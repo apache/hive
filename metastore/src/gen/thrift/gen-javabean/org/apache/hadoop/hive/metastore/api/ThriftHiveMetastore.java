@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -6643,7 +6644,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_database = true && (isSetDatabase());
+      builder.append(present_database);
+      if (present_database)
+        builder.append(database);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_database_args other) {
@@ -7054,7 +7062,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_database_result other) {
@@ -7408,7 +7433,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_database_args other) {
@@ -7818,7 +7850,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_database_result other) {
@@ -8291,7 +8340,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      boolean present_deleteData = true;
+      builder.append(present_deleteData);
+      if (present_deleteData)
+        builder.append(deleteData);
+
+      boolean present_cascade = true;
+      builder.append(present_cascade);
+      if (present_cascade)
+        builder.append(cascade);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_database_args other) {
@@ -8753,7 +8819,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_database_result other) {
@@ -9107,7 +9190,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_pattern = true && (isSetPattern());
+      builder.append(present_pattern);
+      if (present_pattern)
+        builder.append(pattern);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_databases_args other) {
@@ -9479,7 +9569,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_databases_result other) {
@@ -9754,7 +9856,9 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_all_databases_args other) {
@@ -10097,7 +10201,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_all_databases_result other) {
@@ -10495,7 +10611,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_db = true && (isSetDb());
+      builder.append(present_db);
+      if (present_db)
+        builder.append(db);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_database_args other) {
@@ -10878,7 +11006,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_database_result other) {
@@ -11202,7 +11342,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_type_args other) {
@@ -11612,7 +11759,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_type_result other) {
@@ -11966,7 +12130,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_type = true && (isSetType());
+      builder.append(present_type);
+      if (present_type)
+        builder.append(type);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_type_args other) {
@@ -12438,7 +12609,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_type_result other) {
@@ -12621,6 +12814,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -12818,7 +13013,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_type = true && (isSetType());
+      builder.append(present_type);
+      if (present_type)
+        builder.append(type);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_type_args other) {
@@ -13231,7 +13433,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_type_result other) {
@@ -13384,6 +13603,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -13581,7 +13802,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_type_all_args other) {
@@ -13958,7 +14186,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_type_all_result other) {
@@ -14360,7 +14600,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_table_name = true && (isSetTable_name());
+      builder.append(present_table_name);
+      if (present_table_name)
+        builder.append(table_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_fields_args other) {
@@ -14878,7 +15130,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_fields_result other) {
@@ -15337,7 +15611,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_table_name = true && (isSetTable_name());
+      builder.append(present_table_name);
+      if (present_table_name)
+        builder.append(table_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_schema_args other) {
@@ -15855,7 +16141,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_schema_result other) {
@@ -16256,7 +16564,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_tbl = true && (isSetTbl());
+      builder.append(present_tbl);
+      if (present_tbl)
+        builder.append(tbl);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_table_args other) {
@@ -16725,7 +17040,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      boolean present_o4 = true && (isSetO4());
+      builder.append(present_o4);
+      if (present_o4)
+        builder.append(o4);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_table_result other) {
@@ -17167,7 +17504,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_tbl = true && (isSetTbl());
+      builder.append(present_tbl);
+      if (present_tbl)
+        builder.append(tbl);
+
+      boolean present_environment_context = true && (isSetEnvironment_context());
+      builder.append(present_environment_context);
+      if (present_environment_context)
+        builder.append(environment_context);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_table_with_environment_context_args other) {
@@ -17667,7 +18016,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      boolean present_o4 = true && (isSetO4());
+      builder.append(present_o4);
+      if (present_o4)
+        builder.append(o4);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_table_with_environment_context_result other) {
@@ -18170,7 +18541,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      boolean present_deleteData = true;
+      builder.append(present_deleteData);
+      if (present_deleteData)
+        builder.append(deleteData);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_table_args other) {
@@ -18579,7 +18967,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_table_result other) {
@@ -18961,7 +19361,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_pattern = true && (isSetPattern());
+      builder.append(present_pattern);
+      if (present_pattern)
+        builder.append(pattern);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_tables_args other) {
@@ -19363,7 +19775,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_tables_result other) {
@@ -19703,7 +20127,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_all_tables_args other) {
@@ -20075,7 +20506,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_all_tables_result other) {
@@ -20473,7 +20916,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_args other) {
@@ -20913,7 +21368,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_result other) {
@@ -21345,7 +21817,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_tbl_names = true && (isSetTbl_names());
+      builder.append(present_tbl_names);
+      if (present_tbl_names)
+        builder.append(tbl_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_objects_by_name_args other) {
@@ -21880,7 +22364,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_objects_by_name_result other) {
@@ -22402,7 +22908,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_filter = true && (isSetFilter());
+      builder.append(present_filter);
+      if (present_filter)
+        builder.append(filter);
+
+      boolean present_max_tables = true;
+      builder.append(present_max_tables);
+      if (present_max_tables)
+        builder.append(max_tables);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_names_by_filter_args other) {
@@ -22947,7 +23470,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_table_names_by_filter_result other) {
@@ -23463,7 +24008,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_new_tbl = true && (isSetNew_tbl());
+      builder.append(present_new_tbl);
+      if (present_new_tbl)
+        builder.append(new_tbl);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_table_args other) {
@@ -23876,7 +24438,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_table_result other) {
@@ -24374,7 +24948,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_new_tbl = true && (isSetNew_tbl());
+      builder.append(present_new_tbl);
+      if (present_new_tbl)
+        builder.append(new_tbl);
+
+      boolean present_environment_context = true && (isSetEnvironment_context());
+      builder.append(present_environment_context);
+      if (present_environment_context)
+        builder.append(environment_context);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_table_with_environment_context_args other) {
@@ -24818,7 +25414,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_table_with_environment_context_result other) {
@@ -25142,7 +25750,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_new_part = true && (isSetNew_part());
+      builder.append(present_new_part);
+      if (present_new_part)
+        builder.append(new_part);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partition_args other) {
@@ -25611,7 +26226,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partition_result other) {
@@ -26053,7 +26690,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_new_part = true && (isSetNew_part());
+      builder.append(present_new_part);
+      if (present_new_part)
+        builder.append(new_part);
+
+      boolean present_environment_context = true && (isSetEnvironment_context());
+      builder.append(present_environment_context);
+      if (present_environment_context)
+        builder.append(environment_context);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partition_with_environment_context_args other) {
@@ -26553,7 +27202,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partition_with_environment_context_result other) {
@@ -26957,7 +27628,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_new_parts = true && (isSetNew_parts());
+      builder.append(present_new_parts);
+      if (present_new_parts)
+        builder.append(new_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partitions_args other) {
@@ -27446,7 +28124,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_partitions_result other) {
@@ -27629,6 +28329,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -27962,7 +28664,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(append_partition_args other) {
@@ -28507,7 +29226,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(append_partition_result other) {
@@ -29007,7 +29748,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_name = true && (isSetPart_name());
+      builder.append(present_part_name);
+      if (present_part_name)
+        builder.append(part_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(append_partition_by_name_args other) {
@@ -29535,7 +30293,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(append_partition_by_name_result other) {
@@ -30116,7 +30896,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_deleteData = true;
+      builder.append(present_deleteData);
+      if (present_deleteData)
+        builder.append(deleteData);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_partition_args other) {
@@ -30633,7 +31435,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_partition_result other) {
@@ -30786,6 +31605,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -31160,7 +31981,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_name = true && (isSetPart_name());
+      builder.append(present_part_name);
+      if (present_part_name)
+        builder.append(part_name);
+
+      boolean present_deleteData = true;
+      builder.append(present_deleteData);
+      if (present_deleteData)
+        builder.append(deleteData);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_partition_by_name_args other) {
@@ -31660,7 +32503,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_partition_by_name_result other) {
@@ -31813,6 +32673,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -32146,7 +33008,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_args other) {
@@ -32633,7 +33512,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_result other) {
@@ -33259,7 +34155,34 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_user_name = true && (isSetUser_name());
+      builder.append(present_user_name);
+      if (present_user_name)
+        builder.append(user_name);
+
+      boolean present_group_names = true && (isSetGroup_names());
+      builder.append(present_group_names);
+      if (present_group_names)
+        builder.append(group_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_with_auth_args other) {
@@ -33823,7 +34746,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_with_auth_result other) {
@@ -34293,7 +35233,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_name = true && (isSetPart_name());
+      builder.append(present_part_name);
+      if (present_part_name)
+        builder.append(part_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_by_name_args other) {
@@ -34763,7 +35720,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_by_name_result other) {
@@ -35238,7 +36212,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_args other) {
@@ -35725,7 +36716,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_result other) {
@@ -36353,7 +37361,34 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      boolean present_user_name = true && (isSetUser_name());
+      builder.append(present_user_name);
+      if (present_user_name)
+        builder.append(user_name);
+
+      boolean present_group_names = true && (isSetGroup_names());
+      builder.append(present_group_names);
+      if (present_group_names)
+        builder.append(group_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_with_auth_args other) {
@@ -36917,7 +37952,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_with_auth_result other) {
@@ -37409,7 +38461,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_names_args other) {
@@ -37838,7 +38907,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_names_result other) {
@@ -38377,7 +39458,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_ps_args other) {
@@ -38911,7 +40014,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_ps_result other) {
@@ -39617,7 +40737,39 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      boolean present_user_name = true && (isSetUser_name());
+      builder.append(present_user_name);
+      if (present_user_name)
+        builder.append(user_name);
+
+      boolean present_group_names = true && (isSetGroup_names());
+      builder.append(present_group_names);
+      if (present_group_names)
+        builder.append(group_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_ps_with_auth_args other) {
@@ -40228,7 +41380,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_ps_with_auth_result other) {
@@ -40798,7 +41967,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_names_ps_args other) {
@@ -41332,7 +42523,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partition_names_ps_result other) {
@@ -41881,7 +43089,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_filter = true && (isSetFilter());
+      builder.append(present_filter);
+      if (present_filter)
+        builder.append(filter);
+
+      boolean present_max_parts = true;
+      builder.append(present_max_parts);
+      if (present_max_parts)
+        builder.append(max_parts);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_by_filter_args other) {
@@ -42398,7 +43628,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_by_filter_result other) {
@@ -42905,7 +44152,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_names = true && (isSetNames());
+      builder.append(present_names);
+      if (present_names)
+        builder.append(names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_by_names_args other) {
@@ -43412,7 +44676,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_partitions_by_names_result other) {
@@ -43899,7 +45180,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_new_part = true && (isSetNew_part());
+      builder.append(present_new_part);
+      if (present_new_part)
+        builder.append(new_part);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_partition_args other) {
@@ -44312,7 +45610,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_partition_result other) {
@@ -44810,7 +46120,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_new_part = true && (isSetNew_part());
+      builder.append(present_new_part);
+      if (present_new_part)
+        builder.append(new_part);
+
+      boolean present_environment_context = true && (isSetEnvironment_context());
+      builder.append(present_environment_context);
+      if (present_environment_context)
+        builder.append(environment_context);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_partition_with_environment_context_args other) {
@@ -45254,7 +46586,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_partition_with_environment_context_result other) {
@@ -45772,7 +47116,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_new_part = true && (isSetNew_part());
+      builder.append(present_new_part);
+      if (present_new_part)
+        builder.append(new_part);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(rename_partition_args other) {
@@ -46232,7 +47598,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(rename_partition_result other) {
@@ -46614,7 +47992,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_name = true && (isSetName());
+      builder.append(present_name);
+      if (present_name)
+        builder.append(name);
+
+      boolean present_defaultValue = true && (isSetDefaultValue());
+      builder.append(present_defaultValue);
+      if (present_defaultValue)
+        builder.append(defaultValue);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_config_value_args other) {
@@ -46996,7 +48386,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_config_value_result other) {
@@ -47319,7 +48721,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_part_name = true && (isSetPart_name());
+      builder.append(present_part_name);
+      if (present_part_name)
+        builder.append(part_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(partition_name_to_vals_args other) {
@@ -47691,7 +49100,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(partition_name_to_vals_result other) {
@@ -48031,7 +49452,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_part_name = true && (isSetPart_name());
+      builder.append(present_part_name);
+      if (present_part_name)
+        builder.append(part_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(partition_name_to_spec_args other) {
@@ -48408,7 +49836,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(partition_name_to_spec_result other) {
@@ -48962,7 +50402,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_eventType = true && (isSetEventType());
+      builder.append(present_eventType);
+      if (present_eventType)
+        builder.append(eventType.getValue());
+
+      return builder.toHashCode();
     }
 
     public int compareTo(markPartitionForEvent_args other) {
@@ -49656,7 +51118,39 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      boolean present_o4 = true && (isSetO4());
+      builder.append(present_o4);
+      if (present_o4)
+        builder.append(o4);
+
+      boolean present_o5 = true && (isSetO5());
+      builder.append(present_o5);
+      if (present_o5)
+        builder.append(o5);
+
+      boolean present_o6 = true && (isSetO6());
+      builder.append(present_o6);
+      if (present_o6)
+        builder.append(o6);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(markPartitionForEvent_result other) {
@@ -50311,7 +51805,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_part_vals = true && (isSetPart_vals());
+      builder.append(present_part_vals);
+      if (present_part_vals)
+        builder.append(part_vals);
+
+      boolean present_eventType = true && (isSetEventType());
+      builder.append(present_eventType);
+      if (present_eventType)
+        builder.append(eventType.getValue());
+
+      return builder.toHashCode();
     }
 
     public int compareTo(isPartitionMarkedForEvent_args other) {
@@ -51066,7 +52582,44 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      boolean present_o4 = true && (isSetO4());
+      builder.append(present_o4);
+      if (present_o4)
+        builder.append(o4);
+
+      boolean present_o5 = true && (isSetO5());
+      builder.append(present_o5);
+      if (present_o5)
+        builder.append(o5);
+
+      boolean present_o6 = true && (isSetO6());
+      builder.append(present_o6);
+      if (present_o6)
+        builder.append(o6);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(isPartitionMarkedForEvent_result other) {
@@ -51339,6 +52892,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -51594,7 +53149,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_new_index = true && (isSetNew_index());
+      builder.append(present_new_index);
+      if (present_new_index)
+        builder.append(new_index);
+
+      boolean present_index_table = true && (isSetIndex_table());
+      builder.append(present_index_table);
+      if (present_index_table)
+        builder.append(index_table);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_index_args other) {
@@ -52094,7 +53661,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      boolean present_o3 = true && (isSetO3());
+      builder.append(present_o3);
+      if (present_o3)
+        builder.append(o3);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(add_index_result other) {
@@ -52652,7 +54241,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_dbname = true && (isSetDbname());
+      builder.append(present_dbname);
+      if (present_dbname)
+        builder.append(dbname);
+
+      boolean present_base_tbl_name = true && (isSetBase_tbl_name());
+      builder.append(present_base_tbl_name);
+      if (present_base_tbl_name)
+        builder.append(base_tbl_name);
+
+      boolean present_idx_name = true && (isSetIdx_name());
+      builder.append(present_idx_name);
+      if (present_idx_name)
+        builder.append(idx_name);
+
+      boolean present_new_idx = true && (isSetNew_idx());
+      builder.append(present_new_idx);
+      if (present_new_idx)
+        builder.append(new_idx);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_index_args other) {
@@ -53095,7 +54706,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(alter_index_result other) {
@@ -53596,7 +55219,29 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_index_name = true && (isSetIndex_name());
+      builder.append(present_index_name);
+      if (present_index_name)
+        builder.append(index_name);
+
+      boolean present_deleteData = true;
+      builder.append(present_deleteData);
+      if (present_deleteData)
+        builder.append(deleteData);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_index_by_name_args other) {
@@ -54096,7 +55741,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_index_by_name_result other) {
@@ -54249,6 +55911,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -54562,7 +56226,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_index_name = true && (isSetIndex_name());
+      builder.append(present_index_name);
+      if (present_index_name)
+        builder.append(index_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_index_by_name_args other) {
@@ -55032,7 +56713,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_index_by_name_result other) {
@@ -55507,7 +57205,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_max_indexes = true;
+      builder.append(present_max_indexes);
+      if (present_max_indexes)
+        builder.append(max_indexes);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_indexes_args other) {
@@ -55994,7 +57709,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_indexes_result other) {
@@ -56486,7 +58218,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_max_indexes = true;
+      builder.append(present_max_indexes);
+      if (present_max_indexes)
+        builder.append(max_indexes);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_index_names_args other) {
@@ -56915,7 +58664,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_index_names_result other) {
@@ -57255,7 +59016,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_role = true && (isSetRole());
+      builder.append(present_role);
+      if (present_role)
+        builder.append(role);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_role_args other) {
@@ -57611,7 +59379,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(create_role_result other) {
@@ -57734,6 +59514,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -57931,7 +59713,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_role_name = true && (isSetRole_name());
+      builder.append(present_role_name);
+      if (present_role_name)
+        builder.append(role_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_role_args other) {
@@ -58286,7 +60075,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(drop_role_result other) {
@@ -58409,6 +60210,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -58541,7 +60344,9 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_role_names_args other) {
@@ -58884,7 +60689,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_role_names_result other) {
@@ -59541,7 +61358,39 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_role_name = true && (isSetRole_name());
+      builder.append(present_role_name);
+      if (present_role_name)
+        builder.append(role_name);
+
+      boolean present_principal_name = true && (isSetPrincipal_name());
+      builder.append(present_principal_name);
+      if (present_principal_name)
+        builder.append(principal_name);
+
+      boolean present_principal_type = true && (isSetPrincipal_type());
+      builder.append(present_principal_type);
+      if (present_principal_type)
+        builder.append(principal_type.getValue());
+
+      boolean present_grantor = true && (isSetGrantor());
+      builder.append(present_grantor);
+      if (present_grantor)
+        builder.append(grantor);
+
+      boolean present_grantorType = true && (isSetGrantorType());
+      builder.append(present_grantorType);
+      if (present_grantorType)
+        builder.append(grantorType.getValue());
+
+      boolean present_grant_option = true;
+      builder.append(present_grant_option);
+      if (present_grant_option)
+        builder.append(grant_option);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(grant_role_args other) {
@@ -60043,7 +61892,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(grant_role_result other) {
@@ -60166,6 +62027,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -60491,7 +62354,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_role_name = true && (isSetRole_name());
+      builder.append(present_role_name);
+      if (present_role_name)
+        builder.append(role_name);
+
+      boolean present_principal_name = true && (isSetPrincipal_name());
+      builder.append(present_principal_name);
+      if (present_principal_name)
+        builder.append(principal_name);
+
+      boolean present_principal_type = true && (isSetPrincipal_type());
+      builder.append(present_principal_type);
+      if (present_principal_type)
+        builder.append(principal_type.getValue());
+
+      return builder.toHashCode();
     }
 
     public int compareTo(revoke_role_args other) {
@@ -60906,7 +62786,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(revoke_role_result other) {
@@ -61029,6 +62921,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -61296,7 +63190,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_principal_name = true && (isSetPrincipal_name());
+      builder.append(present_principal_name);
+      if (present_principal_name)
+        builder.append(principal_name);
+
+      boolean present_principal_type = true && (isSetPrincipal_type());
+      builder.append(present_principal_type);
+      if (present_principal_type)
+        builder.append(principal_type.getValue());
+
+      return builder.toHashCode();
     }
 
     public int compareTo(list_roles_args other) {
@@ -61698,7 +63604,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(list_roles_result other) {
@@ -62175,7 +64093,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_hiveObject = true && (isSetHiveObject());
+      builder.append(present_hiveObject);
+      if (present_hiveObject)
+        builder.append(hiveObject);
+
+      boolean present_user_name = true && (isSetUser_name());
+      builder.append(present_user_name);
+      if (present_user_name)
+        builder.append(user_name);
+
+      boolean present_group_names = true && (isSetGroup_names());
+      builder.append(present_group_names);
+      if (present_group_names)
+        builder.append(group_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_privilege_set_args other) {
@@ -62605,7 +64540,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_privilege_set_result other) {
@@ -63057,7 +65004,24 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_principal_name = true && (isSetPrincipal_name());
+      builder.append(present_principal_name);
+      if (present_principal_name)
+        builder.append(principal_name);
+
+      boolean present_principal_type = true && (isSetPrincipal_type());
+      builder.append(present_principal_type);
+      if (present_principal_type)
+        builder.append(principal_type.getValue());
+
+      boolean present_hiveObject = true && (isSetHiveObject());
+      builder.append(present_hiveObject);
+      if (present_hiveObject)
+        builder.append(hiveObject);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(list_privileges_args other) {
@@ -63490,7 +65454,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(list_privileges_result other) {
@@ -63831,7 +65807,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_privileges = true && (isSetPrivileges());
+      builder.append(present_privileges);
+      if (present_privileges)
+        builder.append(privileges);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(grant_privileges_args other) {
@@ -64187,7 +66170,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(grant_privileges_result other) {
@@ -64310,6 +66305,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -64507,7 +66504,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_privileges = true && (isSetPrivileges());
+      builder.append(present_privileges);
+      if (present_privileges)
+        builder.append(privileges);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(revoke_privileges_args other) {
@@ -64863,7 +66867,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(revoke_privileges_result other) {
@@ -64986,6 +67002,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -65261,7 +67279,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_user_name = true && (isSetUser_name());
+      builder.append(present_user_name);
+      if (present_user_name)
+        builder.append(user_name);
+
+      boolean present_group_names = true && (isSetGroup_names());
+      builder.append(present_group_names);
+      if (present_group_names)
+        builder.append(group_names);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(set_ugi_args other) {
@@ -65680,7 +67710,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(set_ugi_result other) {
@@ -66078,7 +68120,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_token_owner = true && (isSetToken_owner());
+      builder.append(present_token_owner);
+      if (present_token_owner)
+        builder.append(token_owner);
+
+      boolean present_renewer_kerberos_principal_name = true && (isSetRenewer_kerberos_principal_name());
+      builder.append(present_renewer_kerberos_principal_name);
+      if (present_renewer_kerberos_principal_name)
+        builder.append(renewer_kerberos_principal_name);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_delegation_token_args other) {
@@ -66460,7 +68514,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(get_delegation_token_result other) {
@@ -66783,7 +68849,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_token_str_form = true && (isSetToken_str_form());
+      builder.append(present_token_str_form);
+      if (present_token_str_form)
+        builder.append(token_str_form);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(renew_delegation_token_args other) {
@@ -67138,7 +69211,19 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true;
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(renew_delegation_token_result other) {
@@ -67261,6 +69346,8 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -67458,7 +69545,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_token_str_form = true && (isSetToken_str_form());
+      builder.append(present_token_str_form);
+      if (present_token_str_form)
+        builder.append(token_str_form);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(cancel_delegation_token_args other) {
@@ -67752,7 +69846,14 @@ public class ThriftHiveMetastore {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(cancel_delegation_token_result other) {

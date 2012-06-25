@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.service;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -981,7 +982,14 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_query = true && (isSetQuery());
+      builder.append(present_query);
+      if (present_query)
+        builder.append(query);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(execute_args other) {
@@ -1275,7 +1283,14 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(execute_result other) {
@@ -1504,7 +1519,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchOne_args other) {
@@ -1827,7 +1844,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchOne_result other) {
@@ -2153,7 +2182,14 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_numRows = true;
+      builder.append(present_numRows);
+      if (present_numRows)
+        builder.append(numRows);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchN_args other) {
@@ -2522,7 +2558,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchN_result other) {
@@ -2797,7 +2845,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchAll_args other) {
@@ -3140,7 +3190,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(fetchAll_result other) {
@@ -3415,7 +3477,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getSchema_args other) {
@@ -3738,7 +3802,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getSchema_result other) {
@@ -3997,7 +4073,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getThriftSchema_args other) {
@@ -4320,7 +4398,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getThriftSchema_result other) {
@@ -4579,7 +4669,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getClusterStatus_args other) {
@@ -4902,7 +4994,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getClusterStatus_result other) {
@@ -5161,7 +5265,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getQueryPlan_args other) {
@@ -5484,7 +5590,19 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_success = true && (isSetSuccess());
+      builder.append(present_success);
+      if (present_success)
+        builder.append(success);
+
+      boolean present_ex = true && (isSetEx());
+      builder.append(present_ex);
+      if (present_ex)
+        builder.append(ex);
+
+      return builder.toHashCode();
     }
 
     public int compareTo(getQueryPlan_result other) {
@@ -5743,7 +5861,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(clean_args other) {
@@ -5943,7 +6063,9 @@ public class ThriftHive {
 
     @Override
     public int hashCode() {
-      return 0;
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      return builder.toHashCode();
     }
 
     public int compareTo(clean_result other) {

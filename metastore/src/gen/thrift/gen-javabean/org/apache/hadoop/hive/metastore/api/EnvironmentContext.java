@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -234,7 +235,14 @@ public class EnvironmentContext implements org.apache.thrift.TBase<EnvironmentCo
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_properties = true && (isSetProperties());
+    builder.append(present_properties);
+    if (present_properties)
+      builder.append(properties);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(EnvironmentContext other) {

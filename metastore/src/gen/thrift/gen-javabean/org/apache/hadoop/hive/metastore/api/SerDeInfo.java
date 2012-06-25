@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -350,7 +351,24 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_name = true && (isSetName());
+    builder.append(present_name);
+    if (present_name)
+      builder.append(name);
+
+    boolean present_serializationLib = true && (isSetSerializationLib());
+    builder.append(present_serializationLib);
+    if (present_serializationLib)
+      builder.append(serializationLib);
+
+    boolean present_parameters = true && (isSetParameters());
+    builder.append(present_parameters);
+    if (present_parameters)
+      builder.append(parameters);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(SerDeInfo other) {

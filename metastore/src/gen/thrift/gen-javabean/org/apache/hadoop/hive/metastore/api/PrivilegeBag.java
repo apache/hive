@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -229,7 +230,14 @@ public class PrivilegeBag implements org.apache.thrift.TBase<PrivilegeBag, Privi
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_privileges = true && (isSetPrivileges());
+    builder.append(present_privileges);
+    if (present_privileges)
+      builder.append(privileges);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(PrivilegeBag other) {

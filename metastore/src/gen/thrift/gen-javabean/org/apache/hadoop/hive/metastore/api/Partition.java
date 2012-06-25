@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -661,7 +662,49 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_values = true && (isSetValues());
+    builder.append(present_values);
+    if (present_values)
+      builder.append(values);
+
+    boolean present_dbName = true && (isSetDbName());
+    builder.append(present_dbName);
+    if (present_dbName)
+      builder.append(dbName);
+
+    boolean present_tableName = true && (isSetTableName());
+    builder.append(present_tableName);
+    if (present_tableName)
+      builder.append(tableName);
+
+    boolean present_createTime = true;
+    builder.append(present_createTime);
+    if (present_createTime)
+      builder.append(createTime);
+
+    boolean present_lastAccessTime = true;
+    builder.append(present_lastAccessTime);
+    if (present_lastAccessTime)
+      builder.append(lastAccessTime);
+
+    boolean present_sd = true && (isSetSd());
+    builder.append(present_sd);
+    if (present_sd)
+      builder.append(sd);
+
+    boolean present_parameters = true && (isSetParameters());
+    builder.append(present_parameters);
+    if (present_parameters)
+      builder.append(parameters);
+
+    boolean present_privileges = true && (isSetPrivileges());
+    builder.append(present_privileges);
+    if (present_privileges)
+      builder.append(privileges);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Partition other) {

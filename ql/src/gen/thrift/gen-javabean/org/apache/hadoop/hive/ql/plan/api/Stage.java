@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -642,7 +643,44 @@ public class Stage implements org.apache.thrift.TBase<Stage, Stage._Fields>, jav
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_stageId = true && (isSetStageId());
+    builder.append(present_stageId);
+    if (present_stageId)
+      builder.append(stageId);
+
+    boolean present_stageType = true && (isSetStageType());
+    builder.append(present_stageType);
+    if (present_stageType)
+      builder.append(stageType.getValue());
+
+    boolean present_stageAttributes = true && (isSetStageAttributes());
+    builder.append(present_stageAttributes);
+    if (present_stageAttributes)
+      builder.append(stageAttributes);
+
+    boolean present_stageCounters = true && (isSetStageCounters());
+    builder.append(present_stageCounters);
+    if (present_stageCounters)
+      builder.append(stageCounters);
+
+    boolean present_taskList = true && (isSetTaskList());
+    builder.append(present_taskList);
+    if (present_taskList)
+      builder.append(taskList);
+
+    boolean present_done = true;
+    builder.append(present_done);
+    if (present_done)
+      builder.append(done);
+
+    boolean present_started = true;
+    builder.append(present_started);
+    if (present_started)
+      builder.append(started);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Stage other) {

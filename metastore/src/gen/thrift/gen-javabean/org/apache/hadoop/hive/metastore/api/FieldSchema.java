@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -325,7 +326,24 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_name = true && (isSetName());
+    builder.append(present_name);
+    if (present_name)
+      builder.append(name);
+
+    boolean present_type = true && (isSetType());
+    builder.append(present_type);
+    if (present_type)
+      builder.append(type);
+
+    boolean present_comment = true && (isSetComment());
+    builder.append(present_comment);
+    if (present_comment)
+      builder.append(comment);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(FieldSchema other) {

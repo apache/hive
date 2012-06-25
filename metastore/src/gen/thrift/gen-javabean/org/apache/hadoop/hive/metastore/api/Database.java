@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -464,7 +465,34 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_name = true && (isSetName());
+    builder.append(present_name);
+    if (present_name)
+      builder.append(name);
+
+    boolean present_description = true && (isSetDescription());
+    builder.append(present_description);
+    if (present_description)
+      builder.append(description);
+
+    boolean present_locationUri = true && (isSetLocationUri());
+    builder.append(present_locationUri);
+    if (present_locationUri)
+      builder.append(locationUri);
+
+    boolean present_parameters = true && (isSetParameters());
+    builder.append(present_parameters);
+    if (present_parameters)
+      builder.append(parameters);
+
+    boolean present_privileges = true && (isSetPrivileges());
+    builder.append(present_privileges);
+    if (present_privileges)
+      builder.append(privileges);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Database other) {

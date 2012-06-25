@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.service;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -328,7 +329,24 @@ public class HiveServerException extends Exception implements org.apache.thrift.
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_message = true && (isSetMessage());
+    builder.append(present_message);
+    if (present_message)
+      builder.append(message);
+
+    boolean present_errorCode = true;
+    builder.append(present_errorCode);
+    if (present_errorCode)
+      builder.append(errorCode);
+
+    boolean present_SQLState = true && (isSetSQLState());
+    builder.append(present_SQLState);
+    if (present_SQLState)
+      builder.append(SQLState);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(HiveServerException other) {

@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -270,7 +271,19 @@ public class Order implements org.apache.thrift.TBase<Order, Order._Fields>, jav
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_col = true && (isSetCol());
+    builder.append(present_col);
+    if (present_col)
+      builder.append(col);
+
+    boolean present_order = true;
+    builder.append(present_order);
+    if (present_order)
+      builder.append(order);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Order other) {
