@@ -3002,11 +3002,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<Partition> partsToDelete = new ArrayList<Partition>();
       for (PartitionSpec partSpec : dropTbl.getPartSpecs()) {
         List<Partition> partitions = null;
-        try {
-          partitions = db.getPartitionsByFilter(tbl, partSpec.toString());
-        } catch (Exception e) {
-          throw new HiveException(e);
+        // getPartitionsByFilter only works for string columns.
+        // Till that is fixed, only equality will work for non-string columns.
+        if (dropTbl.isStringPartitionColumns()) {
+          try {
+            partitions = db.getPartitionsByFilter(tbl, partSpec.toString());
+          } catch (Exception e) {
+            throw new HiveException(e);
+          }
         }
+        else {
+          partitions = db.getPartitions(tbl, partSpec.getPartSpecWithoutOperator());
+        }
+
         // this is to prevent dropping archived partition which is archived in a
         // different level the drop command specified.
         int partPrefixToDrop = 0;

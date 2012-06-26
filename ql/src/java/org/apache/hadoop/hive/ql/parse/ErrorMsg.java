@@ -193,6 +193,8 @@ public enum ErrorMsg {
   PARTITION_COLUMN_NON_PRIMITIVE("Partition column must be of primitive type."),
   INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS(
       "Dynamic partitions do not support IF NOT EXISTS. Specified partitions with value :"),
+  DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY("Drop partitions for a non string partition " 
+      + "columns is not allowed using non-equality")
       ;
 
   private String mesg;
