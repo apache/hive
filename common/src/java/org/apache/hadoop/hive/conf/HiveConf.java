@@ -534,6 +534,7 @@ public class HiveConf extends Configuration {
 
     // Hive Variables
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),
+    HIVEVARIABLESUBSTITUTEDEPTH("hive.variable.substitute.depth", 40),
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", ""),
 
