@@ -1037,6 +1037,11 @@
   <description>This enables substitution using syntax like ${var} ${system:var} and ${env:var}.</description>
 </property>
 
+<property>
+  <name>hive.variable.substitute.depth</name>
+  <value>40</value>
+  <description>The maximum replacements the substitution engine will do.</description>
+</property>
 
 <property>
   <name>hive.security.authorization.enabled</name>
