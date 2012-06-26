@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -270,12 +271,8 @@ public abstract class BaseSemanticAnalyzer {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
   }
 
-  public static String stripQuotes(String val) throws SemanticException {
-    if ((val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'')
-        || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
-      val = val.substring(1, val.length() - 1);
-    }
-    return val;
+  public static String stripQuotes(String val) {
+    return PlanUtils.stripQuotes(val);
   }
 
   public static String charSetString(String charSetName, String charSetString)
