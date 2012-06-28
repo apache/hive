@@ -21,13 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,6 +95,7 @@ import org.apache.log4j.varia.NullAppender;
 public class ExecDriver extends Task<MapredWork> implements Serializable, HadoopJobExecHook {
 
   private static final long serialVersionUID = 1L;
+  private static final String JOBCONF_FILENAME = "jobconf.xml";
 
   protected transient JobConf job;
   public static MemoryMXBean memoryMXBean;
@@ -533,7 +532,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   }
 
   private static void printUsage() {
-    System.err.println("ExecDriver -plan <plan-file> [-jobconf k1=v1 [-jobconf k2=v2] ...] "
+    System.err.println("ExecDriver -plan <plan-file> [-jobconffile <job conf file>]"
         + "[-files <file1>[,<file2>] ...]");
     System.exit(1);
   }
@@ -570,7 +569,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public static void main(String[] args) throws IOException, HiveException {
 
     String planFileName = null;
-    ArrayList<String> jobConfArgs = new ArrayList<String>();
+    String jobConfFileName = null;
     boolean noLog = false;
     String files = null;
     boolean localtask = false;
@@ -578,8 +577,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       for (int i = 0; i < args.length; i++) {
         if (args[i].equals("-plan")) {
           planFileName = args[++i];
-        } else if (args[i].equals("-jobconf")) {
-          jobConfArgs.add(args[++i]);
+        } else if (args[i].equals("-jobconffile")) {
+          jobConfFileName = args[++i];
         } else if (args[i].equals("-nolog")) {
           noLog = true;
         } else if (args[i].equals("-files")) {
@@ -599,22 +598,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     } else {
       conf = new JobConf(ExecDriver.class);
     }
-    StringBuilder sb = new StringBuilder("JobConf:\n");
 
-    for (String one : jobConfArgs) {
-      int eqIndex = one.indexOf('=');
-      if (eqIndex != -1) {
-        try {
-          String key = one.substring(0, eqIndex);
-          String value = URLDecoder.decode(one.substring(eqIndex + 1), "UTF-8");
-          conf.set(key, value);
-          sb.append(key).append("=").append(value).append("\n");
-        } catch (UnsupportedEncodingException e) {
-          System.err.println("Unexpected error " + e.getMessage() + " while encoding "
-              + one.substring(eqIndex + 1));
-          System.exit(3);
-        }
-      }
+    if (jobConfFileName != null) {
+      conf.addResource(new Path(jobConfFileName));
     }
 
     if (files != null) {
@@ -648,9 +634,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         console.printInfo("Execution log at: " + ((FileAppender) appender).getFile());
       }
     }
-
-    // log the list of job conf parameters for reference
-    LOG.info(sb.toString());
 
     // the plan file should always be in local directory
     Path p = new Path(planFileName);
@@ -703,53 +686,44 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * Given a Hive Configuration object - generate a command line fragment for passing such
    * configuration information to ExecDriver.
    */
-  public static String generateCmdLine(HiveConf hconf) {
-    try {
-      StringBuilder sb = new StringBuilder();
-      Properties deltaP = hconf.getChangedProperties();
-      boolean hadoopLocalMode = hconf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local");
-      String hadoopSysDir = "mapred.system.dir";
-      String hadoopWorkDir = "mapred.local.dir";
+  public static String generateCmdLine(HiveConf hconf, Context ctx)
+      throws IOException {
+    HiveConf tempConf = new HiveConf();
+    Path hConfFilePath = new Path(ctx.getLocalTmpFileURI(), JOBCONF_FILENAME);
+    OutputStream out = null;
 
-      for (Object one : deltaP.keySet()) {
-        String oneProp = (String) one;
+    Properties deltaP = hconf.getChangedProperties();
+    boolean hadoopLocalMode = hconf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local");
+    String hadoopSysDir = "mapred.system.dir";
+    String hadoopWorkDir = "mapred.local.dir";
 
-        if (hadoopLocalMode && (oneProp.equals(hadoopSysDir) || oneProp.equals(hadoopWorkDir))) {
-          continue;
-        }
+    for (Object one : deltaP.keySet()) {
+      String oneProp = (String) one;
 
-        String oneValue = deltaP.getProperty(oneProp);
-
-        sb.append("-jobconf ");
-        sb.append(oneProp);
-        sb.append("=");
-        sb.append(URLEncoder.encode(oneValue, "UTF-8"));
-        sb.append(" ");
+      if (hadoopLocalMode && (oneProp.equals(hadoopSysDir) || oneProp.equals(hadoopWorkDir))) {
+        continue;
       }
 
-      // Multiple concurrent local mode job submissions can cause collisions in
-      // working dirs
-      // Workaround is to rename map red working dir to a temp dir in such cases
-
-      if (hadoopLocalMode) {
-        sb.append("-jobconf ");
-        sb.append(hadoopSysDir);
-        sb.append("=");
-        sb.append(URLEncoder.encode(hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt(),
-            "UTF-8"));
-
-        sb.append(" ");
-        sb.append("-jobconf ");
-        sb.append(hadoopWorkDir);
-        sb.append("=");
-        sb.append(URLEncoder.encode(hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt(),
-            "UTF-8"));
-      }
-
-      return sb.toString();
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
+      tempConf.set(oneProp, deltaP.getProperty(oneProp));
     }
+
+    // Multiple concurrent local mode job submissions can cause collisions in
+    // working dirs and system dirs
+    // Workaround is to rename map red working dir to a temp dir in such cases
+    if (hadoopLocalMode) {
+      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt());
+      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt());
+    }
+
+    try {
+      out = FileSystem.getLocal(hconf).create(hConfFilePath);
+      tempConf.writeXml(out);
+    } finally {
+      if (out != null) {
+        out.close();
+      }
+    }
+    return " -jobconffile " + hConfFilePath.toString();
   }
 
   @Override

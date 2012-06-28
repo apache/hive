@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
-
 /**
  * Extension of ExecDriver:
  * - can optionally spawn a map-reduce task from a separate jvm
@@ -165,8 +164,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
           libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
         }
       }
+
       // Generate the hiveConfArgs after potentially adding the jars
-      String hiveConfArgs = generateCmdLine(conf);
+      String hiveConfArgs = generateCmdLine(conf, ctx);
 
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpFileURI(), "plan.xml");
