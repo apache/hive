@@ -129,8 +129,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       String jarCmd;
 
       jarCmd = hiveJar + " " + ExecDriver.class.getName();
-
-      String hiveConfArgs = ExecDriver.generateCmdLine(conf);
+      String hiveConfArgs = ExecDriver.generateCmdLine(conf, ctx);
       String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan " + planPath.toString()
           + " " + isSilent + " " + hiveConfArgs;
 
