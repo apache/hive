@@ -255,27 +255,25 @@ public final class FileUtils {
    */
   public static void tar(String parentDir, String[] inputFiles, String outputFile)
       throws IOException {
-    TarArchiveOutputStream tOut = null;
 
+    FileOutputStream out = null;
     try {
-      tOut = new TarArchiveOutputStream(
-          new GzipCompressorOutputStream(
-              new BufferedOutputStream(
-                  new FileOutputStream(new File(parentDir, outputFile)))));
+      out = new FileOutputStream(new File(parentDir, outputFile));
+      TarArchiveOutputStream tOut = new TarArchiveOutputStream(
+          new GzipCompressorOutputStream(new BufferedOutputStream(out)));
 
       for (int i = 0; i < inputFiles.length; i++) {
-        File f = new File(inputFiles[i]);
+        File f = new File(parentDir, inputFiles[i]);
         TarArchiveEntry tarEntry = new TarArchiveEntry(f, f.getName());
         tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
         tOut.putArchiveEntry(tarEntry);
-        IOUtils.copy(new FileInputStream(f), tOut);
+        IOUtils.copy(new FileInputStream(f), tOut); // copy with 8K buffer, not close
         tOut.closeArchiveEntry();
       }
+      tOut.close(); // finishes inside
     } finally {
-      if(tOut != null ) {
-        tOut.finish();
-        tOut.close();
-      }
+      // TarArchiveOutputStream seemed not to close files properly in error situation
+      org.apache.hadoop.io.IOUtils.closeStream(out);
     }
   }
 }
