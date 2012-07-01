@@ -69,31 +69,35 @@
   <property name="hadoop.opts.23" value="-D mapreduce.framework.name=local" />
   <property name="hadoop.opts.20" value="" />
 
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="${test.build.resources}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <pathelement location="${build.dir.hive}/cli/test/classes"/>
-    <pathelement location="${build.dir.hive}/common/test/classes"/>
-    <pathelement location="${build.dir.hive}/hbase-handler/test/classes"/>
-    <pathelement location="${build.dir.hive}/hwi/test/classes"/>
-    <pathelement location="${build.dir.hive}/jdbc/test/classes"/>
-    <pathelement location="${build.dir.hive}/metastore/test/classes"/>
-    <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <pathelement location="${build.dir.hive}/serde/test/classes"/>
-    <pathelement location="${build.dir.hive}/service/test/classes"/>
-    <pathelement location="${build.dir.hive}/shims/test/classes"/>
+  <target name="set-test-classpath">
+    <typedef name="distinctelementsclasspath" classname="org.apache.hadoop.hive.ant.DistinctElementsClassPath"
+      classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar"/>
+    <distinctelementsclasspath id="test.classpath">
+      <pathelement location="${test.build.classes}" />
+      <pathelement location="${test.build.resources}" />
+      <pathelement location="" />
+      <pathelement location="${test.src.data.dir}/conf"/>
+      <pathelement location="${hive.conf.dir}"/>
+      <pathelement location="${build.dir.hive}/cli/test/classes"/>
+      <pathelement location="${build.dir.hive}/common/test/classes"/>
+      <pathelement location="${build.dir.hive}/hbase-handler/test/classes"/>
+      <pathelement location="${build.dir.hive}/hwi/test/classes"/>
+      <pathelement location="${build.dir.hive}/jdbc/test/classes"/>
+      <pathelement location="${build.dir.hive}/metastore/test/classes"/>
+      <pathelement location="${build.dir.hive}/ql/test/classes"/>
+      <pathelement location="${build.dir.hive}/serde/test/classes"/>
+      <pathelement location="${build.dir.hive}/service/test/classes"/>
+      <pathelement location="${build.dir.hive}/shims/test/classes"/>
 
-    <!-- Include build/dist/lib on the classpath before Ivy and exclude hive jars from Ivy to make sure we get the local changes when we test Hive -->
-    <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar"/>
-    <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar"/>
-    <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar" />
-    <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
-    <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
-    <pathelement location="${build.classes}" />
-  </path>
+      <!-- Include build/dist/lib on the classpath before Ivy and exclude hive jars from Ivy to make sure we get the local changes when we test Hive -->
+      <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar,**/lib*.jar"/>
+      <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar"/>
+      <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar" />
+      <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
+      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+      <pathelement location="${build.classes}" />
+    </distinctelementsclasspath>
+  </target>
 
   <!-- include contrib on local classpath, but not on cluster -->
   <!-- https://reviews.facebook.net/D2133#comment-47 -->
@@ -209,7 +213,7 @@
     <echo message="Project: ${ant.project.name}"/>
   </target>
 
-  <target name="test-init">
+  <target name="test-init" depends="set-test-classpath">
     <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${test.data.dir}"/>
     <mkdir dir="${test.log.dir}/clientpositive"/>
@@ -262,7 +266,7 @@
   </target>
 
   <!-- target to compile tests -->
-  <target name="compile-test" depends="compile,ivy-retrieve-test">
+  <target name="compile-test" depends="compile,ivy-retrieve-test,set-test-classpath">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"

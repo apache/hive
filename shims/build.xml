@@ -40,17 +40,18 @@ to call at top-level: ant deploy-contrib compile-core-test
   <property name="shims.0.20S.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.20S.shim" />
   <property name="shims.0.23.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.23.shim" />
 
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <!-- We are running unit tests like the one inside ql -->
-    <fileset dir="${hive.root}/testlibs" includes="*.jar" />
-    <fileset dir="${shims.0.20S.hadoop.ivy.dir}" includes="*.jar" excludes="slf4j-*.jar" />
-    <fileset dir="../lib" includes="*.jar" />
-    <path refid="classpath" />
-  </path>
+  <target name="set-test-classpath">
+    <path id="test.classpath">
+      <pathelement location="${test.build.classes}" />
+      <pathelement location="" />
+      <pathelement location="${test.src.data.dir}/conf"/>
+      <pathelement location="${hive.conf.dir}"/>
+      <fileset dir="${hive.root}/testlibs" includes="*.jar" />
+      <fileset dir="${shims.0.20S.hadoop.ivy.dir}" includes="*.jar" excludes="slf4j-*.jar" />
+      <fileset dir="../lib" includes="*.jar" />
+      <path refid="classpath" />
+    </path>
+  </target>
 
   <target name="build_shims"
           description="Build shims against a particular hadoop version">
@@ -95,7 +96,8 @@ to call at top-level: ant deploy-contrib compile-core-test
     </for>  	
   </target>
   
-  <target name="compile_secure_test" 
+  <target name="compile_secure_test"
+          depends="set-test-classpath"
           description="Test shims against a particular hadoop version">
     <echo message="Project: ${ant.project.name}"/>
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}" />

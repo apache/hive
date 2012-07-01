@@ -22,17 +22,19 @@
 
   <import file="../build-common.xml"/>
 
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
-    <path refid="classpath" />
-  </path>
+  <target name="set-test-classpath">
+    <path id="test.classpath">
+      <pathelement location="${test.build.classes}" />
+      <pathelement location="" />
+      <pathelement location="${test.src.data.dir}/conf"/>
+      <pathelement location="${hive.conf.dir}"/>
+      <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
+      <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+      <pathelement location="${build.dir.hive}/ql/test/classes"/>
+      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+      <path refid="classpath" />
+    </path>
+  </target>
 
   <target name="compile" depends="init,ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
