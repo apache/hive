@@ -267,7 +267,12 @@ public final class FileUtils {
         TarArchiveEntry tarEntry = new TarArchiveEntry(f, f.getName());
         tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
         tOut.putArchiveEntry(tarEntry);
-        IOUtils.copy(new FileInputStream(f), tOut); // copy with 8K buffer, not close
+        FileInputStream input = new FileInputStream(f);
+        try {
+          IOUtils.copy(input, tOut); // copy with 8K buffer, not close
+        } finally {
+          input.close();
+        }
         tOut.closeArchiveEntry();
       }
       tOut.close(); // finishes inside
