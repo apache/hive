@@ -590,16 +590,17 @@ public class SessionState {
   }
 
   /**
-   * Returns the list of filesystem schemas as regex which
-   * are permissible for download as a resource.
+   * Returns  true if it is from any external File Systems except local
    */
-  public static String getMatchingSchemaAsRegex() {
-    String[] matchingSchema = {"s3", "s3n", "hdfs"};
-    return StringUtils.join(matchingSchema, "|");
+  public static boolean canDownloadResource(String value) {
+    // Allow to download resources from any external FileSystem.
+    // And no need to download if it already exists on local file system.
+    String scheme = new Path(value).toUri().getScheme();
+    return (scheme != null) && !scheme.equalsIgnoreCase("file");
   }
 
   private String downloadResource(String value, boolean convertToUnix) {
-    if (value.matches("("+ getMatchingSchemaAsRegex() +")://.*")) {
+    if (canDownloadResource(value)) {
       getConsole().printInfo("converting to local " + value);
       File resourceDir = new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
       String destinationName = new Path(value).getName();
