@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+--> 
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+  <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="false"/>
+  <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+    <mapEntry key="JAVA_HOME" value="${system_property:java.home}"/>
+    <mapEntry key="HIVE_HADOOP_TEST_CLASSPATH" value="@HIVE_HADOOP_TEST_CLASSPATH@"/>
+  </mapAttribute>
+
+  <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+    <listEntry value="/hive/cli/src/java/org/apache/hive/jdbc/HiveBeeline.java"/>
+  </listAttribute>
+
+  <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+    <listEntry value="1"/>
+  </listAttribute>
+
+    <listAttribute key="org.eclipse.jdt.launching.CLASSPATH">
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry containerPath=&quot;org.eclipse.jdt.launching.JRE_CONTAINER&quot; javaProject=&quot;@PROJECT@&quot; path=&quot;1&quot; type=&quot;4&quot;/&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/conf&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/common/src/java/conf&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/build/metastore/hive-metastore-@HIVE_VERSION@.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry id=&quot;org.eclipse.jdt.launching.classpathentry.defaultClasspath&quot;&gt;&#10;&lt;memento exportedEntriesOnly=&quot;false&quot; project=&quot;@PROJECT@&quot;/&gt;&#10;&lt;/runtimeClasspathEntry&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/build/ql/hive-exec-@HIVE_VERSION@.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+  </listAttribute>
+
+
+  <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
+  <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.hive.jdbc.beeline.HiveBeeline"/>
+  <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="@PROJECT@"/>
+  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS"
+    value="@JVM_ARGS@ -Dhive.root.logger=INFO,console -Dhadoop.bin.path=@HADOOP_BIN_PATH@"/>
+
+</launchConfiguration>
