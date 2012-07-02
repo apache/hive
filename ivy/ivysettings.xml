@@ -35,6 +35,7 @@
   <property name="maven2.pattern" value="[organisation]/[module]/[revision]/[module]-[revision](-[classifier])"/>
   <property name="repo.dir" value="${user.home}/.m2/repository"/>
   <property name="maven2.pattern.ext"  value="${maven2.pattern}.[ext]"/>
+  <property name="sourceforge-repo" value="http://www.sourceforge.net/projects"/>
   <property name="resolvers" value="default" override="false"/>
   <!-- pull in the local repository -->
   <include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
@@ -50,6 +51,10 @@
       <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
     </url>
 
+    <url name="sourceforge" m2compatible="false" checksums="">
+      <artifact pattern="${sourceforge-repo}/[module]/files/[module]/[branch]/[module]-[revision].[ext]"/>
+    </url>
+
     <filesystem name="fs" m2compatible="true" force="true">
        <artifact pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].[ext]"/>
        <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
@@ -62,6 +67,7 @@
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="sourceforge"/>
     </chain>
 
     <chain name="internal" dual="true">
