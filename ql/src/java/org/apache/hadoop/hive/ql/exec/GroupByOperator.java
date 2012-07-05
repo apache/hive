@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,20 +45,25 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyString;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -430,6 +436,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     case STRING:
       keyPositionsSize.add(new Integer(pos));
       return javaObjectOverHead;
+    case BINARY:
+      keyPositionsSize.add(new Integer(pos));
+      return javaObjectOverHead;
+    case TIMESTAMP:
+      return javaObjectOverHead + javaSizePrimitiveType;
     default:
       return javaSizeUnknownType;
     }
@@ -461,7 +472,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       return javaSizePrimitiveType;
     }
 
-    if (c.isInstance(new String())) {
+    if (c.isInstance(new Timestamp(0))){
+      return javaObjectOverHead + javaSizePrimitiveType;
+    }
+
+    if (c.isInstance(new String()) || c.isInstance(new ByteArrayRef())) {
       int idx = 0;
       varLenFields v = null;
       for (idx = 0; idx < aggrPositions.size(); idx++) {
@@ -848,7 +863,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         Object key = newKeys.getKeyArray()[pos.intValue()];
         // Ignore nulls
         if (key != null) {
-          if (key instanceof LazyPrimitive) {
+          if (key instanceof LazyString) {
               totalVariableSize +=
                   ((LazyPrimitive<LazyStringObjectInspector, Text>) key).
                       getWritableObject().getLength();
@@ -856,6 +871,14 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
             totalVariableSize += ((String) key).length();
           } else if (key instanceof Text) {
             totalVariableSize += ((Text) key).getLength();
+          } else if (key instanceof LazyBinary) {
+            totalVariableSize +=
+                ((LazyPrimitive<LazyBinaryObjectInspector, BytesWritable>) key).
+                    getWritableObject().getLength();
+          } else if (key instanceof BytesWritable) {
+            totalVariableSize += ((BytesWritable) key).getLength();
+          } else if (key instanceof ByteArrayRef) {
+            totalVariableSize += ((ByteArrayRef) key).getData().length;
           }
         }
       }
@@ -873,7 +896,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
         try {
           for (Field f : fieldsVarLen) {
-            totalVariableSize += ((String) f.get(agg)).length();
+            Object o = f.get(agg);
+            if (o instanceof String){
+              totalVariableSize += ((String)o).length();
+            }
+            else if (o instanceof ByteArrayRef){
+              totalVariableSize += ((ByteArrayRef)o).getData().length;
+            }
           }
         } catch (IllegalAccessException e) {
           assert false;
