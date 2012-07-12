@@ -20,6 +20,7 @@ POSTHOOK: query: load data local inpath "../data/files/test.dat"
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
@@ -76,6 +77,7 @@ maxFileSize:11
 minFileSize:11
 #### A masked pattern was here ####
 
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn

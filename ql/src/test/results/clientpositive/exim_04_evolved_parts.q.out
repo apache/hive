@@ -63,6 +63,7 @@ POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
@@ -151,6 +152,7 @@ maxFileSize:0
 minFileSize:0
 #### A masked pattern was here ####
 
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka

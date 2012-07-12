@@ -3,7 +3,8 @@ set hive.test.mode.prefix=;
 
 create table exim_department ( dep_id int) stored as textfile;
 load data local inpath "../data/files/test.dat" into table exim_department;
-!rm -rf ../build/ql/test/data/exports/exim_department;
+dfs -mkdir ../build/ql/test/data/exports/exim_department/temp;
+dfs -rmr ../build/ql/test/data/exports/exim_department;
 export table exim_department to 'ql/test/data/exports/exim_department';
 drop table exim_department;
 
@@ -17,5 +18,5 @@ import from 'ql/test/data/exports/exim_department';
 set hive.security.authorization.enabled=false;
 drop table exim_department;
 drop database importer;
-!rm -rf ../build/ql/test/data/exports/exim_department;
+dfs -rmr ../build/ql/test/data/exports/exim_department;
 
