@@ -11,6 +11,7 @@ POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@exim_employee
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 #### A masked pattern was here ####
@@ -59,6 +60,7 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 #### A masked pattern was here ####

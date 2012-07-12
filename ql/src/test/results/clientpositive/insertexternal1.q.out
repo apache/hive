@@ -530,3 +530,4 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)s
 400	val_400	2008-01-01
 200	val_200	2008-01-01
 97	val_97	2008-01-01
+#### A masked pattern was here ####

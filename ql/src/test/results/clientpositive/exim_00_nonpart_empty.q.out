@@ -7,6 +7,7 @@ POSTHOOK: query: create table exim_department ( dep_id int comment "department i
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@exim_department
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department
@@ -60,6 +61,7 @@ maxFileSize:0
 minFileSize:0
 #### A masked pattern was here ####
 
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_department
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_department

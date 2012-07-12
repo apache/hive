@@ -47,6 +47,7 @@ POSTHOOK: query: load data local inpath "../data/files/test.dat"
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
@@ -77,6 +78,7 @@ PREHOOK: query: use importer
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
+#### A masked pattern was here ####
 PREHOOK: query: import external table exim_employee partition (emp_country="us", emp_state="tn") 
 	from 'ql/test/data/exports/exim_employee'
 	location 'ql/test/data/tablestore/exim_employee'
@@ -130,6 +132,7 @@ maxFileSize:11
 minFileSize:11
 #### A masked pattern was here ####
 
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
@@ -144,6 +147,7 @@ POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
 4	us	tn
 5	us	tn
 6	us	tn
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn

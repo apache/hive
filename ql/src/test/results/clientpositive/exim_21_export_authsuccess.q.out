@@ -15,6 +15,7 @@ PREHOOK: Output: default@exim_department
 POSTHOOK: query: grant Select on table exim_department to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@exim_department
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department

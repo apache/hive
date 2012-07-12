@@ -13,6 +13,7 @@ PREHOOK: Output: default@exim_department
 POSTHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_department
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department
@@ -37,6 +38,7 @@ PREHOOK: query: use importer
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
+#### A masked pattern was here ####
 PREHOOK: query: import external table exim_department from 'ql/test/data/exports/exim_department' 
 	location 'ql/test/data/tablestore/exim_department'
 PREHOOK: type: IMPORT
@@ -65,6 +67,7 @@ POSTHOOK: Input: importer@exim_department
 4
 5
 6
+#### A masked pattern was here ####
 PREHOOK: query: select * from exim_department
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_department
