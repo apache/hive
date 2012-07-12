@@ -349,6 +349,20 @@ public final class LazyUtils {
     }
   }
 
+  /**
+   * Creates a ByteArrayRef with data from source BytesWritable
+   * @param sourceBw - source BytesWritable
+   */
+  public static ByteArrayRef createByteArrayRef(BytesWritable sourceBw){
+    //TODO should use BytesWritable.copyData() here once Hive
+    // removes support for the Hadoop 0.20 series.
+    byte[] newData = Arrays.copyOf(sourceBw.getBytes(), sourceBw.getLength());
+
+    ByteArrayRef bar = new ByteArrayRef();
+    bar.setData(newData);
+    return bar;
+  }
+
   private LazyUtils() {
     // prevent instantiation
   }
