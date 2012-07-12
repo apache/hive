@@ -27,8 +27,9 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -112,18 +113,37 @@ public class SetProcessor implements CommandProcessor {
       return new CommandProcessorResponse(0);
     } else if (varname.startsWith(SetProcessor.HIVECONF_PREFIX)){
       String propName = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
-      ss.getConf().set(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
-      return new CommandProcessorResponse(0);
+      String error = setConf(varname, propName, varvalue, false);
+      return new CommandProcessorResponse(error == null ? 0 : 1, error, null);
     } else if (varname.startsWith(SetProcessor.HIVEVAR_PREFIX)) {
       String propName = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
       return new CommandProcessorResponse(0);
     } else {
-      String substitutedValue = new VariableSubstitution().substitute(ss.getConf(),varvalue);
-      ss.getConf().set(varname, substitutedValue );
-      ss.getOverriddenConfigurations().put(varname, substitutedValue);
-      return new CommandProcessorResponse(0);
+      String error = setConf(varname, varname, varvalue, true);
+      return new CommandProcessorResponse(error == null ? 0 : 1, error, null);
     }
+  }
+
+  // returns non-null string for validation fail
+  private String setConf(String varname, String key, String varvalue, boolean register) {
+    HiveConf conf = SessionState.get().getConf();
+    String value = new VariableSubstitution().substitute(conf, varvalue);
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
+      HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
+      if (confVars != null && !confVars.isType(value)) {
+        StringBuilder message = new StringBuilder();
+        message.append("'SET ").append(varname).append('=').append(varvalue);
+        message.append("' FAILED because "); message.append(key).append(" expects an ");
+        message.append(confVars.typeString()).append(" value.");
+        return message.toString();
+      }
+    }
+    conf.set(key, value);
+    if (register) {
+      SessionState.get().getOverriddenConfigurations().put(key, value);
+    }
+    return null;
   }
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){

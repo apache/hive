@@ -1,3 +1,12 @@
+PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+255.5
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5, 100) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

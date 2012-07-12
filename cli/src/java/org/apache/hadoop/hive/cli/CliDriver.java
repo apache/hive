@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.service.HiveClient;
@@ -300,7 +301,12 @@ public class CliDriver {
             if (ss.getIsVerbose()) {
               ss.out.println(firstToken + " " + cmd_1);
             }
-            ret = proc.run(cmd_1).getResponseCode();
+            CommandProcessorResponse res = proc.run(cmd_1);
+            if (res.getResponseCode() != 0) {
+              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
+                  ", cause: " + res.getErrorMessage());
+            }
+            ret = res.getResponseCode();
           }
         }
       } catch (CommandNeedRetryException e) {
