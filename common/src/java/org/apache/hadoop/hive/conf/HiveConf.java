@@ -51,6 +51,8 @@ public class HiveConf extends Configuration {
   private static URL hiveSiteURL = null;
   private static URL confVarURL = null;
 
+  private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
+
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     if (classLoader == null) {
@@ -70,6 +72,9 @@ public class HiveConf extends Configuration {
       l4j.warn("hive-site.xml not found on CLASSPATH");
     } else {
       l4j.debug("Using hive-site.xml found on CLASSPATH at " + hiveSiteURL.getPath());
+    }
+    for (ConfVars confVar : ConfVars.values()) {
+      vars.put(confVar.varname, confVar);
     }
   }
 
@@ -536,6 +541,8 @@ public class HiveConf extends Configuration {
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),
     HIVEVARIABLESUBSTITUTEDEPTH("hive.variable.substitute.depth", 40),
 
+    HIVECONFVALIDATION("hive.conf.validation", true),
+
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", ""),
 
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false),
@@ -600,6 +607,8 @@ public class HiveConf extends Configuration {
     public final Class<?> valClass;
     public final boolean defaultBoolVal;
 
+    private final VarType type;
+
     ConfVars(String varname, String defaultVal) {
       this.varname = varname;
       this.valClass = String.class;
@@ -608,6 +617,7 @@ public class HiveConf extends Configuration {
       this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
+      this.type = VarType.STRING;
     }
 
     ConfVars(String varname, int defaultIntVal) {
@@ -618,6 +628,7 @@ public class HiveConf extends Configuration {
       this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
+      this.type = VarType.INT;
     }
 
     ConfVars(String varname, long defaultLongVal) {
@@ -628,6 +639,7 @@ public class HiveConf extends Configuration {
       this.defaultLongVal = defaultLongVal;
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
+      this.type = VarType.LONG;
     }
 
     ConfVars(String varname, float defaultFloatVal) {
@@ -638,6 +650,7 @@ public class HiveConf extends Configuration {
       this.defaultLongVal = -1;
       this.defaultFloatVal = defaultFloatVal;
       this.defaultBoolVal = false;
+      this.type = VarType.FLOAT;
     }
 
     ConfVars(String varname, boolean defaultBoolVal) {
@@ -648,6 +661,15 @@ public class HiveConf extends Configuration {
       this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
       this.defaultBoolVal = defaultBoolVal;
+      this.type = VarType.BOOLEAN;
+    }
+
+    public boolean isType(String value) {
+      return type.isType(value);
+    }
+
+    public String typeString() {
+      return type.typeString();
     }
 
     @Override
@@ -664,6 +686,21 @@ public class HiveConf extends Configuration {
       // and if all else fails we can at least try /usr/bin/hadoop
       return (val == null ? File.separator + "usr" : val)
         + File.separator + "bin" + File.separator + "hadoop";
+    }
+
+    enum VarType {
+      STRING { void checkType(String value) throws Exception { } },
+      INT { void checkType(String value) throws Exception { Integer.valueOf(value); } },
+      LONG { void checkType(String value) throws Exception { Long.valueOf(value); } },
+      FLOAT { void checkType(String value) throws Exception { Float.valueOf(value); } },
+      BOOLEAN { void checkType(String value) throws Exception { Boolean.valueOf(value); } };
+
+      boolean isType(String value) {
+        try { checkType(value); } catch (Exception e) { return false; }
+        return true;
+      }
+      String typeString() { return name().toUpperCase();}
+      abstract void checkType(String value) throws Exception;
     }
   }
 
@@ -795,6 +832,10 @@ public class HiveConf extends Configuration {
   public static void setVar(Configuration conf, ConfVars var, String val) {
     assert (var.valClass == String.class);
     conf.set(var.varname, val);
+  }
+
+  public static ConfVars getConfVars(String name) {
+    return vars.get(name);
   }
 
   public String getVar(ConfVars var) {

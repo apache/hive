@@ -1044,6 +1044,12 @@
 </property>
 
 <property>
+  <name>hive.conf.validation</name>
+  <value>true</value>
+  <description>Eables type checking for registered hive configurations</description>
+</property>
+
+<property>
   <name>hive.security.authorization.enabled</name>
   <value>false</value>
   <description>enable or disable the hive client authorization</description>
