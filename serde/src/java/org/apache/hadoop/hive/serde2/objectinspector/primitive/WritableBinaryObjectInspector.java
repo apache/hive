@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BytesWritable;
 
 public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObjectInspector
@@ -44,9 +45,7 @@ public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObje
     if (null == o){
       return null;
     }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(((BytesWritable)o).getBytes());
-    return ba;
+    return LazyUtils.createByteArrayRef((BytesWritable)o);
   }
 
   @Override
