@@ -1,0 +1,11 @@
+CREATE TABLE prefixtesttab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtesttab;
+SET hive.exec.prefix.tab.alias.on.select.all=true;
+CREATE TABLE joined_ptt AS SELECT * from prefixtesttab tab1 INNER JOIN prefixtesttab tab2 ON (tab1.f1 = tab2.f1);
+DESCRIBE joined_ptt;
+SELECT * from joined_ptt;
+CREATE TABLE prefixtestimpliedtab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtestimpliedtab;
+CREATE TABLE joined_ptit AS SELECT * from prefixtesttab INNER JOIN prefixtestimpliedtab ON (prefixtesttab.f1 = prefixtestimpliedtab.f1);
+DESCRIBE joined_ptit;
+SELECT * from joined_ptit;

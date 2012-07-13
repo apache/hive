@@ -1613,6 +1613,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // For the tab.* case, add all the columns to the fieldList
       // from the input schema
+      boolean prefixTabAlias = HiveConf.getBoolVar(conf, HiveConf.ConfVars.PREFIX_TAB_ALIAS_ON_SELECT_ALL);
       for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
         ColumnInfo colInfo = entry.getValue();
         String name = colInfo.getInternalName();
@@ -1632,13 +1633,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
-            name, colInfo.getTabAlias(), colInfo.getIsVirtualCol());
-        col_list.add(expr);
-        output.put(tmp[0], tmp[1],
-            new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
-            colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
-            colInfo.isHiddenVirtualCol()));
+        if(prefixTabAlias){
+          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+              name, null, colInfo.getIsVirtualCol());
+          col_list.add(expr);
+          output.put(null, tmp[0]+"_"+tmp[1],
+              new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
+              null, colInfo.getIsVirtualCol(),
+              colInfo.isHiddenVirtualCol()));
+        }
+        else{
+          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+              name, colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          col_list.add(expr);
+          output.put(tmp[0], tmp[1],
+              new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
+              colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
+              colInfo.isHiddenVirtualCol()));
+        }
         pos = Integer.valueOf(pos.intValue() + 1);
         matched++;
 

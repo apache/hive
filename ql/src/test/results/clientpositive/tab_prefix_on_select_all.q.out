@@ -1,0 +1,78 @@
+PREHOOK: query: CREATE TABLE prefixtesttab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE prefixtesttab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@prefixtesttab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtesttab
+PREHOOK: type: LOAD
+PREHOOK: Output: default@prefixtesttab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtesttab
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@prefixtesttab
+PREHOOK: query: CREATE TABLE joined_ptt AS SELECT * from prefixtesttab tab1 INNER JOIN prefixtesttab tab2 ON (tab1.f1 = tab2.f1)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@prefixtesttab
+POSTHOOK: query: CREATE TABLE joined_ptt AS SELECT * from prefixtesttab tab1 INNER JOIN prefixtesttab tab2 ON (tab1.f1 = tab2.f1)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@prefixtesttab
+POSTHOOK: Output: default@joined_ptt
+PREHOOK: query: DESCRIBE joined_ptt
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE joined_ptt
+POSTHOOK: type: DESCTABLE
+tab1_f1	int	
+tab1_f2	int	
+tab2_f1	int	
+tab2_f2	int	
+PREHOOK: query: SELECT * from joined_ptt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@joined_ptt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from joined_ptt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@joined_ptt
+#### A masked pattern was here ####
+1	2	1	2
+1	2	1	3
+1	3	1	2
+1	3	1	3
+PREHOOK: query: CREATE TABLE prefixtestimpliedtab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE prefixtestimpliedtab (f1 int, f2 int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@prefixtestimpliedtab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtestimpliedtab
+PREHOOK: type: LOAD
+PREHOOK: Output: default@prefixtestimpliedtab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/tab_prefix_data.txt' INTO TABLE prefixtestimpliedtab
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@prefixtestimpliedtab
+PREHOOK: query: CREATE TABLE joined_ptit AS SELECT * from prefixtesttab INNER JOIN prefixtestimpliedtab ON (prefixtesttab.f1 = prefixtestimpliedtab.f1)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@prefixtestimpliedtab
+PREHOOK: Input: default@prefixtesttab
+POSTHOOK: query: CREATE TABLE joined_ptit AS SELECT * from prefixtesttab INNER JOIN prefixtestimpliedtab ON (prefixtesttab.f1 = prefixtestimpliedtab.f1)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@prefixtestimpliedtab
+POSTHOOK: Input: default@prefixtesttab
+POSTHOOK: Output: default@joined_ptit
+PREHOOK: query: DESCRIBE joined_ptit
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE joined_ptit
+POSTHOOK: type: DESCTABLE
+prefixtesttab_f1	int	
+prefixtesttab_f2	int	
+prefixtestimpliedtab_f1	int	
+prefixtestimpliedtab_f2	int	
+PREHOOK: query: SELECT * from joined_ptit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@joined_ptit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from joined_ptit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@joined_ptit
+#### A masked pattern was here ####
+1	2	1	2
+1	2	1	3
+1	3	1	2
+1	3	1	3
