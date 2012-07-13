@@ -363,15 +363,17 @@ public class HiveMetaStoreChecker {
       throws IOException {
 
     FileStatus[] statuses = fs.listStatus(basePath);
-
-    if (statuses.length == 0) {
-      allDirs.add(basePath);
-    }
+    boolean directoryFound=false;
 
     for (FileStatus status : statuses) {
       if (status.isDir()) {
+        directoryFound = true;
         getAllLeafDirs(status.getPath(), allDirs, fs);
       }
+    }
+
+    if(!directoryFound){
+      allDirs.add(basePath);
     }
   }
 
