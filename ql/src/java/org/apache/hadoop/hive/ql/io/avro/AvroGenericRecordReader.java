@@ -92,7 +92,7 @@ public class AvroGenericRecordReader implements
       // that matches our input split.
       for (Map.Entry<String,PartitionDesc> pathsAndParts: mapRedWork.getPathToPartitionInfo().entrySet()){
         String partitionPath = pathsAndParts.getKey();
-        if(pathIsInPartition(split.getPath().makeQualified(fs), partitionPath)) {
+        if(pathIsInPartition(split.getPath(), partitionPath)) {
           if(LOG.isInfoEnabled()) {
               LOG.info("Matching partition " + partitionPath +
                       " with input split " + split);
@@ -121,7 +121,13 @@ public class AvroGenericRecordReader implements
   }
 
   private boolean pathIsInPartition(Path split, String partitionPath) {
-    return split.toString().startsWith(partitionPath);
+    boolean schemeless = split.toUri().getScheme() == null;
+    if (schemeless) {
+      String schemelessPartitionPath = new Path(partitionPath).toUri().getPath();
+      return split.toString().startsWith(schemelessPartitionPath);
+    } else {
+      return split.toString().startsWith(partitionPath);
+    }
   }
 
 
