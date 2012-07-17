@@ -46,6 +46,8 @@ public final class CommandProcessorFactory {
 
     if ("set".equals(cmdl)) {
       return new SetProcessor();
+    } else if ("reset".equals(cmdl)) {
+      return new ResetProcessor();
     } else if ("dfs".equals(cmdl)) {
       SessionState ss = SessionState.get();
       return new DfsProcessor(ss.getConf());

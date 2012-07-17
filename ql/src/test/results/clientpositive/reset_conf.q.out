@@ -1,0 +1,6 @@
+hive.skewjoin.key=100000
+hive.skewjoin.mapjoin.min.split=33554432
+hive.skewjoin.key=300000
+hive.skewjoin.mapjoin.min.split=256000000
+hive.skewjoin.key=100000
+hive.skewjoin.mapjoin.min.split=33554432
