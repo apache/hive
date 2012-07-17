@@ -104,6 +104,9 @@ public class SetProcessor implements CommandProcessor {
 
   private CommandProcessorResponse setVariable(String varname, String varvalue){
     SessionState ss = SessionState.get();
+    if (varvalue.contains("\n")){
+      ss.err.println("Warning: Value had a \\n character in it.");
+    }
     if (varname.startsWith(SetProcessor.ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
       return new CommandProcessorResponse(1);
