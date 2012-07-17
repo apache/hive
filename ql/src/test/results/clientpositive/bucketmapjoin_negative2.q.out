@@ -96,6 +96,13 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            b {srcbucket20.txt=[srcbucket22.txt, srcbucket22.txt], srcbucket21.txt=[srcbucket23.txt, srcbucket23.txt]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce

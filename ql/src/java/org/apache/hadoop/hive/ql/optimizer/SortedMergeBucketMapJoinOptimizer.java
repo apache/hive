@@ -229,6 +229,11 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);
         }
+        int partNumber = prunedParts.getConfirmedPartns().size()
+              + prunedParts.getUnknownPartns().size();
+        if (partNumber > 1) {
+          return false;
+        }
         boolean ret = true;
         for (Partition p : prunedParts.getConfirmedPartns()) {
           ret = ret && checkSortColsAndJoinCols(p.getSortCols(), joinCols);

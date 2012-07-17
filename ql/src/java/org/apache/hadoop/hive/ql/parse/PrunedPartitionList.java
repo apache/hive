@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -73,6 +75,16 @@ public class PrunedPartitionList {
    */
   public Set<Partition> getDeniedPartns() {
     return deniedPartns;
+  }
+
+  /**
+   * return all not-denied(confirmed + unknown) partitions.
+   */
+  public List<Partition> getNotDeniedPartns() {
+    List<Partition> partitions = new ArrayList<Partition>();
+    partitions.addAll(unknownPartns);
+    partitions.addAll(confirmedPartns);
+    return partitions;
   }
 
   /**
