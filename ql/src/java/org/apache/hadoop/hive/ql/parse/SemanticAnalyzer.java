@@ -3891,6 +3891,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> sortCols  = new ArrayList<ExprNodeDesc>();
+    ArrayList<Integer> sortOrders = new ArrayList<Integer>();
     boolean multiFileSpray = false;
     int     numFiles = 1;
     int     totalFiles = 1;
@@ -3907,6 +3908,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
       enforceSorting = true;
       sortCols = getSortCols(dest, qb, dest_tab, table_desc, input, true);
+      sortOrders = getSortOrders(dest, qb, dest_tab, input);
       if (!enforceBucketing) {
         partnCols = sortCols;
         partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
@@ -3932,7 +3934,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         maxReducers = numBuckets;
       }
 
-      input = genReduceSinkPlanForSortingBucketing(dest_tab, input, sortCols, partnCols, maxReducers);
+      input = genReduceSinkPlanForSortingBucketing(dest_tab, input,
+          sortCols, sortOrders, partnCols, maxReducers);
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
       ctx.setPartnCols(partnColsNoConvert);
@@ -4703,9 +4706,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genConvertCol(dest, qb, tab, table_desc, input, posns, convert);
   }
 
+  private ArrayList<Integer> getSortOrders(String dest, QB qb, Table tab, Operator input)
+    throws SemanticException {
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+    List<Order> tabSortCols = tab.getSortCols();
+    List<FieldSchema> tabCols  = tab.getCols();
+
+    ArrayList<Integer> orders = new ArrayList<Integer>();
+    for (Order sortCol : tabSortCols) {
+      for (FieldSchema tabCol : tabCols) {
+        if (sortCol.getCol().equals(tabCol.getName())) {
+          orders.add(sortCol.getOrder());
+          break;
+        }
+      }
+    }
+    return orders;
+  }
+
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlanForSortingBucketing(Table tab, Operator input,
                                                         ArrayList<ExprNodeDesc> sortCols,
+                                                        List<Integer> sortOrders,
                                                         ArrayList<ExprNodeDesc> partitionCols,
                                                         int numReducers)
     throws SemanticException {
@@ -4729,8 +4751,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     StringBuilder order = new StringBuilder();
-    for (int i = 0; i < sortCols.size(); i++) {
-      order.append("+");
+    for (int sortOrder : sortOrders) {
+      order.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? '+' :'-');
     }
 
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
