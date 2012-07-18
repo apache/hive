@@ -221,7 +221,8 @@ public class HadoopJobExecHelper {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     //DecimalFormat longFormatter = new DecimalFormat("###,###");
     long reportTime = System.currentTimeMillis();
-    long maxReportInterval = 60 * 1000; // One minute
+    long maxReportInterval =
+        HiveConf.getLongVar(job, HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS_INTERVAL);
     boolean fatal = false;
     StringBuilder errMsg = new StringBuilder();
     long pullInterval = HiveConf.getLongVar(job, HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL);
@@ -355,8 +356,10 @@ public class HadoopJobExecHelper {
           ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
           ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
               Keys.TASK_HADOOP_PROGRESS, output);
-          ss.getHiveHistory().progressTask(SessionState.get().getQueryId(), this.task);
-          this.callBackObj.logPlanProgress(ss);
+          if (ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS)) {
+            ss.getHiveHistory().progressTask(SessionState.get().getQueryId(), this.task);
+            this.callBackObj.logPlanProgress(ss);
+          }
         }
         console.printInfo(output);
         lastReport = report;

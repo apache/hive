@@ -708,6 +708,38 @@
 </property>
 
 <property>
+  <name>hive.querylog.location</name>
+  <value>/tmp/${user.name}</value>
+  <description>
+    Location of Hive run time structured log file
+  </description>
+</property>
+
+<property>
+  <name>hive.querylog.enable.plan.progress</name>
+  <value>true</value>
+  <description>
+    Whether to log the plan's progress every time a job's progress is checked.
+    These logs are written to the location specified by hive.querylog.location
+  </description>
+</property>
+
+<property>
+  <name>hive.querylog.plan.progress.interval</name>
+  <value>60000</value>
+  <description>
+    The interval to wait between logging the plan's progress in milliseconds.
+    If there is a whole number percentage change in the progress of the mappers or the reducers,
+    the progress is logged regardless of this value.
+    The actual interval will be the ceiling of (this value divided by the value of
+    hive.exec.counters.pull.interval) multiplied by the value of hive.exec.counters.pull.interval
+    I.e. if it is not divide evenly by the value of hive.exec.counters.pull.interval it will be
+    logged less frequently than specified.
+    This only has an effect if hive.querylog.enable.plan.progress is set to true.
+  </description>
+</property>
+
+<property>
   <name>hive.enforce.bucketing</name>
   <value>false</value>
   <description>Whether bucketing is enforced. If true, while inserting into the table, bucketing is enforced. </description>
