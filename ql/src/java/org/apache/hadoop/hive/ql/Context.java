@@ -51,6 +51,7 @@ import org.apache.hadoop.util.StringUtils;
  * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
+  private boolean isHDFSCleanup;
   private Path resFile;
   private Path resDir;
   private FileSystem resFs;
@@ -166,12 +167,16 @@ public class Context {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
           }
+          if (isHDFSCleanup) {
+            fs.deleteOnExit(dirPath);
+          }
         } catch (IOException e) {
           throw new RuntimeException (e);
         }
       }
       dir = dirPath.toString();
       fsScratchDirs.put(fileSystem, dir);
+
     }
     return dir;
   }
@@ -566,6 +571,20 @@ public class Context {
       }
     }
     paths.addAll(toAdd);
+  }
+
+  /**
+   * @return the isHDFSCleanup
+   */
+  public boolean isHDFSCleanup() {
+    return isHDFSCleanup;
+  }
+
+  /**
+   * @param isHDFSCleanup the isHDFSCleanup to set
+   */
+  public void setHDFSCleanup(boolean isHDFSCleanup) {
+    this.isHDFSCleanup = isHDFSCleanup;
   }
 
   public boolean isNeedLockMgr() {

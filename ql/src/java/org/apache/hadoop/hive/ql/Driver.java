@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
-import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -410,6 +409,7 @@ public class Driver implements CommandProcessor {
       ctx = new Context(conf);
       ctx.setTryCount(getTryCount());
       ctx.setCmd(command);
+      ctx.setHDFSCleanup(true);
 
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
@@ -1091,6 +1091,7 @@ public class Driver implements CommandProcessor {
       Map<TaskResult, TaskRunner> running = new HashMap<TaskResult, TaskRunner>();
 
       DriverContext driverCxt = new DriverContext(runnable, ctx);
+      ctx.setHDFSCleanup(true);
 
       SessionState.get().setLastMapRedStatsList(new ArrayList<MapRedStats>());
       SessionState.get().setStackTraces(new HashMap<String, List<List<String>>>());
