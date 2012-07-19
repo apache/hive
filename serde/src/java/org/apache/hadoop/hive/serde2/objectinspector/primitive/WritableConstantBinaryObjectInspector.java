@@ -35,6 +35,9 @@ public class WritableConstantBinaryObjectInspector extends
     this.value = value;
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
   public BytesWritable getWritableConstantValue() {
     return value;

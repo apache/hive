@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
 public interface BinaryObjectInspector extends PrimitiveObjectInspector {
 
   @Override
-  ByteArrayRef getPrimitiveJavaObject(Object o);
+  byte[] getPrimitiveJavaObject(Object o);
 
   @Override
   BytesWritable getPrimitiveWritableObject(Object o);
