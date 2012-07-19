@@ -1011,10 +1011,6 @@ public final class Utilities {
       return null;
     }
 
-    try {
-      fs.close();
-    } catch (IOException e) {
-    }
     String file = path.makeQualified(fs).toString();
     // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c
     if (StringUtils.startsWith(file, "file:/") && !StringUtils.startsWith(file, "file:///")) {
