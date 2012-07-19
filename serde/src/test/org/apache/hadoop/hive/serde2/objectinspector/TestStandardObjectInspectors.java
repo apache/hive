@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -89,7 +88,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestStandardPrimitiveObjectInspector(FloatWritable.class, Float.class);
       doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
       doTestStandardPrimitiveObjectInspector(Text.class, String.class);
-      doTestStandardPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class);
+      doTestStandardPrimitiveObjectInspector(BytesWritable.class, byte[].class);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -141,9 +140,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestJavaPrimitiveObjectInspector(DoubleWritable.class, Double.class,
           (double) 1);
       doTestJavaPrimitiveObjectInspector(Text.class, String.class, "a");
-      ByteArrayRef ba = new ByteArrayRef();
-      ba.setData(new byte[]{'3'});
-      doTestJavaPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class, ba);
+      doTestJavaPrimitiveObjectInspector(BytesWritable.class, byte[].class, new byte[]{'3'});
 
     } catch (Throwable e) {
       e.printStackTrace();

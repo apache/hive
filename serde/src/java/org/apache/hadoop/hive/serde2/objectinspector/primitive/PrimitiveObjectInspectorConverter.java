@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -268,9 +267,7 @@ public class PrimitiveObjectInspectorConverter {
         SettableBinaryObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      ByteArrayRef ba = new ByteArrayRef();
-      ba.setData(new byte[]{});
-      r = outputOI.create(ba);
+      r = outputOI.create(new byte[]{});
     }
 
     @Override

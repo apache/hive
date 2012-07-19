@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -151,14 +150,12 @@ public class TestBinarySortableSerDe extends TestCase {
     return result;
   }
 
-  public static ByteArrayRef getRandBA(Random r, int len){
+  public static byte[] getRandBA(Random r, int len){
     byte[] bytes = new byte[len];
     for (int j = 0; j < len; j++){
       bytes[j] = Byte.valueOf((byte) r.nextInt());
     }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(bytes);
-    return ba;
+    return bytes;
   }
 
   public void testBinarySortableSerDe() throws Throwable {

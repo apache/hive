@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -117,7 +116,7 @@ public class TestStatsSerde extends TestCase {
             .nextInt(5) - 2, r.nextInt(5) - 2);
         List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
             .getRandIntegerArray(r);
-        ByteArrayRef ba = TestBinarySortableSerDe.getRandBA(r, i);
+        byte[] ba = TestBinarySortableSerDe.getRandBA(r, i);
         MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, is, li,ba);
         rows[i] = t;
       }

@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.serde2.binarysortable;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-
 public class MyTestClass {
   Byte myByte;
   Short myShort;
@@ -31,13 +29,13 @@ public class MyTestClass {
   String myString;
   MyTestInnerStruct myStruct;
   List<Integer> myList;
-  ByteArrayRef myBA;
+  byte[] myBA;
 
   public MyTestClass() {
   }
 
   public MyTestClass(Byte b, Short s, Integer i, Long l, Float f, Double d,
-      String st, MyTestInnerStruct is, List<Integer> li, ByteArrayRef ba) {
+      String st, MyTestInnerStruct is, List<Integer> li, byte[] ba) {
     myByte = b;
     myShort = s;
     myInt = i;
