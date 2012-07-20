@@ -126,9 +126,6 @@ public class MapredLocalWork implements Serializable {
       bucketMapjoinContext.deriveBucketMapJoinMapping();
     }
     for (FetchWork fetchWork : aliasToFetchWork.values()) {
-      if (fetchWork.getTblDesc() == null) {
-        continue;
-      }
       PlanUtils.configureInputJobPropertiesForStorageHandler(
         fetchWork.getTblDesc());
     }

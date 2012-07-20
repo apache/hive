@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -64,7 +64,6 @@ public class FetchOperator implements Serializable {
   static Log LOG = LogFactory.getLog(FetchOperator.class.getName());
   static LogHelper console = new LogHelper(LOG);
 
-  private boolean isEmptyTable;
   private boolean isNativeTable;
   private FetchWork work;
   private int splitNum;
@@ -96,7 +95,7 @@ public class FetchOperator implements Serializable {
     this.job = job;
     tblDataDone = false;
     rowWithPart = new Object[2];
-    if (work.getTblDesc() != null) {
+    if (work.getTblDir() != null) {
       isNativeTable = !work.getTblDesc().isNonNative();
     } else {
       isNativeTable = true;
@@ -144,11 +143,7 @@ public class FetchOperator implements Serializable {
   }
 
   public boolean isEmptyTable() {
-    return isEmptyTable;
-  }
-
-  public void setEmptyTable(boolean isEmptyTable) {
-    this.isEmptyTable = isEmptyTable;
+    return work.getTblDir() == null && (work.getPartDir() == null || work.getPartDir().isEmpty());
   }
 
   /**
@@ -171,28 +166,37 @@ public class FetchOperator implements Serializable {
     return inputFormats.get(inputFormatClass);
   }
 
-  private void setPrtnDesc() throws Exception {
-    List<String> partNames = new ArrayList<String>();
-    List<String> partValues = new ArrayList<String>();
-
-    String pcols = currPart.getTableDesc().getProperties().getProperty(
+  private void setPrtnDesc(TableDesc table, Map<String, String> partSpec) throws Exception {
+    String pcols = table.getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
-    LinkedHashMap<String, String> partSpec = currPart.getPartSpec();
-
-    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
     String[] partKeys = pcols.trim().split("/");
+    if (partSpec != null) {
+      rowWithPart[1] = createPartValue(partKeys, partSpec);
+    }
+    rowObjectInspector = createRowInspector(partKeys);
+  }
+
+  private StructObjectInspector createRowInspector(String[] partKeys) throws SerDeException {
+    List<String> partNames = new ArrayList<String>();
+    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
     for (String key : partKeys) {
       partNames.add(key);
-      partValues.add(partSpec.get(key));
       partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
-    rowObjectInspector = (StructObjectInspector) serde.getObjectInspector();
+    StructObjectInspector inspector = (StructObjectInspector) serde.getObjectInspector();
 
-    rowWithPart[1] = partValues;
-    rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
-        .asList(new StructObjectInspector[] {rowObjectInspector, partObjectInspector}));
+    return ObjectInspectorFactory.getUnionStructObjectInspector(
+        Arrays.asList(inspector, partObjectInspector));
+  }
+
+  private List<String> createPartValue(String[] partKeys, Map<String, String> partSpec) {
+    List<String> partValues = new ArrayList<String>();
+    for (String key : partKeys) {
+      partValues.add(partSpec.get(key));
+    }
+    return partValues;
   }
 
   private void getNextPath() throws Exception {
@@ -290,7 +294,7 @@ public class FetchOperator implements Serializable {
       }
 
       if (currPart != null) {
-        setPrtnDesc();
+        setPrtnDesc(currPart.getTableDesc(), currPart.getPartSpec());
       }
     }
 
@@ -374,11 +378,14 @@ public class FetchOperator implements Serializable {
       } else {
         // hack, get the first.
         List<PartitionDesc> listParts = work.getPartDesc();
-        currPart = listParts.get(0);
+        currPart = listParts.isEmpty() ? null : listParts.get(0);
       }
     }
   }
 
+  /**
+   * returns output ObjectInspector, never null
+   */
   public ObjectInspector getOutputObjectInspector() throws HiveException {
     try {
       if (work.getTblDir() != null) {
@@ -386,20 +393,23 @@ public class FetchOperator implements Serializable {
         Deserializer serde = tbl.getDeserializerClass().newInstance();
         serde.initialize(job, tbl.getProperties());
         return serde.getObjectInspector();
-      } else if (work.getPartDesc() != null) {
-        List<PartitionDesc> listParts = work.getPartDesc();
-        if(listParts.size() == 0) {
-          return null;
-        }
-        currPart = listParts.get(0);
-        serde = currPart.getTableDesc().getDeserializerClass().newInstance();
-        serde.initialize(job, currPart.getTableDesc().getProperties());
-        setPrtnDesc();
-        currPart = null;
-        return rowObjectInspector;
-      } else {
-        return null;
       }
+      TableDesc tbl;
+      Map<String, String> partSpec;
+      List<PartitionDesc> listParts = work.getPartDesc();
+      if (listParts == null || listParts.isEmpty()) {
+        tbl = work.getTblDesc();
+        partSpec = null;
+      } else {
+        currPart = listParts.get(0);
+        tbl = currPart.getTableDesc();
+        partSpec = currPart.getPartSpec();
+      }
+      serde = tbl.getDeserializerClass().newInstance();
+      serde.initialize(job, tbl.getProperties());
+      setPrtnDesc(tbl, partSpec);
+      currPart = null;
+      return rowObjectInspector;
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
           + org.apache.hadoop.util.StringUtils.stringifyException(e));

@@ -59,11 +59,13 @@ public class FetchWork implements Serializable {
     this.limit = limit;
   }
 
-  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc) {
-    this(partDir, partDesc, -1);
+  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc, TableDesc tblDesc) {
+    this(partDir, partDesc, tblDesc, -1);
   }
 
-  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc, int limit) {
+  public FetchWork(List<String> partDir, List<PartitionDesc> partDesc,
+      TableDesc tblDesc, int limit) {
+    this.tblDesc = tblDesc;
     this.partDir = new ArrayList<String>(partDir);
     this.partDesc = new ArrayList<PartitionDesc>(partDesc);
     this.limit = limit;

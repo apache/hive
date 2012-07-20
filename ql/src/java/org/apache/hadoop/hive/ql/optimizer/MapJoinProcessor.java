@@ -195,7 +195,8 @@ public class MapJoinProcessor implements Transform {
       }
       // create fetchwork for partitioned table
       if (fetchWork == null) {
-        fetchWork = new FetchWork(partDir, partDesc);
+        TableDesc table = newWork.getAliasToPartnInfo().get(alias).getTableDesc();
+        fetchWork = new FetchWork(partDir, partDesc, table);
       }
       // set alias to fetch work
       newLocalWork.getAliasToFetchWork().put(alias, fetchWork);

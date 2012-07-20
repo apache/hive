@@ -308,7 +308,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       if (fetchOp.isEmptyTable()) {
         //generate empty hashtable for empty table
-        this.generateDummyHashTable(alias, bigTableBucket);
+        this.generateDummyHashTable(alias, getFileName(bigTableBucket));
         continue;
       }
 
@@ -381,12 +381,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       }
       // initialize the forward operator
       ObjectInspector objectInspector = fetchOp.getOutputObjectInspector();
-      if (objectInspector != null) {
-        forwardOp.initialize(jobConf, new ObjectInspector[] {objectInspector});
-        l4j.info("fetchoperator for " + entry.getKey() + " initialized");
-      } else {
-        fetchOp.setEmptyTable(true);
-      }
+      forwardOp.initialize(jobConf, new ObjectInspector[] {objectInspector});
+      l4j.info("fetchoperator for " + entry.getKey() + " initialized");
     }
   }
 

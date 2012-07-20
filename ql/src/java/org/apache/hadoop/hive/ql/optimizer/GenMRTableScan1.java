@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -103,7 +104,9 @@ public class GenMRTableScan1 implements NodeProcessor {
             confirmedPartns.addAll(tblSpec.partitions);
           }
           if (confirmedPartns.size() > 0) {
-            PrunedPartitionList partList = new PrunedPartitionList(confirmedPartns, new HashSet<Partition>(), null);
+            Table source = parseCtx.getQB().getMetaData().getTableForAlias(alias);
+            PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns,
+                new HashSet<Partition>(), null);
             GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx, partList);
           } else { // non-partitioned table
             GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx);

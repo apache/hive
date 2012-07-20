@@ -815,9 +815,10 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToFetchWork().get(alias_id) == null;
       localPlan.getAliasToWork().put(alias_id, topOp);
       if (tblDir == null) {
+        tblDesc = Utilities.getTableDesc(partsList.getSourceTable());
         localPlan.getAliasToFetchWork().put(
             alias_id,
-            new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc));
+            new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc, tblDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir.toString(), tblDesc));
