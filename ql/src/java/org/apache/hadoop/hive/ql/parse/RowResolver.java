@@ -123,7 +123,7 @@ public class RowResolver implements Serializable{
    * values is returned.
    *
    * This allows us to interpret both select t.c1 type of references and select
-   * c1 kind of refereneces. The later kind are what we call non aliased column
+   * c1 kind of references. The later kind are what we call non aliased column
    * references in the query.
    *
    * @param tab_alias

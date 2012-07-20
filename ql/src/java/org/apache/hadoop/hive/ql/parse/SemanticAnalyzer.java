@@ -2046,7 +2046,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode root = (ASTNode) selExpr.getChild(0);
     if (root.getType() == HiveParser.TOK_TABLE_OR_COL) {
-      colAlias = root.getChild(0).getText();
+      colAlias =
+        BaseSemanticAnalyzer.unescapeIdentifier(root.getChild(0).getText());
       colRef[0] = tabAlias;
       colRef[1] = colAlias;
       return colRef;
