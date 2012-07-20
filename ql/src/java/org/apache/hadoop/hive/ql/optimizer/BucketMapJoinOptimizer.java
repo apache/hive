@@ -238,6 +238,11 @@ public class BucketMapJoinOptimizer implements Transform {
               aliasToPartitionBucketNumberMapping.put(alias, buckets);
               aliasToPartitionBucketFileNamesMapping.put(alias, files);
             }
+          } else {
+            if (!alias.equals(baseBigAlias)) {
+              aliasToPartitionBucketNumberMapping.put(alias, Arrays.<Integer>asList());
+              aliasToPartitionBucketFileNamesMapping.put(alias, new ArrayList<List<String>>());
+            }
           }
         } else {
           if (!checkBucketColumns(tbl.getBucketCols(), mjDecs, index)) {
@@ -278,7 +283,7 @@ public class BucketMapJoinOptimizer implements Transform {
       // in the big table to bucket file names in small tables.
       for (int j = 0; j < joinAliases.size(); j++) {
         String alias = joinAliases.get(j);
-        if(alias.equals(baseBigAlias)) {
+        if (alias.equals(baseBigAlias)) {
           continue;
         }
         for (List<String> names : aliasToPartitionBucketFileNamesMapping.get(alias)) {

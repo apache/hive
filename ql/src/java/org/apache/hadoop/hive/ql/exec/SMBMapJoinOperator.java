@@ -482,7 +482,10 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         .getBucketMatcherClass();
     BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(
         bucketMatcherCls, null);
-    this.getExecContext().setFileId(bucketMatcherCxt.getBucketFileNameMapping().get(currentInputFile));
+    Integer bucketNum = bucketMatcherCxt.getBucketFileNameMapping().get(currentInputFile);
+    if (bucketNum != null) {
+      this.getExecContext().setFileId(bucketNum);
+    }
     LOG.info("set task id: " + this.getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt

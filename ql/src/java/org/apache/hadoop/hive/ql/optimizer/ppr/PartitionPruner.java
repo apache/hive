@@ -244,7 +244,7 @@ public class PartitionPruner implements Transform {
     }
 
     // Now return the set of partitions
-    ret = new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
+    ret = new PrunedPartitionList(tab, true_parts, unkn_parts, denied_parts);
     prunedPartitionsMap.put(key, ret);
     return ret;
   }

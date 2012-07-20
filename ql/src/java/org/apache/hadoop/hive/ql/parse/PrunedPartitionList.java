@@ -23,11 +23,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * The list of pruned partitions.
  */
 public class PrunedPartitionList {
+
+  // source table
+  private Table source;
+
   // confirmed partitions - satisfy the partition criteria
   private Set<Partition> confirmedPartns;
 
@@ -43,11 +48,16 @@ public class PrunedPartitionList {
    * @param unknownPartns
    *          unknown partitions
    */
-  public PrunedPartitionList(Set<Partition> confirmedPartns,
+  public PrunedPartitionList(Table source, Set<Partition> confirmedPartns,
       Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
+    this.source = source;
     this.confirmedPartns = confirmedPartns;
     this.unknownPartns = unknownPartns;
     this.deniedPartns = deniedPartns;
+  }
+
+  public Table getSourceTable() {
+    return source;
   }
 
   /**

@@ -7051,7 +7051,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 inputs.add(new ReadEntity(part));
               }
 
-              fetch = new FetchWork(listP, partP, qb.getParseInfo()
+              TableDesc table = Utilities.getTableDesc(partsList.getSourceTable());
+              fetch = new FetchWork(listP, partP, table, qb.getParseInfo()
                   .getOuterQueryLimit());
               noMapRed = true;
             }
@@ -7060,18 +7061,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (noMapRed) {
-        if (fetch.getTblDesc() != null) {
-          PlanUtils.configureInputJobPropertiesForStorageHandler(
-            fetch.getTblDesc());
-        } else if ( (fetch.getPartDesc() != null) && (!fetch.getPartDesc().isEmpty())){
-            PartitionDesc pd0 = fetch.getPartDesc().get(0);
-            TableDesc td = pd0.getTableDesc();
-            if ((td != null)&&(td.getProperties() != null)
-                && td.getProperties().containsKey(
-                    org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)){
-              PlanUtils.configureInputJobPropertiesForStorageHandler(td);
-            }
-        }
+        PlanUtils.configureInputJobPropertiesForStorageHandler(fetch.getTblDesc());
         fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
         setFetchTask(fetchTask);
 
