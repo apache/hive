@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
@@ -1040,11 +1042,13 @@ public class HiveConf extends Configuration {
   }
 
   public static int getPositionFromInternalName(String internalName) {
-    char pos = internalName.charAt(internalName.length()-1);
-    if (Character.isDigit(pos)) {
-      return Character.digit(pos, 10);
-    } else{
+    Pattern internalPattern = Pattern.compile("_col([0-9]+)");
+    Matcher m = internalPattern.matcher(internalName);
+    if (!m.matches()){
       return -1;
+    } else {
+      return Integer.parseInt(m.group(1));
     }
+
   }
 }

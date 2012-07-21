@@ -76,4 +76,10 @@ public class TestHiveConf extends TestCase {
     // Test HiveConf property variable substitution in hive-site.xml
     checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.defaultVal);
   }
+
+  public void testColumnNameMapping() throws Exception {
+    for (int i = 0 ; i < 20 ; i++ ){
+      assertTrue(i == HiveConf.getPositionFromInternalName(HiveConf.getColumnInternalName(i)));
+    }
+  }
 }
