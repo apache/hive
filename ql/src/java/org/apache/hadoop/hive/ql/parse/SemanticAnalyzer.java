@@ -5615,6 +5615,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       filters.add(node.getFilters().get(i + 1));
     }
 
+    if (node.getFilters().get(0).size() != 0) {
+      ArrayList<ASTNode> filterPos = filters.get(pos);
+      filterPos.addAll(node.getFilters().get(0));
+    }
+
     ArrayList<ArrayList<ASTNode>> filter = target.getFiltersForPushing();
     for (int i = 0; i < nodeRightAliases.length; i++) {
       filter.add(node.getFiltersForPushing().get(i + 1));
