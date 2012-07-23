@@ -1,0 +1,24 @@
+PREHOOK: query: create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst1
+PREHOOK: query: alter table tst1 clustered by (key) into 8 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@tst1
+PREHOOK: Output: default@tst1
+POSTHOOK: query: alter table tst1 clustered by (key) into 8 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@tst1
+POSTHOOK: Output: default@tst1
+PREHOOK: query: insert overwrite table tst1 partition (ds='1') select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tst1@ds=1
+POSTHOOK: query: insert overwrite table tst1 partition (ds='1') select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tst1@ds=1
+POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10130]: Changing the number of buckets for a partitioned table is not allowed. It may lead to wrong results for older partitions
