@@ -215,6 +215,10 @@ public enum ErrorMsg {
   UDAF_INVALID_LOCATION(10128, "Not yet supported place for UDAF"),
   DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY(10129,
     "Drop partitions for a non string partition columns is not allowed using non-equality"),
+  NUM_BUCKETS_CHANGE_NOT_ALLOWED(10130, "Changing the number of buckets for a " +
+    "partitioned table is not allowed. It may lead to wrong results for " +
+    "older partitions"),
+
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

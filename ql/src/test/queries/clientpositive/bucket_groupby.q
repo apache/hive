@@ -1,5 +1,6 @@
 create table clustergroupby(key string, value string) partitioned by(ds string);
 describe extended clustergroupby;
+alter table clustergroupby clustered by (key) into 1 buckets;
 
 insert overwrite table clustergroupby partition (ds='100') select key, value from src sort by key;
 
@@ -7,7 +8,6 @@ explain
 select key, count(1) from clustergroupby where ds='100' group by key limit 10;
 select key, count(1) from clustergroupby where ds='100' group by key limit 10;
 
-alter table clustergroupby clustered by (key) into 1 buckets;
 describe extended clustergroupby;
 insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key;
 
@@ -41,6 +41,10 @@ select key, count(1) from clustergroupby  group by key;
 explain
 select key, count(1) from clustergroupby  group by key, 3;
 
+-- number of buckets cannot be changed, so drop the table
+drop table clustergroupby;
+create table clustergroupby(key string, value string) partitioned by(ds string);
+
 --sort columns--
 alter table clustergroupby clustered by (value) sorted by (key, value) into 1 buckets;
 describe extended clustergroupby;
@@ -56,6 +60,9 @@ explain
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10;
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10;
 
+-- number of buckets cannot be changed, so drop the table
+drop table clustergroupby;
+create table clustergroupby(key string, value string) partitioned by(ds string);
 
 alter table clustergroupby clustered by (value, key) sorted by (key) into 1 buckets;
 describe extended clustergroupby;

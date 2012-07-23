@@ -13,13 +13,6 @@ POSTHOOK: query: create table exim_employee (emp_id int comment 'employee id', e
  stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@exim_employee
-PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
-PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@exim_employee
-POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
-POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Input: default@exim_employee
-POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: alter table exim_employee add columns (emp_dept int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@exim_employee
@@ -28,6 +21,21 @@ POSTHOOK: query: alter table exim_employee add columns (emp_dept int)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
+PREHOOK: query: alter table exim_employee clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: alter table exim_employee clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@exim_employee
+POSTHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='tn')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: alter table exim_employee set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@exim_employee
@@ -46,14 +54,6 @@ POSTHOOK: query: alter table exim_employee set fileformat
 	inputformat "org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat" 
 	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@exim_employee
-POSTHOOK: Output: default@exim_employee
-PREHOOK: query: alter table exim_employee clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
-PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@exim_employee
-PREHOOK: Output: default@exim_employee
-POSTHOOK: query: alter table exim_employee clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
-POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@exim_employee
 POSTHOOK: Output: default@exim_employee
 PREHOOK: query: alter table exim_employee add partition (emp_country='in', emp_state='ka')
@@ -118,6 +118,7 @@ emp_id	int	employee id
 emp_name	string	
 emp_dob	string	employee date of birth
 emp_sex	string	M/F
+emp_dept	int	
 emp_country	string	2-char code
 emp_state	string	2-char code
 	 	 
