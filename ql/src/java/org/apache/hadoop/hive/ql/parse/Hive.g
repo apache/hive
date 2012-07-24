@@ -142,6 +142,7 @@ TOK_ALTERINDEX_PROPERTIES;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
+TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
 TOK_SHOW_TABLESTATUS;
@@ -844,6 +845,8 @@ showStatement
 @after { msgs.pop(); }
     : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=Identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
+    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=Identifier)? 
+    -> ^(TOK_SHOWCOLUMNS $db_name? $tabname)
     | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
     | KW_SHOW KW_PARTITIONS Identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS Identifier partitionSpec?)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
@@ -2088,7 +2091,7 @@ dropPartitionOperator
     :
     EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
-    
+
 sysFuncNames
     :
       KW_AND
@@ -2191,6 +2194,7 @@ KW_PARTITION : 'PARTITION';
 KW_PARTITIONS : 'PARTITIONS';
 KW_TABLE: 'TABLE';
 KW_TABLES: 'TABLES';
+KW_COLUMNS: 'COLUMNS';
 KW_INDEX: 'INDEX';
 KW_INDEXES: 'INDEXES';
 KW_REBUILD: 'REBUILD';
@@ -2280,7 +2284,6 @@ KW_PERCENT: 'PERCENT';
 KW_CAST: 'CAST';
 KW_ADD: 'ADD';
 KW_REPLACE: 'REPLACE';
-KW_COLUMNS: 'COLUMNS';
 KW_RLIKE: 'RLIKE';
 KW_REGEXP: 'REGEXP';
 KW_TEMPORARY: 'TEMPORARY';

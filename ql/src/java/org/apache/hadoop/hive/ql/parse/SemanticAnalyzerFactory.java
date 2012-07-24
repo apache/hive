@@ -59,6 +59,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT, HiveOperation.ALTERTABLE_CLUSTER_SORT);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
+    commandType.put(HiveParser.TOK_SHOWCOLUMNS, HiveOperation.SHOWCOLUMNS);
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, HiveOperation.SHOW_TABLESTATUS);
     commandType.put(HiveParser.TOK_SHOW_TBLPROPERTIES, HiveOperation.SHOW_TBLPROPERTIES);
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, HiveOperation.SHOWFUNCTIONS);
@@ -157,6 +158,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERVIEW_RENAME:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
+      case HiveParser.TOK_SHOWCOLUMNS:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
       case HiveParser.TOK_SHOWFUNCTIONS:

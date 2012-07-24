@@ -1,0 +1,112 @@
+PREHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@shcol_test
+PREHOOK: query: EXPLAIN
+SHOW COLUMNS from shcol_test
+PREHOOK: type: SHOWCOLUMNS
+POSTHOOK: query: EXPLAIN
+SHOW COLUMNS from shcol_test
+POSTHOOK: type: SHOWCOLUMNS
+ABSTRACT SYNTAX TREE:
+  (TOK_SHOWCOLUMNS (TOK_TABNAME shcol_test))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Show Columns Operator:
+          table name: shcol_test
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SHOW COLUMNS from shcol_test
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@shcol_test
+POSTHOOK: query: SHOW COLUMNS from shcol_test
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@shcol_test
+key
+value
+ds
+PREHOOK: query: -- SHOW COLUMNS
+CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- SHOW COLUMNS
+CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@foo
+PREHOOK: query: -- SHOW COLUMNS basic syntax tests
+USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: -- SHOW COLUMNS basic syntax tests
+USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW COLUMNS from foo
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+a
+PREHOOK: query: SHOW COLUMNS in foo
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS in foo
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+a
+PREHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
+CREATE DATABASE `database`
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
+CREATE DATABASE `database`
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE `database`
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE `database`
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database@foo
+PREHOOK: query: SHOW COLUMNS from foo
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo
+POSTHOOK: query: SHOW COLUMNS from foo
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo
+a
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW COLUMNS from test_db.foo
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from test_db.foo
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+a
+PREHOOK: query: SHOW COLUMNS from foo from test_db
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo from test_db
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+a

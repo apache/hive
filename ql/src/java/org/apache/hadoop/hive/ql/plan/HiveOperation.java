@@ -51,6 +51,7 @@ public enum HiveOperation {
   ALTERTABLE_CLUSTER_SORT("ALTERTABLE_CLUSTER_SORT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   SHOWDATABASES("SHOWDATABASES", new Privilege[]{Privilege.SHOW_DATABASE}, null),
   SHOWTABLES("SHOWTABLES", null, null),
+  SHOWCOLUMNS("SHOWCOLUMNS", null, null),
   SHOW_TABLESTATUS("SHOW_TABLESTATUS", null, null),
   SHOW_TBLPROPERTIES("SHOW_TBLPROPERTIES", null, null),
   SHOWFUNCTIONS("SHOWFUNCTIONS", null, null),
