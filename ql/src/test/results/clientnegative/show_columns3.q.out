@@ -1,0 +1,18 @@
+PREHOOK: query: CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@foo
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+FAILED: SemanticException [Error 10001]: Table not found test_db.foo

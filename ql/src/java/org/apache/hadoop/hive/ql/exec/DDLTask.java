@@ -128,6 +128,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
+import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
@@ -322,6 +323,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ShowTablesDesc showTbls = work.getShowTblsDesc();
       if (showTbls != null) {
         return showTables(db, showTbls);
+      }
+
+      ShowColumnsDesc showCols = work.getShowColumnsDesc();
+      if (showCols != null) {
+        return showColumns(db, showCols);
       }
 
       ShowTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
@@ -2028,6 +2034,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
+    } finally {
+      IOUtils.closeStream((FSDataOutputStream) outStream);
+    }
+    return 0;
+  }
+
+  public int showColumns(Hive db, ShowColumnsDesc showCols)
+                         throws HiveException {
+
+    String dbName = showCols.getDbName();
+    String tableName = showCols.getTableName();
+    Table table = null;
+    if (dbName == null) {
+      table = db.getTable(tableName);
+    }
+    else {
+      table = db.getTable(dbName, tableName);
+    }
+
+    // write the results in the file
+    DataOutput outStream = null;
+    try {
+      Path resFile = new Path(showCols.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      outStream = fs.create(resFile);
+
+      List<FieldSchema> cols = table.getCols();
+      cols.addAll(table.getPartCols());
+      outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
+      ((FSDataOutputStream) outStream).close();
+      outStream = null;
+    } catch (IOException e) {
+      LOG.warn("show columns: " + stringifyException(e));
+      return 1;
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }

@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
+import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
@@ -228,6 +229,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWTABLES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTables(ast);
+      break;
+    case HiveParser.TOK_SHOWCOLUMNS:
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowColumns(ast);
       break;
     case HiveParser.TOK_SHOW_TABLESTATUS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -1477,6 +1482,41 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblsDesc), conf));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));
+  }
+
+  private void analyzeShowColumns(ASTNode ast) throws SemanticException {
+    ShowColumnsDesc showColumnsDesc;
+    String dbName = null;
+    String tableName = null;
+    switch (ast.getChildCount()) {
+      case 1:
+        tableName = getUnescapedName((ASTNode)ast.getChild(0));
+        break;
+      case 2:
+        dbName = getUnescapedName((ASTNode)ast.getChild(0));
+        tableName = getUnescapedName((ASTNode)ast.getChild(1));
+        break;
+      default:
+        break;
+    }
+
+    try {
+      Table tab = null;
+      if (dbName == null) {
+        tab = db.getTable(tableName, true);
+      }
+      else {
+        tab = db.getTable(dbName, tableName, true);
+      }
+      inputs.add(new ReadEntity(tab));
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+
+    showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), dbName, tableName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+                                              showColumnsDesc), conf));
+    setFetchTask(createFetchTask(showColumnsDesc.getSchema()));
   }
 
   private void analyzeShowTableStatus(ASTNode ast) throws SemanticException {

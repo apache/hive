@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
@@ -45,6 +44,7 @@ public class DDLWork implements Serializable {
   private AlterIndexDesc alterIdxDesc;
   private ShowDatabasesDesc showDatabasesDesc;
   private ShowTablesDesc showTblsDesc;
+  private ShowColumnsDesc showColumnsDesc;
   private ShowTblPropertiesDesc showTblPropertiesDesc;
   private LockTableDesc lockTblDesc;
   private UnlockTableDesc unlockTblDesc;
@@ -241,6 +241,16 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showTblsDesc = showTblsDesc;
+  }
+
+  /**
+   * @param showColumnsDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowColumnsDesc showColumnsDesc) {
+    this(inputs, outputs);
+
+    this.showColumnsDesc = showColumnsDesc;
   }
 
   /**
@@ -599,6 +609,22 @@ public class DDLWork implements Serializable {
    */
   public void setShowTblsDesc(ShowTablesDesc showTblsDesc) {
     this.showTblsDesc = showTblsDesc;
+  }
+
+  /**
+   * @return the showColumnsDesc
+   */
+  @Explain(displayName = "Show Columns Operator")
+  public ShowColumnsDesc getShowColumnsDesc() {
+    return showColumnsDesc;
+  }
+
+  /**
+   * @param showColumnsDesc
+   *          the showColumnsDesc to set
+   */
+  public void setShowColumnsDesc(ShowColumnsDesc showColumnsDesc) {
+    this.showColumnsDesc = showColumnsDesc;
   }
 
   /**
