@@ -606,7 +606,11 @@ public class Driver implements CommandProcessor {
                 cols.add(columns.get(i).getName());
               }
             }
-            if (tbl.isPartitioned() && tableUsePartLevelAuth.get(tbl.getTableName())) {
+            //map may not contain all sources, since input list may have been optimized out
+            //or non-existent tho such sources may still be referenced by the TableScanOperator
+            //if it's null then the partition probably doesn't exist so let's use table permission
+            if (tbl.isPartitioned() &&
+                tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
               String alias_id = topOpMap.getKey();
               PrunedPartitionList partsList = PartitionPruner.prune(parseCtx
                   .getTopToTable().get(topOp), parseCtx.getOpToPartPruner()
@@ -643,7 +647,7 @@ public class Driver implements CommandProcessor {
         if (read.getPartition() != null) {
           tbl = read.getPartition().getTable();
           // use partition level authorization
-          if (tableUsePartLevelAuth.get(tbl.getTableName())) {
+          if (tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
             List<String> cols = part2Cols.get(read.getPartition());
             if (cols != null && cols.size() > 0) {
               ss.getAuthorizer().authorize(read.getPartition().getTable(),
