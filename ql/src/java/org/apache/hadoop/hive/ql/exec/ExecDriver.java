@@ -46,7 +46,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -387,7 +387,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           String archiveFileName = Utilities.generateTarFileName(stageId);
           localwork.setStageID(stageId);
 
-          FileUtils.tar(parentDir, fileNames,archiveFileName);
+          CompressionUtils.tar(parentDir, fileNames,archiveFileName);
           Path archivePath = new Path(archiveFileURI);
           LOG.info("Archive "+ hashtableFiles.length+" hash table files to " + archiveFileURI);
 
