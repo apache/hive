@@ -18,19 +18,11 @@
 
 package org.apache.hadoop.hive.common;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.BitSet;
 import java.util.List;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -243,42 +235,6 @@ public final class FileUtils {
       }
     } else {
       results.add(fileStatus);
-    }
-  }
-
-  /**
-   * Archive all the files in the inputFiles into outputFile
-   *
-   * @param inputFiles
-   * @param outputFile
-   * @throws IOException
-   */
-  public static void tar(String parentDir, String[] inputFiles, String outputFile)
-      throws IOException {
-
-    FileOutputStream out = null;
-    try {
-      out = new FileOutputStream(new File(parentDir, outputFile));
-      TarArchiveOutputStream tOut = new TarArchiveOutputStream(
-          new GzipCompressorOutputStream(new BufferedOutputStream(out)));
-
-      for (int i = 0; i < inputFiles.length; i++) {
-        File f = new File(parentDir, inputFiles[i]);
-        TarArchiveEntry tarEntry = new TarArchiveEntry(f, f.getName());
-        tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-        tOut.putArchiveEntry(tarEntry);
-        FileInputStream input = new FileInputStream(f);
-        try {
-          IOUtils.copy(input, tOut); // copy with 8K buffer, not close
-        } finally {
-          input.close();
-        }
-        tOut.closeArchiveEntry();
-      }
-      tOut.close(); // finishes inside
-    } finally {
-      // TarArchiveOutputStream seemed not to close files properly in error situation
-      org.apache.hadoop.io.IOUtils.closeStream(out);
     }
   }
 }
