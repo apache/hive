@@ -99,16 +99,13 @@ public class Context {
     this.conf = conf;
     this.executionId = executionId;
 
-    // non-local tmp location is configurable. however it is the same across
+    // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
     nonLocalScratchPath =
       new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
                executionId);
-
-    // local tmp location is not configurable for now
-    localScratchDir = System.getProperty("java.io.tmpdir")
-      + Path.SEPARATOR + System.getProperty("user.name") + Path.SEPARATOR
-      + executionId;
+    localScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
+            executionId).toUri().getPath();
   }
 
   /**

@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
+import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.AntClassLoader;
@@ -259,6 +260,7 @@ public class QTestGenTask extends Task {
     }
 
     List<File> qFiles = new ArrayList<File>();
+    HashMap<String, String> qFilesMap = new HashMap<String, String>();
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
@@ -281,7 +283,7 @@ public class QTestGenTask extends Task {
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
       } else if (runDisabled != null && runDisabled.equals("true")) {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter())));        
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter())));
       } else {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
       }
@@ -298,6 +300,9 @@ public class QTestGenTask extends Task {
       }
       
       Collections.sort(qFiles);
+      for (File qFile : qFiles) {
+        qFilesMap.put(qFile.getName(), getEscapedCanonicalPath(qFile));
+      }
 
       // Make sure the output directory exists, if it doesn't
       // then create it.
@@ -348,8 +353,9 @@ public class QTestGenTask extends Task {
       VelocityContext ctx = new VelocityContext();
       ctx.put("className", className);
       ctx.put("qfiles", qFiles);
-      ctx.put("resultsDir", resultsDir);
-      ctx.put("logDir", logDir);
+      ctx.put("qfilesMap", qFilesMap);
+      ctx.put("resultsDir", getEscapedCanonicalPath(resultsDir));
+      ctx.put("logDir", getEscapedCanonicalPath(logDir));
       ctx.put("clusterMode", clusterMode);
       ctx.put("hadoopVersion", hadoopVersion);
 
@@ -372,5 +378,18 @@ public class QTestGenTask extends Task {
     } catch(Exception e) {
       throw new BuildException("Generation failed", e);
     }
+  }
+  
+  private static String getEscapedCanonicalPath(File file) throws IOException {
+    if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+      // Escape the backward slash in CanonicalPath if the unit test runs on windows
+      // e.g. dir.getCanonicalPath() gets the absolute path of local
+      // directory. When we embed it directly in the generated java class it results
+      // in compiler error in windows. Reason : the canonical path contains backward
+      // slashes "C:\temp\etc\" and it is not a valid string in Java
+      // unless we escape the backward slashes.
+      return file.getCanonicalPath().replace("\\", "\\\\");
+    }
+    return file.getCanonicalPath();
   }
 }
