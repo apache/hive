@@ -69,6 +69,12 @@
 </property>
 
 <property>
+  <name>hive.exec.local.scratchdir</name>
+  <value>/tmp/${user.name}</value>
+  <description>Local scratch space for Hive jobs</description>
+</property>
+
+<property>
   <name>hive.test.mode</name>
   <value>false</value>
   <description>whether hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename</description>

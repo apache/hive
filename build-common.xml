@@ -109,6 +109,8 @@
 
   <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
 
+  <osfamily property="os.family"/>
+
   <condition property="offline">
     <istrue value="${is-offline}"/>
   </condition>
@@ -366,7 +368,7 @@
 
   <!-- target to run the tests -->
   <target name="test"
-  	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
+    depends="test-conditions,gen-test,compile-test,test-jar,test-init">
     <echo message="Project: ${ant.project.name}"/>
     <property name="hadoop.testcp" refid="test.classpath"/>
     <if>
@@ -376,6 +378,18 @@
       </then>
       <else>
         <property name="hadoop.opts" value="${hadoop.opts.20}" />
+      </else>
+    </if>
+    <!-- Set the OS specific settings to run junit tests on unix as well as on windows -->
+    <if>
+      <equals arg1="windows" arg2="${os.family}"/>
+      <then>
+        <property name="junit.script.extension" value=".cmd"/>
+        <property name="junit.file.schema" value=""/>
+      </then>
+      <else>
+        <property name="junit.script.extension" value=""/>
+        <property name="junit.file.schema" value="file://"/>
       </else>
     </if>
     <if>
@@ -390,13 +404,13 @@
       <env key="LANG" value="${test.lang}"/>
       <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hadoop.testcp}"/>
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
-      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
+      <env key="HADOOP_CLASSPATH" path="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
-      <sysproperty key="log4j.configuration" value="file://${test.src.data.dir}/conf/hive-log4j.properties"/>
+      <sysproperty key="log4j.configuration" value="${junit.file.schema}${test.src.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="file://${test.build.dir}/test-udfs.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="${junit.file.schema}${test.build.dir}/test-udfs.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>
@@ -413,7 +427,7 @@
       <sysproperty key="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
       <sysproperty key="derby.version" value="${derby.version}"/>
       <sysproperty key="hive.version" value="${version}"/>
-      <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}"/>
+      <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
 
       <classpath refid="test.local.classpath"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />

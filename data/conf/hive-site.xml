@@ -47,6 +47,12 @@
 </property>
 
 <property>
+  <name>hive.exec.local.scratchdir</name>
+  <value>${build.dir}/scratchdir/local/</value>
+  <description>Local scratch space for Hive jobs</description>
+</property>
+
+<property>
   <name>javax.jdo.option.ConnectionURL</name>
   <!-- note: variable substituion not working here because it's loaded by jdo, not Hive -->
   <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>

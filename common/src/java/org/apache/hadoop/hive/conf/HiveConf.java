@@ -40,6 +40,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Shell;
 
 /**
  * Hive Configuration.
@@ -165,6 +166,7 @@ public class HiveConf extends Configuration {
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
+    LOCALSCRATCHDIR("hive.exec.local.scratchdir", "/tmp/" + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
@@ -692,8 +694,10 @@ public class HiveConf extends Configuration {
         val = System.getenv("HADOOP_PREFIX");
       }
       // and if all else fails we can at least try /usr/bin/hadoop
-      return (val == null ? File.separator + "usr" : val)
+      val = (val == null ? File.separator + "usr" : val)
         + File.separator + "bin" + File.separator + "hadoop";
+      // Launch hadoop command file on windows.
+      return val + (Shell.WINDOWS ? ".cmd" : "");
     }
 
     enum VarType {

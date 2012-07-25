@@ -24,6 +24,8 @@ import java.util.NoSuchElementException;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.util.Shell;
+
 /**
  * TestGenericMR.
  *
@@ -61,8 +63,7 @@ public final class TestGenericMR extends TestCase {
     final StringWriter out = new StringWriter();
 
     new GenericMR().map(new StringReader(in), out, identityMapper());
-
-    assertEquals(in + "\n", out.toString());
+    assertEquals(in + "\n", getOsSpecificOutput(out.toString()));
   }
 
   public void testKVSplitMap() throws Exception {
@@ -79,7 +80,7 @@ public final class TestGenericMR extends TestCase {
       }
     });
 
-    assertEquals(expected, out.toString());
+    assertEquals(expected, getOsSpecificOutput(out.toString()));
   }
 
   public void testIdentityReduce() throws Exception {
@@ -88,7 +89,7 @@ public final class TestGenericMR extends TestCase {
 
     new GenericMR().reduce(new StringReader(in), out, identityReducer());
 
-    assertEquals(in + "\n", out.toString());
+    assertEquals(in + "\n", getOsSpecificOutput(out.toString()));
   }
 
   public void testWordCountReduce() throws Exception {
@@ -111,7 +112,7 @@ public final class TestGenericMR extends TestCase {
 
     final String expected = "hello\t3\nokay\t12\n";
 
-    assertEquals(expected, out.toString());
+    assertEquals(expected, getOsSpecificOutput(out.toString()));
   }
 
   private Mapper identityMapper() {
@@ -133,5 +134,10 @@ public final class TestGenericMR extends TestCase {
         }
       }
     };
+  }
+
+  private static String getOsSpecificOutput(String outStr){
+    assert outStr != null;
+    return Shell.WINDOWS ? outStr.replaceAll("\\r", "") : outStr;
   }
 }

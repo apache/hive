@@ -18,19 +18,17 @@
 
 package org.apache.hadoop.fs;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Shell;
 
 /****************************************************************
  * A Proxy for LocalFileSystem
  *
  * Serves uri's corresponding to 'pfile:///' namespace with using
- * a LocalFileSystem 
+ * a LocalFileSystem
  *****************************************************************/
 
 public class ProxyLocalFileSystem extends FilterFileSystem {
@@ -50,10 +48,21 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     // create a proxy for the local filesystem
     // the scheme/authority serving as the proxy is derived
     // from the supplied URI
-
     String scheme = name.getScheme();
+    String nameUriString = name.toString();
+    if (Shell.WINDOWS) {
+      // Replace the encoded backward slash with forward slash
+      // Remove the windows drive letter
+      // replace the '=' with special string '------' to handle the unsupported char '=' in windows.
+      nameUriString = nameUriString.replaceAll("%5C", "/")
+          .replaceFirst("/[c-zC-Z]:", "/")
+          .replaceFirst("^[c-zC-Z]:", "")
+          .replaceAll("=", "------");
+      name = URI.create(nameUriString);
+    }
+
     String authority = name.getAuthority() != null ? name.getAuthority() : "";
-    String proxyUriString = name + "://" + authority + "/";
+    String proxyUriString = nameUriString + "://" + authority + "/";
     fs = new ProxyFileSystem(localFs, URI.create(proxyUriString));
 
     fs.initialize(name, conf);

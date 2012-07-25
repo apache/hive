@@ -41,7 +41,7 @@ public class $className extends TestCase {
       if ("$clusterMode".equals("miniMR"))
         miniMR = true;
       hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR, hadoopVer);
+      qt = new QTestUtil("$resultsDir", "$logDir", miniMR, hadoopVer);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
@@ -115,7 +115,7 @@ public class $className extends TestCase {
     try {
       System.out.println("Begin query: " + "$fname");
 
-      qt.addFile("$qf.getCanonicalPath()");
+      qt.addFile("$qfilesMap.get($fname)");
 
       if (qt.shouldBeSkipped("$fname")) {
         System.out.println("Test $fname skipped");

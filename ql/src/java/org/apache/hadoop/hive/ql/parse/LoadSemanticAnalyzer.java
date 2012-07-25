@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.util.Shell;
 
 /**
  * LoadSemanticAnalyzer.
@@ -81,10 +82,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = new Path(System.getProperty("user.dir"), path).toString();
+        path = new Path(System.getProperty("user.dir"), path).toUri().toString();
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
-            path).toString();
+          path).toString();
       }
     }
 
@@ -231,7 +232,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // create final load/move work
-    
+
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
