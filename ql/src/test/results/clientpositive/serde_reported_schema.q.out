@@ -1,0 +1,38 @@
+PREHOOK: query: create table int_string
+  partitioned by (b string)
+  row format serde "org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer"
+    with serdeproperties (
+      "serialization.class"="org.apache.hadoop.hive.serde2.thrift.test.IntString",
+      "serialization.format"="org.apache.thrift.protocol.TBinaryProtocol")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table int_string
+  partitioned by (b string)
+  row format serde "org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer"
+    with serdeproperties (
+      "serialization.class"="org.apache.hadoop.hive.serde2.thrift.test.IntString",
+      "serialization.format"="org.apache.thrift.protocol.TBinaryProtocol")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@int_string
+PREHOOK: query: describe int_string
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe int_string
+POSTHOOK: type: DESCTABLE
+myint	int	from deserializer
+mystring	string	from deserializer
+underscore_int	int	from deserializer
+b	string	
+PREHOOK: query: alter table int_string add partition (b='part1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@int_string
+POSTHOOK: query: alter table int_string add partition (b='part1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@int_string
+POSTHOOK: Output: default@int_string@b=part1
+PREHOOK: query: describe int_string partition (b='part1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe int_string partition (b='part1')
+POSTHOOK: type: DESCTABLE
+myint	int	from deserializer
+mystring	string	from deserializer
+underscore_int	int	from deserializer
+b	string	
