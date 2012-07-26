@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
+import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -76,6 +77,11 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
       throws IOException {
     // gone in 0.18+
+  }
+
+  @Override
+  public String unquoteHtmlChars(String item) {
+    return HtmlQuoting.unquoteHtmlChars(item);
   }
 
   public boolean isJobPreparing(RunningJob job) throws IOException {
