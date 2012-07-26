@@ -545,6 +545,12 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public String unquoteHtmlChars(String item) {
+    return item;
+  }
+
+
+  @Override
   public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
     return new org.apache.hadoop.mapreduce.TaskAttemptContext(conf, new TaskAttemptID()) {
       @Override

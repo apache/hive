@@ -158,6 +158,14 @@ public interface HadoopShims {
   void prepareJobOutput(JobConf conf);
 
   /**
+   * Used by TaskLogProcessor to Remove HTML quoting from a string
+   * @param item the string to unquote
+   * @return the unquoted string
+   *
+   */
+  public String unquoteHtmlChars(String item);
+
+  /**
    * Get the UGI that the given job configuration will run as.
    *
    * In secure versions of Hadoop, this simply returns the current
