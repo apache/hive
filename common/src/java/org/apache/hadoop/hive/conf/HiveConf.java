@@ -517,6 +517,7 @@ public class HiveConf extends Configuration {
     // should the raw data size be collected when analayzing tables
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", ""),
     //Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). Non-display names should be used".
+    HIVE_STATS_RELIABLE("hive.stats.reliable", false),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
@@ -701,11 +702,16 @@ public class HiveConf extends Configuration {
     }
 
     enum VarType {
-      STRING { void checkType(String value) throws Exception { } },
-      INT { void checkType(String value) throws Exception { Integer.valueOf(value); } },
-      LONG { void checkType(String value) throws Exception { Long.valueOf(value); } },
-      FLOAT { void checkType(String value) throws Exception { Float.valueOf(value); } },
-      BOOLEAN { void checkType(String value) throws Exception { Boolean.valueOf(value); } };
+      STRING { @Override
+      void checkType(String value) throws Exception { } },
+      INT { @Override
+      void checkType(String value) throws Exception { Integer.valueOf(value); } },
+      LONG { @Override
+      void checkType(String value) throws Exception { Long.valueOf(value); } },
+      FLOAT { @Override
+      void checkType(String value) throws Exception { Float.valueOf(value); } },
+      BOOLEAN { @Override
+      void checkType(String value) throws Exception { Boolean.valueOf(value); } };
 
       boolean isType(String value) {
         try { checkType(value); } catch (Exception e) { return false; }

@@ -175,7 +175,7 @@ public class GenMRFileSink1 implements NodeProcessor {
        statsWork = new StatsWork(mvWork.getLoadFileWork());
     }
     assert statsWork != null : "Error when genereting StatsTask";
-
+    statsWork.setStatsReliable(hconf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
     MapredWork mrWork = (MapredWork) currTask.getWork();
 
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
@@ -186,6 +186,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // mark the MapredWork and FileSinkOperator for gathering stats
     nd.getConf().setGatherStats(true);
     mrWork.setGatheringStats(true);
+    nd.getConf().setStatsReliable(hconf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
     // mrWork.addDestinationTable(nd.getConf().getTableInfo().getTableName());
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list

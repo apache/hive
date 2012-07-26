@@ -48,6 +48,7 @@ public class TableScanDesc implements Serializable {
    *
    */
   private boolean gatherStats;
+  private boolean statsReliable;
 
   private ExprNodeDesc filterExpr;
 
@@ -124,5 +125,13 @@ public class TableScanDesc implements Serializable {
   @Explain(displayName = "Statistics Aggregation Key Prefix", normalExplain = false)
   public String getStatsAggPrefix() {
     return statsAggKeyPrefix;
+  }
+
+  public boolean isStatsReliable() {
+    return statsReliable;
+  }
+
+  public void setStatsReliable(boolean statsReliable) {
+    this.statsReliable = statsReliable;
   }
 }

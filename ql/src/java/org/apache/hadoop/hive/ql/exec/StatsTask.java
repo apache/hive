@@ -218,12 +218,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     LOG.info("Executing stats task");
     // Make sure that it is either an ANALYZE, INSERT OVERWRITE or CTAS command
     short workComponentsPresent = 0;
-    if (work.getLoadTableDesc() != null)
+    if (work.getLoadTableDesc() != null) {
       workComponentsPresent++;
-    if (work.getTableSpecs() != null)
+    }
+    if (work.getTableSpecs() != null) {
       workComponentsPresent++;
-    if (work.getLoadFileDesc() != null)
+    }
+    if (work.getLoadFileDesc() != null) {
       workComponentsPresent++;
+    }
 
     assert (workComponentsPresent == 1);
 
@@ -266,6 +269,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private int aggregateStats() {
 
     StatsAggregator statsAggregator = null;
+    int ret = 0;
 
     try {
       // Stats setup:
@@ -426,17 +430,22 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       console.printInfo("Table " + tableFullName + " stats: [" + tblStats.toString() + ']');
 
     } catch (Exception e) {
-      // return 0 since StatsTask should not fail the whole job
       console.printInfo("[Warning] could not update stats.",
           "Failed with exception " + e.getMessage() + "\n"
               + StringUtils.stringifyException(e));
+
+      // Fail the query if the stats are supposed to be reliable
+      if (work.isStatsReliable()) {
+        ret = 1;
+      }
     } finally {
       if (statsAggregator != null) {
         statsAggregator.closeConnection();
       }
     }
-    // StatsTask always return 0 so that the whole job won't fail
-    return 0;
+    // The return value of 0 indicates success,
+    // anything else indicates failure
+    return ret;
   }
 
   private boolean existStats(Map<String, String> parameters) {
