@@ -944,6 +944,15 @@
 </property>
 
 <property>
+  <name>hive.stats.reliable</name>
+  <value>false</value>
+  <description>Whether queries will fail because stats cannot be collected completely accurately. 
+    If this is set to true, reading/writing from/into a partition may fail becuase the stats 
+    could not be computed accurately.
+  </description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

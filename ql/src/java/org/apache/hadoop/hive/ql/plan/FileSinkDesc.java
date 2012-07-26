@@ -46,6 +46,7 @@ public class FileSinkDesc implements Serializable {
   private DynamicPartitionCtx dpCtx;
   private String staticSpec; // static partition spec ends with a '/'
   private boolean gatherStats;
+  private boolean statsReliable;
 
   public FileSinkDesc() {
   }
@@ -246,5 +247,13 @@ public class FileSinkDesc implements Serializable {
     } else {
       statsKeyPref = k + Path.SEPARATOR;
     }
+  }
+
+  public boolean isStatsReliable() {
+    return statsReliable;
+  }
+
+  public void setStatsReliable(boolean statsReliable) {
+    this.statsReliable = statsReliable;
   }
 }

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -91,7 +92,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private void gatherStats(Object row) {
     // first row/call or a new partition
-
     if ((currentStat == null) || inputFileChanged) {
       inputFileChanged = false;
       if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
@@ -230,12 +230,17 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     return OperatorType.TABLESCAN;
   }
 
-  private void publishStats() {
+  private void publishStats() throws HiveException {
+    boolean isStatsReliable = conf.isStatsReliable();
+
     // Initializing a stats publisher
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
     if (!statsPublisher.connect(jc)) {
       // just return, stats gathering should not block the main query.
       LOG.info("StatsPublishing error: cannot connect to database.");
+      if (isStatsReliable) {
+        throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
+      }
       return;
     }
 
@@ -257,9 +262,17 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));
       }
-      statsPublisher.publishStat(key, statsToPublish);
+      if (!statsPublisher.publishStat(key, statsToPublish)) {
+        if (isStatsReliable) {
+          throw new HiveException(ErrorMsg.STATSPUBLISHER_PUBLISHING_ERROR.getErrorCodedMsg());
+        }
+      }
       LOG.info("publishing : " + key + " : " + statsToPublish.toString());
     }
-    statsPublisher.closeConnection();
+    if (!statsPublisher.closeConnection()) {
+      if (isStatsReliable) {
+        throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
+      }
+    }
   }
 }

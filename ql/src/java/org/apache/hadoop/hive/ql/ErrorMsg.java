@@ -29,7 +29,8 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 
 /**
- * List of error messages thrown by the parser.
+ * List of all error messages.
+ * This list contains both compile time and run-time errors.
  **/
 
 public enum ErrorMsg {
@@ -226,7 +227,29 @@ public enum ErrorMsg {
   SCRIPT_GENERIC_ERROR(20002, "Hive encountered some unknown error while "
       + "running your custom script."),
   SCRIPT_CLOSING_ERROR(20003, "An error occurred when trying to close the Operator " +
-      "running your custom script.")
+      "running your custom script."),
+
+  STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
+    "There was a error to retrieve the StatsPublisher, and retrying " +
+    "might help. If you dont want the query to fail because accurate statistics " +
+    "could not be collected, set hive.stats.reliable=false"),
+  STATSPUBLISHER_INITIALIZATION_ERROR(30001, "StatsPublisher cannot be initialized. " +
+    "There was a error in the initialization of StatsPublisher, and retrying " +
+    "might help. If you dont want the query to fail because accurate statistics " +
+    "could not be collected, set hive.stats.reliable=false"),
+  STATSPUBLISHER_CONNECTION_ERROR(30002, "StatsPublisher cannot be connected to." +
+    "There was a error while connecting to the StatsPublisher, and retrying " +
+    "might help. If you dont want the query to fail because accurate statistics " +
+    "could not be collected, set hive.stats.reliable=false"),
+  STATSPUBLISHER_PUBLISHING_ERROR(30003, "Error in publishing stats. There was an " +
+    "error in publishing stats via StatsPublisher, and retrying " +
+    "might help. If you dont want the query to fail because accurate statistics " +
+    "could not be collected, set hive.stats.reliable=false"),
+  STATSPUBLISHER_CLOSING_ERROR(30004, "StatsPublisher cannot be closed." +
+    "There was a error while closing the StatsPublisher, and retrying " +
+    "might help. If you dont want the query to fail because accurate statistics " +
+    "could not be collected, set hive.stats.reliable=false"),
+
     ;
 
   private int errorCode;
