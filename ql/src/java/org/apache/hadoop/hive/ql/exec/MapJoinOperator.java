@@ -130,7 +130,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
 
 
-      TableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
+      TableDesc valueTableDesc;
+      if (conf.getNoOuterJoin()) {
+        valueTableDesc = conf.getValueTblDescs().get(tag);
+      } else {
+        valueTableDesc = conf.getValueFilteredTblDescs().get(tag);
+      }
       SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
           null);
       valueSerDe.initialize(null, valueTableDesc.getProperties());
