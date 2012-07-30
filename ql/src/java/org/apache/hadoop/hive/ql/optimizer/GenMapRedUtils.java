@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -69,7 +70,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -239,7 +239,7 @@ public final class GenMapRedUtils {
   private static void setupBucketMapJoinInfo(MapredWork plan,
       AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp, boolean createLocalPlan) {
     if (currMapJoinOp != null) {
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping =
+      Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
         currMapJoinOp.getConf().getAliasBucketFileNameMapping();
       if(aliasBucketFileNameMapping!= null) {
         MapredLocalWork localPlan = plan.getMapLocalWork();
@@ -276,10 +276,12 @@ public final class GenMapRedUtils {
         BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
         localPlan.setBucketMapjoinContext(bucketMJCxt);
         bucketMJCxt.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
-        bucketMJCxt.setBucketFileNameMapping(currMapJoinOp.getConf().getBucketFileNameMapping());
+        bucketMJCxt.setBucketFileNameMapping(currMapJoinOp.getConf().getBigTableBucketNumMapping());
         localPlan.setInputFileChangeSensitive(true);
         bucketMJCxt.setMapJoinBigTableAlias(currMapJoinOp.getConf().getBigTableAlias());
         bucketMJCxt.setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
+        bucketMJCxt.setBigTablePartSpecToFileMapping(
+            currMapJoinOp.getConf().getBigTablePartSpecToFileMapping());
       }
     }
   }

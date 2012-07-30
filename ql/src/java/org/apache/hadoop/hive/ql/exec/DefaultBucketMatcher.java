@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,9 +33,9 @@ public class DefaultBucketMatcher implements BucketMatcher {
   protected Log LOG = LogFactory.getLog(this.getClass().getName());
 
   //MAPPING: bucket_file_name_in_big_table->{alias_table->corresonding_bucket_file_names}
-  private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketMapping;
+  private Map<String, Map<String, List<String>>> aliasBucketMapping;
 
-  private LinkedHashMap<String, Integer> bucketFileNameMapping;
+  private Map<String, Integer> bucketFileNameMapping;
 
   public DefaultBucketMatcher(){
     bucketFileNameMapping = new LinkedHashMap<String, Integer>();
@@ -53,15 +54,15 @@ public class DefaultBucketMatcher implements BucketMatcher {
   }
 
   public void setAliasBucketFileNameMapping(
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
+      Map<String,Map<String,List<String>>> aliasBucketFileNameMapping) {
     this.aliasBucketMapping = aliasBucketFileNameMapping;
   }
 
-  public LinkedHashMap<String, Integer> getBucketFileNameMapping() {
+  public Map<String, Integer> getBucketFileNameMapping() {
     return bucketFileNameMapping;
   }
 
-  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping) {
+  public void setBucketFileNameMapping(Map<String, Integer> bucketFileNameMapping) {
     this.bucketFileNameMapping = bucketFileNameMapping;
   }
 

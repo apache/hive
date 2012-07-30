@@ -399,7 +399,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       int filesIdx = 0;
       Set<Integer> seenBuckets = new HashSet<Integer>();
       for (int idx = 0; idx < totalFiles; idx++) {
-        if (this.getExecContext() != null && this.getExecContext().getFileId() != -1) {
+        if (this.getExecContext() != null && this.getExecContext().getFileId() != null) {
           LOG.info("replace taskId from execContext ");
 
           taskId = Utilities.replaceTaskIdFromFilename(taskId, this.getExecContext().getFileId());

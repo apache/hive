@@ -163,7 +163,7 @@ STAGE PLANS:
               Position of Big Table: 1
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            a {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket20.txt], srcbucket23.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket20.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket21.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket23.txt=[srcbucket21.txt]}
+            a {ds=2008-04-08/srcbucket20.txt=[srcbucket20.txt], ds=2008-04-08/srcbucket21.txt=[srcbucket21.txt], ds=2008-04-08/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-08/srcbucket23.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket20.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket21.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket23.txt=[srcbucket21.txt]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -615,7 +615,7 @@ STAGE PLANS:
               Position of Big Table: 1
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            a {srcbucket22.txt=[srcbucket20.txt], srcbucket23.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket23.txt=[srcbucket21.txt]}
+            a {ds=2008-04-08/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-08/srcbucket23.txt=[srcbucket21.txt], ds=2008-04-09/srcbucket22.txt=[srcbucket20.txt], ds=2008-04-09/srcbucket23.txt=[srcbucket21.txt]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
