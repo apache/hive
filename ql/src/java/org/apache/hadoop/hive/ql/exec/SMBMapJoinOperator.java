@@ -31,11 +31,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -475,23 +475,22 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   private void setUpFetchOpContext(FetchOperator fetchOp, String alias) {
-    String currentInputFile = this.getExecContext().getCurrentInputFile();
-    BucketMapJoinContext bucketMatcherCxt = this.localWork
-        .getBucketMapjoinContext();
+    String currentInputFile = getExecContext().getCurrentInputFile();
+    BucketMapJoinContext bucketMatcherCxt = localWork.getBucketMapjoinContext();
+
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt
         .getBucketMatcherClass();
     BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(
         bucketMatcherCls, null);
-    Integer bucketNum = bucketMatcherCxt.getBucketFileNameMapping().get(currentInputFile);
-    if (bucketNum != null) {
-      this.getExecContext().setFileId(bucketNum);
-    }
-    LOG.info("set task id: " + this.getExecContext().getFileId());
+
+    getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputFile));
+    LOG.info("set task id: " + getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
     List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
         bucketMatcherCxt.getMapJoinBigTableAlias(), alias);
+
     Iterator<Path> iter = aliasFiles.iterator();
     fetchOp.setupContext(iter, null);
   }

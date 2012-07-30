@@ -1142,6 +1142,12 @@ public final class Utilities {
   private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
 
   /**
+   * This retruns prefix part + taskID for bucket join for partitioned table
+   */
+  private static Pattern fileNamePrefixedTaskIdRegex =
+      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+
+  /**
    * Get the task id from the filename. It is assumed that the filename is derived from the output
    * of getTaskId
    *
@@ -1149,13 +1155,28 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
+    return getIdFromFilename(filename, fileNameTaskIdRegex);
+  }
+
+  /**
+   * Get the part-spec + task id from the filename. It is assumed that the filename is derived
+   * from the output of getTaskId
+   *
+   * @param filename
+   *          filename to extract taskid from
+   */
+  public static String getPrefixedTaskIdFromFilename(String filename) {
+    return getIdFromFilename(filename, fileNamePrefixedTaskIdRegex);
+  }
+
+  private static String getIdFromFilename(String filename, Pattern pattern) {
     String taskId = filename;
     int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
       taskId = filename.substring(dirEnd + 1);
     }
 
-    Matcher m = fileNameTaskIdRegex.matcher(taskId);
+    Matcher m = pattern.matcher(taskId);
     if (!m.matches()) {
       LOG.warn("Unable to get task id from file name: " + filename + ". Using last component"
           + taskId + " as task id.");
@@ -1174,14 +1195,21 @@ public final class Utilities {
    *          filename to replace taskid "0_0" or "0_0.gz" by 33 to "33_0" or "33_0.gz"
    */
   public static String replaceTaskIdFromFilename(String filename, int bucketNum) {
+    return replaceTaskIdFromFilename(filename, String.valueOf(bucketNum));
+  }
+
+  public static String replaceTaskIdFromFilename(String filename, String fileId) {
     String taskId = getTaskIdFromFilename(filename);
-    String newTaskId = replaceTaskId(taskId, bucketNum);
+    String newTaskId = replaceTaskId(taskId, fileId);
     String ret = replaceTaskIdFromFilename(filename, taskId, newTaskId);
     return (ret);
   }
 
   private static String replaceTaskId(String taskId, int bucketNum) {
-    String strBucketNum = String.valueOf(bucketNum);
+    return replaceTaskId(taskId, String.valueOf(bucketNum));
+  }
+
+  private static String replaceTaskId(String taskId, String strBucketNum) {
     int bucketNumLen = strBucketNum.length();
     int taskIdLen = taskId.length();
     StringBuffer s = new StringBuffer();
@@ -1407,7 +1435,7 @@ public final class Utilities {
           throw new IOException("Unable to delete tmp file: " + one.getPath());
         }
       } else {
-        String taskId = getTaskIdFromFilename(one.getPath().getName());
+        String taskId = getPrefixedTaskIdFromFilename(one.getPath().getName());
         FileStatus otherFile = taskIdToFile.get(taskId);
         if (otherFile == null) {
           taskIdToFile.put(taskId, one);

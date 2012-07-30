@@ -194,6 +194,15 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       if (tso == null) {
         return false;
       }
+      if (pos != op.getConf().getPosBigTable()) {
+        // currently, a file from a big table can be joined with only 1 file from a small table
+        for (List<String> files :
+            op.getConf().getAliasBucketFileNameMapping().get(alias).values()) {
+          if (files != null && files.size() > 1) {
+            return false;
+          }
+        }
+      }
 
       List<ExprNodeDesc> keys = op.getConf().getKeys().get((byte) pos);
       // get all join columns from join keys stored in MapJoinDesc
@@ -229,32 +238,21 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);
         }
-        int partNumber = prunedParts.getConfirmedPartns().size()
-              + prunedParts.getUnknownPartns().size();
-        if (partNumber > 1) {
-          return false;
-        }
-        boolean ret = true;
-        for (Partition p : prunedParts.getConfirmedPartns()) {
-          ret = ret && checkSortColsAndJoinCols(p.getSortCols(), joinCols);
-          if (!ret) {
+        for (Partition partition : prunedParts.getNotDeniedPartns()) {
+          if (!checkSortColsAndJoinCols(partition.getSortCols(), joinCols)) {
             return false;
           }
         }
-        for (Partition p : prunedParts.getUnknownPartns()) {
-          ret = ret && checkSortColsAndJoinCols(p.getSortCols(), joinCols);
-          if (!ret) {
-            return false;
-          }
-        }
-      } else {
-        return checkSortColsAndJoinCols(tbl.getSortCols(), joinCols);
+        return true;
       }
-      return true;
+      return checkSortColsAndJoinCols(tbl.getSortCols(), joinCols);
     }
 
     private boolean checkSortColsAndJoinCols(List<Order> sortCols,
         List<String> joinCols) {
+      if (sortCols == null || sortCols.size() != joinCols.size()) {
+        return false;
+      }
       // require all sort columns are asc, right now only support asc
       List<String> sortColNames = new ArrayList<String>();
       for (Order o : sortCols) {
@@ -264,8 +262,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         sortColNames.add(o.getCol());
       }
 
-      return sortColNames.containsAll(joinCols)
-          && sortColNames.size() == joinCols.size();
+      return sortColNames.containsAll(joinCols);
     }
   }
 

@@ -129,6 +129,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         newLocalWork.setDummyParentOp(dummyOps);
         newLocalWork.setTmpFileURI(tmpFileURI);
         newLocalWork.setInputFileChangeSensitive(localwork.getInputFileChangeSensitive());
+        newLocalWork.setBucketMapjoinContext(localwork.copyPartSpecMappingOnly());
         mapredWork.setMapLocalWork(newLocalWork);
         // get all parent tasks
         List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();

@@ -29,7 +29,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,9 +49,9 @@ import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -267,7 +266,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       initializeOperators(fetchOpJobConfMap);
       // for each big table's bucket, call the start forward
       if (inputFileChangeSenstive) {
-        for (LinkedHashMap<String, ArrayList<String>> bigTableBucketFiles : work
+        for (Map<String, List<String>> bigTableBucketFiles : work
             .getBucketMapjoinContext().getAliasBucketFileNameMapping().values()) {
           for (String bigTableBucket : bigTableBucketFiles.keySet()) {
             startForward(inputFileChangeSenstive, bigTableBucket);
@@ -308,7 +307,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       if (fetchOp.isEmptyTable()) {
         //generate empty hashtable for empty table
-        this.generateDummyHashTable(alias, getFileName(bigTableBucket));
+        this.generateDummyHashTable(alias, bigTableBucket);
         continue;
       }
 
@@ -319,8 +318,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         InspectableObject row = fetchOp.getNextRow();
         if (row == null) {
           if (inputFileChangeSenstive) {
-            String fileName = this.getFileName(bigTableBucket);
-            execContext.setCurrentBigBucketFile(fileName);
+            execContext.setCurrentBigBucketFile(bigTableBucket);
             forwardOp.reset();
           }
           forwardOp.close(false);
@@ -406,12 +404,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable =
       new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>();
 
-    if (bigBucketFileName == null || bigBucketFileName.length() == 0) {
-      bigBucketFileName = "-";
-    }
+    String fileName = work.getBucketFileName(bigBucketFileName);
+
     HashTableSinkOperator htso = (HashTableSinkOperator)childOp;
     String tmpURIPath = Utilities.generatePath(tmpURI, htso.getConf().getDumpFilePrefix(),
-        tag, bigBucketFileName);
+        tag, fileName);
     console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
     Path path = new Path(tmpURIPath);
     FileSystem fs = path.getFileSystem(job);
@@ -437,17 +434,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         .getMapJoinBigTableAlias(), alias);
     Iterator<Path> iter = aliasFiles.iterator();
     fetchOp.setupContext(iter, null);
-  }
-
-  private String getFileName(String path) {
-    if (path == null || path.length() == 0) {
-      return null;
-    }
-
-    int last_separator = path.lastIndexOf(Path.SEPARATOR) + 1;
-    String fileName = path.substring(last_separator);
-    return fileName;
-
   }
 
   @Override

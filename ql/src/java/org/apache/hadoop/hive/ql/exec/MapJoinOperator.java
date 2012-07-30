@@ -159,16 +159,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
     String baseDir = null;
 
-    String currentInputFile = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME);
+    String currentInputFile = getExecContext().getCurrentInputFile();
     LOG.info("******* Load from HashTable File: input : " + currentInputFile);
 
-    String currentFileName;
-
-    if (this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
-      currentFileName = this.getFileName(currentInputFile);
-    } else {
-      currentFileName = "-";
-    }
+    String fileName = getExecContext().getLocalWork().getBucketFileName(currentInputFile);
 
     try {
       if (localMode) {
@@ -193,7 +187,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           .entrySet()) {
         Byte pos = entry.getKey();
         HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashtable = entry.getValue();
-        String filePath = Utilities.generatePath(baseDir, conf.getDumpFilePrefix(), pos, currentFileName);
+        String filePath = Utilities.generatePath(baseDir, conf.getDumpFilePrefix(), pos, fileName);
         Path path = new Path(filePath);
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path.toString());
         hashtable.initilizePersistentHash(path.toUri().getPath());
@@ -286,17 +280,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       e.printStackTrace();
       throw new HiveException(e);
     }
-  }
-
-  private String getFileName(String path) {
-    if (path == null || path.length() == 0) {
-      return null;
-    }
-
-    int last_separator = path.lastIndexOf(Path.SEPARATOR) + 1;
-    String fileName = path.substring(last_separator);
-    return fileName;
-
   }
 
   @Override

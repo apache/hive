@@ -47,14 +47,15 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   private transient String bigTableAlias;
 
-  private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
-  private LinkedHashMap<String, Integer> bucketFileNameMapping;
+  private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
+  private Map<String, Integer> bigTableBucketNumMapping;
+  private Map<String, List<String>> bigTablePartSpecToFileMapping;
 
   //map join dump file name
   private String dumpFilePrefix;
 
   public MapJoinDesc() {
-    bucketFileNameMapping = new LinkedHashMap<String, Integer>();
+    bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
 
   public MapJoinDesc(MapJoinDesc clone) {
@@ -66,7 +67,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.retainList = clone.retainList;
     this.bigTableAlias = clone.bigTableAlias;
     this.aliasBucketFileNameMapping = clone.aliasBucketFileNameMapping;
-    this.bucketFileNameMapping = clone.bucketFileNameMapping;
+    this.bigTableBucketNumMapping = clone.bigTableBucketNumMapping;
+    this.bigTablePartSpecToFileMapping = clone.bigTablePartSpecToFileMapping;
     this.dumpFilePrefix = clone.dumpFilePrefix;
   }
 
@@ -81,7 +83,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.valueTblDescs = valueTblDescs;
     this.valueFilteredTblDescs = valueFilteredTblDescs;
     this.posBigTable = posBigTable;
-    this.bucketFileNameMapping = new LinkedHashMap<String, Integer>();
+    this.bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
     this.dumpFilePrefix = dumpFilePrefix;
     initRetainExprList();
   }
@@ -207,20 +209,28 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTableAlias = bigTableAlias;
   }
 
-  public LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> getAliasBucketFileNameMapping() {
+  public Map<String, Map<String, List<String>>> getAliasBucketFileNameMapping() {
     return aliasBucketFileNameMapping;
   }
 
   public void setAliasBucketFileNameMapping(
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
+      Map<String, Map<String, List<String>>> aliasBucketFileNameMapping) {
     this.aliasBucketFileNameMapping = aliasBucketFileNameMapping;
   }
 
-  public LinkedHashMap<String, Integer> getBucketFileNameMapping() {
-    return bucketFileNameMapping;
+  public Map<String, Integer> getBigTableBucketNumMapping() {
+    return bigTableBucketNumMapping;
   }
 
-  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping) {
-    this.bucketFileNameMapping = bucketFileNameMapping;
+  public void setBigTableBucketNumMapping(Map<String, Integer> bigTableBucketNumMapping) {
+    this.bigTableBucketNumMapping = bigTableBucketNumMapping;
+  }
+
+  public Map<String, List<String>> getBigTablePartSpecToFileMapping() {
+    return bigTablePartSpecToFileMapping;
+  }
+
+  public void setBigTablePartSpecToFileMapping(Map<String, List<String>> partToFileMapping) {
+    this.bigTablePartSpecToFileMapping = partToFileMapping;
   }
 }

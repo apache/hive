@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -194,6 +195,7 @@ public class BucketMapJoinOptimizer implements Transform {
       LinkedHashMap<Partition, List<String>> bigTblPartsToBucketFileNames = new LinkedHashMap<Partition, List<String>>();
       LinkedHashMap<Partition, Integer> bigTblPartsToBucketNumber = new LinkedHashMap<Partition, Integer>();
 
+      boolean bigTablePartitioned = true;
       for (int index = 0; index < joinAliases.size(); index++) {
         String alias = joinAliases.get(index);
         TableScanOperator tso = (TableScanOperator) topOps.get(alias);
@@ -218,7 +220,12 @@ public class BucketMapJoinOptimizer implements Transform {
           }
           List<Partition> partitions = prunedParts.getNotDeniedPartns();
           // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
-          if (partitions.size() >= 1) {
+          if (partitions.isEmpty()) {
+            if (!alias.equals(baseBigAlias)) {
+              aliasToPartitionBucketNumberMapping.put(alias, Arrays.<Integer>asList());
+              aliasToPartitionBucketFileNamesMapping.put(alias, new ArrayList<List<String>>());
+            }
+          } else {
             List<Integer> buckets = new ArrayList<Integer>();
             List<List<String>> files = new ArrayList<List<String>>();
             for (Partition p : partitions) {
@@ -238,11 +245,6 @@ public class BucketMapJoinOptimizer implements Transform {
               aliasToPartitionBucketNumberMapping.put(alias, buckets);
               aliasToPartitionBucketFileNamesMapping.put(alias, files);
             }
-          } else {
-            if (!alias.equals(baseBigAlias)) {
-              aliasToPartitionBucketNumberMapping.put(alias, Arrays.<Integer>asList());
-              aliasToPartitionBucketFileNamesMapping.put(alias, new ArrayList<List<String>>());
-            }
           }
         } else {
           if (!checkBucketColumns(tbl.getBucketCols(), mjDecs, index)) {
@@ -253,6 +255,7 @@ public class BucketMapJoinOptimizer implements Transform {
           if (alias.equals(baseBigAlias)) {
             bigTblPartsToBucketFileNames.put(null, fileNames);
             bigTblPartsToBucketNumber.put(null, tbl.getNumBuckets());
+            bigTablePartitioned = false;
           } else {
             aliasToPartitionBucketNumberMapping.put(alias, Arrays.asList(num));
             aliasToPartitionBucketFileNamesMapping.put(alias, Arrays.asList(fileNames));
@@ -271,8 +274,8 @@ public class BucketMapJoinOptimizer implements Transform {
 
       MapJoinDesc desc = mapJoinOp.getConf();
 
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping =
-        new LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>>();
+      Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
+        new LinkedHashMap<String, Map<String, List<String>>>();
 
       //sort bucket names for the big table
       for(List<String> partBucketNames : bigTblPartsToBucketFileNames.values()) {
@@ -292,7 +295,7 @@ public class BucketMapJoinOptimizer implements Transform {
         List<Integer> smallTblBucketNums = aliasToPartitionBucketNumberMapping.get(alias);
         List<List<String>> smallTblFilesList = aliasToPartitionBucketFileNamesMapping.get(alias);
 
-        LinkedHashMap<String, ArrayList<String>> mapping = new LinkedHashMap<String, ArrayList<String>>();
+        Map<String, List<String>> mapping = new LinkedHashMap<String, List<String>>();
         aliasBucketFileNameMapping.put(alias, mapping);
 
         // for each bucket file in big table, get the corresponding bucket file
@@ -307,21 +310,33 @@ public class BucketMapJoinOptimizer implements Transform {
           int bigTblBucketNum = bigTblPartToBucketNum.next().getValue();
           List<String> bigTblBucketNameList = bigTblPartToBucketNames.next().getValue();
           fillMapping(smallTblBucketNums, smallTblFilesList,
-              mapping, bigTblBucketNum, bigTblBucketNameList, desc.getBucketFileNameMapping());
+              mapping, bigTblBucketNum, bigTblBucketNameList, desc.getBigTableBucketNumMapping());
         }
       }
       desc.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
       desc.setBigTableAlias(baseBigAlias);
+      if (bigTablePartitioned) {
+        desc.setBigTablePartSpecToFileMapping(convert(bigTblPartsToBucketFileNames));
+      }
       return null;
+    }
+
+    // convert partition to partition spec string
+    private Map<String, List<String>> convert(Map<Partition, List<String>> mapping) {
+      Map<String, List<String>> converted = new HashMap<String, List<String>>();
+      for (Map.Entry<Partition, List<String>> entry : mapping.entrySet()) {
+        converted.put(entry.getKey().getName(), entry.getValue());
+      }
+      return converted;
     }
 
     // called for each partition of big table and populates mapping for each file in the partition
     private void fillMapping(
         List<Integer> smallTblBucketNums,
         List<List<String>> smallTblFilesList,
-        LinkedHashMap<String, ArrayList<String>> mapping,
+        Map<String, List<String>> mapping,
         int bigTblBucketNum, List<String> bigTblBucketNameList,
-        LinkedHashMap<String, Integer> bucketFileNameMapping) {
+        Map<String, Integer> bucketFileNameMapping) {
 
       for (int bindex = 0; bindex < bigTblBucketNameList.size(); bindex++) {
         ArrayList<String> resultFileNames = new ArrayList<String>();
