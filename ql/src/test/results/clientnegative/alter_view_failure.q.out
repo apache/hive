@@ -9,9 +9,4 @@ POSTHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx3
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE xxx3 REPLACE COLUMNS (xyz int)
-PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@xxx3
-PREHOOK: Output: default@xxx3
-FAILED: Error in metadata: Cannot alter a view with ALTER TABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.
