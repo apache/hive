@@ -975,10 +975,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
 
-    validateAlterTableType(
-      tbl, AlterTableDesc.AlterTableTypes.ADDPARTITION,
-      addPartitionDesc.getExpectView());
-
     // If the add partition was created with IF NOT EXISTS, then we should
     // not throw an error if the specified part does exist.
     Partition checkPart = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
@@ -1038,9 +1034,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(renamePartitionDesc.getDbName(), renamePartitionDesc.getTableName());
 
-    validateAlterTableType(
-      tbl, AlterTableDesc.AlterTableTypes.RENAMEPARTITION,
-      false);
     Partition oldPart = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
     Partition part = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
     part.setValues(renamePartitionDesc.getNewPartSpec());
@@ -1068,8 +1061,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tblName = touchDesc.getTableName();
 
     Table tbl = db.getTable(dbName, tblName);
-
-    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.TOUCH);
 
     if (touchDesc.getPartSpec() == null) {
       try {
@@ -1228,7 +1219,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tblName = simpleDesc.getTableName();
 
     Table tbl = db.getTable(dbName, tblName);
-    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.ARCHIVE);
 
     if (tbl.getTableType() != TableType.MANAGED_TABLE) {
       throw new HiveException("ARCHIVE can only be performed on managed tables");
@@ -1445,7 +1435,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tblName = simpleDesc.getTableName();
 
     Table tbl = db.getTable(dbName, tblName);
-    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.UNARCHIVE);
 
     // Means user specified a table, not a partition
     if (simpleDesc.getPartSpec() == null) {
@@ -1667,43 +1656,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           + " is archived at level " + archiveLevel
           + ", and given partspec only has " + partSpecLevel
           + " specs.");
-    }
-  }
-
-  private void validateAlterTableType(
-    Table tbl, AlterTableDesc.AlterTableTypes alterType) throws HiveException {
-
-    validateAlterTableType(tbl, alterType, false);
-  }
-
-  private void validateAlterTableType(
-    Table tbl, AlterTableDesc.AlterTableTypes alterType,
-    boolean expectView) throws HiveException {
-
-    if (tbl.isView()) {
-      if (!expectView) {
-        throw new HiveException("Cannot alter a view with ALTER TABLE");
-      }
-      switch (alterType) {
-      case ADDPARTITION:
-      case DROPPARTITION:
-      case RENAMEPARTITION:
-      case ADDPROPS:
-      case RENAME:
-        // allow this form
-        break;
-      default:
-        throw new HiveException(
-          "Cannot use this form of ALTER on a view");
-      }
-    } else {
-      if (expectView) {
-        throw new HiveException("Cannot alter a base table with ALTER VIEW");
-      }
-    }
-
-    if (tbl.isNonNative()) {
-      throw new HiveException("Cannot use ALTER TABLE on a non-native table");
     }
   }
 
@@ -2734,8 +2686,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    validateAlterTableType(tbl, alterTbl.getOp(), alterTbl.getExpectView());
-
     Table oldTbl = tbl.copy();
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
@@ -3117,12 +3067,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else {
       // This is actually an ALTER TABLE DROP PARTITION
-      if (tbl != null) {
-        validateAlterTableType(
-          tbl, AlterTableDesc.AlterTableTypes.DROPPARTITION,
-          dropTbl.getExpectView());
-      }
-
       List<Partition> partsToDelete = new ArrayList<Partition>();
       for (PartitionSpec partSpec : dropTbl.getPartSpecs()) {
         List<Partition> partitions = null;

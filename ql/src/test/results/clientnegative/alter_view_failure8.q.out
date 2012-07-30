@@ -5,9 +5,4 @@ POSTHOOK: query: -- should fail:  can't use ALTER VIEW on a table
 CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@invites
-PREHOOK: query: ALTER VIEW invites RENAME TO invites2
-PREHOOK: type: null
-PREHOOK: Input: default@invites
-PREHOOK: Output: default@invites
-FAILED: Error in metadata: Cannot alter a base table with ALTER VIEW
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 10132]: To alter a base table you need to use the ALTER TABLE command.

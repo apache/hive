@@ -219,7 +219,10 @@ public enum ErrorMsg {
   NUM_BUCKETS_CHANGE_NOT_ALLOWED(10130, "Changing the number of buckets for a " +
     "partitioned table is not allowed. It may lead to wrong results for " +
     "older partitions"),
-
+  ALTER_COMMAND_FOR_VIEWS(10131, "To alter a view you need to use the ALTER VIEW command."),
+  ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
+  ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
+  ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE cannot be used for a non-native table"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
