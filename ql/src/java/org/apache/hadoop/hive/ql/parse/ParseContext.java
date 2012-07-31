@@ -95,7 +95,7 @@ public class ParseContext {
   // a map-reduce job
   private boolean hasNonPartCols;
 
-  private SemanticAnalyzer.GlobalLimitCtx globalLimitCtx;
+  private GlobalLimitCtx globalLimitCtx;
 
   private HashSet<ReadEntity> semanticInputs;
   private List<Task<? extends Serializable>> rootTasks;
@@ -159,7 +159,7 @@ public class ParseContext {
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
-      SemanticAnalyzer.GlobalLimitCtx globalLimitCtx,
+      GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks) {
     this.conf = conf;
@@ -516,11 +516,11 @@ public class ParseContext {
     this.mapJoinContext = mapJoinContext;
   }
 
-  public SemanticAnalyzer.GlobalLimitCtx getGlobalLimitCtx() {
+  public GlobalLimitCtx getGlobalLimitCtx() {
     return globalLimitCtx;
   }
 
-  public void setGlobalLimitCtx(SemanticAnalyzer.GlobalLimitCtx globalLimitCtx) {
+  public void setGlobalLimitCtx(GlobalLimitCtx globalLimitCtx) {
     this.globalLimitCtx = globalLimitCtx;
   }
 
