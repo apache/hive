@@ -195,6 +195,18 @@
         <exclude name="meta-inf/manifest.mf"/>
       </patternset>
     </unzip>
+    <unzip src="${build.ivy.lib.dir}/default/avro-${avro.version}.jar" dest="${build.dir.hive}/avro/classes">
+      <patternset>
+        <exclude name="META-INF"/>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
+    <unzip src="${build.ivy.lib.dir}/default/avro-mapred-${avro.version}.jar" dest="${build.dir.hive}/avro-mapred/classes">
+      <patternset>
+        <exclude name="META-INF"/>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
@@ -203,6 +215,8 @@
       <fileset dir="${build.dir.hive}/thrift/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>
       <fileset dir="${build.dir.hive}/json/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/avro/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/avro-mapred/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/shims/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/javaewah/classes" includes="**/*.class"/>
       <manifest>
