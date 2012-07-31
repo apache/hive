@@ -76,6 +76,7 @@ if
 in
 in_file
 index
+inline
 instr
 isnotnull
 isnull
@@ -202,6 +203,7 @@ e
 explode
 from_unixtime
 in_file
+inline
 json_tuple
 lcase
 like

@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFJSONTuple;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFParseUrlTuple;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFStack;
@@ -467,6 +468,7 @@ public final class FunctionRegistry {
 
     // Generic UDTF's
     registerGenericUDTF("explode", GenericUDTFExplode.class);
+    registerGenericUDTF("inline", GenericUDTFInline.class);
     registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
     registerGenericUDTF("stack", GenericUDTFStack.class);
