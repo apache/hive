@@ -216,49 +216,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   //Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
-  public static class GlobalLimitCtx {
-    private boolean enable = false;
-    private int globalLimit = -1;
-    private boolean hasTransformOrUDTF = false;
-    private LimitDesc lastReduceLimitDesc = null;
-
-    public int getGlobalLimit() {
-      return globalLimit;
-    }
-
-    public boolean ifHasTransformOrUDTF() {
-      return hasTransformOrUDTF;
-    }
-
-    public void setHasTransformOrUDTF(boolean hasTransformOrUDTF) {
-      this.hasTransformOrUDTF = hasTransformOrUDTF;
-    }
-
-    public LimitDesc getLastReduceLimitDesc() {
-      return lastReduceLimitDesc;
-    }
-
-    public void setLastReduceLimitDesc(LimitDesc lastReduceLimitDesc) {
-      this.lastReduceLimitDesc = lastReduceLimitDesc;
-    }
-
-
-    public boolean isEnable() {
-      return enable;
-    }
-
-    public void enableOpt(int globalLimit) {
-      this.enable = true;
-      this.globalLimit = globalLimit;
-    }
-
-    public void disableOpt() {
-      this.enable = false;
-      this.globalLimit = -1;
-      this.lastReduceLimitDesc = null;
-    }
-  }
-
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -6940,53 +6897,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-
-  /**
-   * Recursively check the limit number in all sub queries
-   * @param qbParseInfo
-   * @return if there is one and only one limit for all subqueries, return the limit
-   * if there is no limit, return 0
-   * otherwise, return null
-   */
-  private Integer checkQbpForGlobalLimit(QB localQb) {
-    QBParseInfo qbParseInfo = localQb.getParseInfo();
-    if (localQb.getNumSelDi() == 0 && qbParseInfo.getDestToClusterBy().isEmpty()
-        && qbParseInfo.getDestToDistributeBy().isEmpty()
-        && qbParseInfo.getDestToOrderBy().isEmpty()
-        && qbParseInfo.getDestToSortBy().isEmpty()
-        && qbParseInfo.getDestToAggregationExprs().size() <= 1
-        && qbParseInfo.getDestToDistinctFuncExprs().size() <= 1
-        && qbParseInfo.getNameToSample().isEmpty()) {
-      if ((qbParseInfo.getDestToAggregationExprs().size() < 1 ||
-          qbParseInfo.getDestToAggregationExprs().values().iterator().next().isEmpty()) &&
-          (qbParseInfo.getDestToDistinctFuncExprs().size() < 1 ||
-          qbParseInfo.getDestToDistinctFuncExprs().values().iterator().next().isEmpty())
-          && qbParseInfo.getDestToLimit().size() <= 1) {
-        Integer retValue;
-        if (qbParseInfo.getDestToLimit().size() == 0) {
-          retValue = 0;
-        } else {
-          retValue = qbParseInfo.getDestToLimit().values().iterator().next().intValue();
-        }
-
-        for (String alias : localQb.getSubqAliases()) {
-          Integer limit = checkQbpForGlobalLimit(localQb.getSubqForAlias(alias).getQB());
-          if  (limit == null) {
-            return null;
-          } else if (retValue > 0  && limit > 0) {
-            // Any query has more than one LIMITs shown in the query is not
-            // qualified to this optimization
-            return null;
-          } else if (limit > 0) {
-            retValue = limit;
-          }
-        }
-        return retValue;
-      }
-    }
-    return null;
-  }
-
   @SuppressWarnings("nls")
   private void genMapRedTasks(QB qb) throws SemanticException {
     FetchWork fetch = null;
@@ -7074,73 +6984,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // remove root tasks if any
         rootTasks.clear();
         return;
-      }
-    }
-
-    // determine the query qualifies reduce input size for LIMIT
-    // The query only qualifies when there are only one top operator
-    // and there is no transformer or UDTF and no block sampling
-    // is used.
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVELIMITOPTENABLE)
-        && ctx.getTryCount() == 0 && topOps.size() == 1
-        && !globalLimitCtx.ifHasTransformOrUDTF() &&
-        nameToSplitSample.isEmpty()) {
-
-      // Here we recursively check:
-      // 1. whether there are exact one LIMIT in the query
-      // 2. whether there is no aggregation, group-by, distinct, sort by,
-      //    distributed by, or table sampling in any of the sub-query.
-      // The query only qualifies if both conditions are satisfied.
-      //
-      // Example qualified queries:
-      //    CREATE TABLE ... AS SELECT col1, col2 FROM tbl LIMIT ..
-      //    INSERT OVERWRITE TABLE ... SELECT col1, hash(col2), split(col1)
-      //                               FROM ... LIMIT...
-      //    SELECT * FROM (SELECT col1 as col2 (SELECT * FROM ...) t1 LIMIT ...) t2);
-      //
-      Integer tempGlobalLimit = checkQbpForGlobalLimit(qb);
-
-      // query qualify for the optimization
-      if (tempGlobalLimit != null && tempGlobalLimit != 0)  {
-        TableScanOperator ts = (TableScanOperator) topOps.values().toArray()[0];
-        Table tab = topToTable.get(ts);
-
-        if (!tab.isPartitioned()) {
-          if (qbParseInfo.getDestToWhereExpr().isEmpty()) {
-            globalLimitCtx.enableOpt(tempGlobalLimit);
-          }
-        } else {
-          // check if the pruner only contains partition columns
-          if (PartitionPruner.onlyContainsPartnCols(tab,
-              opToPartPruner.get(ts))) {
-
-            PrunedPartitionList partsList = null;
-            try {
-              partsList = opToPartList.get(ts);
-              if (partsList == null) {
-                partsList = PartitionPruner.prune(tab,
-                    opToPartPruner.get(ts), conf, (String) topOps.keySet()
-                    .toArray()[0], prunedPartitions);
-                opToPartList.put(ts, partsList);
-              }
-            } catch (HiveException e) {
-              // Has to use full name to make sure it does not conflict with
-              // org.apache.commons.lang.StringUtils
-              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-              throw new SemanticException(e.getMessage(), e);
-            }
-
-            // If there is any unknown partition, create a map-reduce job for
-            // the filter to prune correctly
-            if ((partsList.getUnknownPartns().size() == 0)) {
-              globalLimitCtx.enableOpt(tempGlobalLimit);
-            }
-          }
-        }
-        if (globalLimitCtx.isEnable()) {
-          LOG.info("Qualify the optimize that reduces input size for 'limit' for limit "
-              + globalLimitCtx.getGlobalLimit());
-        }
       }
     }
 
