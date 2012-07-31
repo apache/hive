@@ -427,7 +427,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         if (StatsFactory.setImplementation(statsImplementationClass, job)) {
           statsPublisher = StatsFactory.getStatsPublisher();
           if (!statsPublisher.init(job)) { // creating stats table if not exists
-            if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
+            if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
               throw
                 new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());
             }
