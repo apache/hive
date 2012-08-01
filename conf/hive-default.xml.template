@@ -758,6 +758,14 @@
 </property>
 
 <property>
+  <name>hive.enforce.sortmergebucketmapjoin</name>
+  <value>false</value>
+  <description>If the user asked for sort-merge bucketed map-side join, and it cannot be performed,
+    should the query fail or not ?
+  </description>
+</property>
+
+<property>
   <name>hive.metastore.ds.connection.url.hook</name>
   <value></value>
   <description>Name of the hook to use for retriving the JDO connection URL. If empty, the value in javax.jdo.option.ConnectionURL is used </description>
