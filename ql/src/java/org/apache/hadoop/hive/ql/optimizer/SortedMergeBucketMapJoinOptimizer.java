@@ -28,7 +28,9 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -104,7 +106,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
   }
 
   class SortedMergeBucketMapjoinProc implements NodeProcessor {
-    ParseContext pGraphContext;
+    private ParseContext pGraphContext;
 
     public SortedMergeBucketMapjoinProc(ParseContext pctx) {
       this.pGraphContext = pctx;
@@ -113,23 +115,24 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
     public SortedMergeBucketMapjoinProc() {
     }
 
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    // Return true or false based on whether the mapjoin was converted successfully to
+    // a sort-merge map join operator.
+    private boolean convertSMBJoin(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       if (nd instanceof SMBMapJoinOperator) {
-        return null;
+        return false;
       }
       MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
       if (mapJoinOp.getConf().getAliasBucketFileNameMapping() == null
           || mapJoinOp.getConf().getAliasBucketFileNameMapping().size() == 0) {
-        return null;
+        return false;
       }
 
       boolean tableSorted = true;
       QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext()
           .get(mapJoinOp);
       if (joinCxt == null) {
-        return null;
+        return false;
       }
       String[] srcs = joinCxt.getBaseSrc();
       int pos = 0;
@@ -142,11 +145,26 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         //this is a mapjoin but not suit for a sort merge bucket map join. check outer joins
         MapJoinProcessor.checkMapJoin(((MapJoinOperator) nd).getConf().getPosBigTable(),
             ((MapJoinOperator) nd).getConf().getConds());
-        return null;
+        return false;
       }
       // convert a bucket map join operator to a sorted merge bucket map join
       // operator
       convertToSMBJoin(mapJoinOp, srcs);
+      return true;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      boolean convert = convertSMBJoin(nd, stack, procCtx, nodeOutputs);
+      // Throw an error if the user asked for sort merge bucketed mapjoin to be enforced
+      // and sort merge bucketed mapjoin cannot be performed
+      if (!convert &&
+        pGraphContext.getConf().getBoolVar(
+          HiveConf.ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN)) {
+        throw new SemanticException(ErrorMsg.SORTMERGE_MAPJOIN_FAILED.getMsg());
+      }
+
       return null;
     }
 

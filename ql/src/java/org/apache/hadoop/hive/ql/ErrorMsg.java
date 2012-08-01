@@ -223,6 +223,11 @@ public enum ErrorMsg {
   ALTER_COMMAND_FOR_TABLES(10132, "To alter a base table you need to use the ALTER TABLE command."),
   ALTER_VIEW_DISALLOWED_OP(10133, "Cannot use this form of ALTER on a view"),
   ALTER_TABLE_NON_NATIVE(10134, "ALTER TABLE cannot be used for a non-native table"),
+  SORTMERGE_MAPJOIN_FAILED(10135,
+      "Sort merge bucketed join could not be performed. " +
+      "If you really want to perform the operation, either set " +
+      "hive.optimize.bucketmapjoin.sortedmerge=false, or set " +
+      "hive.enforce.sortmergebucketmapjoin=false."),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
