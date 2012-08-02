@@ -1,8 +1,3 @@
-PREHOOK: query: show tblproperties tmpfoo
-PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: show tblproperties tmpfoo
-POSTHOOK: type: SHOW_TBLPROPERTIES
-Table tmpfoo does not exist	 
 PREHOOK: query: create table tmpfoo (a String)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tmpfoo (a String)
