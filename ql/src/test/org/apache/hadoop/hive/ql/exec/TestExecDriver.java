@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -97,8 +96,7 @@ public class TestExecDriver extends TestCase {
       int i = 0;
       Path[] hadoopDataFile = new Path[2];
       String[] testFiles = {"kv1.txt", "kv2.txt"};
-      String testFileDir = "file://"
-          + conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+      String testFileDir = new Path(conf.get("test.data.files")).toUri().getPath();
       for (String oneFile : testFiles) {
         Path localDataFile = new Path(testFileDir, oneFile);
         hadoopDataFile[i] = new Path(tmppath, oneFile);
@@ -202,7 +200,7 @@ public class TestExecDriver extends TestCase {
     Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapplan2.out", Utilities.defaultTd, false));
 
-    Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("/bin/cat",
+    Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
         + Utilities.tabCode, "key,value"), TextRecordReader.class,
@@ -330,7 +328,7 @@ public class TestExecDriver extends TestCase {
         Utilities.makeList(getStringColumn("tkey"),
         getStringColumn("tvalue")), outputColumns, false, -1, 1, -1));
 
-    Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc("/bin/cat",
+    Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc("cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
         + Utilities.tabCode, "tkey,tvalue"), TextRecordReader.class,
@@ -406,7 +404,7 @@ public class TestExecDriver extends TestCase {
         getStringColumn("tvalue")), outputColumns, false, -1, 1, -1));
 
     Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc(
-        "\'/bin/cat\'", PlanUtils.getDefaultTableDesc("" + Utilities.tabCode,
+        "\'cat\'", PlanUtils.getDefaultTableDesc("" + Utilities.tabCode,
         "tkey,tvalue"), TextRecordWriter.class, PlanUtils
         .getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
         TextRecordReader.class,
