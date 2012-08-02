@@ -229,6 +229,14 @@ public enum ErrorMsg {
       "hive.optimize.bucketmapjoin.sortedmerge=false, or set " +
       "hive.enforce.sortmergebucketmapjoin=false."),
 
+  BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
+    "Bucketed mapjoin cannot be performed. " +
+    "This can be due to multiple reasons: " +
+    " . Join columns dont match bucketed columns. " +
+    " . Number of buckets are not a multiple of each other. " +
+    "If you really want to perform the operation, either remove the " +
+    "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
