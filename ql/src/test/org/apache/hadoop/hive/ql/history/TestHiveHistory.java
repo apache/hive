@@ -86,8 +86,7 @@ public class TestHiveHistory extends TestCase {
       int i = 0;
       Path[] hadoopDataFile = new Path[2];
       String[] testFiles = {"kv1.txt", "kv2.txt"};
-      String testFileDir = "file://"
-          + conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+      String testFileDir = new Path(conf.get("test.data.files")).toUri().getPath();
       for (String oneFile : testFiles) {
         Path localDataFile = new Path(testFileDir, oneFile);
         hadoopDataFile[i] = new Path(tmppath, oneFile);
