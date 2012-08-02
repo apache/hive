@@ -145,6 +145,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.Shell;
 
 /**
  * Utilities.
@@ -589,6 +590,7 @@ public final class Utilities {
     defaultTd = PlanUtils.getDefaultTableDesc("" + Utilities.ctrlaCode);
   }
 
+  public static final int carriageReturnCode = 13;
   public static final int newLineCode = 10;
   public static final int tabCode = 9;
   public static final int ctrlaCode = 1;
@@ -814,12 +816,29 @@ public final class Utilities {
 
   public static StreamStatus readColumn(DataInput in, OutputStream out) throws IOException {
 
+    boolean foundCrChar = false;
     while (true) {
       int b;
       try {
         b = in.readByte();
       } catch (EOFException e) {
         return StreamStatus.EOF;
+      }
+
+      // Default new line characters on windows are "CRLF" so detect if there are any windows
+      // native newline characters and handle them.
+      if (Shell.WINDOWS) {
+        // if the CR is not followed by the LF on windows then add it back to the stream and
+        // proceed with next characters in the input stream.
+        if (foundCrChar && b != Utilities.newLineCode) {
+          out.write(Utilities.carriageReturnCode);
+          foundCrChar = false;
+        }
+
+        if (b == Utilities.carriageReturnCode) {
+          foundCrChar = true;
+          continue;
+        }
       }
 
       if (b == Utilities.newLineCode) {
