@@ -60,14 +60,6 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS INPUTDDL6
 POSTHOOK: type: SHOWPARTITIONS
 ds=2008-04-09
-PREHOOK: query: DROP TABLE INPUTDDL6
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@inputddl6
-PREHOOK: Output: default@inputddl6
-POSTHOOK: query: DROP TABLE INPUTDDL6
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@inputddl6
-POSTHOOK: Output: default@inputddl6
 PREHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
@@ -94,3 +86,11 @@ STAGE PLANS:
       limit: -1
 
 
+PREHOOK: query: DROP TABLE INPUTDDL6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inputddl6
+PREHOOK: Output: default@inputddl6
+POSTHOOK: query: DROP TABLE INPUTDDL6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inputddl6
+POSTHOOK: Output: default@inputddl6

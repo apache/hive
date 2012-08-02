@@ -1395,6 +1395,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return (FetchTask) TaskFactory.get(fetch, conf);
   }
 
+  private void validateDatabase(String databaseName) throws SemanticException {
+    try {
+      if (!db.databaseExists(databaseName)) {
+        throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName));
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
+    }
+  }
+
+  private void validateTable(String tableName, Map<String, String> partSpec)
+      throws SemanticException {
+    Table tab = null;
+    try {
+      tab = db.getTable(tableName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
+    }
+
+    if (partSpec != null) {
+      Partition part = null;
+      try {
+        part = db.getPartition(tab, partSpec, false);
+      } catch (HiveException e) {
+        throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
+      }
+
+      if (part == null) {
+        throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
+      }
+    }
+  }
+
   private void analyzeDescribeTable(ASTNode ast) throws SemanticException {
     ASTNode tableTypeExpr = (ASTNode) ast.getChild(0);
     String tableName = getFullyQualifiedName((ASTNode) tableTypeExpr
@@ -1406,6 +1439,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
       partSpec = getPartSpec(partspec);
     }
+
+    // Handle xpath correctly
+    String actualTableName = tableName.substring(0,
+        tableName.indexOf('.') == -1 ? tableName.length() : tableName.indexOf('.'));
+    validateTable(actualTableName, partSpec);
 
     DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec);
     if (ast.getChildCount() == 2) {
@@ -1466,6 +1504,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(partSpecs.size() > 0) {
       partSpec = partSpecs.get(0);
     }
+
+    validateTable(tableName, null);
+
     showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
@@ -1501,12 +1542,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case 2: // Specifies a DB
       assert(ast.getChild(0).getType() == HiveParser.TOK_FROM);
       dbName = unescapeIdentifier(ast.getChild(1).getText());
+      validateDatabase(dbName);
       showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
       break;
     case 3: // Uses a pattern and specifies a DB
       assert(ast.getChild(0).getType() == HiveParser.TOK_FROM);
       dbName = unescapeIdentifier(ast.getChild(1).getText());
       tableNames = unescapeSQLString(ast.getChild(2).getText());
+      validateDatabase(dbName);
       showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
       break;
     default: // No pattern or DB
@@ -1575,6 +1618,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+
+    if (partSpec != null) {
+      validateTable(tableNames, partSpec);
+    }
+
     showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName,
         tableNames, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -1590,6 +1638,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ast.getChildCount() > 1) {
       propertyName = unescapeSQLString(ast.getChild(1).getText());
     }
+
+    validateTable(tableNames, null);
+
     showTblPropertiesDesc = new ShowTblPropertiesDesc(ctx.getResFile().toString(), tableNames,
         propertyName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

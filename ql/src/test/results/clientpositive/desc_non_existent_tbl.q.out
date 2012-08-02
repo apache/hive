@@ -1,5 +1,0 @@
-PREHOOK: query: desc nonexistenttbl
-PREHOOK: type: DESCTABLE
-POSTHOOK: query: desc nonexistenttbl
-POSTHOOK: type: DESCTABLE
-Table nonexistenttbl does not exist	 	 

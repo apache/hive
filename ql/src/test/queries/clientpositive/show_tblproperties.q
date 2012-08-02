@@ -1,4 +1,3 @@
-show tblproperties tmpfoo;
 
 create table tmpfoo (a String);
 show tblproperties tmpfoo("bar");

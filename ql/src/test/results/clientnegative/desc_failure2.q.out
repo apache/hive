@@ -1,0 +1,9 @@
+PREHOOK: query: DESC srcpart
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC srcpart
+POSTHOOK: type: DESCTABLE
+key	string	default
+value	string	default
+ds	string	
+hr	string	
+FAILED: SemanticException [Error 10006]: Partition not found {ds=2012-04-08, hr=15}
