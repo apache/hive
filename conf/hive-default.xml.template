@@ -477,7 +477,24 @@
 <property>
   <name>hive.mapred.mode</name>
   <value>nonstrict</value>
-  <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>
+  <description>The mode in which the hive operations are being performed. 
+     In strict mode, some risky queries are not allowed to run. They include:
+       Cartesian Product.
+       No partition being picked up for a query.
+       Comparing bigints and strings.
+       Comparing bigints and doubles.
+       Orderby without limit.
+  </description>
+</property>
+
+<property>
+  <name>hive.enforce.bucketmapjoin</name>
+  <value>false</value>
+  <description>If the user asked for bucketed map-side join, and it cannot be performed,
+    should the query fail or not ? For eg, if the buckets in the tables being joined are 
+    not a multiple of each other, bucketed map-side join cannot be performed, and the 
+    query will fail if hive.enforce.bucketmapjoin is set to true.
+  </description>
 </property>
 
 <property>
