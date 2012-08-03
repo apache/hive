@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
@@ -316,6 +317,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
     if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
+    }
+
+    if (getWork().isSmbJoin()) {
+      inpFormat = BucketizedHiveInputFormat.class.getName();
     }
 
     LOG.info("Using " + inpFormat);
