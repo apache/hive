@@ -282,6 +282,7 @@ public final class GenMapRedUtils {
         bucketMJCxt.setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
         bucketMJCxt.setBigTablePartSpecToFileMapping(
             currMapJoinOp.getConf().getBigTablePartSpecToFileMapping());
+        plan.setSmbJoin(currMapJoinOp instanceof SMBMapJoinOperator);
       }
     }
   }

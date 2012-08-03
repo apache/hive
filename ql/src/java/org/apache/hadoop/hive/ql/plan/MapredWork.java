@@ -90,6 +90,8 @@ public class MapredWork implements Serializable {
   // used to indicate the input is sorted, and so a BinarySearchRecordReader shoudl be used
   private boolean inputFormatSorted = false;
 
+  private transient boolean smbJoin;
+
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
   }
@@ -486,4 +488,11 @@ public class MapredWork implements Serializable {
     return returnList;
   }
 
+  public boolean isSmbJoin() {
+    return smbJoin;
+  }
+
+  public void setSmbJoin(boolean smbJoin) {
+    this.smbJoin = smbJoin;
+  }
 }
