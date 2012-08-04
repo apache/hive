@@ -59,11 +59,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -88,7 +90,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                     name: default.rcfile_merge3b
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -112,6 +114,15 @@ STAGE PLANS:
 
   Stage: Stage-3
     Block level merge
+
+  Stage: Stage-5
+    Block level merge
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge3b

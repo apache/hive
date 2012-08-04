@@ -243,17 +243,21 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
-  Stage-8 depends on stages: Stage-5 , consists of Stage-7, Stage-6
+  Stage-10 depends on stages: Stage-5 , consists of Stage-7, Stage-6, Stage-8
   Stage-7
-  Stage-4 depends on stages: Stage-7, Stage-6
-  Stage-1 depends on stages: Stage-4, Stage-9
+  Stage-4 depends on stages: Stage-7, Stage-6, Stage-9
+  Stage-1 depends on stages: Stage-4, Stage-11
   Stage-2 depends on stages: Stage-1
   Stage-6
-  Stage-10 is a root stage
-  Stage-13 depends on stages: Stage-10 , consists of Stage-12, Stage-11
-  Stage-12
-  Stage-9 depends on stages: Stage-12, Stage-11
-  Stage-11
+  Stage-8
+  Stage-9 depends on stages: Stage-8
+  Stage-12 is a root stage
+  Stage-17 depends on stages: Stage-12 , consists of Stage-14, Stage-13, Stage-15
+  Stage-14
+  Stage-11 depends on stages: Stage-14, Stage-13, Stage-16
+  Stage-13
+  Stage-15
+  Stage-16 depends on stages: Stage-15
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -284,7 +288,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-8
+  Stage: Stage-10
     Conditional Operator
 
   Stage: Stage-7
@@ -406,7 +410,24 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-10
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-9
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-12
     Map Reduce
       Alias -> Map Operator Tree:
         default__src_src_index__ 
@@ -433,22 +454,22 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-13
+  Stage: Stage-17
     Conditional Operator
 
-  Stage: Stage-12
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-9
+  Stage: Stage-14
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
 
   Stage: Stage-11
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-13
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -458,6 +479,23 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-15
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-16
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

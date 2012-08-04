@@ -39,16 +39,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -102,7 +106,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.nzhang_part2
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -140,10 +144,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part1
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part1
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -162,10 +185,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.nzhang_part2
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -177,6 +200,25 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part2
+
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part2
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from srcpart

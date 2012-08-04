@@ -26,13 +26,15 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-9
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-7 is a root stage
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-9 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -129,7 +131,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.tmptable
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -164,7 +166,26 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.tmptable
 
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.tmptable
+
   Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 

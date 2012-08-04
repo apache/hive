@@ -21,13 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -123,6 +120,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
     Task<? extends Serializable> mvTask = ctx.getListTasks().get(0);
     Task<? extends Serializable> mrTask = ctx.getListTasks().get(1);
+    Task<? extends Serializable> mrAndMvTask = ctx.getListTasks().get(2);
 
     try {
       Path dirPath = new Path(dirName);
@@ -179,11 +177,17 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           if (doMerge) {
             // add the merge MR job
             setupMapRedWork(conf, work, trgtSize, totalSz);
-            resTsks.add(mrTask);
 
             // add the move task for those partitions that do not need merging
-          	if (toMove.size() > 0) { //
+            if (toMove.size() > 0) {
           	  // modify the existing move task as it is already in the candidate running tasks
+
+          	  // running the MoveTask and MR task in parallel may
+              // cause the mvTask write to /ds=1 and MR task write
+              // to /ds=1_1 for the same partition.
+              // make the MoveTask as the child of the MR Task
+          	  resTsks.add(mrAndMvTask);
+
           	  MoveWork mvWork = (MoveWork) mvTask.getWork();
           	  LoadFileDesc lfd = mvWork.getLoadFileWork();
 
@@ -212,21 +216,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           	  mvWork.setLoadFileWork(null);
           	  mvWork.setLoadTableWork(null);
           	  mvWork.setMultiFilesDesc(lmfd);
-
-          	  // running the MoveTask and MR task in parallel may
-          	  // cause the mvTask write to /ds=1 and MR task write
-          	  // to /ds=1_1 for the same partition.
-          	  // make the MoveTask as the child of the MR Task
-          	  List<Task <? extends Serializable>> cTasks = mrTask.getDependentTasks();
-          	  if (cTasks != null) {
-          	    Iterator<Task <? extends Serializable>> itr = cTasks.iterator();
-          	    while (itr.hasNext()) {
-          	      Task<? extends Serializable> cld = itr.next();
-          	      itr.remove();
-          	      mvTask.addDependentTask(cld);
-          	    }
-          	  }
-          	  mrTask.addDependentTask(mvTask);
+          	} else {
+          	  resTsks.add(mrTask);
           	}
           } else { // add the move task
             resTsks.add(mvTask);
@@ -246,6 +237,10 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     } catch (IOException e) {
       e.printStackTrace();
     }
+
+    // Only one of the tasks should ever be added to resTsks
+    assert(resTsks.size() == 1);
+
     return resTsks;
   }
 

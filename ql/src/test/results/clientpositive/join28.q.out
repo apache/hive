@@ -23,16 +23,18 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value) value2)))) subq) (TOK_TABREF (TOK_TABNAME srcpart) z) (and (and (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST z))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-1 depends on stages: Stage-8
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-10 is a root stage
+  Stage-1 depends on stages: Stage-10
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
         subq:x 
@@ -132,7 +134,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -166,6 +168,25 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest_j1
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest_j1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 

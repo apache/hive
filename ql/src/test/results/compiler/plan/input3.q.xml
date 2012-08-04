@@ -6,7 +6,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-10</string> 
+       <string>Stage-12</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList0" class="java.util.ArrayList"> 
@@ -369,6 +369,58 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask2" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask1"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-11</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask2" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask2"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-10</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork0"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork0" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
@@ -402,26 +454,15 @@
            <string>Stage-9</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork0" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork0"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
          <object idref="MapRedTask1"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask2"/> 
         </void> 
        </object> 
       </void> 
@@ -464,27 +505,27 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-14</string> 
+       <string>Stage-18</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList1" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask2" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask3" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask3" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask4" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="childTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
                  <object id="StatsTask1" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-11</string> 
+                   <string>Stage-13</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask3"/> 
+                     <object idref="MoveTask4"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -512,19 +553,19 @@
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask2"/> 
+                 <object idref="MoveTask3"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask2" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask3" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask3"/> 
+                     <object idref="MoveTask4"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-12</string> 
+                   <string>Stage-14</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork1" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -823,6 +864,58 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask5" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask4"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-17</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask4" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask5"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-16</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork1"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork1" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
@@ -853,29 +946,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-13</string> 
+           <string>Stage-15</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork1" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork1"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask2"/> 
+         <object idref="MapRedTask3"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask4"/> 
         </void> 
        </object> 
       </void> 
@@ -918,27 +1000,27 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-18</string> 
+       <string>Stage-24</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList2" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask4" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask6" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask5" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask7" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="childTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
                  <object id="StatsTask2" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-15</string> 
+                   <string>Stage-19</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask5"/> 
+                     <object idref="MoveTask7"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -966,19 +1048,19 @@
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask4"/> 
+                 <object idref="MoveTask6"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask3" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask5" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask5"/> 
+                     <object idref="MoveTask7"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-16</string> 
+                   <string>Stage-20</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork2" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1281,6 +1363,58 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask8" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask7"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-23</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask6" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask8"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-22</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork2"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork2" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
@@ -1320,29 +1454,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-17</string> 
+           <string>Stage-21</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork2" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork2"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask3"/> 
+         <object idref="MapRedTask5"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask6"/> 
         </void> 
        </object> 
       </void> 
@@ -1385,35 +1508,35 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-21</string> 
+       <string>Stage-29</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList3" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask6" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask9" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask7" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask10" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="id"> 
                <string>Stage-5</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask6"/> 
+                 <object idref="MoveTask9"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask4" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask7" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask7"/> 
+                     <object idref="MoveTask10"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-19</string> 
+                   <string>Stage-25</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork3" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1626,6 +1749,58 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask11" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask10"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-28</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask8" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask11"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-27</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork3"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork3" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
@@ -1656,29 +1831,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-20</string> 
+           <string>Stage-26</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork3" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork3"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask4"/> 
+         <object idref="MapRedTask7"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask8"/> 
         </void> 
        </object> 
       </void> 
