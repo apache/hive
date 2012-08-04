@@ -21,16 +21,18 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key))) (TOK_TABREF (TOK_TABNAME srcpart) z) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL z) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x y))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL z) hr) 11)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-1 depends on stages: Stage-8
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-10 is a root stage
+  Stage-1 depends on stages: Stage-10
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
         x 
@@ -183,7 +185,7 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -281,6 +283,76 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
             name: default.dest_j1
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value,val2
+                    columns.types string:string:string
+#### A masked pattern was here ####
+                    name default.dest_j1
+                    serialization.ddl struct dest_j1 { string key, string value, string val2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest_j1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10002
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value,val2
+              columns.types string:string:string
+#### A masked pattern was here ####
+              name default.dest_j1
+              serialization.ddl struct dest_j1 { string key, string value, string val2}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value,val2
+                columns.types string:string:string
+#### A masked pattern was here ####
+                name default.dest_j1
+                serialization.ddl struct dest_j1 { string key, string value, string val2}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest_j1
+            name: default.dest_j1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
@@ -493,16 +565,18 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1_copy) x) (TOK_TABREF (TOK_TABNAME src_copy) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key))) (TOK_TABREF (TOK_TABNAME srcpart) z) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL z) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x y))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL z) hr) 11)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage
-  Stage-1 depends on stages: Stage-8
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-10 is a root stage
+  Stage-1 depends on stages: Stage-10
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
         x 
@@ -660,7 +734,7 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -778,6 +852,91 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
             name: default.dest_j1
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value,val2
+                    columns.types string:string:string
+#### A masked pattern was here ####
+                    name default.dest_j1
+                    numFiles 1
+                    numPartitions 0
+                    numRows 107
+                    rawDataSize 2018
+                    serialization.ddl struct dest_j1 { string key, string value, string val2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 2125
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest_j1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10002
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value,val2
+              columns.types string:string:string
+#### A masked pattern was here ####
+              name default.dest_j1
+              numFiles 1
+              numPartitions 0
+              numRows 107
+              rawDataSize 2018
+              serialization.ddl struct dest_j1 { string key, string value, string val2}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 2125
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value,val2
+                columns.types string:string:string
+#### A masked pattern was here ####
+                name default.dest_j1
+                numFiles 1
+                numPartitions 0
+                numRows 107
+                rawDataSize 2018
+                serialization.ddl struct dest_j1 { string key, string value, string val2}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 2125
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest_j1
+            name: default.dest_j1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1

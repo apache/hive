@@ -266,7 +266,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     ConditionalTask cndTsk = createCondTask(conf, currTask, dummyMv, cplan,
         fsConf.getDirName());
 
-    LinkMoveTask(ctx, newOutput, cndTsk);
+    linkMoveTask(ctx, newOutput, cndTsk);
   }
 
   /**
@@ -425,17 +425,46 @@ public class GenMRFileSink1 implements NodeProcessor {
     //
     // 3. add the moveTask as the children of the conditional task
     //
-    LinkMoveTask(ctx, fsOutput, cndTsk);
+    linkMoveTask(ctx, fsOutput, cndTsk);
  }
 
-  private void LinkMoveTask(GenMRProcContext ctx, FileSinkOperator newOutput,
+  /**
+   * Make the move task in the GenMRProcContext following the FileSinkOperator a dependent of all
+   * possible subtrees branching from the ConditionalTask.
+   *
+   * @param ctx
+   * @param newOutput
+   * @param cndTsk
+   */
+  private void linkMoveTask(GenMRProcContext ctx, FileSinkOperator newOutput,
       ConditionalTask cndTsk) {
 
     List<Task<MoveWork>> mvTasks = ctx.getMvTask();
     Task<MoveWork> mvTask = findMoveTask(mvTasks, newOutput);
 
     for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
-      addDependentMoveTasks(ctx, mvTask, tsk);
+      linkMoveTask(ctx, mvTask, tsk);
+    }
+  }
+
+  /**
+   * Follows the task tree down from task and makes all leaves parents of mvTask
+   *
+   * @param ctx
+   * @param mvTask
+   * @param task
+   */
+  private void linkMoveTask(GenMRProcContext ctx, Task<MoveWork> mvTask,
+      Task<? extends Serializable> task) {
+
+    if (task.getDependentTasks() == null || task.getDependentTasks().isEmpty()) {
+      // If it's a leaf, add the move task as a child
+      addDependentMoveTasks(ctx, mvTask, task);
+    } else {
+      // Otherwise, for each child run this method recursively
+      for (Task<? extends Serializable> childTask : task.getDependentTasks()) {
+        linkMoveTask(ctx, mvTask, childTask);
+      }
     }
   }
 
@@ -552,8 +581,22 @@ public class GenMRFileSink1 implements NodeProcessor {
       Task<? extends Serializable> currTask, MoveWork mvWork,
       MapredWork mergeWork, String inputPath) {
 
-    Task<? extends Serializable> mergeTask = TaskFactory.get(mergeWork, conf);
-    Task<? extends Serializable> moveTask = TaskFactory.get(mvWork, conf);
+    // There are 3 options for this ConditionalTask:
+    // 1) Merge the partitions
+    // 2) Move the partitions (i.e. don't merge the partitions)
+    // 3) Merge some partitions and move other partitions (i.e. merge some partitions and don't
+    //    merge others) in this case the merge is done first followed by the move to prevent
+    //    conflicts.
+    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork, conf);
+    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(mvWork, conf);
+    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork, conf);
+    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(mvWork, conf);
+
+    // NOTE! It is necessary merge task is the parent of the move task, and not
+    // the other way around, for the proper execution of the execute method of
+    // ConditionalTask
+    mergeAndMoveMergeTask.addDependentTask(mergeAndMoveMoveTask);
+
     List<Serializable> listWorks = new ArrayList<Serializable>();
     listWorks.add(mvWork);
     listWorks.add(mergeWork);
@@ -561,8 +604,9 @@ public class GenMRFileSink1 implements NodeProcessor {
     ConditionalWork cndWork = new ConditionalWork(listWorks);
 
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
-    listTasks.add(moveTask);
-    listTasks.add(mergeTask);
+    listTasks.add(moveOnlyMoveTask);
+    listTasks.add(mergeOnlyMergeTask);
+    listTasks.add(mergeAndMoveMergeTask);
 
     ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, conf);
     cndTsk.setListTasks(listTasks);

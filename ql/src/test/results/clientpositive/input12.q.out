@@ -30,21 +30,27 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
-  Stage-7 depends on stages: Stage-3 , consists of Stage-6, Stage-5
+  Stage-9 depends on stages: Stage-3 , consists of Stage-6, Stage-5, Stage-7
   Stage-6
-  Stage-0 depends on stages: Stage-6, Stage-5
+  Stage-0 depends on stages: Stage-6, Stage-5, Stage-8
   Stage-4 depends on stages: Stage-0
   Stage-5
-  Stage-11 depends on stages: Stage-3 , consists of Stage-10, Stage-9
-  Stage-10
-  Stage-1 depends on stages: Stage-10, Stage-9
-  Stage-8 depends on stages: Stage-1
-  Stage-9
-  Stage-15 depends on stages: Stage-3 , consists of Stage-14, Stage-13
-  Stage-14
-  Stage-2 depends on stages: Stage-14, Stage-13
-  Stage-12 depends on stages: Stage-2
+  Stage-7
+  Stage-8 depends on stages: Stage-7
+  Stage-15 depends on stages: Stage-3 , consists of Stage-12, Stage-11, Stage-13
+  Stage-12
+  Stage-1 depends on stages: Stage-12, Stage-11, Stage-14
+  Stage-10 depends on stages: Stage-1
+  Stage-11
   Stage-13
+  Stage-14 depends on stages: Stage-13
+  Stage-21 depends on stages: Stage-3 , consists of Stage-18, Stage-17, Stage-19
+  Stage-18
+  Stage-2 depends on stages: Stage-18, Stage-17, Stage-20
+  Stage-16 depends on stages: Stage-2
+  Stage-17
+  Stage-19
+  Stage-20 depends on stages: Stage-19
 
 STAGE PLANS:
   Stage: Stage-3
@@ -128,7 +134,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest3
 
-  Stage: Stage-7
+  Stage: Stage-9
     Conditional Operator
 
   Stage: Stage-6
@@ -163,10 +169,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
 
-  Stage: Stage-11
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-8
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-15
     Conditional Operator
 
-  Stage: Stage-10
+  Stage: Stage-12
     Move Operator
       files:
           hdfs directory: true
@@ -182,10 +207,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest2
 
-  Stage: Stage-8
+  Stage: Stage-10
     Stats-Aggr Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -198,10 +223,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest2
 
-  Stage: Stage-15
-    Conditional Operator
+  Stage: Stage-13
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest2
 
   Stage: Stage-14
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-21
+    Conditional Operator
+
+  Stage: Stage-18
     Move Operator
       files:
           hdfs directory: true
@@ -220,10 +264,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest3
 
-  Stage: Stage-12
+  Stage: Stage-16
     Stats-Aggr Operator
 
-  Stage: Stage-13
+  Stage: Stage-17
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -235,6 +279,25 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest3
+
+  Stage: Stage-19
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest3
+
+  Stage: Stage-20
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: FROM src 

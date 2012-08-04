@@ -23,10 +23,12 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
   Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-0 depends on stages: Stage-3, Stage-2, Stage-5
   Stage-2
+  Stage-4
+  Stage-5 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -89,7 +91,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-4
+  Stage: Stage-6
     Conditional Operator
 
   Stage: Stage-3
@@ -114,6 +116,23 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: FROM (

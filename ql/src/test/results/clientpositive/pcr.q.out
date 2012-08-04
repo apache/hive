@@ -3639,16 +3639,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -3771,7 +3775,7 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -3870,10 +3874,80 @@ STAGE PLANS:
               name: default.pcr_t2
             name: default.pcr_t2
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t2
+                    serialization.ddl struct pcr_t2 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t2
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t2
+              serialization.ddl struct pcr_t2 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t2
+                serialization.ddl struct pcr_t2 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t2
+            name: default.pcr_t2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -3901,11 +3975,11 @@ STAGE PLANS:
               name: default.pcr_t3
 #### A masked pattern was here ####
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -3969,6 +4043,76 @@ STAGE PLANS:
               name: default.pcr_t3
             name: default.pcr_t3
 
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t3
+                    serialization.ddl struct pcr_t3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t3
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10005
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t3
+              serialization.ddl struct pcr_t3 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t3
+                serialization.ddl struct pcr_t3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t3
+            name: default.pcr_t3
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
@@ -4023,16 +4167,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -4175,7 +4323,7 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -4294,10 +4442,95 @@ STAGE PLANS:
               name: default.pcr_t2
             name: default.pcr_t2
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t2
+                    numFiles 1
+                    numPartitions 0
+                    numRows 20
+                    rawDataSize 160
+                    serialization.ddl struct pcr_t2 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 180
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t2
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t2
+              numFiles 1
+              numPartitions 0
+              numRows 20
+              rawDataSize 160
+              serialization.ddl struct pcr_t2 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 180
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t2
+                numFiles 1
+                numPartitions 0
+                numRows 20
+                rawDataSize 160
+                serialization.ddl struct pcr_t2 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 180
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t2
+            name: default.pcr_t2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -4330,11 +4563,11 @@ STAGE PLANS:
               name: default.pcr_t3
 #### A masked pattern was here ####
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -4412,6 +4645,91 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t3
+                    numFiles 1
+                    numPartitions 0
+                    numRows 20
+                    rawDataSize 160
+                    serialization.ddl struct pcr_t3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 180
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t3
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10005
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t3
+              numFiles 1
+              numPartitions 0
+              numRows 20
+              rawDataSize 160
+              serialization.ddl struct pcr_t3 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 180
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t3
+                numFiles 1
+                numPartitions 0
+                numRows 20
+                rawDataSize 160
+                serialization.ddl struct pcr_t3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 180
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t3
+            name: default.pcr_t3
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from pcr_t1

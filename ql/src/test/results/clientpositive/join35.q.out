@@ -28,14 +28,16 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-9 depends on stages: Stage-1, Stage-7
-  Stage-2 depends on stages: Stage-9
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-11 depends on stages: Stage-1, Stage-9
+  Stage-2 depends on stages: Stage-11
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-7 is a root stage
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-9 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -145,7 +147,7 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-  Stage: Stage-9
+  Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
         x 
@@ -342,7 +344,7 @@ STAGE PLANS:
                 columns.types string,bigint
                 escape.delim \
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -441,7 +443,77 @@ STAGE PLANS:
               name: default.dest_j1
             name: default.dest_j1
 
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value,val2
+                    columns.types string:string:int
+#### A masked pattern was here ####
+                    name default.dest_j1
+                    serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest_j1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10003
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value,val2
+              columns.types string:string:int
+#### A masked pattern was here ####
+              name default.dest_j1
+              serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value,val2
+                columns.types string:string:int
+#### A masked pattern was here ####
+                name default.dest_j1
+                serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest_j1
+            name: default.dest_j1
+
   Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:subq1-subquery2:x1 

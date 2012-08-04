@@ -48,15 +48,17 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-9
+  Stage-2 depends on stages: Stage-1, Stage-11
   Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
-  Stage-8 depends on stages: Stage-4 , consists of Stage-7, Stage-6
+  Stage-10 depends on stages: Stage-4 , consists of Stage-7, Stage-6, Stage-8
   Stage-7
-  Stage-0 depends on stages: Stage-7, Stage-6
+  Stage-0 depends on stages: Stage-7, Stage-6, Stage-9
   Stage-5 depends on stages: Stage-0
   Stage-6
-  Stage-9 is a root stage
+  Stage-8
+  Stage-9 depends on stages: Stage-8
+  Stage-11 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -269,7 +271,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.union_subq_union
 
-  Stage: Stage-8
+  Stage: Stage-10
     Conditional Operator
 
   Stage: Stage-7
@@ -304,7 +306,26 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.union_subq_union
 
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.union_subq_union
+
   Stage: Stage-9
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-11
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:aa-subquery1-subquery2:a-subquery2-subquery2:subq-subquery2:src 
