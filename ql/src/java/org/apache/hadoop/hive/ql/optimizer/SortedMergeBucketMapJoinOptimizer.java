@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
@@ -136,9 +135,21 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       }
       String[] srcs = joinCxt.getBaseSrc();
       int pos = 0;
+
+      // All the tables/partitions columns should be sorted in the same order
+      // For example, if tables A and B are being joined on columns c1, c2 and c3
+      // which are the sorted and bucketed columns. The join would work, as long
+      // c1, c2 and c3 are sorted in the same order.
+      List<Order> sortColumnsFirstTable = new ArrayList<Order>();
+
       for (String src : srcs) {
         tableSorted = tableSorted
-            && isTableSorted(this.pGraphContext, mapJoinOp, joinCxt, src, pos);
+            && isTableSorted(this.pGraphContext,
+                             mapJoinOp,
+                             joinCxt,
+                             src,
+                             pos,
+                             sortColumnsFirstTable);
         pos++;
       }
       if (!tableSorted) {
@@ -202,8 +213,27 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       return smbJop;
     }
 
-    private boolean isTableSorted(ParseContext pctx, MapJoinOperator op,
-        QBJoinTree joinTree, String alias, int pos) throws SemanticException {
+    /**
+     * Whether this table is eligible for a sort-merge join.
+     *
+     * @param pctx                  parse context
+     * @param op                    map join operator being considered
+     * @param joinTree              join tree being considered
+     * @param alias                 table alias in the join tree being checked
+     * @param pos                   position of the table
+     * @param sortColumnsFirstTable The names and order of the sorted columns for the first table.
+     *                              It is not initialized when pos = 0.
+     * @return
+     * @throws SemanticException
+     */
+    private boolean isTableSorted(ParseContext pctx,
+      MapJoinOperator op,
+      QBJoinTree joinTree,
+      String alias,
+      int pos,
+      List<Order> sortColumnsFirstTable)
+      throws SemanticException {
+
       Map<String, Operator<? extends Serializable>> topOps = this.pGraphContext
           .getTopOps();
       Map<TableScanOperator, Table> topToTable = this.pGraphContext
@@ -256,30 +286,57 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);
         }
+        List<Partition> partitions = prunedParts.getNotDeniedPartns();
+        // Populate the names and order of columns for the first partition of the
+        // first table
+        if ((pos == 0) && (partitions != null) && (!partitions.isEmpty())) {
+          Partition firstPartition = partitions.get(0);
+          sortColumnsFirstTable.addAll(firstPartition.getSortCols());
+        }
+
         for (Partition partition : prunedParts.getNotDeniedPartns()) {
-          if (!checkSortColsAndJoinCols(partition.getSortCols(), joinCols)) {
+          if (!checkSortColsAndJoinCols(partition.getSortCols(),
+                                        joinCols,
+                                        sortColumnsFirstTable)) {
             return false;
           }
         }
         return true;
       }
-      return checkSortColsAndJoinCols(tbl.getSortCols(), joinCols);
+
+      // Populate the names and order of columns for the first table
+      if (pos == 0) {
+        sortColumnsFirstTable.addAll(tbl.getSortCols());
+      }
+
+      return checkSortColsAndJoinCols(tbl.getSortCols(),
+        joinCols,
+        sortColumnsFirstTable);
     }
 
     private boolean checkSortColsAndJoinCols(List<Order> sortCols,
-        List<String> joinCols) {
+        List<String> joinCols,
+        List<Order> sortColumnsFirstPartition) {
+
       if (sortCols == null || sortCols.size() != joinCols.size()) {
         return false;
       }
-      // require all sort columns are asc, right now only support asc
+
       List<String> sortColNames = new ArrayList<String>();
-      for (Order o : sortCols) {
-        if (o.getOrder() != BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
+
+      // The join columns should contain all the sort columns
+      // The sort columns of all the tables should be in the same order
+      // compare the column names and the order with the first table/partition.
+      for (int pos = 0; pos < sortCols.size(); pos++) {
+        Order o = sortCols.get(pos);
+        if (!o.equals(sortColumnsFirstPartition.get(pos))) {
           return false;
         }
-        sortColNames.add(o.getCol());
+        sortColNames.add(sortColumnsFirstPartition.get(pos).getCol());
       }
 
+      // The column names and order (ascending/descending) matched
+      // The join columns should contain sort columns
       return sortColNames.containsAll(joinCols);
     }
   }
