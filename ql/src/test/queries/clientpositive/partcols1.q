@@ -15,4 +15,4 @@ SELECT TRANSFORM(
  b.partitionId,b.col2,b.col3,b.col4
  )
 
- USING '/bin/cat' as (a,b,c,d);
+ USING 'cat' as (a,b,c,d);

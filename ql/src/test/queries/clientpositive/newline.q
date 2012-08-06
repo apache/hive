@@ -23,7 +23,7 @@ SELECT TRANSFORM(key, value) USING
 select * from tmp_tmp;
 
 SELECT TRANSFORM(key, value) USING
-'/bin/cat' AS (key, value) FROM tmp_tmp;
+'cat' AS (key, value) FROM tmp_tmp;
 
 insert overwrite table tmp_tmp
 SELECT TRANSFORM(key, value) USING
@@ -32,7 +32,7 @@ SELECT TRANSFORM(key, value) USING
 select * from tmp_tmp;
 
 SELECT TRANSFORM(key, value) USING
-'/bin/cat' AS (key, value) FROM tmp_tmp;
+'cat' AS (key, value) FROM tmp_tmp;
 
 insert overwrite table tmp_tmp
 SELECT TRANSFORM(key, value) USING
@@ -41,7 +41,7 @@ SELECT TRANSFORM(key, value) USING
 select * from tmp_tmp;
 
 SELECT TRANSFORM(key, value) USING
-'/bin/cat' AS (key, value) FROM tmp_tmp;
+'cat' AS (key, value) FROM tmp_tmp;
 
 insert overwrite table tmp_tmp
 SELECT TRANSFORM(key, value) USING
@@ -50,8 +50,8 @@ SELECT TRANSFORM(key, value) USING
 select * from tmp_tmp;
 
 SELECT TRANSFORM(key, value) USING
-'/bin/cat' AS (key, value) FROM tmp_tmp;
+'cat' AS (key, value) FROM tmp_tmp;
 
-SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a;
+SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a;
 
-SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a;
+SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a;

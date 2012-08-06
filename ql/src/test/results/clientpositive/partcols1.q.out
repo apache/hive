@@ -26,7 +26,7 @@ SELECT TRANSFORM(
  b.partitionId,b.col2,b.col3,b.col4
  )
 
- USING '/bin/cat' as (a,b,c,d)
+ USING 'cat' as (a,b,c,d)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@partitionid=1
 #### A masked pattern was here ####
@@ -42,7 +42,7 @@ SELECT TRANSFORM(
  b.partitionId,b.col2,b.col3,b.col4
  )
 
- USING '/bin/cat' as (a,b,c,d)
+ USING 'cat' as (a,b,c,d)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@partitionid=1
 #### A masked pattern was here ####

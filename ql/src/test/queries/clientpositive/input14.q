@@ -4,7 +4,7 @@ EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
-         USING '/bin/cat' AS (tkey, tvalue) 
+         USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100;
@@ -12,7 +12,7 @@ INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
-         USING '/bin/cat' AS (tkey, tvalue) 
+         USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100;

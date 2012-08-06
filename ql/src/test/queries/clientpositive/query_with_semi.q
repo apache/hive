@@ -1,6 +1,6 @@
 from src
-select transform('aa\;') using '/bin/cat' as a  limit 1;
+select transform('aa\;') using 'cat' as a  limit 1;
 
 from src
-select transform('bb') using '/bin/cat' as b limit 1; from src
-select transform('cc') using '/bin/cat' as c limit 1;
+select transform('bb') using 'cat' as b limit 1; from src
+select transform('cc') using 'cat' as c limit 1;
