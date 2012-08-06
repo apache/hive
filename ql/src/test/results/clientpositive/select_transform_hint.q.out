@@ -1,17 +1,17 @@
 PREHOOK: query: EXPLAIN
 SELECT /*+MAPJOIN(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+MAPJOIN(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -72,7 +72,7 @@ STAGE PLANS:
                         type: string
                   outputColumnNames: _col0, _col1
                   Transform Operator
-                    command: /bin/cat
+                    command: cat
                     output info:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -91,14 +91,14 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT /*+MAPJOIN(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+MAPJOIN(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
@@ -1134,18 +1134,18 @@ POSTHOOK: Input: default@src
 97	val_97
 PREHOOK: query: EXPLAIN
 SELECT /*+STREAMTABLE(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+STREAMTABLE(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1201,7 +1201,7 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1
             Transform Operator
-              command: /bin/cat
+              command: cat
               output info:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1218,14 +1218,14 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT /*+STREAMTABLE(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+STREAMTABLE(a)*/ 
-TRANSFORM(a.key, a.value) USING '/bin/cat' AS (tkey, tvalue)
+TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY

@@ -2,7 +2,7 @@ PREHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
-         USING '/bin/cat' AS (ds, tkey, tvalue) 
+         USING 'cat' AS (ds, tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
@@ -11,13 +11,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
-         USING '/bin/cat' AS (ds, tkey, tvalue) 
+         USING 'cat' AS (ds, tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ds tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (AND (< (. (TOK_TABLE_OR_COL tmap) tkey) 100) (= (. (TOK_TABLE_OR_COL tmap) ds) '2008-04-08')))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ds tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (AND (< (. (TOK_TABLE_OR_COL tmap) tkey) 100) (= (. (TOK_TABLE_OR_COL tmap) ds) '2008-04-08')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1, _col2
               Transform Operator
-                command: /bin/cat
+                command: cat
                 output info:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -258,7 +258,7 @@ STAGE PLANS:
 PREHOOK: query: FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
-         USING '/bin/cat' AS (ds, tkey, tvalue) 
+         USING 'cat' AS (ds, tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
@@ -271,7 +271,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: query: FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
-         USING '/bin/cat' AS (ds, tkey, tvalue) 
+         USING 'cat' AS (ds, tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'

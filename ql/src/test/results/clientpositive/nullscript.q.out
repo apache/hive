@@ -16,13 +16,13 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE 
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: explain
-select transform(key) using '/bin/cat' as key1 from nullscript
+select transform(key) using 'cat' as key1 from nullscript
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select transform(key) using '/bin/cat' as key1 from nullscript
+select transform(key) using 'cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME nullscript))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME nullscript))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Transform Operator
-                command: /bin/cat
+                command: cat
                 output info:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -57,11 +57,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
+PREHOOK: query: select transform(key) using 'cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript
 #### A masked pattern was here ####
-POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
+POSTHOOK: query: select transform(key) using 'cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nullscript
 #### A masked pattern was here ####
