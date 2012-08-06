@@ -1,0 +1,165 @@
+PREHOOK: query: drop table table_desc1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table table_desc1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table table_desc2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table table_desc2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table table_desc1(key string, value string) clustered by (key, value)
+sorted by (key DESC, value DESC) into 1 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table table_desc1(key string, value string) clustered by (key, value)
+sorted by (key DESC, value DESC) into 1 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table_desc1
+PREHOOK: query: create table table_desc2(key string, value string) clustered by (key, value)
+sorted by (key DESC, value DESC) into 1 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table table_desc2(key string, value string) clustered by (key, value)
+sorted by (key DESC, value DESC) into 1 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table_desc2
+PREHOOK: query: insert overwrite table table_desc1 select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_desc1
+POSTHOOK: query: insert overwrite table table_desc1 select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_desc1
+POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table table_desc2 select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_desc2
+POSTHOOK: query: insert overwrite table table_desc2 select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_desc2
+POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- The columns of the tables above are sorted in same order.
+-- descending followed by descending
+-- So, sort merge join should be performed
+
+explain
+select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
+on a.key=b.key and a.value=b.value where a.key < 10
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The columns of the tables above are sorted in same order.
+-- descending followed by descending
+-- So, sort merge join should be performed
+
+explain
+select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
+on a.key=b.key and a.value=b.value where a.key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME table_desc1) a) (TOK_TABREF (TOK_TABNAME table_desc2) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 10))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate:
+                  expr: (key < 10.0)
+                  type: boolean
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {key}
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 [Column[key], Column[value]]
+                  1 [Column[key], Column[value]]
+                outputColumnNames: _col0
+                Position of Big Table: 0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count()
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
+on a.key=b.key and a.value=b.value where a.key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc1
+PREHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
+POSTHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
+on a.key=b.key and a.value=b.value where a.key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc1
+POSTHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+22
