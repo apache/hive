@@ -1,4 +1,4 @@
-PREHOOK: query: select * from src a join src b on a.key = b.key limit 1
+PREHOOK: query: select * from src a join src b on a.key = b.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -10,8 +10,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	val_0	0	val_0
-PREHOOK: query: select * from src group by src.key, src.value limit 1
+PREHOOK: query: select * from src group by src.key, src.value limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -23,8 +22,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	val_0
-PREHOOK: query: select * from src order by src.key limit 1
+PREHOOK: query: select * from src order by src.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -36,8 +34,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	val_0
-PREHOOK: query: select * from src sort by src.key limit 1
+PREHOOK: query: select * from src sort by src.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -49,8 +46,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	val_0
-PREHOOK: query: select a.key, sum(b.value) from src a join src b on a.key = b.key group by a.key limit 1
+PREHOOK: query: select a.key, sum(b.value) from src a join src b on a.key = b.key group by a.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -62,8 +58,7 @@ Has Group By After Join: true
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	0.0
-PREHOOK: query: select transform(*) using 'cat' from src limit 1
+PREHOOK: query: select transform(*) using 'cat' from src limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -75,8 +70,7 @@ Has Group By After Join: false
 Uses Script: true
 Has Distribute By: false
 Has Cluster By: false
-238	val_238
-PREHOOK: query: select * from src distribute by src.key limit 1
+PREHOOK: query: select * from src distribute by src.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -88,8 +82,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: true
 Has Cluster By: false
-238	val_238
-PREHOOK: query: select * from src cluster by src.key limit 1
+PREHOOK: query: select * from src cluster by src.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -101,8 +94,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: true
-0	val_0
-PREHOOK: query: select key, sum(value) from (select a.key as key, b.value as value from src a join src b on a.key = b.key) c group by key limit 1
+PREHOOK: query: select key, sum(value) from (select a.key as key, b.value as value from src a join src b on a.key = b.key) c group by key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -114,8 +106,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	0.0
-PREHOOK: query: select * from src a join src b on a.key = b.key order by a.key limit 1
+PREHOOK: query: select * from src a join src b on a.key = b.key order by a.key limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -127,8 +118,7 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: false
 Has Cluster By: false
-0	val_0	0	val_0
-PREHOOK: query: select * from src a join src b on a.key = b.key distribute by a.key sort by a.key, b.value limit 1
+PREHOOK: query: select * from src a join src b on a.key = b.key distribute by a.key sort by a.key, b.value limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -140,4 +130,3 @@ Has Group By After Join: false
 Uses Script: false
 Has Distribute By: true
 Has Cluster By: false
-0	val_0	0	val_0
