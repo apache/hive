@@ -6,4 +6,4 @@ insert overwrite table analyze_srcbucket select * from srcbucket;
 
 explain analyze table analyze_srcbucket compute statistics;
 analyze table analyze_srcbucket compute statistics;
-describe extended analyze_srcbucket;
+describe formatted analyze_srcbucket;

@@ -6,10 +6,17 @@ load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapj
 load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin;
 
 CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+explain
 load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+
+desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08');
 load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08');
 load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08');
 load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08');
 
 CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08');

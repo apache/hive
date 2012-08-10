@@ -6,7 +6,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-9</string> 
+       <string>Stage-10</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList0" class="java.util.ArrayList"> 
@@ -21,7 +21,7 @@
                 <void method="add"> 
                  <object id="StatsTask0" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-4</string> 
+                   <string>Stage-5</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -49,7 +49,7 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-2</string> 
+               <string>Stage-3</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -66,7 +66,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-5</string> 
+                   <string>Stage-6</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork0" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -379,7 +379,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-8</string> 
+                   <string>Stage-9</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -393,7 +393,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-7</string> 
+                       <string>Stage-8</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork0"/> 
@@ -451,7 +451,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-6</string> 
+           <string>Stage-7</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork0"/> 
@@ -505,7 +505,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-3</string> 
+   <string>Stage-4</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -532,6 +532,10 @@
           <string>default.srcbucket</string> 
          </void> 
          <void method="put"> 
+          <string>numFiles</string> 
+          <string>2</string> 
+         </void> 
+         <void method="put"> 
           <string>columns.types</string> 
           <string>int:string</string> 
          </void> 
@@ -552,6 +556,18 @@
           <string>1</string> 
          </void> 
          <void method="put"> 
+          <string>rawDataSize</string> 
+          <string>0</string> 
+         </void> 
+         <void method="put"> 
+          <string>numRows</string> 
+          <string>0</string> 
+         </void> 
+         <void method="put"> 
+          <string>numPartitions</string> 
+          <string>0</string> 
+         </void> 
+         <void method="put"> 
           <string>bucket_count</string> 
           <string>2</string> 
          </void> 
@@ -562,6 +578,10 @@
          <void method="put"> 
           <string>file.inputformat</string> 
           <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+         </void> 
+         <void method="put"> 
+          <string>totalSize</string> 
+          <string>11603</string> 
          </void> 
          <void method="put"> 
           <string>file.outputformat</string> 
@@ -598,6 +618,10 @@
             <string>default.srcbucket</string> 
            </void> 
            <void method="put"> 
+            <string>numFiles</string> 
+            <string>2</string> 
+           </void> 
+           <void method="put"> 
             <string>columns.types</string> 
             <string>int:string</string> 
            </void> 
@@ -618,6 +642,18 @@
             <string>1</string> 
            </void> 
            <void method="put"> 
+            <string>rawDataSize</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numRows</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numPartitions</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
             <string>bucket_count</string> 
             <string>2</string> 
            </void> 
@@ -628,6 +664,10 @@
            <void method="put"> 
             <string>file.inputformat</string> 
             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>totalSize</string> 
+            <string>11603</string> 
            </void> 
            <void method="put"> 
             <string>file.outputformat</string> 
@@ -1194,6 +1234,10 @@
            <string>default.srcbucket</string> 
           </void> 
           <void method="put"> 
+           <string>numFiles</string> 
+           <string>2</string> 
+          </void> 
+          <void method="put"> 
            <string>columns.types</string> 
            <string>int:string</string> 
           </void> 
@@ -1214,6 +1258,18 @@
            <string>1</string> 
           </void> 
           <void method="put"> 
+           <string>rawDataSize</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numRows</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numPartitions</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>2</string> 
           </void> 
@@ -1224,6 +1280,10 @@
           <void method="put"> 
            <string>file.inputformat</string> 
            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>totalSize</string> 
+           <string>11603</string> 
           </void> 
           <void method="put"> 
            <string>file.outputformat</string> 
@@ -1260,6 +1320,10 @@
              <string>default.srcbucket</string> 
             </void> 
             <void method="put"> 
+             <string>numFiles</string> 
+             <string>2</string> 
+            </void> 
+            <void method="put"> 
              <string>columns.types</string> 
              <string>int:string</string> 
             </void> 
@@ -1280,6 +1344,18 @@
              <string>1</string> 
             </void> 
             <void method="put"> 
+             <string>rawDataSize</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numRows</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numPartitions</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
              <string>bucket_count</string> 
              <string>2</string> 
             </void> 
@@ -1290,6 +1366,10 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>totalSize</string> 
+             <string>11603</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 

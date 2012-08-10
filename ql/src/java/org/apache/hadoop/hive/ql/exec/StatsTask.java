@@ -329,6 +329,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
               work.getAggKey(), atomic);
           statsAggregator.cleanUp(work.getAggKey());
         }
+        // The collectable stats for the aggregator needs to be cleared.
+        // For eg. if a file is being loaded, the old number of rows are not valid
+        else if (work.isClearAggregatorStats()) {
+          for (String statType : collectableStats) {
+            if (parameters.containsKey(statType)) {
+              tblStats.setStat(statType, 0L);
+            }
+          }
+        }
       } else {
         // Partitioned table:
         // Need to get the old stats of the partition
@@ -368,7 +377,16 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
                 parameters, partitionID, atomic);
           } else {
             for (String statType : collectableStats) {
-              newPartStats.setStat(statType, currentValues.get(statType));
+              // The collectable stats for the aggregator needs to be cleared.
+              // For eg. if a file is being loaded, the old number of rows are not valid
+              if (work.isClearAggregatorStats()) {
+                if (parameters.containsKey(statType)) {
+                  newPartStats.setStat(statType, 0L);
+                }
+              }
+              else {
+                newPartStats.setStat(statType, currentValues.get(statType));
+              }
             }
           }
 

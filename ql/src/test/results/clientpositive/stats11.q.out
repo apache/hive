@@ -20,6 +20,41 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcbucket_mapjoin_part
+PREHOOK: query: explain
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: LOAD
+POSTHOOK: query: explain
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: LOAD
+ABSTRACT SYNTAX TREE:
+  (TOK_LOAD '../data/files/srcbucket20.txt' (TOK_TAB (TOK_TABNAME srcbucket_mapjoin_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08'))) local)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-0
+    Copy
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.srcbucket_mapjoin_part
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+
 PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part
@@ -27,24 +62,176 @@ POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TAB
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	srcbucket_mapjoin_part	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1358                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	srcbucket_mapjoin_part	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	2750                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	srcbucket_mapjoin_part	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	4200                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08]        	 
+Database:           	default             	 
+Table:              	srcbucket_mapjoin_part	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	4                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
@@ -214,9 +401,14 @@ STAGE PLANS:
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin
+              numFiles 2
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 2750
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -229,9 +421,14 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin
+                numFiles 2
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 2750
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin
@@ -701,10 +898,15 @@ STAGE PLANS:
               columns.types int:string
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part
+              numFiles 4
+              numPartitions 1
+              numRows 0
               partition_columns ds
+              rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -717,10 +919,15 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part
+                numFiles 4
+                numPartitions 1
+                numRows 0
                 partition_columns ds
+                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part
