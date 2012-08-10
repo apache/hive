@@ -185,13 +185,89 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 66	val_66
 98	val_98
 tst1	500
-PREHOOK: query: DESCRIBE EXTENDED tmptable
+PREHOOK: query: DESCRIBE FORMATTED tmptable
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED tmptable
+POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
-key	string	
-value	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	2                   
+	numPartitions       	0                   
+	numRows             	26                  
+	rawDataSize         	199                 
+	totalSize           	225                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+PREHOOK: type: LOAD
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tmptable
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED tmptable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	3                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1583                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

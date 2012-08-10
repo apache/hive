@@ -28,13 +28,13 @@ show partitions nzhang_part2;
 select * from nzhang_part1 where ds is not null and hr is not null;
 select * from nzhang_part2 where ds is not null and hr is not null;
 
-describe extended nzhang_part1 partition(ds='2008-04-08',hr=11);
-describe extended nzhang_part1 partition(ds='2008-04-08',hr=12);
-describe extended nzhang_part2 partition(ds='2008-12-31',hr=11);
-describe extended nzhang_part2 partition(ds='2008-12-31',hr=12);
+describe formatted nzhang_part1 partition(ds='2008-04-08',hr=11);
+describe formatted nzhang_part1 partition(ds='2008-04-08',hr=12);
+describe formatted nzhang_part2 partition(ds='2008-12-31',hr=11);
+describe formatted nzhang_part2 partition(ds='2008-12-31',hr=12);
 
-describe extended nzhang_part1;
-describe extended nzhang_part2;
+describe formatted nzhang_part1;
+describe formatted nzhang_part2;
 
 drop table nzhang_part1;
 drop table nzhang_part2;

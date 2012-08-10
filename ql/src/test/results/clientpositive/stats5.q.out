@@ -36,11 +36,37 @@ POSTHOOK: query: analyze table analyze_src compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_src
 POSTHOOK: Output: default@analyze_src
-PREHOOK: query: describe extended analyze_src
+PREHOOK: query: describe formatted analyze_src
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_src
+POSTHOOK: query: describe formatted analyze_src
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

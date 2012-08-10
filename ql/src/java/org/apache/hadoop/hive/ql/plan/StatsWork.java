@@ -30,11 +30,18 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 public class StatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private tableSpec tableSpecs;        // source table spec -- for TableScanOperator
-  private LoadTableDesc loadTableDesc; // same as MoveWork.loadTableDesc -- for FileSinkOperator
-  private LoadFileDesc loadFileDesc;   // same as MoveWork.loadFileDesc -- for FileSinkOperator
-  private String aggKey;               // aggregation key prefix
-  private boolean statsReliable;     // are stats completely reliable
+  private tableSpec tableSpecs;         // source table spec -- for TableScanOperator
+  private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
+  private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
+  private String aggKey;                // aggregation key prefix
+  private boolean statsReliable;        // are stats completely reliable
+
+  // If stats aggregator is not present, clear the current aggregator stats.
+  // For eg. if a merge is being performed, stats already collected by aggregator (numrows etc.)
+  // are still valid. However, if a load file is being performed, the old stats collected by
+  // aggregator are not valid. It might be a good idea to clear them instead of leaving wrong
+  // and old stats.
+  private boolean clearAggregatorStats = false;
 
   private boolean noStatsAggregator = false;
 
@@ -92,5 +99,13 @@ public class StatsWork implements Serializable {
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
+  }
+
+  public boolean isClearAggregatorStats() {
+    return clearAggregatorStats;
+  }
+
+  public void setClearAggregatorStats(boolean clearAggregatorStats) {
+    this.clearAggregatorStats = clearAggregatorStats;
   }
 }
