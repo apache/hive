@@ -21,6 +21,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
+import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -528,6 +531,17 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
     return new UnixUserGroupInformation(userName, groupNames.toArray(new String[0]));
+  }
+
+  @Override
+  public String getTaskAttemptLogUrl(JobConf conf,
+    String taskTrackerHttpAddress, String taskAttemptId)
+    throws MalformedURLException {
+    URL taskTrackerHttpURL = new URL(taskTrackerHttpAddress);
+    return TaskLogServlet.getTaskLogUrl(
+      taskTrackerHttpURL.getHost(),
+      Integer.toString(taskTrackerHttpURL.getPort()),
+      taskAttemptId);
   }
 
   @Override

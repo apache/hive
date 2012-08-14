@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.Exception;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -104,10 +106,6 @@ public class HadoopJobExecHelper {
    */
   public static String getJobEndMsg(String jobId) {
     return "Ended Job = " + jobId;
-  }
-
-  private String getTaskAttemptLogUrl(String taskTrackerHttpAddress, String taskAttemptId) {
-    return taskTrackerHttpAddress + "/tasklog?taskid=" + taskAttemptId + "&all=true";
   }
 
   public boolean mapStarted() {
@@ -495,7 +493,8 @@ public class HadoopJobExecHelper {
   }
 
   @SuppressWarnings("deprecation")
-  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
+  private void showJobFailDebugInfo(JobConf conf, RunningJob rj)
+    throws IOException, MalformedURLException {
     // Mapping from task ID to the number of failures
     Map<String, Integer> failures = new HashMap<String, Integer>();
     // Successful task ID's
@@ -544,7 +543,11 @@ public class HadoopJobExecHelper {
         }
         // These tasks should have come from the same job.
         assert (ti.getJobId() != null && ti.getJobId().equals(jobId));
-        ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+        String taskAttemptLogUrl = ShimLoader.getHadoopShims().getTaskAttemptLogUrl(
+          conf, t.getTaskTrackerHttp(), t.getTaskId());
+        if (taskAttemptLogUrl != null) {
+          ti.getLogUrls().add(taskAttemptLogUrl);
+        }
 
         // If a task failed, then keep track of the total number of failures
         // for that task (typically, a task gets re-run up to 4 times if it

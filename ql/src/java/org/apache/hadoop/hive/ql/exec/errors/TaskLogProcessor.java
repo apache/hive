@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
@@ -40,6 +42,7 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public class TaskLogProcessor {
 
+  private final Log LOG = LogFactory.getLog(TaskLogProcessor.class);
   private final Map<ErrorHeuristic, HeuristicStats> heuristics =
     new HashMap<ErrorHeuristic, HeuristicStats>();
   private final List<String> taskLogUrls = new ArrayList<String>();
@@ -107,15 +110,16 @@ public class TaskLogProcessor {
    */
   public List<ErrorAndSolution> getErrors() {
 
-    for(String urlString : taskLogUrls) {
+    for (String urlString : taskLogUrls) {
 
       // Open the log file, and read in a line. Then feed the line into
       // each of the ErrorHeuristics. Repeat for all the lines in the log.
       URL taskAttemptLogUrl;
       try {
         taskAttemptLogUrl = new URL(urlString);
-      } catch(MalformedURLException e) {
-        throw new RuntimeException("Bad task log url", e);
+      } catch (MalformedURLException e) {
+        LOG.error("Bad task log URL", e);
+        continue;
       }
       BufferedReader in;
       try {
@@ -129,19 +133,20 @@ public class TaskLogProcessor {
         }
         in.close();
       } catch (IOException e) {
-        throw new RuntimeException("Error while reading from task log url", e);
+        LOG.error("Error while reading from task log URL", e);
+        continue;
       }
 
       // Once the lines of the log file have been fed into the ErrorHeuristics,
       // see if they have detected anything. If any has, record
       // what ErrorAndSolution it gave so we can later return the most
       // frequently occurring error
-      for(Entry<ErrorHeuristic, HeuristicStats> ent : heuristics.entrySet()) {
+      for (Entry<ErrorHeuristic, HeuristicStats> ent : heuristics.entrySet()) {
         ErrorHeuristic eh = ent.getKey();
         HeuristicStats hs = ent.getValue();
 
         ErrorAndSolution es = eh.getErrorAndSolution();
-        if(es != null) {
+        if (es != null) {
           hs.incTriggerCount();
           hs.addErrorAndSolution(es);
         }
@@ -151,16 +156,16 @@ public class TaskLogProcessor {
 
     // Return the errors that occur the most frequently
     int max = 0;
-    for(HeuristicStats hs : heuristics.values()) {
+    for (HeuristicStats hs : heuristics.values()) {
       if(hs.getTriggerCount() > max) {
         max = hs.getTriggerCount();
       }
     }
 
     List<ErrorAndSolution> errors = new ArrayList<ErrorAndSolution>();
-    for(HeuristicStats hs : heuristics.values()) {
-      if(hs.getTriggerCount() == max) {
-        if(hs.getErrorAndSolutions().size() > 0) {
+    for (HeuristicStats hs : heuristics.values()) {
+      if (hs.getTriggerCount() == max) {
+        if (hs.getErrorAndSolutions().size() > 0) {
           // An error heuristic could have generated different ErrorAndSolution
           // for each task attempt, but most likely they are the same. Plus,
           // one of those is probably good enough for debugging

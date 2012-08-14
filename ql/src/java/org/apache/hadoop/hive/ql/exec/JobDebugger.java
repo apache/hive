@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.lang.Exception;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,9 +120,6 @@ public class JobDebugger implements Runnable {
       console.printError(e.getMessage());
     }
   }
-  private String getTaskAttemptLogUrl(String taskTrackerHttpAddress, String taskAttemptId) {
-    return taskTrackerHttpAddress + "/tasklog?taskid=" + taskAttemptId + "&start=-8193";
-  }
 
   public static int extractErrorCode(String[] diagnostics) {
     int result = 0;
@@ -141,12 +140,12 @@ public class JobDebugger implements Runnable {
     public void run() {
       try {
         getTaskInfos();
-      } catch (IOException e) {
+      } catch (Exception e) {
         console.printError(e.getMessage());
       }
     }
 
-    private void getTaskInfos() throws IOException {
+    private void getTaskInfos() throws IOException, MalformedURLException {
       int startIndex = 0;
       while (true) {
         TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(startIndex);
@@ -184,7 +183,11 @@ public class JobDebugger implements Runnable {
           }
           // These tasks should have come from the same job.
           assert (ti.getJobId() != null &&  ti.getJobId().equals(jobId));
-          ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+          String taskAttemptLogUrl = ShimLoader.getHadoopShims().getTaskAttemptLogUrl(
+            conf, t.getTaskTrackerHttp(), t.getTaskId());
+          if (taskAttemptLogUrl != null) {
+            ti.getLogUrls().add(taskAttemptLogUrl);
+          }
 
           // If a task failed, fetch its error code (if available).
           // Also keep track of the total number of failures for that
