@@ -28,6 +28,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -96,7 +97,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
   private void configureSuperUserIPAddresses(Configuration conf,
       String superUserShortName) throws IOException {
-    ArrayList<String> ipList = new ArrayList<String>();
+    List<String> ipList = new ArrayList<String>();
     Enumeration<NetworkInterface> netInterfaceList = NetworkInterface
         .getNetworkInterfaces();
     while (netInterfaceList.hasMoreElements()) {

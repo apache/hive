@@ -91,11 +91,15 @@
 
       <!-- Include build/dist/lib on the classpath before Ivy and exclude hive jars from Ivy to make sure we get the local changes when we test Hive -->
       <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar,**/lib*.jar"/>
-      <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar"/>
-      <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar" />
       <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
-      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+      <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
       <pathelement location="${build.classes}" />
+
+      <!-- we strip out hadoop jars present in places other than the hadoop shimmed dir-->
+      <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false"
+               excludes="**/hive_*.jar,**/hive-*.jar,**/hadoop-*.jar"/>
+      <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false"
+               excludes="**/hive_*.jar,**/hive-*.jar,**/hadoop-*.jar" />
     </distinctelementsclasspath>
   </target>
 
@@ -176,7 +180,9 @@
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
     <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"
+             excludes="**/hadoop-*.jar"
              erroronmissingdir="false"/>
   </path>
 
