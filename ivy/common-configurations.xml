@@ -22,8 +22,10 @@
   <conf name="runtime" description="runtime but not the artifact"/>
   <conf name="test" extends="hadoop${hadoop.mr.rev}.test,compile" visibility="private" />
   <conf name="hadoop20.compile" visibility="private"/>
+  <conf name="hadoop20S.compile" visibility="private"/>
   <conf name="hadoop23.compile" visibility="private"/>
   <conf name="hadoop20.test" visibility="private"/>
+  <conf name="hadoop20S.test" visibility="private"/>
   <conf name="hadoop23.test" visibility="private"/>
   <conf name="hadoop0.20.shim" visibility="private"/>
   <conf name="hadoop0.20S.shim" visibility="private"/>
