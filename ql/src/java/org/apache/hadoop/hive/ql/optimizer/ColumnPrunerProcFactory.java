@@ -87,8 +87,11 @@ public final class ColumnPrunerProcFactory {
       // get list of columns used in the filter
       List<String> cl = condn.getCols();
       // merge it with the downstream col list
+      List<String> filterOpPrunedColLists = Utilities.mergeUniqElems(cppCtx.genColLists(op), cl);
+      List<String> filterOpPrunedColListsOrderPreserved = preserveColumnOrder(op,
+          filterOpPrunedColLists);
       cppCtx.getPrunedColLists().put(op,
-          Utilities.mergeUniqElems(cppCtx.genColLists(op), cl));
+          filterOpPrunedColListsOrderPreserved);
 
       pruneOperator(cppCtx, op, cppCtx.getPrunedColLists().get(op));
 
@@ -590,6 +593,32 @@ public final class ColumnPrunerProcFactory {
       op.getSchema().setSignature(rs);
     }
   }
+
+  /**
+   * The pruning needs to preserve the order of columns in the input schema
+   * @param op
+   * @param cols
+   * @return
+   * @throws SemanticException
+   */
+  private static List<String> preserveColumnOrder(Operator<? extends Serializable> op,
+      List<String> cols)
+      throws SemanticException {
+    RowSchema inputSchema = op.getSchema();
+    if (inputSchema != null) {
+      ArrayList<String> rs = new ArrayList<String>();
+      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
+      for (ColumnInfo i: inputCols) {
+        if (cols.contains(i.getInternalName())) {
+          rs.add(i.getInternalName());
+        }
+      }
+      return rs;
+    } else {
+      return cols;
+    }
+  }
+
 
   private static void pruneJoinOperator(NodeProcessorCtx ctx,
       CommonJoinOperator op, JoinDesc conf,
