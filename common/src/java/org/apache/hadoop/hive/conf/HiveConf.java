@@ -311,6 +311,8 @@ public class HiveConf extends Configuration {
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", ""),
+    // Parameters to copy over when creating a table with Create Table Like.
+    DDL_CTL_PARAMETERS_WHITELIST("hive.ddl.createtablelike.properties.whitelist", ""),
     METASTORE_RAW_STORE_IMPL("hive.metastore.rawstore.impl",
         "org.apache.hadoop.hive.metastore.ObjectStore"),
     METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
