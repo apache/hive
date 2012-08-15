@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -3453,9 +3454,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.unsetDataLocation();
       }
 
-      // we should reset table specific parameters including (stats, lastDDLTime etc.)
       Map<String, String> params = tbl.getParameters();
-      params.clear();
+      // We should copy only those table parameters that are specified in the config.
+      String paramsStr = HiveConf.getVar(conf, HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
+      if (paramsStr != null) {
+        List<String> paramsList = Arrays.asList(paramsStr.split(","));
+        params.keySet().retainAll(paramsList);
+      } else {
+        params.clear();
+      }
 
       if (crtTbl.isExternal()) {
         tbl.setProperty("EXTERNAL", "TRUE");

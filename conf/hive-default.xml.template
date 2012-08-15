@@ -1104,6 +1104,12 @@
 </property>
 
 <property>
+  <name>hive.ddl.createtablelike.properties.whitelist</name>
+  <value></value>
+  <description>Table Properties to copy over when executing a Create Table Like.</description>
+</property>
+
+<property>
   <name>hive.variable.substitute</name>
   <value>true</value>
   <description>This enables substitution using syntax like ${var} ${system:var} and ${env:var}.</description>
