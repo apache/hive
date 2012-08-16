@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.lang.IllegalArgumentException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -104,9 +105,12 @@ public abstract class ShimLoader {
   }
 
   /**
-   * Return the major version of Hadoop currently on the classpath.
-   * This is simply the first two components of the version number
-   * (e.g "0.18" or "0.20")
+   * Return the "major" version of Hadoop currently on the classpath.
+   * For releases in the 0.x series this is simply the first two
+   * components of the version, e.g. "0.20" or "0.23". Releases in
+   * the 1.x and 2.x series are mapped to the appropriate
+   * 0.x release series, e.g. 1.x is mapped to "0.20S" and 2.x
+   * is mapped to "0.23".
    */
   public static String getMajorVersion() {
     String vers = VersionInfo.getVersion();
@@ -116,9 +120,19 @@ public abstract class ShimLoader {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
           " (expected A.B.* format)");
     }
-    if (Integer.parseInt(parts[0]) > 0){
+
+    // Special handling for Hadoop 1.x and 2.x
+    switch (Integer.parseInt(parts[0])) {
+    case 0:
+      break;
+    case 1:
       return "0.20S";
+    case 2:
+      return "0.23";
+    default:
+      throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }
+    
     String majorVersion = parts[0] + "." + parts[1];
 
     // If we are running a security release, we won't have UnixUserGroupInformation
