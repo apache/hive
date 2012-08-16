@@ -237,6 +237,15 @@ public enum ErrorMsg {
     "If you really want to perform the operation, either remove the " +
     "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
 
+  EXPRESSIONS_NOT_ALLOWED_CLUSTERBY(10137,
+    "Expressions are not allowed in a cluster by clause. Use a column alias instead"),
+  EXPRESSIONS_NOT_ALLOWED_DISTRIBUTEBY(10138,
+    "Expressions are not allowed in a distribute by clause. Use a column alias instead"),
+  EXPRESSIONS_NOT_ALLOWED_ORDERBY(10139,
+    "Expressions are not allowed in an order by clause. Use a column alias instead"),
+  EXPRESSIONS_NOT_ALLOWED_SORTBY(10140,
+    "Expressions are not allowed in a sort by clause. Use a column alias instead"),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
