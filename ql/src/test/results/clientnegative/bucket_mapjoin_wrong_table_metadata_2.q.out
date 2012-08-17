@@ -1,0 +1,59 @@
+PREHOOK: query: -- Although the user has specified a bucketed map-join, the number of buckets in the table
+-- do not match the number of files
+drop table table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Although the user has specified a bucketed map-join, the number of buckets in the table
+-- do not match the number of files
+drop table table1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table table2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table table2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table table1(key string, value string) partitioned by (ds string) clustered by (key, value)
+into 2 BUCKETS stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table table1(key string, value string) partitioned by (ds string) clustered by (key, value)
+into 2 BUCKETS stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table1
+PREHOOK: query: create table table2(key string, value string) clustered by (value, key)
+into 2 BUCKETS stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table table2(key string, value string) clustered by (value, key)
+into 2 BUCKETS stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table2
+PREHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table1 partition (ds='1')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table1
+POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table1 partition (ds='1')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@ds=1
+PREHOOK: query: load data local inpath '../data/files/T2.txt' overwrite into table table1 partition (ds='1')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table1@ds=1
+POSTHOOK: query: load data local inpath '../data/files/T2.txt' overwrite into table table1 partition (ds='1')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table1@ds=1
+PREHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table1 partition (ds='2')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table1
+POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table1 partition (ds='2')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@ds=2
+PREHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table2
+POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table table2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table2
+PREHOOK: query: load data local inpath '../data/files/T2.txt' overwrite into table table2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table2
+POSTHOOK: query: load data local inpath '../data/files/T2.txt' overwrite into table table2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table2
+FAILED: SemanticException [Error 10141]: Bucketed table metadata is not correct. Fix the metadata or don't use bucketed mapjoin, by setting hive.enforce.bucketmapjoin to false. The number of buckets for table table1 partition ds=1 is 2, whereas the number of files is 1
