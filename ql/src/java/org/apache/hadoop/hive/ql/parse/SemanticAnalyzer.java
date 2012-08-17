@@ -110,7 +110,6 @@ import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo.ClauseType;
@@ -143,7 +142,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -285,6 +283,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb = pctx.getQB();
     groupOpToInputTables = pctx.getGroupOpToInputTables();
     prunedPartitions = pctx.getPrunedPartitions();
+    fetchTask = pctx.getFetchTask();
     setLineageInfo(pctx.getLineageInfo());
   }
 
@@ -7015,94 +7014,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void genMapRedTasks(QB qb) throws SemanticException {
-    FetchWork fetch = null;
-    List<Task<MoveWork>> mvTask = new ArrayList<Task<MoveWork>>();
-    FetchTask fetchTask = null;
-
-    QBParseInfo qbParseInfo = qb.getParseInfo();
-
-    // Does this query need reduce job
-    if (qb.isSelectStarQuery() && qbParseInfo.getDestToClusterBy().isEmpty()
-        && qbParseInfo.getDestToDistributeBy().isEmpty()
-        && qbParseInfo.getDestToOrderBy().isEmpty()
-        && qbParseInfo.getDestToSortBy().isEmpty()) {
-      boolean noMapRed = false;
-
-      Iterator<Map.Entry<String, Table>> iter = qb.getMetaData()
-          .getAliasToTable().entrySet().iterator();
-      Table tab = (iter.next()).getValue();
-      if (!tab.isPartitioned()) {
-        if (qbParseInfo.getDestToWhereExpr().isEmpty()) {
-          fetch = new FetchWork(tab.getPath().toString(), Utilities
-              .getTableDesc(tab), qb.getParseInfo().getOuterQueryLimit());
-          noMapRed = true;
-          inputs.add(new ReadEntity(tab));
-        }
-      } else {
-
-        if (topOps.size() == 1) {
-          TableScanOperator ts = (TableScanOperator) topOps.values().toArray()[0];
-
-          // check if the pruner only contains partition columns
-          if (PartitionPruner.onlyContainsPartnCols(topToTable.get(ts),
-              opToPartPruner.get(ts))) {
-
-            PrunedPartitionList partsList = null;
-            try {
-              partsList = opToPartList.get(ts);
-              if (partsList == null) {
-                partsList = PartitionPruner.prune(topToTable.get(ts),
-                    opToPartPruner.get(ts), conf, (String) topOps.keySet()
-                    .toArray()[0], prunedPartitions);
-                opToPartList.put(ts, partsList);
-              }
-            } catch (HiveException e) {
-              // Has to use full name to make sure it does not conflict with
-              // org.apache.commons.lang.StringUtils
-              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-              throw new SemanticException(e.getMessage(), e);
-            }
-
-            // If there is any unknown partition, create a map-reduce job for
-            // the filter to prune correctly
-            if ((partsList.getUnknownPartns().size() == 0)) {
-              List<String> listP = new ArrayList<String>();
-              List<PartitionDesc> partP = new ArrayList<PartitionDesc>();
-
-              Set<Partition> parts = partsList.getConfirmedPartns();
-              Iterator<Partition> iterParts = parts.iterator();
-              while (iterParts.hasNext()) {
-                Partition part = iterParts.next();
-
-                listP.add(part.getPartitionPath().toString());
-                try {
-                  partP.add(Utilities.getPartitionDesc(part));
-                } catch (HiveException e) {
-                  throw new SemanticException(e.getMessage(), e);
-                }
-                inputs.add(new ReadEntity(part));
-              }
-
-              TableDesc table = Utilities.getTableDesc(partsList.getSourceTable());
-              fetch = new FetchWork(listP, partP, table, qb.getParseInfo()
-                  .getOuterQueryLimit());
-              noMapRed = true;
-            }
-          }
-        }
-      }
-
-      if (noMapRed) {
-        PlanUtils.configureInputJobPropertiesForStorageHandler(fetch.getTblDesc());
-        fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
-        setFetchTask(fetchTask);
-
-        // remove root tasks if any
-        rootTasks.clear();
-        return;
-      }
+  private void genMapRedTasks(ParseContext pCtx) throws SemanticException {
+    if (pCtx.getFetchTask() != null) {
+      // replaced by single fetch task
+      init(pCtx);
+      return;
     }
+
+    init(pCtx);
+    List<Task<MoveWork>> mvTask = new ArrayList<Task<MoveWork>>();
 
     // In case of a select, use a fetch task instead of a move task
     if (qb.getIsQuery()) {
@@ -7115,10 +7035,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
       TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
 
-      fetch = new FetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
+      FetchWork fetch = new FetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
           resultTab, qb.getParseInfo().getOuterQueryLimit());
 
-      fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
+      FetchTask fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
       setFetchTask(fetchTask);
 
       // For the FetchTask, the limit optimiztion requires we fetch all the rows
@@ -7542,12 +7462,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     optm.setPctx(pCtx);
     optm.initialize(conf);
     pCtx = optm.optimize();
-    init(pCtx);
-    qb = pCtx.getQB();
 
     // At this point we have the complete operator tree
     // from which we want to find the reduce operator
-    genMapRedTasks(qb);
+    genMapRedTasks(pCtx);
 
     LOG.info("Completed plan generation");
 

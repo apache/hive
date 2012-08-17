@@ -376,8 +376,8 @@ public class QBParseInfo {
     this.outerQueryLimit = outerQueryLimit;
   }
 
-  public boolean isSelectStarQuery() {
-    if (isSubQ || (joinExpr != null) || (!nameToSample.isEmpty())
+  public boolean isSimpleSelectQuery() {
+    if (isSubQ || (joinExpr != null)
         || (!destToGroupby.isEmpty()) || (!destToClusterby.isEmpty())
         || (!aliasToLateralViews.isEmpty())) {
       return false;
@@ -410,23 +410,6 @@ public class QBParseInfo {
       ASTNode v = entry.getValue();
       if (!(((ASTNode) v.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE)) {
         return false;
-      }
-    }
-
-    iter = destToSelExpr.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<String, ASTNode> entry = iter.next();
-      ASTNode selExprList = entry.getValue();
-      // Iterate over the selects
-      for (int i = 0; i < selExprList.getChildCount(); ++i) {
-
-        // list of the columns
-        ASTNode selExpr = (ASTNode) selExprList.getChild(i);
-        ASTNode sel = (ASTNode) selExpr.getChild(0);
-
-        if (sel.getToken().getType() != HiveParser.TOK_ALLCOLREF) {
-          return false;
-        }
       }
     }
 

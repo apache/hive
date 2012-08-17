@@ -111,6 +111,21 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: srcpart
+          Select Operator
+            expressions:
+                  expr: key
+                  type: string
+                  expr: value
+                  type: string
+                  expr: ds
+                  type: string
+                  expr: hr
+                  type: string
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
 
 
 PREHOOK: query: select * from srcpart

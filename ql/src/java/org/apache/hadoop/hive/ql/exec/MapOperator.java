@@ -33,7 +33,6 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -494,13 +493,16 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       // The child operators cleanup if input file has changed
       cleanUpInputFileChanged();
     }
+    ExecMapperContext context = getExecContext();
 
     Object row = null;
     try {
       if (this.hasVC) {
         this.rowWithPartAndVC[0] = deserializer.deserialize(value);
         int vcPos = isPartitioned ? 2 : 1;
-        populateVirtualColumnValues();
+        if (context != null) {
+          populateVirtualColumnValues(context, vcs, vcValues, deserializer);
+        }
         this.rowWithPartAndVC[vcPos] = this.vcValues;
       } else if (!isPartitioned) {
         row = deserializer.deserialize((Writable) value);
@@ -549,54 +551,60 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     }
   }
 
-  private void populateVirtualColumnValues() {
-    if (this.vcs != null) {
-      ExecMapperContext mapExecCxt = this.getExecContext();
-      IOContext ioCxt = mapExecCxt.getIoCxt();
-      for (int i = 0; i < vcs.size(); i++) {
-        VirtualColumn vc = vcs.get(i);
-        if (vc.equals(VirtualColumn.FILENAME) && mapExecCxt.inputFileChanged()) {
-          this.vcValues[i] = new Text(mapExecCxt.getCurrentInputFile());
-        } else if (vc.equals(VirtualColumn.BLOCKOFFSET)) {
-          long current = ioCxt.getCurrentBlockStart();
-          LongWritable old = (LongWritable) this.vcValues[i];
-          if (old == null) {
-            old = new LongWritable(current);
-            this.vcValues[i] = old;
-            continue;
-          }
-          if (current != old.get()) {
-            old.set(current);
-          }
-        } else if (vc.equals(VirtualColumn.ROWOFFSET)) {
-          long current = ioCxt.getCurrentRow();
-          LongWritable old = (LongWritable) this.vcValues[i];
-          if (old == null) {
-            old = new LongWritable(current);
-            this.vcValues[i] = old;
-            continue;
-          }
-          if (current != old.get()) {
-            old.set(current);
-          }
-        } else if (vc.equals(VirtualColumn.RAWDATASIZE)) {
-          long current = 0L;
-          SerDeStats stats = this.deserializer.getSerDeStats();
-          if(stats != null) {
-            current = stats.getRawDataSize();
-          }
-          LongWritable old = (LongWritable) this.vcValues[i];
-          if (old == null) {
-            old = new LongWritable(current);
-            this.vcValues[i] = old;
-            continue;
-          }
-          if (current != old.get()) {
-            old.set(current);
-          }
+  public static Writable[] populateVirtualColumnValues(ExecMapperContext ctx,
+      List<VirtualColumn> vcs, Writable[] vcValues, Deserializer deserializer) {
+    if (vcs == null) {
+      return vcValues;
+    }
+    if (vcValues == null) {
+      vcValues = new Writable[vcs.size()];
+    }
+    for (int i = 0; i < vcs.size(); i++) {
+      VirtualColumn vc = vcs.get(i);
+      if (vc.equals(VirtualColumn.FILENAME)) {
+        if (ctx.inputFileChanged()) {
+          vcValues[i] = new Text(ctx.getCurrentInputFile());
+        }
+      } else if (vc.equals(VirtualColumn.BLOCKOFFSET)) {
+        long current = ctx.getIoCxt().getCurrentBlockStart();
+        LongWritable old = (LongWritable) vcValues[i];
+        if (old == null) {
+          old = new LongWritable(current);
+          vcValues[i] = old;
+          continue;
+        }
+        if (current != old.get()) {
+          old.set(current);
+        }
+      } else if (vc.equals(VirtualColumn.ROWOFFSET)) {
+        long current = ctx.getIoCxt().getCurrentRow();
+        LongWritable old = (LongWritable) vcValues[i];
+        if (old == null) {
+          old = new LongWritable(current);
+          vcValues[i] = old;
+          continue;
+        }
+        if (current != old.get()) {
+          old.set(current);
+        }
+      } else if (vc.equals(VirtualColumn.RAWDATASIZE)) {
+        long current = 0L;
+        SerDeStats stats = deserializer.getSerDeStats();
+        if(stats != null) {
+          current = stats.getRawDataSize();
+        }
+        LongWritable old = (LongWritable) vcValues[i];
+        if (old == null) {
+          old = new LongWritable(current);
+          vcValues[i] = old;
+          continue;
+        }
+        if (current != old.get()) {
+          old.set(current);
         }
       }
     }
+    return vcValues;
   }
 
   @Override

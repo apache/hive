@@ -549,6 +549,9 @@ public class HiveConf extends Configuration {
 
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
+    // 'minimal', 'more' (and 'all' later)
+    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal"),
+
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 

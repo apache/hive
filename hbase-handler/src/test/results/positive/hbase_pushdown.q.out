@@ -256,6 +256,17 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: hbase_pushdown
+          Select Operator
+            expressions:
+                  expr: key
+                  type: int
+                  expr: value
+                  type: string
+            outputColumnNames: _col0, _col1
+            ListSink
 
 
 PREHOOK: query: -- with a predicate which is not actually part of the filter, so

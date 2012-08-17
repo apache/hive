@@ -339,7 +339,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return partDesc;
   }
 
-  protected void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
+  public static void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
 
     TableScanDesc scanDesc = tableScan.getConf();
     if (scanDesc == null) {

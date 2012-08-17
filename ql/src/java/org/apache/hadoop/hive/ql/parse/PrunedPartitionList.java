@@ -92,8 +92,8 @@ public class PrunedPartitionList {
    */
   public List<Partition> getNotDeniedPartns() {
     List<Partition> partitions = new ArrayList<Partition>();
-    partitions.addAll(unknownPartns);
     partitions.addAll(confirmedPartns);
+    partitions.addAll(unknownPartns);
     return partitions;
   }
 

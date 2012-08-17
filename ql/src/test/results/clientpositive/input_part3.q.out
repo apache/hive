@@ -14,6 +14,21 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: x
+          Select Operator
+            expressions:
+                  expr: key
+                  type: string
+                  expr: value
+                  type: string
+                  expr: ds
+                  type: string
+                  expr: hr
+                  type: string
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
 
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 11

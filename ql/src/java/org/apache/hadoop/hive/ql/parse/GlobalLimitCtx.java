@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 
 /**
- *
+ * context for pruning inputs. populated by GlobalLimitOptimizer
  */
 public class GlobalLimitCtx {
 

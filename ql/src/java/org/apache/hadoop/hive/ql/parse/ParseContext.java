@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -37,7 +38,9 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -99,6 +102,8 @@ public class ParseContext {
 
   private HashSet<ReadEntity> semanticInputs;
   private List<Task<? extends Serializable>> rootTasks;
+
+  private FetchTask fetchTask;
 
   public ParseContext() {
   }
@@ -532,5 +537,24 @@ public class ParseContext {
                               List<? extends Task<? extends Serializable>> tasks) {
     this.rootTasks.remove(rootTask);
     this.rootTasks.addAll(tasks);
+  }
+
+  public FetchTask getFetchTask() {
+    return fetchTask;
+  }
+
+  public void setFetchTask(FetchTask fetchTask) {
+    this.fetchTask = fetchTask;
+  }
+
+  public PrunedPartitionList getPrunedPartitions(String alias, TableScanOperator ts)
+      throws HiveException {
+    PrunedPartitionList partsList = opToPartList.get(ts);
+    if (partsList == null) {
+      partsList = PartitionPruner.prune(topToTable.get(ts),
+          opToPartPruner.get(ts), conf, alias, prunedPartitions);
+      opToPartList.put(ts, partsList);
+    }
+    return partsList;
   }
 }
