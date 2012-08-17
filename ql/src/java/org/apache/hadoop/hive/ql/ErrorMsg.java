@@ -246,6 +246,11 @@ public enum ErrorMsg {
   EXPRESSIONS_NOT_ALLOWED_SORTBY(10140,
     "Expressions are not allowed in a sort by clause. Use a column alias instead"),
 
+  BUCKETED_TABLE_METADATA_INCORRECT(10141,
+   "Bucketed table metadata is not correct. " +
+    "Fix the metadata or don't use bucketed mapjoin, by setting " +
+    "hive.enforce.bucketmapjoin to false."),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),

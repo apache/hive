@@ -234,12 +234,21 @@ public class BucketMapJoinOptimizer implements Transform {
                 return false;
               }
               List<String> fileNames = getOnePartitionBucketFileNames(p.getDataLocation());
+              // The number of files for the table should be same as number of buckets.
+              int bucketCount = p.getBucketCount();
+              if (fileNames.size() != bucketCount) {
+                String msg = "The number of buckets for table " +
+                  tbl.getTableName() + " partition " + p.getName() + " is " +
+                  p.getBucketCount() + ", whereas the number of files is " + fileNames.size();
+                throw new SemanticException(
+                  ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
+              }
               if (alias.equals(baseBigAlias)) {
                 bigTblPartsToBucketFileNames.put(p, fileNames);
-                bigTblPartsToBucketNumber.put(p, p.getBucketCount());
+                bigTblPartsToBucketNumber.put(p, bucketCount);
               } else {
                 files.add(fileNames);
-                buckets.add(p.getBucketCount());
+                buckets.add(bucketCount);
               }
             }
             if (!alias.equals(baseBigAlias)) {
@@ -253,6 +262,14 @@ public class BucketMapJoinOptimizer implements Transform {
           }
           List<String> fileNames = getOnePartitionBucketFileNames(tbl.getDataLocation());
           Integer num = new Integer(tbl.getNumBuckets());
+          // The number of files for the table should be same as number of buckets.
+          if (fileNames.size() != num) {
+            String msg = "The number of buckets for table " +
+              tbl.getTableName() + " is " + tbl.getNumBuckets() +
+              ", whereas the number of files is " + fileNames.size();
+            throw new SemanticException(
+              ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
+          }
           if (alias.equals(baseBigAlias)) {
             bigTblPartsToBucketFileNames.put(null, fileNames);
             bigTblPartsToBucketNumber.put(null, tbl.getNumBuckets());

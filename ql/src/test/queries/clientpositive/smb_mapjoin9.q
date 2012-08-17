@@ -30,9 +30,13 @@ ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS N
 
 set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+set hive.exec.reducers.max = 1;
 
 insert overwrite table hive_test_smb_bucket1 partition (ds='2010-10-15') select key, value from src;
 insert overwrite table hive_test_smb_bucket2 partition (ds='2010-10-15') select key, value from src;
+
+set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 explain
 create table smb_mapjoin9_results as
