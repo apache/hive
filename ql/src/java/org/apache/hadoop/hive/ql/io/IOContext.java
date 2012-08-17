@@ -39,6 +39,10 @@ public class IOContext {
     return IOContext.threadLocal.get();
   }
 
+  public static void clear() {
+    IOContext.threadLocal.remove();
+  }
+
   long currentBlockStart;
   long nextBlockStart;
   long currentRow;

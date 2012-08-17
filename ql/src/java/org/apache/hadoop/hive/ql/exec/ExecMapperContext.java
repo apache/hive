@@ -68,7 +68,10 @@ public class ExecMapperContext {
     ioCxt = IOContext.get();
   }
 
-
+  public void clear() {
+    IOContext.clear();
+    ioCxt = null;
+  }
 
   /**
    * For CompbineFileInputFormat, the mapper's input file will be changed on the
@@ -174,5 +177,4 @@ public class ExecMapperContext {
   public void setIoCxt(IOContext ioCxt) {
     this.ioCxt = ioCxt;
   }
-
 }

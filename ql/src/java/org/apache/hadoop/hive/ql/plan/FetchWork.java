@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+import org.apache.hadoop.hive.ql.parse.SplitSample;
 
 /**
  * FetchWork.
@@ -38,8 +41,13 @@ public class FetchWork implements Serializable {
   private ArrayList<String> partDir;
   private ArrayList<PartitionDesc> partDesc;
 
+  private Operator<?> source;
+  private ListSinkOperator sink;
+
   private int limit;
   private int leastNumRows;
+
+  private SplitSample splitSample;
 
   /**
    * Serialization Null Format for the serde used to fetch data.
@@ -71,12 +79,28 @@ public class FetchWork implements Serializable {
     this.limit = limit;
   }
 
+  public void initializeForFetch() {
+    if (source == null) {
+      sink = new ListSinkOperator();
+      sink.setConf(new ListSinkDesc(serializationNullFormat));
+      source = sink;
+    }
+  }
+
   public String getSerializationNullFormat() {
     return serializationNullFormat;
   }
 
   public void setSerializationNullFormat(String format) {
     serializationNullFormat = format;
+  }
+
+  public boolean isNotPartitioned() {
+    return tblDir != null;
+  }
+
+  public boolean isPartitioned() {
+    return tblDir == null;
   }
 
   /**
@@ -198,6 +222,31 @@ public class FetchWork implements Serializable {
 
   public void setLeastNumRows(int leastNumRows) {
     this.leastNumRows = leastNumRows;
+  }
+
+  @Explain(displayName = "Processor Tree")
+  public Operator<?> getSource() {
+    return source;
+  }
+
+  public void setSource(Operator<?> source) {
+    this.source = source;
+  }
+
+  public ListSinkOperator getSink() {
+    return sink;
+  }
+
+  public void setSink(ListSinkOperator sink) {
+    this.sink = sink;
+  }
+
+  public void setSplitSample(SplitSample splitSample) {
+    this.splitSample = splitSample;
+  }
+
+  public SplitSample getSplitSample() {
+    return splitSample;
   }
 
   @Override

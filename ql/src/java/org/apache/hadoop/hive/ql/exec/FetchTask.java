@@ -21,27 +21,24 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Properties;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -51,9 +48,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private int maxRows = 100;
-  private FetchOperator ftOp;
-  private SerDe mSerde;
+  private FetchOperator fetch;
+  private ListSinkOperator sink;
   private int totalRows;
+
   private static transient final Log LOG = LogFactory.getLog(FetchTask.class);
 
   public FetchTask() {
@@ -63,34 +61,35 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
+    work.initializeForFetch();
 
     try {
       // Create a file system handle
       JobConf job = new JobConf(conf, ExecDriver.class);
 
-      String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
-      Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,
-          JavaUtils.getClassLoader()).asSubclass(SerDe.class);
-      // cast only needed for Hadoop 0.17 compatibility
-      mSerde = (SerDe) ReflectionUtils.newInstance(serdeClass, null);
-
-      Properties serdeProp = new Properties();
-
-      // this is the default serialization format
-      if (mSerde instanceof DelimitedJSONSerDe) {
-        serdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-        serdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, work.getSerializationNullFormat());
+      Operator<?> source = work.getSource();
+      if (source instanceof TableScanOperator) {
+        TableScanOperator ts = (TableScanOperator) source;
+        HiveInputFormat.pushFilters(job, ts);
+        ColumnProjectionUtils.appendReadColumnIDs(job, ts.getNeededColumnIDs());
       }
+      sink = work.getSink();
+      fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
+      source.initialize(conf, new ObjectInspector[]{fetch.getOutputObjectInspector()});
 
-      mSerde.initialize(job, serdeProp);
-
-      ftOp = new FetchOperator(work, job);
     } catch (Exception e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
     }
+  }
+
+  private List<VirtualColumn> getVirtualColumns(Operator<?> ts) {
+    if (ts instanceof TableScanOperator && ts.getConf() != null) {
+      return ((TableScanOperator)ts).getConf().getVirtualCols();
+    }
+    return null;
   }
 
   @Override
@@ -122,48 +121,26 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
   @Override
   public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
+    sink.reset(res);
     try {
-      int numRows = 0;
-      int rowsRet = maxRows;
-
-      if (work.getLeastNumRows() > 0) {
-        if (totalRows == work.getLeastNumRows()) {
-          return false;
-        }
-        for (int i = 0; i < work.getLeastNumRows(); i++) {
-          InspectableObject io = ftOp.getNextRow();
-          if (io == null) {
-            throw new CommandNeedRetryException();
-          }
-          res.add(((Text) mSerde.serialize(io.o, io.oi)).toString());
-          numRows++;
-        }
-        totalRows = work.getLeastNumRows();
-        return true;
-      }
-
-      if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet)) {
-        rowsRet = work.getLimit() - totalRows;
+      int rowsRet = work.getLeastNumRows();
+      if (rowsRet <= 0) {
+        rowsRet = work.getLimit() >= 0 ? Math.min(work.getLimit() - totalRows, maxRows) : maxRows;
       }
       if (rowsRet <= 0) {
-        ftOp.clearFetchContext();
+        fetch.clearFetchContext();
         return false;
       }
-
-      while (numRows < rowsRet) {
-        InspectableObject io = ftOp.getNextRow();
-        if (io == null) {
-          if (numRows == 0) {
-            return false;
+      boolean fetched = false;
+      while (sink.getNumRows() < rowsRet) {
+        if (!fetch.pushRow()) {
+          if (work.getLeastNumRows() > 0) {
+            throw new CommandNeedRetryException();
           }
-          totalRows += numRows;
-          return true;
+          return fetched;
         }
-
-        res.add(((Text) mSerde.serialize(io.o, io.oi)).toString());
-        numRows++;
+        fetched = true;
       }
-      totalRows += numRows;
       return true;
     } catch (CommandNeedRetryException e) {
       throw e;
@@ -171,6 +148,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       throw e;
     } catch (Exception e) {
       throw new IOException(e);
+    } finally {
+      totalRows += sink.getNumRows();
     }
   }
 
@@ -203,8 +182,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
    * @throws HiveException
    */
   public void clearFetch() throws HiveException {
-    if (null != ftOp) {
-      ftOp.clearFetchContext();
+    if (fetch != null) {
+      fetch.clearFetchContext();
     }
   }
 }

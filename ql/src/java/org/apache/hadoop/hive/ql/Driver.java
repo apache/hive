@@ -442,13 +442,6 @@ public class Driver implements CommandProcessor {
       sem.validate();
 
       plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
-      // initialize FetchTask right here
-      if (plan.getFetchTask() != null) {
-        plan.getFetchTask().initialize(conf, plan, null);
-      }
-
-      // get the output schema
-      schema = getSchema(sem, conf);
 
       // test Only - serialize the query plan and deserialize it
       if ("true".equalsIgnoreCase(System.getProperty("test.serialize.qplan"))) {
@@ -476,6 +469,9 @@ public class Driver implements CommandProcessor {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
       }
+
+      // get the output schema
+      schema = getSchema(sem, conf);
 
       //do the authorization check
       if (HiveConf.getBoolVar(conf,
