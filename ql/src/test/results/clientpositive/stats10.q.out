@@ -430,9 +430,9 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended bucket3_1 partition (ds='1')
+PREHOOK: query: describe formatted bucket3_1 partition (ds='1')
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended bucket3_1 partition (ds='1')
+POSTHOOK: query: describe formatted bucket3_1 partition (ds='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -440,14 +440,43 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	bucket3_1           	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended bucket3_1 partition (ds='2')
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted bucket3_1 partition (ds='2')
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended bucket3_1 partition (ds='2')
+POSTHOOK: query: describe formatted bucket3_1 partition (ds='2')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -455,14 +484,43 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2]                 	 
+Database:           	default             	 
+Table:              	bucket3_1           	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended bucket3_1
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted bucket3_1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended bucket3_1
+POSTHOOK: query: describe formatted bucket3_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -470,8 +528,38 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	4                   
+	numPartitions       	2                   
+	numRows             	1000                
+	rawDataSize         	10624               
+	totalSize           	11624               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

@@ -11,9 +11,9 @@ analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics;
 
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics;
 
-desc extended analyze_srcpart;
-desc extended analyze_srcpart partition (ds='2008-04-08', hr=11);
-desc extended analyze_srcpart partition (ds='2008-04-08', hr=12);
-desc extended analyze_srcpart partition (ds='2008-04-09', hr=11);
-desc extended analyze_srcpart partition (ds='2008-04-09', hr=12);
+desc formatted analyze_srcpart;
+desc formatted analyze_srcpart partition (ds='2008-04-08', hr=11);
+desc formatted analyze_srcpart partition (ds='2008-04-08', hr=12);
+desc formatted analyze_srcpart partition (ds='2008-04-09', hr=11);
+desc formatted analyze_srcpart partition (ds='2008-04-09', hr=12);
 

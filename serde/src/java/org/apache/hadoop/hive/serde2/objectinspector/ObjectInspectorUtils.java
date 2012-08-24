@@ -31,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
@@ -193,7 +192,7 @@ public final class ObjectInspectorUtils {
       if (i++ >= startCol) {
         result.add(copyToStandardObject(soi.getStructFieldData(row, f),
             f.getFieldObjectInspector(), objectInspectorOption));
-        if (j == numCols) {
+        if (++j == numCols) {
           break;
         }
       }

@@ -145,6 +145,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     StructObjectInspector partObjectInspector; // partition
     StructObjectInspector rowObjectInspector;
     Object[] rowWithPart;
+    Object[] rowWithPartAndVC;
     Deserializer deserializer;
     public String tableName;
     public String partName;
@@ -159,12 +160,14 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
         StructObjectInspector rawRowObjectInspector,
         StructObjectInspector partObjectInspector,
         Object[] rowWithPart,
+        Object[] rowWithPartAndVC,
         Deserializer deserializer) {
       this.isPartitioned = isPartitioned;
       this.rowObjectInspector = rowObjectInspector;
       this.rawRowObjectInspector = rawRowObjectInspector;
       this.partObjectInspector = partObjectInspector;
       this.rowWithPart = rowWithPart;
+      this.rowWithPartAndVC = rowWithPartAndVC;
       this.deserializer = deserializer;
     }
 
@@ -187,6 +190,13 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
      */
     public Object[] getRowWithPart() {
       return rowWithPart;
+    }
+
+    /**
+     * @return the rowWithPartAndVC
+     */
+    public Object[] getRowWithPartAndVC() {
+      return rowWithPartAndVC;
     }
 
     /**
@@ -213,7 +223,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     initialize(hconf, null);
   }
 
-  private static MapOpCtx initObjectInspector(MapredWork conf,
+  private MapOpCtx initObjectInspector(MapredWork conf,
       Configuration hconf, String onefile) throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,
       SerDeException {
@@ -277,12 +287,12 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       // LOG.info("dump " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
       opCtx = new MapOpCtx(true, rowObjectInspector, rawRowObjectInspector, partObjectInspector,
-          rowWithPart, deserializer);
+                           rowWithPart, null, deserializer);
     } else {
       // LOG.info("dump2 " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
       opCtx = new MapOpCtx(false, rawRowObjectInspector, rawRowObjectInspector, null, null,
-          deserializer);
+                           null, deserializer);
     }
     opCtx.tableName = tableName;
     opCtx.partName = partName;
@@ -299,15 +309,17 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     deserializer = opCtxMap.get(inp).getDeserializer();
     isPartitioned = opCtxMap.get(inp).isPartitioned();
     rowWithPart = opCtxMap.get(inp).getRowWithPart();
+    rowWithPartAndVC = opCtxMap.get(inp).getRowWithPartAndVC();
     rowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
     if (listInputPaths.contains(inp)) {
       return;
     }
 
     listInputPaths.add(inp);
-    StructObjectInspector rawRowObjectInspector = opCtxMap.get(inp).rawRowObjectInspector;
-    StructObjectInspector partObjectInspector = opCtxMap.get(inp).partObjectInspector;
+
     if (op instanceof TableScanOperator) {
+      StructObjectInspector rawRowObjectInspector = opCtxMap.get(inp).rawRowObjectInspector;
+      StructObjectInspector partObjectInspector = opCtxMap.get(inp).partObjectInspector;
       TableScanOperator tsOp = (TableScanOperator) op;
       TableScanDesc tsDesc = tsOp.getConf();
       if (tsDesc != null) {
@@ -344,6 +356,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
                                             vcStructObjectInspector}));
           }
           opCtxMap.get(inp).rowObjectInspector = this.rowObjectInspector;
+          opCtxMap.get(inp).rowWithPartAndVC = this.rowWithPartAndVC;
         }
       }
     }

@@ -10,7 +10,7 @@ explain analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute stat
 
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics;
 
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
 
-describe extended analyze_srcpart;
+describe formatted analyze_srcpart;
