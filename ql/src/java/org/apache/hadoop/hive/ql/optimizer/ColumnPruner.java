@@ -94,6 +94,8 @@ public class ColumnPruner implements Transform {
         .getTableScanProc());
     opRules.put(new RuleRegExp("R8", "LVJ%"), ColumnPrunerProcFactory
         .getLateralViewJoinProc());
+    opRules.put(new RuleRegExp("R9", "LVF%"), ColumnPrunerProcFactory
+        .getLateralViewForwardProc());
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory

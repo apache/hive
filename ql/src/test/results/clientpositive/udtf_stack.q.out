@@ -23,9 +23,8 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2, _col3
+                  outputColumnNames: _col2, _col3
                   Select Operator
                     expressions:
                           expr: _col2
@@ -54,7 +53,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: stack
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    outputColumnNames: _col2, _col3
                     Select Operator
                       expressions:
                             expr: _col2
@@ -95,9 +94,8 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2, _col3
+                  outputColumnNames: _col2, _col3
                   Select Operator
                     expressions:
                           expr: _col2
@@ -128,7 +126,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: stack
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    outputColumnNames: _col2, _col3
                     Select Operator
                       expressions:
                             expr: _col2

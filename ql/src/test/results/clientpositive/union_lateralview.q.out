@@ -83,9 +83,14 @@ STAGE PLANS:
               Union
                 Lateral View Forward
                   Select Operator
-                    SELECT * : (no compute)
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    outputColumnNames: _col0, _col1
                     Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      outputColumnNames: _col0, _col1, _col3
                       Select Operator
                         expressions:
                               expr: _col3
@@ -117,7 +122,7 @@ STAGE PLANS:
                     UDTF Operator
                       function name: explode
                       Lateral View Join Operator
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                        outputColumnNames: _col0, _col1, _col3
                         Select Operator
                           expressions:
                                 expr: _col3
@@ -156,9 +161,14 @@ STAGE PLANS:
               Union
                 Lateral View Forward
                   Select Operator
-                    SELECT * : (no compute)
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    outputColumnNames: _col0, _col1
                     Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      outputColumnNames: _col0, _col1, _col3
                       Select Operator
                         expressions:
                               expr: _col3
@@ -190,7 +200,7 @@ STAGE PLANS:
                     UDTF Operator
                       function name: explode
                       Lateral View Join Operator
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                        outputColumnNames: _col0, _col1, _col3
                         Select Operator
                           expressions:
                                 expr: _col3

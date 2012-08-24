@@ -159,9 +159,8 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2
+                  outputColumnNames: _col2
                   Select Operator
                     expressions:
                           expr: _col2
@@ -182,7 +181,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2
+                    outputColumnNames: _col2
                     Select Operator
                       expressions:
                             expr: _col2
@@ -222,14 +221,16 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2
+                  outputColumnNames: _col2
                   Lateral View Forward
                     Select Operator
-                      SELECT * : (no compute)
+                      expressions:
+                            expr: _col2
+                            type: int
+                      outputColumnNames: _col2
                       Lateral View Join Operator
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                        outputColumnNames: _col2, _col3
                         Select Operator
                           expressions:
                                 expr: _col2
@@ -252,7 +253,7 @@ STAGE PLANS:
                       UDTF Operator
                         function name: explode
                         Lateral View Join Operator
-                          outputColumnNames: _col0, _col1, _col2, _col3
+                          outputColumnNames: _col2, _col3
                           Select Operator
                             expressions:
                                   expr: _col2
@@ -275,12 +276,15 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2
+                    outputColumnNames: _col2
                     Lateral View Forward
                       Select Operator
-                        SELECT * : (no compute)
+                        expressions:
+                              expr: _col2
+                              type: int
+                        outputColumnNames: _col2
                         Lateral View Join Operator
-                          outputColumnNames: _col0, _col1, _col2, _col3
+                          outputColumnNames: _col2, _col3
                           Select Operator
                             expressions:
                                   expr: _col2
@@ -303,7 +307,7 @@ STAGE PLANS:
                         UDTF Operator
                           function name: explode
                           Lateral View Join Operator
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                            outputColumnNames: _col2, _col3
                             Select Operator
                               expressions:
                                     expr: _col2
@@ -345,14 +349,12 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2
+                  outputColumnNames: _col2
                   Lateral View Forward
                     Select Operator
-                      SELECT * : (no compute)
                       Lateral View Join Operator
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                        outputColumnNames: _col3
                         Select Operator
                           expressions:
                                 expr: _col3
@@ -373,7 +375,7 @@ STAGE PLANS:
                       UDTF Operator
                         function name: explode
                         Lateral View Join Operator
-                          outputColumnNames: _col0, _col1, _col2, _col3
+                          outputColumnNames: _col3
                           Select Operator
                             expressions:
                                   expr: _col3
@@ -394,12 +396,11 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2
+                    outputColumnNames: _col2
                     Lateral View Forward
                       Select Operator
-                        SELECT * : (no compute)
                         Lateral View Join Operator
-                          outputColumnNames: _col0, _col1, _col2, _col3
+                          outputColumnNames: _col3
                           Select Operator
                             expressions:
                                   expr: _col3
@@ -420,7 +421,7 @@ STAGE PLANS:
                         UDTF Operator
                           function name: explode
                           Lateral View Join Operator
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                            outputColumnNames: _col3
                             Select Operator
                               expressions:
                                     expr: _col3
@@ -522,9 +523,8 @@ STAGE PLANS:
             alias: tmp_pyang_lv
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1
+                  outputColumnNames: _col1
                   Select Operator
                     expressions:
                           expr: _col1
@@ -545,7 +545,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: _col1
                     Select Operator
                       expressions:
                             expr: _col1
@@ -861,16 +861,17 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
-                  expr: _col1
-                  type: string
                   expr: array(_col0)
                   type: array<string>
-            outputColumnNames: _col0, _col1
+            outputColumnNames: _col1
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
+                expressions:
+                      expr: _col1
+                      type: array<string>
+                outputColumnNames: _col1
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2
+                  outputColumnNames: _col1, _col2
                   Select Operator
                     expressions:
                           expr: _col1
@@ -892,7 +893,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2
+                    outputColumnNames: _col1, _col2
                     Select Operator
                       expressions:
                             expr: _col1
