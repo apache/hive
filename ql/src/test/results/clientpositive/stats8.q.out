@@ -77,9 +77,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -89,15 +89,44 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended analyze_srcpart
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted analyze_srcpart
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart
+POSTHOOK: query: describe formatted analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -107,12 +136,42 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
@@ -162,9 +221,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -174,12 +233,41 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics
@@ -229,9 +317,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -241,12 +329,41 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09, 11]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics
@@ -296,9 +413,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -308,12 +425,41 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09, 12]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain analyze table analyze_srcpart PARTITION(ds, hr) compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_srcpart PARTITION(ds, hr) compute statistics
@@ -375,9 +521,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -387,15 +533,44 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -405,15 +580,44 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -423,15 +627,44 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09, 11]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -441,15 +674,44 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09, 12]    	 
+Database:           	default             	 
+Table:              	analyze_srcpart     	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended analyze_srcpart
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted analyze_srcpart
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart
+POSTHOOK: query: describe formatted analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -459,9 +721,39 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	4                   
+	numPartitions       	4                   
+	numRows             	2000                
+	rawDataSize         	21248               
+	totalSize           	23248               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

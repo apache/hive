@@ -54,7 +54,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   protected transient JobConf jc;
   private transient Configuration hconf;
-  private transient String partitionSpecs;
   private transient boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
@@ -93,6 +92,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private void gatherStats(Object row) {
     // first row/call or a new partition
     if ((currentStat == null) || inputFileChanged) {
+      String partitionSpecs;
       inputFileChanged = false;
       if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
         partitionSpecs = ""; // non-partitioned
@@ -183,7 +183,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
     currentStat = null;
     stats = new HashMap<String, Stat>();
-    partitionSpecs = null;
     if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
       // NON PARTITIONED table
       return;

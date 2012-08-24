@@ -23,6 +23,6 @@ select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order b
 explain analyze table bucket3_1 partition (ds) compute statistics;
 analyze table bucket3_1 partition (ds) compute statistics;
 
-describe extended bucket3_1 partition (ds='1');
-describe extended bucket3_1 partition (ds='2');
-describe extended bucket3_1;
+describe formatted bucket3_1 partition (ds='1');
+describe formatted bucket3_1 partition (ds='2');
+describe formatted bucket3_1;
