@@ -68,6 +68,11 @@ public class HBaseStatsPublisher implements StatsPublisher {
 
     // Write in HBase
 
+    if (stats.isEmpty()) {
+      // If there are no stats to publish, nothing to do.
+      return true;
+    }
+
     if (!HBaseStatsUtils.isValidStatisticSet(stats.keySet())) {
       LOG.warn("Warning. Invalid statistic: " + stats.keySet().toString()
           + ", supported stats: "

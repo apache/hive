@@ -119,6 +119,11 @@ public class JDBCStatsPublisher implements StatsPublisher {
   @Override
   public boolean publishStat(String fileID, Map<String, String> stats) {
 
+    if (stats.isEmpty()) {
+      // If there are no stats to publish, nothing to do.
+      return true;
+    }
+
     if (conn == null) {
       LOG.error("JDBC connection is null. Cannot publish stats without JDBC connection.");
       return false;
