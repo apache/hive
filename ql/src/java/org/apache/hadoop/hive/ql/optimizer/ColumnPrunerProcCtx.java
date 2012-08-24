@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -154,5 +155,19 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     }
 
     return cols;
+  }
+
+  /**
+   * Create the list of internal columns for select tag of LV
+   */
+  public List<String> getSelectColsFromLVJoin(RowResolver rr,
+      List<String> colList) throws SemanticException {
+    List<String> columns = new ArrayList<String>();
+    for (String col : colList) {
+      if (rr.reverseLookup(col) != null) {
+        columns.add(col);
+      }
+    }
+    return columns;
   }
 }

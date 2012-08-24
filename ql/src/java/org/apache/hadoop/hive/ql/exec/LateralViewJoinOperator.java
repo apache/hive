@@ -78,8 +78,8 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
   // The expected tags from the parent operators. See processOp() before
   // changing the tags.
-  static final int SELECT_TAG = 0;
-  static final int UDTF_TAG = 1;
+  public static final int SELECT_TAG = 0;
+  public static final int UDTF_TAG = 1;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

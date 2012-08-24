@@ -18,9 +18,8 @@ STAGE PLANS:
             alias: src
             Lateral View Forward
               Select Operator
-                SELECT * : (no compute)
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col1, _col2
+                  outputColumnNames: _col2
                   Select Operator
                     expressions:
                           expr: (1 + assert_true((_col2 < 2)))
@@ -41,7 +40,7 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2
+                    outputColumnNames: _col2
                     Select Operator
                       expressions:
                             expr: (1 + assert_true((_col2 < 2)))
