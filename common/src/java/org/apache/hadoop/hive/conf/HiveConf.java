@@ -615,6 +615,13 @@ public class HiveConf extends Configuration {
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
         "hive.multi.insert.move.tasks.share.dependencies", false),
+
+    /**
+     * Enable list bucketing DDL. Default value is false so that we disable it by default.
+     *
+     * This will be removed once the rest of the DML changes are committed.
+     */
+    HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE("hive.internal.ddl.list.bucketing.enable", false),
     ;
 
     public final String varname;

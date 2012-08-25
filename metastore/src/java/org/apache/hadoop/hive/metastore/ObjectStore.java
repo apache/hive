@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
@@ -974,17 +976,87 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     List<MFieldSchema> mFieldSchemas = msd.getCD() == null ? null : msd.getCD().getCols();
-    return new StorageDescriptor(noFS ? null: convertToFieldSchemas(mFieldSchemas),
+
+    StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
         .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
         .getSortCols()), msd.getParameters());
+    SkewedInfo skewedInfo = new SkewedInfo(msd.getSkewedColNames(),
+        convertToSkewedValues(msd.getSkewedColValues()),
+        covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
+    sd.setSkewedInfo(skewedInfo);
+    return sd;
   }
 
   private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
       throws MetaException {
     return convertToStorageDescriptor(msd, false);
   }
+
+  /**
+   * Convert a list of MStringList to a list of list string
+   *
+   * @param mLists
+   * @return
+   */
+  private List<List<String>> convertToSkewedValues(List<MStringList> mLists) {
+    List<List<String>> lists = null;
+    if (mLists != null) {
+      lists = new ArrayList<List<String>>(mLists.size());
+      for (MStringList element : mLists) {
+        lists.add(new ArrayList<String>(element.getInternalList()));
+      }
+    }
+    return lists;
+  }
+
+  private List<MStringList> convertToMStringLists(List<List<String>> mLists) {
+    List<MStringList> lists = null ;
+    if (null != mLists) {
+      lists = new ArrayList<MStringList>();
+      for (List<String> mList : mLists) {
+        lists.add(new MStringList(mList));
+      }
+    }
+    return lists;
+  }
+
+  /**
+   * Convert a MStringList Map to a Map
+   * @param mMap
+   * @return
+   */
+  private Map<List<String>, String> covertToSkewedMap(Map<MStringList, String> mMap) {
+    Map<List<String>, String> map = null;
+    if (mMap != null) {
+      map = new HashMap<List<String>, String>(mMap.size());
+      Set<MStringList> keys = mMap.keySet();
+      for (MStringList key : keys) {
+        map.put(new ArrayList<String>(key.getInternalList()), mMap.get(key));
+      }
+    }
+    return map;
+  }
+
+  /**
+   * Covert a Map to a MStringList Map
+   * @param mMap
+   * @return
+   */
+  private Map<MStringList, String> covertToMapMStringList(Map<List<String>, String> mMap) {
+    Map<MStringList, String> map = null;
+    if (mMap != null) {
+      map = new HashMap<MStringList, String>(mMap.size());
+      Set<List<String>> keys = mMap.keySet();
+      for (List<String> key : keys) {
+        map.put(new MStringList(key), mMap.get(key));
+      }
+    }
+    return map;
+  }
+
+
 
   /**
    * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
@@ -1020,7 +1092,13 @@ public class ObjectStore implements RawStore, Configurable {
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
         .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
-        convertToMOrders(sd.getSortCols()), sd.getParameters());
+        convertToMOrders(sd.getSortCols()), sd.getParameters(),
+        (null == sd.getSkewedInfo()) ? null
+            : sd.getSkewedInfo().getSkewedColNames(),
+        convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+            .getSkewedColValues()),
+        covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+            .getSkewedColValueLocationMaps()));
   }
 
   public boolean addPartition(Partition part) throws InvalidObjectException,
@@ -1958,6 +2036,9 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
+    oldSd.setSkewedColNames(newSd.getSkewedColNames());
+    oldSd.setSkewedColValues(newSd.getSkewedColValues());
+    oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
   }
 
   /**

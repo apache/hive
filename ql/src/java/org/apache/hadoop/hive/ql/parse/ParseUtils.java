@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+
 
 /**
  * Library of utility functions used in the parse code.
@@ -63,4 +70,30 @@ public final class ParseUtils {
   private ParseUtils() {
     // prevent instantiation
   }
+
+  public static List<String> validateColumnNameUniqueness(
+      List<FieldSchema> fieldSchemas) throws SemanticException {
+
+    // no duplicate column names
+    // currently, it is a simple n*n algorithm - this can be optimized later if
+    // need be
+    // but it should not be a major bottleneck as the number of columns are
+    // anyway not so big
+    Iterator<FieldSchema> iterCols = fieldSchemas.iterator();
+    List<String> colNames = new ArrayList<String>();
+    while (iterCols.hasNext()) {
+      String colName = iterCols.next().getName();
+      Iterator<String> iter = colNames.iterator();
+      while (iter.hasNext()) {
+        String oldColName = iter.next();
+        if (colName.equalsIgnoreCase(oldColName)) {
+          throw new SemanticException(ErrorMsg.DUPLICATE_COLUMN_NAMES
+              .getMsg(oldColName));
+        }
+      }
+      colNames.add(colName);
+    }
+    return colNames;
+  }
+
 }

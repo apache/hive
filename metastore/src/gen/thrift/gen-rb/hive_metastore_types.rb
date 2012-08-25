@@ -288,6 +288,26 @@ class Order
   ::Thrift::Struct.generate_accessors self
 end
 
+class SkewedInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SKEWEDCOLNAMES = 1
+  SKEWEDCOLVALUES = 2
+  SKEWEDCOLVALUELOCATIONMAPS = 3
+
+  FIELDS = {
+    SKEWEDCOLNAMES => {:type => ::Thrift::Types::LIST, :name => 'skewedColNames', :element => {:type => ::Thrift::Types::STRING}},
+    SKEWEDCOLVALUES => {:type => ::Thrift::Types::LIST, :name => 'skewedColValues', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
+    SKEWEDCOLVALUELOCATIONMAPS => {:type => ::Thrift::Types::MAP, :name => 'skewedColValueLocationMaps', :key => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}, :value => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class StorageDescriptor
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COLS = 1
@@ -300,6 +320,7 @@ class StorageDescriptor
   BUCKETCOLS = 8
   SORTCOLS = 9
   PARAMETERS = 10
+  SKEWEDINFO = 11
 
   FIELDS = {
     COLS => {:type => ::Thrift::Types::LIST, :name => 'cols', :element => {:type => ::Thrift::Types::STRUCT, :class => FieldSchema}},
@@ -311,7 +332,8 @@ class StorageDescriptor
     SERDEINFO => {:type => ::Thrift::Types::STRUCT, :name => 'serdeInfo', :class => SerDeInfo},
     BUCKETCOLS => {:type => ::Thrift::Types::LIST, :name => 'bucketCols', :element => {:type => ::Thrift::Types::STRING}},
     SORTCOLS => {:type => ::Thrift::Types::LIST, :name => 'sortCols', :element => {:type => ::Thrift::Types::STRUCT, :class => Order}},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    SKEWEDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'skewedInfo', :class => SkewedInfo, :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -2792,6 +2792,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.getTTable().getSd().setCols(newCols);
+
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       if (tbl.getSerializationLib().equals(
@@ -3325,6 +3326,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     if (crtTbl.getLocation() != null) {
       tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+    }
+
+    if (crtTbl.getSkewedColNames() != null) {
+      tbl.setSkewedColNames(crtTbl.getSkewedColNames());
+    }
+    if (crtTbl.getSkewedColValues() != null) {
+      tbl.setSkewedColValues(crtTbl.getSkewedColValues());
     }
 
     tbl.setInputFormatClass(crtTbl.getInputFormat());

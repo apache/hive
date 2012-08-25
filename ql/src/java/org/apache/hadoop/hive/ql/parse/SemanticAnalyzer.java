@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -77,7 +78,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -161,14 +161,11 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -194,6 +191,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private UnionProcContext uCtx;
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  private final Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner;
   /**
    * a map for the split sampling, from ailias to an instance of SplitSample
    * that describes percentage and number.
@@ -245,6 +243,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     autogenColAliasPrfxIncludeFuncName = HiveConf.getBoolVar(conf,
                          HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME);
     queryProperties = new QueryProperties();
+    opToSkewedPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
   }
 
   @Override
@@ -292,7 +291,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToSkewedPruner);
   }
 
   @SuppressWarnings("nls")
@@ -1590,7 +1589,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
-            name, colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+            name, colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
         col_list.add(expr);
         output.put(tmp[0], tmp[1],
             new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
@@ -2279,9 +2278,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(colAlias));
         }
 
-        out_rwsch.put(tabAlias, colAlias, new ColumnInfo(
-            getColumnInternalName(pos), exp.getWritableObjectInspector(),
-            tabAlias, false));
+        ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(pos),
+          exp.getWritableObjectInspector(), tabAlias, false);
+        colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
+          .isSkewedCol() : false);
+        out_rwsch.put(tabAlias, colAlias, colInfo);
 
         pos = Integer.valueOf(pos.intValue() + 1);
       }
@@ -4375,7 +4376,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .getTypeInfoFromObjectInspector(tableFieldOI);
         TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
         ExprNodeDesc column = new ExprNodeColumnDesc(rowFieldTypeInfo,
-            rowFields.get(i).getInternalName(), "", false);
+            rowFields.get(i).getInternalName(), "", false, rowFields.get(i).isSkewedCol());
         // LazySimpleSerDe can convert any types to String type using
         // JSON-format.
         if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)
@@ -6567,10 +6568,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (int i = 0; i < fields.size(); i++) {
-          rwsch.put(alias, fields.get(i).getFieldName(), new ColumnInfo(fields
-              .get(i).getFieldName(), TypeInfoUtils
-              .getTypeInfoFromObjectInspector(fields.get(i)
-              .getFieldObjectInspector()), alias, false));
+          /**
+           * if the column is a skewed column, use ColumnInfo accordingly
+           */
+          ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
+            TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
+              .getFieldObjectInspector()), alias, false);
+          colInfo.setSkewedCol((isSkewedCol(alias, qb, fields.get(i)
+            .getFieldName())) ? true : false);
+          rwsch.put(alias, fields.get(i).getFieldName(), colInfo);
         }
       } catch (SerDeException e) {
         throw new RuntimeException(e);
@@ -6749,6 +6755,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return output;
+  }
+
+  private boolean isSkewedCol(String alias, QB qb, String colName) {
+    boolean isSkewedCol = false;
+    List<String> skewedCols = qb.getSkewedColumnNames(alias);
+    for (String skewedCol:skewedCols) {
+      if (skewedCol.equalsIgnoreCase(colName)) {
+        isSkewedCol = true;
+      }
+    }
+    return isSkewedCol;
   }
 
   private void setupStats(TableScanDesc tsDesc, QBParseInfo qbp, Table tab, String alias, RowResolver rwsch)
@@ -7186,7 +7203,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = qb.getTableDesc();
 
-      validateCreateTable(crtTblDesc);
+      crtTblDesc.validate();
 
       // Clear the output for CTAS since we don't need the output from the
       // mapredWork, the
@@ -7456,7 +7473,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToSkewedPruner);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
@@ -7483,7 +7500,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // modify it below as part of imposing view column names.
     List<FieldSchema> derivedSchema =
         new ArrayList<FieldSchema>(resultSchema);
-    validateColumnNameUniqueness(derivedSchema);
+    ParseUtils.validateColumnNameUniqueness(derivedSchema);
 
     List<FieldSchema> imposedSchema = createVwDesc.getSchema();
     if (imposedSchema != null) {
@@ -7653,7 +7670,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       return new ExprNodeColumnDesc(colInfo.getType(), colInfo
           .getInternalName(), colInfo.getTabAlias(), colInfo
-          .getIsVirtualCol());
+          .getIsVirtualCol(), colInfo.isSkewedCol());
     }
 
     // Create the walker and  the rules dispatcher.
@@ -7883,6 +7900,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
     final int CTAS = 2; // CREATE TABLE AS SELECT ... (CTAS)
     int command_type = CREATE_TABLE;
+    List<String> skewedColNames = new ArrayList<String>();
+    List<List<String>> skewedValues = new ArrayList<List<String>>();
+    Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat();
@@ -7990,7 +8010,60 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_FILEFORMAT_GENERIC:
         handleGenericFileFormat(child);
         break;
+      case HiveParser.TOK_TABLESKEWED:
+        /**
+         * Throw an error if the user tries to use the DDL with
+         * hive.internal.ddl.list.bucketing.enable set to false.
+         */
+        HiveConf hiveConf = SessionState.get().getConf();
+        if (!(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))) {
+          throw new SemanticException(ErrorMsg.HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED.getMsg());
+        }
 
+        // skewed column names
+        skewedColNames = analyzeCreateTableSkewedColNames(skewedColNames, child);
+        // skewed value
+        Tree vNode = child.getChild(1);
+        if (vNode == null) {
+          throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+        } else {
+          ASTNode vAstNode = (ASTNode) vNode;
+          switch (vAstNode.getToken().getType()) {
+            case HiveParser.TOK_TABCOLVALUE:
+              for (String str : getSkewedColumnValuesFromASTNode(vAstNode)) {
+                List<String> sList = new ArrayList<String>(Arrays.asList(str));
+                skewedValues.add(sList);
+              }
+              break;
+            case HiveParser.TOK_TABCOLVALUE_PAIR:
+              ArrayList<Node> vLNodes = vAstNode.getChildren();
+              for (Node node : vLNodes) {
+                if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
+                  throw new SemanticException(
+                      ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+                } else {
+                  Tree leafVNode = ((ASTNode) node).getChild(0);
+                  if (leafVNode == null) {
+                    throw new SemanticException(
+                        ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+                  } else {
+                    ASTNode lVAstNode = (ASTNode) leafVNode;
+                    if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
+                      throw new SemanticException(
+                          ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+                    } else {
+                      skewedValues.add(new ArrayList<String>(
+                          getSkewedColumnValuesFromASTNode(lVAstNode)));
+                    }
+                  }
+                }
+              }
+              break;
+            default:
+              break;
+          }
+        }
+        break;
       default:
         assert false;
       }
@@ -8025,9 +8098,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment,
           storageFormat.inputFormat, storageFormat.outputFormat, location, shared.serde,
-          storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists);
+          storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists, skewedColNames,
+          skewedValues);
 
-      validateCreateTable(crtTblDesc);
+      crtTblDesc.validate();
       // outputs is empty, which means this create table happens in the current
       // database.
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);
@@ -8067,7 +8141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment, storageFormat.inputFormat,
           storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler, shared.serdeProps,
-          tblProps, ifNotExists);
+          tblProps, ifNotExists, skewedColNames, skewedValues);
       qb.setTableDesc(crtTblDesc);
 
       SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
@@ -8078,6 +8152,50 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return null;
   }
+
+  /**
+   * Analyze list bucket column names
+   *
+   * @param skewedColNames
+   * @param child
+   * @return
+   * @throws SemanticException
+   */
+  private List<String> analyzeCreateTableSkewedColNames(List<String> skewedColNames,
+      ASTNode child) throws SemanticException {
+    Tree nNode = child.getChild(0);
+    if (nNode == null) {
+      throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+    } else {
+      ASTNode nAstNode = (ASTNode) nNode;
+      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
+        throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+      } else {
+        skewedColNames = getColumnNames(nAstNode);
+      }
+    }
+    return skewedColNames;
+  }
+
+  /**
+   * Given a ASTNode, return list of values.
+   *
+   * use case:
+   *   create table xyz list bucketed (col1) with skew (1,2,5)
+   *   AST Node is for (1,2,5)
+   * @param ast
+   * @return
+   */
+  protected List<String> getSkewedColumnValuesFromASTNode(ASTNode ast) {
+    List<String> colList = new ArrayList<String>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      colList.add(unescapeIdentifier(child.getText()).toLowerCase());
+    }
+    return colList;
+  }
+
 
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
       throws SemanticException {
@@ -8133,124 +8251,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         createVwDesc), conf));
 
     return selectStmt;
-  }
-
-  private List<String> validateColumnNameUniqueness(
-      List<FieldSchema> fieldSchemas) throws SemanticException {
-
-    // no duplicate column names
-    // currently, it is a simple n*n algorithm - this can be optimized later if
-    // need be
-    // but it should not be a major bottleneck as the number of columns are
-    // anyway not so big
-    Iterator<FieldSchema> iterCols = fieldSchemas.iterator();
-    List<String> colNames = new ArrayList<String>();
-    while (iterCols.hasNext()) {
-      String colName = iterCols.next().getName();
-      Iterator<String> iter = colNames.iterator();
-      while (iter.hasNext()) {
-        String oldColName = iter.next();
-        if (colName.equalsIgnoreCase(oldColName)) {
-          throw new SemanticException(ErrorMsg.DUPLICATE_COLUMN_NAMES
-              .getMsg(oldColName));
-        }
-      }
-      colNames.add(colName);
-    }
-    return colNames;
-  }
-
-  private void validateCreateTable(CreateTableDesc crtTblDesc)
-      throws SemanticException {
-
-    if ((crtTblDesc.getCols() == null) || (crtTblDesc.getCols().size() == 0)) {
-      // for now make sure that serde exists
-      if (StringUtils.isEmpty(crtTblDesc.getSerName())
-          || !SerDeUtils.shouldGetColsFromSerDe(crtTblDesc.getSerName())) {
-        throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
-      }
-      return;
-    }
-
-    if (crtTblDesc.getStorageHandler() == null) {
-      try {
-        Class<?> origin = Class.forName(crtTblDesc.getOutputFormat(), true,
-          JavaUtils.getClassLoader());
-        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin);
-        if (replaced == null) {
-          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
-            .getMsg());
-        }
-      } catch (ClassNotFoundException e) {
-        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
-      }
-    }
-
-    List<String> colNames = validateColumnNameUniqueness(crtTblDesc.getCols());
-
-    if (crtTblDesc.getBucketCols() != null) {
-      // all columns in cluster and sort are valid columns
-      Iterator<String> bucketCols = crtTblDesc.getBucketCols().iterator();
-      while (bucketCols.hasNext()) {
-        String bucketCol = bucketCols.next();
-        boolean found = false;
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = colNamesIter.next();
-          if (bucketCol.equalsIgnoreCase(colName)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
-        }
-      }
-    }
-
-    if (crtTblDesc.getSortCols() != null) {
-      // all columns in cluster and sort are valid columns
-      Iterator<Order> sortCols = crtTblDesc.getSortCols().iterator();
-      while (sortCols.hasNext()) {
-        String sortCol = sortCols.next().getCol();
-        boolean found = false;
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = colNamesIter.next();
-          if (sortCol.equalsIgnoreCase(colName)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
-        }
-      }
-    }
-
-    if (crtTblDesc.getPartCols() != null) {
-      // there is no overlap between columns and partitioning columns
-      Iterator<FieldSchema> partColsIter = crtTblDesc.getPartCols().iterator();
-      while (partColsIter.hasNext()) {
-        FieldSchema fs = partColsIter.next();
-        String partCol = fs.getName();
-        PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(
-            fs.getType());
-        if(null == pte){
-          throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
-        + partCol + " of type: " + fs.getType());
-        }
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = unescapeIdentifier(colNamesIter.next());
-          if (partCol.equalsIgnoreCase(colName)) {
-            throw new SemanticException(
-                ErrorMsg.COLUMN_REPEATED_IN_PARTITIONING_COLS.getMsg());
-          }
-        }
-      }
-    }
   }
 
   private void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,

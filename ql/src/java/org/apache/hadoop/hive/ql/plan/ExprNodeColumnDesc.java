@@ -47,6 +47,11 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
    */
   private boolean isPartitionColOrVirtualCol;
 
+  /**
+   * Is the column a skewed column
+   */
+  private boolean isSkewedCol;
+
   public ExprNodeColumnDesc() {
   }
 
@@ -64,6 +69,15 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
     this.column = column;
     this.tabAlias = tabAlias;
     this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
+  }
+
+  public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
+      boolean isPartitionColOrVirtualCol, boolean isSkewedCol) {
+    super(typeInfo);
+    this.column = column;
+    this.tabAlias = tabAlias;
+    this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
+    this.isSkewedCol = isSkewedCol;
   }
 
   public String getColumn() {
@@ -110,7 +124,8 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeColumnDesc(typeInfo, column, tabAlias, isPartitionColOrVirtualCol);
+    return new ExprNodeColumnDesc(typeInfo, column, tabAlias, isPartitionColOrVirtualCol,
+        isSkewedCol);
   }
 
   @Override
@@ -126,5 +141,19 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
       return false;
     }
     return true;
+  }
+
+  /**
+   * @return the isSkewedCol
+   */
+  public boolean isSkewedCol() {
+    return isSkewedCol;
+  }
+
+  /**
+   * @param isSkewedCol the isSkewedCol to set
+   */
+  public void setSkewedCol(boolean isSkewedCol) {
+    this.isSkewedCol = isSkewedCol;
   }
 }

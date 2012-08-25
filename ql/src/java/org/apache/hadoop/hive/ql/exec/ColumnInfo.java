@@ -39,6 +39,10 @@ public class ColumnInfo implements Serializable {
 
   private String alias = null; // [optional] alias of the column (external name
   // as seen by the users)
+  /**
+   * Indicates whether the column is a skewed column.
+   */
+  private boolean isSkewedCol;
 
   /**
    * Store the alias of the table where available.
@@ -73,17 +77,17 @@ public class ColumnInfo implements Serializable {
       boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this(internalName,
          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(type),
-         tabAlias, 
+         tabAlias,
          isVirtualCol,
          isHiddenVirtualCol);
   }
 
-  public ColumnInfo(String internalName, ObjectInspector objectInspector, 
+  public ColumnInfo(String internalName, ObjectInspector objectInspector,
       String tabAlias, boolean isVirtualCol) {
     this(internalName, objectInspector, tabAlias, isVirtualCol, false);
   }
 
-  public ColumnInfo(String internalName, ObjectInspector objectInspector, 
+  public ColumnInfo(String internalName, ObjectInspector objectInspector,
       String tabAlias, boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this.internalName = internalName;
     this.objectInspector = objectInspector;
@@ -153,5 +157,17 @@ public class ColumnInfo implements Serializable {
     this.isHiddenVirtualCol = isHiddenVirtualCol;
   }
 
+  /**
+   * @return the isSkewedCol
+   */
+  public boolean isSkewedCol() {
+    return isSkewedCol;
+  }
 
+  /**
+   * @param isSkewedCol the isSkewedCol to set
+   */
+  public void setSkewedCol(boolean isSkewedCol) {
+    this.isSkewedCol = isSkewedCol;
+  }
 }
