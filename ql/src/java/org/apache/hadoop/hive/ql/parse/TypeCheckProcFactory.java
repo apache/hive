@@ -433,7 +433,7 @@ public final class TypeCheckProcFactory {
             ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
             return null;
           } else {
-            List<String> possibleColumnNames = input.getNonHiddenColumnNames(-1);
+            List<String> possibleColumnNames = input.getReferenceableColumnAliases(tableOrCol, -1);
             String reason = String.format("(possible column names are: %s)",
                 StringUtils.join(possibleColumnNames, ", "));
             ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0), reason),
