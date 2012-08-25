@@ -322,6 +322,34 @@ public class MetaStoreUtils {
     return true;
   }
 
+  public static  boolean validateSkewedColNames(List<String> cols) {
+    if (null == cols) {
+      return true;
+    }
+    for (String col : cols) {
+      if (!validateName(col)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean validateSkewedColNamesSubsetCol(List<String> skewedColNames,
+      List<FieldSchema> cols) {
+    if (null == skewedColNames) {
+      return true;
+    }
+    List<String> colNames = new ArrayList<String>();
+    for (FieldSchema fieldSchema : cols) {
+      colNames.add(fieldSchema.getName());
+    }
+    // make a copy
+    List<String> copySkewedColNames = new ArrayList<String>(skewedColNames);
+    // remove valid columns
+    copySkewedColNames.removeAll(colNames);
+    return (copySkewedColNames.size() > 0) ? false : true;
+  }
+
   public static String getListType(String t) {
     return "array<" + t + ">";
   }

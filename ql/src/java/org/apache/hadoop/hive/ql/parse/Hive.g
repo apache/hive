@@ -259,6 +259,10 @@ TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
 TOK_CASCADE;
+TOK_TABLESKEWED;
+TOK_TABCOLVALUE;
+TOK_TABCOLVALUE_PAIR;
+TOK_TABCOLVALUES;
 }
 
 
@@ -451,6 +455,7 @@ createTableStatement
          tableComment?
          tablePartition?
          tableBuckets?
+         tableSkewed?
          tableRowFormat?
          tableFileFormat?
          tableLocation?
@@ -463,6 +468,7 @@ createTableStatement
          tableComment?
          tablePartition?
          tableBuckets?
+         tableSkewed?
          tableRowFormat?
          tableFileFormat?
          tableLocation?
@@ -1080,6 +1086,14 @@ tableBuckets
     -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
     ;
 
+tableSkewed
+@init { msgs.push("table skewed specification"); }
+@after { msgs.pop(); }
+    :
+     KW_SKEWED KW_BY LPAREN skewedCols=columnNameList RPAREN KW_ON LPAREN (skewedValues=skewedValueElement) RPAREN
+    -> ^(TOK_TABLESKEWED $skewedCols $skewedValues)
+    ;
+
 rowFormat
 @init { msgs.push("serde specification"); }
 @after { msgs.pop(); }
@@ -1239,6 +1253,41 @@ columnNameOrderList
 @init { msgs.push("column name order list"); }
 @after { msgs.pop(); }
     : columnNameOrder (COMMA columnNameOrder)* -> ^(TOK_TABCOLNAME columnNameOrder+)
+    ;
+
+skewedValueElement
+@init { msgs.push("skewed value element"); }
+@after { msgs.pop(); }
+    : 
+      skewedColumnValues
+     | skewedColumnValuePairList
+    ;
+
+skewedColumnValuePairList
+@init { msgs.push("column value pair list"); }
+@after { msgs.pop(); }
+    : skewedColumnValuePair (COMMA skewedColumnValuePair)* -> ^(TOK_TABCOLVALUE_PAIR skewedColumnValuePair+)
+    ;
+
+skewedColumnValuePair
+@init { msgs.push("column value pair"); }
+@after { msgs.pop(); }
+    : 
+      LPAREN colValues=skewedColumnValues RPAREN 
+      -> ^(TOK_TABCOLVALUES $colValues)
+    ;
+
+skewedColumnValues
+@init { msgs.push("column values"); }
+@after { msgs.pop(); }
+    : skewedColumnValue (COMMA skewedColumnValue)* -> ^(TOK_TABCOLVALUE skewedColumnValue+)
+    ;
+
+skewedColumnValue
+@init { msgs.push("column value"); }
+@after { msgs.pop(); }
+    :
+      constant
     ;
 
 columnNameOrder
@@ -2367,6 +2416,7 @@ KW_SHOW_DATABASE: 'SHOW_DATABASE';
 KW_UPDATE: 'UPDATE';
 KW_RESTRICT: 'RESTRICT';
 KW_CASCADE: 'CASCADE';
+KW_SKEWED: 'SKEWED';
 
 
 // Operators

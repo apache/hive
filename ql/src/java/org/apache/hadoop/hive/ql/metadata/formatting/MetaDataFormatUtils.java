@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 
+
 /**
  * This class provides methods to format table and index information.
  *
@@ -190,6 +191,25 @@ public final class MetaDataFormatUtils {
     formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
     formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
     formatOutput("Sort Columns:", storageDesc.getSortCols().toString(), tableInfo);
+
+    if (null != storageDesc.getSkewedInfo()) {
+      List<String> skewedColNames = storageDesc.getSkewedInfo().getSkewedColNames();
+      if ((skewedColNames != null) && (skewedColNames.size() > 0)) {
+        formatOutput("Skewed Columns:", skewedColNames.toString(), tableInfo);
+      }
+
+      List<List<String>> skewedColValues = storageDesc.getSkewedInfo().getSkewedColValues();
+      if ((skewedColValues != null) && (skewedColValues.size() > 0)) {
+        formatOutput("Skewed Values:", skewedColValues.toString(), tableInfo);
+      }
+
+      Map<List<String>, String> skewedColMap = storageDesc.getSkewedInfo()
+          .getSkewedColValueLocationMaps();
+      if ((skewedColMap!=null) && (skewedColMap.size() > 0)) {
+        formatOutput("Skewed Value to Location Mapping:", skewedColMap.toString(),
+            tableInfo);
+      }
+    }
 
     if (storageDesc.getSerdeInfo().getParametersSize() > 0) {
       tableInfo.append("Storage Desc Params:").append(LINE_DELIM);

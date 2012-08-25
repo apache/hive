@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
@@ -1856,9 +1857,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    String oldColName = ast.getChild(1).getText();
+    String newColName = ast.getChild(2).getText();
+
+    /*Validate the operation of renaming a column name.*/
+    Table tab = null;
+    try {
+      tab = db.getTable(tblName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName), e);
+    }
+    SkewedInfo skewInfo = tab.getTTable().getSd().getSkewedInfo();
+    if ((null != skewInfo)
+        && (null != skewInfo.getSkewedColNames())
+        && skewInfo.getSkewedColNames().contains(oldColName)) {
+      throw new SemanticException(oldColName
+        + ErrorMsg.ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN.getMsg());
+    }
+
     AlterTableDesc alterTblDesc = new AlterTableDesc(tblName,
-        unescapeIdentifier(ast.getChild(1).getText()), unescapeIdentifier(ast
-        .getChild(2).getText()), newType, newComment, first, flagCol);
+        unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
+        newType, newComment, first, flagCol);
     addInputsOutputsAlterTable(tblName, null, alterTblDesc);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

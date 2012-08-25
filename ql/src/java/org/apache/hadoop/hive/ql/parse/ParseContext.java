@@ -43,10 +43,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -64,6 +64,7 @@ public class ParseContext {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  private Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
@@ -166,7 +167,8 @@ public class ParseContext {
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
-      HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks) {
+      HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
+      Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -192,6 +194,7 @@ public class ParseContext {
     this.globalLimitCtx = globalLimitCtx;
     this.semanticInputs = semanticInputs;
     this.rootTasks = rootTasks;
+    this.opToSkewedPruner = opToSkewedPruner;
   }
 
   /**
@@ -557,4 +560,19 @@ public class ParseContext {
     }
     return partsList;
   }
+
+  /**
+   * @return the opToSkewedPruner
+   */
+  public Map<TableScanOperator, ExprNodeDesc> getOpToSkewedPruner() {
+    return opToSkewedPruner;
+  }
+
+  /**
+   * @param opToSkewedPruner the opToSkewedPruner to set
+   */
+  public void setOpToSkewedPruner(HashMap<TableScanOperator, ExprNodeDesc> opToSkewedPruner) {
+    this.opToSkewedPruner = opToSkewedPruner;
+  }
+
 }

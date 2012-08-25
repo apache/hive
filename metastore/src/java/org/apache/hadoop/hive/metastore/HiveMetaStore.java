@@ -868,7 +868,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (!MetaStoreUtils.validateName(tbl.getTableName())
           || !MetaStoreUtils.validateColNames(tbl.getSd().getCols())
           || (tbl.getPartitionKeys() != null && !MetaStoreUtils
-              .validateColNames(tbl.getPartitionKeys()))) {
+              .validateColNames(tbl.getPartitionKeys()))
+          || !MetaStoreUtils.validateSkewedColNames(
+              (null == tbl.getSd().getSkewedInfo()) ?
+                  null : tbl.getSd().getSkewedInfo().getSkewedColNames())
+          || !MetaStoreUtils.validateSkewedColNamesSubsetCol(
+              (null == tbl.getSd().getSkewedInfo()) ?
+              null : tbl.getSd().getSkewedInfo().getSkewedColNames(),
+              tbl.getSd().getCols())) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
       }

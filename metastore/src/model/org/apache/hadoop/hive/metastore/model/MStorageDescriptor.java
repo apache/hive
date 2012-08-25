@@ -32,6 +32,9 @@ public class MStorageDescriptor {
   private List<String> bucketCols;
   private List<MOrder> sortCols;
   private Map<String, String> parameters;
+  private List<String> skewedColNames;
+  private List<MStringList> skewedColValues;
+  private Map<MStringList, String> skewedColValueLocationMaps;
 
   public MStorageDescriptor() {}
 
@@ -50,7 +53,9 @@ public class MStorageDescriptor {
    */
   public MStorageDescriptor(MColumnDescriptor cd, String location, String inputFormat,
       String outputFormat, boolean isCompressed, int numBuckets, MSerDeInfo serDeInfo,
-      List<String> bucketCols, List<MOrder> sortOrder, Map<String, String> parameters) {
+      List<String> bucketCols, List<MOrder> sortOrder, Map<String, String> parameters,
+      List<String> skewedColNames, List<MStringList> skewedColValues,
+      Map<MStringList, String> skewedColValueLocationMaps) {
     this.cd = cd;
     this.location = location;
     this.inputFormat = inputFormat;
@@ -61,6 +66,9 @@ public class MStorageDescriptor {
     this.bucketCols = bucketCols;
     this.sortCols = sortOrder;
     this.parameters = parameters;
+    this.skewedColNames = skewedColNames;
+    this.skewedColValues = skewedColValues;
+    this.skewedColValueLocationMaps = skewedColValueLocationMaps;
   }
 
 
@@ -205,4 +213,47 @@ public class MStorageDescriptor {
   public List<MOrder> getSortCols() {
     return sortCols;
   }
+
+  /**
+   * @return the skewedColNames
+   */
+  public List<String> getSkewedColNames() {
+    return skewedColNames;
+  }
+
+  /**
+   * @param skewedColNames the skewedColNames to set
+   */
+  public void setSkewedColNames(List<String> skewedColNames) {
+    this.skewedColNames = skewedColNames;
+  }
+
+  /**
+   * @return the skewedColValues
+   */
+  public List<MStringList> getSkewedColValues() {
+    return skewedColValues;
+  }
+
+  /**
+   * @param skewedColValues the skewedColValues to set
+   */
+  public void setSkewedColValues(List<MStringList> skewedColValues) {
+    this.skewedColValues = skewedColValues;
+  }
+
+  /**
+   * @return the skewedColValueLocationMaps
+   */
+  public Map<MStringList, String> getSkewedColValueLocationMaps() {
+    return skewedColValueLocationMaps;
+  }
+
+  /**
+   * @param skewedColValueLocationMaps the skewedColValueLocationMaps to set
+   */
+  public void setSkewedColValueLocationMaps(Map<MStringList, String> listBucketColValuesMapping) {
+    this.skewedColValueLocationMaps = listBucketColValuesMapping;
+  }
+
 }

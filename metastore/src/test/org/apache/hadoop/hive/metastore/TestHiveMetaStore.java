@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -171,6 +172,16 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().getParameters()
           .put(Constants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
+
+      //skewed information
+      SkewedInfo skewInfor = new SkewedInfo();
+      skewInfor.setSkewedColNames(Arrays.asList("name"));
+      List<String> skv = Arrays.asList("1");
+      skewInfor.setSkewedColValues(Arrays.asList(skv));
+      Map<List<String>, String> scvlm = new HashMap<List<String>, String>();
+      scvlm.put(skv, "location1");
+      skewInfor.setSkewedColValueLocationMaps(scvlm);
+      sd.setSkewedInfo(skewInfor);
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(

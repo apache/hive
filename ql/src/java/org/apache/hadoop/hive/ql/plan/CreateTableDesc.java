@@ -20,12 +20,25 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
  * CreateTableDesc.
@@ -56,6 +69,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   Map<String, String> serdeProps;
   Map<String, String> tblProps;
   boolean ifNotExists;
+  List<String> skewedColNames;
+  List<List<String>> skewedColValues;
 
   public CreateTableDesc() {
   }
@@ -69,13 +84,13 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists) {
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
 
     this(tableName, isExternal, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
-        tblProps, ifNotExists);
+        tblProps, ifNotExists, skewedColNames, skewedColValues);
 
     this.databaseName = databaseName;
   }
@@ -89,7 +104,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists) {
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.bucketCols = new ArrayList<String>(bucketCols);
@@ -111,6 +126,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.serdeProps = serdeProps;
     this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
+    this.skewedColNames = new ArrayList<String>(skewedColNames);
+    this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
   }
 
   @Explain(displayName = "columns")
@@ -342,4 +359,219 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.tblProps = tblProps;
   }
 
+  /**
+   * @return the skewedColNames
+   */
+  public List<String> getSkewedColNames() {
+    return skewedColNames;
+  }
+
+  /**
+   * @param skewedColNames the skewedColNames to set
+   */
+  public void setSkewedColNames(ArrayList<String> skewedColNames) {
+    this.skewedColNames = skewedColNames;
+  }
+
+  /**
+   * @return the skewedColValues
+   */
+  public List<List<String>> getSkewedColValues() {
+    return skewedColValues;
+  }
+
+  /**
+   * @param skewedColValues the skewedColValues to set
+   */
+  public void setSkewedColValues(ArrayList<List<String>> skewedColValues) {
+    this.skewedColValues = skewedColValues;
+  }
+
+  public void validate()
+      throws SemanticException {
+
+    if ((this.getCols() == null) || (this.getCols().size() == 0)) {
+      // for now make sure that serde exists
+      if (StringUtils.isEmpty(this.getSerName())
+          || !SerDeUtils.shouldGetColsFromSerDe(this.getSerName())) {
+        throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
+      }
+      return;
+    }
+
+    if (this.getStorageHandler() == null) {
+      try {
+        Class<?> origin = Class.forName(this.getOutputFormat(), true,
+          JavaUtils.getClassLoader());
+        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
+          .getOutputFormatSubstitute(origin);
+        if (replaced == null) {
+          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
+            .getMsg());
+        }
+      } catch (ClassNotFoundException e) {
+        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
+      }
+    }
+
+    List<String> colNames = ParseUtils.validateColumnNameUniqueness(this.getCols());
+
+    if (this.getBucketCols() != null) {
+      // all columns in cluster and sort are valid columns
+      Iterator<String> bucketCols = this.getBucketCols().iterator();
+      while (bucketCols.hasNext()) {
+        String bucketCol = bucketCols.next();
+        boolean found = false;
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = colNamesIter.next();
+          if (bucketCol.equalsIgnoreCase(colName)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+        }
+      }
+    }
+
+    if (this.getSortCols() != null) {
+      // all columns in cluster and sort are valid columns
+      Iterator<Order> sortCols = this.getSortCols().iterator();
+      while (sortCols.hasNext()) {
+        String sortCol = sortCols.next().getCol();
+        boolean found = false;
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = colNamesIter.next();
+          if (sortCol.equalsIgnoreCase(colName)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+        }
+      }
+    }
+
+    if (this.getPartCols() != null) {
+      // there is no overlap between columns and partitioning columns
+      Iterator<FieldSchema> partColsIter = this.getPartCols().iterator();
+      while (partColsIter.hasNext()) {
+        FieldSchema fs = partColsIter.next();
+        String partCol = fs.getName();
+        PrimitiveObjectInspectorUtils.PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils
+            .getTypeEntryFromTypeName(
+            fs.getType());
+        if(null == pte){
+          throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
+        + partCol + " of type: " + fs.getType());
+        }
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = BaseSemanticAnalyzer.unescapeIdentifier(colNamesIter.next());
+          if (partCol.equalsIgnoreCase(colName)) {
+            throw new SemanticException(
+                ErrorMsg.COLUMN_REPEATED_IN_PARTITIONING_COLS.getMsg());
+          }
+        }
+      }
+    }
+
+    validateSkewedInformation(colNames);
+  }
+
+
+  /**
+   * Validate skewed table creation
+
+   * @param colNames
+   * @throws SemanticException
+   */
+  private void validateSkewedInformation(List<String> colNames)
+      throws SemanticException {
+    if (this.getSkewedColNames().size() > 0) {
+      /**
+       * all columns in skewed column name are valid columns
+       */
+      validateSkewedColNames(colNames);
+
+      /**
+       * find out duplicate skewed column name
+       */
+      validateSkewedColumnNameUniqueness(this.getSkewedColNames());
+
+      if (this.getSkewedColValues() == null || this.getSkewedColValues().size() == 0) {
+        /**
+         * skewed column value is empty but skewed col name is not empty. something is wrong
+         */
+        throw new SemanticException(
+            ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2.getMsg());
+
+      } else {
+        /**
+         * each skewed col value should have the same number as number of skewed column names
+         */
+        validateSkewedColNameValueNumberMatch();
+
+      }
+    } else if (this.getSkewedColValues().size() > 0) {
+      /**
+       * skewed column name is empty but skewed col value is not empty. something is wrong
+       */
+      throw new SemanticException(
+          ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_1.getMsg());
+    }
+  }
+
+  private void validateSkewedColNameValueNumberMatch()
+      throws SemanticException {
+    for (List<String> colValue : this.getSkewedColValues()) {
+      if (colValue.size() != this.getSkewedColNames().size()) {
+        throw new SemanticException(
+            ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3.getMsg()
+                + this.getSkewedColNames().size() + " : "
+                + colValue.size());
+      }
+    }
+  }
+
+  private void validateSkewedColNames(List<String> colNames)
+      throws SemanticException {
+    // make a copy
+    List<String> copySkewedColNames = new ArrayList<String>(this.getSkewedColNames());
+    // remove valid columns
+    copySkewedColNames.removeAll(colNames);
+    if (copySkewedColNames.size() > 0) {
+      StringBuilder invalidColNames = new StringBuilder();
+      for (String name : copySkewedColNames) {
+        invalidColNames.append(name);
+        invalidColNames.append(" ");
+      }
+      throw new SemanticException(
+          ErrorMsg.CREATE_SKEWED_TABLE_INVALID_COLUMN.getMsg(invalidColNames.toString()));
+    }
+  }
+
+
+  /**
+   * Find out duplicate name
+   * @param names
+   * @throws SemanticException
+   */
+  private void validateSkewedColumnNameUniqueness(
+      List<String> names) throws SemanticException {
+
+    Set<String> lookup = new HashSet<String>();
+    for (String name : names) {
+      if (lookup.contains(name)) {
+        throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES
+            .getMsg(name));
+      } else {
+        lookup.add(name);
+      }
+    }
+  }
 }

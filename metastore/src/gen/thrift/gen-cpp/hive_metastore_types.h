@@ -774,8 +774,65 @@ class Order {
 
 };
 
+typedef struct _SkewedInfo__isset {
+  _SkewedInfo__isset() : skewedColNames(false), skewedColValues(false), skewedColValueLocationMaps(false) {}
+  bool skewedColNames;
+  bool skewedColValues;
+  bool skewedColValueLocationMaps;
+} _SkewedInfo__isset;
+
+class SkewedInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "4BF2ED84BC3C3EB297A2AE2FA8427EB1";
+  static const uint8_t binary_fingerprint[16]; // = {0x4B,0xF2,0xED,0x84,0xBC,0x3C,0x3E,0xB2,0x97,0xA2,0xAE,0x2F,0xA8,0x42,0x7E,0xB1};
+
+  SkewedInfo() {
+  }
+
+  virtual ~SkewedInfo() throw() {}
+
+  std::vector<std::string>  skewedColNames;
+  std::vector<std::vector<std::string> >  skewedColValues;
+  std::map<std::vector<std::string> , std::string>  skewedColValueLocationMaps;
+
+  _SkewedInfo__isset __isset;
+
+  void __set_skewedColNames(const std::vector<std::string> & val) {
+    skewedColNames = val;
+  }
+
+  void __set_skewedColValues(const std::vector<std::vector<std::string> > & val) {
+    skewedColValues = val;
+  }
+
+  void __set_skewedColValueLocationMaps(const std::map<std::vector<std::string> , std::string> & val) {
+    skewedColValueLocationMaps = val;
+  }
+
+  bool operator == (const SkewedInfo & rhs) const
+  {
+    if (!(skewedColNames == rhs.skewedColNames))
+      return false;
+    if (!(skewedColValues == rhs.skewedColValues))
+      return false;
+    if (!(skewedColValueLocationMaps == rhs.skewedColValueLocationMaps))
+      return false;
+    return true;
+  }
+  bool operator != (const SkewedInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SkewedInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _StorageDescriptor__isset {
-  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false) {}
+  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false), skewedInfo(false) {}
   bool cols;
   bool location;
   bool inputFormat;
@@ -786,13 +843,14 @@ typedef struct _StorageDescriptor__isset {
   bool bucketCols;
   bool sortCols;
   bool parameters;
+  bool skewedInfo;
 } _StorageDescriptor__isset;
 
 class StorageDescriptor {
  public:
 
-  static const char* ascii_fingerprint; // = "11E4CE18F895C13812C853DFDCD1293F";
-  static const uint8_t binary_fingerprint[16]; // = {0x11,0xE4,0xCE,0x18,0xF8,0x95,0xC1,0x38,0x12,0xC8,0x53,0xDF,0xDC,0xD1,0x29,0x3F};
+  static const char* ascii_fingerprint; // = "BDC4DB93B74677CE1C04198D60E6CB80";
+  static const uint8_t binary_fingerprint[16]; // = {0xBD,0xC4,0xDB,0x93,0xB7,0x46,0x77,0xCE,0x1C,0x04,0x19,0x8D,0x60,0xE6,0xCB,0x80};
 
   StorageDescriptor() : location(""), inputFormat(""), outputFormat(""), compressed(0), numBuckets(0) {
   }
@@ -809,6 +867,7 @@ class StorageDescriptor {
   std::vector<std::string>  bucketCols;
   std::vector<Order>  sortCols;
   std::map<std::string, std::string>  parameters;
+  SkewedInfo skewedInfo;
 
   _StorageDescriptor__isset __isset;
 
@@ -852,6 +911,11 @@ class StorageDescriptor {
     parameters = val;
   }
 
+  void __set_skewedInfo(const SkewedInfo& val) {
+    skewedInfo = val;
+    __isset.skewedInfo = true;
+  }
+
   bool operator == (const StorageDescriptor & rhs) const
   {
     if (!(cols == rhs.cols))
@@ -873,6 +937,10 @@ class StorageDescriptor {
     if (!(sortCols == rhs.sortCols))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.skewedInfo != rhs.__isset.skewedInfo)
+      return false;
+    else if (__isset.skewedInfo && !(skewedInfo == rhs.skewedInfo))
       return false;
     return true;
   }
@@ -907,8 +975,8 @@ typedef struct _Table__isset {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "26BE788C09746068A2616712C9262900";
-  static const uint8_t binary_fingerprint[16]; // = {0x26,0xBE,0x78,0x8C,0x09,0x74,0x60,0x68,0xA2,0x61,0x67,0x12,0xC9,0x26,0x29,0x00};
+  static const char* ascii_fingerprint; // = "F21F7F0ACA98ECCFC83F6605440D007F";
+  static const uint8_t binary_fingerprint[16]; // = {0xF2,0x1F,0x7F,0x0A,0xCA,0x98,0xEC,0xCF,0xC8,0x3F,0x66,0x05,0x44,0x0D,0x00,0x7F};
 
   Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText(""), tableType("") {
   }
@@ -1042,8 +1110,8 @@ typedef struct _Partition__isset {
 class Partition {
  public:
 
-  static const char* ascii_fingerprint; // = "F480E1D1B8AEBDDB37F8E180C0F07395";
-  static const uint8_t binary_fingerprint[16]; // = {0xF4,0x80,0xE1,0xD1,0xB8,0xAE,0xBD,0xDB,0x37,0xF8,0xE1,0x80,0xC0,0xF0,0x73,0x95};
+  static const char* ascii_fingerprint; // = "E5EF1F030CF964C052658DD22257D025";
+  static const uint8_t binary_fingerprint[16]; // = {0xE5,0xEF,0x1F,0x03,0x0C,0xF9,0x64,0xC0,0x52,0x65,0x8D,0xD2,0x22,0x57,0xD0,0x25};
 
   Partition() : dbName(""), tableName(""), createTime(0), lastAccessTime(0) {
   }
@@ -1144,8 +1212,8 @@ typedef struct _Index__isset {
 class Index {
  public:
 
-  static const char* ascii_fingerprint; // = "5FEE4F7E28935B644F207D74459F6A29";
-  static const uint8_t binary_fingerprint[16]; // = {0x5F,0xEE,0x4F,0x7E,0x28,0x93,0x5B,0x64,0x4F,0x20,0x7D,0x74,0x45,0x9F,0x6A,0x29};
+  static const char* ascii_fingerprint; // = "BA1090E838C806A4F8D8D137C5085EDD";
+  static const uint8_t binary_fingerprint[16]; // = {0xBA,0x10,0x90,0xE8,0x38,0xC8,0x06,0xA4,0xF8,0xD8,0xD1,0x37,0xC5,0x08,0x5E,0xDD};
 
   Index() : indexName(""), indexHandlerClass(""), dbName(""), origTableName(""), createTime(0), lastAccessTime(0), indexTableName(""), deferredRebuild(0) {
   }

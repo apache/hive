@@ -228,7 +228,6 @@ public enum ErrorMsg {
       "If you really want to perform the operation, either set " +
       "hive.optimize.bucketmapjoin.sortedmerge=false, or set " +
       "hive.enforce.sortmergebucketmapjoin=false."),
-
   BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
     "Bucketed mapjoin cannot be performed. " +
     "This can be due to multiple reasons: " +
@@ -250,6 +249,24 @@ public enum ErrorMsg {
    "Bucketed table metadata is not correct. " +
     "Fix the metadata or don't use bucketed mapjoin, by setting " +
     "hive.enforce.bucketmapjoin to false."),
+
+  CREATE_SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
+  CREATE_SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
+  CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,
+      "Duplicate skewed column name:"),
+  CREATE_SKEWED_TABLE_INVALID_COLUMN(10203,
+      "Invalid skewed column name:"),
+  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_1(10204,
+      "Skewed column name is empty but skewed value is not."),
+  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2(10205,
+      "Skewed column value is empty but skewed name is not."),
+  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3(10206,
+      "The number of skewed column names and the number of " +
+      "skewed column values are different: "),
+  ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN(10207,
+          " is a skewed column. It's not allowed to rename skewed column."),
+  HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED(10208,
+              "List Bucketing DDL is not allowed to use since feature is not completed yet."),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

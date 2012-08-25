@@ -112,7 +112,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             table.getSd().getSerdeInfo().getSerializationLib(),
             null, // storagehandler passed as table params
             table.getSd().getSerdeInfo().getParameters(),
-            table.getParameters(), false);
+            table.getParameters(), false,
+            (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                .getSkewedColNames(),
+            (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
+                .getSkewedColValues());
 
 
         List<FieldSchema> partCols = tblDesc.getPartCols();
