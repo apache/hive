@@ -55,7 +55,6 @@
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
-  <property name="test.timeout" value="18200000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
   <property name="minimr.query.files" value="input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q"/>
@@ -405,7 +404,7 @@
       </then>
     </if>
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
-           fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
+           fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.junit.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
       <env key="LANG" value="${test.lang}"/>
       <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hadoop.testcp}"/>
