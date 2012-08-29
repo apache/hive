@@ -47,12 +47,14 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
+import
+  org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
-import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * An implementation of PhysicalPlanResolver. It iterator each MapRedTask to see whether the task
@@ -122,7 +124,8 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         // replace the map join operator to local_map_join operator in the operator tree
         // and return all the dummy parent
         LocalMapJoinProcCtx  localMapJoinProcCtx= adjustLocalTask(localTask);
-        List<Operator<? extends Serializable>> dummyOps = localMapJoinProcCtx.getDummyParentOp();
+        List<Operator<? extends OperatorDesc>> dummyOps =
+         localMapJoinProcCtx.getDummyParentOp();
 
         // create new local work and setup the dummy ops
         MapredLocalWork newLocalWork = new MapredLocalWork();
@@ -264,13 +267,13 @@ public class MapJoinResolver implements PhysicalPlanResolver {
   public static class LocalMapJoinProcCtx implements NodeProcessorCtx {
     private Task<? extends Serializable> currentTask;
     private ParseContext parseCtx;
-    private List<Operator<? extends Serializable>> dummyParentOp = null;
+    private List<Operator<? extends OperatorDesc>> dummyParentOp = null;
     private boolean isFollowedByGroupBy;
 
     public LocalMapJoinProcCtx(Task<? extends Serializable> task, ParseContext parseCtx) {
       currentTask = task;
       this.parseCtx = parseCtx;
-      dummyParentOp = new ArrayList<Operator<? extends Serializable>>();
+      dummyParentOp = new ArrayList<Operator<? extends OperatorDesc>>();
       isFollowedByGroupBy = false;
     }
 
@@ -297,15 +300,15 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       this.parseCtx = parseCtx;
     }
 
-    public void setDummyParentOp(List<Operator<? extends Serializable>> op) {
+    public void setDummyParentOp(List<Operator<? extends OperatorDesc>> op) {
       this.dummyParentOp = op;
     }
 
-    public List<Operator<? extends Serializable>> getDummyParentOp() {
+    public List<Operator<? extends OperatorDesc>> getDummyParentOp() {
       return this.dummyParentOp;
     }
 
-    public void addDummyParentOp(Operator<? extends Serializable> op) {
+    public void addDummyParentOp(Operator<? extends OperatorDesc> op) {
       this.dummyParentOp.add(op);
     }
   }

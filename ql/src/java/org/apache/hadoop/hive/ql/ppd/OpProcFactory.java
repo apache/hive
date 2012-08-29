@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.ppd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -132,10 +132,10 @@ public final class OpProcFactory {
       // SELECT(*) because that's the way that the DAG was constructed. We
       // only want to get the predicates from the SELECT(*).
       ExprWalkerInfo childPreds = owi
-      .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
+      .getPrunedPreds((Operator<? extends OperatorDesc>) nd.getChildren()
       .get(0));
 
-      owi.putPrunedPreds((Operator<? extends Serializable>) nd, childPreds);
+      owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, childPreds);
       return null;
     }
 
@@ -173,7 +173,8 @@ public final class OpProcFactory {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+      Operator<? extends OperatorDesc> op =
+        (Operator<? extends OperatorDesc>) nd;
       ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
       ExprWalkerInfo ewi = new ExprWalkerInfo();
       // Don't push a sampling predicate since createFilter() always creates filter
@@ -186,7 +187,7 @@ public final class OpProcFactory {
           /* predicate is not deterministic */
           if (op.getChildren() != null && op.getChildren().size() == 1) {
             createFilter(op, owi
-                .getPrunedPreds((Operator<? extends Serializable>) (op
+                .getPrunedPreds((Operator<? extends OperatorDesc>) (op
                 .getChildren().get(0))), owi);
           }
           return null;
@@ -199,7 +200,7 @@ public final class OpProcFactory {
           }
         }
         logExpr(nd, ewi);
-        owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
+        owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
       }
       // merge it with children predicates
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, ewi, null, false);
@@ -233,7 +234,7 @@ public final class OpProcFactory {
       boolean hasUnpushedPredicates =
           mergeWithChildrenPred(nd, owi, null, null, false);
       ExprWalkerInfo prunePreds =
-          owi.getPrunedPreds((Operator<? extends Serializable>) nd);
+          owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd);
       if (prunePreds != null) {
         Set<String> toRemove = new HashSet<String>();
         // we don't push down any expressions that refer to aliases that can;t
@@ -294,7 +295,7 @@ public final class OpProcFactory {
     private void applyFilterTransitivity(JoinOperator nd, OpWalkerInfo owi)
         throws SemanticException {
       ExprWalkerInfo prunePreds =
-          owi.getPrunedPreds((Operator<? extends Serializable>) nd);
+          owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd);
       if (prunePreds != null) {
         // We want to use the row resolvers of the parents of the join op
         // because the rowresolver refers to the output columns of an operator
@@ -302,7 +303,7 @@ public final class OpProcFactory {
         // operator.
         Map<String, RowResolver> aliasToRR =
             new HashMap<String, RowResolver>();
-        for (Operator<? extends Serializable> o : (nd).getParentOperators()) {
+        for (Operator<? extends OperatorDesc> o : (nd).getParentOperators()) {
           for (String alias : owi.getRowResolver(o).getTableNames()){
             aliasToRR.put(alias, owi.getRowResolver(o));
           }
@@ -386,7 +387,7 @@ public final class OpProcFactory {
 
         for (Entry<String, List<ExprNodeDesc>> aliasToFilters
             : newFilters.entrySet()){
-          owi.getPrunedPreds((Operator<? extends Serializable>) nd)
+          owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd)
             .addPushDowns(aliasToFilters.getKey(), aliasToFilters.getValue());
         }
       }
@@ -513,8 +514,9 @@ public final class OpProcFactory {
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
           HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
         if (hasUnpushedPredicates) {
-          Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
-          Operator<? extends Serializable> childOperator = op.getChildOperators().get(0);
+          Operator<? extends OperatorDesc> op =
+            (Operator<? extends OperatorDesc>) nd;
+          Operator<? extends OperatorDesc> childOperator = op.getChildOperators().get(0);
           if(childOperator.getParentOperators().size()==1) {
             owi.getCandidateFilterOps().clear();
           }
@@ -587,9 +589,10 @@ public final class OpProcFactory {
         // no-op for leafs
         return hasUnpushedPredicates;
       }
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+      Operator<? extends OperatorDesc> op =
+        (Operator<? extends OperatorDesc>) nd;
       ExprWalkerInfo childPreds = owi
-          .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
+          .getPrunedPreds((Operator<? extends OperatorDesc>) nd.getChildren()
           .get(0));
       if (childPreds == null) {
         return hasUnpushedPredicates;
@@ -614,7 +617,7 @@ public final class OpProcFactory {
           hasUnpushedPredicates = true;
         }
       }
-      owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
+      owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
       return hasUnpushedPredicates;
     }
 
@@ -624,9 +627,9 @@ public final class OpProcFactory {
       if (nd.getChildren() == null) {
         return null;
       }
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)nd;
       ExprWalkerInfo ewi = new ExprWalkerInfo();
-      for (Operator<? extends Serializable> child : op.getChildOperators()) {
+      for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
         ExprWalkerInfo childPreds = owi.getPrunedPreds(child);
         if (childPreds == null) {
           continue;
@@ -698,15 +701,15 @@ public final class OpProcFactory {
     }
 
     // add new filter op
-    List<Operator<? extends Serializable>> originalChilren = op
+    List<Operator<? extends OperatorDesc>> originalChilren = op
         .getChildOperators();
     op.setChildOperators(null);
     Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
         new FilterDesc(condn, false), new RowSchema(inputRR.getColumnInfos()),
         op);
     output.setChildOperators(originalChilren);
-    for (Operator<? extends Serializable> ch : originalChilren) {
-      List<Operator<? extends Serializable>> parentOperators = ch
+    for (Operator<? extends OperatorDesc> ch : originalChilren) {
+      List<Operator<? extends OperatorDesc>> parentOperators = ch
           .getParentOperators();
       int pos = parentOperators.indexOf(op);
       assert pos != -1;
@@ -720,13 +723,13 @@ public final class OpProcFactory {
         HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
       // remove the candidate filter ops
       for (FilterOperator fop : owi.getCandidateFilterOps()) {
-        List<Operator<? extends Serializable>> children = fop.getChildOperators();
-        List<Operator<? extends Serializable>> parents = fop.getParentOperators();
-        for (Operator<? extends Serializable> parent : parents) {
+        List<Operator<? extends OperatorDesc>> children = fop.getChildOperators();
+        List<Operator<? extends OperatorDesc>> parents = fop.getParentOperators();
+        for (Operator<? extends OperatorDesc> parent : parents) {
           parent.getChildOperators().addAll(children);
           parent.removeChild(fop);
         }
-        for (Operator<? extends Serializable> child : children) {
+        for (Operator<? extends OperatorDesc> child : children) {
           child.getParentOperators().addAll(parents);
           child.removeParent(fop);
         }

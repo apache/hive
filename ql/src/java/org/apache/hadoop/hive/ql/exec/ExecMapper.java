@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
@@ -31,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -104,8 +104,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       //The following code is for mapjoin
       //initialize all the dummy ops
       l4j.info("Initializing dummy operator");
-      List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
-      for(Operator<? extends Serializable> dummyOp : dummyOps){
+      List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
+      for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
         dummyOp.setExecContext(execContext);
         dummyOp.initialize(jc,null);
       }
@@ -194,9 +194,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       //for close the local work
       if(localWork != null){
-        List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
+        List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
 
-        for(Operator<? extends Serializable> dummyOp : dummyOps){
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
           dummyOp.close(abort);
         }
       }
@@ -204,7 +204,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       if (fetchOperators != null) {
         MapredLocalWork localWork = mo.getConf().getMapLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-          Operator<? extends Serializable> forwardOp = localWork
+          Operator<? extends OperatorDesc> forwardOp = localWork
               .getAliasToWork().get(entry.getKey());
           forwardOp.close(abort);
         }

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Processor for the rule - union followed by reduce sink.
@@ -56,8 +57,8 @@ public class GenMRRedSink3 implements NodeProcessor {
 
     // union consisted on a bunch of map-reduce jobs, and it has been split at
     // the union
-    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(ctx.getCurrUnionOp());
 
@@ -70,7 +71,7 @@ public class GenMRRedSink3 implements NodeProcessor {
 
 
     MapredWork plan = (MapredWork) unionTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
         .getOpTaskMap();
     Task<? extends Serializable> reducerTask = opTaskMap.get(reducer);
 

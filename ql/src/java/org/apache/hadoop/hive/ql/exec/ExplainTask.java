@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,12 +42,12 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * ExplainTask implementation.
@@ -281,7 +282,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     // If this is an operator then we need to call the plan generation on the
     // conf and then the children
     if (work instanceof Operator) {
-      Operator<? extends Serializable> operator = (Operator<? extends Serializable>) work;
+      Operator<? extends OperatorDesc> operator =
+        (Operator<? extends OperatorDesc>) work;
       if (operator.getConf() != null) {
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent);
@@ -291,7 +293,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
 
       if (operator.getChildOperators() != null) {
-        for (Operator<? extends Serializable> op : operator.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
           JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, jsonOutput ? 0 : indent + 2);
           if (jsonOutput) {
             json.put(operator.getOperatorId(), jsonOut);
@@ -651,6 +653,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     throw new RuntimeException("Unexpected call");
   }
 
+  @Override
   public List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();

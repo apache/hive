@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
@@ -548,7 +549,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   @Override
-  public Operator<? extends Serializable> getReducer() {
+  public Operator<? extends OperatorDesc> getReducer() {
     return getWork().getReducer();
   }
 }

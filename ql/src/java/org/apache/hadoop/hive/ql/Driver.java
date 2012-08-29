@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -509,7 +510,7 @@ public class Driver implements CommandProcessor {
   }
 
   private void doAuthorization(BaseSemanticAnalyzer sem)
-      throws HiveException, AuthorizationException {
+    throws HiveException, AuthorizationException {
     HashSet<ReadEntity> inputs = sem.getInputs();
     HashSet<WriteEntity> outputs = sem.getOutputs();
     SessionState ss = SessionState.get();
@@ -583,9 +584,9 @@ public class Driver implements CommandProcessor {
         ParseContext parseCtx = querySem.getParseContext();
         Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
 
-        for (Map.Entry<String, Operator<? extends Serializable>> topOpMap : querySem
+        for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpMap : querySem
             .getParseContext().getTopOps().entrySet()) {
-          Operator<? extends Serializable> topOp = topOpMap.getValue();
+          Operator<? extends OperatorDesc> topOp = topOpMap.getValue();
           if (topOp instanceof TableScanOperator
               && tsoTopMap.containsKey(topOp)) {
             TableScanOperator tableScanOp = (TableScanOperator) topOp;

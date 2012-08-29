@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * The processor context for the lineage information. This contains the
@@ -33,41 +32,41 @@ public class ExprProcCtx implements NodeProcessorCtx {
   /**
    * The lineage context that is being populated.
    */
-  private LineageCtx lctx;
-  
+  private final LineageCtx lctx;
+
   /**
    * The input operator in case the current operator is not a leaf.
    */
-  private Operator<? extends Serializable> inpOp;
-  
+  private final Operator<? extends OperatorDesc> inpOp;
+
   /**
    * Constructor.
-   * 
+   *
    * @param lctx The lineage context thatcontains the dependencies for the inputs.
    * @param inpOp The input operator to the current operator.
    */
   public ExprProcCtx(LineageCtx lctx,
-      Operator<? extends Serializable> inpOp) {
+    Operator<? extends OperatorDesc> inpOp) {
     this.lctx = lctx;
     this.inpOp = inpOp;
   }
-  
+
   /**
    * Gets the lineage context.
-   * 
+   *
    * @return LineageCtx The lineage context.
    */
   public LineageCtx getLineageCtx() {
     return lctx;
   }
- 
+
   /**
    * Gets the input operator.
-   * 
-   * @return Operator The input operator - this is null in case the current 
+   *
+   * @return Operator The input operator - this is null in case the current
    * operator is a leaf.
    */
-  public Operator<? extends Serializable> getInputOperator() {
+  public Operator<? extends OperatorDesc> getInputOperator() {
     return inpOp;
   }
 }

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
 import org.apache.hadoop.hive.ql.plan.api.NodeType;
 import org.apache.hadoop.hive.ql.plan.api.TaskType;
@@ -152,18 +153,18 @@ public class QueryPlan implements Serializable {
    */
   private void populateOperatorGraph(
       org.apache.hadoop.hive.ql.plan.api.Task task,
-      Collection<Operator<? extends Serializable>> topOps) {
+      Collection<Operator<? extends OperatorDesc>> topOps) {
 
     task.setOperatorGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     task.getOperatorGraph().setNodeType(NodeType.OPERATOR);
 
-    Queue<Operator<? extends Serializable>> opsToVisit =
-      new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited =
-      new HashSet<Operator<? extends Serializable>>();
+    Queue<Operator<? extends OperatorDesc>> opsToVisit =
+      new LinkedList<Operator<? extends OperatorDesc>>();
+    Set<Operator<? extends OperatorDesc>> opsVisited =
+      new HashSet<Operator<? extends OperatorDesc>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.peek() != null) {
-      Operator<? extends Serializable> op = opsToVisit.remove();
+      Operator<? extends OperatorDesc> op = opsToVisit.remove();
       opsVisited.add(op);
       // populate the operator
       org.apache.hadoop.hive.ql.plan.api.Operator operator =
@@ -177,7 +178,7 @@ public class QueryPlan implements Serializable {
           new org.apache.hadoop.hive.ql.plan.api.Adjacency();
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(op.getOperatorId());
-        for (Operator<? extends Serializable> childOp : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
           entry.addToChildren(childOp.getOperatorId());
           if (!opsVisited.contains(childOp)) {
             opsToVisit.add(childOp);
@@ -230,8 +231,8 @@ public class QueryPlan implements Serializable {
           reduceTask.setTaskId(stage.getStageId() + "_REDUCE");
           reduceTask.setTaskType(TaskType.REDUCE);
           stage.addToTaskList(reduceTask);
-          Collection<Operator<? extends Serializable>> reducerTopOps =
-            new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
+            new ArrayList<Operator<? extends OperatorDesc>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           populateOperatorGraph(reduceTask, reducerTopOps);
         }
@@ -309,8 +310,11 @@ public class QueryPlan implements Serializable {
           } else {
             task.setStarted(started.contains(task.getTaskId()));
             task.setDone(done.contains(task.getTaskId()));
-            for (org.apache.hadoop.hive.ql.plan.api.Operator op : task
-                .getOperatorList()) {
+            if (task.getOperatorList() == null) {
+              return;
+            }
+            for (org.apache.hadoop.hive.ql.plan.api.Operator op :
+              task.getOperatorList()) {
               // if the task has started, all operators within the task have
               // started
               op.setStarted(started.contains(task.getTaskId()));
@@ -370,8 +374,8 @@ public class QueryPlan implements Serializable {
           done.add(task.getId() + "_MAP");
         }
         if (mrTask.hasReduce()) {
-          Collection<Operator<? extends Serializable>> reducerTopOps =
-            new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
+            new ArrayList<Operator<? extends OperatorDesc>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           extractOperatorCounters(reducerTopOps, task.getId() + "_REDUCE");
           if (mrTask.reduceStarted()) {
@@ -393,21 +397,21 @@ public class QueryPlan implements Serializable {
   }
 
   private void extractOperatorCounters(
-      Collection<Operator<? extends Serializable>> topOps, String taskId) {
-    Queue<Operator<? extends Serializable>> opsToVisit =
-      new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited =
-      new HashSet<Operator<? extends Serializable>>();
+      Collection<Operator<? extends OperatorDesc>> topOps, String taskId) {
+    Queue<Operator<? extends OperatorDesc>> opsToVisit =
+      new LinkedList<Operator<? extends OperatorDesc>>();
+    Set<Operator<? extends OperatorDesc>> opsVisited =
+      new HashSet<Operator<? extends OperatorDesc>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.size() != 0) {
-      Operator<? extends Serializable> op = opsToVisit.remove();
+      Operator<? extends OperatorDesc> op = opsToVisit.remove();
       opsVisited.add(op);
       counters.put(op.getOperatorId(), op.getCounters());
       if (op.getDone()) {
         done.add(op.getOperatorId());
       }
       if (op.getChildOperators() != null) {
-        for (Operator<? extends Serializable> childOp : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
           if (!opsVisited.contains(childOp)) {
             opsToVisit.add(childOp);
           }

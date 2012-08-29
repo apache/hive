@@ -543,7 +543,7 @@ public class Table implements Serializable {
     tTable.getSd().getSkewedInfo().setSkewedColNames(skewedColNames);
   }
 
-  public List<String> getSkewedColName() {
+  public List<String> getSkewedColNames() {
     return tTable.getSd().getSkewedInfo().getSkewedColNames();
   }
 

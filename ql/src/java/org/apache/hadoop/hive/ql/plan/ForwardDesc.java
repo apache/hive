@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * ForwardDesc.
  *
  */
 @Explain(displayName = "Forward")
-public class ForwardDesc implements Serializable {
+public class ForwardDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   public ForwardDesc() {
+  }
+
+  @Override
+  public ForwardDesc clone() {
+    return new ForwardDesc();
   }
 }

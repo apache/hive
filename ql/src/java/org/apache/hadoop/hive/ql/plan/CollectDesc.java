@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * CollectDesc.
  *
  */
 @Explain(displayName = "Collect")
-public class CollectDesc implements Serializable {
+public class CollectDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   Integer bufferSize;
 

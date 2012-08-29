@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -88,7 +87,7 @@ public final class PlanUtils {
     try {
       return new MapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
         new LinkedHashMap<String, PartitionDesc>(),
-        new LinkedHashMap<String, Operator<? extends Serializable>>(),
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
         new TableDesc(), new ArrayList<TableDesc>(), null, Integer.valueOf(1),
         null, Hive.get().getConf().getBoolVar(
           HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));

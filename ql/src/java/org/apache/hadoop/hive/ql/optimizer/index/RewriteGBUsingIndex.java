@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.index;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +47,7 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 
 /**
@@ -224,7 +224,7 @@ public class RewriteGBUsingIndex implements Transform {
     boolean canApply = false;
     //Context for checking if this optimization can be applied to the input query
     RewriteCanApplyCtx canApplyCtx = RewriteCanApplyCtx.getInstance(parseContext);
-    Map<String, Operator<? extends Serializable>> topOps = parseContext.getTopOps();
+    Map<String, Operator<? extends OperatorDesc>> topOps = parseContext.getTopOps();
 
     canApplyCtx.setBaseTableName(baseTableName);
     canApplyCtx.populateRewriteVars(topOp);
@@ -403,8 +403,8 @@ public class RewriteGBUsingIndex implements Transform {
    */
   @SuppressWarnings("unchecked")
   private void rewriteOriginalQuery() throws SemanticException {
-    Map<String, Operator<? extends Serializable>> topOpMap =
-      (HashMap<String, Operator<? extends Serializable>>) parseContext.getTopOps().clone();
+    Map<String, Operator<? extends OperatorDesc>> topOpMap =
+      (HashMap<String, Operator<? extends OperatorDesc>>) parseContext.getTopOps().clone();
     Iterator<String> tsOpItr = tsOpToProcess.keySet().iterator();
 
     while(tsOpItr.hasNext()){
@@ -416,7 +416,7 @@ public class RewriteGBUsingIndex implements Transform {
             indexTableName, baseTableName, canApplyCtx.getAggFunction());
       rewriteQueryCtx.invokeRewriteQueryProc(topOp);
       parseContext = rewriteQueryCtx.getParseContext();
-      parseContext.setOpParseCtx((LinkedHashMap<Operator<? extends Serializable>,
+      parseContext.setOpParseCtx((LinkedHashMap<Operator<? extends OperatorDesc>,
           OpParseContext>) rewriteQueryCtx.getOpc());
     }
     LOG.info("Finished Rewriting query");

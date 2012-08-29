@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.pcr;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -36,6 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * PcrOpProcFactory contains processors that process expression tree of filter operators
@@ -70,7 +70,7 @@ public final class PcrOpProcFactory {
       Node tmp = stack.pop();
       Node tmp2 = stack.pop();
       TableScanOperator top = null;
-      Operator<? extends Serializable> pop = null;
+      Operator<? extends OperatorDesc> pop = null;
       if (tmp2 instanceof TableScanOperator) {
         top = (TableScanOperator) tmp2;
         pop = top;

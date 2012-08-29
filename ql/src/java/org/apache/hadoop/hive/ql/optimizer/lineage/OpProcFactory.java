@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 
 /**
@@ -71,8 +71,8 @@ public class OpProcFactory {
    *
    * @return Operator The parent operator in the current path.
    */
-  protected static Operator<? extends Serializable> getParent(Stack<Node> stack) {
-    return (Operator<? extends Serializable>)Utils.getNthAncestor(stack, 1);
+  protected static Operator<? extends OperatorDesc> getParent(Stack<Node> stack) {
+    return (Operator<? extends OperatorDesc>)Utils.getNthAncestor(stack, 1);
   }
 
   /**
@@ -88,8 +88,8 @@ public class OpProcFactory {
       LineageCtx lCtx = (LineageCtx) procCtx;
 
       // The operators
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)nd;
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
 
       // Create a single dependency list by concatenating the dependencies of all
       // the cols
@@ -238,7 +238,7 @@ public class OpProcFactory {
       LineageCtx lCtx = (LineageCtx) procCtx;
       LateralViewJoinOperator op = (LateralViewJoinOperator)nd;
       boolean isUdtfPath = true;
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
       ArrayList<ColumnInfo> cols = inpOp.getSchema().getSignature();
 
       if (inpOp instanceof SelectOperator) {
@@ -317,7 +317,7 @@ public class OpProcFactory {
       LineageCtx lctx = (LineageCtx)procCtx;
       GroupByOperator gop = (GroupByOperator)nd;
       ArrayList<ColumnInfo> col_infos = gop.getSchema().getSignature();
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
       int cnt = 0;
 
       for(ExprNodeDesc expr : gop.getConf().getKeys()) {
@@ -401,11 +401,11 @@ public class OpProcFactory {
 
       // LineageCtx
       LineageCtx lCtx = (LineageCtx) procCtx;
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)nd;
 
       // Get the row schema of the input operator.
       // The row schema of the parent operator
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
       RowSchema rs = op.getSchema();
       ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
       int cnt = 0;
@@ -439,12 +439,12 @@ public class OpProcFactory {
       ReduceSinkOperator rop = (ReduceSinkOperator)nd;
 
       ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
       int cnt = 0;
 
       // The keys are included only in case the reduce sink feeds into
       // a group by operator through a chain of forward operators
-      Operator<? extends Serializable> op = rop.getChildOperators().get(0);
+      Operator<? extends OperatorDesc> op = rop.getChildOperators().get(0);
       while (op instanceof ForwardOperator) {
         op = op.getChildOperators().get(0);
       }
@@ -483,11 +483,11 @@ public class OpProcFactory {
 
       // LineageCtx
       LineageCtx lCtx = (LineageCtx) procCtx;
-      Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)nd;
 
       // Get the row schema of the input operator.
       // The row schema of the parent operator
-      Operator<? extends Serializable> inpOp = getParent(stack);
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
       RowSchema rs = op.getSchema();
       ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
       int cnt = 0;

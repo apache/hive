@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.ppd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Context class for operator walker of predicate pushdown.
@@ -39,23 +39,24 @@ public class OpWalkerInfo implements NodeProcessorCtx {
    * Operator to Pushdown Predicates Map. This keeps track of the final pushdown
    * predicates for each operator as you walk the Op Graph from child to parent
    */
-  private final HashMap<Operator<? extends Serializable>, ExprWalkerInfo> opToPushdownPredMap;
-  private final Map<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
+  private final HashMap<Operator<? extends OperatorDesc>, ExprWalkerInfo>
+    opToPushdownPredMap;
+  private final Map<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
   private final ParseContext pGraphContext;
   private final List<FilterOperator> candidateFilterOps;
 
   public OpWalkerInfo(ParseContext pGraphContext) {
     this.pGraphContext = pGraphContext;
     opToParseCtxMap = pGraphContext.getOpParseCtx();
-    opToPushdownPredMap = new HashMap<Operator<? extends Serializable>, ExprWalkerInfo>();
+    opToPushdownPredMap = new HashMap<Operator<? extends OperatorDesc>, ExprWalkerInfo>();
     candidateFilterOps = new ArrayList<FilterOperator>();
   }
 
-  public ExprWalkerInfo getPrunedPreds(Operator<? extends Serializable> op) {
+  public ExprWalkerInfo getPrunedPreds(Operator<? extends OperatorDesc> op) {
     return opToPushdownPredMap.get(op);
   }
 
-  public ExprWalkerInfo putPrunedPreds(Operator<? extends Serializable> op,
+  public ExprWalkerInfo putPrunedPreds(Operator<? extends OperatorDesc> op,
       ExprWalkerInfo value) {
     return opToPushdownPredMap.put(op, value);
   }
@@ -64,7 +65,7 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     return opToParseCtxMap.get(op).getRowResolver();
   }
 
-  public OpParseContext put(Operator<? extends Serializable> key,
+  public OpParseContext put(Operator<? extends OperatorDesc> key,
       OpParseContext value) {
     return opToParseCtxMap.put(key, value);
   }

@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * description for ListSinkOperator, just for explain result.
  */
 @Explain(displayName = "ListSink")
-public class ListSinkDesc implements Serializable {
+public class ListSinkDesc extends AbstractOperatorDesc {
 
   private static final long serialVersionUID = 1L;
 

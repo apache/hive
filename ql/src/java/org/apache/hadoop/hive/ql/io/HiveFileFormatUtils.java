@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,15 +30,16 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -385,11 +385,11 @@ public final class HiveFileFormatUtils {
    * @param aliasToWork    The operator tree to be invoked for a given alias
    * @param dir            The path to look for
    **/
-  public static List<Operator<? extends Serializable>> doGetWorksFromPath(
+  public static List<Operator<? extends OperatorDesc>> doGetWorksFromPath(
     Map<String, ArrayList<String>> pathToAliases,
-    Map<String, Operator<? extends Serializable>> aliasToWork, Path dir) {
-    List<Operator<? extends Serializable>> opList =
-      new ArrayList<Operator<? extends Serializable>>();
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork, Path dir) {
+    List<Operator<? extends OperatorDesc>> opList =
+      new ArrayList<Operator<? extends OperatorDesc>>();
 
     List<String> aliases = doGetAliasesFromPath(pathToAliases, dir);
     for (String alias : aliases) {

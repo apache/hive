@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Stack;
 
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Processor for the rule - no specific rule fired.
@@ -39,7 +39,7 @@ public class GenMROperator implements NodeProcessor {
 
   /**
    * Reduce Scan encountered.
-   * 
+   *
    * @param nd
    *          the reduce sink operator encountered
    * @param procCtx
@@ -49,10 +49,10 @@ public class GenMROperator implements NodeProcessor {
       Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
-    mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
+    mapCurrCtx.put((Operator<? extends OperatorDesc>) nd, new GenMapRedCtx(
         mapredCtx.getCurrTask(), mapredCtx.getCurrTopOp(), mapredCtx
         .getCurrAliasId()));
     return null;

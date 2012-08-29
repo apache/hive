@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -1057,7 +1058,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   // Group by contains the columns needed - no need to aggregate from children
   public List<String> genColLists(
-      HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
+      HashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
     List<String> colLists = new ArrayList<String>();
     ArrayList<ExprNodeDesc> keys = conf.getKeys();
     for (ExprNodeDesc key : keys) {

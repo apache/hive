@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * unionDesc is a empty class currently. However, union has more than one input
  * (as compared with forward), and therefore, we need a separate class.
  **/
 @Explain(displayName = "Union")
-public class UnionDesc implements Serializable {
+public class UnionDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   private transient int numInputs;

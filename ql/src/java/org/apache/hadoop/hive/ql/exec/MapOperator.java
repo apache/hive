@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -58,7 +59,7 @@ import org.apache.hadoop.util.StringUtils;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
-public class MapOperator extends Operator<MapredWork> implements Serializable {
+public class MapOperator extends Operator<MapredWork> implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
 
@@ -83,17 +84,17 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   private Map<MapInputPath, MapOpCtx> opCtxMap;
   private final Set<MapInputPath> listInputPaths = new HashSet<MapInputPath>();
 
-  private Map<Operator<? extends Serializable>, java.util.ArrayList<String>> operatorToPaths;
+  private Map<Operator<? extends OperatorDesc>, ArrayList<String>> operatorToPaths;
 
-  private final Map<Operator<? extends Serializable>, MapOpCtx> childrenOpToOpCtxMap =
-    new HashMap<Operator<? extends Serializable>, MapOpCtx>();
+  private final Map<Operator<? extends OperatorDesc>, MapOpCtx> childrenOpToOpCtxMap =
+    new HashMap<Operator<? extends OperatorDesc>, MapOpCtx>();
 
-  private ArrayList<Operator<? extends Serializable>> extraChildrenToClose = null;
+  private ArrayList<Operator<? extends OperatorDesc>> extraChildrenToClose = null;
 
   private static class MapInputPath {
     String path;
     String alias;
-    Operator<? extends Serializable> op;
+    Operator<? extends OperatorDesc> op;
 
     /**
      * @param path
@@ -101,7 +102,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
      * @param op
      */
     public MapInputPath(String path, String alias,
-        Operator<? extends Serializable> op) {
+        Operator<? extends OperatorDesc> op) {
       this.path = path;
       this.alias = alias;
       this.op = op;
@@ -129,11 +130,11 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       return ret;
     }
 
-    public Operator<? extends Serializable> getOp() {
+    public Operator<? extends OperatorDesc> getOp() {
       return op;
     }
 
-    public void setOp(Operator<? extends Serializable> op) {
+    public void setOp(Operator<? extends OperatorDesc> op) {
       this.op = op;
     }
 
@@ -304,7 +305,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
    * need to be changed if the input changes
    **/
   private void setInspectorInput(MapInputPath inp) {
-    Operator<? extends Serializable> op = inp.getOp();
+    Operator<? extends OperatorDesc> op = inp.getOp();
 
     deserializer = opCtxMap.get(inp).getDeserializer();
     isPartitioned = opCtxMap.get(inp).isPartitioned();
@@ -367,9 +368,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     Path fpath = new Path((new Path(HiveConf.getVar(hconf,
         HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
 
-    ArrayList<Operator<? extends Serializable>> children = new ArrayList<Operator<? extends Serializable>>();
+    ArrayList<Operator<? extends OperatorDesc>> children =
+      new ArrayList<Operator<? extends OperatorDesc>>();
     opCtxMap = new HashMap<MapInputPath, MapOpCtx>();
-    operatorToPaths = new HashMap<Operator<? extends Serializable>, java.util.ArrayList<String>>();
+    operatorToPaths = new HashMap<Operator<? extends OperatorDesc>, ArrayList<String>>();
 
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
 
@@ -380,17 +382,17 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
         List<String> aliases = conf.getPathToAliases().get(onefile);
 
         for (String onealias : aliases) {
-          Operator<? extends Serializable> op = conf.getAliasToWork().get(
+          Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(
             onealias);
           LOG.info("Adding alias " + onealias + " to work list for file "
             + onefile);
           MapInputPath inp = new MapInputPath(onefile, onealias, op);
           opCtxMap.put(inp, opCtx);
           if (operatorToPaths.get(op) == null) {
-            operatorToPaths.put(op, new java.util.ArrayList<String>());
+            operatorToPaths.put(op, new ArrayList<String>());
           }
           operatorToPaths.get(op).add(onefile);
-          op.setParentOperators(new ArrayList<Operator<? extends Serializable>>());
+          op.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
           op.getParentOperators().add(this);
           // check for the operators who will process rows coming to this Map
           // Operator
@@ -423,11 +425,11 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   public void initializeOp(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
-    List<Operator<? extends Serializable>> children = getChildOperators();
+    List<Operator<? extends OperatorDesc>> children = getChildOperators();
 
-    for (Entry<Operator<? extends Serializable>, MapOpCtx> entry : childrenOpToOpCtxMap
+    for (Entry<Operator<? extends OperatorDesc>, MapOpCtx> entry : childrenOpToOpCtxMap
         .entrySet()) {
-      Operator<? extends Serializable> child = entry.getKey();
+      Operator<? extends OperatorDesc> child = entry.getKey();
       MapOpCtx mapOpCtx = entry.getValue();
       // Add alias, table name, and partitions to hadoop conf so that their
       // children will
@@ -448,12 +450,12 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, entry
           .getValue().partName);
       MapInputPath input = entry.getKey();
-      Operator<? extends Serializable> op = input.op;
+      Operator<? extends OperatorDesc> op = input.op;
       // op is not in the children list, so need to remember it and close it
       // afterwards
       if (children.indexOf(op) == -1) {
         if (extraChildrenToClose == null) {
-          extraChildrenToClose = new ArrayList<Operator<? extends Serializable>>();
+          extraChildrenToClose = new ArrayList<Operator<? extends OperatorDesc>>();
         }
         extraChildrenToClose.add(op);
         op.initialize(hconf, new ObjectInspector[] {entry.getValue().getRowObjectInspector()});
@@ -467,7 +469,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   @Override
   public void closeOp(boolean abort) throws HiveException {
     if (extraChildrenToClose != null) {
-      for (Operator<? extends Serializable> op : extraChildrenToClose) {
+      for (Operator<? extends OperatorDesc> op : extraChildrenToClose) {
         op.close(abort);
       }
     }
@@ -486,7 +488,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       // Operator
       if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
         String onealias = conf.getPathToAliases().get(onefile).get(0);
-        Operator<? extends Serializable> op =
+        Operator<? extends OperatorDesc> op =
             conf.getAliasToWork().get(onealias);
 
         LOG.info("Processing alias " + onealias + " for file " + onefile);

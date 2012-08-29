@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
  *
  */
 @Explain(displayName = "Group By Operator")
-public class GroupByDesc implements java.io.Serializable {
+public class GroupByDesc extends AbstractOperatorDesc {
   /**
    * Group-by Mode: COMPLETE: complete 1-phase aggregation: iterate, terminate
    * PARTIAL1: partial aggregation - first phase: iterate, terminatePartial
@@ -54,9 +54,9 @@ public class GroupByDesc implements java.io.Serializable {
   private boolean groupKeyNotReductionKey;
   private boolean bucketGroup;
 
-  private java.util.ArrayList<ExprNodeDesc> keys;
-  private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
-  private java.util.ArrayList<java.lang.String> outputColumnNames;
+  private ArrayList<ExprNodeDesc> keys;
+  private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
+  private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
   private float memoryThreshold;
 
@@ -65,9 +65,9 @@ public class GroupByDesc implements java.io.Serializable {
 
   public GroupByDesc(
       final Mode mode,
-      final java.util.ArrayList<java.lang.String> outputColumnNames,
-      final java.util.ArrayList<ExprNodeDesc> keys,
-      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
+      final ArrayList<java.lang.String> outputColumnNames,
+      final ArrayList<ExprNodeDesc> keys,
+      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
       final boolean groupKeyNotReductionKey,float groupByMemoryUsage, float memoryThreshold) {
     this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
         false, groupByMemoryUsage, memoryThreshold);
@@ -75,9 +75,9 @@ public class GroupByDesc implements java.io.Serializable {
 
   public GroupByDesc(
       final Mode mode,
-      final java.util.ArrayList<java.lang.String> outputColumnNames,
-      final java.util.ArrayList<ExprNodeDesc> keys,
-      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
+      final ArrayList<java.lang.String> outputColumnNames,
+      final ArrayList<ExprNodeDesc> keys,
+      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
       final boolean groupKeyNotReductionKey, final boolean bucketGroup,float groupByMemoryUsage, float memoryThreshold) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
@@ -120,21 +120,21 @@ public class GroupByDesc implements java.io.Serializable {
   }
 
   @Explain(displayName = "keys")
-  public java.util.ArrayList<ExprNodeDesc> getKeys() {
+  public ArrayList<ExprNodeDesc> getKeys() {
     return keys;
   }
 
-  public void setKeys(final java.util.ArrayList<ExprNodeDesc> keys) {
+  public void setKeys(final ArrayList<ExprNodeDesc> keys) {
     this.keys = keys;
   }
 
   @Explain(displayName = "outputColumnNames")
-  public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
+  public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
 
   public void setOutputColumnNames(
-      java.util.ArrayList<java.lang.String> outputColumnNames) {
+      ArrayList<java.lang.String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
   }
 
@@ -155,12 +155,12 @@ public class GroupByDesc implements java.io.Serializable {
   }
 
   @Explain(displayName = "aggregations")
-  public java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> getAggregators() {
+  public ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> getAggregators() {
     return aggregators;
   }
 
   public void setAggregators(
-      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators) {
+      final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators) {
     this.aggregators = aggregators;
   }
 
@@ -180,7 +180,7 @@ public class GroupByDesc implements java.io.Serializable {
   public void setBucketGroup(boolean dataSorted) {
     bucketGroup = dataSorted;
   }
-  
+
   /**
    * Checks if this grouping is like distinct, which means that all non-distinct grouping
    * columns behave like they were distinct - for example min and max operators.

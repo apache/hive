@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 /**
@@ -175,7 +175,7 @@ public class GroupByOptimizer implements Transform {
       }
 
       for (String table : tblNames) {
-        Operator<? extends Serializable> topOp = pGraphContext.getTopOps().get(
+        Operator<? extends OperatorDesc> topOp = pGraphContext.getTopOps().get(
             table);
         if (topOp == null || (!(topOp instanceof TableScanOperator))) {
           // this is in a sub-query.

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,7 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SplitSample;
  *
  */
 @Explain(displayName = "Map Reduce")
-public class MapredWork implements Serializable {
+public class MapredWork extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private String command;
   // map side work
@@ -49,7 +48,7 @@ public class MapredWork implements Serializable {
 
   private LinkedHashMap<String, PartitionDesc> pathToPartitionInfo;
 
-  private LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork;
+  private LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork;
 
   private LinkedHashMap<String, PartitionDesc> aliasToPartnInfo;
 
@@ -81,7 +80,7 @@ public class MapredWork implements Serializable {
 
   private String tmpHDFSFileURI;
 
-  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap;
+  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
 
   private QBJoinTree joinTree;
 
@@ -100,7 +99,7 @@ public class MapredWork implements Serializable {
       final String command,
       final LinkedHashMap<String, ArrayList<String>> pathToAliases,
       final LinkedHashMap<String, PartitionDesc> pathToPartitionInfo,
-      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
+      final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork,
       final TableDesc keyDesc, List<TableDesc> tagToValueDesc,
       final Operator<?> reducer, final Integer numReduceTasks,
       final MapredLocalWork mapLocalWork,
@@ -167,12 +166,12 @@ public class MapredWork implements Serializable {
   }
 
   @Explain(displayName = "Alias -> Map Operator Tree")
-  public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
+  public LinkedHashMap<String, Operator<? extends OperatorDesc>> getAliasToWork() {
     return aliasToWork;
   }
 
   public void setAliasToWork(
-      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
+      final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
   }
 
@@ -433,12 +432,13 @@ public class MapredWork implements Serializable {
     this.joinTree = joinTree;
   }
 
-  public LinkedHashMap<Operator<? extends Serializable>, OpParseContext> getOpParseCtxMap() {
+  public
+    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtxMap() {
     return opParseCtxMap;
   }
 
   public void setOpParseCtxMap(
-      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap) {
+    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap) {
     this.opParseCtxMap = opParseCtxMap;
   }
 

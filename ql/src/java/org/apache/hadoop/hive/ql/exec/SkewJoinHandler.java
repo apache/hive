@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -94,11 +94,11 @@ public class SkewJoinHandler {
   List<Object> dummyKey = null;
   String taskId;
 
-  private final CommonJoinOperator<? extends Serializable> joinOp;
+  private final CommonJoinOperator<? extends OperatorDesc> joinOp;
   private final int numAliases;
   private final JoinDesc conf;
 
-  public SkewJoinHandler(CommonJoinOperator<? extends Serializable> joinOp) {
+  public SkewJoinHandler(CommonJoinOperator<? extends OperatorDesc> joinOp) {
     this.joinOp = joinOp;
     numAliases = joinOp.numAliases;
     conf = joinOp.getConf();

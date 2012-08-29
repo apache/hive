@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.index.compact;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -57,14 +56,13 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 
 public class CompactIndexHandler extends TableBasedIndexHandler {
 
@@ -252,9 +250,11 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
    * @param operators
    * @return whether or not it has found its target
    */
-  private boolean findIndexColumnFilter(Collection<Operator<? extends Serializable>> operators) {
-    for (Operator<? extends Serializable> op : operators) {
-      if (op instanceof FilterOperator && ((FilterOperator)op).getConf().getPredicate().getChildren() != null) {
+  private boolean findIndexColumnFilter(
+    Collection<Operator<? extends OperatorDesc>> operators) {
+    for (Operator<? extends OperatorDesc> op : operators) {
+      if (op instanceof FilterOperator &&
+        ((FilterOperator)op).getConf().getPredicate().getChildren() != null) {
         // Is this the target
         if (findIndexColumnExprNodeDesc(((FilterOperator)op).getConf().getPredicate())) {
           ((FilterOperator)op).getConf().setSortedFilter(true);

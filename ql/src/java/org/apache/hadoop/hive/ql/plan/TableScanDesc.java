@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
  * things will be added here as table scan is invoked as part of local work.
  **/
 @Explain(displayName = "TableScan")
-public class TableScanDesc implements Serializable {
+public class TableScanDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   private String alias;
@@ -69,6 +69,12 @@ public class TableScanDesc implements Serializable {
   public TableScanDesc(final String alias, List<VirtualColumn> vcs) {
     this.alias = alias;
     this.virtualCols = vcs;
+  }
+
+  @Override
+  public Object clone() {
+    List<VirtualColumn> vcs = new ArrayList<VirtualColumn>(getVirtualCols());
+    return new TableScanDesc(getAlias(), vcs);
   }
 
   @Explain(displayName = "alias")

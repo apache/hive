@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
@@ -224,10 +224,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   // Splits are not shared across different partitions with different input formats.
   // For example, 2 partitions (1 sequencefile and 1 rcfile) will have 2 different splits
   private static class CombinePathInputFormat {
-    private final List<Operator<? extends Serializable>> opList;
+    private final List<Operator<? extends OperatorDesc>> opList;
     private final String inputFormatClassName;
 
-    public CombinePathInputFormat(List<Operator<? extends Serializable>> opList,
+    public CombinePathInputFormat(List<Operator<? extends OperatorDesc>> opList,
                                   String inputFormatClassName) {
       this.opList = opList;
       this.inputFormatClassName = inputFormatClassName;
@@ -259,7 +259,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     init(job);
     Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
-    Map<String, Operator<? extends Serializable>> aliasToWork =
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
@@ -341,7 +341,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       // Does a pool exist for this path already
       CombineFilter f = null;
-      List<Operator<? extends Serializable>> opList = null;
+      List<Operator<? extends OperatorDesc>> opList = null;
       boolean done = false;
 
       if (!mrwork.isMapperCannotSpanPartns()) {

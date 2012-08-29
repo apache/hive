@@ -39,13 +39,14 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -89,7 +90,7 @@ public class GenMRUnion1 implements NodeProcessor {
     }
     else {
       ctx.getMapCurrCtx().put(
-          (Operator<? extends Serializable>) union,
+          (Operator<? extends OperatorDesc>) union,
           new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
               ctx.getCurrAliasId()));
     }
@@ -127,8 +128,8 @@ public class GenMRUnion1 implements NodeProcessor {
    * @param uCtxTask
    */
   private void processSubQueryUnionCreateIntermediate(
-      Operator<? extends Serializable> parent,
-      Operator<? extends Serializable> child,
+      Operator<? extends OperatorDesc> parent,
+      Operator<? extends OperatorDesc> child,
       Task<? extends Serializable> uTask, GenMRProcContext ctx,
       GenMRUnionCtx uCtxTask) {
     ParseContext parseCtx = ctx.getParseCtx();
@@ -141,21 +142,23 @@ public class GenMRUnion1 implements NodeProcessor {
     String taskTmpDir = baseCtx.getMRTmpFileURI();
 
     // Create a file sink operator for this file name
-    Operator<? extends Serializable> fs_op = OperatorFactory.get(
+    Operator<? extends OperatorDesc> fs_op = OperatorFactory.get(
         new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
             HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
 
     assert parent.getChildOperators().size() == 1;
     parent.getChildOperators().set(0, fs_op);
 
-    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends OperatorDesc>> parentOpList =
+      new ArrayList<Operator<? extends OperatorDesc>>();
     parentOpList.add(parent);
     fs_op.setParentOperators(parentOpList);
 
     // Create a dummy table scan operator
-    Operator<? extends Serializable> ts_op = OperatorFactory.get(
+    Operator<? extends OperatorDesc> ts_op = OperatorFactory.get(
         new TableScanDesc(), parent.getSchema());
-    List<Operator<? extends Serializable>> childOpList = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends OperatorDesc>> childOpList =
+      new ArrayList<Operator<? extends OperatorDesc>>();
     childOpList.add(child);
     ts_op.setChildOperators(childOpList);
     child.replaceParent(parent, ts_op);
@@ -199,8 +202,8 @@ public class GenMRUnion1 implements NodeProcessor {
     Task<? extends Serializable> uTask = uCtxTask.getUTask();
     MapredWork plan = (MapredWork) uTask.getWork();
     ctx.setCurrTask(uTask);
-    List<Operator<? extends Serializable>> seenOps = ctx.getSeenOps();
-    Operator<? extends Serializable> topOp = ctx.getCurrTopOp();
+    List<Operator<? extends OperatorDesc>> seenOps = ctx.getSeenOps();
+    Operator<? extends OperatorDesc> topOp = ctx.getCurrTopOp();
     if (!seenOps.contains(topOp) && topOp != null) {
       seenOps.add(topOp);
       GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx
@@ -247,7 +250,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // Map-only subqueries can be optimized in future to not write to a file in
     // future
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
 
@@ -305,7 +308,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     ctx.setCurrTask(uTask);
 
-    mapCurrCtx.put((Operator<? extends Serializable>) nd,
+    mapCurrCtx.put((Operator<? extends OperatorDesc>) nd,
         new GenMapRedCtx(ctx.getCurrTask(), null, null));
 
     return null;

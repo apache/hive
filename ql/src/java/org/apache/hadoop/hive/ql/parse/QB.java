@@ -219,7 +219,7 @@ public class QB {
         null != qbm.getAliasToTable() &&
             qbm.getAliasToTable().size() > 0) {
       Table tbl = getMetaData().getTableForAlias(alias);
-      skewedColNames = tbl.getSkewedColName();
+      skewedColNames = tbl.getSkewedColNames();
     }
     return skewedColNames;
   }

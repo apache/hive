@@ -25,6 +25,11 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 
+import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 
 /**
  * Library of utility functions used in the parse code.
@@ -95,5 +100,4 @@ public final class ParseUtils {
     }
     return colNames;
   }
-
 }

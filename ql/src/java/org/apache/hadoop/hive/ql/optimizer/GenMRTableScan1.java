@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 /**
  * Processor for the rule - table scan.
@@ -62,17 +63,17 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
     // create a dummy MapReduce task
     MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
     Task<? extends Serializable> currTask = TaskFactory.get(currWork, parseCtx.getConf());
-    Operator<? extends Serializable> currTopOp = op;
+    Operator<? extends OperatorDesc> currTopOp = op;
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(currTopOp);
 
     for (String alias : parseCtx.getTopOps().keySet()) {
-      Operator<? extends Serializable> currOp = parseCtx.getTopOps().get(alias);
+      Operator<? extends OperatorDesc> currOp = parseCtx.getTopOps().get(alias);
       if (currOp == op) {
         String currAliasId = alias;
         ctx.setCurrAliasId(currAliasId);

@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -250,14 +251,14 @@ public final class GenMRSkewJoinProcessor {
         throw new SemanticException(e);
       }
 
-      Operator<? extends Serializable>[] parentOps = new TableScanOperator[tags.length];
+      Operator<? extends OperatorDesc>[] parentOps = new TableScanOperator[tags.length];
       for (int k = 0; k < tags.length; k++) {
-        Operator<? extends Serializable> ts = OperatorFactory.get(
+        Operator<? extends OperatorDesc> ts = OperatorFactory.get(
             TableScanDesc.class, (RowSchema) null);
         ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
-      Operator<? extends Serializable> tblScan_op = parentOps[i];
+      Operator<? extends OperatorDesc> tblScan_op = parentOps[i];
 
       ArrayList<String> aliases = new ArrayList<String>();
       String alias = src.toString();
@@ -275,7 +276,7 @@ public final class GenMRSkewJoinProcessor {
       newPlan.getPathToPartitionInfo().put(bigKeyDirPath, part);
       newPlan.getAliasToPartnInfo().put(alias, part);
 
-      Operator<? extends Serializable> reducer = clonePlan.getReducer();
+      Operator<? extends OperatorDesc> reducer = clonePlan.getReducer();
       assert reducer instanceof JoinOperator;
       JoinOperator cloneJoinOp = (JoinOperator) reducer;
 
@@ -289,7 +290,7 @@ public final class GenMRSkewJoinProcessor {
       mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());
 
       MapredLocalWork localPlan = new MapredLocalWork(
-          new LinkedHashMap<String, Operator<? extends Serializable>>(),
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
           new LinkedHashMap<String, FetchWork>());
       Map<Byte, String> smallTblDirs = smallKeysDirMap.get(src);
 
@@ -298,7 +299,7 @@ public final class GenMRSkewJoinProcessor {
           continue;
         }
         Byte small_alias = tags[j];
-        Operator<? extends Serializable> tblScan_op2 = parentOps[j];
+        Operator<? extends OperatorDesc> tblScan_op2 = parentOps[j];
         localPlan.getAliasToWork().put(small_alias.toString(), tblScan_op2);
         Path tblDir = new Path(smallTblDirs.get(small_alias));
         localPlan.getAliasToFetchWork().put(small_alias.toString(),
@@ -312,9 +313,9 @@ public final class GenMRSkewJoinProcessor {
           .getAndMakeChild(mapJoinDescriptor, (RowSchema) null, parentOps);
       // change the children of the original join operator to point to the map
       // join operator
-      List<Operator<? extends Serializable>> childOps = cloneJoinOp
+      List<Operator<? extends OperatorDesc>> childOps = cloneJoinOp
           .getChildOperators();
-      for (Operator<? extends Serializable> childOp : childOps) {
+      for (Operator<? extends OperatorDesc> childOp : childOps) {
         childOp.replaceParent(cloneJoinOp, mapJoinOp);
       }
       mapJoinOp.setChildOperators(childOps);

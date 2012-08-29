@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -350,18 +351,18 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
-  public Collection<Operator<? extends Serializable>> getTopOperators() {
-    return new LinkedList<Operator<? extends Serializable>>();
+  public Collection<Operator<? extends OperatorDesc>> getTopOperators() {
+    return new LinkedList<Operator<? extends OperatorDesc>>();
   }
-  
+
   public boolean hasReduce() {
     return false;
   }
 
-  public Operator<? extends Serializable> getReducer() {
+  public Operator<? extends OperatorDesc> getReducer() {
     return null;
   }
-  
+
   public HashMap<String, Long> getCounters() {
     return taskCounters;
   }

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -416,8 +416,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     for (String alias : aliases) {
-      Operator<? extends Serializable> op = this.mrwork.getAliasToWork().get(
-          alias);
+      Operator<? extends OperatorDesc> op = this.mrwork.getAliasToWork().get(
+        alias);
       if (op != null && op instanceof TableScanOperator) {
         TableScanOperator tableScan = (TableScanOperator) op;
 

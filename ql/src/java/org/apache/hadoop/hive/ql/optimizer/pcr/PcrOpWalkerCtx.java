@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.pcr;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Context class for operator tree walker for partition condition remover.
@@ -32,15 +32,16 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 public class PcrOpWalkerCtx implements NodeProcessorCtx {
 
   static public class OpToDeleteInfo {
-    private final Operator<? extends Serializable> parent;
+    private final Operator<? extends OperatorDesc> parent;
     private final FilterOperator operator;
 
-    public OpToDeleteInfo(Operator<? extends Serializable> parent, FilterOperator operator) {
+    public OpToDeleteInfo(Operator<? extends OperatorDesc> parent,
+      FilterOperator operator) {
       super();
       this.parent = parent;
       this.operator = operator;
     }
-    public Operator<? extends Serializable> getParent() {
+    public Operator<? extends OperatorDesc> getParent() {
       return parent;
     }
     public FilterOperator getOperator() {

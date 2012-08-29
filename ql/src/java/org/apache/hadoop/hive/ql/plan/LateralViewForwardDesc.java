@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * LateralViewForwardDesc.
  *
  */
 @Explain(displayName = "Lateral View Forward")
-public class LateralViewForwardDesc implements Serializable {
+public class LateralViewForwardDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   public LateralViewForwardDesc() {
