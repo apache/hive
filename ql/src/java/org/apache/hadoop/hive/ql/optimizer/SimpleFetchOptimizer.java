@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -63,7 +63,7 @@ public class SimpleFetchOptimizer implements Transform {
   private final Log LOG = LogFactory.getLog(SimpleFetchOptimizer.class.getName());
 
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    Map<String, Operator<? extends Serializable>> topOps = pctx.getTopOps();
+    Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
     if (pctx.getQB().isSimpleSelectQuery() && topOps.size() == 1) {
       // no join, no groupby, no distinct, no lateral view, no subq,
       // no CTAS or insert, not analyze command, and single sourced.
@@ -234,8 +234,8 @@ public class SimpleFetchOptimizer implements Transform {
       pctx.getSemanticInputs().addAll(inputs);
       ListSinkOperator sink = new ListSinkOperator();
       sink.setConf(new ListSinkDesc(work.getSerializationNullFormat()));
-      sink.setParentOperators(new ArrayList<Operator<? extends Serializable>>());
-      Operator<? extends Serializable> parent = fileSink.getParentOperators().get(0);
+      sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+      Operator<? extends OperatorDesc> parent = fileSink.getParentOperators().get(0);
       sink.getParentOperators().add(parent);
       parent.replaceChild(fileSink, sink);
       fileSink.setParentOperators(null);

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Processor for the rule - reduce sink followed by reduce sink.
@@ -41,7 +42,7 @@ public class GenMRRedSink2 implements NodeProcessor {
 
   /**
    * Reduce Scan encountered.
-   * 
+   *
    * @param nd
    *          the reduce sink operator encountered
    * @param opProcCtx
@@ -52,14 +53,14 @@ public class GenMRRedSink2 implements NodeProcessor {
     ReduceSinkOperator op = (ReduceSinkOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
 
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-    Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
+    Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
-    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
+    Map<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
         .getOpTaskMap();
     Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 

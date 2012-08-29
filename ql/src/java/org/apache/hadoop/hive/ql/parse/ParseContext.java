@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -65,9 +66,9 @@ public class ParseContext {
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   private Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner;
-  private HashMap<String, Operator<? extends Serializable>> topOps;
-  private HashMap<String, Operator<? extends Serializable>> topSelOps;
-  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
+  private HashMap<String, Operator<? extends OperatorDesc>> topOps;
+  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
   private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
   private HashMap<TableScanOperator, Table> topToTable;
@@ -154,9 +155,9 @@ public class ParseContext {
       ASTNode ast,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
-      HashMap<String, Operator<? extends Serializable>> topOps,
-      HashMap<String, Operator<? extends Serializable>> topSelOps,
-      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
+      HashMap<String, Operator<? extends OperatorDesc>> topOps,
+      HashMap<String, Operator<? extends OperatorDesc>> topSelOps,
+      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
       HashMap<TableScanOperator, Table> topToTable,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
@@ -299,7 +300,7 @@ public class ParseContext {
   /**
    * @return the topOps
    */
-  public HashMap<String, Operator<? extends Serializable>> getTopOps() {
+  public HashMap<String, Operator<? extends OperatorDesc>> getTopOps() {
     return topOps;
   }
 
@@ -307,14 +308,14 @@ public class ParseContext {
    * @param topOps
    *          the topOps to set
    */
-  public void setTopOps(HashMap<String, Operator<? extends Serializable>> topOps) {
+  public void setTopOps(HashMap<String, Operator<? extends OperatorDesc>> topOps) {
     this.topOps = topOps;
   }
 
   /**
    * @return the topSelOps
    */
-  public HashMap<String, Operator<? extends Serializable>> getTopSelOps() {
+  public HashMap<String, Operator<? extends OperatorDesc>> getTopSelOps() {
     return topSelOps;
   }
 
@@ -323,14 +324,14 @@ public class ParseContext {
    *          the topSelOps to set
    */
   public void setTopSelOps(
-      HashMap<String, Operator<? extends Serializable>> topSelOps) {
+      HashMap<String, Operator<? extends OperatorDesc>> topSelOps) {
     this.topSelOps = topSelOps;
   }
 
   /**
    * @return the opParseCtx
    */
-  public LinkedHashMap<Operator<? extends Serializable>, OpParseContext> getOpParseCtx() {
+  public LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> getOpParseCtx() {
     return opParseCtx;
   }
 
@@ -339,7 +340,7 @@ public class ParseContext {
    *          the opParseCtx to set
    */
   public void setOpParseCtx(
-      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
+      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
     this.opParseCtx = opParseCtx;
   }
 

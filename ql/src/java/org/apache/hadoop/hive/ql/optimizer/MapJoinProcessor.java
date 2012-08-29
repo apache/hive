@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -97,8 +97,8 @@ public class MapJoinProcessor implements Transform {
   }
 
   @SuppressWarnings("nls")
-  private Operator<? extends Serializable> putOpInsertMap(Operator<? extends Serializable> op,
-      RowResolver rr) {
+  private Operator<? extends OperatorDesc>
+    putOpInsertMap(Operator<? extends OperatorDesc> op, RowResolver rr) {
     OpParseContext ctx = new OpParseContext(rr);
     pGraphContext.getOpParseCtx().put(op, ctx);
     return op;
@@ -120,18 +120,18 @@ public class MapJoinProcessor implements Transform {
 
     // create a new  MapredLocalWork
     MapredLocalWork newLocalWork = new MapredLocalWork(
-        new LinkedHashMap<String, Operator<? extends Serializable>>(),
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
         new LinkedHashMap<String, FetchWork>());
 
-    for (Map.Entry<String, Operator<? extends Serializable>> entry : newWork.getAliasToWork()
-        .entrySet()) {
+    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
+      newWork.getAliasToWork().entrySet()) {
       String alias = entry.getKey();
-      Operator<? extends Serializable> op = entry.getValue();
+      Operator<? extends OperatorDesc> op = entry.getValue();
 
       // if the table scan is for big table; then skip it
       // tracing down the operator tree from the table scan operator
-      Operator<? extends Serializable> parentOp = op;
-      Operator<? extends Serializable> childOp = op.getChildOperators().get(0);
+      Operator<? extends OperatorDesc> parentOp = op;
+      Operator<? extends OperatorDesc> childOp = op.getChildOperators().get(0);
       while ((childOp != null) && (!childOp.equals(mapJoinOp))) {
         parentOp = childOp;
         assert parentOp.getChildOperators().size() == 1;
@@ -218,10 +218,10 @@ public class MapJoinProcessor implements Transform {
   }
 
   public static String genMapJoinOpAndLocalWork(MapredWork newWork, JoinOperator op, int mapJoinPos)
-      throws SemanticException {
+    throws SemanticException {
     try {
-      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap = newWork
-          .getOpParseCtxMap();
+      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
+        newWork.getOpParseCtxMap();
       QBJoinTree newJoinTree = newWork.getJoinTree();
       // generate the map join operator; already checked the map join
       MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
@@ -256,9 +256,9 @@ public class MapJoinProcessor implements Transform {
    * @param noCheckOuterJoin
    */
   public static MapJoinOperator convertMapJoin(
-      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
-      throws SemanticException {
+    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
+    JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
+    throws SemanticException {
     // outer join cannot be performed on a table which is being cached
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
@@ -279,18 +279,22 @@ public class MapJoinProcessor implements Transform {
     // The join outputs a concatenation of all the inputs.
     QBJoinTree leftSrc = joinTree.getJoinSrc();
 
-    List<Operator<? extends Serializable>> parentOps = op.getParentOperators();
-    List<Operator<? extends Serializable>> newParentOps = new ArrayList<Operator<? extends Serializable>>();
-    List<Operator<? extends Serializable>> oldReduceSinkParentOps = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends OperatorDesc>> parentOps = op.getParentOperators();
+    List<Operator<? extends OperatorDesc>> newParentOps =
+      new ArrayList<Operator<? extends OperatorDesc>>();
+    List<Operator<? extends OperatorDesc>> oldReduceSinkParentOps =
+       new ArrayList<Operator<? extends OperatorDesc>>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    HashMap<Byte, HashMap<String, ExprNodeDesc>> columnTransfer = new HashMap<Byte, HashMap<String, ExprNodeDesc>>();
+    HashMap<Byte, HashMap<String, ExprNodeDesc>> columnTransfer =
+      new HashMap<Byte, HashMap<String, ExprNodeDesc>>();
 
     // found a source which is not to be stored in memory
     if (leftSrc != null) {
       // assert mapJoinPos == 0;
-      Operator<? extends Serializable> parentOp = parentOps.get(0);
+      Operator<? extends OperatorDesc> parentOp = parentOps.get(0);
       assert parentOp.getParentOperators().size() == 1;
-      Operator<? extends Serializable> grandParentOp = parentOp.getParentOperators().get(0);
+      Operator<? extends OperatorDesc> grandParentOp =
+        parentOp.getParentOperators().get(0);
       oldReduceSinkParentOps.add(parentOp);
       grandParentOp.removeChild(parentOp);
       newParentOps.add(grandParentOp);
@@ -300,9 +304,10 @@ public class MapJoinProcessor implements Transform {
     // Remove parent reduce-sink operators
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
-        Operator<? extends Serializable> parentOp = parentOps.get(pos);
+        Operator<? extends OperatorDesc> parentOp = parentOps.get(pos);
         assert parentOp.getParentOperators().size() == 1;
-        Operator<? extends Serializable> grandParentOp = parentOp.getParentOperators().get(0);
+        Operator<? extends OperatorDesc> grandParentOp =
+          parentOp.getParentOperators().get(0);
 
         grandParentOp.removeChild(parentOp);
         oldReduceSinkParentOps.add(parentOp);
@@ -389,7 +394,7 @@ public class MapJoinProcessor implements Transform {
 
     Operator[] newPar = new Operator[newParentOps.size()];
     pos = 0;
-    for (Operator<? extends Serializable> o : newParentOps) {
+    for (Operator<? extends OperatorDesc> o : newParentOps) {
       newPar[pos++] = o;
     }
 
@@ -461,8 +466,8 @@ public class MapJoinProcessor implements Transform {
 
     // change the children of the original join operator to point to the map
     // join operator
-    List<Operator<? extends Serializable>> childOps = op.getChildOperators();
-    for (Operator<? extends Serializable> childOp : childOps) {
+    List<Operator<? extends OperatorDesc>> childOps = op.getChildOperators();
+    for (Operator<? extends OperatorDesc> childOp : childOps) {
       childOp.replaceParent(op, mapJoinOp);
     }
 
@@ -482,7 +487,7 @@ public class MapJoinProcessor implements Transform {
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN);
 
 
-    LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap = pctx
+    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap = pctx
         .getOpParseCtx();
     MapJoinOperator mapJoinOp = convertMapJoin(opParseCtxMap, op, joinTree, mapJoinPos,
         noCheckOuterJoin);
@@ -577,7 +582,7 @@ public class MapJoinProcessor implements Transform {
   }
 
   private void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
-    List<Operator<? extends Serializable>> childOps = input.getChildOperators();
+    List<Operator<? extends OperatorDesc>> childOps = input.getChildOperators();
     input.setChildOperators(null);
 
     // create a dummy select - This select is needed by the walker to split the
@@ -613,7 +618,7 @@ public class MapJoinProcessor implements Transform {
 
     // Insert the select operator in between.
     sel.setChildOperators(childOps);
-    for (Operator<? extends Serializable> ch : childOps) {
+    for (Operator<? extends OperatorDesc> ch : childOps) {
       ch.replaceParent(input, sel);
     }
   }
@@ -764,12 +769,12 @@ public class MapJoinProcessor implements Transform {
     }
 
     private Boolean findGrandChildSubqueryMapjoin(MapJoinWalkerCtx ctx, MapJoinOperator mapJoin) {
-      Operator<? extends Serializable> parent = mapJoin;
+      Operator<? extends OperatorDesc> parent = mapJoin;
       while (true) {
         if (parent.getChildOperators() == null || parent.getChildOperators().size() != 1) {
           return null;
         }
-        Operator<? extends Serializable> ch = parent.getChildOperators().get(0);
+        Operator<? extends OperatorDesc> ch = parent.getChildOperators().get(0);
         if (ch instanceof MapJoinOperator) {
           if (!nonSubqueryMapJoin(ctx.getpGraphContext(), (MapJoinOperator) ch, mapJoin)) {
             if (ch.getParentOperators().indexOf(parent) == ((MapJoinOperator) ch).getConf()

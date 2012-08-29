@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Implementation of rule-based join table reordering optimization. User passes
@@ -42,7 +42,7 @@ public class JoinReorder implements Transform {
    * the whole tree is traversed. Possible sizes: 0: the operator and its
    * subtree don't contain any big tables 1: the subtree of the operator
    * contains a big table 2: the operator is a big table
-   * 
+   *
    * @param operator
    *          The operator which output size is to be estimated
    * @param bigTables
@@ -50,12 +50,12 @@ public class JoinReorder implements Transform {
    * @return The estimated size - 0 (no streamed tables), 1 (streamed tables in
    *         subtree) or 2 (a streamed table)
    */
-  private int getOutputSize(Operator<? extends Serializable> operator,
+  private int getOutputSize(Operator<? extends OperatorDesc> operator,
       Set<String> bigTables) {
     // If a join operator contains a big subtree, there is a chance that its
     // output is also big, so the output size is 1 (medium)
     if (operator instanceof JoinOperator) {
-      for (Operator<? extends Serializable> o : operator.getParentOperators()) {
+      for (Operator<? extends OperatorDesc> o : operator.getParentOperators()) {
         if (getOutputSize(o, bigTables) != 0) {
           return 1;
         }
@@ -74,7 +74,7 @@ public class JoinReorder implements Transform {
     // the biggest output from a parent
     int maxSize = 0;
     if (operator.getParentOperators() != null) {
-      for (Operator<? extends Serializable> o : operator.getParentOperators()) {
+      for (Operator<? extends OperatorDesc> o : operator.getParentOperators()) {
         int current = getOutputSize(o, bigTables);
         if (current > maxSize) {
           maxSize = current;
@@ -87,7 +87,7 @@ public class JoinReorder implements Transform {
 
   /**
    * Find all big tables from STREAMTABLE hints.
-   * 
+   *
    * @param joinCtx
    *          The join context
    * @return Set of all big tables
@@ -107,7 +107,7 @@ public class JoinReorder implements Transform {
   /**
    * Reorder the tables in a join operator appropriately (by reordering the tags
    * of the reduces sinks).
-   * 
+   *
    * @param joinOp
    *          The join operator to be processed
    * @param bigTables
@@ -148,7 +148,7 @@ public class JoinReorder implements Transform {
    * Transform the query tree. For each join, check which reduce sink will
    * output the biggest result (based on STREAMTABLE hints) and give it the
    * biggest tag so that it gets streamed.
-   * 
+   *
    * @param pactx
    *          current parse context
    */

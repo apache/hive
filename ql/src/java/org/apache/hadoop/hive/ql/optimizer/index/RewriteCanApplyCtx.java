@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.index;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * RewriteCanApplyCtx class stores the context for the {@link RewriteCanApplyProcFactory}
@@ -252,7 +252,8 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
    * @param topOp
    * @throws SemanticException
    */
-  void populateRewriteVars(Operator<? extends Serializable> topOp) throws SemanticException{
+  void populateRewriteVars(Operator<? extends OperatorDesc> topOp)
+    throws SemanticException{
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", "FIL%"),
         RewriteCanApplyProcFactory.canApplyOnFilterOperator());

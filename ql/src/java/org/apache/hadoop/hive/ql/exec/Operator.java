@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -46,15 +47,15 @@ import org.apache.hadoop.mapred.Reporter;
 /**
  * Base operator implementation.
  **/
-public abstract class Operator<T extends Serializable> implements Serializable,
-    Node {
+public abstract class Operator<T extends OperatorDesc> implements Serializable,Cloneable,
+  Node {
 
   // Bean methods
 
   private static final long serialVersionUID = 1L;
 
-  protected List<Operator<? extends Serializable>> childOperators;
-  protected List<Operator<? extends Serializable>> parentOperators;
+  protected List<Operator<? extends OperatorDesc>> childOperators;
+  protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
   /**
    * List of counter names associated with the operator. It contains the
@@ -122,11 +123,11 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   public void setChildOperators(
-      List<Operator<? extends Serializable>> childOperators) {
+      List<Operator<? extends OperatorDesc>> childOperators) {
     this.childOperators = childOperators;
   }
 
-  public List<Operator<? extends Serializable>> getChildOperators() {
+  public List<Operator<? extends OperatorDesc>> getChildOperators() {
     return childOperators;
   }
 
@@ -140,7 +141,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
 
     ArrayList<Node> ret_vec = new ArrayList<Node>();
-    for (Operator<? extends Serializable> op : getChildOperators()) {
+    for (Operator<? extends OperatorDesc> op : getChildOperators()) {
       ret_vec.add(op);
     }
 
@@ -148,11 +149,11 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   public void setParentOperators(
-      List<Operator<? extends Serializable>> parentOperators) {
+      List<Operator<? extends OperatorDesc>> parentOperators) {
     this.parentOperators = parentOperators;
   }
 
-  public List<Operator<? extends Serializable>> getParentOperators() {
+  public List<Operator<? extends OperatorDesc>> getParentOperators() {
     return parentOperators;
   }
 
@@ -231,7 +232,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return;
     }
 
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setReporter(rep);
     }
   }
@@ -244,7 +245,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return;
     }
 
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setOutputCollector(out);
     }
   }
@@ -259,7 +260,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return;
     }
 
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setAlias(alias);
     }
   }
@@ -282,7 +283,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     if (parentOperators == null) {
       return true;
     }
-    for (Operator<? extends Serializable> parent : parentOperators) {
+    for (Operator<? extends OperatorDesc> parent : parentOperators) {
       if (parent == null) {
         //return true;
         continue;
@@ -331,7 +332,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       }
       childOperatorsTag = new int[childOperatorsArray.length];
       for (int i = 0; i < childOperatorsArray.length; i++) {
-        List<Operator<? extends Serializable>> parentOperators = childOperatorsArray[i]
+        List<Operator<? extends OperatorDesc>> parentOperators = childOperatorsArray[i]
             .getParentOperators();
         if (parentOperators == null) {
           throw new HiveException("Hive internal error: parent is null in "
@@ -361,7 +362,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   public void initializeLocalWork(Configuration hconf) throws HiveException {
     if (childOperators != null) {
       for (int i =0; i<childOperators.size();i++) {
-        Operator<? extends Serializable> childOp = this.childOperators.get(i);
+        Operator<? extends OperatorDesc> childOp = this.childOperators.get(i);
         childOp.initializeLocalWork(hconf);
       }
     }
@@ -485,7 +486,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
 
     LOG.debug("Starting group for children:");
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.startGroup();
     }
 
@@ -505,7 +506,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
 
     LOG.debug("Ending group for children:");
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.endGroup();
     }
 
@@ -514,7 +515,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   protected boolean allInitializedParentsAreClosed() {
     if (parentOperators != null) {
-      for (Operator<? extends Serializable> parent : parentOperators) {
+      for (Operator<? extends OperatorDesc> parent : parentOperators) {
         if(parent==null){
           continue;
         }
@@ -562,7 +563,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
         return;
       }
 
-      for (Operator<? extends Serializable> op : childOperators) {
+      for (Operator<? extends OperatorDesc> op : childOperators) {
         op.close(abort);
       }
 
@@ -595,7 +596,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return;
     }
 
-    for (Operator<? extends Serializable> op : childOperators) {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
       op.jobClose(conf, success, feedBack);
     }
   }
@@ -604,7 +605,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * Cache childOperators in an array for faster access. childOperatorsArray is
    * accessed per row, so it's important to make the access efficient.
    */
-  protected transient Operator<? extends Serializable>[] childOperatorsArray = null;
+  protected transient Operator<? extends OperatorDesc>[] childOperatorsArray = null;
   protected transient int[] childOperatorsTag;
 
   // counters for debugging
@@ -620,14 +621,14 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @param newChild
    *          the new child
    */
-  public void replaceChild(Operator<? extends Serializable> child,
-      Operator<? extends Serializable> newChild) {
+  public void replaceChild(Operator<? extends OperatorDesc> child,
+      Operator<? extends OperatorDesc> newChild) {
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     childOperators.set(childIndex, newChild);
   }
 
-  public void removeChild(Operator<? extends Serializable> child) {
+  public void removeChild(Operator<? extends OperatorDesc> child) {
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     if (childOperators.size() == 1) {
@@ -651,7 +652,8 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @param child   If this operator is not the only parent of the child. There can be unpredictable result.
    * @throws SemanticException
    */
-  public void removeChildAndAdoptItsChildren(Operator<? extends Serializable> child) throws SemanticException {
+  public void removeChildAndAdoptItsChildren(
+    Operator<? extends OperatorDesc> child) throws SemanticException {
     int childIndex = childOperators.indexOf(child);
     if (childIndex == -1) {
       throw new SemanticException(
@@ -664,18 +666,18 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       childOperators.addAll(childIndex, child.getChildOperators());
     }
 
-    for (Operator<? extends Serializable> gc : child.getChildOperators()) {
-      List<Operator<? extends Serializable>> parents = gc.getParentOperators();
+    for (Operator<? extends OperatorDesc> gc : child.getChildOperators()) {
+      List<Operator<? extends OperatorDesc>> parents = gc.getParentOperators();
       int index = parents.indexOf(child);
       if (index == -1) {
         throw new SemanticException(
-            "Exception when trying to remove partition predicates: fail to find parent from child");
+          "Exception when trying to remove partition predicates: fail to find parent from child");
       }
       parents.set(index, this);
     }
   }
 
-  public void removeParent(Operator<? extends Serializable> parent) {
+  public void removeParent(Operator<? extends OperatorDesc> parent) {
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     if (parentOperators.size() == 1) {
@@ -702,8 +704,8 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @param newParent
    *          the new parent
    */
-  public void replaceParent(Operator<? extends Serializable> parent,
-      Operator<? extends Serializable> newParent) {
+  public void replaceParent(Operator<? extends OperatorDesc> parent,
+      Operator<? extends OperatorDesc> newParent) {
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     parentOperators.set(parentIndex, newParent);
@@ -755,7 +757,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
     int childrenDone = 0;
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      Operator<? extends Serializable> o = childOperatorsArray[i];
+      Operator<? extends OperatorDesc> o = childOperatorsArray[i];
       if (o.getDone()) {
         childrenDone++;
       } else {
@@ -778,7 +780,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   public void reset(){
     this.state=State.INIT;
     if (childOperators != null) {
-      for (Operator<? extends Serializable> o : childOperators) {
+      for (Operator<? extends OperatorDesc> o : childOperators) {
         o.reset();
       }
     }
@@ -790,13 +792,13 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    *
    */
   public static interface OperatorFunc {
-    void func(Operator<? extends Serializable> op);
+    void func(Operator<? extends OperatorDesc> op);
   }
 
   public void preorderMap(OperatorFunc opFunc) {
     opFunc.func(this);
     if (childOperators != null) {
-      for (Operator<? extends Serializable> o : childOperators) {
+      for (Operator<? extends OperatorDesc> o : childOperators) {
         o.preorderMap(opFunc);
       }
     }
@@ -863,7 +865,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     if (childOperators != null) {
       s.append(ls);
       s.append("  <Children>");
-      for (Operator<? extends Serializable> o : childOperators) {
+      for (Operator<? extends OperatorDesc> o : childOperators) {
         s.append(o.dump(level + 2, seenOpts));
       }
       s.append(ls);
@@ -873,7 +875,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     if (parentOperators != null) {
       s.append(ls);
       s.append("  <Parent>");
-      for (Operator<? extends Serializable> o : parentOperators) {
+      for (Operator<? extends OperatorDesc> o : parentOperators) {
         s.append("Id = " + o.id + " ");
         s.append(o.dump(level, seenOpts));
       }
@@ -1154,7 +1156,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     // but, some operators may be updated more than once and that's ok
     if (getChildren() != null) {
       for (Node op : getChildren()) {
-        ((Operator<? extends Serializable>) op).updateCounters(ctrs);
+        ((Operator<? extends OperatorDesc>) op).updateCounters(ctrs);
       }
     }
   }
@@ -1189,7 +1191,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
     if (getChildren() != null) {
       for (Node op : getChildren()) {
-        if (((Operator<? extends Serializable>) op).checkFatalErrors(ctrs,
+        if (((Operator<? extends OperatorDesc>) op).checkFatalErrors(ctrs,
             errMsg)) {
           return true;
         }
@@ -1309,7 +1311,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     this.execContext = execContext;
     if(this.childOperators != null) {
       for (int i = 0; i<this.childOperators.size();i++) {
-        Operator<? extends Serializable> op = this.childOperators.get(i);
+        Operator<? extends OperatorDesc> op = this.childOperators.get(i);
         op.setExecContext(execContext);
       }
     }
@@ -1321,7 +1323,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     this.cleanUpInputFileChangedOp();
     if(this.childOperators != null) {
       for (int i = 0; i<this.childOperators.size();i++) {
-        Operator<? extends Serializable> op = this.childOperators.get(i);
+        Operator<? extends OperatorDesc> op = this.childOperators.get(i);
         op.cleanUpInputFileChanged();
       }
     }
@@ -1332,4 +1334,25 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   public void cleanUpInputFileChangedOp() throws HiveException {
   }
 
+  @Override
+  public Operator<? extends OperatorDesc> clone()
+    throws CloneNotSupportedException {
+
+    List<Operator<? extends OperatorDesc>> parents = getParentOperators();
+    List<Operator<? extends OperatorDesc>> parentClones =
+      new ArrayList<Operator<? extends OperatorDesc>>();
+
+    if (parents != null) {
+      for (Operator<? extends OperatorDesc> parent : parents) {
+        parentClones.add((Operator<? extends OperatorDesc>)(parent.clone()));
+      }
+    }
+
+    T descClone = (T)conf.clone();
+    Operator<? extends OperatorDesc> ret =
+      (Operator<? extends OperatorDesc>) OperatorFactory.getAndMakeChild(
+        descClone, getSchema(), parentClones);
+
+    return ret;
+  }
 }

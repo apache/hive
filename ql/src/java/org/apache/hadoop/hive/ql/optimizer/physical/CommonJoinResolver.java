@@ -46,10 +46,12 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
+import
+  org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 
 public class CommonJoinResolver implements PhysicalPlanResolver {
@@ -112,14 +114,14 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       JoinDesc joinDesc = joinOp.getConf();
       Byte[] order = joinDesc.getTagOrder();
       int numAliases = order.length;
-      
+
       long aliasTotalKnownInputSize = 0;
       HashMap<String, Long> aliasToSize = new HashMap<String, Long>();
       try {
         // go over all the input paths, and calculate a known total size, known
         // size for each input alias.
         Utilities.getInputSummary(context, currWork, null).getLength();
-        
+
         // set alias to size mapping, this can be used to determine if one table
         // is choosen as big table, what's the total size of left tables, which
         // are going to be small tables.
@@ -140,9 +142,9 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
             }
           }
         }
-        
+
         HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(joinDesc.getConds());
-        
+
         // no table could be the big table; there is no need to convert
         if (bigTableCandidates == null) {
           return null;
@@ -160,7 +162,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           if (!bigTableCandidates.contains(i)) {
             continue;
           }
-          
+
           // create map join task and set big table as i
           // deep copy a new mapred work from xml
           InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -182,7 +184,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
               continue;
             }
           }
-          
+
           // add into conditional task
           listWorks.add(newWork);
           listTasks.add(newTask);
@@ -295,7 +297,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       if (task.getWork() == null) {
         return null;
       }
-      Operator<? extends Serializable> reducerOp = task.getWork().getReducer();
+      Operator<? extends OperatorDesc> reducerOp = task.getWork().getReducer();
       if (reducerOp instanceof JoinOperator) {
         return (JoinOperator) reducerOp;
       } else {

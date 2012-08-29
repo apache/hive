@@ -18,20 +18,20 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 import java.util.List;
+
 
 /**
  * FilterDesc.
  *
  */
 @Explain(displayName = "Filter Operator")
-public class FilterDesc implements Serializable {
+public class FilterDesc extends AbstractOperatorDesc {
 
   /**
    * sampleDesc is used to keep track of the sampling descriptor.
    */
-  public static class sampleDesc {
+  public static class sampleDesc implements Cloneable {
     // The numerator of the TABLESAMPLE clause
     private int numerator;
 
@@ -61,6 +61,12 @@ public class FilterDesc implements Serializable {
 
     public boolean getInputPruning() {
       return inputPruning;
+    }
+
+    @Override
+    public Object clone() {
+      sampleDesc desc = new sampleDesc(numerator, denominator, null, inputPruning);
+      return desc;
     }
   }
 
@@ -126,4 +132,13 @@ public class FilterDesc implements Serializable {
     this.isSortedFilter = isSortedFilter;
   }
 
+  @Override
+  public Object clone() {
+    FilterDesc filterDesc = new FilterDesc(getPredicate().clone(), getIsSamplingPred());
+    if (getIsSamplingPred()) {
+      filterDesc.setSampleDescr(getSampleDescr());
+    }
+    filterDesc.setSortedFilter(isSortedFilter());
+    return filterDesc;
+  }
 }

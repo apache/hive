@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 /**
  * HashTable Dummy Descriptor implementation.
  *
  */
 @Explain(displayName = "HashTable Dummy Operator")
-public class HashTableDummyDesc implements Serializable {
+public class HashTableDummyDesc extends AbstractOperatorDesc {
   private TableDesc tbl;
 
   public TableDesc getTbl() {

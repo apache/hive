@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.unionproc;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Stack;
 
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Operator factory for union processing.
@@ -42,9 +42,9 @@ public final class UnionProcFactory {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == union;
-    Operator<? extends Serializable> parent = (Operator<? extends Serializable>) stack
-        .get(size - 2);
-    List<Operator<? extends Serializable>> parUnion = union
+    Operator<? extends OperatorDesc> parent =
+      (Operator<? extends OperatorDesc>) stack.get(size - 2);
+    List<Operator<? extends OperatorDesc>> parUnion = union
         .getParentOperators();
     pos = parUnion.indexOf(parent);
     assert pos < parUnion.size();
@@ -145,8 +145,8 @@ public final class UnionProcFactory {
       int start = stack.size() - 2;
       UnionOperator parentUnionOperator = null;
       while (start >= 0) {
-        Operator<? extends Serializable> parent =
-            (Operator<? extends Serializable>) stack.get(start);
+        Operator<? extends OperatorDesc> parent =
+            (Operator<? extends OperatorDesc>) stack.get(start);
         if (parent instanceof UnionOperator) {
           parentUnionOperator = (UnionOperator) parent;
           break;

@@ -33,22 +33,22 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 public class MapredLocalWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork;
+  private LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork;
   private LinkedHashMap<String, FetchWork> aliasToFetchWork;
   private boolean inputFileChangeSensitive;
   private BucketMapJoinContext bucketMapjoinContext;
   private String tmpFileURI;
   private String stageID;
 
-  private List<Operator<? extends Serializable>> dummyParentOp ;
+  private List<Operator<? extends OperatorDesc>> dummyParentOp ;
 
   public MapredLocalWork() {
 
   }
 
   public MapredLocalWork(
-      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
-      final LinkedHashMap<String, FetchWork> aliasToFetchWork) {
+    final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork,
+    final LinkedHashMap<String, FetchWork> aliasToFetchWork) {
     this.aliasToWork = aliasToWork;
     this.aliasToFetchWork = aliasToFetchWork;
 
@@ -61,18 +61,18 @@ public class MapredLocalWork implements Serializable {
   }
 
 
-  public void setDummyParentOp(List<Operator<? extends Serializable>> op){
+  public void setDummyParentOp(List<Operator<? extends OperatorDesc>> op){
     this.dummyParentOp=op;
   }
 
 
-  public List<Operator<? extends Serializable>> getDummyParentOp(){
+  public List<Operator<? extends OperatorDesc>> getDummyParentOp(){
     return this.dummyParentOp;
   }
 
 
   @Explain(displayName = "Alias -> Map Local Operator Tree")
-  public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
+  public LinkedHashMap<String, Operator<? extends OperatorDesc>> getAliasToWork() {
     return aliasToWork;
   }
 
@@ -85,7 +85,7 @@ public class MapredLocalWork implements Serializable {
   }
 
   public void setAliasToWork(
-      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
+    final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
   }
 

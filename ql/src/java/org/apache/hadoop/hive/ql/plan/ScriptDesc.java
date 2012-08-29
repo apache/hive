@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 
@@ -28,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.RecordWriter;
  *
  */
 @Explain(displayName = "Transform Operator")
-public class ScriptDesc implements Serializable {
+public class ScriptDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private String scriptCmd;
   // Describe how to deserialize data back from user script

@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -312,7 +313,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       }
 
       // get the root operator
-      Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(alias);
+      Operator<? extends OperatorDesc> forwardOp = work.getAliasToWork().get(alias);
       // walk through the operator tree
       while (true) {
         InspectableObject row = fetchOp.getNextRow();
@@ -342,7 +343,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     for (Map.Entry<String, FetchWork> entry : work.getAliasToFetchWork().entrySet()) {
       JobConf jobClone = new JobConf(job);
 
-      Operator<? extends Serializable> tableScan = work.getAliasToWork().get(entry.getKey());
+      Operator<? extends OperatorDesc> tableScan =
+        work.getAliasToWork().get(entry.getKey());
       boolean setColumnsNeeded = false;
       if (tableScan instanceof TableScanOperator) {
         ArrayList<Integer> list = ((TableScanOperator) tableScan).getNeededColumnIDs();
@@ -366,7 +368,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
       // get the forward op
       String alias = entry.getKey();
-      Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(alias);
+      Operator<? extends OperatorDesc> forwardOp = work.getAliasToWork().get(alias);
 
       // put the exe context into all the operators
       forwardOp.setExecContext(execContext);
@@ -386,8 +388,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   private void generateDummyHashTable(String alias, String bigBucketFileName) throws HiveException,IOException {
     // find the (byte)tag for the map join(HashTableSinkOperator)
-    Operator<? extends Serializable> parentOp = work.getAliasToWork().get(alias);
-    Operator<? extends Serializable> childOp = parentOp.getChildOperators().get(0);
+    Operator<? extends OperatorDesc> parentOp = work.getAliasToWork().get(alias);
+    Operator<? extends OperatorDesc> childOp = parentOp.getChildOperators().get(0);
     while ((childOp != null) && (!(childOp instanceof HashTableSinkOperator))) {
       parentOp = childOp;
       assert parentOp.getChildOperators().size() == 1;
@@ -447,7 +449,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public Collection<Operator<? extends Serializable>> getTopOperators() {
+  public Collection<Operator<? extends OperatorDesc>> getTopOperators() {
     return getWork().getAliasToWork().values();
   }
 

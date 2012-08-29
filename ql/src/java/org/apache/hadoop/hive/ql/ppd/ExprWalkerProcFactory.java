@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.ppd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Expression factory for predicate pushdown processing. Each processor
@@ -70,7 +70,7 @@ public final class ExprWalkerProcFactory {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
       ExprNodeColumnDesc colref = (ExprNodeColumnDesc) nd;
       RowResolver toRR = ctx.getToRR();
-      Operator<? extends Serializable> op = ctx.getOp();
+      Operator<? extends OperatorDesc> op = ctx.getOp();
       String[] colAlias = toRR.reverseLookup(colref.getColumn());
 
       boolean isCandidate = true;
@@ -230,8 +230,8 @@ public final class ExprWalkerProcFactory {
   }
 
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext,
-      Operator<? extends Serializable> op, ExprNodeDesc pred)
-      throws SemanticException {
+    Operator<? extends OperatorDesc> op, ExprNodeDesc pred)
+    throws SemanticException {
     List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
     preds.add(pred);
     return extractPushdownPreds(opContext, op, preds);
@@ -249,11 +249,11 @@ public final class ExprWalkerProcFactory {
    * @throws SemanticException
    */
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext,
-      Operator<? extends Serializable> op, List<ExprNodeDesc> preds)
-      throws SemanticException {
+    Operator<? extends OperatorDesc> op, List<ExprNodeDesc> preds)
+    throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     ExprWalkerInfo exprContext = new ExprWalkerInfo(op, opContext
-        .getRowResolver(op));
+      .getRowResolver(op));
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher

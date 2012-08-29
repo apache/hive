@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -148,9 +149,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     for (Map.Entry<String, FetchWork> entry : localWork.getAliasToFetchWork()
         .entrySet()) {
       JobConf jobClone = new JobConf(hconf);
-      Operator<? extends Serializable> tableScan = localWork.getAliasToWork()
-      .get(entry.getKey());
-      if(tableScan instanceof TableScanOperator) {
+      Operator<? extends OperatorDesc> tableScan = localWork.getAliasToWork()
+        .get(entry.getKey());
+      if (tableScan instanceof TableScanOperator) {
         ArrayList<Integer> list = ((TableScanOperator)tableScan).getNeededColumnIDs();
         if (list != null) {
           ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
@@ -165,8 +166,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-      Operator<? extends Serializable> forwardOp = localWork.getAliasToWork()
-          .get(entry.getKey());
+      Operator<? extends OperatorDesc> forwardOp = localWork.getAliasToWork()
+        .get(entry.getKey());
       // All the operators need to be initialized before process
       forwardOp.setExecContext(this.getExecContext());
       FetchOperator fetchOp = entry.getValue();
@@ -500,7 +501,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       String tble = this.tagToAlias.get(tag);
       FetchOperator fetchOp = fetchOperators.get(tble);
 
-      Operator<? extends Serializable> forwardOp = localWork.getAliasToWork()
+      Operator<? extends OperatorDesc> forwardOp = localWork.getAliasToWork()
           .get(tble);
       try {
         InspectableObject row = fetchOp.getNextRow();
@@ -565,7 +566,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     super.closeOp(abort);
     if (fetchOperators != null) {
       for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-        Operator<? extends Serializable> forwardOp = localWork
+        Operator<? extends OperatorDesc> forwardOp = localWork
             .getAliasToWork().get(entry.getKey());
         forwardOp.close(abort);
       }

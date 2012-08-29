@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -178,9 +179,9 @@ import org.apache.hadoop.mapred.InputFormat;
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
-  private HashMap<String, Operator<? extends Serializable>> topOps;
-  private HashMap<String, Operator<? extends Serializable>> topSelOps;
-  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
+  private HashMap<String, Operator<? extends OperatorDesc>> topOps;
+  private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
+  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private Map<JoinOperator, QBJoinTree> joinContext;
@@ -225,11 +226,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
     opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
     nameToSplitSample = new HashMap<String, SplitSample>();
-    topOps = new HashMap<String, Operator<? extends Serializable>>();
-    topSelOps = new HashMap<String, Operator<? extends Serializable>>();
+    topOps = new HashMap<String, Operator<? extends OperatorDesc>>();
+    topSelOps = new HashMap<String, Operator<? extends OperatorDesc>>();
     loadTableWork = new ArrayList<LoadTableDesc>();
     loadFileWork = new ArrayList<LoadFileDesc>();
-    opParseCtx = new LinkedHashMap<Operator<? extends Serializable>, OpParseContext>();
+    opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
     topToTable = new HashMap<TableScanOperator, Table>();
     destTableId = 1;
@@ -1467,7 +1468,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  public <T extends Serializable> Operator<T> putOpInsertMap(Operator<T> op,
+  public <T extends OperatorDesc> Operator<T> putOpInsertMap(Operator<T> op,
       RowResolver rr) {
     OpParseContext ctx = new OpParseContext(rr);
     opParseCtx.put(op, ctx);
@@ -6403,12 +6404,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((leftOp instanceof UnionOperator) || (rightOp instanceof UnionOperator)) {
       if (leftOp instanceof UnionOperator) {
         // make left a child of right
-        List<Operator<? extends Serializable>> child =
-          new ArrayList<Operator<? extends Serializable>>();
+        List<Operator<? extends OperatorDesc>> child =
+          new ArrayList<Operator<? extends OperatorDesc>>();
         child.add(leftOp);
         rightOp.setChildOperators(child);
 
-        List<Operator<? extends Serializable>> parent = leftOp
+        List<Operator<? extends OperatorDesc>> parent = leftOp
             .getParentOperators();
         parent.add(rightOp);
 
@@ -6417,12 +6418,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return putOpInsertMap(leftOp, unionoutRR);
       } else {
         // make right a child of left
-        List<Operator<? extends Serializable>> child =
-          new ArrayList<Operator<? extends Serializable>>();
+        List<Operator<? extends OperatorDesc>> child =
+          new ArrayList<Operator<? extends OperatorDesc>>();
         child.add(rightOp);
         leftOp.setChildOperators(child);
 
-        List<Operator<? extends Serializable>> parent = rightOp
+        List<Operator<? extends OperatorDesc>> parent = rightOp
             .getParentOperators();
         parent.add(leftOp);
         UnionDesc uDesc = ((UnionOperator) rightOp).getConf();
@@ -6433,22 +6434,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Create a new union operator
-    Operator<? extends Serializable> unionforward = OperatorFactory
+    Operator<? extends OperatorDesc> unionforward = OperatorFactory
         .getAndMakeChild(new UnionDesc(), new RowSchema(unionoutRR
         .getColumnInfos()));
 
     // set union operator as child of each of leftOp and rightOp
-    List<Operator<? extends Serializable>> child =
-      new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends OperatorDesc>> child =
+      new ArrayList<Operator<? extends OperatorDesc>>();
     child.add(unionforward);
     rightOp.setChildOperators(child);
 
-    child = new ArrayList<Operator<? extends Serializable>>();
+    child = new ArrayList<Operator<? extends OperatorDesc>>();
     child.add(unionforward);
     leftOp.setChildOperators(child);
 
-    List<Operator<? extends Serializable>> parent =
-      new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends OperatorDesc>> parent =
+      new ArrayList<Operator<? extends OperatorDesc>>();
     parent.add(leftOp);
     parent.add(rightOp);
     unionforward.setParentOperators(parent);
@@ -6554,8 +6555,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver rwsch;
 
     // is the table already present
-    Operator<? extends Serializable> top = topOps.get(alias_id);
-    Operator<? extends Serializable> dummySel = topSelOps.get(alias_id);
+    Operator<? extends OperatorDesc> top = topOps.get(alias_id);
+    Operator<? extends OperatorDesc> dummySel = topSelOps.get(alias_id);
     if (dummySel != null) {
       top = dummySel;
     }
@@ -6607,7 +6608,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
       top = putOpInsertMap(OperatorFactory.get(tsDesc,
-          new RowSchema(rwsch.getColumnInfos())), rwsch);
+        new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table
       // scan
@@ -6621,7 +6622,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // check if this table is sampled and needs more than input pruning
-    Operator<? extends Serializable> tableOp = top;
+    Operator<? extends OperatorDesc> tableOp = top;
     TableSample ts = qb.getParseInfo().getTabSample(alias);
     if (ts != null) {
       int num = ts.getNumerator();
@@ -7129,10 +7130,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ParseContext tempParseContext = getParseContext();
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
-        new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
-        new ArrayList<Operator<? extends Serializable>>(), tempParseContext,
+        new HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
+        new ArrayList<Operator<? extends OperatorDesc>>(), tempParseContext,
         mvTask, rootTasks,
-        new LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
+        new LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx>(),
         inputs, outputs);
 
     // create a walker which walks the tree in a DFS manner while maintaining
@@ -7275,15 +7276,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // loop over all the tasks recursviely
   private void generateCountersTask(Task<? extends Serializable> task) {
     if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends Serializable>> opMap = ((MapredWork) task
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
           .getWork()).getAliasToWork();
       if (!opMap.isEmpty()) {
-        for (Operator<? extends Serializable> op : opMap.values()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
           generateCountersOperator(op);
         }
       }
 
-      Operator<? extends Serializable> reducer = ((MapredWork) task.getWork())
+      Operator<? extends OperatorDesc> reducer = ((MapredWork) task.getWork())
           .getReducer();
       if (reducer != null) {
         LOG.info("Generating counters for operator " + reducer);
@@ -7309,14 +7310,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void generateCountersOperator(Operator<? extends Serializable> op) {
+  private void generateCountersOperator(Operator<? extends OperatorDesc> op) {
     op.assignCounterNameToEnum();
 
     if (op.getChildOperators() == null) {
       return;
     }
 
-    for (Operator<? extends Serializable> child : op.getChildOperators()) {
+    for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
       generateCountersOperator(child);
     }
   }
@@ -7325,10 +7326,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void breakTaskTree(Task<? extends Serializable> task) {
 
     if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends Serializable>> opMap = ((MapredWork) task
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
           .getWork()).getAliasToWork();
       if (!opMap.isEmpty()) {
-        for (Operator<? extends Serializable> op : opMap.values()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
           breakOperatorTree(op);
         }
       }
@@ -7350,7 +7351,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // loop over all the operators recursviely
-  private void breakOperatorTree(Operator<? extends Serializable> topOp) {
+  private void breakOperatorTree(Operator<? extends OperatorDesc> topOp) {
     if (topOp instanceof ReduceSinkOperator) {
       topOp.setChildOperators(null);
     }
@@ -7359,7 +7360,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    for (Operator<? extends Serializable> op : topOp.getChildOperators()) {
+    for (Operator<? extends OperatorDesc> op : topOp.getChildOperators()) {
       breakOperatorTree(op);
     }
   }
@@ -7370,10 +7371,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
       work.deriveExplainAttributes();
-      HashMap<String, Operator<? extends Serializable>> opMap = work
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
           .getAliasToWork();
       if (!opMap.isEmpty()) {
-        for (Operator<? extends Serializable> op : opMap.values()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
           GenMapRedUtils.setKeyAndValueDesc(work, op);
         }
       }
@@ -8334,7 +8335,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       /**
        * This code is commented out pending further testing/development
-       * for (Task<? extends Serializable> t: rootTasks)
+       * for (Task<? extends SerializableCloneable> t: rootTasks)
        * t.localizeMRTmpFiles(ctx);
        */
     }

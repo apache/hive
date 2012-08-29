@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * This class contains the lineage context that is passed
@@ -53,13 +53,16 @@ public class LineageCtx implements NodeProcessorCtx {
      * dependency vector for that tuple. This is used to generate the
      * dependency vectors during the walk of the operator tree.
      */
-    private final Map<Operator<? extends Serializable>, LinkedHashMap<ColumnInfo, Dependency>> depMap;
+    private final Map<Operator<? extends OperatorDesc>,
+                      LinkedHashMap<ColumnInfo, Dependency>> depMap;
 
     /**
      * Constructor.
      */
     public Index() {
-      depMap = new LinkedHashMap<Operator<? extends Serializable>, LinkedHashMap<ColumnInfo, Dependency>>();
+      depMap =
+        new LinkedHashMap<Operator<? extends OperatorDesc>,
+                          LinkedHashMap<ColumnInfo, Dependency>>();
     }
 
     /**
@@ -69,7 +72,8 @@ public class LineageCtx implements NodeProcessorCtx {
      * @return Dependency for that particular operator, columninfo tuple.
      *         null if no dependency is found.
      */
-    public Dependency getDependency(Operator<? extends Serializable> op, ColumnInfo col) {
+    public Dependency getDependency(Operator<? extends OperatorDesc> op,
+      ColumnInfo col) {
       Map<ColumnInfo, Dependency> colMap = depMap.get(op);
       if (colMap == null) {
         return null;
@@ -84,7 +88,7 @@ public class LineageCtx implements NodeProcessorCtx {
      * @param col The column info whose dependency is being inserted.
      * @param dep The dependency.
      */
-    public void putDependency(Operator<? extends Serializable> op,
+    public void putDependency(Operator<? extends OperatorDesc> op,
         ColumnInfo col, Dependency dep) {
       LinkedHashMap<ColumnInfo, Dependency> colMap = depMap.get(op);
       if (colMap == null) {
@@ -102,7 +106,7 @@ public class LineageCtx implements NodeProcessorCtx {
      * @param ci The column info of the associated column.
      * @param dep The new dependency.
      */
-    public void mergeDependency(Operator<? extends Serializable> op,
+    public void mergeDependency(Operator<? extends OperatorDesc> op,
         ColumnInfo ci, Dependency dep) {
       Dependency old_dep = getDependency(op, ci);
       if (old_dep == null) {

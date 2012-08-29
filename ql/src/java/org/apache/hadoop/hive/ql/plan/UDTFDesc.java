@@ -18,18 +18,16 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 /**
  * All member variables should have a setters and getters of the form get<member
  * name> and set<member name> or else they won't be recreated properly at run
  * time.
- * 
+ *
  */
 @Explain(displayName = "UDTF Operator")
-public class UDTFDesc implements Serializable {
+public class UDTFDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   private GenericUDTF genericUDTF;

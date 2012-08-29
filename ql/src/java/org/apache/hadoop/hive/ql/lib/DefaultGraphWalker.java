@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.lib;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -43,7 +42,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * Constructor.
-   * 
+   *
    * @param disp
    *          dispatcher to call for each op encountered
    */
@@ -68,7 +67,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * Dispatch the current operator.
-   * 
+   *
    * @param nd
    *          node being walked
    * @param ndStack
@@ -91,7 +90,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * starting point for walking.
-   * 
+   *
    * @throws SemanticException
    */
   public void startWalking(Collection<Node> startNodes,
@@ -108,7 +107,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * walk the current operator and its descendants.
-   * 
+   *
    * @param nd
    *          current operator in the graph
    * @throws SemanticException
@@ -122,7 +121,7 @@ public class DefaultGraphWalker implements GraphWalker {
         || getDispatchedList().containsAll(nd.getChildren())) {
       // all children are done or no need to walk the children
       if (!getDispatchedList().contains(nd)) {
-        dispatch(nd, opStack);        
+        dispatch(nd, opStack);
       }
       opStack.pop();
       return;

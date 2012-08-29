@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -56,6 +55,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
@@ -234,7 +234,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       List<Order> sortColumnsFirstTable)
       throws SemanticException {
 
-      Map<String, Operator<? extends Serializable>> topOps = this.pGraphContext
+      Map<String, Operator<? extends OperatorDesc>> topOps = this.pGraphContext
           .getTopOps();
       Map<TableScanOperator, Table> topToTable = this.pGraphContext
           .getTopToTable();

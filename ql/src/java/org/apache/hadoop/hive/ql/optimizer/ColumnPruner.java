@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Implementation of one of the rule-based optimization steps. ColumnPruner gets
@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class ColumnPruner implements Transform {
   protected ParseContext pGraphContext;
-  private HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
+  private HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap;
 
   /**
    * empty constructor.

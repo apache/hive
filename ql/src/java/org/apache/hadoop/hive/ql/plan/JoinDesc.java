@@ -18,19 +18,20 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * Join operator Descriptor implementation.
  *
  */
 @Explain(displayName = "Join Operator")
-public class JoinDesc implements Serializable {
+public class JoinDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   public static final int INNER_JOIN = 0;
   public static final int LEFT_OUTER_JOIN = 1;
@@ -85,6 +86,53 @@ public class JoinDesc implements Serializable {
     for (int i = 0; i < tagOrder.length; i++) {
       tagOrder[i] = (byte) i;
     }
+  }
+
+  @Override
+  public Object clone() {
+    JoinDesc ret = new JoinDesc();
+    Map<Byte,List<ExprNodeDesc>> cloneExprs = new HashMap<Byte,List<ExprNodeDesc>>();
+    cloneExprs.putAll(getExprs());
+    ret.setExprs(cloneExprs);
+    Map<Byte,List<ExprNodeDesc>> cloneFilters = new HashMap<Byte,List<ExprNodeDesc>>();
+    cloneFilters.putAll(getFilters());
+    ret.setFilters(cloneFilters);
+    ret.setConds(getConds().clone());
+    ret.setNoOuterJoin(getNoOuterJoin());
+    ret.setNullSafes(getNullSafes());
+    ret.setHandleSkewJoin(handleSkewJoin);
+    ret.setSkewKeyDefinition(getSkewKeyDefinition());
+    ret.setTagOrder(getTagOrder().clone());
+    if (getKeyTableDesc() != null) {
+      ret.setKeyTableDesc((TableDesc) getKeyTableDesc().clone());
+    }
+
+    if (getBigKeysDirMap() != null) {
+      Map<Byte, String> cloneBigKeysDirMap = new HashMap<Byte, String>();
+      cloneBigKeysDirMap.putAll(getBigKeysDirMap());
+      ret.setBigKeysDirMap(cloneBigKeysDirMap);
+    }
+    if (getSmallKeysDirMap() != null) {
+      Map<Byte, Map<Byte, String>> cloneSmallKeysDirMap = new HashMap<Byte, Map<Byte,String>> ();
+      cloneSmallKeysDirMap.putAll(getSmallKeysDirMap());
+      ret.setSmallKeysDirMap(cloneSmallKeysDirMap);
+    }
+    if (getSkewKeysValuesTables() != null) {
+      Map<Byte, TableDesc> cloneSkewKeysValuesTables = new HashMap<Byte, TableDesc>();
+      cloneSkewKeysValuesTables.putAll(getSkewKeysValuesTables());
+      ret.setSkewKeysValuesTables(cloneSkewKeysValuesTables);
+    }
+    if (getOutputColumnNames() != null) {
+      List<String> cloneOutputColumnNames = new ArrayList<String>();
+      cloneOutputColumnNames.addAll(getOutputColumnNames());
+      ret.setOutputColumnNames(cloneOutputColumnNames);
+    }
+    if (getReversedExprs() != null) {
+      Map<String, Byte> cloneReversedExprs = new HashMap<String, Byte>();
+      cloneReversedExprs.putAll(getReversedExprs());
+      ret.setReversedExprs(cloneReversedExprs);
+    }
+    return ret;
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,

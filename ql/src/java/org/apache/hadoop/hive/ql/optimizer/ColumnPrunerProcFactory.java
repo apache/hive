@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -154,8 +154,8 @@ public final class ColumnPrunerProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      cppCtx.getPrunedColLists().put((Operator<? extends Serializable>) nd,
-          cppCtx.genColLists((Operator<? extends Serializable>) nd));
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
+          cppCtx.genColLists((Operator<? extends OperatorDesc>) nd));
 
       return null;
     }
@@ -180,8 +180,8 @@ public final class ColumnPrunerProcFactory {
       TableScanOperator scanOp = (TableScanOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       List<String> cols = cppCtx
-          .genColLists((Operator<? extends Serializable>) nd);
-      cppCtx.getPrunedColLists().put((Operator<? extends Serializable>) nd,
+          .genColLists((Operator<? extends OperatorDesc>) nd);
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
       ArrayList<Integer> needed_columns = new ArrayList<Integer>();
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
@@ -241,13 +241,13 @@ public final class ColumnPrunerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap = cppCtx
+      HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap = cppCtx
           .getOpToParseCtxMap();
       RowResolver redSinkRR = opToParseCtxMap.get(op).getRowResolver();
       ReduceSinkDesc conf = op.getConf();
-      List<Operator<? extends Serializable>> childOperators = op
+      List<Operator<? extends OperatorDesc>> childOperators = op
           .getChildOperators();
-      List<Operator<? extends Serializable>> parentOperators = op
+      List<Operator<? extends OperatorDesc>> parentOperators = op
           .getParentOperators();
 
       List<String> colLists = new ArrayList<String>();
@@ -259,7 +259,7 @@ public final class ColumnPrunerProcFactory {
       if ((childOperators.size() == 1)
           && (childOperators.get(0) instanceof JoinOperator)) {
         assert parentOperators.size() == 1;
-        Operator<? extends Serializable> par = parentOperators.get(0);
+        Operator<? extends OperatorDesc> par = parentOperators.get(0);
         JoinOperator childJoin = (JoinOperator) childOperators.get(0);
         RowResolver parRR = opToParseCtxMap.get(par).getRowResolver();
         List<String> childJoinCols = cppCtx.getJoinPrunedColLists().get(
@@ -405,7 +405,7 @@ public final class ColumnPrunerProcFactory {
 
       LateralViewJoinOperator lvJoin = null;
       if (op.getChildOperators() != null) {
-        for (Operator<? extends Serializable> child : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
           // If one of my children is a FileSink or Script, return all columns.
           // Without this break, a bug in ReduceSink to Extract edge column
           // pruning will manifest
@@ -490,14 +490,14 @@ public final class ColumnPrunerProcFactory {
      */
     private void handleChildren(SelectOperator op,
         List<String> retainedSelOutputCols, ColumnPrunerProcCtx cppCtx) throws SemanticException {
-      for (Operator<? extends Serializable> child : op.getChildOperators()) {
+      for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
         if (child instanceof ReduceSinkOperator) {
           boolean[] flags = getPruneReduceSinkOpRetainFlags(
               retainedSelOutputCols, (ReduceSinkOperator) child);
           pruneReduceSinkOperator(flags, (ReduceSinkOperator) child, cppCtx);
         } else if (child instanceof FilterOperator) {
           // filter operator has the same output columns as its parent
-          for (Operator<? extends Serializable> filterChild : child
+          for (Operator<? extends OperatorDesc> filterChild : child
               .getChildOperators()) {
             if (filterChild instanceof ReduceSinkOperator) {
               boolean[] flags = getPruneReduceSinkOpRetainFlags(
@@ -647,7 +647,7 @@ public final class ColumnPrunerProcFactory {
   }
 
   private static void pruneOperator(NodeProcessorCtx ctx,
-      Operator<? extends Serializable> op,
+      Operator<? extends OperatorDesc> op,
       List<String> cols)
       throws SemanticException {
     // the pruning needs to preserve the order of columns in the input schema
@@ -671,7 +671,7 @@ public final class ColumnPrunerProcFactory {
    * @return
    * @throws SemanticException
    */
-  private static List<String> preserveColumnOrder(Operator<? extends Serializable> op,
+  private static List<String> preserveColumnOrder(Operator<? extends OperatorDesc> op,
       List<String> cols)
       throws SemanticException {
     RowSchema inputSchema = op.getSchema();
@@ -696,10 +696,10 @@ public final class ColumnPrunerProcFactory {
       Map<Byte, List<Integer>> retainMap, boolean mapJoin) throws SemanticException {
     ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
     Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
-    List<Operator<? extends Serializable>> childOperators = op
+    List<Operator<? extends OperatorDesc>> childOperators = op
         .getChildOperators();
 
-    for (Operator<? extends Serializable> child : childOperators) {
+    for (Operator<? extends OperatorDesc> child : childOperators) {
       if (child instanceof FileSinkOperator) {
         return;
       }
@@ -787,7 +787,7 @@ public final class ColumnPrunerProcFactory {
 
     }
 
-    for (Operator<? extends Serializable> child : childOperators) {
+    for (Operator<? extends OperatorDesc> child : childOperators) {
       if (child instanceof ReduceSinkOperator) {
         boolean[] flags = getPruneReduceSinkOpRetainFlags(childColLists,
             (ReduceSinkOperator) child);

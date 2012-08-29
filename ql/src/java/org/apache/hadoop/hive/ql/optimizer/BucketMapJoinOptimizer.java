@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +64,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 /**
@@ -188,7 +188,8 @@ public class BucketMapJoinOptimizer implements Transform {
       LinkedHashMap<String, List<List<String>>> aliasToPartitionBucketFileNamesMapping =
           new LinkedHashMap<String, List<List<String>>>();
 
-      Map<String, Operator<? extends Serializable>> topOps = this.pGraphContext.getTopOps();
+      Map<String, Operator<? extends OperatorDesc>> topOps =
+        this.pGraphContext.getTopOps();
       Map<TableScanOperator, Table> topToTable = this.pGraphContext.getTopToTable();
 
       // (partition to bucket file names) and (partition to bucket number) for

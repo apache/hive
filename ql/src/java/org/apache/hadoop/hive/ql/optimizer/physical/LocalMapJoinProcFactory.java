@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.MapJoinResolver.LocalMapJoin
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
 import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -136,16 +136,18 @@ public final class LocalMapJoinProcFactory {
       int bigTableAlias = (int) order[bigTable];
 
       // the parent ops for hashTableSinkOp
-      List<Operator<? extends Serializable>> smallTablesParentOp = new ArrayList<Operator<? extends Serializable>>();
-      List<Operator<? extends Serializable>> dummyOperators = new ArrayList<Operator<? extends Serializable>>();
+      List<Operator<? extends OperatorDesc>> smallTablesParentOp =
+        new ArrayList<Operator<? extends OperatorDesc>>();
+      List<Operator<? extends OperatorDesc>> dummyOperators =
+        new ArrayList<Operator<? extends OperatorDesc>>();
       // get all parents
-      List<Operator<? extends Serializable>> parentsOp = mapJoinOp.getParentOperators();
+      List<Operator<? extends OperatorDesc>> parentsOp = mapJoinOp.getParentOperators();
       for (int i = 0; i < parentsOp.size(); i++) {
         if (i == bigTableAlias) {
           smallTablesParentOp.add(null);
           continue;
         }
-        Operator<? extends Serializable> parent = parentsOp.get(i);
+        Operator<? extends OperatorDesc> parent = parentsOp.get(i);
         // let hashtable Op be the child of this parent
         parent.replaceChild(mapJoinOp, hashTableSinkOp);
         // keep the parent id correct
@@ -171,22 +173,23 @@ public final class LocalMapJoinProcFactory {
         dummyOp.getConf().setTbl(tbl);
         // let the dummy op be the parent of mapjoin op
         mapJoinOp.replaceParent(parent, dummyOp);
-        List<Operator<? extends Serializable>> dummyChildren = new ArrayList<Operator<? extends Serializable>>();
+        List<Operator<? extends OperatorDesc>> dummyChildren =
+          new ArrayList<Operator<? extends OperatorDesc>>();
         dummyChildren.add(mapJoinOp);
         dummyOp.setChildOperators(dummyChildren);
         // add this dummy op to the dummp operator list
         dummyOperators.add(dummyOp);
       }
       hashTableSinkOp.setParentOperators(smallTablesParentOp);
-      for (Operator<? extends Serializable> op : dummyOperators) {
+      for (Operator<? extends OperatorDesc> op : dummyOperators) {
         context.addDummyParentOp(op);
       }
       return null;
     }
 
-    public void hasGroupBy(Operator<? extends Serializable> mapJoinOp,
+    public void hasGroupBy(Operator<? extends OperatorDesc> mapJoinOp,
         LocalMapJoinProcCtx localMapJoinProcCtx) throws Exception {
-      List<Operator<? extends Serializable>> childOps = mapJoinOp.getChildOperators();
+      List<Operator<? extends OperatorDesc>> childOps = mapJoinOp.getChildOperators();
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", "GBY%"), LocalMapJoinProcFactory.getGroupByProc());
       // The dispatcher fires the processor corresponding to the closest

@@ -50,9 +50,9 @@ import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -178,7 +179,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * @return true if fatal errors happened during job execution, false otherwise.
    */
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
-    for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
+    for (Operator<? extends OperatorDesc> op : work.getAliasToWork().values()) {
       if (op.checkFatalErrors(ctrs, errMsg)) {
         return true;
       }
@@ -195,7 +196,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // fix up outputs
     Map<String, ArrayList<String>> pa = work.getPathToAliases();
     if (pa != null) {
-      ArrayList<Operator<? extends Serializable>> opList = new ArrayList<Operator<? extends Serializable>>();
+      List<Operator<? extends OperatorDesc>> opList =
+        new ArrayList<Operator<? extends OperatorDesc>>();
 
       if (work.getReducer() != null) {
         opList.add(work.getReducer());
@@ -206,7 +208,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           opList.add(work.getAliasToWork().get(a));
 
           while (!opList.isEmpty()) {
-            Operator<? extends Serializable> op = opList.remove(0);
+            Operator<? extends OperatorDesc> op = opList.remove(0);
 
             if (op instanceof FileSinkOperator) {
               FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
@@ -489,7 +491,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (rj != null) {
         JobCloseFeedBack feedBack = new JobCloseFeedBack();
         if (work.getAliasToWork() != null) {
-          for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
+          for (Operator<? extends OperatorDesc> op : work.getAliasToWork().values()) {
             op.jobClose(job, success, feedBack);
           }
         }
@@ -743,7 +745,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   }
 
   @Override
-  public Collection<Operator<? extends Serializable>> getTopOperators() {
+  public Collection<Operator<? extends OperatorDesc>> getTopOperators() {
     return getWork().getAliasToWork().values();
   }
 
@@ -947,11 +949,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (pa != null) {
       for (List<String> ls : pa.values()) {
         for (String a : ls) {
-          ArrayList<Operator<? extends Serializable>> opList = new ArrayList<Operator<? extends Serializable>>();
+          ArrayList<Operator<? extends OperatorDesc>> opList =
+            new ArrayList<Operator<? extends OperatorDesc>>();
           opList.add(work.getAliasToWork().get(a));
 
           while (!opList.isEmpty()) {
-            Operator<? extends Serializable> op = opList.remove(0);
+            Operator<? extends OperatorDesc> op = opList.remove(0);
 
             if (op instanceof FileSinkOperator) {
               FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
@@ -973,7 +976,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
   @Override
   public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
-    for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
+    for (Operator<? extends OperatorDesc> op : work.getAliasToWork().values()) {
       op.updateCounters(ctrs);
     }
     if (work.getReducer() != null) {

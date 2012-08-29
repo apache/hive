@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -213,7 +214,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     }
 
     // create a dummy tableScan operator
-    Operator<? extends Serializable> tsMerge = OperatorFactory.get(
+    Operator<? extends OperatorDesc> tsMerge = OperatorFactory.get(
         TableScanDesc.class, inputRS);
 
     ArrayList<String> outputColumns = new ArrayList<String>();
@@ -335,7 +336,8 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // Create a TableScan operator
     RowSchema inputRS = fsInput.getSchema();
-    Operator<? extends Serializable> tsMerge = OperatorFactory.get(TableScanDesc.class, inputRS);
+    Operator<? extends OperatorDesc> tsMerge =
+      OperatorFactory.get(TableScanDesc.class, inputRS);
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
@@ -510,7 +512,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @param parentFS the last FileSinkOperator in the parent MapReduce work
    * @return the MapredWork
    */
-  private MapredWork createMergeTask(HiveConf conf, Operator<? extends Serializable> topOp,
+  private MapredWork createMergeTask(HiveConf conf, Operator<? extends OperatorDesc> topOp,
       FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
@@ -556,7 +558,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       work.setMapperCannotSpanPartns(true);
       work.setPathToAliases(pathToAliases);
       work.setAliasToWork(
-          new LinkedHashMap<String, Operator<? extends Serializable>>());
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
       if (hasDynamicPartitions) {
         work.getPathToPartitionInfo().put(inputDir,
             new PartitionDesc(tblDesc, null));
@@ -696,11 +698,11 @@ public class GenMRFileSink1 implements NodeProcessor {
       mvTask = findMoveTask(ctx.getMvTask(), fsOp);
     }
 
-    Operator<? extends Serializable> currTopOp = ctx.getCurrTopOp();
+    Operator<? extends OperatorDesc> currTopOp = ctx.getCurrTopOp();
     String currAliasId = ctx.getCurrAliasId();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
       ctx.getOpTaskMap();
-    List<Operator<? extends Serializable>> seenOps = ctx.getSeenOps();
+    List<Operator<? extends OperatorDesc>> seenOps = ctx.getSeenOps();
     List<Task<? extends Serializable>> rootTasks = ctx.getRootTasks();
 
     // Set the move task to be dependent on the current task

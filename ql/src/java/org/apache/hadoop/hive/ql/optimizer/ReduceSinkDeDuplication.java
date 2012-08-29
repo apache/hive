@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
@@ -155,9 +155,10 @@ public class ReduceSinkDeDuplication implements Transform{
           return null;
         }
 
-        List<Operator<? extends Serializable>> childOp = childReduceSink.getChildOperators();
+        List<Operator<? extends OperatorDesc>> childOp =
+          childReduceSink.getChildOperators();
         if (childOp != null && childOp.size() == 1) {
-          Operator<? extends Serializable> child = childOp.get(0);
+          Operator<? extends OperatorDesc> child = childOp.get(0);
           if (child instanceof GroupByOperator || child instanceof JoinOperator) {
             ctx.addRejectedReduceSinkOperator(childReduceSink);
             return null;
@@ -165,7 +166,8 @@ public class ReduceSinkDeDuplication implements Transform{
         }
 
         ParseContext pGraphContext = ctx.getPctx();
-        HashMap<String, String> childColumnMapping = getPartitionAndKeyColumnMapping(childReduceSink);
+        HashMap<String, String> childColumnMapping =
+          getPartitionAndKeyColumnMapping(childReduceSink);
         ReduceSinkOperator parentRS = null;
         parentRS = findSingleParentReduceSink(childReduceSink, pGraphContext);
         if (parentRS == null) {
@@ -173,7 +175,7 @@ public class ReduceSinkDeDuplication implements Transform{
           return null;
         }
         HashMap<String, String> parentColumnMapping = getPartitionAndKeyColumnMapping(parentRS);
-        Operator<? extends Serializable> stopBacktrackFlagOp = null;
+        Operator<? extends OperatorDesc> stopBacktrackFlagOp = null;
         if (parentRS.getParentOperators() == null
             || parentRS.getParentOperators().size() == 0) {
           stopBacktrackFlagOp =  parentRS;
@@ -202,10 +204,12 @@ public class ReduceSinkDeDuplication implements Transform{
 
       private void replaceReduceSinkWithSelectOperator(
           ReduceSinkOperator childReduceSink, ParseContext pGraphContext) throws SemanticException {
-        List<Operator<? extends Serializable>> parentOp = childReduceSink.getParentOperators();
-        List<Operator<? extends Serializable>> childOp = childReduceSink.getChildOperators();
+        List<Operator<? extends OperatorDesc>> parentOp =
+          childReduceSink.getParentOperators();
+        List<Operator<? extends OperatorDesc>> childOp =
+          childReduceSink.getChildOperators();
 
-        Operator<? extends Serializable> oldParent = childReduceSink;
+        Operator<? extends OperatorDesc> oldParent = childReduceSink;
 
         if (childOp != null && childOp.size() == 1
             && ((childOp.get(0)) instanceof ExtractOperator)) {
@@ -213,7 +217,7 @@ public class ReduceSinkDeDuplication implements Transform{
           childOp = childOp.get(0).getChildOperators();
         }
 
-        Operator<? extends Serializable> input = parentOp.get(0);
+        Operator<? extends OperatorDesc> input = parentOp.get(0);
         input.getChildOperators().clear();
 
         RowResolver inputRR = pGraphContext.getOpParseCtx().get(input).getRowResolver();
@@ -247,14 +251,14 @@ public class ReduceSinkDeDuplication implements Transform{
 
         // Insert the select operator in between.
         sel.setChildOperators(childOp);
-        for (Operator<? extends Serializable> ch : childOp) {
+        for (Operator<? extends OperatorDesc> ch : childOp) {
           ch.replaceParent(oldParent, sel);
         }
 
       }
 
-      private Operator<? extends Serializable> putOpInsertMap(
-          Operator<? extends Serializable> op, RowResolver rr, ParseContext pGraphContext) {
+      private Operator<? extends OperatorDesc> putOpInsertMap(
+        Operator<? extends OperatorDesc> op, RowResolver rr, ParseContext pGraphContext) {
         OpParseContext ctx = new OpParseContext(rr);
         pGraphContext.getOpParseCtx().put(op, ctx);
         return op;
@@ -373,8 +377,9 @@ public class ReduceSinkDeDuplication implements Transform{
       private boolean backTrackColumnNames(
           HashMap<String, String> columnMapping,
           ReduceSinkOperator reduceSink,
-          Operator<? extends Serializable> stopBacktrackFlagOp, ParseContext pGraphContext) {
-        Operator<? extends Serializable> startOperator = reduceSink;
+          Operator<? extends OperatorDesc> stopBacktrackFlagOp,
+          ParseContext pGraphContext) {
+        Operator<? extends OperatorDesc> startOperator = reduceSink;
         while (startOperator != null && startOperator != stopBacktrackFlagOp) {
           startOperator = startOperator.getParentOperators().get(0);
           Map<String, ExprNodeDesc> colExprMap = startOperator.getColumnExprMap();
@@ -423,7 +428,7 @@ public class ReduceSinkDeDuplication implements Transform{
       }
 
       private ReduceSinkOperator findSingleParentReduceSink(ReduceSinkOperator childReduceSink, ParseContext pGraphContext) {
-        Operator<? extends Serializable> start = childReduceSink;
+        Operator<? extends OperatorDesc> start = childReduceSink;
         while(start != null) {
           if (start.getParentOperators() == null
               || start.getParentOperators().size() != 1) {

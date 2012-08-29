@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,9 +37,7 @@ import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-
-import java.io.Serializable;
-import java.util.Map;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * This optimizer is used to reduce the input size for the query for queries which are
@@ -58,7 +58,7 @@ public class GlobalLimitOptimizer implements Transform {
 
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Context ctx = pctx.getContext();
-    Map<String, Operator<? extends Serializable>> topOps = pctx.getTopOps();
+    Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
     GlobalLimitCtx globalLimitCtx = pctx.getGlobalLimitCtx();
     Map<TableScanOperator, ExprNodeDesc> opToPartPruner = pctx.getOpToPartPruner();
     Map<TableScanOperator, PrunedPartitionList> opToPartList = pctx.getOpToPartList();

@@ -16,17 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
-/**
- * Terminal Operator Base Class.
- **/
-public abstract class TerminalOperator<T extends OperatorDesc> extends
-    Operator<T> implements Serializable {
-  private static final long serialVersionUID = 1L;
-
+public class AbstractOperatorDesc implements OperatorDesc {
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    throw new CloneNotSupportedException("clone not supported");
+  }
 }

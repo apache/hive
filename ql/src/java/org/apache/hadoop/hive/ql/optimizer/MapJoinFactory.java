@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -57,9 +58,9 @@ public final class MapJoinFactory {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == op;
-    Operator<? extends Serializable> parent = (Operator<? extends Serializable>) stack
-        .get(size - 2);
-    List<Operator<? extends Serializable>> parOp = op.getParentOperators();
+    Operator<? extends OperatorDesc> parent =
+      (Operator<? extends OperatorDesc>) stack.get(size - 2);
+    List<Operator<? extends OperatorDesc>> parOp = op.getParentOperators();
     pos = parOp.indexOf(parent);
     assert pos < parOp.size();
     return pos;
@@ -72,24 +73,24 @@ public final class MapJoinFactory {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
+      Object... nodeOutputs) throws SemanticException {
       AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
 
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
-      Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
+      Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
       String currAliasId = mapredCtx.getCurrAliasId();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
+      Operator<? extends OperatorDesc> reducer = mapJoin;
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+        ctx.getOpTaskMap();
       Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
       ctx.setCurrTopOp(currTopOp);
@@ -138,11 +139,11 @@ public final class MapJoinFactory {
           : true;
 
       GenMapRedUtils.splitTasks(mapJoin, currTask, redTask, opProcCtx, false,
-          local, pos);
+        local, pos);
 
       currTask = opProcCtx.getCurrTask();
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-          .getOpTaskMap();
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+        opProcCtx.getOpTaskMap();
       Task<? extends Serializable> opMapTask = opTaskMap.get(mapJoin);
 
       // If the plan for this reducer does not exist, initialize the plan
@@ -195,9 +196,9 @@ public final class MapJoinFactory {
       if (listMapJoinOps.contains(mapJoin)) {
         ctx.setCurrAliasId(null);
         ctx.setCurrTopOp(null);
-        Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+        Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
             .getMapCurrCtx();
-        mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
+        mapCurrCtx.put((Operator<? extends OperatorDesc>) nd, new GenMapRedCtx(
             ctx.getCurrTask(), null, null));
         return null;
       }
@@ -230,14 +231,15 @@ public final class MapJoinFactory {
       sel.setParentOperators(null);
 
       // Create a file sink operator for this file name
-      Operator<? extends Serializable> fs_op = OperatorFactory.get(
+      Operator<? extends OperatorDesc> fs_op = OperatorFactory.get(
           new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
           HiveConf.ConfVars.COMPRESSINTERMEDIATE)), mapJoin.getSchema());
 
       assert mapJoin.getChildOperators().size() == 1;
       mapJoin.getChildOperators().set(0, fs_op);
 
-      List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
+      List<Operator<? extends OperatorDesc>> parentOpList =
+        new ArrayList<Operator<? extends OperatorDesc>>();
       parentOpList.add(mapJoin);
       fs_op.setParentOperators(parentOpList);
 
@@ -247,9 +249,9 @@ public final class MapJoinFactory {
       ctx.setCurrAliasId(null);
       ctx.setCurrTopOp(null);
 
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
-      mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
+      mapCurrCtx.put((Operator<? extends OperatorDesc>) nd, new GenMapRedCtx(
           ctx.getCurrTask(), null, null));
 
       return null;
@@ -263,8 +265,9 @@ public final class MapJoinFactory {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin = (AbstractMapJoinOperator<? extends MapJoinDesc>) nd;
+      Object... nodeOutputs) throws SemanticException {
+      AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin =
+        (AbstractMapJoinOperator<? extends MapJoinDesc>) nd;
       GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
       ctx.getParseCtx();
@@ -282,16 +285,16 @@ public final class MapJoinFactory {
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
 
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
       mapredCtx.getCurrAliasId();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
+      Operator<? extends OperatorDesc> reducer = mapJoin;
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+        ctx.getOpTaskMap();
       Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
       ctx.setCurrTask(currTask);
@@ -321,7 +324,7 @@ public final class MapJoinFactory {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
+      Object... nodeOutputs) throws SemanticException {
       GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
       ParseContext parseCtx = ctx.getParseCtx();
@@ -341,15 +344,15 @@ public final class MapJoinFactory {
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
 
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
+      Operator<? extends OperatorDesc> reducer = mapJoin;
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+        ctx.getOpTaskMap();
       Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
       // union result cannot be a map table
