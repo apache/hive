@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -34,8 +35,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
+
 /**
  * GenericUDTFJSONTuple: this
  *
@@ -47,6 +50,9 @@ import org.json.JSONObject;
 public class GenericUDTFJSONTuple extends GenericUDTF {
 
   private static Log LOG = LogFactory.getLog(GenericUDTFJSONTuple.class.getName());
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
 
   int numCols;    // number of output columns
   String[] paths; // array of path expressions, each of which corresponds to a column
@@ -77,7 +83,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
   }
 
-  static Map<String, JSONObject> jsonObjectCache = new HashCache<String, JSONObject>();
+  static Map<String, Object> jsonObjectCache = new HashCache<String, Object>();
 
   @Override
   public void close() throws HiveException {
@@ -127,6 +133,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
     return ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldOIs);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void process(Object[] o) throws HiveException {
 
@@ -148,31 +155,38 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
       return;
     }
     try {
-      JSONObject jsonObj = jsonObjectCache.get(jsonStr);
+      Object jsonObj = jsonObjectCache.get(jsonStr);
       if (jsonObj == null) {
-        jsonObj = new JSONObject(jsonStr);
+        try {
+          jsonObj = MAPPER.readValue(jsonStr, MAP_TYPE);
+        } catch (Exception e) {
+          reportInvalidJson(jsonStr);
+          forward(nullCols);
+          return;
+        }
         jsonObjectCache.put(jsonStr, jsonObj);
       }
 
+      if (!(jsonObj instanceof Map)) {
+        reportInvalidJson(jsonStr);
+        forward(nullCols);
+        return;
+      }
+
       for (int i = 0; i < numCols; ++i) {
-        if (jsonObj.isNull(paths[i])) {
-          retCols[i] = null;
+        if (retCols[i] == null) {
+          retCols[i] = cols[i]; // use the object pool rather than creating a new object
+        }
+        Object extractObject = ((Map<String, Object>)jsonObj).get(paths[i]);
+        if (extractObject instanceof Map || extractObject instanceof List) {
+          retCols[i].set(MAPPER.writeValueAsString(extractObject));
+        } else if (extractObject != null) {
+          retCols[i].set(extractObject.toString());
         } else {
-          if (retCols[i] == null) {
-            retCols[i] = cols[i]; // use the object pool rather than creating a new object
-          }
-          retCols[i].set(jsonObj.getString(paths[i]));
+          retCols[i] = null;
         }
       }
       forward(retCols);
-      return;
-    } catch (JSONException e) {
-      // parsing error, invalid JSON string
-      if (!seenErrors) {
-        LOG.error("The input is not a valid JSON string: " + jsonStr + ". Skipping such error messages in the future.");
-        seenErrors = true;
-      }
-      forward(nullCols);
       return;
     } catch (Throwable e) {
       LOG.error("JSON parsing/evaluation exception" + e);
@@ -183,5 +197,13 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
   @Override
   public String toString() {
     return "json_tuple";
+  }
+
+  private void reportInvalidJson(String jsonStr) {
+    if (!seenErrors) {
+      LOG.error("The input is not a valid JSON string: " + jsonStr +
+          ". Skipping such error messages in the future.");
+      seenErrors = true;
+    }
   }
 }
