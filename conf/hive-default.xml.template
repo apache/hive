@@ -256,6 +256,18 @@
 </property>
 
 <property>
+  <name>hive.metadata.export.location</name>
+  <value></value>
+  <description>When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, it is the location to which the metadata will be exported. The default is an empty string, which results in the metadata being exported to the current user's home directory on HDFS.</description>
+</property>
+
+<property>
+  <name>hive.metadata.move.exported.metadata.to.trash</name>
+  <value></value>
+  <description>When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, this setting determines if the metadata that is exported will subsequently be moved to the user's trash directory alongside the dropped table data. This ensures that the metadata will be cleaned up along with the dropped table data.</description>
+</property>
+
+<property>
   <name>hive.metastore.end.function.listeners</name>
   <value></value>
   <description>list of comma separated listeners for the end of metastore functions.</description>
