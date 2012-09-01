@@ -325,6 +325,11 @@ public class HiveConf extends Configuration {
     METASTORE_END_FUNCTION_LISTENERS("hive.metastore.end.function.listeners", ""),
     METASTORE_PART_INHERIT_TBL_PROPS("hive.metastore.partition.inherit.table.properties",""),
 
+    // Parameters for exporting metadata on table drop (requires the use of the)
+    // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
+    METADATA_EXPORT_LOCATION("hive.metadata.export.location", ""),
+    MOVE_EXPORTED_METADATA_TO_TRASH("hive.metadata.move.exported.metadata.to.trash", true),
+
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
     CLIPRINTCURRENTDB("hive.cli.print.current.db", false),
