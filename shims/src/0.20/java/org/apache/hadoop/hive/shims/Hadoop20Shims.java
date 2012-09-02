@@ -22,6 +22,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -441,26 +443,34 @@ public class Hadoop20Shims implements HadoopShims {
     HadoopArchives har = new HadoopArchives(conf);
     List<String> args = new ArrayList<String>();
 
-    if (conf.get("hive.archive.har.parentdir.settable") == null) {
-      throw new RuntimeException("hive.archive.har.parentdir.settable is not set");
-    }
-    boolean parentSettable =
-      conf.getBoolean("hive.archive.har.parentdir.settable", false);
-
-    if (parentSettable) {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add("-p");
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    } else {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    }
+    args.add("-archiveName");
+    args.add(archiveName);
+    args.add(sourceDir.toString());
+    args.add(destDir.toString());
 
     return ToolRunner.run(har, args.toArray(new String[0]));
+  }
+
+  /*
+   *(non-Javadoc)
+   * @see org.apache.hadoop.hive.shims.HadoopShims#getHarUri(java.net.URI, java.net.URI, java.net.URI)
+   * This particular instance is for Hadoop 20 which creates an archive
+   * with the entire directory path from which one created the archive as
+   * compared against the one used by Hadoop 1.0 (within HadoopShimsSecure)
+   * where a relative path is stored within the archive.
+   */
+  public URI getHarUri (URI original, URI base, URI originalBase)
+    throws URISyntaxException {
+    URI relative = null;
+
+    String dirInArchive = original.getPath();
+    if (dirInArchive.length() > 1 && dirInArchive.charAt(0) == '/') {
+      dirInArchive = dirInArchive.substring(1);
+    }
+
+    relative = new URI(null, null, dirInArchive, null);
+
+    return base.resolve(relative);
   }
 
   public static class NullOutputCommitter extends OutputCommitter {

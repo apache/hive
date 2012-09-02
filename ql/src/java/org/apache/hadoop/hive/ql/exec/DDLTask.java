@@ -1324,6 +1324,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // ARCHIVE_INTERMEDIATE_DIR_SUFFIX that's the same level as the partition,
     // if it does not already exist. If it does exist, we assume the dir is good
     // to use as the move operation that created it is atomic.
+    HadoopShims shim = ShimLoader.getHadoopShims();
     if (!pathExists(intermediateArchivedDir) &&
         !pathExists(intermediateOriginalDir)) {
 
@@ -1338,7 +1339,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       console.printInfo("Please wait... (this may take a while)");
 
       // Create the Hadoop archive
-      HadoopShims shim = ShimLoader.getHadoopShims();
       int ret=0;
       try {
         int maxJobNameLen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
@@ -1353,6 +1353,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (ret != 0) {
         throw new HiveException("Error while creating HAR");
       }
+
       // Move from the tmp dir to an intermediate directory, in the same level as
       // the partition directory. e.g. .../hr=12-intermediate-archived
       try {
@@ -1406,7 +1407,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       for(Partition p: partitions) {
         URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
-        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri);
+        URI test = p.getPartitionPath().toUri();
+        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
         Path harPath = new Path(harPartitionDir.getScheme(),
             harPartitionDir.getAuthority(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
@@ -1508,7 +1510,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     URI archiveUri = archivePath.toUri();
     ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(conf,
         archiveUri, originalUri);
-    URI sourceUri = harHelper.getHarUri(originalUri);
+    HadoopShims shim = ShimLoader.getHadoopShims();
+    URI sourceUri = harHelper.getHarUri(originalUri, shim);
     Path sourceDir = new Path(sourceUri.getScheme(), sourceUri.getAuthority(), sourceUri.getPath());
 
     if(!pathExists(intermediateArchivedDir) && !pathExists(archivePath)) {

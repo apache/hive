@@ -1,8 +1,8 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 drop table tstsrc
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 drop table tstsrc
 POSTHOOK: type: DROPTABLE
@@ -530,7 +530,7 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-NULL
+48656137
 PREHOOK: query: drop table tstsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc

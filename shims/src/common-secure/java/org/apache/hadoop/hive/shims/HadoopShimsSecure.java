@@ -21,6 +21,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
@@ -438,26 +440,31 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     HadoopArchives har = new HadoopArchives(conf);
     List<String> args = new ArrayList<String>();
 
-    if (conf.get("hive.archive.har.parentdir.settable") == null) {
-      throw new RuntimeException("hive.archive.har.parentdir.settable is not set");
-    }
-    boolean parentSettable =
-      conf.getBoolean("hive.archive.har.parentdir.settable", false);
-
-    if (parentSettable) {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add("-p");
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    } else {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    }
+    args.add("-archiveName");
+    args.add(archiveName);
+    args.add("-p");
+    args.add(sourceDir.toString());
+    args.add(destDir.toString());
 
     return ToolRunner.run(har, args.toArray(new String[0]));
+  }
+  
+  /*
+   * This particular instance is for Hadoop 1.0 which creates an archive
+   * with only the relative path of the archived directory stored within
+   * the archive as compared to the full path in case of earlier versions.
+   * See this api in Hadoop20Shims for comparison.
+   */
+  public URI getHarUri(URI original, URI base, URI originalBase) 
+    throws URISyntaxException {
+    URI relative = originalBase.relativize(original);
+    if (relative.isAbsolute()) {
+      throw new URISyntaxException("Couldn't create URI for location.",
+                                   "Relative: " + relative + " Base: " 
+                                   + base + " OriginalBase: " + originalBase);
+    }
+
+    return base.resolve(relative);
   }
 
   public static class NullOutputCommitter extends OutputCommitter {
