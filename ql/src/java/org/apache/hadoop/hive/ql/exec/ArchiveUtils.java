@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.shims.HadoopShims;
 
 /**
  * ArchiveUtils.
@@ -129,7 +130,6 @@ public final class ArchiveUtils {
    * HarPathHelper helps to create har:/ URIs for locations inside of archive.
    */
   public static class HarPathHelper {
-    boolean parentSettable;
     private final URI base, originalBase;
 
     /**
@@ -138,12 +138,11 @@ public final class ArchiveUtils {
      * @param originalBase directory for which Hadoop archive was created
      */
     public HarPathHelper(HiveConf hconf, URI archive, URI originalBase) throws HiveException {
-      parentSettable = hconf.getBoolVar(HiveConf.ConfVars.HIVEHARPARENTDIRSETTABLE);
       this.originalBase = addSlash(originalBase);
       String parentHost = archive.getHost();
       String harHost = null;
       if (parentHost == null) {
-        harHost = archive.getScheme();
+        harHost = archive.getScheme() + "-localhost";
       } else {
         harHost = archive.getScheme() + "-" + parentHost;
       }
@@ -164,44 +163,15 @@ public final class ArchiveUtils {
       }
     }
 
-    /**
-     * Creates har URI for file/directory that was put there when creating HAR.
-     *
-     *  With older versions of Hadoop, archiving a directory would produce
-     *  the same directory structure, reflecting absoulute paths.
-     *  If you created myArchive.har of /tmp/myDir the files in /tmp/myDir
-     *  will be located under myArchive.har/tmp/myDir/*
-     *
-     *  With newer versions, the parent directory can be specified. Assuming
-     *  the parent directory was set to /tmp/myDir when creating the archive,
-     *  the files can be found under myArchive.har/*
-     *
-     *  This is why originalBase is argument - with new versions we can
-     *  relativize URI, in older we keep absolute one.
-     *
-     * @param original file/directory path
-     * @return absolute HAR uri
-     */
-    public URI getHarUri(URI original) throws HiveException {
-      URI relative = null;
-      if (!parentSettable) {
-        String dirInArchive = original.getPath();
-        if(dirInArchive.length() > 1 && dirInArchive.charAt(0)=='/') {
-          dirInArchive = dirInArchive.substring(1);
-        }
-        try {
-          relative = new URI(null, null, dirInArchive, null);
-        } catch (URISyntaxException e) {
-          throw new HiveException("Couldn't create har URI for location");
-        } // relative URI with path only
+    public URI getHarUri(URI original, HadoopShims shim) throws HiveException {
+      URI harUri = null;
+      try {
+        harUri = shim.getHarUri(original, base, originalBase);
+      } catch (URISyntaxException e) {
+        throw new HiveException("Couldn't create har URI for location", e);
       }
-      else {
-        relative = originalBase.relativize(original);
-        if(relative.isAbsolute()) {
-          throw new HiveException("Unable to relativize URI");
-        }
-      }
-      return base.resolve(relative);
+
+      return harUri;
     }
   }
 

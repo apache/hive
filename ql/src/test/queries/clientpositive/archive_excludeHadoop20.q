@@ -1,7 +1,7 @@
 set hive.archive.enabled = true;
 set hive.enforce.bucketing = true;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 drop table tstsrc;
 drop table tstsrcpart;

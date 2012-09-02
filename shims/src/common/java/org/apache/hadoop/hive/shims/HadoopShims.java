@@ -21,6 +21,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
@@ -159,6 +161,9 @@ public interface HadoopShims {
 
   int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
       String archiveName) throws Exception;
+
+  public URI getHarUri(URI original, URI base, URI originalBase)
+        throws URISyntaxException;
   /**
    * Hive uses side effect files exclusively for it's output. It also manages
    * the setup/cleanup/commit of output from the hive client. As a result it does
