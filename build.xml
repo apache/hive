@@ -419,6 +419,7 @@
     <mkdir dir="${target.lib.dir}/py"/>
     <mkdir dir="${target.lib.dir}/php"/>
     <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
+    <copy file="${hive.root}/bin/metatool" todir="${target.bin.dir}"/>
     <echo message="metastore.excludes = ${metastore.excludes}"/>
     <copy todir="${target.scripts.dir}/metastore/upgrade">
       <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${metastore.excludes}"/>
