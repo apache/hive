@@ -43,7 +43,7 @@
                  artifactspattern="${build.dir}/${ivy.publish.pattern}"/>
   </target>
 
-  <target name="test" unless="testcase" depends="init, setup, ivy-retrieve">
+  <target name="test" unless="testcase" depends="init, setup, ivy-retrieve, ivy-retrieve-test">
     <echo message="Project: ${ant.project.name}"/>
     <ant antfile="build-plugin.xml" target="test" inheritAll="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>

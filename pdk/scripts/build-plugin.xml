@@ -25,6 +25,7 @@
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.metadata" location="${build.dir}/metadata"/>
   <property name="install.dir" location="${pdk.script.dir}/../.."/>
+  <property name="pdk.test.conf.dir" location="${pdk.script.dir}/../test-plugin/test/conf"/>
   <property name="function.sql.prefix" value=""/>
   <property name="plugin.jar.basename" 
             value="${plugin.libname}-${plugin.version}.jar"/>
@@ -133,6 +134,7 @@
       <sysproperty key="hive.metastore.warehouse.dir" value="${build.dir}/warehouse"/>
       <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hive.hadoop.mock.classpath}"/>
       <env key="HADOOP_HOME" value="${hadoop.home}"/>
+      <env key="HADOOP_CONF_DIR" value="${pdk.test.conf.dir}"/>
       <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
       <env key="HIVE_HOME" value="${install.dir}"/>
       <env key="HIVE_PLUGIN_ROOT_DIR" value="${plugin.dir}"/>
