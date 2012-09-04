@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -3972,6 +3974,285 @@ public class ObjectStore implements RawStore, Configurable {
       storedVals.add(partVal);
     }
     return join(storedVals,',');
+  }
+
+  /** The following API
+   *
+   *  - executeJDOQLSelect
+   *
+   * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+   *
+   */
+  @SuppressWarnings("finally")
+  public Collection<?> executeJDOQLSelect(String query) {
+    boolean committed = false;
+    Collection<?> result = null;
+
+    LOG.info("Executing query: " + query);
+
+    try {
+      openTransaction();
+      Query q = pm.newQuery(query);
+      result = (Collection<?>) q.execute();
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return null;
+      } else  {
+        return result;
+      }
+    }
+  }
+
+  /** The following API
+  *
+  *  - executeJDOQLUpdate
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  @SuppressWarnings("finally")
+  public long executeJDOQLUpdate(String query) {
+    boolean committed = false;
+    long numUpdated = 0;
+
+    LOG.info("Executing query: " + query);
+
+    try {
+      openTransaction();
+      Query q = pm.newQuery(query);
+      numUpdated = (Long) q.execute();
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return -1;
+      } else {
+        return numUpdated;
+      }
+    }
+  }
+
+  /** The following API
+  *
+  *  - listFSRoots
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  @SuppressWarnings("finally")
+  public Set<String> listFSRoots() {
+    boolean committed = false;
+    Set<String> fsRoots = new HashSet<String>();
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MDatabase.class);
+      List<MDatabase> mDBs = (List<MDatabase>) query.execute();
+      pm.retrieveAll(mDBs);
+
+      for (MDatabase mDB:mDBs) {
+        fsRoots.add(mDB.getLocationUri());
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return null;
+      } else {
+        return fsRoots;
+      }
+    }
+  }
+
+  private boolean shouldUpdateURI(URI onDiskUri, URI inputUri) {
+    String onDiskHost = onDiskUri.getHost();
+    String inputHost = inputUri.getHost();
+
+    int onDiskPort = onDiskUri.getPort();
+    int inputPort = inputUri.getPort();
+
+    String onDiskScheme = onDiskUri.getScheme();
+    String inputScheme = inputUri.getScheme();
+
+    //compare ports
+    if (inputPort != -1) {
+      if (inputPort != onDiskPort) {
+        return false;
+      }
+    }
+    //compare schemes
+    if (inputScheme != null) {
+      if (onDiskScheme == null) {
+        return false;
+      }
+      if (!inputScheme.equalsIgnoreCase(onDiskScheme)) {
+        return false;
+      }
+    }
+    //compare hosts
+    if (onDiskHost != null) {
+      if (!inputHost.equalsIgnoreCase(onDiskHost)) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  private int updateMDatabaseURI(URI oldLoc, URI newLoc,
+      HashMap<String, String> updateLocations, boolean dryRun) {
+    int count = 0;
+    Query query = pm.newQuery(MDatabase.class);
+    List<MDatabase> mDBs = (List<MDatabase>) query.execute();
+    pm.retrieveAll(mDBs);
+
+    LOG.info("Looking for location in DB_LOCATION_URI field in DBS table...");
+
+    for(MDatabase mDB:mDBs) {
+      URI locationURI = null;
+      try {
+        locationURI = new URI(mDB.getLocationUri());
+      } catch(URISyntaxException e) {
+        LOG.error("Encountered error while validating location URI"
+            + e.getLocalizedMessage());
+      }
+      // locationURI is a valid URI
+      if (locationURI != null) {
+        if (shouldUpdateURI(locationURI, oldLoc)) {
+          String dbLoc = mDB.getLocationUri().replaceAll(oldLoc.toString(), newLoc.toString());
+          if (dryRun) {
+            updateLocations.put(locationURI.toString(), dbLoc);
+          } else {
+            mDB.setLocationUri(dbLoc);
+          }
+          count++;
+        }
+      }
+    }
+
+    LOG.info("Found  " + count + " records to update");
+    return count;
+  }
+
+  private int updateMStorageDescriptorURI(URI oldLoc, URI newLoc,
+      HashMap<String, String> updateLocations, boolean dryRun) {
+    int count = 0;
+    Query query = pm.newQuery(MStorageDescriptor.class);
+    List<MStorageDescriptor> mSDSs = (List<MStorageDescriptor>) query.execute();
+    pm.retrieveAll(mSDSs);
+
+    LOG.info("Looking for location in LOCATION field in SDS table...");
+
+    for(MStorageDescriptor mSDS:mSDSs) {
+      URI locationURI = null;
+      try {
+        locationURI = new URI(mSDS.getLocation());
+      } catch (URISyntaxException e) {
+        LOG.error("Encountered error while validating location URI"
+            + e.getLocalizedMessage());
+      }
+      // locationURI is a valid URI
+      if (locationURI != null) {
+        if (shouldUpdateURI(locationURI, oldLoc)) {
+          String tblLoc = mSDS.getLocation().replaceAll(oldLoc.toString(), newLoc.toString());
+          if (dryRun) {
+            updateLocations.put(locationURI.toString(), tblLoc);
+          } else {
+            mSDS.setLocation(tblLoc);
+          }
+          count++;
+        }
+      }
+    }
+
+    LOG.info("Found " + count + " records to update");
+    return count;
+  }
+
+  private int updateAvroSerdeURI(URI oldLoc, URI newLoc,
+      HashMap<String, String> updateLocations, boolean dryRun) {
+    int count = 0;
+    Query query = pm.newQuery(MSerDeInfo.class);
+    List<MSerDeInfo> mSerdes = (List<MSerDeInfo>) query.execute();
+    pm.retrieveAll(mSerdes);
+
+    LOG.info("Looking for location in the value field of schema.url key in SERDES table...");
+
+    for(MSerDeInfo mSerde:mSerdes) {
+      String key = new String("schema.url");
+      String schemaLoc = mSerde.getParameters().get(key);
+      if (schemaLoc != null) {
+        URI schemaLocURI = null;
+        try {
+          schemaLocURI = new URI(schemaLoc);
+        } catch (URISyntaxException e) {
+          LOG.error("Encountered error while validating location URI"
+              + e.getLocalizedMessage());
+        }
+        // schemaLocURI is a valid URI
+        if (schemaLocURI != null) {
+          if (shouldUpdateURI(schemaLocURI, oldLoc)) {
+            String newSchemaLoc = schemaLoc.replaceAll(oldLoc.toString(), newLoc.toString());
+            if (dryRun) {
+              updateLocations.put(schemaLocURI.toString(), newSchemaLoc);
+            } else {
+              mSerde.getParameters().put(key, newSchemaLoc);
+            }
+            count++;
+          }
+        }
+      }
+    }
+
+    LOG.info("Found " + count + " records to update");
+    return count;
+  }
+
+  /** The following APIs
+  *
+  *  - updateFSRootLocation
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  @SuppressWarnings("finally")
+  public int updateFSRootLocation(URI oldLoc, URI newLoc,
+      HashMap<String, String> updateLocations, boolean dryRun) {
+    boolean committed = false;
+    int count = 0;
+    int totalCount = 0;
+
+    LOG.info("Old FS root location: " + oldLoc.toString() +
+                    " New FS root location: " + newLoc.toString());
+    LOG.info("Updating FS root location...");
+
+    try {
+      openTransaction();
+
+      // update locationURI in mDatabase
+      count = updateMDatabaseURI(oldLoc, newLoc, updateLocations, dryRun);
+      totalCount += count;
+
+      // update location in mStorageDescriptor
+      count = updateMStorageDescriptorURI(oldLoc, newLoc, updateLocations, dryRun);
+      totalCount += count;
+
+      // upgrade schema.url for avro serde
+      count = updateAvroSerdeURI(oldLoc, newLoc, updateLocations, dryRun);
+      totalCount += count;
+
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return -1;
+      } else {
+        return totalCount;
+      }
+    }
   }
 
   @Override

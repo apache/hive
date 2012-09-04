@@ -1573,160 +1573,162 @@ public abstract class TestHiveMetaStore extends TestCase {
    * Tests for list partition by filter functionality.
    * @throws Exception
    */
+
   public void testPartitionFilter() throws Exception {
-      String dbName = "filterdb";
-      String tblName = "filtertbl";
+    String dbName = "filterdb";
+    String tblName = "filtertbl";
 
-      List<String> vals = new ArrayList<String>(3);
-      vals.add("p11");
-      vals.add("p21");
-      vals.add("p31");
-      List <String> vals2 = new ArrayList<String>(3);
-      vals2.add("p11");
-      vals2.add("p22");
-      vals2.add("p31");
-      List <String> vals3 = new ArrayList<String>(3);
-      vals3.add("p12");
-      vals3.add("p21");
-      vals3.add("p31");
-      List <String> vals4 = new ArrayList<String>(3);
-      vals4.add("p12");
-      vals4.add("p23");
-      vals4.add("p31");
-      List <String> vals5 = new ArrayList<String>(3);
-      vals5.add("p13");
-      vals5.add("p24");
-      vals5.add("p31");
-      List <String> vals6 = new ArrayList<String>(3);
-      vals6.add("p13");
-      vals6.add("p25");
-      vals6.add("p31");
+    List<String> vals = new ArrayList<String>(3);
+    vals.add("p11");
+    vals.add("p21");
+    vals.add("p31");
+    List <String> vals2 = new ArrayList<String>(3);
+    vals2.add("p11");
+    vals2.add("p22");
+    vals2.add("p31");
+    List <String> vals3 = new ArrayList<String>(3);
+    vals3.add("p12");
+    vals3.add("p21");
+    vals3.add("p31");
+    List <String> vals4 = new ArrayList<String>(3);
+    vals4.add("p12");
+    vals4.add("p23");
+    vals4.add("p31");
+    List <String> vals5 = new ArrayList<String>(3);
+    vals5.add("p13");
+    vals5.add("p24");
+    vals5.add("p31");
+    List <String> vals6 = new ArrayList<String>(3);
+    vals6.add("p13");
+    vals6.add("p25");
+    vals6.add("p31");
 
-      silentDropDatabase(dbName);
+    silentDropDatabase(dbName);
 
-      Database db = new Database();
-      db.setName(dbName);
-      client.createDatabase(db);
+    Database db = new Database();
+    db.setName(dbName);
+    client.createDatabase(db);
 
-      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+    ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+    cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
 
-      ArrayList<FieldSchema> partCols = new ArrayList<FieldSchema>(3);
-      partCols.add(new FieldSchema("p1", Constants.STRING_TYPE_NAME, ""));
-      partCols.add(new FieldSchema("p2", Constants.STRING_TYPE_NAME, ""));
-      partCols.add(new FieldSchema("p3", Constants.INT_TYPE_NAME, ""));
+    ArrayList<FieldSchema> partCols = new ArrayList<FieldSchema>(3);
+    partCols.add(new FieldSchema("p1", Constants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema("p2", Constants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema("p3", Constants.INT_TYPE_NAME, ""));
 
-      Table tbl = new Table();
-      tbl.setDbName(dbName);
-      tbl.setTableName(tblName);
-      StorageDescriptor sd = new StorageDescriptor();
-      tbl.setSd(sd);
-      sd.setCols(cols);
-      sd.setCompressed(false);
-      sd.setNumBuckets(1);
-      sd.setParameters(new HashMap<String, String>());
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setSerdeInfo(new SerDeInfo());
-      sd.getSerdeInfo().setName(tbl.getTableName());
-      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-      sd.getSerdeInfo().getParameters()
-          .put(Constants.SERIALIZATION_FORMAT, "1");
-      sd.setSortCols(new ArrayList<Order>());
+    Table tbl = new Table();
+    tbl.setDbName(dbName);
+    tbl.setTableName(tblName);
+    StorageDescriptor sd = new StorageDescriptor();
+    tbl.setSd(sd);
+    sd.setCols(cols);
+    sd.setCompressed(false);
+    sd.setNumBuckets(1);
+    sd.setParameters(new HashMap<String, String>());
+    sd.setBucketCols(new ArrayList<String>());
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tbl.getTableName());
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().getParameters()
+        .put(Constants.SERIALIZATION_FORMAT, "1");
+    sd.setSortCols(new ArrayList<Order>());
 
-      tbl.setPartitionKeys(partCols);
-      client.createTable(tbl);
+    tbl.setPartitionKeys(partCols);
+    client.createTable(tbl);
 
-      tbl = client.getTable(dbName, tblName);
+    tbl = client.getTable(dbName, tblName);
 
-      add_partition(client, tbl, vals, "part1");
-      add_partition(client, tbl, vals2, "part2");
-      add_partition(client, tbl, vals3, "part3");
-      add_partition(client, tbl, vals4, "part4");
-      add_partition(client, tbl, vals5, "part5");
-      add_partition(client, tbl, vals6, "part6");
+    add_partition(client, tbl, vals, "part1");
+    add_partition(client, tbl, vals2, "part2");
+    add_partition(client, tbl, vals3, "part3");
+    add_partition(client, tbl, vals4, "part4");
+    add_partition(client, tbl, vals5, "part5");
+    add_partition(client, tbl, vals6, "part6");
 
-      checkFilter(client, dbName, tblName, "p1 = \"p11\"", 2);
-      checkFilter(client, dbName, tblName, "p1 = \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p2 = \"p21\"", 2);
-      checkFilter(client, dbName, tblName, "p2 = \"p23\"", 1);
-      checkFilter(client, dbName, tblName, "p1 = \"p11\" and p2=\"p22\"", 1);
-      checkFilter(client, dbName, tblName, "p1 = \"p11\" or p2=\"p23\"", 3);
-      checkFilter(client, dbName, tblName, "p1 = \"p11\" or p1=\"p12\"", 4);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\"", 2);
+    checkFilter(client, dbName, tblName, "p1 = \"p12\"", 2);
+    checkFilter(client, dbName, tblName, "p2 = \"p21\"", 2);
+    checkFilter(client, dbName, tblName, "p2 = \"p23\"", 1);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" and p2=\"p22\"", 1);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" or p2=\"p23\"", 3);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" or p1=\"p12\"", 4);
 
-      checkFilter(client, dbName, tblName,
-          "p1 = \"p11\" or (p1=\"p12\" and p2=\"p21\")", 3);
-      checkFilter(client, dbName, tblName,
-         "p1 = \"p11\" or (p1=\"p12\" and p2=\"p21\") Or " +
-         "(p1=\"p13\" aNd p2=\"p24\")", 4);
-      //test for and or precedence
-      checkFilter(client, dbName, tblName,
-         "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
-      checkFilter(client, dbName, tblName,
-         "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
+    checkFilter(client, dbName, tblName,
+        "p1 = \"p11\" or (p1=\"p12\" and p2=\"p21\")", 3);
+    checkFilter(client, dbName, tblName,
+       "p1 = \"p11\" or (p1=\"p12\" and p2=\"p21\") Or " +
+       "(p1=\"p13\" aNd p2=\"p24\")", 4);
+    //test for and or precedence
+    checkFilter(client, dbName, tblName,
+       "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
+    checkFilter(client, dbName, tblName,
+       "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
 
-      checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);
-      checkFilter(client, dbName, tblName, "p1 < \"p12\"", 2);
-      checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
-      checkFilter(client, dbName, tblName, "p1 <> \"p12\"", 4);
-      checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
-      checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
+    checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
+    checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);
+    checkFilter(client, dbName, tblName, "p1 < \"p12\"", 2);
+    checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
+    checkFilter(client, dbName, tblName, "p1 <> \"p12\"", 4);
+    checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
+    checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
 
-      //Test for setting the maximum partition count
-      List<Partition> partitions = client.listPartitionsByFilter(dbName,
-          tblName, "p1 >= \"p12\"", (short) 2);
-      assertEquals("User specified row limit for partitions",
-          2, partitions.size());
+    //Test for setting the maximum partition count
+    List<Partition> partitions = client.listPartitionsByFilter(dbName,
+        tblName, "p1 >= \"p12\"", (short) 2);
+    assertEquals("User specified row limit for partitions",
+        2, partitions.size());
 
-      //Negative tests
-      Exception me = null;
-      try {
-        client.listPartitionsByFilter(dbName,
-            tblName, "p3 >= \"p12\"", (short) -1);
-      } catch(MetaException e) {
-        me = e;
-      }
-      assertNotNull(me);
-      assertTrue("Filter on int partition key", me.getMessage().contains(
-            "Filtering is supported only on partition keys of type string"));
+    //Negative tests
+    Exception me = null;
+    try {
+      client.listPartitionsByFilter(dbName,
+          tblName, "p3 >= \"p12\"", (short) -1);
+    } catch(MetaException e) {
+      me = e;
+    }
+    assertNotNull(me);
+    assertTrue("Filter on int partition key", me.getMessage().contains(
+          "Filtering is supported only on partition keys of type string"));
 
-      me = null;
-      try {
-        client.listPartitionsByFilter(dbName,
-            tblName, "c1 >= \"p12\"", (short) -1);
-      } catch(MetaException e) {
-        me = e;
-      }
-      assertNotNull(me);
-      assertTrue("Filter on invalid key", me.getMessage().contains(
-            "<c1> is not a partitioning key for the table"));
+    me = null;
+    try {
+      client.listPartitionsByFilter(dbName,
+          tblName, "c1 >= \"p12\"", (short) -1);
+    } catch(MetaException e) {
+      me = e;
+    }
+    assertNotNull(me);
+    assertTrue("Filter on invalid key", me.getMessage().contains(
+          "<c1> is not a partitioning key for the table"));
 
-      me = null;
-      try {
-        client.listPartitionsByFilter(dbName,
-            tblName, "c1 >= ", (short) -1);
-      } catch(MetaException e) {
-        me = e;
-      }
-      assertNotNull(me);
-      assertTrue("Invalid filter string", me.getMessage().contains(
-            "Error parsing partition filter"));
+    me = null;
+    try {
+      client.listPartitionsByFilter(dbName,
+          tblName, "c1 >= ", (short) -1);
+    } catch(MetaException e) {
+      me = e;
+    }
+    assertNotNull(me);
+    assertTrue("Invalid filter string", me.getMessage().contains(
+          "Error parsing partition filter"));
 
-      me = null;
-      try {
-        client.listPartitionsByFilter("invDBName",
-            "invTableName", "p1 = \"p11\"", (short) -1);
-      } catch(NoSuchObjectException e) {
-        me = e;
-      }
-      assertNotNull(me);
-      assertTrue("NoSuchObject exception", me.getMessage().contains(
-            "database/table does not exist"));
+    me = null;
+    try {
+      client.listPartitionsByFilter("invDBName",
+          "invTableName", "p1 = \"p11\"", (short) -1);
+    } catch(NoSuchObjectException e) {
+      me = e;
+    }
+    assertNotNull(me);
+    assertTrue("NoSuchObject exception", me.getMessage().contains(
+          "database/table does not exist"));
 
-      client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
+    client.dropTable(dbName, tblName);
+    client.dropDatabase(dbName);
   }
+
 
   /**
    * Test filtering on table with single partition
@@ -2299,5 +2301,4 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     createPartitions(dbName, tbl, values);
   }
-
 }

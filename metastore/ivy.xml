@@ -45,7 +45,7 @@
     <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
     <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}"
                 transitive="false"/>
-    <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}"
+     <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}"
                 transitive="false"/>
     <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}"
                 transitive="false"/>
