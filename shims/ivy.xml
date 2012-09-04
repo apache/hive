@@ -47,7 +47,8 @@
     <dependency org="org.apache.hadoop" name="hadoop-common"
                 rev="${hadoop-0.23.version}"
                 conf="hadoop0.23.shim->default">
-      <include type="jar"/>
+      <artifact name="hadoop-common" ext="jar" />
+      <artifact name="hadoop-common" type="tests" ext="jar" m:classifier="tests"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>

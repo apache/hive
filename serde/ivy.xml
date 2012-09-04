@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="${hive.ivy.org}" module="hive-serde" revision="${version}">
     <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
     <description homepage="http://hive.apache.org">
@@ -51,6 +51,20 @@
                 transitive="false"/>
 
     <!-- Test Dependencies -->
+    <dependency org="org.apache.hadoop" name="hadoop-common"
+                rev="${hadoop.version.ant-internal}"
+                conf="hadoop23.test->default">
+      <artifact name="hadoop-common" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-hdfs"
+                rev="${hadoop.version.ant-internal}"
+                conf="hadoop23.test->default">
+      <artifact name="hadoop-hdfs" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
     <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
   </dependencies>
 </ivy-module>
