@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.BucketMatcher;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.ql.exec.BucketMatcher;
 
 /**
  * was inner class of MapreLocalWork. context for bucket mapjoin (or smb join)
@@ -199,7 +200,8 @@ public class BucketMapJoinContext implements Serializable {
     Map<String, String> mapping = inputToPartSpecMapping == null ?
         inputToPartSpecMapping = revert(bigTablePartSpecToFileMapping) : inputToPartSpecMapping;
     String partSpec = mapping.get(inputPath);
-    return partSpec == null || partSpec.isEmpty() ? fileName : "(" + partSpec + ")" + fileName;
+    return partSpec == null || partSpec.isEmpty() ? fileName :
+      "(" + FileUtils.escapePathName(partSpec) + ")" + fileName;
   }
 
   // revert partSpecToFileMapping to inputToPartSpecMapping
