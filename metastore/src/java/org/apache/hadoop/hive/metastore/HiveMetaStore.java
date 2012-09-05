@@ -548,10 +548,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public void create_database(final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
-      startFunction("create_database", ": "
-          + db.getName() + " "
-          + db.getLocationUri() + " "
-          + db.getDescription());
+      startFunction("create_database", ": " + db.toString());
       boolean success = false;
       try {
         try {
@@ -788,7 +785,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public boolean create_type(final Type type) throws AlreadyExistsException,
         MetaException, InvalidObjectException {
-      startFunction("create_type", ": " + type.getName());
+      startFunction("create_type", ": " + type.toString());
       boolean success = false;
       try {
         create_type_core(getMS(), type);
@@ -970,8 +967,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void create_table(final Table tbl,
         final EnvironmentContext envContext) throws AlreadyExistsException,
         MetaException, InvalidObjectException {
-      startFunction("create_table", ": db=" + tbl.getDbName() + " tbl="
-          + tbl.getTableName());
+      startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       try {
         create_table_core(getMS(), tbl, envContext);
@@ -2246,8 +2242,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Index add_index(final Index newIndex, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-      startFunction("add_index", ": db=" + newIndex.getDbName() + " tbl="
-          + newIndex.getOrigTableName() + " index=" + newIndex.getIndexName());
+      startFunction("add_index", ": " + newIndex.toString() + " " + indexTable.toString());
       Index ret = null;
       try {
         ret = add_index_core(getMS(), newIndex, indexTable);
