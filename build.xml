@@ -332,7 +332,7 @@
 
   <target name="test-shims">
     <echo message="Project: ${ant.project.name}"/>
-    <subant target="test">
+    <subant target="test" failonerror="${failonerror}">
       <property name="hadoop.version" value="${hadoop.security.version}"/>
       <property name="hadoop.security.version" value="${hadoop.security.version}"/>
       <fileset dir="${hive.root}/shims" includes="build.xml"/>
