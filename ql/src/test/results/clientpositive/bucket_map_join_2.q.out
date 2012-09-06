@@ -34,14 +34,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table2
 PREHOOK: query: -- The tables are bucketed in same columns in different order,
 -- but sorted in different column orders
--- Bucketed map-join should be performed, not sort-merge join
+-- Neither bucketed map-join, nor sort-merge join should be performed
 
 explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The tables are bucketed in same columns in different order,
 -- but sorted in different column orders
--- Bucketed map-join should be performed, not sort-merge join
+-- Neither bucketed map-join, nor sort-merge join should be performed
 
 explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
@@ -76,13 +76,6 @@ STAGE PLANS:
                 0 [Column[key], Column[value]]
                 1 [Column[key], Column[value]]
               Position of Big Table: 0
-      Bucket Mapjoin Context:
-          Alias Bucket Base File Name Mapping:
-            b {SortCol1Col2.txt=[SortCol2Col1.txt]}
-          Alias Bucket File Name Mapping:
-#### A masked pattern was here ####
-          Alias Bucket Output File Name Mapping:
-#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -241,6 +234,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
