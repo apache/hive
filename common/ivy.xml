@@ -28,28 +28,28 @@
   </configurations>
   <dependencies>
     <dependency org="org.apache.hadoop" name="hadoop-common"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-auth"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-archives"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
