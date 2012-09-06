@@ -46,6 +46,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -80,6 +81,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   transient RecordWriter scriptOutWriter = null;
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING = "Broken pipe";
+  static final String IO_EXCEPTION_PIPE_ENDED_WIN = "The pipe has been ended";
+  static final String IO_EXCEPTION_PIPE_CLOSED_WIN = "The pipe is being closed";
 
   /**
    * sends periodic reports back to the tracker.
@@ -245,7 +248,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   boolean isBrokenPipeException(IOException e) {
-    return (e.getMessage().compareToIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) == 0);
+  if (Shell.WINDOWS) {
+      String errMsg = e.getMessage();
+      return errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_CLOSED_WIN) ||
+          errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_ENDED_WIN);
+    }
+    return (e.getMessage().equalsIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING));
   }
 
   boolean allowPartialConsumption() {
