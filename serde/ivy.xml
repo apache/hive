@@ -52,14 +52,14 @@
 
     <!-- Test Dependencies -->
     <dependency org="org.apache.hadoop" name="hadoop-common"
-                rev="${hadoop.version.ant-internal}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.test->default">
       <artifact name="hadoop-common" type="tests" ext="jar" m:classifier="tests"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-hdfs"
-                rev="${hadoop.version.ant-internal}"
+                rev="${hadoop-0.23.version}"
                 conf="hadoop23.test->default">
       <artifact name="hadoop-hdfs" type="tests" ext="jar" m:classifier="tests"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
