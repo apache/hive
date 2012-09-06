@@ -18,7 +18,7 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 -- The tables are bucketed in same columns in different order,
 -- but sorted in different column orders
--- Bucketed map-join should be performed, not sort-merge join
+-- Neither bucketed map-join, nor sort-merge join should be performed
 
 explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value;
