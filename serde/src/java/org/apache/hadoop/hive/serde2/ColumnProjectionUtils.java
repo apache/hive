@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
@@ -36,7 +37,7 @@ public final class ColumnProjectionUtils {
    * is included in the list, RCFile's reader will not skip its value.
    * 
    */
-  public static void setReadColumnIDs(Configuration conf, ArrayList<Integer> ids) {
+  public static void setReadColumnIDs(Configuration conf, List<Integer> ids) {
     String id = toReadColumnIDString(ids);
     setReadColumnIDConf(conf, id);
   }
@@ -46,8 +47,7 @@ public final class ColumnProjectionUtils {
    * is included in the list, RCFile's reader will not skip its value.
    * 
    */
-  public static void appendReadColumnIDs(Configuration conf,
-      ArrayList<Integer> ids) {
+  public static void appendReadColumnIDs(Configuration conf, List<Integer> ids) {
     String id = toReadColumnIDString(ids);
     if (id != null) {
       String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
@@ -69,7 +69,7 @@ public final class ColumnProjectionUtils {
     conf.set(READ_COLUMN_IDS_CONF_STR, id);
   }
 
-  private static String toReadColumnIDString(ArrayList<Integer> ids) {
+  private static String toReadColumnIDString(List<Integer> ids) {
     String id = null;
     if (ids != null) {
       for (int i = 0; i < ids.size(); i++) {

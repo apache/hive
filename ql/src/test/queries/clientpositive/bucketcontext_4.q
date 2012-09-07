@@ -19,7 +19,5 @@ explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN buc
 select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
-
-
+select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;

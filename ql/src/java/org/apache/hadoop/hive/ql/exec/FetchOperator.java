@@ -143,6 +143,10 @@ public class FetchOperator implements Serializable {
     } else {
       isNativeTable = true;
     }
+    setupExecContext();
+  }
+
+  private void setupExecContext() {
     if (hasVC || work.getSplitSample() != null) {
       context = new ExecMapperContext();
       if (operator != null) {
@@ -536,6 +540,7 @@ public class FetchOperator implements Serializable {
         context.clear();
         context = null;
       }
+      this.currTbl = null;
       this.currPath = null;
       this.iterPath = null;
       this.iterPartDesc = null;
@@ -546,21 +551,16 @@ public class FetchOperator implements Serializable {
   }
 
   /**
-   * used for bucket map join. there is a hack for getting partitionDesc. bucket map join right now
-   * only allow one partition present in bucket map join.
+   * used for bucket map join
    */
-  public void setupContext(Iterator<Path> iterPath, Iterator<PartitionDesc> iterPartDesc) {
-    this.iterPath = iterPath;
-    this.iterPartDesc = iterPartDesc;
-    if (iterPartDesc == null) {
-      if (work.isNotPartitioned()) {
-        this.currTbl = work.getTblDesc();
-      } else {
-        // hack, get the first.
-        List<PartitionDesc> listParts = work.getPartDesc();
-        currPart = listParts.isEmpty() ? null : listParts.get(0);
-      }
+  public void setupContext(List<Path> paths) {
+    this.iterPath = paths.iterator();
+    if (work.isNotPartitioned()) {
+      this.currTbl = work.getTblDesc();
+    } else {
+      this.iterPartDesc = work.getPartDescs(paths).iterator();
     }
+    setupExecContext();
   }
 
   /**

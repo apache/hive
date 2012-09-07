@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -434,8 +433,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
     List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile, bucketMatcherCxt
         .getMapJoinBigTableAlias(), alias);
-    Iterator<Path> iter = aliasFiles.iterator();
-    fetchOp.setupContext(iter, null);
+    fetchOp.setupContext(aliasFiles);
   }
 
   @Override
