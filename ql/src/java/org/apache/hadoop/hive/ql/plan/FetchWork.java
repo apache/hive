@@ -193,6 +193,17 @@ public class FetchWork implements Serializable {
   }
 
   /**
+   * @return the partDescs for paths
+   */
+  public List<PartitionDesc> getPartDescs(List<Path> paths) {
+    List<PartitionDesc> parts = new ArrayList<PartitionDesc>(paths.size());
+    for (Path path : paths) {
+      parts.add(partDesc.get(partDir.indexOf(path.getParent().toString())));
+    }
+    return parts;
+  }
+
+  /**
    * @param partDesc
    *          the partDesc to set
    */

@@ -17,18 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOContext;
-import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.ReflectionUtils;
 
 public class ExecMapperContext {
 
@@ -108,26 +102,6 @@ public class ExecMapperContext {
 
   public void setLastInputFile(String lastInputFile) {
     this.lastInputFile = lastInputFile;
-  }
-
-
-  private void setUpFetchOpContext(FetchOperator fetchOp, String alias)
-      throws Exception {
-    String currentInputFile = HiveConf.getVar(jc,
-        HiveConf.ConfVars.HADOOPMAPFILENAME);
-    BucketMapJoinContext bucketMatcherCxt = this.localWork
-        .getBucketMapjoinContext();
-    Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt
-        .getBucketMatcherClass();
-    BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(
-        bucketMatcherCls, null);
-    bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
-        .getAliasBucketFileNameMapping());
-
-    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
-        bucketMatcherCxt.getMapJoinBigTableAlias(), alias);
-    Iterator<Path> iter = aliasFiles.iterator();
-    fetchOp.setupContext(iter, null);
   }
 
   public String getCurrentInputFile() {

@@ -1,66 +1,51 @@
-PREHOOK: query: -- small 2 part, 2 bucket & big 1 part, 4 bucket
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: -- small no part, 4 bucket & big no part, 2 bucket
+CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- small 2 part, 2 bucket & big 1 part, 4 bucket
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: -- small no part, 4 bucket & big no part, 2 bucket
+CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_small
-POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
-PREHOOK: type: LOAD
-PREHOOK: Output: default@bucket_small@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_small
-POSTHOOK: Output: default@bucket_small@ds=2008-04-09
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_small
 PREHOOK: type: LOAD
-PREHOOK: Output: default@bucket_small@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+PREHOOK: Output: default@bucket_small
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
-POSTHOOK: Output: default@bucket_small@ds=2008-04-09
-PREHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@bucket_small
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_small
+PREHOOK: type: LOAD
+PREHOOK: Output: default@bucket_small
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_small
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@bucket_small
+PREHOOK: query: CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big
 PREHOOK: type: LOAD
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_big
+POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big
 POSTHOOK: type: LOAD
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
-PREHOOK: type: LOAD
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
-PREHOOK: type: LOAD
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
+POSTHOOK: Output: default@bucket_big
 PREHOOK: query: explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
@@ -97,7 +82,7 @@ STAGE PLANS:
               Position of Big Table: 1
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            a {ds=2008-04-08/srcsortbucket1outof4.txt=[ds=2008-04-08/srcsortbucket1outof4.txt, ds=2008-04-09/srcsortbucket1outof4.txt], ds=2008-04-08/srcsortbucket2outof4.txt=[ds=2008-04-08/srcsortbucket2outof4.txt, ds=2008-04-09/srcsortbucket2outof4.txt], ds=2008-04-08/srcsortbucket3outof4.txt=[ds=2008-04-08/srcsortbucket1outof4.txt, ds=2008-04-09/srcsortbucket1outof4.txt], ds=2008-04-08/srcsortbucket4outof4.txt=[ds=2008-04-08/srcsortbucket2outof4.txt, ds=2008-04-09/srcsortbucket2outof4.txt]}
+            a {srcsortbucket1outof4.txt=[srcsortbucket1outof4.txt, srcsortbucket3outof4.txt], srcsortbucket2outof4.txt=[srcsortbucket2outof4.txt, srcsortbucket4outof4.txt]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -144,28 +129,25 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: ds=2008-04-08
+            base file name: bucket_big
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2008-04-08
             properties:
               SORTBUCKETCOLSPREFIX TRUE
-              bucket_count 4
+              bucket_count 2
               bucket_field_name key
               columns key,value
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
-              numFiles 4
-              numPartitions 1
+              numFiles 2
+              numPartitions 0
               numRows 0
-              partition_columns ds
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
+              totalSize 2750
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -173,21 +155,20 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 SORTBUCKETCOLSPREFIX TRUE
-                bucket_count 4
+                bucket_count 2
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 1
+                numFiles 2
+                numPartitions 0
                 numRows 0
-                partition_columns ds
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
+                totalSize 2750
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -268,17 +249,15 @@ STAGE PLANS:
 
 PREHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big@ds=2008-04-08
-PREHOOK: Input: default@bucket_small@ds=2008-04-08
-PREHOOK: Input: default@bucket_small@ds=2008-04-09
+PREHOOK: Input: default@bucket_big
+PREHOOK: Input: default@bucket_small
 #### A masked pattern was here ####
 POSTHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big@ds=2008-04-08
-POSTHOOK: Input: default@bucket_small@ds=2008-04-08
-POSTHOOK: Input: default@bucket_small@ds=2008-04-09
+POSTHOOK: Input: default@bucket_big
+POSTHOOK: Input: default@bucket_small
 #### A masked pattern was here ####
-928
+464
 PREHOOK: query: explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
@@ -331,28 +310,25 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: ds=2008-04-08
+            base file name: bucket_big
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2008-04-08
             properties:
               SORTBUCKETCOLSPREFIX TRUE
-              bucket_count 4
+              bucket_count 2
               bucket_field_name key
               columns key,value
               columns.types string:string
 #### A masked pattern was here ####
               name default.bucket_big
-              numFiles 4
-              numPartitions 1
+              numFiles 2
+              numPartitions 0
               numRows 0
-              partition_columns ds
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
+              totalSize 2750
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -360,21 +336,20 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 SORTBUCKETCOLSPREFIX TRUE
-                bucket_count 4
+                bucket_count 2
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 1
+                numFiles 2
+                numPartitions 0
                 numRows 0
-                partition_columns ds
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
+                totalSize 2750
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -455,14 +430,12 @@ STAGE PLANS:
 
 PREHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big@ds=2008-04-08
-PREHOOK: Input: default@bucket_small@ds=2008-04-08
-PREHOOK: Input: default@bucket_small@ds=2008-04-09
+PREHOOK: Input: default@bucket_big
+PREHOOK: Input: default@bucket_small
 #### A masked pattern was here ####
 POSTHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big@ds=2008-04-08
-POSTHOOK: Input: default@bucket_small@ds=2008-04-08
-POSTHOOK: Input: default@bucket_small@ds=2008-04-09
+POSTHOOK: Input: default@bucket_big
+POSTHOOK: Input: default@bucket_small
 #### A masked pattern was here ####
-928
+464
