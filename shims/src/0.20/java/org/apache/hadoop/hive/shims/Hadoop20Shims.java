@@ -588,4 +588,10 @@ public class Hadoop20Shims implements HadoopShims {
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new org.apache.hadoop.mapreduce.JobContext(job.getConfiguration(), job.getJobID());
   }
+
+  @Override
+  public void closeAllForUGI(UserGroupInformation ugi) {
+    // No such functionality in ancient hadoop
+    return;
+  }
 }

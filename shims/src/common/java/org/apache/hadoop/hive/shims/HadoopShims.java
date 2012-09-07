@@ -188,6 +188,9 @@ public interface HadoopShims {
    * In secure versions of Hadoop, this simply returns the current
    * access control context's user, ignoring the configuration.
    */
+
+  public void closeAllForUGI(UserGroupInformation ugi);
+
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
   /**
