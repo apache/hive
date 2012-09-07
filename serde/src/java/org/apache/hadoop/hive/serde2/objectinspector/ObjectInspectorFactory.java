@@ -155,6 +155,12 @@ public final class ObjectInspectorFactory {
           .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
     }
 
+    // Enum class?
+    if (Enum.class.isAssignableFrom(c)) {
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspector.PrimitiveCategory.STRING);
+    }
+
     // Must be struct because List and Map need to be ParameterizedType
     assert (!List.class.isAssignableFrom(c));
     assert (!Map.class.isAssignableFrom(c));
