@@ -25,7 +25,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -165,8 +168,15 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     }
 
     public InputSplitShim(CombineFileSplit old) throws IOException {
-      super(old);
+      super(old.getJob(), old.getPaths(), old.getStartOffsets(),
+          old.getLengths(), dedup(old.getLocations()));
       _isShrinked = false;
+    }
+
+    private static String[] dedup(String[] locations) {
+      Set<String> dedup = new HashSet<String>();
+      Collections.addAll(dedup, locations);
+      return dedup.toArray(new String[dedup.size()]);
     }
 
     @Override
