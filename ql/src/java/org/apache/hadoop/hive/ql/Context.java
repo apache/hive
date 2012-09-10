@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -488,7 +489,7 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPJT).equals("local");
+    return ShimLoader.getHadoopShims().isLocalMode(conf);
   }
 
   public List<HiveLock> getHiveLocks() {
@@ -516,7 +517,7 @@ public class Context {
 
   public void restoreOriginalTracker() {
     if (originalTracker != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.HADOOPJT, originalTracker);
+      ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf, originalTracker);
       originalTracker = null;
     }
   }

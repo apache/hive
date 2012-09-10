@@ -84,4 +84,33 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new JobContextImpl(job.getConfiguration(), job.getJobID());
   }
+
+  @Override
+  public boolean isLocalMode(Configuration conf) {
+    return "local".equals(conf.get("mapreduce.framework.name"));
+  }
+
+  @Override
+  public String getJobLauncherRpcAddress(Configuration conf) {
+    return conf.get("yarn.resourcemanager.address");
+  }
+
+  @Override
+  public void setJobLauncherRpcAddress(Configuration conf, String val) {
+    if (val.equals("local")) {
+      // LocalClientProtocolProvider expects both parameters to be 'local'.
+      conf.set("mapreduce.framework.name", val);
+      conf.set("mapreduce.jobtracker.address", val);
+    }
+    else {
+      conf.set("mapreduce.framework.name", "yarn");
+      conf.set("yarn.resourcemanager.address", val);
+    }
+  }
+
+  @Override
+  public String getJobLauncherHttpAddress(Configuration conf) {
+    return conf.get("yarn.resourcemanager.webapp.address");
+  }
+
 }

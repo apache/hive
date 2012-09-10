@@ -118,7 +118,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         if (reason == null) {
           // clone configuration before modifying it on per-task basis
           cloneConf();
-          conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
+          ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf, "local");
           console.printInfo("Selecting local mode for task: " + getId());
           this.setLocalMode(true);
         } else {
@@ -127,8 +127,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
       }
 
-      runningViaChild =
-        "local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT)) ||
+      runningViaChild = ShimLoader.getHadoopShims().isLocalMode(conf) ||
         conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
       if(!runningViaChild) {
@@ -228,7 +227,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       Map<String, String> variables = new HashMap(System.getenv());
       // The user can specify the hadoop memory
 
-      if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
+      if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
         // if we are running in local mode - then the amount of memory used
         // by the child jvm can no longer default to the memory used by the
         // parent jvm

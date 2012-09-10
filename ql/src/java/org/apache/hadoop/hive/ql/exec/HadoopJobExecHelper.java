@@ -423,10 +423,9 @@ public class HadoopJobExecHelper {
    * from StreamJob.java.
    */
   public void jobInfo(RunningJob rj) {
-    if (job.get("mapred.job.tracker", "local").equals("local")) {
+    if (ShimLoader.getHadoopShims().isLocalMode(job)) {
       console.printInfo("Job running in-process (local Hadoop)");
     } else {
-      String hp = job.get("mapred.job.tracker");
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setTaskProperty(SessionState.get().getQueryId(),
             getId(), Keys.TASK_HADOOP_ID, rj.getJobID());
@@ -434,7 +433,7 @@ public class HadoopJobExecHelper {
       console.printInfo(getJobStartMsg(rj.getJobID()) + ", Tracking URL = "
           + rj.getTrackingURL());
       console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
-          + " job  -Dmapred.job.tracker=" + hp + " -kill " + rj.getJobID());
+          + " job  -kill " + rj.getJobID());
     }
   }
 

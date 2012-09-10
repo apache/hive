@@ -604,4 +604,24 @@ public class Hadoop20Shims implements HadoopShims {
     // No such functionality in ancient hadoop
     return;
   }
+
+  @Override
+  public boolean isLocalMode(Configuration conf) {
+    return "local".equals(getJobLauncherRpcAddress(conf));
+  }
+
+  @Override
+  public String getJobLauncherRpcAddress(Configuration conf) {
+    return conf.get("mapred.job.tracker");
+  }
+
+  @Override
+  public void setJobLauncherRpcAddress(Configuration conf, String val) {
+    conf.set("mapred.job.tracker", val);
+  }
+
+  @Override
+  public String getJobLauncherHttpAddress(Configuration conf) {
+    return conf.get("mapred.job.tracker.http.address");
+  }
 }
