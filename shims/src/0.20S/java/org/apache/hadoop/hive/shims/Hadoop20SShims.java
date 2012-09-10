@@ -73,4 +73,24 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new org.apache.hadoop.mapreduce.JobContext(job.getConfiguration(), job.getJobID());
   }
+
+  @Override
+  public boolean isLocalMode(Configuration conf) {
+    return "local".equals(getJobLauncherRpcAddress(conf));
+  }
+
+  @Override
+  public String getJobLauncherRpcAddress(Configuration conf) {
+    return conf.get("mapred.job.tracker");
+  }
+
+  @Override
+  public void setJobLauncherRpcAddress(Configuration conf, String val) {
+    conf.set("mapred.job.tracker", val);
+  }
+
+  @Override
+  public String getJobLauncherHttpAddress(Configuration conf) {
+    return conf.get("mapred.job.tracker.http.address");
+  }
 }

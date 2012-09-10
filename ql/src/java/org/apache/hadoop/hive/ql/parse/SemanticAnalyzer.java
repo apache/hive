@@ -170,6 +170,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -8310,24 +8311,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                    + numReducers + ", estimated Input: " + estimatedInput);
         }
 
-        if(MapRedTask.isEligibleForLocalMode(conf, numReducers,
+        if (MapRedTask.isEligibleForLocalMode(conf, numReducers,
             estimatedInput, inputSummary.getFileCount()) != null) {
           hasNonLocalJob = true;
           break;
-        }else{
+        } else {
           mrtask.setLocalMode(true);
-  }
+        }
       } catch (IOException e) {
         throw new SemanticException (e);
       }
     }
 
     if(!hasNonLocalJob) {
-      // none of the mapred tasks needs to be run locally. That means that the
-      // query can be executed entirely in local mode. Save the current tracker
-      // value and restore it when done
-      ctx.setOriginalTracker(conf.getVar(HiveConf.ConfVars.HADOOPJT));
-      conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
+      // Entire query can be run locally.
+      // Save the current tracker value and restore it when done.
+      ctx.setOriginalTracker(ShimLoader.getHadoopShims().getJobLauncherRpcAddress(conf));
+      ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf,"local");
       console.printInfo("Automatically selecting local only mode for query");
 
       // If all the tasks can be run locally, we can use local disk for
