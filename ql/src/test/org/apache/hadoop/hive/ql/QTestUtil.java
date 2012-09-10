@@ -212,7 +212,8 @@ public class QTestUtil {
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfs.getFileSystem().getUri().toString(),
                             "/build/ql/test/data/warehouse/")).toString());
-      conf.setVar(HiveConf.ConfVars.HADOOPJT, "localhost:" + mr.getJobTrackerPort());
+      ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf,
+          "localhost:" + mr.getJobTrackerPort());
     }
   }
 

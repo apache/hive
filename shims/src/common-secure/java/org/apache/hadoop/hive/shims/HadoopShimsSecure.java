@@ -527,4 +527,16 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job);
+
+  @Override
+  abstract public boolean isLocalMode(Configuration conf);
+
+  @Override
+  abstract public void setJobLauncherRpcAddress(Configuration conf, String val);
+
+  @Override
+  abstract public String getJobLauncherHttpAddress(Configuration conf);
+
+  @Override
+  abstract public String getJobLauncherRpcAddress(Configuration conf);
 }

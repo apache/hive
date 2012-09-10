@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -151,7 +152,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
     }
 
-    boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
     String baseDir = null;
 
     String currentInputFile = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME);
@@ -166,7 +166,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
 
     try {
-      if (localMode) {
+      if (ShimLoader.getHadoopShims().isLocalMode(hconf)) {
         baseDir = this.getExecContext().getLocalWork().getTmpFileURI();
       } else {
         Path[] localArchives;

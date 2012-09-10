@@ -204,7 +204,7 @@ public final class Utilities {
       assert jobID != null;
       gWork = gWorkMap.get(jobID);
       if (gWork == null) {
-        String jtConf = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT);
+        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(job);
         String path;
         if (jtConf.equals("local")) {
           String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
@@ -353,7 +353,7 @@ public final class Utilities {
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
       // able to get the plan directly from the cache
-      if (!HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local")) {
+      if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
         // Set up distributed cache
         DistributedCache.createSymlink(job);
         String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;

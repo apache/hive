@@ -231,6 +231,37 @@ public interface HadoopShims {
   public JobContext newJobContext(Job job);
 
   /**
+   * Check wether MR is configured to run in local-mode
+   * @param conf
+   * @return
+   */
+  public boolean isLocalMode(Configuration conf);
+
+  /**
+   * All retrieval of jobtracker/resource manager rpc address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public String getJobLauncherRpcAddress(Configuration conf);
+
+  /**
+   * All updates to jobtracker/resource manager rpc address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public void setJobLauncherRpcAddress(Configuration conf, String val);
+
+  /**
+   * All references to jobtracker/resource manager http address
+   * in the configuration should be done through this shim
+   * @param conf
+   * @return
+   */
+  public String getJobLauncherHttpAddress(Configuration conf);
+
+  /**
    * InputSplitShim.
    *
    */
