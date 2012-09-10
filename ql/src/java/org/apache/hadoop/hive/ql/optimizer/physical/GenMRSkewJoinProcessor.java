@@ -385,18 +385,18 @@ public final class GenMRSkewJoinProcessor {
   private static String RESULTS = "results";
 
   static String getBigKeysDir(String baseDir, Byte srcTbl) {
-    return baseDir + File.separator + skewJoinPrefix + UNDERLINE + BIGKEYS
+    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + BIGKEYS
         + UNDERLINE + srcTbl;
   }
 
   static String getBigKeysSkewJoinResultDir(String baseDir, Byte srcTbl) {
-    return baseDir + File.separator + skewJoinPrefix + UNDERLINE + BIGKEYS
+    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + BIGKEYS
         + UNDERLINE + RESULTS + UNDERLINE + srcTbl;
   }
 
   static String getSmallKeysDir(String baseDir, Byte srcTblBigTbl,
       Byte srcTblSmallTbl) {
-    return baseDir + File.separator + skewJoinPrefix + UNDERLINE + SMALLKEYS
+    return baseDir + Path.SEPARATOR + skewJoinPrefix + UNDERLINE + SMALLKEYS
         + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl;
   }
 
