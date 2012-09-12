@@ -63,6 +63,7 @@
                 transitive="false"/>
     <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
     <dependency org="com.googlecode.javaewah" name="JavaEWAH" rev="${javaewah.version}"/>
+    <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="${jackson.version}"/>
 
     <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}"
                 transitive="false"/>
