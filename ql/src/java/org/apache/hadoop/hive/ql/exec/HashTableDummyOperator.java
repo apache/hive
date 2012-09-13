@@ -54,6 +54,10 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "HASHTABLEDUMMY";
   }
 

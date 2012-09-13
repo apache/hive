@@ -310,6 +310,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "RS";
   }
 

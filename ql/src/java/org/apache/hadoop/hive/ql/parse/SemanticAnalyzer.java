@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -7141,27 +7143,42 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("R1"), "TS%"), new GenMRTableScan1());
-    opRules.put(new RuleRegExp(new String("R2"), "TS%.*RS%"),
-        new GenMRRedSink1());
-    opRules.put(new RuleRegExp(new String("R3"), "RS%.*RS%"),
-        new GenMRRedSink2());
-    opRules.put(new RuleRegExp(new String("R4"), "FS%"), new GenMRFileSink1());
-    opRules.put(new RuleRegExp(new String("R5"), "UNION%"), new GenMRUnion1());
-    opRules.put(new RuleRegExp(new String("R6"), "UNION%.*RS%"),
-        new GenMRRedSink3());
-    opRules.put(new RuleRegExp(new String("R6"), "MAPJOIN%.*RS%"),
-        new GenMRRedSink4());
-    opRules.put(new RuleRegExp(new String("R7"), "TS%.*MAPJOIN%"),
-        MapJoinFactory.getTableScanMapJoin());
-    opRules.put(new RuleRegExp(new String("R8"), "RS%.*MAPJOIN%"),
-        MapJoinFactory.getReduceSinkMapJoin());
-    opRules.put(new RuleRegExp(new String("R9"), "UNION%.*MAPJOIN%"),
-        MapJoinFactory.getUnionMapJoin());
-    opRules.put(new RuleRegExp(new String("R10"), "MAPJOIN%.*MAPJOIN%"),
-        MapJoinFactory.getMapJoinMapJoin());
-    opRules.put(new RuleRegExp(new String("R11"), "MAPJOIN%SEL%"),
-        MapJoinFactory.getMapJoin());
+    opRules.put(new RuleRegExp(new String("R1"),
+      TableScanOperator.getOperatorName() + "%"),
+      new GenMRTableScan1());
+    opRules.put(new RuleRegExp(new String("R2"),
+      TableScanOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      new GenMRRedSink1());
+    opRules.put(new RuleRegExp(new String("R3"),
+      ReduceSinkOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      new GenMRRedSink2());
+    opRules.put(new RuleRegExp(new String("R4"),
+      FileSinkOperator.getOperatorName() + "%"),
+      new GenMRFileSink1());
+    opRules.put(new RuleRegExp(new String("R5"),
+      UnionOperator.getOperatorName() + "%"),
+      new GenMRUnion1());
+    opRules.put(new RuleRegExp(new String("R6"),
+      UnionOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      new GenMRRedSink3());
+    opRules.put(new RuleRegExp(new String("R6"),
+      MapJoinOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      new GenMRRedSink4());
+    opRules.put(new RuleRegExp(new String("R7"),
+      TableScanOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      MapJoinFactory.getTableScanMapJoin());
+    opRules.put(new RuleRegExp(new String("R8"),
+      ReduceSinkOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      MapJoinFactory.getReduceSinkMapJoin());
+    opRules.put(new RuleRegExp(new String("R9"),
+      UnionOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      MapJoinFactory.getUnionMapJoin());
+    opRules.put(new RuleRegExp(new String("R10"),
+      MapJoinOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      MapJoinFactory.getMapJoinMapJoin());
+    opRules.put(new RuleRegExp(new String("R11"),
+      MapJoinOperator.getOperatorName() + "%" + SelectOperator.getOperatorName() + "%"),
+      MapJoinFactory.getMapJoin());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

@@ -40,6 +40,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -83,12 +85,18 @@ public class BucketMapJoinOptimizer implements Transform {
       new BucketMapjoinOptProcCtx(pctx.getConf());
 
     // process map joins with no reducers pattern
-    opRules.put(new RuleRegExp("R1", "MAPJOIN%"), getBucketMapjoinProc(pctx));
-    opRules.put(new RuleRegExp("R2", "RS%.*MAPJOIN"), getBucketMapjoinRejectProc(pctx));
-    opRules.put(new RuleRegExp(new String("R3"), "UNION%.*MAPJOIN%"),
-        getBucketMapjoinRejectProc(pctx));
-    opRules.put(new RuleRegExp(new String("R4"), "MAPJOIN%.*MAPJOIN%"),
-        getBucketMapjoinRejectProc(pctx));
+    opRules.put(new RuleRegExp("R1",
+      MapJoinOperator.getOperatorName() + "%"),
+      getBucketMapjoinProc(pctx));
+    opRules.put(new RuleRegExp("R2",
+      ReduceSinkOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName()),
+      getBucketMapjoinRejectProc(pctx));
+    opRules.put(new RuleRegExp(new String("R3"),
+      UnionOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      getBucketMapjoinRejectProc(pctx));
+    opRules.put(new RuleRegExp(new String("R4"),
+      MapJoinOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+      getBucketMapjoinRejectProc(pctx));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

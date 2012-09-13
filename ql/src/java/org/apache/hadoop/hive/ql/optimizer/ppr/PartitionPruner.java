@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -89,8 +92,13 @@ public class PartitionPruner implements Transform {
     OpWalkerCtx opWalkerCtx = new OpWalkerCtx(pctx.getOpToPartPruner());
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "(TS%FIL%)|(TS%FIL%FIL%)"), OpProcFactory
-        .getFilterProc());
+    opRules.put(new RuleRegExp("R1",
+      "(" + TableScanOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%)|("
+      + TableScanOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%)"),
+      OpProcFactory.getFilterProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

@@ -23,10 +23,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ScriptOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -78,24 +87,33 @@ public class ColumnPruner implements Transform {
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "FIL%"), ColumnPrunerProcFactory
-        .getFilterProc());
-    opRules.put(new RuleRegExp("R2", "GBY%"), ColumnPrunerProcFactory
-        .getGroupByProc());
-    opRules.put(new RuleRegExp("R3", "RS%"), ColumnPrunerProcFactory
-        .getReduceSinkProc());
-    opRules.put(new RuleRegExp("R4", "SEL%"), ColumnPrunerProcFactory
-        .getSelectProc());
-    opRules.put(new RuleRegExp("R5", "JOIN%"), ColumnPrunerProcFactory
-        .getJoinProc());
-    opRules.put(new RuleRegExp("R6", "MAPJOIN%"), ColumnPrunerProcFactory
-        .getMapJoinProc());
-    opRules.put(new RuleRegExp("R7", "TS%"), ColumnPrunerProcFactory
-        .getTableScanProc());
-    opRules.put(new RuleRegExp("R8", "LVJ%"), ColumnPrunerProcFactory
-        .getLateralViewJoinProc());
-    opRules.put(new RuleRegExp("R9", "LVF%"), ColumnPrunerProcFactory
-        .getLateralViewForwardProc());
+    opRules.put(new RuleRegExp("R1",
+      FilterOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getFilterProc());
+    opRules.put(new RuleRegExp("R2",
+      GroupByOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getGroupByProc());
+    opRules.put(new RuleRegExp("R3",
+      ReduceSinkOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getReduceSinkProc());
+    opRules.put(new RuleRegExp("R4",
+      SelectOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getSelectProc());
+    opRules.put(new RuleRegExp("R5",
+      CommonJoinOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getJoinProc());
+    opRules.put(new RuleRegExp("R6",
+      MapJoinOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getMapJoinProc());
+    opRules.put(new RuleRegExp("R7",
+      TableScanOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getTableScanProc());
+    opRules.put(new RuleRegExp("R8",
+      LateralViewJoinOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getLateralViewJoinProc());
+    opRules.put(new RuleRegExp("R9",
+      LateralViewForwardOperator.getOperatorName() + "%"),
+      ColumnPrunerProcFactory.getLateralViewForwardProc());
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory

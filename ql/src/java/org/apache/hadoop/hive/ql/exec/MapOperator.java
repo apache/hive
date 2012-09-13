@@ -629,6 +629,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "MAP";
   }
 

@@ -114,6 +114,10 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "UDTF";
   }
 

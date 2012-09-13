@@ -736,6 +736,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "FS";
   }
 

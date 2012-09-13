@@ -22,6 +22,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -63,14 +68,18 @@ public class UnionProcessor implements Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "RS%.*UNION%"),
-        UnionProcFactory.getMapRedUnion());
-    opRules.put(new RuleRegExp("R2", "UNION%.*UNION%"),
-        UnionProcFactory.getUnknownUnion());
-    opRules.put(new RuleRegExp("R3", "TS%.*UNION%"),
-        UnionProcFactory.getMapUnion());
-    opRules.put(new RuleRegExp("R3", "MAPJOIN%.*UNION%"),
-        UnionProcFactory.getMapJoinUnion());
+    opRules.put(new RuleRegExp("R1",
+      ReduceSinkOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
+      UnionProcFactory.getMapRedUnion());
+    opRules.put(new RuleRegExp("R2",
+      UnionOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
+      UnionProcFactory.getUnknownUnion());
+    opRules.put(new RuleRegExp("R3",
+      TableScanOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
+      UnionProcFactory.getMapUnion());
+    opRules.put(new RuleRegExp("R3",
+      MapJoinOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
+      UnionProcFactory.getMapJoinUnion());
 
     // The dispatcher fires the processor for the matching rule and passes the
     // context along
