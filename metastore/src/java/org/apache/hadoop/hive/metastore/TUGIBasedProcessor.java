@@ -131,6 +131,8 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
         throw new RuntimeException(ie); // unexpected!
       } catch (IOException ioe) {
         throw new RuntimeException(ioe); // unexpected!
+      } finally {
+          shim.closeAllForUGI(clientUgi);
       }
     }
   }

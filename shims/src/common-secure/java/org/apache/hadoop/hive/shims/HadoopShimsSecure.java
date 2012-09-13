@@ -25,6 +25,8 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -63,6 +65,9 @@ import org.apache.hadoop.util.ToolRunner;
  * Base implemention for shims against secure Hadoop 0.20.3/0.23.
  */
 public abstract class HadoopShimsSecure implements HadoopShims {
+
+  static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
+
   public boolean usesJobShell() {
     return false;
   }
@@ -517,6 +522,15 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   @Override
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
     return UserGroupInformation.createRemoteUser(userName);
+  }
+
+  @Override
+  public void closeAllForUGI(UserGroupInformation ugi) {
+    try {
+      FileSystem.closeAllForUGI(ugi);
+    } catch (IOException e) {
+      LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+    }
   }
 
   @Override

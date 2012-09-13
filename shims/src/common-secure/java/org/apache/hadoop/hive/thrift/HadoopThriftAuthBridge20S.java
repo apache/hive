@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.thrift.client.TUGIAssumingTransport;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -510,8 +511,9 @@ import org.apache.thrift.transport.TTransportFactory;
          }
          Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
          remoteAddress.set(socket.getInetAddress());
+         UserGroupInformation clientUgi = null;
          try {
-           UserGroupInformation clientUgi = UserGroupInformation.createProxyUser(
+           clientUgi = UserGroupInformation.createProxyUser(
               endUser, UserGroupInformation.getLoginUser());
            return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
                public Boolean run() {
@@ -531,6 +533,14 @@ import org.apache.thrift.transport.TTransportFactory;
            throw new RuntimeException(ie); // unexpected!
          } catch (IOException ioe) {
            throw new RuntimeException(ioe); // unexpected!
+         }
+         finally {
+           if (clientUgi != null) {
+            try { FileSystem.closeAllForUGI(clientUgi); }
+              catch(IOException exception) {
+                LOG.error("Could not clean up file-system handles for UGI: " + clientUgi, exception);
+              }
+          }
          }
        }
      }

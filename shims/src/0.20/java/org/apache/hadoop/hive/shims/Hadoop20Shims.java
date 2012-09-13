@@ -573,4 +573,10 @@ public class Hadoop20Shims implements HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf) {
     return conf.get("mapred.job.tracker.http.address");
   }
+
+  @Override
+  public void closeAllForUGI(UserGroupInformation ugi) {
+    // No such functionality in ancient hadoop
+    return;
+  }
 }
