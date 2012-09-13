@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde.Constants;
@@ -111,6 +110,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
       return Constants.INT_TYPE_NAME;
     } else if ("bigint".equalsIgnoreCase(type)) {
       return Constants.BIGINT_TYPE_NAME;
+    } else if ("timestamp".equalsIgnoreCase(type)) {
+      return Constants.TIMESTAMP_TYPE_NAME;
     } else if (type.startsWith("map<")) {
       return Constants.STRING_TYPE_NAME;
     } else if (type.startsWith("array<")) {

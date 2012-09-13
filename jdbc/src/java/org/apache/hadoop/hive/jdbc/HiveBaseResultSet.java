@@ -467,11 +467,21 @@ public abstract class HiveBaseResultSet implements ResultSet{
   }
 
   public Timestamp getTimestamp(int columnIndex) throws SQLException {
-    throw new SQLException("Method not supported");
+    Object obj = getObject(columnIndex);
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof Timestamp) {
+      return (Timestamp) obj;
+    }
+    if (obj instanceof String) {
+      return Timestamp.valueOf((String)obj);
+    }
+    throw new SQLException("Illegal conversion");
   }
 
   public Timestamp getTimestamp(String columnName) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getTimestamp(findColumn(columnName));
   }
 
   public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
