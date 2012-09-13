@@ -147,7 +147,8 @@ public class TestJdbcDriver extends TestCase {
         + " c13 array<array<string>>,"
         + " c14 map<int, map<int,int>>,"
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
-        + " c16 array<struct<m:map<string,string>,n:int>>) comment '"+dataTypeTableComment
+        + " c16 array<struct<m:map<string,string>,n:int>>,"
+        + " c17 timestamp) comment '"+dataTypeTableComment
             +"' partitioned by (dt STRING)");
     assertFalse(res.next());
 
@@ -378,6 +379,8 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("{}", res.getString(14));
     assertEquals("[null, null]", res.getString(15));
     assertEquals("[]", res.getString(16));
+    assertEquals(null, res.getString(17));
+    assertEquals(null, res.getTimestamp(17));
 
     // row 3
     assertTrue(res.next());
@@ -397,6 +400,8 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("{1={11=12, 13=14}, 2={21=22}}", res.getString(14));
     assertEquals("[1, [2, x]]", res.getString(15));
     assertEquals("[[{}, 1], [{c=d, a=b}, 2]]", res.getString(16));
+    assertEquals("2012-04-22 09:00:00.123456789", res.getString(17));
+    assertEquals("2012-04-22 09:00:00.123456789", res.getTimestamp(17).toString());
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -792,13 +797,13 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-        "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
+        "c1*2, sentences(null, null, null) as b, c17 from " + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(14, meta.getColumnCount());
+    assertEquals(15, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -993,6 +998,13 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
     assertEquals(0, meta.getScale(14));
+
+    assertEquals("c17", meta.getColumnName(15));
+    assertEquals(Types.TIMESTAMP, meta.getColumnType(15));
+    assertEquals("timestamp", meta.getColumnTypeName(15));
+    assertEquals(29, meta.getColumnDisplaySize(15));
+    assertEquals(29, meta.getPrecision(15));
+    assertEquals(9, meta.getScale(15));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
