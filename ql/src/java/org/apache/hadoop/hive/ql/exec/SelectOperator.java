@@ -89,6 +89,10 @@ public class SelectOperator extends Operator<SelectDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "SEL";
   }
 

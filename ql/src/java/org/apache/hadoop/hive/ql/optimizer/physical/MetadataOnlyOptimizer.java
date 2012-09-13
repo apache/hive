@@ -30,6 +30,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -264,8 +265,12 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       WalkerCtx walkerCtx = new WalkerCtx();
 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("R1", "TS%"), new TableScanProcessor());
-      opRules.put(new RuleRegExp("R2", "GBY%.*FS%"), new FileSinkProcessor());
+      opRules.put(new RuleRegExp("R1",
+        TableScanOperator.getOperatorName() + "%"),
+        new TableScanProcessor());
+      opRules.put(new RuleRegExp("R2",
+        GroupByOperator.getOperatorName() + "%.*" + FileSinkOperator.getOperatorName() + "%"),
+        new FileSinkProcessor());
 
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along

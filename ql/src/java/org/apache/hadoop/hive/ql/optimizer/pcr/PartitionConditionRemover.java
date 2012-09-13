@@ -25,6 +25,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -63,8 +66,13 @@ public class PartitionConditionRemover implements Transform {
     PcrOpWalkerCtx opWalkerCtx = new PcrOpWalkerCtx(pctx, opToRemove);
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "(TS%FIL%)|(TS%FIL%FIL%)"), PcrOpProcFactory
-        .getFilterProc());
+    opRules.put(new RuleRegExp("R1",
+      "(" + TableScanOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%)|("
+      + TableScanOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%"
+      + FilterOperator.getOperatorName() + "%)"),
+      PcrOpProcFactory.getFilterProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

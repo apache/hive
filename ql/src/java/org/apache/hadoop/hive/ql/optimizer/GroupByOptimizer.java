@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -77,8 +78,11 @@ public class GroupByOptimizer implements Transform {
     GroupByOptProcCtx groupByOptimizeCtx = new GroupByOptProcCtx();
 
     // process group-by pattern
-    opRules.put(new RuleRegExp("R1", "GBY%RS%GBY%"),
-        getMapAggreSortedGroupbyProc(pctx));
+    opRules.put(new RuleRegExp("R1",
+      GroupByOperator.getOperatorName() + "%"
+      + ReduceSinkOperator.getOperatorName() + "%"
+      + GroupByOperator.getOperatorName() + "%"),
+      getMapAggreSortedGroupbyProc(pctx));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

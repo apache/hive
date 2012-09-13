@@ -435,6 +435,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "HASHTABLESINK";
   }
 

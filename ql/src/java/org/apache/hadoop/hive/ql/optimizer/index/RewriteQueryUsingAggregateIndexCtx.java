@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -123,14 +126,14 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     // replace scan operator containing original table with index table
-    opRules.put(new RuleRegExp("R1", "TS%"),
+    opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
         RewriteQueryUsingAggregateIndex.getReplaceTableScanProc());
     //rule that replaces index key selection with
     //sum(`_count_of_indexed_column`) function in original query
-    opRules.put(new RuleRegExp("R2", "SEL%"),
+    opRules.put(new RuleRegExp("R2", SelectOperator.getOperatorName() + "%"),
         RewriteQueryUsingAggregateIndex.getNewQuerySelectSchemaProc());
     //Manipulates the ExprNodeDesc from GroupByOperator aggregation list
-    opRules.put(new RuleRegExp("R3", "GBY%"),
+    opRules.put(new RuleRegExp("R3", GroupByOperator.getOperatorName() + "%"),
         RewriteQueryUsingAggregateIndex.getNewQueryGroupbySchemaProc());
 
     // The dispatcher fires the processor corresponding to the closest matching

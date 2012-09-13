@@ -1081,6 +1081,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "GBY";
   }
 

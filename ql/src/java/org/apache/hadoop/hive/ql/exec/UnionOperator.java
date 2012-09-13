@@ -137,6 +137,10 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "UNION";
   }
 

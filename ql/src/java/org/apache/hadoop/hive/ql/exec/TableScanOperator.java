@@ -207,6 +207,10 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    **/
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "TS";
   }
 

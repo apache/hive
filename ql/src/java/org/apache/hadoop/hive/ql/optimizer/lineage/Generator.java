@@ -22,6 +22,17 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -52,15 +63,25 @@ public class Generator implements Transform {
     LineageCtx lCtx = new LineageCtx(pctx);
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "TS%"), OpProcFactory.getTSProc());
-    opRules.put(new RuleRegExp("R2", "SCR%"), OpProcFactory.getTransformProc());
-    opRules.put(new RuleRegExp("R3", "UDTF%"), OpProcFactory.getTransformProc());
-    opRules.put(new RuleRegExp("R4", "SEL%"), OpProcFactory.getSelProc());
-    opRules.put(new RuleRegExp("R5", "GBY%"), OpProcFactory.getGroupByProc());
-    opRules.put(new RuleRegExp("R6", "UNION%"), OpProcFactory.getUnionProc());
-    opRules.put(new RuleRegExp("R7", "JOIN%|MAPJOIN%"), OpProcFactory.getJoinProc());
-    opRules.put(new RuleRegExp("R8", "RS%"), OpProcFactory.getReduceSinkProc());
-    opRules.put(new RuleRegExp("R9", "LVJ%"), OpProcFactory.getLateralViewJoinProc());
+    opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
+      OpProcFactory.getTSProc());
+    opRules.put(new RuleRegExp("R2", ScriptOperator.getOperatorName() + "%"),
+      OpProcFactory.getTransformProc());
+    opRules.put(new RuleRegExp("R3", UDTFOperator.getOperatorName() + "%"),
+      OpProcFactory.getTransformProc());
+    opRules.put(new RuleRegExp("R4", SelectOperator.getOperatorName() + "%"),
+      OpProcFactory.getSelProc());
+    opRules.put(new RuleRegExp("R5", GroupByOperator.getOperatorName() + "%"),
+      OpProcFactory.getGroupByProc());
+    opRules.put(new RuleRegExp("R6", UnionOperator.getOperatorName() + "%"),
+      OpProcFactory.getUnionProc());
+    opRules.put(new RuleRegExp("R7",
+      CommonJoinOperator.getOperatorName() + "%|" + MapJoinOperator.getOperatorName() + "%"),
+      OpProcFactory.getJoinProc());
+    opRules.put(new RuleRegExp("R8", ReduceSinkOperator.getOperatorName() + "%"),
+      OpProcFactory.getReduceSinkProc());
+    opRules.put(new RuleRegExp("R9", LateralViewJoinOperator.getOperatorName() + "%"),
+      OpProcFactory.getLateralViewJoinProc());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(OpProcFactory.getDefaultProc(), opRules, lCtx);

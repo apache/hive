@@ -816,6 +816,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @return the name of the operator
    */
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "OP";
   }
 

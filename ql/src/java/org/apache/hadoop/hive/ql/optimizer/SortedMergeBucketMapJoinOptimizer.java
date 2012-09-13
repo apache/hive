@@ -74,7 +74,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     // go through all map joins and find out all which have enabled bucket map
     // join.
-    opRules.put(new RuleRegExp("R1", "MAPJOIN%"),
+    opRules.put(new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%"),
         getSortedMergeBucketMapjoinProc(pctx));
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

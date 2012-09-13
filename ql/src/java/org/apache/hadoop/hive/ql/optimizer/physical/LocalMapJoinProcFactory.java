@@ -191,7 +191,8 @@ public final class LocalMapJoinProcFactory {
         LocalMapJoinProcCtx localMapJoinProcCtx) throws Exception {
       List<Operator<? extends OperatorDesc>> childOps = mapJoinOp.getChildOperators();
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("R1", "GBY%"), LocalMapJoinProcFactory.getGroupByProc());
+      opRules.put(new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%"),
+        LocalMapJoinProcFactory.getGroupByProc());
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
       Dispatcher disp = new DefaultRuleDispatcher(LocalMapJoinProcFactory.getDefaultProc(),

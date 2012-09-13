@@ -57,6 +57,10 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "LIM";
   }
 

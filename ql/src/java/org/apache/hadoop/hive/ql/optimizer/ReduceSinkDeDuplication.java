@@ -75,8 +75,9 @@ public class ReduceSinkDeDuplication implements Transform{
     ReduceSinkDeduplicateProcCtx cppCtx = new ReduceSinkDeduplicateProcCtx(pGraphContext);
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "RS%.*RS%"), ReduceSinkDeduplicateProcFactory
-        .getReducerReducerProc());
+    opRules.put(new RuleRegExp("R1",
+      ReduceSinkOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      ReduceSinkDeduplicateProcFactory.getReducerReducerProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

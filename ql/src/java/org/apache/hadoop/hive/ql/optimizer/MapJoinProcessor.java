@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
@@ -714,10 +715,18 @@ public class MapJoinProcessor implements Transform {
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R0", "MAPJOIN%"), getCurrentMapJoin());
-    opRules.put(new RuleRegExp("R1", "MAPJOIN%.*FS%"), getMapJoinFS());
-    opRules.put(new RuleRegExp("R2", "MAPJOIN%.*RS%"), getMapJoinDefault());
-    opRules.put(new RuleRegExp("R4", "MAPJOIN%.*UNION%"), getMapJoinDefault());
+    opRules.put(new RuleRegExp("R0",
+      MapJoinOperator.getOperatorName() + "%"),
+      getCurrentMapJoin());
+    opRules.put(new RuleRegExp("R1",
+      MapJoinOperator.getOperatorName() + "%.*" + FileSinkOperator.getOperatorName() + "%"),
+      getMapJoinFS());
+    opRules.put(new RuleRegExp("R2",
+      MapJoinOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
+      getMapJoinDefault());
+    opRules.put(new RuleRegExp("R4",
+      MapJoinOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
+      getMapJoinDefault());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
