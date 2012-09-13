@@ -879,7 +879,7 @@ public class Driver implements CommandProcessor {
     errorMessage = null;
     SQLState = null;
 
-    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf);
+    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf, command);
     // Get all the driver run hooks and pre-execute them.
     List<HiveDriverRunHook> driverRunHooks;
     try {
