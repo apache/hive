@@ -22,10 +22,12 @@ import org.apache.hadoop.conf.Configuration;
 
 public class HiveDriverRunHookContextImpl implements HiveDriverRunHookContext {
 
-  Configuration conf;
+  private Configuration conf;
+  private String command;
 
-  public HiveDriverRunHookContextImpl(Configuration conf) {
+  public HiveDriverRunHookContextImpl(Configuration conf, String command) {
     this.conf = conf;
+    this.command = command;
   }
 
   @Override
@@ -36,5 +38,15 @@ public class HiveDriverRunHookContextImpl implements HiveDriverRunHookContext {
   @Override
   public void setConf(Configuration conf) {
     this.conf = conf;
+  }
+
+  @Override
+  public String getCommand() {
+    return command;
+  }
+
+  @Override
+  public void setCommand(String command) {
+    this.command = command;
   }
 }

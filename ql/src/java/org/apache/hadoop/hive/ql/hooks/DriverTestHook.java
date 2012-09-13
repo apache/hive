@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,15 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.hadoop.conf.Configurable;
+import java.io.PrintStream;
 
-/**
- * Context information provided by Hive to implementations of
- * HiveDriverRunHook.
- */
-public interface HiveDriverRunHookContext extends Configurable{
-  public String getCommand();
-  public void setCommand(String command);
+import org.apache.hadoop.hive.ql.HiveDriverRunHook;
+import org.apache.hadoop.hive.ql.HiveDriverRunHookContext;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+
+public class DriverTestHook implements HiveDriverRunHook {
+
+  @Override
+  public void preDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+    SessionState sess = new SessionState((HiveConf)hookContext.getConf());
+    PrintStream stream = sess.getConsole().getOutStream();
+    stream.println(hookContext.getCommand());
+  }
+
+  @Override
+  public void postDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+    // do nothing
+  }
 }
