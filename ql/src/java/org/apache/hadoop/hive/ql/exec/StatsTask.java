@@ -541,10 +541,13 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       }
       DynamicPartitionCtx dpCtx = tbd.getDPCtx();
       if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
-        // load the list of DP partitions and return the list of partition specs
-        for (LinkedHashMap<String, String> partSpec : dpPartSpecs) {
-          Partition partn = db.getPartition(table, partSpec, false);
-          list.add(partn);
+        // If no dynamic partitions are generated, dpPartSpecs may not be initialized
+        if (dpPartSpecs != null) {
+          // load the list of DP partitions and return the list of partition specs
+          for (LinkedHashMap<String, String> partSpec : dpPartSpecs) {
+            Partition partn = db.getPartition(table, partSpec, false);
+            list.add(partn);
+          }
         }
       } else { // static partition
         Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
