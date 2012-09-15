@@ -7699,7 +7699,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TypeCheckProcFactory.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = (ExprNodeDesc) nodeOutputs.get(expr);
     if (desc == null) {
-      throw new SemanticException(tcCtx.getError());
+      String errMsg = tcCtx.getError();
+      if ( errMsg == null) {
+        errMsg = "Error in parsing ";
+      }
+      throw new SemanticException(errMsg);
     }
 
     if (!unparseTranslator.isEnabled()) {
