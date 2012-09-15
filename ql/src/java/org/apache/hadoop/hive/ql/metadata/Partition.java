@@ -344,12 +344,8 @@ public class Partition implements Serializable {
     return outputFormatClass;
   }
 
-  /**
-   * The number of buckets is a property of the partition. However - internally
-   * we are just storing it as a property of the table as a short term measure.
-   */
   public int getBucketCount() {
-    return table.getNumBuckets();
+    return tPartition.getSd().getNumBuckets();
     /*
      * TODO: Keeping this code around for later use when we will support
      * sampling on tables which are not created with CLUSTERED INTO clause
