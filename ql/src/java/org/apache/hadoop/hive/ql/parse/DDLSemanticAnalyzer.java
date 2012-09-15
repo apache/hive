@@ -1324,24 +1324,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
       }
 
-      // If the table is partitioned, the number of buckets cannot be changed
-      // (unless the table is empty).
-      // The hive code uses bucket information from the table, and changing the
-      // number of buckets can lead to wrong results for bucketed join/sampling
-      // etc. This should be fixed as part of HIVE-3283.
-      // Once the above jira is fixed, this error check/message should be removed
-      if (tab.isPartitioned()) {
-        try {
-          List<String> partitionNames = db.getPartitionNames(tableName, (short)1);
-          if ((partitionNames != null) && (!partitionNames.isEmpty())) {
-            throw new
-              SemanticException(ErrorMsg.NUM_BUCKETS_CHANGE_NOT_ALLOWED.getMsg());
-          }
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage());
-        }
-      }
-
       AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, numBuckets,
           bucketCols, sortCols);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
