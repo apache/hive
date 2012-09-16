@@ -433,6 +433,37 @@ public class Hive {
   }
 
   /**
+   * Updates the existing table metadata with the new metadata.
+   *
+   * @param tblName
+   *          name of the existing table
+   * @param newParts
+   *          new partitions
+   * @throws InvalidOperationException
+   *           if the changes in metadata is not acceptable
+   * @throws TException
+   */
+  public void alterPartitions(String tblName, List<Partition> newParts)
+      throws InvalidOperationException, HiveException {
+    Table t = newTable(tblName);
+    List<org.apache.hadoop.hive.metastore.api.Partition> newTParts =
+      new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
+    try {
+      // Remove the DDL time so that it gets refreshed
+      for (Partition tmpPart: newParts) {
+        if (tmpPart.getParameters() != null) {
+          tmpPart.getParameters().remove(Constants.DDL_TIME);
+        }
+        newTParts.add(tmpPart.getTPartition());
+      }
+      getMSC().alter_partitions(t.getDbName(), t.getTableName(), newTParts);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter partition.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter partition.", e);
+    }
+  }
+  /**
    * Rename a old partition to new partition
    *
    * @param tbl

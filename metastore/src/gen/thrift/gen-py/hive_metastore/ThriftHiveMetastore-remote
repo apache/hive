@@ -62,6 +62,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)'
   print '   get_partitions_by_names(string db_name, string tbl_name,  names)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
+  print '  void alter_partitions(string db_name, string tbl_name,  new_parts)'
   print '  void alter_partition_with_environment_context(string db_name, string tbl_name, Partition new_part, EnvironmentContext environment_context)'
   print '  void rename_partition(string db_name, string tbl_name,  part_vals, Partition new_part)'
   print '  string get_config_value(string name, string defaultValue)'
@@ -384,6 +385,12 @@ elif cmd == 'alter_partition':
     print 'alter_partition requires 3 args'
     sys.exit(1)
   pp.pprint(client.alter_partition(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'alter_partitions':
+  if len(args) != 3:
+    print 'alter_partitions requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.alter_partitions(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'alter_partition_with_environment_context':
   if len(args) != 4:

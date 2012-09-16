@@ -1975,27 +1975,53 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
+      Partition newPart) throws InvalidObjectException, MetaException {
+    name = name.toLowerCase();
+    dbname = dbname.toLowerCase();
+    MPartition oldp = getMPartition(dbname, name, part_vals);
+    MPartition newp = convertToMPart(newPart, false);
+    if (oldp == null || newp == null) {
+      throw new InvalidObjectException("partition does not exist.");
+    }
+    oldp.setValues(newp.getValues());
+    oldp.setPartitionName(newp.getPartitionName());
+    oldp.setParameters(newPart.getParameters());
+    copyMSD(newp.getSd(), oldp.getSd());
+    if (newp.getCreateTime() != oldp.getCreateTime()) {
+      oldp.setCreateTime(newp.getCreateTime());
+    }
+    if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
+      oldp.setLastAccessTime(newp.getLastAccessTime());
+    }
+  }
+
   public void alterPartition(String dbname, String name, List<String> part_vals, Partition newPart)
       throws InvalidObjectException, MetaException {
     boolean success = false;
     try {
       openTransaction();
-      name = name.toLowerCase();
-      dbname = dbname.toLowerCase();
-      MPartition oldp = getMPartition(dbname, name, part_vals);
-      MPartition newp = convertToMPart(newPart, false);
-      if (oldp == null || newp == null) {
-        throw new InvalidObjectException("partition does not exist.");
+      alterPartitionNoTxn(dbname, name, part_vals, newPart);
+      // commit the changes
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+        throw new MetaException(
+            "The transaction for alter partition did not commit successfully.");
       }
-      oldp.setValues(newp.getValues());
-      oldp.setPartitionName(newp.getPartitionName());
-      oldp.setParameters(newPart.getParameters());
-      copyMSD(newp.getSd(), oldp.getSd());
-      if (newp.getCreateTime() != oldp.getCreateTime()) {
-        oldp.setCreateTime(newp.getCreateTime());
-      }
-      if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
-        oldp.setLastAccessTime(newp.getLastAccessTime());
+    }
+  }
+
+  public void alterPartitions(String dbname, String name, List<List<String>> part_vals,
+      List<Partition> newParts) throws InvalidObjectException, MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      Iterator<List<String>> part_val_itr = part_vals.iterator();
+      for (Partition tmpPart: newParts) {
+        List<String> tmpPartVals = part_val_itr.next();
+        alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart);
       }
       // commit the changes
       success = commitTransaction();

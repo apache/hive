@@ -227,6 +227,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_partition\n");
   }
 
+  void alter_partitions(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts) {
+    // Your implementation goes here
+    printf("alter_partitions\n");
+  }
+
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("alter_partition_with_environment_context\n");

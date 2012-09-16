@@ -834,6 +834,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.alter_partition(dbName, tblName, newPart);
   }
 
+  public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
+  throws InvalidOperationException, MetaException, TException {
+    client.alter_partitions(dbName, tblName, newParts);
+}
+
   public void alterDatabase(String dbName, Database db)
       throws MetaException, NoSuchObjectException, TException {
     client.alter_database(dbName, db);
