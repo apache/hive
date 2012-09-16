@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -366,6 +367,35 @@ public class HiveAlterHandler implements AlterHandler {
       }
     }
     return oldPart;
+  }
+
+  public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
+      final String name, final List<Partition> new_parts)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
+      MetaException {
+    List<Partition> oldParts = new ArrayList<Partition>();
+    List<List<String>> partValsList = new ArrayList<List<String>>();
+    try {
+      for (Partition tmpPart: new_parts) {
+        // Set DDL time to now if not specified
+        if (tmpPart.getParameters() == null ||
+            tmpPart.getParameters().get(Constants.DDL_TIME) == null ||
+            Integer.parseInt(tmpPart.getParameters().get(Constants.DDL_TIME)) == 0) {
+          tmpPart.putToParameters(Constants.DDL_TIME, Long.toString(System
+              .currentTimeMillis() / 1000));
+        }
+        Partition oldTmpPart = msdb.getPartition(dbname, name, tmpPart.getValues());
+        oldParts.add(oldTmpPart);
+        partValsList.add(tmpPart.getValues());
+      }
+      msdb.alterPartitions(dbname, name, partValsList, new_parts);
+    } catch (InvalidObjectException e) {
+      throw new InvalidOperationException("alter is not possible");
+    } catch (NoSuchObjectException e){
+      //old partition does not exist
+      throw new InvalidOperationException("alter is not possible");
+    }
+    return oldParts;
   }
 
   private boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,

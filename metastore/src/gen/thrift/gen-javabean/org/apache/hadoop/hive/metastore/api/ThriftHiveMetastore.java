@@ -110,6 +110,8 @@ public class ThriftHiveMetastore {
 
     public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
 
+    public void alter_partitions(String db_name, String tbl_name, List<Partition> new_parts) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
+
     public void alter_partition_with_environment_context(String db_name, String tbl_name, Partition new_part, EnvironmentContext environment_context) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
 
     public void rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
@@ -249,6 +251,8 @@ public class ThriftHiveMetastore {
     public void get_partitions_by_names(String db_name, String tbl_name, List<String> names, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_partitions_by_names_call> resultHandler) throws org.apache.thrift.TException;
 
     public void alter_partition(String db_name, String tbl_name, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.alter_partition_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void alter_partitions(String db_name, String tbl_name, List<Partition> new_parts, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.alter_partitions_call> resultHandler) throws org.apache.thrift.TException;
 
     public void alter_partition_with_environment_context(String db_name, String tbl_name, Partition new_part, EnvironmentContext environment_context, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.alter_partition_with_environment_context_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1571,6 +1575,34 @@ public class ThriftHiveMetastore {
     {
       alter_partition_result result = new alter_partition_result();
       receiveBase(result, "alter_partition");
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      return;
+    }
+
+    public void alter_partitions(String db_name, String tbl_name, List<Partition> new_parts) throws InvalidOperationException, MetaException, org.apache.thrift.TException
+    {
+      send_alter_partitions(db_name, tbl_name, new_parts);
+      recv_alter_partitions();
+    }
+
+    public void send_alter_partitions(String db_name, String tbl_name, List<Partition> new_parts) throws org.apache.thrift.TException
+    {
+      alter_partitions_args args = new alter_partitions_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setNew_parts(new_parts);
+      sendBase("alter_partitions", args);
+    }
+
+    public void recv_alter_partitions() throws InvalidOperationException, MetaException, org.apache.thrift.TException
+    {
+      alter_partitions_result result = new alter_partitions_result();
+      receiveBase(result, "alter_partitions");
       if (result.o1 != null) {
         throw result.o1;
       }
@@ -3876,6 +3908,44 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void alter_partitions(String db_name, String tbl_name, List<Partition> new_parts, org.apache.thrift.async.AsyncMethodCallback<alter_partitions_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      alter_partitions_call method_call = new alter_partitions_call(db_name, tbl_name, new_parts, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class alter_partitions_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private List<Partition> new_parts;
+      public alter_partitions_call(String db_name, String tbl_name, List<Partition> new_parts, org.apache.thrift.async.AsyncMethodCallback<alter_partitions_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.new_parts = new_parts;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("alter_partitions", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        alter_partitions_args args = new alter_partitions_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setNew_parts(new_parts);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws InvalidOperationException, MetaException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_alter_partitions();
+      }
+    }
+
     public void alter_partition_with_environment_context(String db_name, String tbl_name, Partition new_part, EnvironmentContext environment_context, org.apache.thrift.async.AsyncMethodCallback<alter_partition_with_environment_context_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       alter_partition_with_environment_context_call method_call = new alter_partition_with_environment_context_call(db_name, tbl_name, new_part, environment_context, resultHandler, this, ___protocolFactory, ___transport);
@@ -4911,6 +4981,7 @@ public class ThriftHiveMetastore {
       processMap.put("get_partitions_by_filter", new get_partitions_by_filter());
       processMap.put("get_partitions_by_names", new get_partitions_by_names());
       processMap.put("alter_partition", new alter_partition());
+      processMap.put("alter_partitions", new alter_partitions());
       processMap.put("alter_partition_with_environment_context", new alter_partition_with_environment_context());
       processMap.put("rename_partition", new rename_partition());
       processMap.put("get_config_value", new get_config_value());
@@ -5859,6 +5930,28 @@ public class ThriftHiveMetastore {
         alter_partition_result result = new alter_partition_result();
         try {
           iface.alter_partition(args.db_name, args.tbl_name, args.new_part);
+        } catch (InvalidOperationException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        }
+        return result;
+      }
+    }
+
+    private static class alter_partitions<I extends Iface> extends org.apache.thrift.ProcessFunction<I, alter_partitions_args> {
+      public alter_partitions() {
+        super("alter_partitions");
+      }
+
+      protected alter_partitions_args getEmptyArgsInstance() {
+        return new alter_partitions_args();
+      }
+
+      protected alter_partitions_result getResult(I iface, alter_partitions_args args) throws org.apache.thrift.TException {
+        alter_partitions_result result = new alter_partitions_result();
+        try {
+          iface.alter_partitions(args.db_name, args.tbl_name, args.new_parts);
         } catch (InvalidOperationException o1) {
           result.o1 = o1;
         } catch (MetaException o2) {
@@ -12814,8 +12907,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -13603,8 +13694,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -28329,8 +28418,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -31605,8 +31692,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -32673,8 +32758,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -45757,6 +45840,925 @@ public class ThriftHiveMetastore {
 
   }
 
+  public static class alter_partitions_args implements org.apache.thrift.TBase<alter_partitions_args, alter_partitions_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("alter_partitions_args");
+
+    private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tbl_name", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField NEW_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("new_parts", org.apache.thrift.protocol.TType.LIST, (short)3);
+
+    private String db_name; // required
+    private String tbl_name; // required
+    private List<Partition> new_parts; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      NEW_PARTS((short)3, "new_parts");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // NEW_PARTS
+            return NEW_PARTS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NEW_PARTS, new org.apache.thrift.meta_data.FieldMetaData("new_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_partitions_args.class, metaDataMap);
+    }
+
+    public alter_partitions_args() {
+    }
+
+    public alter_partitions_args(
+      String db_name,
+      String tbl_name,
+      List<Partition> new_parts)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.new_parts = new_parts;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_partitions_args(alter_partitions_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetNew_parts()) {
+        List<Partition> __this__new_parts = new ArrayList<Partition>();
+        for (Partition other_element : other.new_parts) {
+          __this__new_parts.add(new Partition(other_element));
+        }
+        this.new_parts = __this__new_parts;
+      }
+    }
+
+    public alter_partitions_args deepCopy() {
+      return new alter_partitions_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.new_parts = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getNew_partsSize() {
+      return (this.new_parts == null) ? 0 : this.new_parts.size();
+    }
+
+    public java.util.Iterator<Partition> getNew_partsIterator() {
+      return (this.new_parts == null) ? null : this.new_parts.iterator();
+    }
+
+    public void addToNew_parts(Partition elem) {
+      if (this.new_parts == null) {
+        this.new_parts = new ArrayList<Partition>();
+      }
+      this.new_parts.add(elem);
+    }
+
+    public List<Partition> getNew_parts() {
+      return this.new_parts;
+    }
+
+    public void setNew_parts(List<Partition> new_parts) {
+      this.new_parts = new_parts;
+    }
+
+    public void unsetNew_parts() {
+      this.new_parts = null;
+    }
+
+    /** Returns true if field new_parts is set (has been assigned a value) and false otherwise */
+    public boolean isSetNew_parts() {
+      return this.new_parts != null;
+    }
+
+    public void setNew_partsIsSet(boolean value) {
+      if (!value) {
+        this.new_parts = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case NEW_PARTS:
+        if (value == null) {
+          unsetNew_parts();
+        } else {
+          setNew_parts((List<Partition>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case NEW_PARTS:
+        return getNew_parts();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case NEW_PARTS:
+        return isSetNew_parts();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_partitions_args)
+        return this.equals((alter_partitions_args)that);
+      return false;
+    }
+
+    public boolean equals(alter_partitions_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_new_parts = true && this.isSetNew_parts();
+      boolean that_present_new_parts = true && that.isSetNew_parts();
+      if (this_present_new_parts || that_present_new_parts) {
+        if (!(this_present_new_parts && that_present_new_parts))
+          return false;
+        if (!this.new_parts.equals(that.new_parts))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_db_name = true && (isSetDb_name());
+      builder.append(present_db_name);
+      if (present_db_name)
+        builder.append(db_name);
+
+      boolean present_tbl_name = true && (isSetTbl_name());
+      builder.append(present_tbl_name);
+      if (present_tbl_name)
+        builder.append(tbl_name);
+
+      boolean present_new_parts = true && (isSetNew_parts());
+      builder.append(present_new_parts);
+      if (present_new_parts)
+        builder.append(new_parts);
+
+      return builder.toHashCode();
+    }
+
+    public int compareTo(alter_partitions_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      alter_partitions_args typedOther = (alter_partitions_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNew_parts()).compareTo(typedOther.isSetNew_parts());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNew_parts()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.new_parts, typedOther.new_parts);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // NEW_PARTS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list245 = iprot.readListBegin();
+                this.new_parts = new ArrayList<Partition>(_list245.size);
+                for (int _i246 = 0; _i246 < _list245.size; ++_i246)
+                {
+                  Partition _elem247; // required
+                  _elem247 = new Partition();
+                  _elem247.read(iprot);
+                  this.new_parts.add(_elem247);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.new_parts != null) {
+        oprot.writeFieldBegin(NEW_PARTS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.new_parts.size()));
+          for (Partition _iter248 : this.new_parts)
+          {
+            _iter248.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_partitions_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("new_parts:");
+      if (this.new_parts == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_parts);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class alter_partitions_result implements org.apache.thrift.TBase<alter_partitions_result, alter_partitions_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("alter_partitions_result");
+
+    private static final org.apache.thrift.protocol.TField O1_FIELD_DESC = new org.apache.thrift.protocol.TField("o1", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField O2_FIELD_DESC = new org.apache.thrift.protocol.TField("o2", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+
+    private InvalidOperationException o1; // required
+    private MetaException o2; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_partitions_result.class, metaDataMap);
+    }
+
+    public alter_partitions_result() {
+    }
+
+    public alter_partitions_result(
+      InvalidOperationException o1,
+      MetaException o2)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_partitions_result(alter_partitions_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new InvalidOperationException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    public alter_partitions_result deepCopy() {
+      return new alter_partitions_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public InvalidOperationException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidOperationException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been assigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been assigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidOperationException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_partitions_result)
+        return this.equals((alter_partitions_result)that);
+      return false;
+    }
+
+    public boolean equals(alter_partitions_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      HashCodeBuilder builder = new HashCodeBuilder();
+
+      boolean present_o1 = true && (isSetO1());
+      builder.append(present_o1);
+      if (present_o1)
+        builder.append(o1);
+
+      boolean present_o2 = true && (isSetO2());
+      builder.append(present_o2);
+      if (present_o2)
+        builder.append(o2);
+
+      return builder.toHashCode();
+    }
+
+    public int compareTo(alter_partitions_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      alter_partitions_result typedOther = (alter_partitions_result)other;
+
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // O1
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.o1 = new InvalidOperationException();
+              this.o1.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_partitions_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
   public static class alter_partition_with_environment_context_args implements org.apache.thrift.TBase<alter_partition_with_environment_context_args, alter_partition_with_environment_context_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("alter_partition_with_environment_context_args");
 
@@ -47223,13 +48225,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list245 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list245.size);
-                for (int _i246 = 0; _i246 < _list245.size; ++_i246)
+                org.apache.thrift.protocol.TList _list249 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list249.size);
+                for (int _i250 = 0; _i250 < _list249.size; ++_i250)
                 {
-                  String _elem247; // required
-                  _elem247 = iprot.readString();
-                  this.part_vals.add(_elem247);
+                  String _elem251; // required
+                  _elem251 = iprot.readString();
+                  this.part_vals.add(_elem251);
                 }
                 iprot.readListEnd();
               }
@@ -47272,9 +48274,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter248 : this.part_vals)
+          for (String _iter252 : this.part_vals)
           {
-            oprot.writeString(_iter248);
+            oprot.writeString(_iter252);
           }
           oprot.writeListEnd();
         }
@@ -49163,13 +50165,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list249 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list249.size);
-                for (int _i250 = 0; _i250 < _list249.size; ++_i250)
+                org.apache.thrift.protocol.TList _list253 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list253.size);
+                for (int _i254 = 0; _i254 < _list253.size; ++_i254)
                 {
-                  String _elem251; // required
-                  _elem251 = iprot.readString();
-                  this.success.add(_elem251);
+                  String _elem255; // required
+                  _elem255 = iprot.readString();
+                  this.success.add(_elem255);
                 }
                 iprot.readListEnd();
               }
@@ -49201,9 +50203,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter252 : this.success)
+          for (String _iter256 : this.success)
           {
-            oprot.writeString(_iter252);
+            oprot.writeString(_iter256);
           }
           oprot.writeListEnd();
         }
@@ -49899,15 +50901,15 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map253 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map253.size);
-                for (int _i254 = 0; _i254 < _map253.size; ++_i254)
+                org.apache.thrift.protocol.TMap _map257 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map257.size);
+                for (int _i258 = 0; _i258 < _map257.size; ++_i258)
                 {
-                  String _key255; // required
-                  String _val256; // required
-                  _key255 = iprot.readString();
-                  _val256 = iprot.readString();
-                  this.success.put(_key255, _val256);
+                  String _key259; // required
+                  String _val260; // required
+                  _key259 = iprot.readString();
+                  _val260 = iprot.readString();
+                  this.success.put(_key259, _val260);
                 }
                 iprot.readMapEnd();
               }
@@ -49939,10 +50941,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter257 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter261 : this.success.entrySet())
           {
-            oprot.writeString(_iter257.getKey());
-            oprot.writeString(_iter257.getValue());
+            oprot.writeString(_iter261.getKey());
+            oprot.writeString(_iter261.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -50509,15 +51511,15 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map258 = iprot.readMapBegin();
-                this.part_vals = new HashMap<String,String>(2*_map258.size);
-                for (int _i259 = 0; _i259 < _map258.size; ++_i259)
+                org.apache.thrift.protocol.TMap _map262 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map262.size);
+                for (int _i263 = 0; _i263 < _map262.size; ++_i263)
                 {
-                  String _key260; // required
-                  String _val261; // required
-                  _key260 = iprot.readString();
-                  _val261 = iprot.readString();
-                  this.part_vals.put(_key260, _val261);
+                  String _key264; // required
+                  String _val265; // required
+                  _key264 = iprot.readString();
+                  _val265 = iprot.readString();
+                  this.part_vals.put(_key264, _val265);
                 }
                 iprot.readMapEnd();
               }
@@ -50559,10 +51561,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (Map.Entry<String, String> _iter262 : this.part_vals.entrySet())
+          for (Map.Entry<String, String> _iter266 : this.part_vals.entrySet())
           {
-            oprot.writeString(_iter262.getKey());
-            oprot.writeString(_iter262.getValue());
+            oprot.writeString(_iter266.getKey());
+            oprot.writeString(_iter266.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -51912,15 +52914,15 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map263 = iprot.readMapBegin();
-                this.part_vals = new HashMap<String,String>(2*_map263.size);
-                for (int _i264 = 0; _i264 < _map263.size; ++_i264)
+                org.apache.thrift.protocol.TMap _map267 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map267.size);
+                for (int _i268 = 0; _i268 < _map267.size; ++_i268)
                 {
-                  String _key265; // required
-                  String _val266; // required
-                  _key265 = iprot.readString();
-                  _val266 = iprot.readString();
-                  this.part_vals.put(_key265, _val266);
+                  String _key269; // required
+                  String _val270; // required
+                  _key269 = iprot.readString();
+                  _val270 = iprot.readString();
+                  this.part_vals.put(_key269, _val270);
                 }
                 iprot.readMapEnd();
               }
@@ -51962,10 +52964,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (Map.Entry<String, String> _iter267 : this.part_vals.entrySet())
+          for (Map.Entry<String, String> _iter271 : this.part_vals.entrySet())
           {
-            oprot.writeString(_iter267.getKey());
-            oprot.writeString(_iter267.getValue());
+            oprot.writeString(_iter271.getKey());
+            oprot.writeString(_iter271.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -52892,8 +53894,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -55911,8 +56911,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -57787,14 +58785,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list268 = iprot.readListBegin();
-                this.success = new ArrayList<Index>(_list268.size);
-                for (int _i269 = 0; _i269 < _list268.size; ++_i269)
+                org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
+                this.success = new ArrayList<Index>(_list272.size);
+                for (int _i273 = 0; _i273 < _list272.size; ++_i273)
                 {
-                  Index _elem270; // required
-                  _elem270 = new Index();
-                  _elem270.read(iprot);
-                  this.success.add(_elem270);
+                  Index _elem274; // required
+                  _elem274 = new Index();
+                  _elem274.read(iprot);
+                  this.success.add(_elem274);
                 }
                 iprot.readListEnd();
               }
@@ -57834,9 +58832,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Index _iter271 : this.success)
+          for (Index _iter275 : this.success)
           {
-            _iter271.write(oprot);
+            _iter275.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -58727,13 +59725,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list272.size);
-                for (int _i273 = 0; _i273 < _list272.size; ++_i273)
+                org.apache.thrift.protocol.TList _list276 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list276.size);
+                for (int _i277 = 0; _i277 < _list276.size; ++_i277)
                 {
-                  String _elem274; // required
-                  _elem274 = iprot.readString();
-                  this.success.add(_elem274);
+                  String _elem278; // required
+                  _elem278 = iprot.readString();
+                  this.success.add(_elem278);
                 }
                 iprot.readListEnd();
               }
@@ -58765,9 +59763,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter275 : this.success)
+          for (String _iter279 : this.success)
           {
-            oprot.writeString(_iter275);
+            oprot.writeString(_iter279);
           }
           oprot.writeListEnd();
         }
@@ -59514,8 +60512,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -60210,8 +61206,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -60752,13 +61746,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list276 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list276.size);
-                for (int _i277 = 0; _i277 < _list276.size; ++_i277)
+                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list280.size);
+                for (int _i281 = 0; _i281 < _list280.size; ++_i281)
                 {
-                  String _elem278; // required
-                  _elem278 = iprot.readString();
-                  this.success.add(_elem278);
+                  String _elem282; // required
+                  _elem282 = iprot.readString();
+                  this.success.add(_elem282);
                 }
                 iprot.readListEnd();
               }
@@ -60790,9 +61784,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter279 : this.success)
+          for (String _iter283 : this.success)
           {
-            oprot.writeString(_iter279);
+            oprot.writeString(_iter283);
           }
           oprot.writeListEnd();
         }
@@ -62027,8 +63021,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -62921,8 +63913,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -63667,14 +64657,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
-                this.success = new ArrayList<Role>(_list280.size);
-                for (int _i281 = 0; _i281 < _list280.size; ++_i281)
+                org.apache.thrift.protocol.TList _list284 = iprot.readListBegin();
+                this.success = new ArrayList<Role>(_list284.size);
+                for (int _i285 = 0; _i285 < _list284.size; ++_i285)
                 {
-                  Role _elem282; // required
-                  _elem282 = new Role();
-                  _elem282.read(iprot);
-                  this.success.add(_elem282);
+                  Role _elem286; // required
+                  _elem286 = new Role();
+                  _elem286.read(iprot);
+                  this.success.add(_elem286);
                 }
                 iprot.readListEnd();
               }
@@ -63706,9 +64696,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Role _iter283 : this.success)
+          for (Role _iter287 : this.success)
           {
-            _iter283.write(oprot);
+            _iter287.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -64186,13 +65176,13 @@ public class ThriftHiveMetastore {
           case 3: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list284 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list284.size);
-                for (int _i285 = 0; _i285 < _list284.size; ++_i285)
+                org.apache.thrift.protocol.TList _list288 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list288.size);
+                for (int _i289 = 0; _i289 < _list288.size; ++_i289)
                 {
-                  String _elem286; // required
-                  _elem286 = iprot.readString();
-                  this.group_names.add(_elem286);
+                  String _elem290; // required
+                  _elem290 = iprot.readString();
+                  this.group_names.add(_elem290);
                 }
                 iprot.readListEnd();
               }
@@ -64227,9 +65217,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter287 : this.group_names)
+          for (String _iter291 : this.group_names)
           {
-            oprot.writeString(_iter287);
+            oprot.writeString(_iter291);
           }
           oprot.writeListEnd();
         }
@@ -65517,14 +66507,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list288 = iprot.readListBegin();
-                this.success = new ArrayList<HiveObjectPrivilege>(_list288.size);
-                for (int _i289 = 0; _i289 < _list288.size; ++_i289)
+                org.apache.thrift.protocol.TList _list292 = iprot.readListBegin();
+                this.success = new ArrayList<HiveObjectPrivilege>(_list292.size);
+                for (int _i293 = 0; _i293 < _list292.size; ++_i293)
                 {
-                  HiveObjectPrivilege _elem290; // required
-                  _elem290 = new HiveObjectPrivilege();
-                  _elem290.read(iprot);
-                  this.success.add(_elem290);
+                  HiveObjectPrivilege _elem294; // required
+                  _elem294 = new HiveObjectPrivilege();
+                  _elem294.read(iprot);
+                  this.success.add(_elem294);
                 }
                 iprot.readListEnd();
               }
@@ -65556,9 +66546,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (HiveObjectPrivilege _iter291 : this.success)
+          for (HiveObjectPrivilege _iter295 : this.success)
           {
-            _iter291.write(oprot);
+            _iter295.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -66305,8 +67295,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -67002,8 +67990,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -67349,13 +68335,13 @@ public class ThriftHiveMetastore {
           case 2: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list292 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list292.size);
-                for (int _i293 = 0; _i293 < _list292.size; ++_i293)
+                org.apache.thrift.protocol.TList _list296 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list296.size);
+                for (int _i297 = 0; _i297 < _list296.size; ++_i297)
                 {
-                  String _elem294; // required
-                  _elem294 = iprot.readString();
-                  this.group_names.add(_elem294);
+                  String _elem298; // required
+                  _elem298 = iprot.readString();
+                  this.group_names.add(_elem298);
                 }
                 iprot.readListEnd();
               }
@@ -67385,9 +68371,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter295 : this.group_names)
+          for (String _iter299 : this.group_names)
           {
-            oprot.writeString(_iter295);
+            oprot.writeString(_iter299);
           }
           oprot.writeListEnd();
         }
@@ -67773,13 +68759,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list296 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list296.size);
-                for (int _i297 = 0; _i297 < _list296.size; ++_i297)
+                org.apache.thrift.protocol.TList _list300 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list300.size);
+                for (int _i301 = 0; _i301 < _list300.size; ++_i301)
                 {
-                  String _elem298; // required
-                  _elem298 = iprot.readString();
-                  this.success.add(_elem298);
+                  String _elem302; // required
+                  _elem302 = iprot.readString();
+                  this.success.add(_elem302);
                 }
                 iprot.readListEnd();
               }
@@ -67811,9 +68797,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter299 : this.success)
+          for (String _iter303 : this.success)
           {
-            oprot.writeString(_iter299);
+            oprot.writeString(_iter303);
           }
           oprot.writeListEnd();
         }
@@ -69346,8 +70332,6 @@ public class ThriftHiveMetastore {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);

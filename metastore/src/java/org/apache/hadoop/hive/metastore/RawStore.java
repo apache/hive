@@ -159,6 +159,10 @@ public interface RawStore extends Configurable {
   public abstract void alterPartition(String db_name, String tbl_name, List<String> part_vals,
       Partition new_part) throws InvalidObjectException, MetaException;
 
+  public abstract void alterPartitions(String db_name, String tbl_name,
+      List<List<String>> part_vals_list, List<Partition> new_parts)
+      throws InvalidObjectException, MetaException;
+
   public abstract boolean addIndex(Index index)
       throws InvalidObjectException, MetaException;
 

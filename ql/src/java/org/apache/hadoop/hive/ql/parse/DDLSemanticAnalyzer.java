@@ -1088,19 +1088,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = null;
     try {
       tab = db.getTable(db.getCurrentDatabase(), tableName, true);
-      inputs.add(new ReadEntity(tab));
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
 
-      if ((partSpec == null) || (partSpec.isEmpty())) {
-        outputs.add(new WriteEntity(tab));
+    inputs.add(new ReadEntity(tab));
+
+    if ((partSpec == null) || (partSpec.isEmpty())) {
+      outputs.add(new WriteEntity(tab));
+    }
+    else {
+      List<Partition> allPartitions = null;
+      try {
+        if (desc == null || desc.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE){
+          Partition part = db.getPartition(tab, partSpec, false);
+          allPartitions = new ArrayList<Partition>(1);
+          allPartitions.add(part);
+        }
+        else {
+          allPartitions = db.getPartitions(tab, partSpec);
+          if (allPartitions == null || allPartitions.size() == 0) {
+            throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
+          }
+        }
       }
-      else {
-        Partition part = db.getPartition(tab, partSpec, false);
-        if (part != null) {
+      catch (HiveException e) {
+        throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
+      }
+
+      if (allPartitions != null ){
+        for (Partition part: allPartitions) {
           outputs.add(new WriteEntity(part));
         }
       }
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
     }
 
     if (desc != null) {

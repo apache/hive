@@ -2663,6 +2663,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     outStream.write(separator);
   }
 
+  private void setAlterProtectMode(boolean protectModeEnable,
+      AlterTableDesc.ProtectModeType protectMode,
+      ProtectMode mode) {
+    if (protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
+      mode.offline = protectModeEnable;
+    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
+      mode.noDrop = protectModeEnable;
+    } else if (protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
+      mode.noDropCascade = protectModeEnable;
+    }
+  }
   /**
    * Alter a given table.
    *
@@ -2679,14 +2690,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(alterTbl.getOldName());
 
     Partition part = null;
-    if(alterTbl.getPartSpec() != null) {
-      part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
-      if(part == null) {
-        formatter.consoleError(console,
-                               "Partition : " + alterTbl.getPartSpec().toString()
-                               + " does not exist.",
-                               formatter.MISSING);
-        return 1;
+    List<Partition> allPartitions = null;
+    if (alterTbl.getPartSpec() != null) {
+      if (alterTbl.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
+        part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
+        if (part == null) {
+          formatter.consoleError(console,
+                                 "Partition : " + alterTbl.getPartSpec().toString()
+                                 + " does not exist.",
+                                 formatter.MISSING);
+          return 1;
+        }
+      }
+      else {
+        allPartitions = db.getPartitions(tbl, alterTbl.getPartSpec());
       }
     }
 
@@ -2863,38 +2880,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
 
       ProtectMode mode = null;
-      if(part != null) {
-        mode = part.getProtectMode();
+      if (allPartitions != null) {
+        for (Partition tmpPart: allPartitions) {
+          mode = tmpPart.getProtectMode();
+          setAlterProtectMode(protectModeEnable, protectMode, mode);
+          tmpPart.setProtectMode(mode);
+        }
       } else {
         mode = tbl.getProtectMode();
-      }
-
-      if (protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
-        mode.offline = true;
-      } else if (protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
-        mode.noDrop = true;
-      } else if (protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
-        mode.noDropCascade = true;
-      } else if (!protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
-        mode.offline = false;
-      } else if (!protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
-        mode.noDrop = false;
-      } else if (!protectModeEnable
-          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
-        mode.noDropCascade = false;
-      }
-
-      if (part != null) {
-        part.setProtectMode(mode);
-      } else {
+        setAlterProtectMode(protectModeEnable,protectMode, mode);
         tbl.setProtectMode(mode);
       }
-
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
@@ -2948,7 +2944,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     }
 
-    if(part == null) {
+    if (part == null && allPartitions == null) {
       if (!updateModifiedParameters(tbl.getTTable().getParameters(), conf)) {
         return 1;
       }
@@ -2960,17 +2956,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                                formatter.ERROR);
         return 1;
       }
-    } else {
+    } else if (part != null) {
       if (!updateModifiedParameters(part.getParameters(), conf)) {
         return 1;
       }
     }
+    else {
+      for (Partition tmpPart: allPartitions) {
+        if (!updateModifiedParameters(tmpPart.getParameters(), conf)) {
+          return 1;
+        }
+      }
+    }
 
     try {
-      if (part == null) {
+      if (part == null && allPartitions == null) {
         db.alterTable(alterTbl.getOldName(), tbl);
-      } else {
+      } else if (part != null) {
         db.alterPartition(tbl.getTableName(), part);
+      }
+      else {
+        db.alterPartitions(tbl.getTableName(), allPartitions);
       }
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
@@ -2988,7 +2994,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if(part != null) {
       work.getInputs().add(new ReadEntity(part));
       work.getOutputs().add(new WriteEntity(part));
-    } else {
+    }
+    else if (allPartitions != null ){
+      for (Partition tmpPart: allPartitions) {
+        work.getInputs().add(new ReadEntity(tmpPart));
+        work.getOutputs().add(new WriteEntity(tmpPart));
+      }
+    }
+    else {
       work.getInputs().add(new ReadEntity(oldTbl));
       work.getOutputs().add(new WriteEntity(tbl));
     }

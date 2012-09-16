@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1819,6 +1820,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new InvalidOperationException(e.getMessage());
       } finally {
         endFunction("alter_partition", oldPart != null);
+      }
+      return;
+    }
+
+    @Override
+    public void alter_partitions(final String db_name, final String tbl_name,
+        final List<Partition> new_parts)
+        throws InvalidOperationException, MetaException,
+        TException {
+
+      startTableFunction("alter_partitions", db_name, tbl_name);
+
+      if (LOG.isInfoEnabled()) {
+        for (Partition tmpPart: new_parts) {
+          LOG.info("New partition values:" + tmpPart.getValues());
+        }
+      }
+      // all partitions are altered atomically
+      // all prehooks are fired together followed by all post hooks
+      List<Partition> oldParts = null;
+      try {
+        for (Partition tmpPart: new_parts) {
+          try {
+            for (MetaStorePreEventListener listener : preListeners) {
+              listener.onEvent(
+                new PreAlterPartitionEvent(db_name, tbl_name, null, tmpPart, this));
+            }
+          } catch (NoSuchObjectException e) {
+            throw new MetaException(e.getMessage());
+          }
+        }
+        oldParts = alterHandler.alterPartitions(getMS(), wh, db_name, tbl_name, new_parts);
+
+        Iterator<Partition> olditr = oldParts.iterator();
+        for (Partition tmpPart: new_parts) {
+          Partition oldTmpPart = null;
+          if (olditr.hasNext()) {
+            oldTmpPart = (Partition)olditr.next();
+          }
+          else {
+            throw new InvalidOperationException("failed to alterpartitions");
+          }
+          for (MetaStoreEventListener listener : listeners) {
+            AlterPartitionEvent alterPartitionEvent =
+                new AlterPartitionEvent(oldTmpPart, tmpPart, true, this);
+            listener.onAlterPartition(alterPartitionEvent);
+          }
+        }
+      } catch (InvalidObjectException e) {
+        throw new InvalidOperationException(e.getMessage());
+      } catch (AlreadyExistsException e) {
+        throw new InvalidOperationException(e.getMessage());
+      } finally {
+        endFunction("alter_partition", oldParts != null);
       }
       return;
     }

@@ -416,6 +416,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // * See notes on DDL_TIME
   void alter_partition(1:string db_name, 2:string tbl_name, 3:Partition new_part)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+                       
+  // change a list of partitions. All partitions are altered atomically and all 
+  // prehooks are fired together followed by all post hooks
+  void alter_partitions(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts)
+                       throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   void alter_partition_with_environment_context(1:string db_name,
       2:string tbl_name, 3:Partition new_part,
