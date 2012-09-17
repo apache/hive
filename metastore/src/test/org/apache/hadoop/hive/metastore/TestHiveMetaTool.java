@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.tools.HiveMetaTool;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.util.StringUtils;
 
 public class TestHiveMetaTool extends TestCase {
@@ -73,20 +72,16 @@ public class TestHiveMetaTool extends TestCase {
       ps = new PrintStream(os);
 
       // create a dummy database and a couple of dummy tables
-      String dbName = "TestHiveMetaToolDB";
+      String dbName = "testDB";
       String typeName = "Person";
       String tblName = "simpleTbl";
-      String badTblName = "badSimpleTbl";
 
       Database db = new Database();
       db.setName(dbName);
       client.dropTable(dbName, tblName);
-      client.dropTable(dbName, badTblName);
       dropDatabase(dbName);
       client.createDatabase(db);
       locationUri = db.getLocationUri();
-      String avroUri = "hdfs://nn.example.com/warehouse/hive/ab.avsc";
-      String badAvroUri = new String("hdfs:/hive");
 
       client.dropType(typeName);
       Type typ1 = new Type();
@@ -115,34 +110,10 @@ public class TestHiveMetaTool extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
           org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
-      sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, avroUri);
       sd.getSerdeInfo().setSerializationLib(
-          org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());
+          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
-      client.createTable(tbl);
 
-      //create a table with bad avro uri
-      tbl = new Table();
-      tbl.setDbName(dbName);
-      tbl.setTableName(badTblName);
-      sd = new StorageDescriptor();
-      tbl.setSd(sd);
-      sd.setCols(typ1.getFields());
-      sd.setCompressed(false);
-      sd.setNumBuckets(1);
-      sd.setParameters(new HashMap<String, String>());
-      sd.getParameters().put("test_param_1", "Use this for comments etc");
-      sd.setBucketCols(new ArrayList<String>(2));
-      sd.getBucketCols().add("name");
-      sd.setSerdeInfo(new SerDeInfo());
-      sd.getSerdeInfo().setName(tbl.getTableName());
-      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-      sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
-      sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, badAvroUri);
-      sd.getSerdeInfo().setSerializationLib(
-          org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());
-      tbl.setPartitionKeys(new ArrayList<FieldSchema>());
       client.createTable(tbl);
       client.close();
     } catch (Exception e) {
@@ -202,29 +173,37 @@ public class TestHiveMetaTool extends TestCase {
   public void testUpdateFSRootLocation() throws Exception {
 
     redirectOutputStream();
-    String oldLocationUri = "hdfs://nn.example.com/";
-    String newLocationUri = "hdfs://nn-ha-uri/";
-    String[] args = new String[5];
+    String newLocationUri = "hdfs://nn-ha-uri/user/hive/warehouse";
+    String[] args = new String[3];
     args[0] = new String("-updateLocation");
     args[1] = new String(newLocationUri);
-    args[2] = new String(oldLocationUri);
-    args[3] = new String("-tablePropKey");
-    args[4] = new String("avro.schema.url");
+    args[2] = new String(locationUri);
+
+    String[] args2 = new String[1];
+    args2[0] = new String("-listFSRoot");
 
     try {
+
       // perform HA upgrade
       HiveMetaTool.main(args);
+
+      // obtain new HDFS root
+      HiveMetaTool.main(args2);
+
       String out = os.toString();
       boolean b = out.contains(newLocationUri);
-      restoreOutputStream();
-      assertTrue(b);
 
-      //restore the original HDFS root
-      args[1] = new String(oldLocationUri);
-      args[2] = new String(newLocationUri);
-      redirectOutputStream();
-      HiveMetaTool.main(args);
-      restoreOutputStream();
+      if (b) {
+        System.out.println("updateFSRootLocation successful");
+      } else {
+        System.out.println("updateFSRootLocation failed");
+      }
+      // restore the original HDFS root if needed
+      if (b) {
+        args[1] = new String(locationUri);
+        args[2] = new String(newLocationUri);
+        HiveMetaTool.main(args);
+      }
     } finally {
       restoreOutputStream();
       System.out.println("Completed testUpdateFSRootLocation..");
@@ -235,6 +214,7 @@ public class TestHiveMetaTool extends TestCase {
   protected void tearDown() throws Exception {
     try {
       super.tearDown();
+
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
       System.err.println(StringUtils.stringifyException(e));
