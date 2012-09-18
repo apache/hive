@@ -1338,6 +1338,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void cleanUpInputFileChangedOp() throws HiveException {
   }
 
+  public boolean supportSkewJoinOptimization() {
+    return false;
+  }
+
   @Override
   public Operator<? extends OperatorDesc> clone()
     throws CloneNotSupportedException {

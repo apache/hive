@@ -426,6 +426,27 @@
 </property>
 
 <property>
+  <name>hive.optimize.skewjoin.compiletime</name>
+  <value>false</value>
+  <description>Whether to create a separate plan for skewed keys for the tables in the join.
+    This is based on the skewed keys stored in the metadata. At compile time, the plan is broken
+    into different joins: one for the skewed keys, and the other for the remaining keys. And then,
+    a union is performed for the 2 joins generated above. So unless the same skewed key is present
+    in both the joined tables, the join for the skewed key will be performed as a map-side join.
+
+    The main difference between this paramater and hive.optimize.skewjoin is that this parameter
+    uses the skew information stored in the metastore to optimize the plan at compile time itself.
+    If there is no skew information in the metadata, this parameter will not have any affect. 
+    Both hive.optimize.skewjoin.compiletime and hive.optimize.skewjoin should be set to true.
+    Ideally, hive.optimize.skewjoin should be renamed as hive.optimize.skewjoin.runtime, but not doing
+    so for backward compatibility.
+
+    If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime
+    would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op.
+  </description>
+</property>
+
+<property>
   <name>hive.multigroupby.singlemr</name>
   <value>false</value>
   <description>Whether to optimize multi group by query to generate single M/R
@@ -459,7 +480,13 @@
 <property>
   <name>hive.optimize.skewjoin</name>
   <value>false</value>
-  <description>Whether to enable skew join optimization. </description>
+  <description>Whether to enable skew join optimization.
+    The algorithm is as follows: At runtime, detect the keys with a large skew. Instead of
+    processing those keys, store them temporarily in a hdfs directory. In a follow-up map-reduce
+    job, process those skewed keys. The same key need not be skewed for all the tables, and so,
+    the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a 
+    map-join.
+</description>
 </property>
 
 <property>

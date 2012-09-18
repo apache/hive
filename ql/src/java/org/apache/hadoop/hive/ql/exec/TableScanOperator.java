@@ -278,4 +278,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       }
     }
   }
+
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
 }

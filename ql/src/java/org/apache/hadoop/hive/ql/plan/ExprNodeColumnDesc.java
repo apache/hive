@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -155,5 +156,15 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
    */
   public void setSkewedCol(boolean isSkewedCol) {
     this.isSkewedCol = isSkewedCol;
+  }
+
+  @Override
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
+    builder.append(column);
+    builder.append(tabAlias);
+    return builder.toHashCode();
   }
 }

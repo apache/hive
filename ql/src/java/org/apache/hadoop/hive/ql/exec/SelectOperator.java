@@ -100,4 +100,9 @@ public class SelectOperator extends Operator<SelectDesc> implements
   public OperatorType getType() {
     return OperatorType.SELECT;
   }
+
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
 }

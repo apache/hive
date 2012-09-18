@@ -160,4 +160,9 @@ public class FilterOperator extends Operator<FilterDesc> implements
   public OperatorType getType() {
     return OperatorType.FILTER;
   }
+
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
 }

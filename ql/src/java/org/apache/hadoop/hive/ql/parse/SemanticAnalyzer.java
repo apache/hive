@@ -8356,7 +8356,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       /**
        * This code is commented out pending further testing/development
-       * for (Task<? extends SerializableCloneable> t: rootTasks)
+       * for (Task<? extends OperatorDesc> t: rootTasks)
        * t.localizeMRTmpFiles(ctx);
        */
     }
