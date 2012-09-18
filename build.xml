@@ -1187,9 +1187,7 @@
         <artifact:deploy
             file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
           <pom refid="hive.project.pom" />
-          <remoteRepository
-              id="apache.snapshots.https"
-              url="https://repository.apache.org/content/repositories/snapshots" />
+          <remoteRepository id="${mvn.deploy.id}" url="${mvn.deploy.url}"/>
         </artifact:deploy>
       </else>
     </if>
