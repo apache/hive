@@ -53,6 +53,11 @@ public abstract class ExprNodeDesc implements Serializable, Node {
   // object equality - isSame means that the objects are semantically equal.
   public abstract boolean isSame(Object o);
 
+  @Override
+  public int hashCode() {
+    return typeInfo.hashCode();
+  }
+
   public TypeInfo getTypeInfo() {
     return typeInfo;
   }
@@ -115,6 +120,11 @@ public abstract class ExprNodeDesc implements Serializable, Node {
       }
 
       return this.exprNodeDesc.isSame(((ExprNodeDescEqualityWrapper)other).getExprNodeDesc());
+    }
+
+    @Override
+    public int hashCode() {
+      return exprNodeDesc == null ? 0 : exprNodeDesc.hashCode();
     }
   }
 }

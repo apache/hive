@@ -55,6 +55,9 @@ public class Optimizer {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
     }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
+      transformations.add(new SkewJoinOptimizer());
+    }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
     }
@@ -88,7 +91,7 @@ public class Optimizer {
    */
   public ParseContext optimize() throws SemanticException {
     for (Transform t : transformations) {
-      pctx = t.transform(pctx);
+        pctx = t.transform(pctx);
     }
     return pctx;
   }

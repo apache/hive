@@ -266,4 +266,11 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     }
   }
 
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    // Since skew join optimization makes a copy of the tree above joins, and
+    // there is no multi-query optimization in place, let us not use skew join
+    // optimizations for now.
+    return false;
+  }
 }
