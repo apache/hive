@@ -432,6 +432,7 @@
       <sysproperty key="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
       <sysproperty key="derby.version" value="${derby.version}"/>
       <sysproperty key="hive.version" value="${version}"/>
+      <sysproperty key="java.net.preferIPv4Stack" value="${java.net.preferIPv4Stack}"/>
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
 
       <classpath refid="test.local.classpath"/>
