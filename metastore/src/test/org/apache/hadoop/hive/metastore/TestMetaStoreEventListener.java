@@ -82,9 +82,9 @@ public class TestMetaStoreEventListener extends TestCase {
   protected void setUp() throws Exception {
 
     super.setUp();
-    System.setProperty(ConfVars.METASTORE_EVENT_LISTENERS.varname,
+    System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
-    System.setProperty(ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
+    System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
     Thread t = new Thread(new RunMS());
     t.start();
