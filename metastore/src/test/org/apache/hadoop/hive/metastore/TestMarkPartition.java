@@ -47,8 +47,8 @@ public class TestMarkPartition extends TestCase{
   protected void setUp() throws Exception {
 
     super.setUp();
-    System.setProperty(ConfVars.METASTORE_EVENT_CLEAN_FREQ.varname, "2");
-    System.setProperty(ConfVars.METASTORE_EVENT_EXPIRY_DURATION.varname, "5");
+    System.setProperty("hive.metastore.event.clean.freq", "2");
+    System.setProperty("hive.metastore.event.expiry.duration", "5");
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
