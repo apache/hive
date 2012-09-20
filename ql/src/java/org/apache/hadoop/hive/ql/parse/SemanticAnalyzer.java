@@ -8222,7 +8222,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(unescapeIdentifier(child.getText()).toLowerCase());
+      colList.add(stripQuotes(child.getText()).toLowerCase());
     }
     return colList;
   }
