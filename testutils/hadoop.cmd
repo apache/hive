@@ -173,7 +173,7 @@ set HADOOP_OPTS=%HADOOP_OPTS% -Djava.net.preferIPv4Stack=true
     set CLASS=%hadoop-command%
   )
   call %JAVA% %JAVA_HEAP_MAX% %HADOOP_OPTS% -classpath %CLASSPATH% %CLASS% %hadoop-command-arguments%
-
+  exit /b %ERRORLEVEL%
   goto :eof
 
 :version 
