@@ -152,7 +152,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
+  public void jobCloseOp(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
       throws HiveException {
     int numAliases = conf.getExprs().size();
     if (conf.getHandleSkewJoin()) {
@@ -189,7 +189,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         throw new HiveException(e);
       }
     }
-    super.jobClose(hconf, success, feedBack);
+    super.jobCloseOp(hconf, success, feedBack);
   }
 
   private void moveUpFiles(String specPath, Configuration hconf, Log log)

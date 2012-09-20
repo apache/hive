@@ -744,7 +744,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
+  public void jobCloseOp(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
       throws HiveException {
     try {
       if ((conf != null) && isNativeTable) {
@@ -755,7 +755,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (IOException e) {
       throw new HiveException(e);
     }
-    super.jobClose(hconf, success, feedBack);
+    super.jobCloseOp(hconf, success, feedBack);
   }
 
   @Override
