@@ -581,6 +581,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void closeOp(boolean abort) throws HiveException {
   }
 
+  private boolean jobCloseDone = false;
+
+  // Operator specific logic goes here
+  public void jobCloseOp(Configuration conf, boolean success, JobCloseFeedBack feedBack)
+      throws HiveException {
+  }
+
   /**
    * Unlike other operator interfaces which are called from map or reduce task,
    * jobClose is called from the jobclient side once the job has completed.
@@ -592,12 +599,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public void jobClose(Configuration conf, boolean success, JobCloseFeedBack feedBack)
       throws HiveException {
-    if (childOperators == null) {
+    // JobClose has already been performed on this operator
+    if (jobCloseDone) {
       return;
     }
 
-    for (Operator<? extends OperatorDesc> op : childOperators) {
-      op.jobClose(conf, success, feedBack);
+    jobCloseOp(conf, success, feedBack);
+    jobCloseDone = true;
+
+    if (childOperators != null) {
+      for (Operator<? extends OperatorDesc> op : childOperators) {
+        op.jobClose(conf, success, feedBack);
+      }
     }
   }
 
