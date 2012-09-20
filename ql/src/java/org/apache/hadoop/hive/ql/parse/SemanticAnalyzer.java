@@ -70,8 +70,8 @@ import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -1054,13 +1054,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ctx.setResFile(null);
 
               // allocate a temporary output dir on the location of the table
-              String location = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+              String tableName = getUnescapedName((ASTNode)ast.getChild(0));
+              Table newTable = db.newTable(tableName);
+              Path location;
+              try {
+                Warehouse wh = new Warehouse(conf);
+                location = wh.getDatabasePath(db.getDatabase(newTable.getDbName()));
+              } catch (MetaException e) {
+                throw new SemanticException(e);
+              }
               try {
                 fname = ctx.getExternalTmpFileURI(
-                    FileUtils.makeQualified(new Path(location), conf).toUri());
+                    FileUtils.makeQualified(location, conf).toUri());
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
-                      "Error creating temporary folder on: " + location), e);
+                      "Error creating temporary folder on: " + location.toString()), e);
               }
               if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
                 tableSpec ts = new tableSpec(db, conf, this.ast);
