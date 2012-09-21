@@ -399,7 +399,8 @@ public final class GenMapRedUtils {
     List<Task<? extends Serializable>> parTasks = null;
     if (opProcCtx.getRootTasks().contains(currentUnionTask)) {
       opProcCtx.getRootTasks().remove(currentUnionTask);
-      if (!opProcCtx.getRootTasks().contains(existingTask)) {
+      if (!opProcCtx.getRootTasks().contains(existingTask) &&
+          (existingTask.getParentTasks() == null || existingTask.getParentTasks().isEmpty())) {
         opProcCtx.getRootTasks().add(existingTask);
       }
     }
@@ -423,6 +424,7 @@ public final class GenMapRedUtils {
         }
       }
     }
+
     opProcCtx.setCurrTask(existingTask);
   }
 
