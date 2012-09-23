@@ -528,7 +528,8 @@ public class Table implements Serializable {
   }
 
   public Map<List<String>,String> getSkewedColValueLocationMaps() {
-    return tTable.getSd().getSkewedInfo().getSkewedColValueLocationMaps();
+    return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
+        .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
   }
 
   public void setSkewedColValues(List<List<String>> skewedValues) throws HiveException {
@@ -536,7 +537,8 @@ public class Table implements Serializable {
   }
 
   public List<List<String>> getSkewedColValues(){
-    return tTable.getSd().getSkewedInfo().getSkewedColValues();
+    return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
+        .getSkewedColValues() : new ArrayList<List<String>>();
   }
 
   public void setSkewedColNames(List<String> skewedColNames) throws HiveException {
@@ -544,7 +546,8 @@ public class Table implements Serializable {
   }
 
   public List<String> getSkewedColNames() {
-    return tTable.getSd().getSkewedInfo().getSkewedColNames();
+    return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
+        .getSkewedColNames() : new ArrayList<String>();
   }
 
 
