@@ -23,7 +23,9 @@
   <import file="../build-common.xml"/>
 
   <target name="set-test-classpath">
-    <path id="test.classpath">
+    <typedef name="distinctelementsclasspath" classname="org.apache.hadoop.hive.ant.DistinctElementsClassPath"
+      classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar"/>
+    <distinctelementsclasspath  id="test.classpath">
       <pathelement location="${test.build.classes}" />
       <pathelement location="" />
       <pathelement location="${test.src.data.dir}/conf"/>
@@ -33,7 +35,7 @@
       <pathelement location="${build.dir.hive}/ql/test/classes"/>
       <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
       <path refid="classpath" />
-    </path>
+    </distinctelementsclasspath>
   </target>
 
   <target name="compile" depends="init,ivy-retrieve">
