@@ -207,7 +207,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         };
 
     private final void logAuditEvent(String cmd) {
-      if (!useSasl || cmd == null) {
+      if (cmd == null) {
         return;
       }
 
@@ -219,8 +219,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder) fmt.out()).setLength(0);
+
+      String address;
+      if (useSasl) {
+        address = saslServer.getRemoteAddress().toString();
+      } else {
+        address = getIpAddress();
+      }
+      if (address == null) {
+        address = "unknown-ip-addr";
+      }
+
       auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
-          saslServer.getRemoteAddress().toString(), cmd).toString());
+        address, cmd).toString());
     }
 
     // The next serial number to be assigned
