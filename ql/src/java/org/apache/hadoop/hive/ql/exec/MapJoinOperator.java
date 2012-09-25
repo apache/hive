@@ -238,7 +238,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           joinKeysObjectInspectors.get(alias));
       ArrayList<Object> value = JoinUtil.computeValues(row, joinValues.get(alias),
           joinValuesObjectInspectors.get(alias), joinFilters.get(alias), joinFilterObjectInspectors
-              .get(alias), noOuterJoin);
+              .get(alias), filterMap == null ? null : filterMap[alias]);
 
 
       // Add the value to the ArrayList

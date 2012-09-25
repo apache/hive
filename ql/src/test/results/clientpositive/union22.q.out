@@ -119,6 +119,8 @@ STAGE PLANS:
                   condition expressions:
                     0 {k1} {k2}
                     1 {_col3} {_col4}
+                  filter mappings:
+                    0 [1, 1]
                   filter predicates:
                     0 {(ds = '1')}
                     1 
@@ -146,6 +148,8 @@ STAGE PLANS:
                 condition expressions:
                   0 {k1} {k2}
                   1 {_col3} {_col4}
+                filter mappings:
+                  0 [1, 1]
                 filter predicates:
                   0 {(ds = '1')}
                   1 

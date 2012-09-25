@@ -53,6 +53,9 @@ public class QBJoinTree implements Serializable{
   // filters
   private ArrayList<ArrayList<ASTNode>> filters;
 
+  // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
+  private int[][] filterMap;
+
   // filters for pushing
   private ArrayList<ArrayList<ASTNode>> filtersForPushing;
 
@@ -304,5 +307,17 @@ public class QBJoinTree implements Serializable{
 
   public void setNullSafes(ArrayList<Boolean> nullSafes) {
     this.nullsafes = nullSafes;
+  }
+
+  public void addFilterMapping(int outer, int target, int length) {
+    filterMap[outer] = new int[] { target, length };
+  }
+
+  public int[][] getFilterMap() {
+    return filterMap;
+  }
+
+  public void setFilterMap(int[][] filterMap) {
+    this.filterMap = filterMap;
   }
 }

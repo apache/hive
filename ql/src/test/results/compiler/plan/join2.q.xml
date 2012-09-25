@@ -1521,6 +1521,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="filterMap"> 
+             <array class="[I" length="2"/> 
+            </void> 
             <void property="filters"> 
              <object class="java.util.HashMap"> 
               <void method="put"> 
@@ -2984,6 +2987,9 @@
            </object> 
           </void> 
          </object> 
+        </void> 
+        <void property="filterMap"> 
+         <array class="[I" length="2"/> 
         </void> 
         <void property="filters"> 
          <object class="java.util.HashMap"> 

@@ -96,9 +96,10 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     posBigTable = conf.getPosBigTable();
 
     emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
+
     RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
         rowContainerStandardObjectInspectors.get((byte) posBigTable),
-        order[posBigTable], joinCacheSize,spillTableDesc, conf,noOuterJoin);
+        order[posBigTable], joinCacheSize,spillTableDesc, conf, !hasFilter(posBigTable));
     storage.put((byte) posBigTable, bigPosRC);
 
     mapJoinRowsKey = HiveConf.getIntVar(hconf,

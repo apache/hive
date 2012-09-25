@@ -116,6 +116,7 @@ public class SkewJoinHandler {
     bigKeysExistingMap = new HashMap<Byte, Boolean>(numAliases);
     taskId = Utilities.getTaskId(hconf);
 
+    int[][] filterMap = desc.getFilterMap();
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
       List<ObjectInspector> skewTableKeyInspectors = new ArrayList<ObjectInspector>();
@@ -145,7 +146,9 @@ public class SkewJoinHandler {
         break;
       }
 
-      TableDesc valTblDesc = JoinUtil.getSpillTableDesc(alias,joinOp.spillTableDesc,conf,noOuterJoin);
+      boolean hasFilter = filterMap != null && filterMap[i] != null;
+      TableDesc valTblDesc = JoinUtil.getSpillTableDesc(alias,
+          joinOp.spillTableDesc, conf, !hasFilter);
       List<String> valColNames = new ArrayList<String>();
       if (valTblDesc != null) {
         valColNames = Utilities.getColumnNames(valTblDesc.getProperties());

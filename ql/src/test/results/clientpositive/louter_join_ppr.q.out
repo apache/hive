@@ -615,6 +615,8 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          filter mappings:
+            0 [1, 1]
           filter predicates:
             0 {(VALUE._col2 = '2008-04-08')}
             1 

@@ -36,13 +36,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.BooleanWritable;
 
 /**
  * Join operator implementation.
@@ -97,6 +96,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    * The filters for join
    */
   protected transient Map<Byte, List<ExprNodeEvaluator>> joinFilters;
+
+  protected transient int[][] filterMap;
 
   /**
    * The ObjectInspectors for the join inputs.
@@ -260,6 +261,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
         joinValuesObjectInspectors,NOTSKIPBIGTABLE);
 
+    filterMap = conf.getFilterMap();
+
     if (noOuterJoin) {
       rowContainerStandardObjectInspectors = joinValuesStandardObjectInspectors;
     } else {
@@ -270,7 +273,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         rcOIs.addAll(joinValuesObjectInspectors.get(alias));
         // for each alias, add object inspector for boolean as the last element
         rcOIs.add(
-            PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+            PrimitiveObjectInspectorFactory.writableByteObjectInspector);
         rowContainerObjectInspectors.put(alias, rcOIs);
       }
       rowContainerStandardObjectInspectors =
@@ -304,13 +307,13 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         // add whether the row is filtered or not
         // this value does not matter for the dummyObj
         // because the join values are already null
-        nr.add(new BooleanWritable(false));
+        nr.add(new ByteWritable());
       }
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
       RowContainer<ArrayList<Object>> values = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)pos),
-          alias, 1, spillTableDesc, conf, noOuterJoin);
+          alias, 1, spillTableDesc, conf, !hasFilter(pos));
 
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
@@ -319,7 +322,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       // e.g., the output columns does not contains the input table
       RowContainer rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)pos),
-          alias, joinCacheSize,spillTableDesc, conf,noOuterJoin);
+          alias, joinCacheSize,spillTableDesc, conf, !hasFilter(pos));
       storage.put(pos, rc);
 
       pos++;
@@ -443,14 +446,11 @@ transient boolean newGroupStarted = false;
 
   private ArrayList<boolean[]> joinObjectsLeftOuterJoin(
       ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
-      ArrayList<Object> newObj, IntermediateObject intObj, int left,
+      ArrayList<Object> newObj, IntermediateObject intObj, int left, int right,
       boolean newObjNull) {
     // newObj is null if is already null or
     // if the row corresponding to the left alias does not pass through filter
-    int filterIndex = joinValues.get(order[left]).size();
-    if(filterIndex < intObj.getObjs()[left].size()) {
-      newObjNull = newObjNull || ((BooleanWritable) (intObj.getObjs()[left].get(filterIndex))).get();
-    }
+    newObjNull |= isLeftFiltered(left, right, intObj.getObjs()[left]);
 
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
     while (nullsIter.hasNext()) {
@@ -470,7 +470,7 @@ transient boolean newGroupStarted = false;
 
   private ArrayList<boolean[]> joinObjectsRightOuterJoin(
       ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
-      ArrayList<Object> newObj, IntermediateObject intObj, int left,
+      ArrayList<Object> newObj, IntermediateObject intObj, int left, int right,
       boolean newObjNull, boolean firstRow) {
     if (newObjNull) {
       return resNulls;
@@ -498,7 +498,7 @@ transient boolean newGroupStarted = false;
     }
 
     // if the row does not pass through filter, all old Objects are null
-    if (((BooleanWritable)newObj.get(newObj.size()-1)).get()) {
+    if (isRightFiltered(left, right, newObj)) {
       allOldObjsNull = true;
     }
     nullsIter = inputNulls.iterator();
@@ -526,7 +526,7 @@ transient boolean newGroupStarted = false;
 
   private ArrayList<boolean[]> joinObjectsFullOuterJoin(
       ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
-      ArrayList<Object> newObj, IntermediateObject intObj, int left,
+      ArrayList<Object> newObj, IntermediateObject intObj, int left, int right,
       boolean newObjNull, boolean firstRow) {
     if (newObjNull) {
       Iterator<boolean[]> nullsIter = inputNulls.iterator();
@@ -562,7 +562,7 @@ transient boolean newGroupStarted = false;
     }
 
     // if the row does not pass through filter, all old Objects are null
-    if (((BooleanWritable)newObj.get(newObj.size()-1)).get()) {
+    if (isRightFiltered(left, right, newObj)) {
       allOldObjsNull = true;
     }
     boolean rhsPreserved = false;
@@ -572,9 +572,8 @@ transient boolean newGroupStarted = false;
       boolean[] oldNulls = nullsIter.next();
       // old obj is null even if the row corresponding to the left alias
       // does not pass through filter
-      boolean oldObjNull = oldNulls[left] || ((BooleanWritable)
-        (intObj.getObjs()[left].get(joinValues.get(order[left]).size()))).get()
-        || allOldObjsNull;
+      boolean oldObjNull = oldNulls[left] || allOldObjsNull
+          || isLeftFiltered(left, right, intObj.getObjs()[left]);
       if (!oldObjNull) {
         boolean[] newNulls = new boolean[intObj.getCurSize()];
         copyOldArray(oldNulls, newNulls);
@@ -623,6 +622,7 @@ transient boolean newGroupStarted = false;
     }
 
     int left = condn[joinPos - 1].getLeft();
+    int right = condn[joinPos - 1].getRight();
     int type = condn[joinPos - 1].getType();
 
     // process all nulls for RIGHT and FULL OUTER JOINS
@@ -646,17 +646,17 @@ transient boolean newGroupStarted = false;
           newObjNull);
     } else if (type == JoinDesc.LEFT_OUTER_JOIN) {
       return joinObjectsLeftOuterJoin(resNulls, inputNulls, newObj, intObj,
-          left, newObjNull);
+          left, right, newObjNull);
     } else if (type == JoinDesc.RIGHT_OUTER_JOIN) {
       return joinObjectsRightOuterJoin(resNulls, inputNulls, newObj, intObj,
-          left, newObjNull, firstRow);
+          left, right, newObjNull, firstRow);
     } else if (type == JoinDesc.LEFT_SEMI_JOIN) {
       return joinObjectsLeftSemiJoin(resNulls, inputNulls, newObj, intObj,
           left, newObjNull);
     }
 
     assert (type == JoinDesc.FULL_OUTER_JOIN);
-    return joinObjectsFullOuterJoin(resNulls, inputNulls, newObj, intObj, left,
+    return joinObjectsFullOuterJoin(resNulls, inputNulls, newObj, intObj, left, right,
         newObjNull, firstRow);
   }
 
@@ -821,19 +821,14 @@ transient boolean newGroupStarted = false;
             hasEmpty = true;
             alw.add((ArrayList<Object>) dummyObj[i]);
           } else if (!hasEmpty && alw.size() == 1) {
-            ArrayList<Object> row = alw.first();
-            int numValues = joinValues.get(alias).size();
-            if (row == dummyObj[alias]
-                || (row.size() > numValues && ((BooleanWritable) (row.get(numValues))).get())) {
+            if (hasAnyFiltered(alias, alw.first())) {
               hasEmpty = true;
             }
           } else {
             mayHasMoreThanOne = true;
             if (!hasEmpty) {
-              int numValues = joinValues.get(alias).size();
               for (ArrayList<Object> row = alw.first(); row != null; row = alw.next()) {
-                if (row == dummyObj[alias]
-                    || (row.size() > numValues && ((BooleanWritable) (row.get(numValues))).get())) {
+                if (hasAnyFiltered(alias, row)) {
                   hasEmpty = true;
                   break;
                 }
@@ -860,6 +855,34 @@ transient boolean newGroupStarted = false;
     }
   }
 
+  // returns filter result of left object by filters associated with right alias
+  private boolean isLeftFiltered(int left, int right, List<Object> leftObj) {
+    if (joinValues.get(order[left]).size() < leftObj.size()) {
+      ByteWritable filter = (ByteWritable) leftObj.get(leftObj.size() - 1);
+      return JoinUtil.isFiltered(filter.get(), right);
+    }
+    return false;
+  }
+
+  // returns filter result of right object by filters associated with left alias
+  private boolean isRightFiltered(int left, int right, List<Object> rightObj) {
+    if (joinValues.get(order[right]).size() < rightObj.size()) {
+      ByteWritable filter = (ByteWritable) rightObj.get(rightObj.size() - 1);
+      return JoinUtil.isFiltered(filter.get(), left);
+    }
+    return false;
+  }
+
+  // returns object has any filtered tag
+  private boolean hasAnyFiltered(int alias, List<Object> row) {
+    return row == dummyObj[alias] ||
+        hasFilter(alias) && JoinUtil.hasAnyFiltered(((ByteWritable) row.get(row.size() - 1)).get());
+  }
+
+  protected final boolean hasFilter(int alias) {
+    return filterMap != null && filterMap[alias] != null;
+  }
+
   protected void reportProgress() {
     // Send some status periodically
     countAfterReport++;
@@ -869,25 +892,6 @@ transient boolean newGroupStarted = false;
       reporter.progress();
       countAfterReport = 0;
     }
-  }
-
-  /**
-   * Returns true if the row does not pass through filters.
-   */
-  protected static Boolean isFiltered(Object row,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> ois)
-      throws HiveException {
-    // apply join filters on the row.
-    Boolean ret = false;
-    for (int j = 0; j < filters.size(); j++) {
-      Object condition = filters.get(j).evaluate(row);
-      ret = (Boolean) ((PrimitiveObjectInspector)
-          ois.get(j)).getPrimitiveJavaObject(condition);
-      if (ret == null || !ret) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
