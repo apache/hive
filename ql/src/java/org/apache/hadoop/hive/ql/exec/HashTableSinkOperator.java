@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -85,6 +84,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    * The filters for join
    */
   protected transient Map<Byte, List<ExprNodeEvaluator>> joinFilters;
+
+  protected transient int[][] filterMap;
 
   protected transient int numAliases; // number of aliases
   /**
@@ -197,6 +198,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     totalSz = 0;
 
     noOuterJoin = conf.isNoOuterJoin();
+    filterMap = conf.getFilterMap();
 
     // process join keys
     joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
@@ -228,10 +230,12 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         if (alias == posBigTableAlias) {
           continue;
         }
-        ArrayList<ObjectInspector> rcOIs = new ArrayList<ObjectInspector>();
-        rcOIs.addAll(joinValuesObjectInspectors.get(alias));
-        // for each alias, add object inspector for boolean as the last element
-        rcOIs.add(PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+        List<ObjectInspector> rcOIs = joinValuesObjectInspectors.get(alias);
+        if (filterMap != null && filterMap[alias] != null) {
+          // for each alias, add object inspector for filter tag as the last element
+          rcOIs = new ArrayList<ObjectInspector>(rcOIs);
+          rcOIs.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+        }
         rowContainerObjectInspectors.put(alias, rcOIs);
       }
       rowContainerStandardObjectInspectors = getStandardObjectInspectors(rowContainerObjectInspectors);
@@ -318,7 +322,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
       Object[] value = JoinUtil.computeMapJoinValues(row, joinValues.get(alias),
           joinValuesObjectInspectors.get(alias), joinFilters.get(alias), joinFilterObjectInspectors
-              .get(alias), noOuterJoin);
+              .get(alias), filterMap == null ? null : filterMap[alias]);
 
 
       HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables

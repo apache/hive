@@ -83,7 +83,8 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
 
       ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues.get(alias),
           joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
-          joinFilterObjectInspectors.get(alias), noOuterJoin);
+          joinFilterObjectInspectors.get(alias),
+          filterMap == null ? null : filterMap[alias]);
 
 
       if (handleSkewJoin) {

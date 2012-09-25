@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,6 +50,9 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   // alias to filter mapping
   private Map<Byte, List<ExprNodeDesc>> filters;
+
+  // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
+  private int[][] filterMap;
 
   // used for create joinOutputObjectInspector
   protected List<String> outputColumnNames;
@@ -98,6 +103,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.smallKeysDirMap = clone.getSmallKeysDirMap();
     this.tagOrder = clone.getTagOrder();
     this.filters = clone.getFilters();
+    this.filterMap = clone.getFilterMap();
 
     this.keys = clone.getKeys();
     this.keyTblDesc = clone.getKeyTblDesc();
@@ -285,6 +291,21 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.keyTableDesc = keyTableDesc;
   }
 
+  @Override
+  public int[][] getFilterMap() {
+    return filterMap;
+  }
+
+  @Override
+  public void setFilterMap(int[][] filterMap) {
+    this.filterMap = filterMap;
+  }
+
+  @Override
+  @Explain(displayName = "filter mappings", normalExplain = false)
+  public Map<Integer, String> getFilterMapString() {
+    return toCompactString(filterMap);
+  }
 
   public Map<Byte, List<Integer>> getRetainList() {
     return retainList;

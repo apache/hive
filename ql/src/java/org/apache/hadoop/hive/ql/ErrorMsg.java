@@ -247,6 +247,9 @@ public enum ErrorMsg {
     "Fix the metadata or don't use bucketed mapjoin, by setting " +
     "hive.enforce.bucketmapjoin to false."),
 
+  JOINNODE_OUTERJOIN_MORETHAN_8(10142, "Single join node containing outer join(s) " +
+      "cannot have more than 8 aliases"),
+
   CREATE_SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   CREATE_SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
   CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,

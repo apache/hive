@@ -1247,9 +1247,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void populateAliases(ArrayList<String> leftAliases,
-      ArrayList<String> rightAliases, ASTNode condn, QBJoinTree joinTree,
-      ArrayList<String> leftSrc) throws SemanticException {
+  private void populateAliases(List<String> leftAliases,
+      List<String> rightAliases, ASTNode condn, QBJoinTree joinTree,
+      List<String> leftSrc) throws SemanticException {
     if ((leftAliases.size() != 0) && (rightAliases.size() != 0)) {
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1
           .getMsg(condn));
@@ -1271,6 +1271,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc)
+      throws SemanticException {
+    if (joinCond == null) {
+      return;
+    }
+    JoinCond cond = joinTree.getJoinCond()[0];
+
+    JoinType type = cond.getJoinType();
+    parseJoinCondition(joinTree, joinCond, leftSrc, type);
+
+    List<ArrayList<ASTNode>> filters = joinTree.getFilters();
+    if (type == JoinType.LEFTOUTER || type == JoinType.FULLOUTER) {
+      joinTree.addFilterMapping(cond.getLeft(), cond.getRight(), filters.get(0).size());
+    }
+    if (type == JoinType.RIGHTOUTER || type == JoinType.FULLOUTER) {
+      joinTree.addFilterMapping(cond.getRight(), cond.getLeft(), filters.get(1).size());
+    }
+  }
   /**
    * Parse the join condition. If the condition is a join condition, throw an
    * error if it is not an equality. Otherwise, break it into left and right
@@ -1291,20 +1309,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond,
-      ArrayList<String> leftSrc) throws SemanticException {
+      List<String> leftSrc, JoinType type) throws SemanticException {
     if (joinCond == null) {
       return;
     }
 
-    JoinType type = joinTree.getJoinCond()[0].getJoinType();
     switch (joinCond.getToken().getType()) {
     case HiveParser.KW_OR:
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_3
           .getMsg(joinCond));
 
     case HiveParser.KW_AND:
-      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(0), leftSrc);
-      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(1), leftSrc);
+      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(0), leftSrc, type);
+      parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(1), leftSrc, type);
       break;
 
     case HiveParser.EQUAL_NS:
@@ -4949,6 +4966,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames,
         join.getNoOuterJoin(), joinCondns, filterMap);
     desc.setReversedExprs(reversedExprs);
+    desc.setFilterMap(join.getFilterMap());
+
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc,
         new RowSchema(outputRS.getColumnInfos()), rightOps);
     joinOp.setColumnExprMap(colExprMap);
@@ -5473,6 +5492,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     filters.add(new ArrayList<ASTNode>());
     filters.add(new ArrayList<ASTNode>());
     joinTree.setFilters(filters);
+    joinTree.setFilterMap(new int[2][]);
 
     ArrayList<ArrayList<ASTNode>> filtersForPushing =
       new ArrayList<ArrayList<ASTNode>>();
@@ -5590,6 +5610,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       filterPos.addAll(node.getFilters().get(0));
     }
 
+    int[][] nmap = node.getFilterMap();
+    int[][] tmap = target.getFilterMap();
+    int[][] newmap = new int[tmap.length + nmap.length - 1][];
+
+    for (int[] mapping : nmap) {
+      if (mapping != null) {
+        for (int i = 0; i < mapping.length; i+=2) {
+          if (pos > 0 || mapping[i] > 0) {
+            mapping[i] += trgtRightAliases.length;
+          }
+        }
+      }
+    }
+    if (nmap[0] != null) {
+      if (tmap[pos] == null) {
+        tmap[pos] = nmap[0];
+      } else {
+        int[] appended = new int[tmap[pos].length + nmap[0].length];
+        System.arraycopy(tmap[pos], 0, appended, 0, tmap[pos].length);
+        System.arraycopy(nmap[0], 0, appended, tmap[pos].length, nmap[0].length);
+        tmap[pos] = appended;
+      }
+    }
+    System.arraycopy(tmap, 0, newmap, 0, tmap.length);
+    System.arraycopy(nmap, 1, newmap, tmap.length, nmap.length - 1);
+    target.setFilterMap(newmap);
+
     ArrayList<ArrayList<ASTNode>> filter = target.getFiltersForPushing();
     for (int i = 0; i < nodeRightAliases.length; i++) {
       filter.add(node.getFiltersForPushing().get(i + 1));
@@ -5695,7 +5742,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (target == null) {
       return false;
     }
-
+    if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
+      // todo 8 way could be not enough number
+      if (node.getRightAliases().length + node.getRightAliases().length + 1 >= 8) {
+        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_8);
+        return false;
+      }
+    }
     int res = findMergePos(node, target);
     if (res != -1) {
       mergeJoins(qb, parent, node, target, res);

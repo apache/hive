@@ -2054,6 +2054,9 @@
           </void> 
          </object> 
         </void> 
+        <void property="filterMap"> 
+         <array class="[I" length="3"/> 
+        </void> 
         <void property="filters"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 

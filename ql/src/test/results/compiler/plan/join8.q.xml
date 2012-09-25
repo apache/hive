@@ -2533,6 +2533,17 @@
           </void> 
          </object> 
         </void> 
+        <void property="filterMap"> 
+         <array class="[I" length="2"> 
+          <void index="0"> 
+           <array class="int" length="2"> 
+            <void index="0"> 
+             <int>1</int> 
+            </void> 
+           </array> 
+          </void> 
+         </array> 
+        </void> 
         <void property="filters"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 

@@ -363,8 +363,8 @@ public class MapJoinProcessor implements Transform {
       valueExprMap.put(Byte.valueOf((byte) pos), values);
     }
 
-    Map<Byte, List<ExprNodeDesc>> filterMap = desc.getFilters();
-    for (Map.Entry<Byte, List<ExprNodeDesc>> entry : filterMap.entrySet()) {
+    Map<Byte, List<ExprNodeDesc>> filters = desc.getFilters();
+    for (Map.Entry<Byte, List<ExprNodeDesc>> entry : filters.entrySet()) {
       Byte srcAlias = entry.getKey();
       List<ExprNodeDesc> columnDescList = entry.getValue();
 
@@ -411,6 +411,7 @@ public class MapJoinProcessor implements Transform {
     List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
     List<TableDesc> valueFiltedTableDescs = new ArrayList<TableDesc>();
 
+    int[][] filterMap = desc.getFilterMap();
     for (pos = 0; pos < newParentOps.size(); pos++) {
       List<ExprNodeDesc> valueCols = valueExprMap.get(Byte.valueOf((byte) pos));
       int length = valueCols.size();
@@ -419,11 +420,9 @@ public class MapJoinProcessor implements Transform {
       for (int i = 0; i < length; i++) {
         valueFilteredCols.add(valueCols.get(i).clone());
       }
-      List<ExprNodeDesc> valueFilters = filterMap.get(Byte.valueOf((byte) pos));
-
-      if (valueFilters != null && valueFilters.size() != 0 && pos != mapJoinPos) {
+      if (filterMap != null && filterMap[pos] != null && pos != mapJoinPos) {
         ExprNodeColumnDesc isFilterDesc = new ExprNodeColumnDesc(TypeInfoFactory
-            .getPrimitiveTypeInfo(Constants.BOOLEAN_TYPE_NAME), "filter", "filter", false);
+            .getPrimitiveTypeInfo(Constants.TINYINT_TYPE_NAME), "filter", "filter", false);
         valueFilteredCols.add(isFilterDesc);
       }
 
@@ -452,9 +451,10 @@ public class MapJoinProcessor implements Transform {
     }
     MapJoinDesc mapJoinDescriptor = new MapJoinDesc(keyExprMap, keyTableDesc, valueExprMap,
         valueTableDescs, valueFiltedTableDescs, outputColumnNames, mapJoinPos, joinCondns,
-        filterMap, op.getConf().getNoOuterJoin(), dumpFilePrefix);
+        filters, op.getConf().getNoOuterJoin(), dumpFilePrefix);
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());
+    mapJoinDescriptor.setFilterMap(desc.getFilterMap());
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
         mapJoinDescriptor, new RowSchema(outputRS.getColumnInfos()), newPar);

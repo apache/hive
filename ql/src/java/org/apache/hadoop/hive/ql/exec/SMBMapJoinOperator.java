@@ -116,11 +116,11 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     for (Byte alias : order) {
       RowContainer rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get(storePos),
-          alias, bucketSize,spillTableDesc, conf,noOuterJoin);
+          alias, bucketSize,spillTableDesc, conf, !hasFilter(storePos));
       nextGroupStorage[storePos] = rc;
       RowContainer candidateRC = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)storePos),
-          alias,bucketSize,spillTableDesc, conf,noOuterJoin);
+          alias,bucketSize,spillTableDesc, conf, !hasFilter(storePos));
       candidateStorage[alias] = candidateRC;
       storePos++;
     }
@@ -237,7 +237,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         joinKeysObjectInspectors.get(alias));
     ArrayList<Object> value = JoinUtil.computeValues(row, joinValues.get(alias),
         joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
-        joinFilterObjectInspectors.get(alias), noOuterJoin);
+        joinFilterObjectInspectors.get(alias),
+        filterMap == null ? null : filterMap[alias]);
 
 
     //have we reached a new key group?

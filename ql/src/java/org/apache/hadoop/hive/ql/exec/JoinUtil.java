@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -207,14 +207,14 @@ public class JoinUtil {
   public static Object[] computeMapJoinValues(Object row,
       List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
       List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      boolean noOuterJoin) throws HiveException {
+      int[] filterMap) throws HiveException {
 
     // Compute the keys
     Object[] nr;
-    if (!noOuterJoin) {
+    if (filterMap != null) {
       nr = new Object[valueFields.size()+1];
       // add whether the row is filtered or not.
-      nr[valueFields.size()] = new BooleanWritable(isFiltered(row, filters, filtersOI));
+      nr[valueFields.size()] = new ByteWritable(isFiltered(row, filters, filtersOI, filterMap));
     }else{
       nr = new Object[valueFields.size()];
     }
@@ -235,7 +235,7 @@ public class JoinUtil {
   public static ArrayList<Object> computeValues(Object row,
       List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
       List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      boolean noOuterJoin) throws HiveException {
+      int[] filterMap) throws HiveException {
 
     // Compute the values
     ArrayList<Object> nr = new ArrayList<Object>(valueFields.size());
@@ -244,54 +244,77 @@ public class JoinUtil {
           .evaluate(row), valueFieldsOI.get(i),
           ObjectInspectorCopyOption.WRITABLE));
     }
-    if (!noOuterJoin) {
+    if (filterMap != null) {
       // add whether the row is filtered or not.
-      nr.add(new BooleanWritable(isFiltered(row, filters, filtersOI)));
+      nr.add(new ByteWritable(isFiltered(row, filters, filtersOI, filterMap)));
     }
 
     return nr;
   }
+
+  private static final byte[] MASKS = new byte[]
+      {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, (byte) 0x80};
+
   /**
    * Returns true if the row does not pass through filters.
    */
-  protected static Boolean isFiltered(Object row,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> ois)
-      throws HiveException {
+  protected static byte isFiltered(Object row, List<ExprNodeEvaluator> filters,
+      List<ObjectInspector> ois, int[] filterMap) throws HiveException {
     // apply join filters on the row.
-    Boolean ret = false;
-    for (int j = 0; j < filters.size(); j++) {
-      Object condition = filters.get(j).evaluate(row);
-      ret = (Boolean) ((PrimitiveObjectInspector)
-          ois.get(j)).getPrimitiveJavaObject(condition);
-      if (ret == null || !ret) {
-        return true;
+    byte ret = 0;
+    int j = 0;
+    for (int i = 0; i < filterMap.length; i += 2) {
+      int tag = filterMap[i];
+      int length = filterMap[i + 1];
+
+      boolean passed = true;
+      for (; length > 0; length--, j++) {
+        if (passed) {
+          Object condition = filters.get(j).evaluate(row);
+          Boolean result = (Boolean) ((PrimitiveObjectInspector)
+              ois.get(j)).getPrimitiveJavaObject(condition);
+          if (result == null || !result) {
+            passed = false;
+          }
+        }
+      }
+      if (!passed) {
+        ret |= MASKS[tag];
       }
     }
-    return false;
+    return ret;
+  }
+
+  protected static boolean isFiltered(byte filter, int tag) {
+    return (filter & MASKS[tag]) != 0;
+  }
+
+  protected static boolean hasAnyFiltered(byte tag) {
+    return tag != 0;
   }
 
   public static TableDesc getSpillTableDesc(Byte alias,
       Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
+      boolean noFilter) {
     if (spillTableDesc == null || spillTableDesc.size() == 0) {
-      spillTableDesc = initSpillTables(conf,noOuterJoin);
+      spillTableDesc = initSpillTables(conf,noFilter);
     }
     return spillTableDesc.get(alias);
   }
 
   public static Map<Byte, TableDesc> getSpillTableDesc(
       Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
+      boolean noFilter) {
     if (spillTableDesc == null) {
-      spillTableDesc = initSpillTables(conf,noOuterJoin);
+      spillTableDesc = initSpillTables(conf,noFilter);
     }
     return spillTableDesc;
   }
 
   public static SerDe getSpillSerDe(byte alias,
       Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
-    TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noOuterJoin);
+      boolean noFilter) {
+    TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noFilter);
     if (desc == null) {
       return null;
     }
@@ -306,7 +329,7 @@ public class JoinUtil {
     return sd;
   }
 
-  public static Map<Byte, TableDesc>  initSpillTables(JoinDesc conf,boolean noOuterJoin) {
+  public static Map<Byte, TableDesc> initSpillTables(JoinDesc conf, boolean noFilter) {
     Map<Byte, List<ExprNodeDesc>> exprs = conf.getExprs();
     Map<Byte, TableDesc> spillTableDesc = new HashMap<Byte, TableDesc>(exprs.size());
     for (int tag = 0; tag < exprs.size(); tag++) {
@@ -325,10 +348,10 @@ public class JoinUtil {
         colTypes.append(valueCols.get(k).getTypeString());
         colTypes.append(',');
       }
-      if (!noOuterJoin) {
+      if (!noFilter) {
         colNames.append("filtered");
         colNames.append(',');
-        colTypes.append(TypeInfoFactory.booleanTypeInfo.getTypeName());
+        colTypes.append(TypeInfoFactory.byteTypeInfo.getTypeName());
         colTypes.append(',');
       }
       // remove the last ','
@@ -352,11 +375,10 @@ public class JoinUtil {
   public static RowContainer getRowContainer(Configuration hconf,
       List<ObjectInspector> structFieldObjectInspectors,
       Byte alias,int containerSize, Map<Byte, TableDesc> spillTableDesc,
-      JoinDesc conf,boolean noOuterJoin) throws HiveException {
+      JoinDesc conf,boolean noFilter) throws HiveException {
 
-    TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noOuterJoin);
-    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf,
-        noOuterJoin);
+    TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);
+    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
 
     if (serde == null) {
       containerSize = -1;
