@@ -132,12 +132,13 @@ public class QBParseInfo {
     }
   }
 
-  public void addInsertIntoTable(String table) {
-    insertIntoTables.add(table.toLowerCase());
+  public void addInsertIntoTable(String fullName) {
+    insertIntoTables.add(fullName.toLowerCase());
   }
 
-  public boolean isInsertIntoTable(String table) {
-    return insertIntoTables.contains(table);
+  public boolean isInsertIntoTable(String dbName, String table) {
+    String fullName = dbName + "." + table;
+    return insertIntoTables.contains(fullName.toLowerCase());
   }
 
   public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {

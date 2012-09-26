@@ -34,6 +34,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -315,14 +316,21 @@ public abstract class BaseSemanticAnalyzer {
    * @return if DB name is give, db.tab is returned. Otherwise, tab.
    */
   public static String getUnescapedName(ASTNode tableNameNode) {
+    return getUnescapedName(tableNameNode, false);
+  }
+
+  public static String getUnescapedName(ASTNode tableNameNode, boolean prependDefaultDB) {
     if (tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME) {
       if (tableNameNode.getChildCount() == 2) {
         String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
         String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
         return dbName + "." + tableName;
-      } else {
-        return unescapeIdentifier(tableNameNode.getChild(0).getText());
       }
+      String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      if (prependDefaultDB) {
+        return MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + tableName;
+      }
+      return tableName;
     }
     return unescapeIdentifier(tableNameNode.getText());
   }
