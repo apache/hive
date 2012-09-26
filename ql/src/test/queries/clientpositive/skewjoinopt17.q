@@ -15,11 +15,13 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 -- skewed by one column. Ths join is performed on the first skewed column
 -- The skewed value for the jon key is common to both the tables.
 -- In this case, the skewed join value is not repeated in the filter.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val;
 
 DROP TABLE T1;
 DROP TABLE T2;
@@ -42,4 +44,5 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val;

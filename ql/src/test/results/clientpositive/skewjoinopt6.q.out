@@ -27,6 +27,7 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
 -- is common to both the tables. The join key is a subset of the skewed key set:
 -- it only contains the first skewed key for both the tables
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -34,6 +35,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
 -- is common to both the tables. The join key is a subset of the skewed key set:
 -- it only contains the first skewed key for both the tables
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -224,11 +226,13 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

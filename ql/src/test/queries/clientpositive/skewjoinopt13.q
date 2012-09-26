@@ -19,6 +19,7 @@ LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3;
 -- tables 1 and 2. Table 3 is skewed, but since one of the join sources for table
 -- 3 consist of a sub-query which contains a join, the compile time skew join 
 -- optimization is not performed
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 select *
@@ -29,5 +30,6 @@ join T3 c on a.val = c.val;
 select *
 from 
 T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val;
+join T3 c on a.val = c.val
+order by a.key, b.key, c.key, a.val, b.val, c.val;
 

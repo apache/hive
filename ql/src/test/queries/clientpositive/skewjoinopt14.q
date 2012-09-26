@@ -21,6 +21,8 @@ LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3;
 -- 3 consist of a sub-query which contains a join, the compile time skew join 
 -- optimization is not enabled for table 3, but it is used for the first join between
 -- tables 1 and 2
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 select *
 from 
@@ -30,5 +32,6 @@ join T3 c on a.val = c.val;
 select *
 from 
 T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val;
+join T3 c on a.val = c.val
+order by a.key, b.key, a.val, b.val;
 

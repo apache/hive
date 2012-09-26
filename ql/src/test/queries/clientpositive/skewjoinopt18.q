@@ -20,7 +20,10 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 -- Once HIVE-3445 is fixed, the compile time skew join optimization would be
 -- applicable here. Till the above jira is fixed, it would be performed as a
 -- regular join
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val;

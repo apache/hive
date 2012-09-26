@@ -27,6 +27,7 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: -- a simple query with skew on both the tables. One of the skewed
 -- value is common to both the tables. The skewed value should not be
 -- repeated in the filter.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -34,6 +35,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- a simple query with skew on both the tables. One of the skewed
 -- value is common to both the tables. The skewed value should not be
 -- repeated in the filter.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -224,11 +226,13 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -435,21 +439,23 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a FULL OUTER JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a FULL OUTER JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-1	11	NULL	NULL
 NULL	NULL	4	14
 NULL	NULL	5	15
-7	17	NULL	NULL
+1	11	NULL	NULL
 2	12	2	22
 3	13	3	13
+7	17	NULL	NULL
 8	18	8	18
 8	18	8	18
 8	28	8	18
