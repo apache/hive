@@ -25,6 +25,8 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: -- This test is to verify the skew join compile optimization when the join is followed
 -- by a union. Both sides of a union consist of a join, which should have used
 -- skew join compile time optimization.
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN	 
 select * from	
 (      
@@ -36,6 +38,8 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- This test is to verify the skew join compile optimization when the join is followed
 -- by a union. Both sides of a union consist of a join, which should have used
 -- skew join compile time optimization.
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN	 
 select * from	
 (      
@@ -433,6 +437,7 @@ PREHOOK: query: select * from
     union all 	
   select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
 ) subq1
+ORDER BY key, val1, val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -443,19 +448,20 @@ POSTHOOK: query: select * from
     union all 	
   select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
 ) subq1
+ORDER BY key, val1, val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
+2	12	22
+2	12	22
 3	13	13
+3	13	13
+8	18	18
+8	18	18
 8	18	18
 8	18	18
 8	28	18
 8	28	18
-2	12	22
-2	12	22
-3	13	13
-8	18	18
-8	18	18
 8	28	18
 8	28	18

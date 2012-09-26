@@ -28,6 +28,7 @@ PREHOOK: query: -- One of the tables is skewed by 2 columns, and the other table
 -- skewed by one column. Ths join is performed on the first skewed column
 -- The skewed value for the jon key is common to both the tables.
 -- In this case, the skewed join value is not repeated in the filter.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -36,6 +37,7 @@ POSTHOOK: query: -- One of the tables is skewed by 2 columns, and the other tabl
 -- skewed by one column. Ths join is performed on the first skewed column
 -- The skewed value for the jon key is common to both the tables.
 -- In this case, the skewed join value is not repeated in the filter.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -226,21 +228,23 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
+2	12	2	22
 3	13	3	13
 8	18	8	18
 8	18	8	18
 8	28	8	18
 8	28	8	18
-2	12	2	22
 PREHOOK: query: DROP TABLE T1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
@@ -498,11 +502,13 @@ STAGE PLANS:
       limit: -1
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

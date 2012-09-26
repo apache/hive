@@ -13,8 +13,10 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 
 -- One of the tables is skewed by 2 columns, and the other table is
 -- skewed by one column. Ths join is performed on the first skewed column
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val;

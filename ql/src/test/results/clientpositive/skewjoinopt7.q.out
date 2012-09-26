@@ -38,12 +38,16 @@ POSTHOOK: Output: default@t3
 PREHOOK: query: -- This test is for validating skewed join compile time optimization for more than
 -- 2 tables. The join key is the same, and so a 3-way join would be performed.
 -- 2 of the 3 tables are skewed on the join key
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- This test is for validating skewed join compile time optimization for more than
 -- 2 tables. The join key is the same, and so a 3-way join would be performed.
 -- 2 of the 3 tables are skewed on the join key
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
 POSTHOOK: type: QUERY
@@ -287,12 +291,14 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
+ORDER BY a.key, b.key, c.key, a.val, b.val, c.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
+ORDER BY a.key, b.key, c.key, a.val, b.val, c.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

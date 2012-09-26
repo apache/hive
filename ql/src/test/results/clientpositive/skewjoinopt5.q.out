@@ -26,12 +26,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
 -- skewed by one column. Ths join is performed on the first skewed column
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
 -- skewed by one column. Ths join is performed on the first skewed column
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
@@ -222,18 +224,20 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-8	18	8	18
-8	18	8	18
-8	28	8	18
-8	28	8	18
 2	12	2	22
 3	13	3	13
+8	18	8	18
+8	18	8	18
+8	28	8	18
+8	28	8	18

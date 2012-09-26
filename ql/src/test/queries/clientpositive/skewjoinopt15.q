@@ -21,17 +21,21 @@ INSERT OVERWRITE TABLE T2 SELECT key, val FROM tmpT2;
 -- Otherwise this test is similar to skewjoinopt1.q
 -- Both the joined tables are skewed, and the joined column
 -- is an integer
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val;
 
 -- test outer joins also
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key;
 
-SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key;
+SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val;
 
 -- an aggregation at the end should not change anything
 

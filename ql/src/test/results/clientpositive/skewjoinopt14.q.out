@@ -41,6 +41,8 @@ PREHOOK: query: -- This test is for skewed join compile time optimization for mo
 -- 3 consist of a sub-query which contains a join, the compile time skew join 
 -- optimization is not enabled for table 3, but it is used for the first join between
 -- tables 1 and 2
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 select *
 from 
@@ -53,6 +55,8 @@ POSTHOOK: query: -- This test is for skewed join compile time optimization for m
 -- 3 consist of a sub-query which contains a join, the compile time skew join 
 -- optimization is not enabled for table 3, but it is used for the first join between
 -- tables 1 and 2
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 select *
 from 
@@ -297,6 +301,7 @@ PREHOOK: query: select *
 from 
 T1 a join T2 b on a.key = b.key 
 join T3 c on a.val = c.val
+order by a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -306,6 +311,7 @@ POSTHOOK: query: select *
 from 
 T1 a join T2 b on a.key = b.key 
 join T3 c on a.val = c.val
+order by a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

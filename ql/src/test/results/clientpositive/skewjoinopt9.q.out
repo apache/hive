@@ -24,6 +24,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: -- no skew join compile time optimization would be performed if one of the
 -- join sources is a sub-query consisting of a union all
+-- adding a order by at the end to make the results deterministic
 EXPLAIN
 select * from
 (
@@ -35,6 +36,7 @@ join T2 b on subq1.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- no skew join compile time optimization would be performed if one of the
 -- join sources is a sub-query consisting of a union all
+-- adding a order by at the end to make the results deterministic
 EXPLAIN
 select * from
 (
@@ -161,6 +163,7 @@ select key, val from T1
 select key, val from T1
 ) subq1
 join T2 b on subq1.key = b.key
+ORDER BY subq1.key, b.key, subq1.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -172,6 +175,7 @@ select key, val from T1
 select key, val from T1
 ) subq1
 join T2 b on subq1.key = b.key
+ORDER BY subq1.key, b.key, subq1.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -343,6 +347,7 @@ PREHOOK: query: select * from
 select key, count(1) as cnt from T1 group by key
 ) subq1
 join T2 b on subq1.key = b.key
+ORDER BY subq1.key, b.key, subq1.cnt, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -352,6 +357,7 @@ POSTHOOK: query: select * from
 select key, count(1) as cnt from T1 group by key
 ) subq1
 join T2 b on subq1.key = b.key
+ORDER BY subq1.key, b.key, subq1.cnt, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

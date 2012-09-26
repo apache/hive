@@ -28,6 +28,7 @@ PREHOOK: query: -- a simple query with skew on both the tables on the join key
 -- multiple skew values are present for the skewed keys
 -- but the skewed values do not overlap.
 -- The join values are a superset of the skewed keys.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
@@ -36,6 +37,7 @@ POSTHOOK: query: -- a simple query with skew on both the tables on the join key
 -- multiple skew values are present for the skewed keys
 -- but the skewed values do not overlap.
 -- The join values are a superset of the skewed keys.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
@@ -241,11 +243,13 @@ STAGE PLANS:
       limit: -1
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -464,11 +468,13 @@ STAGE PLANS:
       limit: -1
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
@@ -477,9 +483,9 @@ POSTHOOK: Input: default@t2
 2	12	NULL	NULL
 3	13	3	13
 7	17	NULL	NULL
-8	18	8	18
-8	18	8	18
 8	28	NULL	NULL
+8	18	8	18
+8	18	8	18
 PREHOOK: query: -- a group by at the end should not change anything
 
 EXPLAIN

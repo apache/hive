@@ -13,6 +13,8 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 -- This test is to verify the skew join compile optimization when the join is followed
 -- by a union. Both sides of a union consist of a join, which should have used
 -- skew join compile time optimization.
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN	 
 select * from	
 (      
@@ -26,4 +28,5 @@ select * from
   select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
     union all 	
   select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
-) subq1;
+) subq1
+ORDER BY key, val1, val2;

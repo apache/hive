@@ -52,12 +52,16 @@ POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string
 PREHOOK: query: -- Once HIVE-3445 is fixed, the compile time skew join optimization would be
 -- applicable here. Till the above jira is fixed, it would be performed as a
 -- regular join
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Once HIVE-3445 is fixed, the compile time skew join optimization would be
 -- applicable here. Till the above jira is fixed, it would be performed as a
 -- regular join
+-- adding a order by at the end to make the results deterministic
+
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
@@ -141,11 +145,13 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

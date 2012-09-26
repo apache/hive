@@ -15,18 +15,21 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 -- multiple skew values are present for the skewed keys
 -- but the skewed values do not overlap.
 -- The join values are a superset of the skewed keys.
+-- adding a order by at the end to make the results deterministic
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val;
 
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val;
+SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val;
 
 -- test outer joins also
 
 EXPLAIN
 SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val;
 
-SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val;
+SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
+ORDER BY a.key, b.key, a.val, b.val;
 
 -- a group by at the end should not change anything
 
