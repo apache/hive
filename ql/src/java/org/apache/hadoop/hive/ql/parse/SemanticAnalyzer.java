@@ -699,8 +699,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_INSERT_INTO:
-        String tab_name = getUnescapedName((ASTNode)ast.getChild(0).
-            getChild(0));
+        String tab_name = getUnescapedName((ASTNode)ast.getChild(0).getChild(0), true);
         qbp.addInsertIntoTable(tab_name);
 
       case HiveParser.TOK_DESTINATION:
@@ -925,7 +924,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // Disallow INSERT INTO on bucketized tables
-        if(qb.getParseInfo().isInsertIntoTable(tab_name) &&
+        if(qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab_name) &&
             tab.getNumBuckets() > 0) {
           throw new SemanticException(ErrorMsg.INSERT_INTO_BUCKETIZED_TABLE.
               getMsg("Table: " + tab_name));
@@ -4065,7 +4064,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isNonNativeTable) {
         ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
             table_desc, dpCtx);
-        ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(
+        ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
 
         if (holdDDLTime) {
@@ -4138,7 +4137,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
           table_desc, dest_part.getSpec());
-      ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(
+      ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
           dest_tab.getTableName()));
 
       if (holdDDLTime) {
