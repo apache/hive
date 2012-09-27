@@ -250,6 +250,8 @@ public enum ErrorMsg {
   JOINNODE_OUTERJOIN_MORETHAN_8(10142, "Single join node containing outer join(s) " +
       "cannot have more than 8 aliases"),
 
+  INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
+
   CREATE_SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   CREATE_SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
   CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,

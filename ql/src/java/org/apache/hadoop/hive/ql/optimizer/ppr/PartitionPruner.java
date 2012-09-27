@@ -226,19 +226,25 @@ public class PartitionPruner implements Transform {
             // This could happen when hive.mapred.mode=nonstrict and all the predicates
             // are on non-partition columns.
             unkn_parts.addAll(Hive.get().getPartitions(tab));
-          } else if (Utilities.checkJDOPushDown(tab, compactExpr)) {
-            String filter = compactExpr.getExprString();
-            String oldFilter = prunerExpr.getExprString();
-
-            if (filter.equals(oldFilter)) {
-              // pruneExpr contains only partition columns
-              pruneByPushDown(tab, true_parts, filter);
-            } else {
-              // pruneExpr contains non-partition columns
-              pruneByPushDown(tab, unkn_parts, filter);
-            }
           } else {
-            pruneBySequentialScan(tab, true_parts, unkn_parts, denied_parts, prunerExpr, rowObjectInspector);
+            String message = Utilities.checkJDOPushDown(tab, compactExpr);
+            if (message == null) {
+              String filter = compactExpr.getExprString();
+              String oldFilter = prunerExpr.getExprString();
+
+              if (filter.equals(oldFilter)) {
+                // pruneExpr contains only partition columns
+                pruneByPushDown(tab, true_parts, filter);
+              } else {
+                // pruneExpr contains non-partition columns
+                pruneByPushDown(tab, unkn_parts, filter);
+              }
+            } else {
+              LOG.info(ErrorMsg.INVALID_JDO_FILTER_EXPRESSION.getMsg("by condition '"
+                  + message + "'"));
+              pruneBySequentialScan(tab, true_parts, unkn_parts, denied_parts,
+                  prunerExpr, rowObjectInspector);
+            }
           }
         }
         LOG.debug("tabname = " + tab.getTableName() + " is partitioned");

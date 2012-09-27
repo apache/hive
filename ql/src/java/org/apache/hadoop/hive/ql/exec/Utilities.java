@@ -2060,13 +2060,16 @@ public final class Utilities {
    *     restriction by the current JDO filtering implementation.
    * @param tab The table that contains the partition columns.
    * @param expr the partition pruning expression
-   * @return true if the partition pruning expression can be pushed down to JDO filtering.
+   * @return null if the partition pruning expression can be pushed down to JDO filtering.
    */
-  public static boolean checkJDOPushDown(Table tab, ExprNodeDesc expr) {
+  public static String checkJDOPushDown(Table tab, ExprNodeDesc expr) {
     if (expr instanceof ExprNodeConstantDesc) {
       // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
       Object value = ((ExprNodeConstantDesc)expr).getValue();
-      return (value instanceof String);
+      if (value instanceof String) {
+        return null;
+      }
+      return "Constant " + value + " is not string type";
     } else if (expr instanceof ExprNodeColumnDesc) {
       // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
       TypeInfo type = expr.getTypeInfo();
@@ -2074,28 +2077,32 @@ public final class Utilities {
         String colName = ((ExprNodeColumnDesc)expr).getColumn();
         for (FieldSchema fs: tab.getPartCols()) {
           if (fs.getName().equals(colName)) {
-            return fs.getType().equals(Constants.STRING_TYPE_NAME);
+            if (fs.getType().equals(Constants.STRING_TYPE_NAME)) {
+              return null;
+            }
+            return "Partition column " + fs.getName() + " is not string type";
           }
         }
         assert(false); // cannot find the partition column!
      } else {
-       return false;
+        return "Column " + expr.getExprString() + " is not string type";
      }
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
       GenericUDF func = funcDesc.getGenericUDF();
       if (!supportedJDOFuncs(func)) {
-        return false;
+        return "Expression " + expr.getExprString() + " cannot be evaluated";
       }
       List<ExprNodeDesc> children = funcDesc.getChildExprs();
       for (ExprNodeDesc child: children) {
-        if (!checkJDOPushDown(tab, child)) {
-          return false;
+        String message = checkJDOPushDown(tab, child);
+        if (message != null) {
+          return message;
         }
       }
-      return true;
+      return null;
     }
-    return false;
+    return "Expression " + expr.getExprString() + " cannot be evaluated";
   }
 
   /**
