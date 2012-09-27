@@ -251,28 +251,32 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: hr
-                    type: string
-                    expr: ds
-                    type: string
-              sort order: +++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: hr
-                    type: string
-                    expr: ds
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (key = 103.0)
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                      expr: hr
+                      type: string
+                      expr: ds
+                      type: string
+                sort order: +++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: hr
+                      type: string
+                      expr: ds
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
+import org.apache.hadoop.hive.ql.ppd.PredicateTransitivePropagate;
 
 /**
  * Implementation of the optimizer.
@@ -51,6 +52,7 @@ public class Optimizer {
       transformations.add(new ColumnPruner());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+      transformations.add(new PredicateTransitivePropagate());
       transformations.add(new PredicatePushDown());
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());

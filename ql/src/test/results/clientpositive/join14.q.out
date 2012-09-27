@@ -45,18 +45,22 @@ STAGE PLANS:
         srcpart 
           TableScan
             alias: srcpart
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (key > 100.0)
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

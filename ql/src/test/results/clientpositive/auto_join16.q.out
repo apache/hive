@@ -43,7 +43,7 @@ STAGE PLANS:
             alias: tab
             Filter Operator
               predicate:
-                  expr: (value < 200.0)
+                  expr: ((key > 20.0) and (value < 200.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -174,7 +174,7 @@ STAGE PLANS:
             alias: tab
             Filter Operator
               predicate:
-                  expr: (value < 200.0)
+                  expr: ((key > 20.0) and (value < 200.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -248,7 +248,7 @@ STAGE PLANS:
             alias: tab
             Filter Operator
               predicate:
-                  expr: (value < 200.0)
+                  expr: ((key > 20.0) and (value < 200.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:

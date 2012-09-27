@@ -43,35 +43,39 @@ STAGE PLANS:
         null-subquery2:src_12-subquery2:src 
           TableScan
             alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: key, value
-              Group By Operator
-                bucketGroup: false
-                keys:
+            Filter Operator
+              predicate:
+                  expr: (key < 200.0)
+                  type: boolean
+              Select Operator
+                expressions:
                       expr: key
                       type: string
                       expr: value
                       type: string
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+                outputColumnNames: key, value
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: key
                         type: string
-                        expr: _col1
+                        expr: value
                         type: string
-                  sort order: ++
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  tag: -1
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    sort order: ++
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    tag: -1
       Reduce Operator Tree:
         Group By Operator
           bucketGroup: false
@@ -161,38 +165,42 @@ STAGE PLANS:
         null-subquery1:src_12-subquery1:src 
           TableScan
             alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[_col0]]
-                    1 [Column[_col0]]
-                  Position of Big Table: 0
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count(1)
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            Filter Operator
+              predicate:
+                  expr: (key < 200.0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Union
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 
+                      1 
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col0]]
+                      1 [Column[_col0]]
+                    Position of Big Table: 0
+                    Select Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count(1)
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -250,23 +258,27 @@ STAGE PLANS:
         null-subquery1:src_12-subquery1:src 
           TableScan
             alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                HashTable Sink Operator
-                  condition expressions:
-                    0 
-                    1 
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[_col0]]
-                    1 [Column[_col0]]
-                  Position of Big Table: 1
+            Filter Operator
+              predicate:
+                  expr: (key < 200.0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Union
+                  HashTable Sink Operator
+                    condition expressions:
+                      0 
+                      1 
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col0]]
+                      1 [Column[_col0]]
+                    Position of Big Table: 1
 
   Stage: Stage-7
     Map Reduce
@@ -328,23 +340,27 @@ STAGE PLANS:
         null-subquery1:src_12-subquery1:src 
           TableScan
             alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: 0
+            Filter Operator
+              predicate:
+                  expr: (key < 200.0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Union
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
         src3:src 
           TableScan
             alias: src

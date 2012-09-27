@@ -55,3 +55,7 @@ SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value;
+
+--HIVE-3315 join predicate transitive
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
+select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
