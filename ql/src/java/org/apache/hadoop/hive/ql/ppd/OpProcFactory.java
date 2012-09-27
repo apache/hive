@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -670,11 +671,10 @@ public final class OpProcFactory {
       }
 
       for (; i < preds.size(); i++) {
-        List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
-        children.add(condn);
-        children.add(preds.get(i));
-        condn = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-            FunctionRegistry.getGenericUDFForAnd(), children);
+        ExprNodeDesc next = preds.get(i);
+        if (!ExprNodeDescUtils.containsPredicate(condn, next)) {
+          condn = ExprNodeDescUtils.mergePredicates(condn, next);
+        }
       }
     }
 
