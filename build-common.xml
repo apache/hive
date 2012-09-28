@@ -390,11 +390,9 @@
       <equals arg1="windows" arg2="${os.family}"/>
       <then>
         <property name="junit.script.extension" value=".cmd"/>
-        <property name="junit.file.schema" value=""/>
       </then>
       <else>
         <property name="junit.script.extension" value=""/>
-        <property name="junit.file.schema" value="file://"/>
       </else>
     </if>
     <if>
@@ -413,9 +411,9 @@
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
-      <sysproperty key="log4j.configuration" value="${junit.file.schema}${test.src.data.dir}/conf/hive-log4j.properties"/>
+      <sysproperty key="log4j.configuration" value="file:///${test.src.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="${junit.file.schema}${test.build.dir}/test-udfs.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="file:///${test.build.dir}/test-udfs.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>

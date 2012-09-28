@@ -243,11 +243,6 @@ public class QTestUtil {
 
     String orgScratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR);
     conf.setVar(HiveConf.ConfVars.SCRATCHDIR, getHdfsUriString(orgScratchDir));
-
-    if (miniMr) {
-      String orgAuxJarFolder = conf.getAuxJars();
-      conf.setAuxJars(getHdfsUriString("file://" + orgAuxJarFolder));
-    }
   }
 
   private String getHdfsUriString(String uriStr) {
