@@ -89,7 +89,7 @@ public class MapredWork extends AbstractOperatorDesc {
   // used to indicate the input is sorted, and so a BinarySearchRecordReader shoudl be used
   private boolean inputFormatSorted = false;
 
-  private transient boolean smbJoin;
+  private transient boolean useBucketizedHiveInputFormat;
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -488,11 +488,11 @@ public class MapredWork extends AbstractOperatorDesc {
     return returnList;
   }
 
-  public boolean isSmbJoin() {
-    return smbJoin;
+  public boolean isUseBucketizedHiveInputFormat() {
+    return useBucketizedHiveInputFormat;
   }
 
-  public void setSmbJoin(boolean smbJoin) {
-    this.smbJoin = smbJoin;
+  public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
+    this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
   }
 }

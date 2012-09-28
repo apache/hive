@@ -52,6 +52,8 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   private Mode mode;
   private boolean groupKeyNotReductionKey;
+
+  // no hash aggregations for group by
   private boolean bucketGroup;
 
   private ArrayList<ExprNodeDesc> keys;
@@ -177,8 +179,8 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return bucketGroup;
   }
 
-  public void setBucketGroup(boolean dataSorted) {
-    bucketGroup = dataSorted;
+  public void setBucketGroup(boolean bucketGroup) {
+    this.bucketGroup = bucketGroup;
   }
 
   /**

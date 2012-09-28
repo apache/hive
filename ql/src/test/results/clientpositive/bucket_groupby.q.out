@@ -60,7 +60,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -185,7 +185,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -289,7 +289,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: length(key)
                       type: int
@@ -384,7 +384,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: abs(length(key))
                       type: int
@@ -481,7 +481,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -700,7 +700,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -1102,7 +1102,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: true
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string

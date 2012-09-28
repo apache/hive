@@ -105,4 +105,9 @@ public class SelectOperator extends Operator<SelectDesc> implements
   public boolean supportSkewJoinOptimization() {
     return true;
   }
+
+  @Override
+  public boolean columnNamesRowResolvedCanBeObtained() {
+    return true;
+  }
 }

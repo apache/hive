@@ -120,8 +120,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
   protected transient HashSet<KeyWrapper> keysCurrentGroup;
 
-  transient boolean bucketGroup;
-
   transient boolean firstRow;
   transient long totalMemory;
   transient boolean hashAggr;
@@ -329,9 +327,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       objectInspectors.add(roi);
     }
 
-    bucketGroup = conf.getBucketGroup();
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
-    if (conf.getMode() != GroupByDesc.Mode.HASH || bucketGroup) {
+    if (conf.getMode() != GroupByDesc.Mode.HASH || conf.getBucketGroup()) {
       aggregations = newAggregations();
       hashAggr = false;
     } else {
@@ -807,7 +804,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
     boolean keysAreEqual = (currentKeys != null && newKeys != null)?
         newKeys.equals(currentKeys) : false;
-
 
     // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual) {

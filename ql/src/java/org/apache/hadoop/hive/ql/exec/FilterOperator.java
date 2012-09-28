@@ -165,4 +165,9 @@ public class FilterOperator extends Operator<FilterDesc> implements
   public boolean supportSkewJoinOptimization() {
     return true;
   }
+
+  @Override
+  public boolean columnNamesRowResolvedCanBeObtained() {
+    return true;
+  }
 }

@@ -321,7 +321,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
     }
 
-    if (getWork().isSmbJoin()) {
+    if (getWork().isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
     }
 
