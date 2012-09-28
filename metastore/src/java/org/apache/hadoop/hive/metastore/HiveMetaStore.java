@@ -420,7 +420,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     public String startFunction(String function, String extraLogInfo) {
       incrementCounter(function);
-      logInfo(function + extraLogInfo);
+      logInfo((getIpAddress() == null ? "" : "source:" + getIpAddress() + " ") +
+          function + extraLogInfo);
       try {
         Metrics.startScope(function);
       } catch (IOException e) {
