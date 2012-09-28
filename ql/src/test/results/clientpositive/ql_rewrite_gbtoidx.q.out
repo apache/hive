@@ -294,7 +294,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(_count_of_l_shipdate)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: l_shipdate
                       type: string
@@ -1136,7 +1136,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(_count_of_l_shipdate)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: l_shipdate
                       type: string
@@ -1301,7 +1301,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations:
                         expr: sum(_count_of_key)
-                  bucketGroup: false
+                  bucketGroup: true
                   keys:
                         expr: key
                         type: int
@@ -1384,7 +1384,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(_count_of_key)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: key
                       type: int
@@ -3909,7 +3909,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(_count_of_key)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: key
                       type: int

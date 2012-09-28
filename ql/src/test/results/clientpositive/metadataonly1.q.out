@@ -30,7 +30,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: max(ds)
-                bucketGroup: false
+                bucketGroup: true
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator

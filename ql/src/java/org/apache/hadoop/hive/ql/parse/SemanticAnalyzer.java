@@ -7263,6 +7263,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setKeyDescTaskTree(rootTask);
     }
 
+    // If a task contains an operator which instructs bucketizedhiveinputformat
+    // to be used, please do so
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      setInputFormat(rootTask);
+    }
+
     PhysicalContext physicalContext = new PhysicalContext(conf,
         getParseContext(), ctx, rootTasks, fetchTask);
     PhysicalOptimizer physicalOptimizer = new PhysicalOptimizer(
@@ -7440,6 +7446,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Operator<? extends OperatorDesc> op : topOp.getChildOperators()) {
       breakOperatorTree(op);
+    }
+  }
+
+  private void setInputFormat(MapredWork work, Operator<? extends OperatorDesc> op) {
+    if (op.isUseBucketizedHiveInputFormat()) {
+      work.setUseBucketizedHiveInputFormat(true);
+      return;
+    }
+
+    if (op.getChildOperators() != null) {
+      for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+        setInputFormat(work, childOp);
+      }
+    }
+  }
+
+  // loop over all the tasks recursviely
+  private void setInputFormat(Task<? extends Serializable> task) {
+    if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
+      if (!opMap.isEmpty()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
+          setInputFormat(work, op);
+        }
+      }
+    } else if (task instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task).getListTasks();
+      for (Task<? extends Serializable> tsk : listTasks) {
+        setInputFormat(tsk);
+      }
+    }
+
+    if (task.getChildTasks() != null) {
+      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+        setInputFormat(childTask);
+      }
     }
   }
 

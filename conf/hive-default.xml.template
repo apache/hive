@@ -453,6 +453,16 @@
   job plan. If the multi group by query has common group by keys, it will be
   optimized to generate single M/R job.</description>
 </property>
+
+<property>
+  <name>hive.map.groupby.sorted</name>
+  <value>false</value>
+  <description>If the bucketing/sorting properties of the table exactly match the grouping key, whether to 
+    perform the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this
+    is that it limits the number of mappers to the number of files. 
+  </description>
+</property>
+
 <property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
