@@ -50,6 +50,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private boolean gatherStats;
   private boolean statsReliable;
 
+  private boolean forwardRowNumber = false;
+
   private ExprNodeDesc filterExpr;
 
   public static final String FILTER_EXPR_CONF_STR =
@@ -101,6 +103,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public List<String> getPartColumns () {
     return partColumns;
+  }
+
+  public boolean isForwardRowNumber() {
+    return forwardRowNumber;
+  }
+
+  public void setForwardRowNumber(boolean forwardRowNumber) {
+    this.forwardRowNumber = forwardRowNumber;
   }
 
   public void setGatherStats(boolean gatherStats) {

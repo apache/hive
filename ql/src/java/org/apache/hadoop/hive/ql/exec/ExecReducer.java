@@ -25,6 +25,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,6 +62,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private Reporter rp;
   private boolean abort = false;
   private boolean isTagged = false;
+  private boolean isOperationPathTagged = false;
   private long cntr = 0;
   private long nextCntr = 1;
 
@@ -116,6 +118,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     reducer.setParentOperators(null); // clear out any parents as reducer is the
     // root
     isTagged = gWork.getNeedsTagging();
+    isOperationPathTagged = gWork.getNeedsOperationPathTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
       inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
@@ -164,8 +167,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   private BytesWritable groupKey;
 
-  ArrayList<Object> row = new ArrayList<Object>(3);
+  List<Object> row = new ArrayList<Object>(4);
   ByteWritable tag = new ByteWritable();
+  ByteWritable operationPathTags = new ByteWritable();
 
   public void reduce(Object key, Iterator values, OutputCollector output,
       Reporter reporter) throws IOException {
@@ -185,6 +189,14 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         // remove the tag
         int size = keyWritable.getSize() - 1;
         tag.set(keyWritable.get()[size]);
+        keyWritable.setSize(size);
+      }
+
+      operationPathTags.set((byte)0);
+      if (isOperationPathTagged) {
+        // remove the operation plan tag
+        int size = keyWritable.getSize() - 1;
+        operationPathTags.set(keyWritable.get()[size]);
         keyWritable.setSize(size);
       }
 
@@ -212,6 +224,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         l4j.trace("Start Group");
         reducer.startGroup();
         reducer.setGroupKeyObject(keyObject);
+        reducer.setBytesWritableGroupKey(groupKey);
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {
@@ -234,6 +247,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(valueObject[tag.get()]);
         // The tag is not used any more, we should remove it.
         row.add(tag);
+        row.add(operationPathTags);
         if (isLogInfoEnabled) {
           cntr++;
           if (cntr == nextCntr) {

@@ -28,7 +28,10 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   LATERALVIEWJOIN(14),
   LATERALVIEWFORWARD(15),
   HASHTABLESINK(16),
-  HASHTABLEDUMMY(17);
+  HASHTABLEDUMMY(17),
+  CORRELATIONCOMPOSITE(18),
+  CORRELATIONLOCALSIMULATIVEREDUCESINK(19),
+  CORRELATIONREDUCERDISPATCH(20);
 
   private final int value;
 
@@ -85,6 +88,12 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return HASHTABLESINK;
       case 17:
         return HASHTABLEDUMMY;
+      case 18:
+        return CORRELATIONCOMPOSITE;
+      case 19:
+        return CORRELATIONLOCALSIMULATIVEREDUCESINK;
+      case 20:
+        return CORRELATIONREDUCERDISPATCH;
       default:
         return null;
     }

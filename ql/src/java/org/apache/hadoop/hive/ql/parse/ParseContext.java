@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
@@ -85,6 +86,11 @@ public class ParseContext {
   // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
+
+  //a map from non-map-side group by pattern (RS-GBY) to map-side group by pattern (GBY-RS-GBY)
+  Map<ReduceSinkOperator, GroupByOperator> groupbyNonMapSide2MapSide;
+  //a map from map-side group by pattern (GBY-RS-GBY) to non-map-side group by pattern (RS-GBY)
+  Map<GroupByOperator, ReduceSinkOperator> groupbyMapSide2NonMapSide;
 
   /**
    * The lineage information.
@@ -169,7 +175,9 @@ public class ParseContext {
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
-      Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner) {
+      Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner,
+      Map<ReduceSinkOperator, GroupByOperator> groupbyNonMapSide2MapSide,
+      Map<GroupByOperator, ReduceSinkOperator> groupbyMapSide2NonMapSide) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -196,6 +204,8 @@ public class ParseContext {
     this.semanticInputs = semanticInputs;
     this.rootTasks = rootTasks;
     this.opToSkewedPruner = opToSkewedPruner;
+    this.groupbyNonMapSide2MapSide = groupbyNonMapSide2MapSide;
+    this.groupbyMapSide2NonMapSide = groupbyMapSide2NonMapSide;
   }
 
   /**
@@ -538,7 +548,7 @@ public class ParseContext {
   }
 
   public void replaceRootTask(Task<? extends Serializable> rootTask,
-                              List<? extends Task<? extends Serializable>> tasks) {
+      List<? extends Task<? extends Serializable>> tasks) {
     this.rootTasks.remove(rootTask);
     this.rootTasks.addAll(tasks);
   }
@@ -576,4 +586,11 @@ public class ParseContext {
     this.opToSkewedPruner = opToSkewedPruner;
   }
 
+  public Map<ReduceSinkOperator, GroupByOperator> getGroupbyNonMapSide2MapSide() {
+    return groupbyNonMapSide2MapSide;
+  }
+
+  public Map<GroupByOperator, ReduceSinkOperator> getGroupbyMapSide2NonMapSide() {
+    return groupbyMapSide2NonMapSide;
+  }
 }
