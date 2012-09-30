@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -1414,5 +1415,53 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
+  }
+
+  // bytesWritableGroupKey is only used when a query plan is optimized by CorrelationOptimizer.
+  // CorrelationLocalSimulativeReduceSinkOperator will use this variable to determine when it needs to start or end the group
+  // for its child operator.
+  protected BytesWritable bytesWritableGroupKey;
+
+  public void setBytesWritableGroupKey(BytesWritable groupKey) {
+    if (bytesWritableGroupKey == null) {
+      bytesWritableGroupKey = new BytesWritable();
+    }
+    bytesWritableGroupKey.set(groupKey.get(), 0, groupKey.getSize());
+  }
+
+  public BytesWritable getBytesWritableGroupKey() {
+    return bytesWritableGroupKey;
+  }
+
+  // The number of current row
+  protected long rowNumber;
+
+  public void initializeRowNumber() {
+    this.rowNumber = 0L;
+    LOG.info("Operator " + id + " " + getName() + " row number initialized to 0");
+    if (childOperators == null) {
+      return;
+    }
+    LOG.info("Initializing row numbers of children of " + id + " " + getName());
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      childOperatorsArray[i].initializeRowNumber();
+    }
+  }
+
+  public void setRowNumber(long rowNumber) throws HiveException {
+    this.rowNumber = rowNumber;
+    if (childOperators == null) {
+      return;
+    }
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      assert rowNumber >= childOperatorsArray[i].getRowNumber();
+      if (rowNumber != childOperatorsArray[i].getRowNumber()) {
+        childOperatorsArray[i].setRowNumber(rowNumber);
+      }
+    }
+  }
+
+  public long getRowNumber() {
+    return rowNumber;
   }
 }

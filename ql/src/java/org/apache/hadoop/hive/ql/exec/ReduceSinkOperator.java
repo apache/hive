@@ -21,179 +21,50 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.Serializer;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
  **/
-public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
+public class ReduceSinkOperator extends BaseReduceSinkOperator<ReduceSinkDesc>
     implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * The evaluators for the key columns. Key columns decide the sort order on
-   * the reducer side. Key columns are passed to the reducer in the "key".
-   */
-  protected transient ExprNodeEvaluator[] keyEval;
-  /**
-   * The evaluators for the value columns. Value columns are passed to reducer
-   * in the "value".
-   */
-  protected transient ExprNodeEvaluator[] valueEval;
-  /**
-   * The evaluators for the partition columns (CLUSTER BY or DISTRIBUTE BY in
-   * Hive language). Partition columns decide the reducer that the current row
-   * goes to. Partition columns are not passed to reducer.
-   */
-  protected transient ExprNodeEvaluator[] partitionEval;
+  private final List<Integer> operationPathTags = new ArrayList<Integer>(); // operation path tags
+  private final byte[] operationPathTagsByte = new byte[1];
 
-  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is
-  // ready
-  transient Serializer keySerializer;
-  transient boolean keyIsText;
-  transient Serializer valueSerializer;
-  transient int tag;
-  transient byte[] tagByte = new byte[1];
-  transient protected int numDistributionKeys;
-  transient protected int numDistinctExprs;
-
-  @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
-
-    try {
-      keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
-      int i = 0;
-      for (ExprNodeDesc e : conf.getKeyCols()) {
-        keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
-      }
-
-      numDistributionKeys = conf.getNumDistributionKeys();
-      distinctColIndices = conf.getDistinctColumnIndices();
-      numDistinctExprs = distinctColIndices.size();
-
-      valueEval = new ExprNodeEvaluator[conf.getValueCols().size()];
-      i = 0;
-      for (ExprNodeDesc e : conf.getValueCols()) {
-        valueEval[i++] = ExprNodeEvaluatorFactory.get(e);
-      }
-
-      partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
-      i = 0;
-      for (ExprNodeDesc e : conf.getPartitionCols()) {
-        partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
-      }
-
-      tag = conf.getTag();
-      tagByte[0] = (byte) tag;
-      LOG.info("Using tag = " + tag);
-
-      TableDesc keyTableDesc = conf.getKeySerializeInfo();
-      keySerializer = (Serializer) keyTableDesc.getDeserializerClass()
-          .newInstance();
-      keySerializer.initialize(null, keyTableDesc.getProperties());
-      keyIsText = keySerializer.getSerializedClass().equals(Text.class);
-
-      TableDesc valueTableDesc = conf.getValueSerializeInfo();
-      valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
-          .newInstance();
-      valueSerializer.initialize(null, valueTableDesc.getProperties());
-
-      firstRow = true;
-      initializeChildren(hconf);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+  public void setOperationPathTags(List<Integer> operationPathTags) {
+    this.operationPathTags.addAll(operationPathTags);
+    int operationPathTagsInt = 0;
+    int tmp = 1;
+    for (Integer operationPathTag: operationPathTags) {
+      operationPathTagsInt += tmp << operationPathTag.intValue();
     }
+    operationPathTagsByte[0] = (byte) operationPathTagsInt;
   }
 
-  transient InspectableObject tempInspectableObject = new InspectableObject();
-  transient HiveKey keyWritable = new HiveKey();
-  transient Writable value;
-
-  transient StructObjectInspector keyObjectInspector;
-  transient StructObjectInspector valueObjectInspector;
-  transient ObjectInspector[] partitionObjectInspectors;
-
-  transient Object[][] cachedKeys;
-  transient Object[] cachedValues;
-  transient List<List<Integer>> distinctColIndices;
-
-  boolean firstRow;
-
-  transient Random random;
-
-  /**
-   * Initializes array of ExprNodeEvaluator. Adds Union field for distinct
-   * column indices for group by.
-   * Puts the return values into a StructObjectInspector with output column
-   * names.
-   *
-   * If distinctColIndices is empty, the object inspector is same as
-   * {@link Operator#initEvaluatorsAndReturnStruct(ExprNodeEvaluator[], List, ObjectInspector)}
-   */
-  protected static StructObjectInspector initEvaluatorsAndReturnStruct(
-      ExprNodeEvaluator[] evals, List<List<Integer>> distinctColIndices,
-      List<String> outputColNames,
-      int length, ObjectInspector rowInspector)
-      throws HiveException {
-    int inspectorLen = evals.length > length ? length + 1 : evals.length;
-    List<ObjectInspector> sois = new ArrayList<ObjectInspector>(inspectorLen);
-
-    // keys
-    ObjectInspector[] fieldObjectInspectors = initEvaluators(evals, 0, length, rowInspector);
-    sois.addAll(Arrays.asList(fieldObjectInspectors));
-
-    if (evals.length > length) {
-      // union keys
-      List<ObjectInspector> uois = new ArrayList<ObjectInspector>();
-      for (List<Integer> distinctCols : distinctColIndices) {
-        List<String> names = new ArrayList<String>();
-        List<ObjectInspector> eois = new ArrayList<ObjectInspector>();
-        int numExprs = 0;
-        for (int i : distinctCols) {
-          names.add(HiveConf.getColumnInternalName(numExprs));
-          eois.add(evals[i].initialize(rowInspector));
-          numExprs++;
-        }
-        uois.add(ObjectInspectorFactory.getStandardStructObjectInspector(names, eois));
-      }
-      UnionObjectInspector uoi =
-        ObjectInspectorFactory.getStandardUnionObjectInspector(uois);
-      sois.add(uoi);
-    }
-    return ObjectInspectorFactory.getStandardStructObjectInspector(outputColNames, sois );
+  public List<Integer> getOperationPathTags() {
+    return this.operationPathTags;
   }
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
       ObjectInspector rowInspector = inputObjInspectors[tag];
-      if (firstRow) {
-        firstRow = false;
+      if (isFirstRow) {
+        isFirstRow = false;
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
             distinctColIndices,
             conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);
@@ -267,9 +138,18 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             keyWritable.set(key.getBytes(), 0, key.getLength());
           } else {
             int keyLength = key.getLength();
-            keyWritable.setSize(keyLength + 1);
+            if (!this.getConf().getNeedsOperationPathTagging()) {
+              keyWritable.setSize(keyLength + 1);
+            } else {
+              keyWritable.setSize(keyLength + 2);
+            }
             System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
-            keyWritable.get()[keyLength] = tagByte[0];
+            if (!this.getConf().getNeedsOperationPathTagging()) {
+              keyWritable.get()[keyLength] = tagByte[0];
+            } else {
+              keyWritable.get()[keyLength] = operationPathTagsByte[0];
+              keyWritable.get()[keyLength + 1] = tagByte[0];
+            }
           }
         } else {
           // Must be BytesWritable
@@ -279,9 +159,18 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             keyWritable.set(key.getBytes(), 0, key.getLength());
           } else {
             int keyLength = key.getLength();
-            keyWritable.setSize(keyLength + 1);
+            if (!this.getConf().getNeedsOperationPathTagging()) {
+              keyWritable.setSize(keyLength + 1);
+            } else {
+              keyWritable.setSize(keyLength + 2);
+            }
             System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
-            keyWritable.get()[keyLength] = tagByte[0];
+            if (!this.getConf().getNeedsOperationPathTagging()) {
+              keyWritable.get()[keyLength] = tagByte[0];
+            } else {
+              keyWritable.get()[keyLength] = operationPathTagsByte[0];
+              keyWritable.get()[keyLength + 1] = tagByte[0];
+            }
           }
         }
         keyWritable.setHashCode(keyHashCode);

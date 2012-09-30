@@ -80,6 +80,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
     }
+    if (conf != null && conf.isForwardRowNumber()) {
+      setRowNumber(rowNumber+1);
+    }
     forward(row, inputObjInspectors[tag]);
   }
 
@@ -169,6 +172,12 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (conf == null) {
       return;
     }
+
+    LOG.info(this.getName() + " forward row number " + conf.isForwardRowNumber());
+    if(conf.isForwardRowNumber()){
+      initializeRowNumber();
+    }
+
     if (!conf.isGatherStats()) {
       return;
     }
