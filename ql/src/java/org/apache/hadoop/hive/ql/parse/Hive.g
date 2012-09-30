@@ -1822,6 +1822,10 @@ orderByClause
 @after { msgs.pop(); }
     :
     KW_ORDER KW_BY
+    LPAREN columnRefOrder
+    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_ORDERBY columnRefOrder+)
+    |
+    KW_ORDER KW_BY
     columnRefOrder
     ( COMMA columnRefOrder)* -> ^(TOK_ORDERBY columnRefOrder+)
     ;
@@ -1830,6 +1834,9 @@ clusterByClause
 @init { msgs.push("cluster by clause"); }
 @after { msgs.pop(); }
     :
+    KW_CLUSTER KW_BY
+    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_CLUSTERBY expression+)
+    |
     KW_CLUSTER KW_BY
     expression
     ( COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
@@ -1840,6 +1847,9 @@ distributeByClause
 @after { msgs.pop(); }
     :
     KW_DISTRIBUTE KW_BY
+    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
+    |
+    KW_DISTRIBUTE KW_BY
     expression (COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
@@ -1847,6 +1857,10 @@ sortByClause
 @init { msgs.push("sort by clause"); }
 @after { msgs.pop(); }
     :
+    KW_SORT KW_BY
+    LPAREN columnRefOrder
+    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_SORTBY columnRefOrder+)
+    |
     KW_SORT KW_BY
     columnRefOrder
     ( COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
