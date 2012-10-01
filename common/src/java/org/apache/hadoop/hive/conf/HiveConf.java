@@ -131,6 +131,9 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
       HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX,
       HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS,
+      HiveConf.ConfVars.HMSHANDLERATTEMPTS,
+      HiveConf.ConfVars.HMSHANDLERINTERVAL,
+      HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
       };
 
   /**
@@ -257,9 +260,18 @@ public class HiveConf extends Configuration {
     METASTOREINTERVAL("hive.metastore.ds.retry.interval", 1000),
     // Whether to force reloading of the metastore configuration (including
     // the connection URL, before the next metastore query that accesses the
-    // datastore. Once reloaded, the  this value is reset to false. Used for
+    // datastore. Once reloaded, this value is reset to false. Used for
     // testing only.
     METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false),
+    // Number of attempts to retry connecting after there is a JDO datastore err
+    HMSHANDLERATTEMPTS("hive.hmshandler.retry.attempts", 1),
+    // Number of miliseconds to wait between attepting
+    HMSHANDLERINTERVAL("hive.hmshandler.retry.interval", 1000),
+    // Whether to force reloading of the HMSHandler configuration (including
+    // the connection URL, before the next metastore query that accesses the
+    // datastore. Once reloaded, this value is reset to false. Used for
+    // testing only.
+    HMSHANDLERFORCERELOADCONF("hive.hmshandler.force.reload.conf", false),
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
     METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 100000),
     METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true),
