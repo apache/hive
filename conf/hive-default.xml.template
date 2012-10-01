@@ -928,12 +928,6 @@
 </property>
 
 <property>
-  <name>hive.optimize.correlation</name>
-  <value>false</value>
-  <description>exploit intra-query correlations.</description>
-</property>
-
-<property>
   <name>hive.exec.dynamic.partition</name>
   <value>true</value>
   <description>Whether or not to allow dynamic partitions in DML/DDL.</description>

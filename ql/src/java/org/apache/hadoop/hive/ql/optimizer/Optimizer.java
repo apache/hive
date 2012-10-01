@@ -46,18 +46,6 @@ public class Optimizer {
    */
   public void initialize(HiveConf hiveConf) {
     transformations = new ArrayList<Transform>();
-    // Add correlation optimizer for first phase query plan tree analysis.
-    // The first phase will record original opColumnExprMap, opParseCtx, opRowResolver,
-    // since these may be changed by other optimizers (e.g. entries in opColumnExprMap may be deleted).
-    // If hive.groupby.skewindata is on, CorrelationOptimizer will not be applied.
-    // TODO: Make correlation optimizer 1 phase.
-    CorrelationOptimizer correlationOptimizer = new CorrelationOptimizer();
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCORRELATION) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
-      // TODO: make CorrelationOptimizer compatible with SkewJoinOptimizer
-      transformations.add(correlationOptimizer);
-    }
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
@@ -94,13 +82,6 @@ public class Optimizer {
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVELIMITOPTENABLE)) {
       transformations.add(new GlobalLimitOptimizer());
-    }
-    // The second phase of correlation optimizer used for correlation detection and query plan tree transformation.
-    // The second phase should be the last optimizer added into transformations.
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCORRELATION) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
-      transformations.add(correlationOptimizer);
     }
     transformations.add(new SimpleFetchOptimizer());  // must be called last
   }

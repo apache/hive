@@ -495,7 +495,6 @@ public class HiveConf extends Configuration {
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
-    HIVEOPTCORRELATION("hive.optimize.correlation", false), // exploit intra-query correlations
 
     // optimize skewed join by changing the query plan at compile time
     HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME("hive.optimize.skewjoin.compiletime", false),

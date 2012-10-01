@@ -71,7 +71,6 @@ public class MapredWork extends AbstractOperatorDesc {
   private Long minSplitSizePerRack;
 
   private boolean needsTagging;
-  private boolean needsOperationPathTagging;
   private boolean hadoopSupportsSplittable;
 
   private MapredLocalWork mapLocalWork;
@@ -338,16 +337,6 @@ public class MapredWork extends AbstractOperatorDesc {
 
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
-  }
-
-  //TODO: enable the annotation shown below
-  // @Explain(displayName = "Needs Operation Paths Tagging", normalExplain = false)
-  public boolean getNeedsOperationPathTagging() {
-    return needsOperationPathTagging;
-  }
-
-  public void setNeedsOperationPathTagging(boolean needsOperationPathTagging) {
-    this.needsOperationPathTagging = needsOperationPathTagging;
   }
 
   public boolean getHadoopSupportsSplittable() {
