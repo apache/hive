@@ -116,11 +116,6 @@ public final class GenMapRedUtils {
     }
     if (reducer.getClass() == JoinOperator.class) {
       plan.setNeedsTagging(true);
-      plan.setNeedsOperationPathTagging(false);
-    }
-    if (op.getConf().getNeedsOperationPathTagging()) {
-      plan.setNeedsTagging(true);
-      plan.setNeedsOperationPathTagging(true);
     }
 
     assert currTopOp != null;
@@ -187,7 +182,6 @@ public final class GenMapRedUtils {
         opTaskMap.put(reducer, currTask);
         if (reducer.getClass() == JoinOperator.class) {
           plan.setNeedsTagging(true);
-          plan.setNeedsOperationPathTagging(false);
         }
         ReduceSinkDesc desc = (ReduceSinkDesc) op.getConf();
         plan.setNumReduceTasks(desc.getNumReducers());
@@ -322,7 +316,6 @@ public final class GenMapRedUtils {
 
     if (reducer.getClass() == JoinOperator.class) {
       plan.setNeedsTagging(true);
-      plan.setNeedsOperationPathTagging(false);
     }
 
     initUnionPlan(opProcCtx, unionTask, false);
@@ -1073,7 +1066,6 @@ public final class GenMapRedUtils {
       // dependent on the redTask
       if (reducer.getClass() == JoinOperator.class) {
         cplan.setNeedsTagging(true);
-        cplan.setNeedsOperationPathTagging(false);
       }
     }
 

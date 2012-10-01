@@ -144,13 +144,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   private long maxMemory;
   private float memoryThreshold;
 
-  private boolean forcedForward;  // only used by CorrelationReducerDispatchOperator to make
-                                     // GroupByOperator has the same pace with other
-                                     // GroupByOperators and JoinOperators.
-                                     // If true and newKeys is different from currentKeys,
-                                     // data associated with currentKeys will be
-                                     // forwarded, otherwise, nothing happens.
-
   /**
    * This is used to store the position and field names for variable length
    * fields.
@@ -392,7 +385,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
-    forcedForward = false;
     initializeChildren(hconf);
   }
 
@@ -801,10 +793,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
   }
 
-  public void setForcedForward(boolean forcedForward) {
-    this.forcedForward = forcedForward;
-  }
-
   // Non-hash aggregation
   private void processAggr(Object row, ObjectInspector rowInspector,
       KeyWrapper newKeys) throws HiveException {
@@ -818,14 +806,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         newKeys.equals(currentKeys) : false;
 
     // Forward the current keys if needed for sort-based aggregation
-    if (currentKeys != null && (!keysAreEqual || forcedForward)) {
+    if (currentKeys != null && !keysAreEqual) {
       forward(currentKeys.getKeyArray(), aggregations);
       countAfterReport = 0;
-    }
-
-    if (forcedForward) {
-      currentKeys = null;
-      return;
     }
 
     // Need to update the keys?

@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
-import org.apache.hadoop.hive.ql.plan.CorrelationCompositeDesc;
-import org.apache.hadoop.hive.ql.plan.CorrelationLocalSimulativeReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.CorrelationReducerDispatchDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -94,12 +91,6 @@ public final class OperatorFactory {
         HashTableDummyOperator.class));
     opvec.add(new OpTuple<HashTableSinkDesc>(HashTableSinkDesc.class,
         HashTableSinkOperator.class));
-    opvec.add(new OpTuple<CorrelationCompositeDesc>(CorrelationCompositeDesc.class,
-            CorrelationCompositeOperator.class));
-    opvec.add(new OpTuple<CorrelationReducerDispatchDesc>(CorrelationReducerDispatchDesc.class,
-        CorrelationReducerDispatchOperator.class));
-    opvec.add(new OpTuple<CorrelationLocalSimulativeReduceSinkDesc>(CorrelationLocalSimulativeReduceSinkDesc.class,
-        CorrelationLocalSimulativeReduceSinkOperator.class));
   }
 
   public static <T extends OperatorDesc> Operator<T> get(Class<T> opClass) {
