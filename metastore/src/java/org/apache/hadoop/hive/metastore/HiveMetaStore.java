@@ -166,7 +166,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   public static class HMSHandler extends FacebookBase implements
-      ThriftHiveMetastore.Iface {
+      IHMSHandler {
     public static final Log LOG = HiveMetaStore.LOG;
     private static boolean createDefaultDB = false;
     private String rawStoreClassName;
@@ -342,6 +342,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalId.get() + ": " + s;
     }
 
+    public void setConf(Configuration conf) {
+      threadLocalConf.set(conf);
+      RawStore ms = threadLocalMS.get();
+      if (ms != null) {
+        ms.setConf(conf);
+      }
+    }
+
     private Configuration getConf() {
       Configuration conf = threadLocalConf.get();
       if (conf == null) {
@@ -366,7 +374,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         threadLocalMS.set(ms);
         ms = threadLocalMS.get();
       }
-
       return ms;
     }
 
@@ -3185,6 +3192,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
+  public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
+    return RetryingHMSHandler.getProxy(hiveConf, name);
+  }
+
 
   /**
    * Discard a current delegation token.
@@ -3377,12 +3388,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // start delegation token manager
         saslServer.startDelegationTokenSecretManager(conf);
         transFactory = saslServer.createTransportFactory();
-        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor<HMSHandler>(
-            new HMSHandler("new db based metaserver", conf)));
+        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor<IHMSHandler>(
+            newHMSHandler("new db based metaserver", conf)));
         LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
         // we are in unsecure mode.
-        HMSHandler handler = new HMSHandler("new db based metaserver", conf);
+        IHMSHandler handler = newHMSHandler("new db based metaserver", conf);
 
         if (conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)) {
           transFactory = useFramedTransport ?
@@ -3390,12 +3401,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                   new TUGIContainingTransport.Factory())
               : new TUGIContainingTransport.Factory();
 
-          processor = new TUGIBasedProcessor<HMSHandler>(handler);
+          processor = new TUGIBasedProcessor<IHMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
         } else {
           transFactory = useFramedTransport ?
               new TFramedTransport.Factory() : new TTransportFactory();
-          processor = new TSetIpAddressProcessor<HMSHandler>(handler);
+          processor = new TSetIpAddressProcessor<IHMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
         }
       }

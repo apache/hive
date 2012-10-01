@@ -1465,5 +1465,17 @@
   </description>
 </property>
 
+<property>
+  <name>hive.hmshandler.retry.attempts</name>
+  <value>1</value>
+  <description>The number of times to retry a HMSHandler call if there were a connection error</description>
+</property>
+
+<property>
+   <name>hive.hmshandler.retry.interval</name>
+   <value>1000</value>
+   <description>The number of miliseconds between HMSHandler retry attempts</description>
+</property>
+
 </configuration>
 
