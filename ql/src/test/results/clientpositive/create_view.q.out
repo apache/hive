@@ -768,12 +768,91 @@ CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW view9(m) AS
+PREHOOK: query: -- disable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
 #### A masked pattern was here ####
-POSTHOOK: query: CREATE VIEW view9(m) AS
+POSTHOOK: query: -- disable map-side aggregation
+CREATE VIEW view9(m) AS
+SELECT test_max(length(value))
+FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@view9
+#### A masked pattern was here ####
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE EXTENDED view9
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED view9
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+m	int	
+	 	 
+#### A masked pattern was here ####
+FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
+FROM `default`.`src`) `view9`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view9
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view9
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+m                   	int                 	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT test_max(length(value))	 
+FROM src	 	 
+View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
+FROM `default`.`src`) `view9`	 	 
+PREHOOK: query: SELECT * FROM view9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@view9
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM view9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view9
+#### A masked pattern was here ####
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+7
+PREHOOK: query: DROP VIEW view9
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view9
+PREHOOK: Output: default@view9
+POSTHOOK: query: DROP VIEW view9
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view9
+POSTHOOK: Output: default@view9
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: -- enable map-side aggregation
+CREATE VIEW view9(m) AS
+SELECT test_max(length(value))
+FROM src
+PREHOOK: type: CREATEVIEW
+#### A masked pattern was here ####
+POSTHOOK: query: -- enable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW

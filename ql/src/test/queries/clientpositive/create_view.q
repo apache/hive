@@ -120,6 +120,17 @@ SELECT * FROM view8;
 -- test usage of a UDAF within a view
 CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax';
+set hive.map.aggr=false;
+-- disable map-side aggregation
+CREATE VIEW view9(m) AS
+SELECT test_max(length(value))
+FROM src;
+DESCRIBE EXTENDED view9;
+DESCRIBE FORMATTED view9;
+SELECT * FROM view9;
+DROP VIEW view9;
+set hive.map.aggr=true;
+-- enable map-side aggregation
 CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src;

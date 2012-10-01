@@ -2540,7 +2540,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode value = entry.getValue();
 
       // This is the GenericUDAF name
-      String aggName = value.getChild(0).getText();
+      String aggName = unescapeIdentifier(value.getChild(0).getText());
       boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
       boolean isAllColumns = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
 
@@ -2663,7 +2663,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numDistinctUDFs = 0;
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
-      String aggName = value.getChild(0).getText();
+      String aggName = unescapeIdentifier(value.getChild(0).getText());
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
       boolean isDistinct = (value.getType() == HiveParser.TOK_FUNCTIONDI);
 
@@ -3278,7 +3278,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           paraExpression, paraExprInfo.getTabAlias(), paraExprInfo
           .getIsVirtualCol()));
 
-      String aggName = value.getChild(0).getText();
+      String aggName = unescapeIdentifier(value.getChild(0).getText());
 
       boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
       boolean isStar = value.getType() == HiveParser.TOK_FUNCTIONSTAR;
@@ -5928,7 +5928,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
         ASTNode value = entry.getValue();
-        value.getChild(0).getText();
 
         // 0 is the function name
         for (int i = 1; i < value.getChildCount(); i++) {
