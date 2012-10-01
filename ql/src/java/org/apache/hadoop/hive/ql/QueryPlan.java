@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
 import org.apache.hadoop.hive.ql.plan.api.NodeType;
 import org.apache.hadoop.hive.ql.plan.api.TaskType;
@@ -67,6 +68,7 @@ public class QueryPlan implements Serializable {
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
+  private final List<ReducerTimeStatsPerJob> reducerTimeStatsPerJobList;
 
   private HashSet<ReadEntity> inputs;
   /**
@@ -94,12 +96,14 @@ public class QueryPlan implements Serializable {
   private transient Long queryStartTime;
 
   public QueryPlan() {
+    this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>();
+    this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     rootTasks.addAll(sem.getRootTasks());
     fetchTask = sem.getFetchTask();
     // Note that inputs and outputs can be changed when the query gets executed
@@ -704,6 +708,10 @@ public class QueryPlan implements Serializable {
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQuery() {
     return query;
+  }
+
+  public List<ReducerTimeStatsPerJob> getReducerTimeStatsPerJobList() {
+    return this.reducerTimeStatsPerJobList;
   }
 
   public void setQuery(org.apache.hadoop.hive.ql.plan.api.Query query) {
