@@ -251,7 +251,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE._col0)
+                expr: count(1)
           bucketGroup: false
           keys:
                 expr: KEY._col0
@@ -362,7 +362,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE._col0)
+                expr: count(1)
           bucketGroup: false
           keys:
                 expr: KEY._col0

@@ -165,6 +165,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -2480,6 +2481,50 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Check if the given internalName represents a constant parameter in aggregation parameters
+   * of an aggregation tree.
+   * This method is only invoked when map-side aggregation is not involved. In this case,
+   * every parameter in every aggregation tree should already have a corresponding ColumnInfo,
+   * which is generated when the corresponding ReduceSinkOperator of the GroupByOperator being
+   * generating is generated. If we find that this parameter is a constant parameter,
+   * we will return the corresponding ExprNodeDesc in reduceValues, and we will not need to
+   * use a new ExprNodeColumnDesc, which can not be treated as a constant parameter, for this
+   * parameter (since the writableObjectInspector of a ExprNodeColumnDesc will not be
+   * a instance of ConstantObjectInspector).
+   *
+   * @param reduceValues
+   *          value columns of the corresponding ReduceSinkOperator
+   * @param internalName
+   *          the internal name of this parameter
+   * @return the ExprNodeDesc of the constant parameter if the given internalName represents
+   *         a constant parameter; otherwise, return null
+   */
+  private ExprNodeDesc isConstantParameterInAggregationParameters(String internalName,
+      List<ExprNodeDesc> reduceValues) {
+    // only the pattern of "VALUE._col([0-9]+)" should be handled.
+
+    String[] terms = internalName.split("\\.");
+    if (terms.length != 2 || reduceValues == null) {
+      return null;
+    }
+
+    if (Utilities.ReduceField.VALUE.toString().equals(terms[0])) {
+      int pos = getPositionFromInternalName(terms[1]);
+      if (pos >= 0 && pos < reduceValues.size()) {
+        ExprNodeDesc reduceValue = reduceValues.get(pos);
+        if (reduceValue != null) {
+          if (reduceValue.getWritableObjectInspector() instanceof ConstantObjectInspector) {
+            // this internalName represents a constant parameter in aggregation parameters
+            return reduceValue;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
    *
@@ -2528,12 +2573,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // get the last colName for the reduce KEY
     // it represents the column name corresponding to distinct aggr, if any
     String lastKeyColName = null;
+    List<ExprNodeDesc> reduceValues = null;
     if (reduceSinkOperatorInfo.getConf() instanceof ReduceSinkDesc) {
       List<String> inputKeyCols = ((ReduceSinkDesc)
           reduceSinkOperatorInfo.getConf()).getOutputKeyColumnNames();
       if (inputKeyCols.size() > 0) {
         lastKeyColName = inputKeyCols.get(inputKeyCols.size()-1);
       }
+      reduceValues = ((ReduceSinkDesc)reduceSinkOperatorInfo.getConf()).getValueCols();
     }
     int numDistinctUDFs = 0;
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
@@ -2565,9 +2612,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           getColumnInternalName(i-1);
 
         }
-        aggParameters.add(new ExprNodeColumnDesc(paraExprInfo.getType(),
+
+        ExprNodeDesc expr = new ExprNodeColumnDesc(paraExprInfo.getType(),
             paraExpression, paraExprInfo.getTabAlias(),
-            paraExprInfo.getIsVirtualCol()));
+            paraExprInfo.getIsVirtualCol());
+        ExprNodeDesc reduceValue = isConstantParameterInAggregationParameters(
+            paraExprInfo.getInternalName(), reduceValues);
+
+        if (reduceValue != null) {
+          // this parameter is a constant
+          expr = reduceValue;
+        }
+
+        aggParameters.add(expr);
       }
 
       if (isDistinct) {
@@ -2653,12 +2710,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // get the last colName for the reduce KEY
     // it represents the column name corresponding to distinct aggr, if any
     String lastKeyColName = null;
+    List<ExprNodeDesc> reduceValues = null;
     if (reduceSinkOperatorInfo.getConf() instanceof ReduceSinkDesc) {
       List<String> inputKeyCols = ((ReduceSinkDesc)
           reduceSinkOperatorInfo.getConf()).getOutputKeyColumnNames();
       if (inputKeyCols.size() > 0) {
         lastKeyColName = inputKeyCols.get(inputKeyCols.size()-1);
       }
+      reduceValues = ((ReduceSinkDesc)reduceSinkOperatorInfo.getConf()).getValueCols();
     }
     int numDistinctUDFs = 0;
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
@@ -2699,9 +2758,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             + getColumnInternalName(i-1);
 
           }
-          aggParameters.add(new ExprNodeColumnDesc(paraExprInfo.getType(),
+
+          ExprNodeDesc expr = new ExprNodeColumnDesc(paraExprInfo.getType(),
               paraExpression, paraExprInfo.getTabAlias(),
-              paraExprInfo.getIsVirtualCol()));
+              paraExprInfo.getIsVirtualCol());
+          ExprNodeDesc reduceValue = isConstantParameterInAggregationParameters(
+              paraExprInfo.getInternalName(), reduceValues);
+
+          if (reduceValue != null) {
+            // this parameter is a constant
+            expr = reduceValue;
+          }
+
+          aggParameters.add(expr);
+
         }
       } else {
         ColumnInfo paraExprInfo = groupByInputRowResolver.getExpression(value);
