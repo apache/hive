@@ -179,6 +179,12 @@ public class HiveServer extends ThriftHive {
       String SQLState = null;
 
       try {
+        // Close the existing driver object (CommandProcessor) before creating
+        // the new driver (CommandProcessor) object to clean-up the resources
+        if (driver != null) {
+          driver.close();
+          driver = null;
+        }
         CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
         if (proc != null) {
           if (proc instanceof Driver) {
