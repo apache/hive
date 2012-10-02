@@ -383,7 +383,7 @@
     </delete>
   </target>
 
-  <target name="very-clean" unless="offline" depends="ivy-clean-cache,clean"
+  <target name="very-clean" unless="offline" depends="clean,ivy-clean-cache"
           description="Clean build artifacts and flush Ivy cache" />
 
 

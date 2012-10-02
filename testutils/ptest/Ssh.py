@@ -60,7 +60,7 @@ class SSHConnection():
             quiet = True
         else:
             print(cmd + '\n')
-        cmd = '''ssh -nT '{0}' "bash -c '{1}'"'''.format(self.host, cmd)
+        cmd = '''ssh '{0}' "bash -c '{1}'"'''.format(self.host, cmd)
         try:
             return Process.run(cmd, quiet, abandon_output)
         except Exception as e:

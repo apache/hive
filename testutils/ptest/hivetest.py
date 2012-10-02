@@ -63,11 +63,12 @@ phutil_path = None
 code_path = None
 report_path = None
 host_code_path = None
+ivy_path = None
 
 def read_conf(config_file):
     global local, qfile_set, other_set, remote_set, all_set
     global master_base_path, host_base_path
-    global ant_path, arc_path, phutil_path, code_path, report_path, host_code_path
+    global ant_path, arc_path, phutil_path, code_path, report_path, host_code_path, ivy_path
 
     if config_file is not None:
         config.load(config_file)
@@ -94,10 +95,12 @@ def read_conf(config_file):
     code_path = master_base_path + '/trunk'
     report_path = master_base_path + '/report/' + time.strftime('%m.%d.%Y_%H:%M:%S')
     host_code_path = host_base_path + '/trunk-{host}'
+    ivy_path = master_base_path + '/.ivy2'
 
     # Setup of needed environmental variables and paths
 
     # Ant
+    all_set.export('ANT_HOME', ant_path)
     all_set.add_path(ant_path + '/bin')
 
     # Arcanist
@@ -208,7 +211,13 @@ def patch_hive(patches = [], revision = None):
 def build_hive():
     print('\n-- Building Hive\n')
     local.cd(code_path)
-    local.run('ant clean package')
+    cmd = 'ant -Divy.default.ivy.user.dir={0} '.format(ivy_path)
+    if args.very_clean:
+      cmd += 'very-clean '
+    else:
+      cmd += 'clean '
+    cmd += 'package'
+    local.run(cmd)
 
 def propagate_hive():
     # Expects master_base_path to be available on all test nodes in the same
@@ -216,10 +225,14 @@ def propagate_hive():
     print('\n-- Propagating Hive repo to all hosts\n')
     print(host_code_path)
     print(code_path)
+
     remote_set.run('rm -rf "{0}"'.format(host_code_path))
     remote_set.run('mkdir -p "{0}"'.format(host_code_path))
     remote_set.run('cp -r "{0}/*" "{1}"'.format(
                     code_path, host_code_path))
+
+    # It should avoid issues with 'ivy publish' exceptions during testing phase. 
+    remote_set.run('cp -r "{0}" "{1}"'.format(ivy_path, host_code_path))
 
 
 def segment_tests(path):
@@ -284,16 +297,16 @@ def run_tests():
     # irrelevant if one of the first tests fails and Ant reports a failure after
     # running all the other test, fortunately JUnit report saves the Ant output
     # if you need it for some reason).
+    
+    remote_ivy_path = '$(pwd)/.ivy2'
 
     qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestCliDriver test',
-            quiet = True, warn_only = True)
+    qfile_set.run('ant -Divy.default.ivy.user.dir={0} -Dtestcase=TestCliDriver test'.format(remote_ivy_path), quiet = True, warn_only = True)
     collect_log('TEST-org.apache.hadoop.hive.cli.TestCliDriver.xml')
     collect_out('build/ql/test/logs/clientpositive', 'TestCliDriver')
 
     qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestNegativeCliDriver test',
-            quiet = True, warn_only = True)
+    qfile_set.run('ant -Divy.default.ivy.user.dir={0} -Dtestcase=TestNegativeCliDriver test'.format(remote_ivy_path), quiet = True, warn_only = True)
     collect_log('TEST-org.apache.hadoop.hive.cli.TestNegativeCliDriver.xml')
     collect_out('build/ql/test/logs/clientnegative', 'TestNegativeCliDriver')
 
@@ -344,7 +357,7 @@ def run_other_tests():
         # Split all test cases between hosts.
         def get_command(test):
             return '; '.join([
-                'ant -Dtestcase=' + test + ' test',
+                'ant -Divy.default.ivy.user.dir=$(pwd)/.ivy2 -Dtestcase=' + test + ' test',
 
                 'cp "`find . -name "TEST-*.xml"`" "' + report_path + '/logs/" || ' +
                 'touch "' + report_path + '/logs/{host}-' + test + '.fail"',
@@ -524,6 +537,8 @@ parser.add_argument('--singlehost', dest = 'singlehost', action = 'store_true',
                'contain multiple hosts. '
                'The script is not doing any validation. When --singlehost is set '
                'the script should not be run using sudo.')
+parser.add_argument('--very-clean', action = 'store_true', dest = 'very_clean',
+        help = 'Build hive with `very-clean` option')
 
 args = parser.parse_args()
 
@@ -542,3 +557,6 @@ elif args.stop:
     cmd_stop()
 elif args.remove:
     cmd_remove()
+else: 
+  parser.print_help()
+
