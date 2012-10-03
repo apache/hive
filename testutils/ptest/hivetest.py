@@ -154,14 +154,14 @@ def get_clean_hive():
     print('\n-- Updating Hive repo\n')
 
     if local.run('test -d "{0}"'.format(code_path), warn_only = True,
-            abandon_output = False) is None:
-      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
-      local.run('git clone git://git.apache.org/hive.git "{0}"'.format(code_path))
+            abandon_output = False) is not None:
+      local.run('rm -rf "{0}"'.format(code_path))
 
+
+    local.run('mkdir -p "{0}"'.format(code_path))
+    local.run('svn checkout http://svn.apache.org/repos/asf/hive/trunk "{0}"'.format(code_path), quiet = True)
+    
     local.cd(code_path)
-    local.run('git reset --hard HEAD')
-    local.run('git clean -dffx')
-    local.run('git pull')
     local.run('ant arc-setup')
 
 def copy_local_hive():
