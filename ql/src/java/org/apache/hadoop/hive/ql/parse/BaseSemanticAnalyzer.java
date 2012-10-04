@@ -93,6 +93,7 @@ public abstract class BaseSemanticAnalyzer {
    * Lineage information for the query.
    */
   protected LineageInfo linfo;
+  protected TableAccessInfo tableAccessInfo;
 
   protected static final String TEXTFILE_INPUT = TextInputFormat.class
       .getName();
@@ -794,6 +795,24 @@ public abstract class BaseSemanticAnalyzer {
    */
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
+  }
+
+  /**
+   * Gets the table access information.
+   *
+   * @return TableAccessInfo associated with the query.
+   */
+  public TableAccessInfo getTableAccessInfo() {
+    return tableAccessInfo;
+  }
+
+  /**
+   * Sets the table access information.
+   *
+   * @param taInfo The TableAccessInfo structure that is set in the optimization phase.
+   */
+  public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
+    this.tableAccessInfo = tableAccessInfo;
   }
 
   protected HashMap<String, String> extractPartitionSpecs(Tree partspec)

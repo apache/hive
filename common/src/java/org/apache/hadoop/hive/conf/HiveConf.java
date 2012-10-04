@@ -539,10 +539,12 @@ public class HiveConf extends Configuration {
     HIVE_STATS_RETRIES_WAIT("hive.stats.retries.wait",
         3000),  // # milliseconds to wait before the next retry
     HIVE_STATS_COLLECT_RAWDATASIZE("hive.stats.collect.rawdatasize", true),
-    // should the raw data size be collected when analayzing tables
+    // should the raw data size be collected when analyzing tables
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", ""),
     //Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). Non-display names should be used".
     HIVE_STATS_RELIABLE("hive.stats.reliable", false),
+    // Collect table access keys information for operators that can benefit from bucketing
+    HIVE_STATS_COLLECT_TABLEKEYS("hive.stats.collect.tablekeys", false),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),

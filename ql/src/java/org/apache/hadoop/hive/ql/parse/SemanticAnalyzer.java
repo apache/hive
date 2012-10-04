@@ -7666,6 +7666,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToSkewedPruner);
 
+    // Generate table access stats if required
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {
+      TableAccessAnalyzer tableAccessAnalyzer = new TableAccessAnalyzer(pCtx);
+      setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
+    }
+
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
     optm.initialize(conf);
