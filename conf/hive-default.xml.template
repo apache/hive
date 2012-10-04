@@ -1027,6 +1027,14 @@
 </property>
 
 <property>
+  <name>hive.stats.collect.tablekeys</name>
+  <value>false</value>
+  <description>Whether join and group by keys on tables are derived and maintained in the QueryPlan.
+    This is useful to identify how tables are accessed and to determine if they should be bucketed.
+  </description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

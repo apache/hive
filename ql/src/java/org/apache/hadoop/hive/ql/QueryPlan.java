@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
@@ -82,6 +83,7 @@ public class QueryPlan implements Serializable {
    * Lineage information for the query.
    */
   protected LineageInfo linfo;
+  private TableAccessInfo tableAccessInfo;
 
   private HashMap<String, String> idToTableNameMap;
 
@@ -110,6 +112,7 @@ public class QueryPlan implements Serializable {
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
     linfo = sem.getLineageInfo();
+    tableAccessInfo = sem.getTableAccessInfo();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
 
     queryId = makeQueryId();
@@ -754,6 +757,24 @@ public class QueryPlan implements Serializable {
    */
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
+  }
+
+  /**
+   * Gets the table access information.
+   *
+   * @return TableAccessInfo associated with the query.
+   */
+  public TableAccessInfo getTableAccessInfo() {
+    return tableAccessInfo;
+  }
+
+  /**
+   * Sets the table access information.
+   *
+   * @param taInfo The TableAccessInfo structure that is set right before the optimization phase.
+   */
+  public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
+    this.tableAccessInfo = tableAccessInfo;
   }
 
   public QueryProperties getQueryProperties() {

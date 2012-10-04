@@ -1404,6 +1404,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return ret;
   }
 
+  /*
+   * True only for operators which produce atmost 1 output row per input
+   * row to it. This will allow the output column names to be directly
+   * translated to input column names.
+   */
   public boolean columnNamesRowResolvedCanBeObtained() {
     return false;
   }
