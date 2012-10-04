@@ -287,48 +287,55 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to rename partition because table or database do not exist");
       }
-      try {
-        destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
+
+      // if the external partition is renamed, the file should not change
+      if (tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        new_part.getSd().setLocation(oldPart.getSd().getLocation());
+        msdb.alterPartition(dbname, name, part_vals, new_part);
+      } else {
+        try {
+          destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
-        destPath = constructRenamedPartitionPath(destPath, new_part);
-      } catch (NoSuchObjectException e) {
-        LOG.debug(e);
-        throw new InvalidOperationException(
+          destPath = constructRenamedPartitionPath(destPath, new_part);
+        } catch (NoSuchObjectException e) {
+          LOG.debug(e);
+          throw new InvalidOperationException(
             "Unable to change partition or table. Database " + dbname + " does not exist"
-                + " Check metastore logs for detailed stack." + e.getMessage());
-      }
-      if (destPath != null) {
-        newPartLoc = destPath.toString();
-        oldPartLoc = oldPart.getSd().getLocation();
+              + " Check metastore logs for detailed stack." + e.getMessage());
+        }
+        if (destPath != null) {
+          newPartLoc = destPath.toString();
+          oldPartLoc = oldPart.getSd().getLocation();
 
-        srcPath = new Path(oldPartLoc);
+          srcPath = new Path(oldPartLoc);
 
-        LOG.info("srcPath:" + oldPartLoc);
-        LOG.info("descPath:" + newPartLoc);
-        srcFs = wh.getFs(srcPath);
-        destFs = wh.getFs(destPath);
-        // check that src and dest are on the same file system
-        if (srcFs != destFs) {
-          throw new InvalidOperationException("table new location " + destPath
+          LOG.info("srcPath:" + oldPartLoc);
+          LOG.info("descPath:" + newPartLoc);
+          srcFs = wh.getFs(srcPath);
+          destFs = wh.getFs(destPath);
+          // check that src and dest are on the same file system
+          if (srcFs != destFs) {
+            throw new InvalidOperationException("table new location " + destPath
               + " is on a different file system than the old location "
               + srcPath + ". This operation is not supported");
-        }
-        try {
-          srcFs.exists(srcPath); // check that src exists and also checks
-          if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
-            throw new InvalidOperationException("New location for this table "
+          }
+          try {
+            srcFs.exists(srcPath); // check that src exists and also checks
+            if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
+              throw new InvalidOperationException("New location for this table "
                 + tbl.getDbName() + "." + tbl.getTableName()
                 + " already exists : " + destPath);
-          }
-        } catch (IOException e) {
-          Warehouse.closeFs(srcFs);
-          Warehouse.closeFs(destFs);
-          throw new InvalidOperationException("Unable to access new location "
+            }
+          } catch (IOException e) {
+            Warehouse.closeFs(srcFs);
+            Warehouse.closeFs(destFs);
+            throw new InvalidOperationException("Unable to access new location "
               + destPath + " for partition " + tbl.getDbName() + "."
               + tbl.getTableName() + " " + new_part.getValues());
+          }
+          new_part.getSd().setLocation(newPartLoc);
+          msdb.alterPartition(dbname, name, part_vals, new_part);
         }
-        new_part.getSd().setLocation(newPartLoc);
-        msdb.alterPartition(dbname, name, part_vals, new_part);
       }
 
       success = msdb.commitTransaction();
@@ -336,7 +343,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!success) {
         msdb.rollbackTransaction();
       }
-      if (success && newPartLoc.compareTo(oldPartLoc) != 0) {
+      if (success && newPartLoc != null && newPartLoc.compareTo(oldPartLoc) != 0) {
         //rename the data directory
         try{
           if (srcFs.exists(srcPath)) {

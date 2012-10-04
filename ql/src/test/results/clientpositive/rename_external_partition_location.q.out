@@ -1,0 +1,113 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ex_table ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE ex_table ( key INT, value STRING)
+    PARTITIONED BY (part STRING)
+    STORED AS textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ex_table
+PREHOOK: query: INSERT OVERWRITE TABLE ex_table PARTITION (part='part1')
+SELECT key, value FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ex_table@part=part1
+POSTHOOK: query: INSERT OVERWRITE TABLE ex_table PARTITION (part='part1')
+SELECT key, value FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ex_table@part=part1
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW PARTITIONS ex_table
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS ex_table
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+part=part1
+PREHOOK: query: SELECT * from ex_table where part='part1' ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ex_table@part=part1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from ex_table where part='part1' ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ex_table@part=part1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	part1
+0	val_0	part1
+0	val_0	part1
+2	val_2	part1
+4	val_4	part1
+5	val_5	part1
+5	val_5	part1
+5	val_5	part1
+8	val_8	part1
+9	val_9	part1
+Found 1 items
+#### A masked pattern was here ####
+0val_0
+4val_4
+8val_8
+0val_0
+0val_0
+5val_5
+5val_5
+2val_2
+5val_5
+9val_9
+PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@ex_table
+PREHOOK: Output: default@ex_table@part=part1
+POSTHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@ex_table
+POSTHOOK: Input: default@ex_table@part=part1
+POSTHOOK: Output: default@ex_table@part=part1
+POSTHOOK: Output: default@ex_table@part=part2
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW PARTITIONS ex_table
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS ex_table
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+part=part2
+PREHOOK: query: SELECT * from ex_table where part='part2' ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ex_table@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from ex_table where part='part2' ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ex_table@part=part2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	part2
+0	val_0	part2
+0	val_0	part2
+2	val_2	part2
+4	val_4	part2
+5	val_5	part2
+5	val_5	part2
+5	val_5	part2
+8	val_8	part2
+9	val_9	part2
+Found 1 items
+#### A masked pattern was here ####
+0val_0
+4val_4
+8val_8
+0val_0
+0val_0
+5val_5
+5val_5
+2val_2
+5val_5
+9val_9
