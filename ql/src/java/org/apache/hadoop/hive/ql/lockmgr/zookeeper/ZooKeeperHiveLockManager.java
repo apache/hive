@@ -217,7 +217,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       HiveLock lock = null;
       try {
-        lock = lock(lockObject.getObj(), lockObject.getMode(), false, true);
+        lock = lock(lockObject.getObj(), lockObject.getMode(), keepAlive, true);
       } catch (LockException e) {
         console.printError("Error in acquireLocks..." );
         LOG.error("Error in acquireLocks...", e);
