@@ -1158,13 +1158,20 @@ public final class Utilities {
    * return an integer only - this should match a pure integer as well. {1,3} is used to limit
    * matching for attempts #'s 0-999.
    */
-  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+  private static final Pattern FILE_NAME_TO_TASK_ID_REGEX =
+      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
 
   /**
    * This retruns prefix part + taskID for bucket join for partitioned table
    */
-  private static Pattern fileNamePrefixedTaskIdRegex =
+  private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
       Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+
+  /**
+   * This breaks a prefixed bucket number into the prefix and the taskID
+   */
+  private static final Pattern PREFIXED_TASK_ID_REGEX =
+      Pattern.compile("^(.*?\\(.*\\))?([0-9]+)$");
 
   /**
    * Get the task id from the filename. It is assumed that the filename is derived from the output
@@ -1174,7 +1181,7 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
-    return getIdFromFilename(filename, fileNameTaskIdRegex);
+    return getIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
   }
 
   /**
@@ -1185,7 +1192,7 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getPrefixedTaskIdFromFilename(String filename) {
-    return getIdFromFilename(filename, fileNamePrefixedTaskIdRegex);
+    return getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
   }
 
   private static String getIdFromFilename(String filename, Pattern pattern) {
@@ -1228,14 +1235,41 @@ public final class Utilities {
     return replaceTaskId(taskId, String.valueOf(bucketNum));
   }
 
+  /**
+   * Returns strBucketNum with enough 0's prefixing the task ID portion of the String to make it
+   * equal in length to taskId
+   *
+   * @param taskId - the taskId used as a template for length
+   * @param strBucketNum - the bucket number of the output, may or may not be prefixed
+   * @return
+   */
   private static String replaceTaskId(String taskId, String strBucketNum) {
-    int bucketNumLen = strBucketNum.length();
+    Matcher m = PREFIXED_TASK_ID_REGEX.matcher(strBucketNum);
+    if (!m.matches()) {
+      LOG.warn("Unable to determine bucket number from file ID: " + strBucketNum + ". Using " +
+          "file ID as bucket number.");
+      return adjustBucketNumLen(strBucketNum, taskId);
+    } else {
+      String adjustedBucketNum = adjustBucketNumLen(m.group(2), taskId);
+      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+    }
+  }
+
+  /**
+   * Adds 0's to the beginning of bucketNum until bucketNum and taskId are the same length.
+   *
+   * @param bucketNum - the bucket number, should not be prefixed
+   * @param taskId - the taskId used as a template for length
+   * @return
+   */
+  private static String adjustBucketNumLen(String bucketNum, String taskId) {
+    int bucketNumLen = bucketNum.length();
     int taskIdLen = taskId.length();
     StringBuffer s = new StringBuffer();
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
       s.append("0");
     }
-    return s.toString() + strBucketNum;
+    return s.toString() + bucketNum;
   }
 
   /**
