@@ -169,7 +169,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   public void reduce(Object key, Iterator values, OutputCollector output,
       Reporter reporter) throws IOException {
-
+    if (reducer.getDone()) {
+      return;
+    }
     if (oc == null) {
       // propagete reporter and output collector to all operators
       oc = output;
