@@ -1153,6 +1153,12 @@
 </property>
 
 <property>
+  <name>hive.entity.separator</name>
+  <value>@</value>
+  <description>Separator used to construct names of tables and partitions. For example, dbname@tablename@partitionname</description>
+</property>
+
+<property>
   <name>hive.ddl.createtablelike.properties.whitelist</name>
   <value></value>
   <description>Table Properties to copy over when executing a Create Table Like.</description>
