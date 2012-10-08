@@ -25,6 +25,8 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * This class encapsulates an object that is being read or written to by the

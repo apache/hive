@@ -632,6 +632,7 @@ public class HiveConf extends Configuration {
     // beginning and end of Driver.run, these will be run in the order specified
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", ""),
     HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null),
+    HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
