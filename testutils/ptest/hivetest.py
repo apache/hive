@@ -456,6 +456,16 @@ def overwrite_results():
         local.run('cp * "' + code_path + '/ql/src/test/results/' + name + '"',
                 warn_only = True)
 
+def save_svn_info():
+  if args.svn_info:
+    local.cd(master_base_path + '/trunk')
+    local.run('svn info > "{0}"'.format(report_path + '/svn-info'))
+
+def save_patch():
+  if args.save_patch:
+    local.cd(master_base_path + '/trunk')
+    local.run('svn diff > "{0}"'.format(report_path + '/patch'))
+  
 # -- Tasks that can be called from command line start here.
 
 def cmd_prepare(patches = [], revision = None):
@@ -472,9 +482,12 @@ def cmd_prepare(patches = [], revision = None):
     prepare_tests()
 
 def cmd_run_tests(one_file_report = False):
+    prepare_for_reports()
+    save_svn_info()
+    save_patch()
+
     t = Thread(target = run_other_tests)
     t.start()
-    prepare_for_reports()
     run_tests()
     t.join()
 
@@ -539,6 +552,10 @@ parser.add_argument('--singlehost', dest = 'singlehost', action = 'store_true',
                'the script should not be run using sudo.')
 parser.add_argument('--very-clean', action = 'store_true', dest = 'very_clean',
         help = 'Build hive with `very-clean` option')
+parser.add_argument('--svn-info', dest = 'svn_info', action = 'store_true',
+        help = 'Save result of `svn info` into ${report_path}/svn-info')
+parser.add_argument('--save-patch', dest = 'save_patch', action = 'store_true',
+        help = 'Save applied patch into ${report_path}/patch')
 
 args = parser.parse_args()
 
