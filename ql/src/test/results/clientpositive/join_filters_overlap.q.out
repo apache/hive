@@ -185,6 +185,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -389,6 +391,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -593,6 +597,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -823,6 +829,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /a [d, b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -1058,6 +1066,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /a [d, b, c, a]
 
   Stage: Stage-0
     Fetch Operator

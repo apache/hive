@@ -105,6 +105,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -229,6 +231,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator

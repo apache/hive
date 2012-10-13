@@ -202,6 +202,9 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [src]
+        /srcpart/ds=2008-04-08/hr=12 [src]
 
   Stage: Stage-0
     Move Operator

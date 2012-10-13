@@ -194,6 +194,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        fake-path-metadata-only-query-default.test1{ds=1} [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -320,6 +322,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        fake-path-metadata-only-query-default.test1{ds=1} [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -440,6 +444,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /test1/ds=1 [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -606,6 +612,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        fake-path-metadata-only-query-default.test1{ds=1} [b:test1]
+        fake-path-metadata-only-query-default.test1{ds=2} [b:test1]
 
   Stage: Stage-2
     Map Reduce
@@ -755,6 +764,10 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /test1/ds=1 [a2]
+        /test1/ds=2 [a2]
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
@@ -815,6 +828,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -1060,6 +1075,10 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        fake-path-metadata-only-query-default.test2{ds=1, hr=1} [test2]
+        fake-path-metadata-only-query-default.test2{ds=1, hr=2} [test2]
+        fake-path-metadata-only-query-default.test2{ds=1, hr=3} [test2]
 
   Stage: Stage-0
     Fetch Operator
@@ -1275,6 +1294,10 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /test2/ds=1/hr=1 [test2]
+        /test2/ds=1/hr=2 [test2]
+        /test2/ds=1/hr=3 [test2]
 
   Stage: Stage-0
     Fetch Operator
@@ -1435,6 +1458,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        fake-path-metadata-only-query-default.test1{ds=1} [test1]
+        fake-path-metadata-only-query-default.test1{ds=2} [test1]
 
   Stage: Stage-0
     Fetch Operator

@@ -125,6 +125,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Move Operator

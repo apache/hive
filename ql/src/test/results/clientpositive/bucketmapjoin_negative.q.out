@@ -205,6 +205,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin
             name: default.srcbucket_mapjoin
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin [a]
 
   Stage: Stage-7
     Conditional Operator
@@ -304,6 +306,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -368,6 +372,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator

@@ -104,6 +104,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Move Operator
@@ -1432,6 +1434,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-7
     Conditional Operator
@@ -1531,6 +1535,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.stats_non_partitioned
             name: default.stats_non_partitioned
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -1595,6 +1601,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.stats_non_partitioned
             name: default.stats_non_partitioned
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator

@@ -156,6 +156,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [null-subquery1:subq1-subquery1:x]
 
   Stage: Stage-11
     Map Reduce Local Work
@@ -353,6 +355,8 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-8
     Conditional Operator
@@ -452,6 +456,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
             name: default.dest_j1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Map Reduce
@@ -516,6 +522,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest_j1
             name: default.dest_j1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-7
     Move Operator
@@ -639,6 +647,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [null-subquery2:subq1-subquery2:x1]
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1

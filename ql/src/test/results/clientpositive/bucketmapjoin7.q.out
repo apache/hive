@@ -195,6 +195,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_1
             name: default.srcbucket_mapjoin_part_1
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_1/ds=2008-04-08/hr=0 [a]
 
   Stage: Stage-0
     Fetch Operator

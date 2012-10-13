@@ -120,6 +120,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket0.txt [s]
 
   Stage: Stage-7
     Conditional Operator
@@ -219,6 +221,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
             name: default.dest1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -283,6 +287,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
             name: default.dest1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator

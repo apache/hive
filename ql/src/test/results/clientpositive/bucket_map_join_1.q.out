@@ -162,6 +162,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table1
             name: default.table1
+      Truncated Path -> Alias:
+        /table1 [a]
 
   Stage: Stage-2
     Map Reduce
@@ -230,6 +232,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

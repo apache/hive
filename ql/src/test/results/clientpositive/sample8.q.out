@@ -298,6 +298,11 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [t, s]
+        /srcpart/ds=2008-04-08/hr=12 [t]
+        /srcpart/ds=2008-04-09/hr=11 [t]
+        /srcpart/ds=2008-04-09/hr=12 [t]
 
   Stage: Stage-2
     Map Reduce
@@ -364,6 +369,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

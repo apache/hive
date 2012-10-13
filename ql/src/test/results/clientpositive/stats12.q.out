@@ -136,6 +136,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.analyze_srcpart
             name: default.analyze_srcpart
+      Truncated Path -> Alias:
+        /analyze_srcpart/ds=2008-04-08/hr=11 [analyze_srcpart]
+        /analyze_srcpart/ds=2008-04-08/hr=12 [analyze_srcpart]
 
   Stage: Stage-1
     Stats-Aggr Operator

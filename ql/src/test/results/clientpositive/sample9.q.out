@@ -105,6 +105,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket0.txt [s:a]
 
   Stage: Stage-0
     Fetch Operator

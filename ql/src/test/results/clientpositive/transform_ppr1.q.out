@@ -289,6 +289,11 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [tmap:src]
+        /srcpart/ds=2008-04-08/hr=12 [tmap:src]
+        /srcpart/ds=2008-04-09/hr=11 [tmap:src]
+        /srcpart/ds=2008-04-09/hr=12 [tmap:src]
 
   Stage: Stage-0
     Fetch Operator

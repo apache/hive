@@ -118,6 +118,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket0.txt [s]
 
   Stage: Stage-7
     Conditional Operator
@@ -217,6 +219,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
             name: default.dest1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -281,6 +285,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
             name: default.dest1
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator
@@ -675,6 +681,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket1.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -1047,6 +1055,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket0.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -1673,6 +1683,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2142,6 +2154,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2641,6 +2655,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket2/srcbucket20.txt [s]
+        /srcbucket2/srcbucket22.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2896,6 +2913,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcbucket2/srcbucket21.txt [s]
 
   Stage: Stage-0
     Fetch Operator
