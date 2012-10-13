@@ -178,6 +178,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table1
             name: default.test_table1
+      Truncated Path -> Alias:
+        /test_table1/ds=1 [a]
 
   Stage: Stage-0
     Move Operator

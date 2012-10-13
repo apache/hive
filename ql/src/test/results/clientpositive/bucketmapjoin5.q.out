@@ -334,6 +334,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part
             name: default.srcbucket_mapjoin_part
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part/ds=2008-04-08 [b]
+        /srcbucket_mapjoin_part/ds=2008-04-09 [b]
 
   Stage: Stage-7
     Conditional Operator
@@ -433,6 +436,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -497,6 +502,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator
@@ -883,6 +890,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_2
             name: default.srcbucket_mapjoin_part_2
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_2/ds=2008-04-08 [b]
+        /srcbucket_mapjoin_part_2/ds=2008-04-09 [b]
 
   Stage: Stage-7
     Conditional Operator
@@ -1002,6 +1012,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -1081,6 +1093,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator

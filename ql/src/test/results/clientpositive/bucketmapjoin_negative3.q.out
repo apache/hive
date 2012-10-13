@@ -259,6 +259,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -416,6 +418,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        /test2 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -568,6 +572,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -718,6 +724,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -868,6 +876,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -1018,6 +1028,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -1168,6 +1180,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        /test2 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -1318,6 +1332,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        /test2 [l]
 
   Stage: Stage-0
     Fetch Operator
@@ -1468,6 +1484,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test3
             name: default.test3
+      Truncated Path -> Alias:
+        /test3 [l]
 
   Stage: Stage-0
     Fetch Operator

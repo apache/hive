@@ -267,6 +267,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
             name: default.bucket_big
+      Truncated Path -> Alias:
+        /bucket_big/ds=2008-04-08 [b]
+        /bucket_big/ds=2008-04-09 [b]
 
   Stage: Stage-2
     Map Reduce
@@ -335,6 +338,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -506,6 +511,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
             name: default.bucket_big
+      Truncated Path -> Alias:
+        /bucket_big/ds=2008-04-08 [b]
+        /bucket_big/ds=2008-04-09 [b]
 
   Stage: Stage-2
     Map Reduce
@@ -574,6 +582,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

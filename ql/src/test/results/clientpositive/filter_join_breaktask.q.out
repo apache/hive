@@ -157,6 +157,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [f, m]
 
   Stage: Stage-2
     Map Reduce
@@ -294,6 +296,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [g]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

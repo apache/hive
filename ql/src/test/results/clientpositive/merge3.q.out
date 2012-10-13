@@ -142,6 +142,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src
             name: default.merge_src
+      Truncated Path -> Alias:
+        /merge_src [merge_src]
 
   Stage: Stage-7
     Conditional Operator
@@ -218,6 +220,8 @@ STAGE PLANS:
                 serialization.format 1
               name: default.merge_src2
             name: default.merge_src2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -264,6 +268,8 @@ STAGE PLANS:
                 serialization.format 1
               name: default.merge_src2
             name: default.merge_src2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator
@@ -2509,6 +2515,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
+      Truncated Path -> Alias:
+        /merge_src_part/ds=2008-04-08 [merge_src_part]
+        /merge_src_part/ds=2008-04-09 [merge_src_part]
 
   Stage: Stage-7
     Conditional Operator
@@ -2614,6 +2623,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -2681,6 +2692,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator
@@ -4966,6 +4979,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /merge_src_part/ds=2008-04-08 [s:merge_src_part]
+        /merge_src_part/ds=2008-04-09 [s:merge_src_part]
 
   Stage: Stage-7
     Conditional Operator
@@ -5071,6 +5087,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-5
     Map Reduce
@@ -5138,6 +5156,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Move Operator

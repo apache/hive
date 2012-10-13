@@ -131,6 +131,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Fetch Operator

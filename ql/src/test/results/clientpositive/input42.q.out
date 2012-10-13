@@ -164,6 +164,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -1351,6 +1354,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -1916,6 +1922,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator

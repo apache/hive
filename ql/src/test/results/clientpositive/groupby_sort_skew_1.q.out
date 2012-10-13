@@ -164,6 +164,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [t1]
 
   Stage: Stage-0
     Move Operator
@@ -372,6 +374,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -467,6 +471,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -678,6 +684,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
 
   Stage: Stage-0
     Move Operator
@@ -899,6 +907,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
 
   Stage: Stage-0
     Move Operator
@@ -1140,6 +1150,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [t1]
 
   Stage: Stage-0
     Move Operator
@@ -1394,6 +1406,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -1499,6 +1513,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -1739,6 +1755,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -1839,6 +1857,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2119,6 +2139,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2209,6 +2231,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2556,6 +2580,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [null-subquery1:subq1-subquery1:t1, null-subquery2:subq1-subquery2:t1]
 
   Stage: Stage-0
     Move Operator
@@ -2837,6 +2863,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [null-subquery2:subq1-subquery2:t1]
 
   Stage: Stage-5
     Map Reduce
@@ -2906,6 +2934,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Map Reduce
@@ -3092,6 +3122,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [null-subquery1:subq1-subquery1:t1]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -3450,6 +3483,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [subq1:t1, subq2:t1]
 
   Stage: Stage-0
     Move Operator
@@ -3743,6 +3778,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [subq2:t1]
 
   Stage: Stage-3
     Map Reduce
@@ -3820,6 +3857,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -3985,6 +4024,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -4227,6 +4269,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t2 [t2]
 
   Stage: Stage-2
     Map Reduce
@@ -4317,6 +4361,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -4621,6 +4667,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t2
             name: default.t2
+      Truncated Path -> Alias:
+        /t2 [t2]
 
   Stage: Stage-0
     Move Operator
@@ -4981,6 +5029,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t2
             name: default.t2
+      Truncated Path -> Alias:
+        /t2 [t2]
 
   Stage: Stage-0
     Move Operator
@@ -5323,6 +5373,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t2
             name: default.t2
+      Truncated Path -> Alias:
+        /t2 [subq:t2]
 
   Stage: Stage-0
     Move Operator
@@ -5697,6 +5749,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t2
             name: default.t2
+      Truncated Path -> Alias:
+        /t2 [subq2:subq:t2]
 
   Stage: Stage-0
     Move Operator

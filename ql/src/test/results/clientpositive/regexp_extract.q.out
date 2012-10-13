@@ -144,6 +144,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [tmap:src]
 
   Stage: Stage-0
     Fetch Operator
@@ -400,6 +402,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [tmap:src]
 
   Stage: Stage-0
     Fetch Operator

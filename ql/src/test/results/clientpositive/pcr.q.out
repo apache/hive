@@ -220,6 +220,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -461,6 +464,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -699,6 +706,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -902,6 +912,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1153,6 +1166,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1414,6 +1431,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1633,6 +1654,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1815,6 +1839,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2083,6 +2110,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2338,6 +2369,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2512,6 +2546,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t2, t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2575,6 +2611,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -2830,6 +2868,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t1]
+        /pcr_t1/ds=2000-04-09 [t2]
 
   Stage: Stage-2
     Map Reduce
@@ -2893,6 +2934,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -3234,6 +3277,11 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+        /pcr_t1/ds=2000-04-11 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3523,6 +3571,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3774,6 +3826,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
 
   Stage: Stage-8
     Conditional Operator
@@ -3873,6 +3927,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Map Reduce
@@ -3937,6 +3993,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-7
     Move Operator
@@ -4042,6 +4100,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-12
     Map Reduce
@@ -4106,6 +4166,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-13
     Move Operator
@@ -4322,6 +4384,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
 
   Stage: Stage-8
     Conditional Operator
@@ -4441,6 +4505,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-6
     Map Reduce
@@ -4520,6 +4586,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-7
     Move Operator
@@ -4645,6 +4713,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-12
     Map Reduce
@@ -4724,6 +4794,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-13
     Move Operator
@@ -4886,6 +4958,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -5101,6 +5175,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -5322,6 +5399,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-09/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator

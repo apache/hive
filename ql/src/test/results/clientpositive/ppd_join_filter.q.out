@@ -153,6 +153,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -285,6 +287,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -480,6 +485,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -612,6 +619,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -807,6 +817,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -939,6 +951,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -1134,6 +1149,8 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -1266,6 +1283,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

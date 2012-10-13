@@ -129,6 +129,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [y]
 
   Stage: Stage-1
     Map Reduce
@@ -282,6 +284,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [z]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator

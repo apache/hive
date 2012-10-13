@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * MapredWork.
@@ -138,6 +141,52 @@ public class MapredWork extends AbstractOperatorDesc {
       final LinkedHashMap<String, ArrayList<String>> pathToAliases) {
     this.pathToAliases = pathToAliases;
   }
+
+  @Explain(displayName = "Truncated Path -> Alias", normalExplain = false)
+  /**
+   * This is used to display and verify output of "Path -> Alias" in test framework.
+   *
+   * {@link QTestUtil} masks "Path -> Alias" and makes verification impossible.
+   * By keeping "Path -> Alias" intact and adding a new display name which is not
+   * masked by {@link QTestUtil} by removing prefix.
+   *
+   * Notes: we would still be masking for intermediate directories.
+   *
+   * @return
+   */
+  public Map<String, ArrayList<String>> getTruncatedPathToAliases() {
+    Map<String, ArrayList<String>> trunPathToAliases = new LinkedHashMap<String,
+        ArrayList<String>>();
+    Iterator<Entry<String, ArrayList<String>>> itr = this.pathToAliases.entrySet().iterator();
+    while (itr.hasNext()) {
+      final Entry<String, ArrayList<String>> entry = itr.next();
+      String origiKey = entry.getKey();
+      String newKey = removePrefixFromWarehouseConfig(origiKey);
+      ArrayList<String> value = entry.getValue();
+      trunPathToAliases.put(newKey, value);
+    }
+    return trunPathToAliases;
+  }
+
+  /**
+   * Remove prefix from "Path -> Alias"
+   *
+   * @param origiKey
+   * @return
+   */
+  private String removePrefixFromWarehouseConfig(String origiKey) {
+    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    if ((prefix != null) && (prefix.length() > 0)) {
+      //Local file system is using pfile:/// {@link ProxyLocalFileSystem}
+      prefix = prefix.replace("pfile:///", "pfile:/");
+      int index = origiKey.indexOf(prefix);
+      if (index > -1) {
+        origiKey = origiKey.substring(index + prefix.length());
+      }
+    }
+    return origiKey;
+  }
+
 
   @Explain(displayName = "Path -> Partition", normalExplain = false)
   public LinkedHashMap<String, PartitionDesc> getPathToPartitionInfo() {

@@ -185,6 +185,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_1
             name: default.srcbucket_mapjoin_part_1
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_1/part=1 [a]
 
   Stage: Stage-2
     Map Reduce
@@ -253,6 +255,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -421,6 +425,8 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_1
             name: default.srcbucket_mapjoin_part_1
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_1/part=1 [a]
 
   Stage: Stage-2
     Map Reduce
@@ -489,6 +495,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
