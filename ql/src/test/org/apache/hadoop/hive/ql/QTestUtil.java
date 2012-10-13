@@ -430,6 +430,7 @@ public class QTestUtil {
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);
     initConf();
+    db = Hive.get(conf);  // propagate new conf to meta store
     setup.preTest(conf);
   }
 
