@@ -114,7 +114,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
-import org.apache.hadoop.hive.ql.parse.QBParseInfo.ClauseType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
@@ -6278,93 +6277,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return curr;
   }
 
-  // Expressions are not allowed currently in cluster/distribute/order/sort by.
-  // It would be good to support them in the future, but till then it is better
-  // to throw a good semantic error instead of some crpytic error.
-  private void checkExpression(ASTNode input,
-    ClauseType clauseType) throws SemanticException {
-    int childCount = input.getChildCount();
-
-    // Columns can only exist at the top
-    if (input.getType() == HiveParser.TOK_TABLE_OR_COL) {
-      switch (clauseType) {
-        case CLUSTER_BY_CLAUSE:
-          throw new
-            SemanticException(ErrorMsg.EXPRESSIONS_NOT_ALLOWED_CLUSTERBY.getMsg());
-        case DISTRIBUTE_BY_CLAUSE:
-          throw new
-            SemanticException(ErrorMsg.EXPRESSIONS_NOT_ALLOWED_DISTRIBUTEBY.getMsg());
-        case ORDER_BY_CLAUSE:
-          throw new
-            SemanticException(ErrorMsg.EXPRESSIONS_NOT_ALLOWED_ORDERBY.getMsg());
-        case SORT_BY_CLAUSE:
-          throw new
-            SemanticException(ErrorMsg.EXPRESSIONS_NOT_ALLOWED_SORTBY.getMsg());
-      }
-    }
-
-    if (childCount > 0) {
-      for (int pos = 0; pos < childCount; pos++) {
-        ASTNode exprChild = (ASTNode) input.getChild(pos);
-        checkExpression(exprChild, clauseType);
-      }
-    }
-  }
-
-  private void validateExpressionSkipParent(ASTNode inputExpr,
-    ClauseType clauseType) throws SemanticException {
-    int childCount = inputExpr.getChildCount();
-    if (childCount > 0) {
-      for (int pos = 0; pos < childCount; pos++) {
-        checkExpression((ASTNode)inputExpr.getChild(pos), clauseType);
-      }
-    }
-  }
-
-  private void validateExpressionHandleTableQualifier(ASTNode inputExpr,
-    ClauseType clauseType) throws SemanticException {
-    // If the expression is tab.column, go to the columns
-    // Same for value[3]
-    if ((inputExpr.getType() == HiveParser.DOT) ||
-        (inputExpr.getType() == HiveParser.LSQUARE)) {
-      for (int pos = 0; pos < inputExpr.getChildCount(); pos++) {
-        validateExpressionHandleTableQualifier((ASTNode)inputExpr.getChild(pos), clauseType);
-      }
-    } else {
-      validateExpressionSkipParent(inputExpr, clauseType);
-    }
-  }
-
-  // Validate that the expression only consists of constants and columns.
-  // Expressions are not allowed in the cluster/distribute/order/sort by list
-  private void validateExpression(ASTNode expr,
-    ClauseType clauseType) throws SemanticException {
-
-    boolean isGrandChild = true;
-    // The first level of children is whether it is ascending/descending
-    // for order by and sort by
-    if ((clauseType == ClauseType.DISTRIBUTE_BY_CLAUSE) ||
-        (clauseType == ClauseType.CLUSTER_BY_CLAUSE)) {
-      isGrandChild = false;
-    }
-
-    int ccount = expr.getChildCount();
-    for (int i = 0; i < ccount; ++i) {
-      ASTNode cl = (ASTNode) expr.getChild(i);
-      if (isGrandChild == false) {
-        validateExpressionHandleTableQualifier(cl, clauseType);
-      } else {
-        int grandChildCount = cl.getChildCount();
-        if (grandChildCount > 0) {
-          for (int childPos = 0; childPos < grandChildCount; childPos++) {
-            validateExpressionHandleTableQualifier(
-              (ASTNode)cl.getChild(childPos), clauseType);
-          }
-        }
-      }
-    }
-  }
-
   private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb)
       throws SemanticException {
 
@@ -6391,26 +6303,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // order by or a sort by clause. For each of the above clause types, check
     // if the clause contains any expression.
     if (qbp.getClusterByForClause(dest) != null) {
-      validateExpression(qbp.getClusterByForClause(dest),
-        ClauseType.CLUSTER_BY_CLAUSE);
       genReduceSink = true;
     }
 
     if (qbp.getDistributeByForClause(dest) != null) {
-      validateExpression(qbp.getDistributeByForClause(dest),
-        ClauseType.DISTRIBUTE_BY_CLAUSE);
       genReduceSink = true;
     }
 
     if (qbp.getOrderByForClause(dest) != null) {
-      validateExpression(qbp.getOrderByForClause(dest),
-        ClauseType.ORDER_BY_CLAUSE);
       genReduceSink = true;
     }
 
     if (qbp.getSortByForClause(dest) != null) {
-      validateExpression(qbp.getSortByForClause(dest),
-        ClauseType.SORT_BY_CLAUSE);
       genReduceSink = true;
     }
 

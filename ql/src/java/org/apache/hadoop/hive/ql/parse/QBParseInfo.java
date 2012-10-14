@@ -490,11 +490,4 @@ public class QBParseInfo {
   public HashMap<String, TableSample> getNameToSample() {
     return nameToSample;
   }
-
-  protected static enum ClauseType {
-    CLUSTER_BY_CLAUSE,
-    DISTRIBUTE_BY_CLAUSE,
-    ORDER_BY_CLAUSE,
-    SORT_BY_CLAUSE
-  }
 }
