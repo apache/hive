@@ -243,6 +243,8 @@ public enum ErrorMsg {
 
   INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
 
+  SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
+
   CREATE_SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   CREATE_SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
   CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,

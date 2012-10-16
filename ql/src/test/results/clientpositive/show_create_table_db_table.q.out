@@ -1,0 +1,51 @@
+PREHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
+
+CREATE DATABASE tmp_feng comment 'for show create table test'
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
+
+CREATE DATABASE tmp_feng comment 'for show create table test'
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+tmp_feng
+PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: tmp_feng@tmp_showcrt
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt
+POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt
+CREATE  TABLE tmp_feng.tmp_showcrt(
+  key string, 
+  value int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: tmp_feng@tmp_showcrt
+PREHOOK: query: DROP DATABASE tmp_feng
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE tmp_feng
+POSTHOOK: type: DROPDATABASE

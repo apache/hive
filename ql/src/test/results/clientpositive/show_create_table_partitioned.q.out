@@ -1,0 +1,43 @@
+PREHOOK: query: -- Test SHOW CREATE TABLE on a table with partitions and column comments.
+
+CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new value')
+COMMENT 'temporary table'
+PARTITIONED BY (value bigint COMMENT 'some value')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test SHOW CREATE TABLE on a table with partitions and column comments.
+
+CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new value')
+COMMENT 'temporary table'
+PARTITIONED BY (value bigint COMMENT 'some value')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1
+CREATE EXTERNAL TABLE tmp_showcrt1(
+  key string, 
+  newvalue boolean COMMENT 'a new value')
+COMMENT 'temporary table'
+PARTITIONED BY ( 
+  value bigint COMMENT 'some value')
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1
+PREHOOK: Output: default@tmp_showcrt1
+POSTHOOK: query: DROP TABLE tmp_showcrt1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1
+POSTHOOK: Output: default@tmp_showcrt1
