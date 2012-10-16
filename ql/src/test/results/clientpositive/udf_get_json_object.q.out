@@ -173,3 +173,47 @@ POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1234
+PREHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
+
+CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
+
+CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest2
+POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest2.c1 SIMPLE []
+PREHOOK: query: SELECT * FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest2.c1 SIMPLE []
+{"a":"b
+c"}
+PREHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT get_json_object(c1, '$.a') FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest2.c1 SIMPLE []
+b
+c

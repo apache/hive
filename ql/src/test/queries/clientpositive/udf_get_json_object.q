@@ -27,3 +27,14 @@ SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_json_object(src_j
 SELECT get_json_object(src_json.json, '$.zip code') FROM src_json;
 
 SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json;
+
+
+-- Verify that get_json_object can handle new lines in JSON values
+
+CREATE TABLE dest2(c1 STRING) STORED AS RCFILE;
+
+INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src LIMIT 1;
+
+SELECT * FROM dest2;
+
+SELECT get_json_object(c1, '$.a') FROM dest2;

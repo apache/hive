@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParser.Feature;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 import org.codehaus.jackson.type.JavaType;
@@ -51,7 +53,12 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
   private static Log LOG = LogFactory.getLog(GenericUDTFJSONTuple.class.getName());
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  static {
+    // Allows for unescaped ASCII control characters in JSON values
+    JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+  }
+  private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
   private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
 
   int numCols;    // number of output columns

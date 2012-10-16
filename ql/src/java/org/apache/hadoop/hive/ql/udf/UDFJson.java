@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParser.Feature;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 import org.codehaus.jackson.type.JavaType;
@@ -59,7 +61,12 @@ public class UDFJson extends UDF {
   private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
   private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  static {
+    // Allows for unescaped ASCII control characters in JSON values
+    JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+  }
+  private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
   private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
 
   // An LRU cache using a linked hash map
