@@ -34,3 +34,14 @@ explain
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2;
 
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2;
+
+
+-- Verify that json_tuple can handle new lines in JSON values
+
+CREATE TABLE dest1(c1 STRING) STORED AS RCFILE;
+
+INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src LIMIT 1;
+
+SELECT * FROM dest1;
+
+SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS json;
