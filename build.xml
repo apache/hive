@@ -509,7 +509,6 @@
         <exclude name="**/mockito*.jar"/>
         <exclude name="**/velocity*.jar"/>
         <exclude name="**/antlr-3*.jar"/>
-        <exclude name="**/antlr-2*.jar"/>
       </fileset>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">

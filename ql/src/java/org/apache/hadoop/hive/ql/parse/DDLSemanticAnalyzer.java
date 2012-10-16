@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
@@ -326,6 +327,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
+      break;
+    case HiveParser.TOK_SHOW_CREATETABLE:
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowCreateTable(ast);
       break;
     case HiveParser.TOK_SHOWINDEXES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -1514,6 +1519,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
     setFetchTask(createFetchTask(showPartsDesc.getSchema()));
+  }
+
+  private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {
+    ShowCreateTableDesc showCreateTblDesc;
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
+    showCreateTblDesc = new ShowCreateTableDesc(tableName, ctx.getResFile().toString());
+    try {
+      Table tab = db.getTable(tableName, true);
+      if (tab.getTableType() == org.apache.hadoop.hive.metastore.TableType.INDEX_TABLE) {
+        throw new SemanticException(ErrorMsg.SHOW_CREATETABLE_INDEX.getMsg(tableName
+            + " has table type INDEX_TABLE"));
+      }
+      inputs.add(new ReadEntity(tab));
+    } catch (SemanticException e) {
+      throw e;
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showCreateTblDesc), conf));
+    setFetchTask(createFetchTask(showCreateTblDesc.getSchema()));
   }
 
   private void analyzeShowDatabases(ASTNode ast) throws SemanticException {

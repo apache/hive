@@ -62,6 +62,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOWCOLUMNS, HiveOperation.SHOWCOLUMNS);
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, HiveOperation.SHOW_TABLESTATUS);
     commandType.put(HiveParser.TOK_SHOW_TBLPROPERTIES, HiveOperation.SHOW_TBLPROPERTIES);
+    commandType.put(HiveParser.TOK_SHOW_CREATETABLE, HiveOperation.SHOW_CREATETABLE);
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, HiveOperation.SHOWFUNCTIONS);
     commandType.put(HiveParser.TOK_SHOWINDEXES, HiveOperation.SHOWINDEXES);
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, HiveOperation.SHOWPARTITIONS);
@@ -161,6 +162,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWCOLUMNS:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOW_TBLPROPERTIES:
+      case HiveParser.TOK_SHOW_CREATETABLE:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
       case HiveParser.TOK_SHOWINDEXES:

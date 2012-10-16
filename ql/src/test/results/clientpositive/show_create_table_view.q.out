@@ -1,0 +1,26 @@
+PREHOOK: query: -- Test SHOW CREATE TABLE on a view name.
+
+CREATE VIEW tmp_copy_src AS SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+#### A masked pattern was here ####
+POSTHOOK: query: -- Test SHOW CREATE TABLE on a view name.
+
+CREATE VIEW tmp_copy_src AS SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@tmp_copy_src
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE tmp_copy_src
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_copy_src
+POSTHOOK: query: SHOW CREATE TABLE tmp_copy_src
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_copy_src
+CREATE VIEW tmp_copy_src AS SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
+PREHOOK: query: DROP VIEW tmp_copy_src
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@tmp_copy_src
+PREHOOK: Output: default@tmp_copy_src
+POSTHOOK: query: DROP VIEW tmp_copy_src
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@tmp_copy_src
+POSTHOOK: Output: default@tmp_copy_src

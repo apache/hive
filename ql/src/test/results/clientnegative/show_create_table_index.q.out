@@ -1,0 +1,11 @@
+PREHOOK: query: CREATE TABLE tmp_showcrt (key int, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tmp_showcrt (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_showcrt
+PREHOOK: query: CREATE INDEX tmp_index on table tmp_showcrt(key) as 'compact' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX tmp_index on table tmp_showcrt(key) as 'compact' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__tmp_showcrt_tmp_index__
+FAILED: SemanticException [Error 10144]: SHOW CREATE TABLE does not support tables of type INDEX_TABLE. default__tmp_showcrt_tmp_index__ has table type INDEX_TABLE

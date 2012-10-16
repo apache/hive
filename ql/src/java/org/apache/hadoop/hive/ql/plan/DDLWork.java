@@ -52,6 +52,7 @@ public class DDLWork implements Serializable {
   private ShowLocksDesc showLocksDesc;
   private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
+  private ShowCreateTableDesc showCreateTblDesc;
   private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
@@ -311,6 +312,16 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showPartsDesc = showPartsDesc;
+  }
+
+  /**
+   * @param showCreateTblDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowCreateTableDesc showCreateTblDesc) {
+    this(inputs, outputs);
+
+    this.showCreateTblDesc = showCreateTblDesc;
   }
 
   /**
@@ -721,6 +732,22 @@ public class DDLWork implements Serializable {
    */
   public void setShowPartsDesc(ShowPartitionsDesc showPartsDesc) {
     this.showPartsDesc = showPartsDesc;
+  }
+
+  /**
+   * @return the showCreateTblDesc
+   */
+  @Explain(displayName = "Show Create Table Operator")
+  public ShowCreateTableDesc getShowCreateTblDesc() {
+    return showCreateTblDesc;
+  }
+
+  /**
+   * @param showCreateTblDesc
+   *          the showCreateTblDesc to set
+   */
+  public void setShowCreateTblDesc(ShowCreateTableDesc showCreateTblDesc) {
+    this.showCreateTblDesc = showCreateTblDesc;
   }
 
   /**

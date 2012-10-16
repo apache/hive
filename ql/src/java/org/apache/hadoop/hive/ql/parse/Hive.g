@@ -145,6 +145,7 @@ TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
+TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
 TOK_SHOW_TBLPROPERTIES;
 TOK_SHOWLOCKS;
@@ -855,6 +856,7 @@ showStatement
     -> ^(TOK_SHOWCOLUMNS $db_name? $tabname)
     | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
     | KW_SHOW KW_PARTITIONS Identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS Identifier partitionSpec?)
+    | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_TBLPROPERTIES tblName=Identifier (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES $tblName $prptyName?)
