@@ -31,6 +31,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -204,6 +205,21 @@ public class TestAvroSerializer {
 
     r = serializeAndDeserialize(field, "nullableint", null);
     assertNull(r.get("nullableint"));
+  }
+
+  @Test 
+  public void canSerializeMapsWithNullablePrimitiveValues() throws SerDeException, IOException {
+    String field = "{ \"name\":\"mapWithNulls\", \"type\": " +
+            "{\"type\":\"map\", \"values\": [\"null\", \"boolean\"]} }";
+
+    Map<String, Boolean> m = new HashMap<String, Boolean>();
+    m.put("yes", true);
+    m.put("no", false);
+    m.put("maybe", null);
+    GenericRecord r = serializeAndDeserialize(field, "mapWithNulls", m);
+
+    Object result = r.get("mapWithNulls");
+    assertEquals(m, result);
   }
 
   @Test

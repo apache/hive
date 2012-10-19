@@ -43,7 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -246,7 +246,7 @@ class AvroDeserializer {
           throws AvroSerdeException {
     // Avro only allows maps with Strings for keys, so we only have to worry
     // about deserializing the values
-    Map<String, Object> map = new Hashtable<String, Object>();
+    Map<String, Object> map = new HashMap<String, Object>();
     Map<Utf8, Object> mapDatum = (Map)datum;
     Schema valueSchema = mapSchema.getValueType();
     TypeInfo valueTypeInfo = columnType.getMapValueTypeInfo();

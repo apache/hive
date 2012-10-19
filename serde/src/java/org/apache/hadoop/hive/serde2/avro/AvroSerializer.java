@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -229,7 +229,7 @@ class AvroSerializer {
     Map<?,?> map = fieldOI.getMap(structFieldData);
     Schema valueType = schema.getValueType();
 
-    Map<Object, Object> deserialized = new Hashtable<Object, Object>(fieldOI.getMapSize(structFieldData));
+    Map<Object, Object> deserialized = new HashMap<Object, Object>(fieldOI.getMapSize(structFieldData));
 
     for (Map.Entry<?, ?> entry : map.entrySet()) {
       deserialized.put(serialize(mapKeyTypeInfo, mapKeyObjectInspector, entry.getKey(), null), // This works, but is a bit fragile.  Construct a single String schema?
