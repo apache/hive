@@ -113,7 +113,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public List<String> getColsFromSelectExpr(SelectOperator op) {
     List<String> cols = new ArrayList<String>();
     SelectDesc conf = op.getConf();
-    ArrayList<ExprNodeDesc> exprList = conf.getColList();
+    List<ExprNodeDesc> exprList = conf.getColList();
     for (ExprNodeDesc expr : exprList) {
       cols = Utilities.mergeUniqElems(cols, expr.getCols());
     }
@@ -140,13 +140,13 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
       return cols;
     }
 
-    ArrayList<ExprNodeDesc> selectExprs = conf.getColList();
+    List<ExprNodeDesc> selectExprs = conf.getColList();
 
     // The colList is the output columns used by child operators, they are
     // different
     // from input columns of the current operator. we need to find out which
     // input columns are used.
-    ArrayList<String> outputColumnNames = conf.getOutputColumnNames();
+    List<String> outputColumnNames = conf.getOutputColumnNames();
     for (int i = 0; i < outputColumnNames.size(); i++) {
       if (colList.contains(outputColumnNames.get(i))) {
         ExprNodeDesc expr = selectExprs.get(i);

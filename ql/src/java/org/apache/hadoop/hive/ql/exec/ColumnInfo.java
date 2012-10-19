@@ -96,6 +96,16 @@ public class ColumnInfo implements Serializable {
     this.isHiddenVirtualCol = isHiddenVirtualCol;
   }
 
+  public ColumnInfo(ColumnInfo columnInfo) {
+    this.internalName = columnInfo.getInternalName();
+    this.alias = columnInfo.getAlias();
+    this.isSkewedCol = columnInfo.isSkewedCol();
+    this.tabAlias = columnInfo.getTabAlias();
+    this.isVirtualCol = columnInfo.getIsVirtualCol();
+    this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
+    this.setType(columnInfo.getType());
+  }
+
   public TypeInfo getType() {
     return TypeInfoUtils.getTypeInfoFromObjectInspector(objectInspector);
   }
