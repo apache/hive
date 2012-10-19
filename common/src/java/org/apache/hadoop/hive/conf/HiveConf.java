@@ -645,6 +645,12 @@ public class HiveConf extends Configuration {
      * This will be removed once the rest of the DML changes are committed.
      */
     HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE("hive.internal.ddl.list.bucketing.enable", false),
+
+    // Allow TCP Keep alive socket option for for HiveServer or a maximum timeout for the socket.
+
+    SERVER_READ_SOCKET_TIMEOUT("hive.server.read.socket.timeout", 10),
+    SERVER_TCP_KEEP_ALIVE("hive.server.tcp.keepalive", true),
+
     ;
 
     public final String varname;

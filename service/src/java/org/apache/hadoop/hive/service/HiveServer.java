@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.TServerSocketKeepAlive;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
@@ -651,6 +652,7 @@ public class HiveServer extends ThriftHive {
 
       cli.parse(args);
 
+
       // NOTE: It is critical to do this prior to initializing log4j, otherwise
       // any log specific settings via hiveconf will be ignored
       Properties hiveconf = cli.addHiveconfToSystemProperties();
@@ -665,7 +667,11 @@ public class HiveServer extends ThriftHive {
 
       HiveConf conf = new HiveConf(HiveServerHandler.class);
       ServerUtils.cleanUpScratchDir(conf);
-      TServerTransport serverTransport = new TServerSocket(cli.port);
+
+
+      boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.SERVER_TCP_KEEP_ALIVE);
+
+      TServerTransport serverTransport = tcpKeepAlive ? new TServerSocketKeepAlive(cli.port) : new TServerSocket(cli.port, 1000 * conf.getIntVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT));
 
       // set all properties specified on the command line
       for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {
@@ -688,6 +694,9 @@ public class HiveServer extends ThriftHive {
         + " with " + cli.minWorkerThreads + " min worker threads and "
         + cli.maxWorkerThreads + " max worker threads";
       HiveServerHandler.LOG.info(msg);
+
+      HiveServerHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+
       if (cli.isVerbose()) {
         System.err.println(msg);
       }
