@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -6430,9 +6431,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String field = lEntry.getKey();
       ColumnInfo lInfo = lEntry.getValue();
       ColumnInfo rInfo = rightmap.get(field);
-      lInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
+      ColumnInfo unionColInfo = new ColumnInfo(lInfo);
+      unionColInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
             rInfo.getType()));
-      unionoutRR.put(unionalias, field, lInfo);
+      unionoutRR.put(unionalias, field, unionColInfo);
+    }
+
+    if (!(leftOp instanceof UnionOperator)) {
+      leftOp = genInputSelectForUnion(leftOp, leftmap, leftalias, unionoutRR, unionalias);
+    }
+
+    if (!(rightOp instanceof UnionOperator)) {
+      rightOp = genInputSelectForUnion(rightOp, rightmap, rightalias, unionoutRR, unionalias);
     }
 
     // If one of the children is a union, merge with it
@@ -6492,6 +6502,66 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // create operator info list to return
     return putOpInsertMap(unionforward, unionoutRR);
+  }
+
+  /**
+   * Generates a select operator which can go between the original input operator and the union
+   * operator.  This select casts columns to match the type of the associated column in the union,
+   * other columns pass through unchanged.  The new operator's only parent is the original input
+   * operator to the union, and it's only child is the union.  If the input does not need to be
+   * cast, the original operator is returned, and no new select operator is added.
+   *
+   * @param origInputOp
+   *          The original input operator to the union.
+   * @param origInputFieldMap
+   *          A map from field name to ColumnInfo for the original input operator.
+   * @param origInputAlias
+   *          The alias associated with the original input operator.
+   * @param unionoutRR
+   *          The union's output row resolver.
+   * @param unionalias
+   *          The alias of the union.
+   * @return
+   * @throws UDFArgumentException
+   */
+  private Operator<? extends OperatorDesc> genInputSelectForUnion(
+      Operator<? extends OperatorDesc> origInputOp, Map<String, ColumnInfo> origInputFieldMap,
+      String origInputAlias, RowResolver unionoutRR, String unionalias)
+          throws UDFArgumentException {
+
+    List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
+    boolean needsCast = false;
+    for (Map.Entry<String, ColumnInfo> unionEntry: unionoutRR.getFieldMap(unionalias).entrySet()) {
+      String field = unionEntry.getKey();
+      ColumnInfo lInfo = origInputFieldMap.get(field);
+      ExprNodeDesc column = new ExprNodeColumnDesc(lInfo.getType(), lInfo.getInternalName(),
+          lInfo.getTabAlias(), lInfo.getIsVirtualCol(), lInfo.isSkewedCol());;
+      if (!lInfo.getType().equals(unionEntry.getValue().getType())) {
+        needsCast = true;
+        column = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(
+            unionEntry.getValue().getType().getTypeName(), column);
+      }
+      columns.add(column);
+    }
+
+    // If none of the columns need to be cast there's no need for an additional select operator
+    if (!needsCast) {
+      return origInputOp;
+    }
+
+    RowResolver rowResolver = new RowResolver();
+    List<String> colName = new ArrayList<String>();
+    for (int i = 0; i < columns.size(); i++) {
+      String name = getColumnInternalName(i);
+      rowResolver.put(origInputAlias, name, new ColumnInfo(name, columns.get(i)
+          .getTypeInfo(), "", false));
+      colName.add(name);
+    }
+
+    Operator<SelectDesc> newInputOp = OperatorFactory.getAndMakeChild(
+        new SelectDesc(columns, colName), new RowSchema(rowResolver.getColumnInfos()),
+        origInputOp);
+    return putOpInsertMap(newInputOp, rowResolver);
   }
 
   /**

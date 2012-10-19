@@ -452,7 +452,7 @@ public final class ColumnPrunerProcFactory {
       }
       // by now, 'prunedCols' are columns used by child operators, and 'columns'
       // are columns used by this select operator.
-      ArrayList<String> originalOutputColumnNames = conf.getOutputColumnNames();
+      List<String> originalOutputColumnNames = conf.getOutputColumnNames();
       if (cols.size() < originalOutputColumnNames.size()) {
         ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();

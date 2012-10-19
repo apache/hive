@@ -13,7 +13,7 @@ LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2;
 -- This test is to verify the skew join compile optimization when the join is followed
 -- by a union. Both sides of a union consist of a join, which should have used
 -- skew join compile time optimization.
--- adding a order by at the end to make the results deterministic
+-- adding an order by at the end to make the results deterministic
 
 EXPLAIN	 
 select * from	

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -28,8 +29,8 @@ import java.util.ArrayList;
 @Explain(displayName = "Select Operator")
 public class SelectDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
-  private ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList;
-  private ArrayList<java.lang.String> outputColumnNames;
+  private List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList;
+  private List<java.lang.String> outputColumnNames;
   private boolean selectStar;
   private boolean selStarNoCompute;
 
@@ -41,14 +42,14 @@ public class SelectDesc extends AbstractOperatorDesc {
   }
 
   public SelectDesc(
-    final ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
-    final ArrayList<java.lang.String> outputColumnNames) {
+    final List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
+    final List<java.lang.String> outputColumnNames) {
     this(colList, outputColumnNames, false);
   }
 
   public SelectDesc(
-    final ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
-    ArrayList<java.lang.String> outputColumnNames,
+    final List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
+    List<java.lang.String> outputColumnNames,
     final boolean selectStar) {
     this.colList = colList;
     this.selectStar = selectStar;
@@ -56,7 +57,7 @@ public class SelectDesc extends AbstractOperatorDesc {
   }
 
   public SelectDesc(
-    final ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
+    final List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList,
     final boolean selectStar, final boolean selStarNoCompute) {
     this.colList = colList;
     this.selectStar = selectStar;
@@ -66,30 +67,30 @@ public class SelectDesc extends AbstractOperatorDesc {
   @Override
   public Object clone() {
     SelectDesc ret = new SelectDesc();
-    ret.setColList((ArrayList<ExprNodeDesc>)getColList().clone());
-    ret.setOutputColumnNames((ArrayList<String>)getOutputColumnNames().clone());
+    ret.setColList(new ArrayList<ExprNodeDesc>(getColList()));
+    ret.setOutputColumnNames(new ArrayList<String>(getOutputColumnNames()));
     ret.setSelectStar(selectStar);
     ret.setSelStarNoCompute(selStarNoCompute);
     return ret;
   }
 
   @Explain(displayName = "expressions")
-  public ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> getColList() {
+  public List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> getColList() {
     return colList;
   }
 
   public void setColList(
-    final ArrayList<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList) {
+    final List<org.apache.hadoop.hive.ql.plan.ExprNodeDesc> colList) {
     this.colList = colList;
   }
 
   @Explain(displayName = "outputColumnNames")
-  public ArrayList<java.lang.String> getOutputColumnNames() {
+  public List<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
 
   public void setOutputColumnNames(
-    ArrayList<java.lang.String> outputColumnNames) {
+    List<java.lang.String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
   }
 
