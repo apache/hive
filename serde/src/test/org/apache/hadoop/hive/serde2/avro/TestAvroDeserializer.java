@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -402,6 +403,57 @@ public class TestAvroDeserializer {
     record = new GenericData.Record(s);
     record.put("nullableString", null);
     verifyNullableType(record, s, null);
+  }
+
+  @Test
+  public void canDeserializeMapWithNullablePrimitiveValues() throws SerDeException, IOException {
+    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
+    GenericData.Record record = new GenericData.Record(s);
+
+    Map<String, Long> m = new HashMap<String, Long>();
+    m.put("one", 1l);
+    m.put("two", 2l);
+    m.put("three", 3l);
+    m.put("mu", null);
+
+    record.put("aMap", m);
+    assertTrue(GENERIC_DATA.validate(s, record));
+    System.out.println("record = " + record);
+
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
+
+    AvroDeserializer de = new AvroDeserializer();
+
+    ArrayList<Object> row = (ArrayList<Object>)de.deserialize(aoig.getColumnNames(),
+            aoig.getColumnTypes(), garw, s);
+    assertEquals(1, row.size());
+    Object theMapObject = row.get(0);
+    assertTrue(theMapObject instanceof Map);
+    Map theMap = (Map)theMapObject;
+
+    // Verify the raw object that's been created
+    assertEquals(1l, theMap.get("one"));
+    assertEquals(2l, theMap.get("two"));
+    assertEquals(3l, theMap.get("three"));
+    assertTrue(theMap.containsKey("mu"));
+    assertEquals(null, theMap.get("mu"));
+
+    // Verify that the provided object inspector can pull out these same values
+    StandardStructObjectInspector oi =
+            (StandardStructObjectInspector)aoig.getObjectInspector();
+
+    List<Object> z = oi.getStructFieldsDataAsList(row);
+    assertEquals(1, z.size());
+    StructField fieldRef = oi.getStructFieldRef("amap");
+
+    Map theMap2 = (Map)oi.getStructFieldData(row, fieldRef);
+    assertEquals(1l, theMap2.get("one"));
+    assertEquals(2l, theMap2.get("two"));
+    assertEquals(3l, theMap2.get("three"));
+    assertTrue(theMap2.containsKey("mu"));
+    assertEquals(null, theMap2.get("mu"));
   }
 
   private void verifyNullableType(GenericData.Record record, Schema s,
