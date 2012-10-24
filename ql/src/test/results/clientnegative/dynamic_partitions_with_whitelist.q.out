@@ -1,0 +1,15 @@
+PREHOOK: query: create table source_table like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table source_table like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@source_table
+PREHOOK: query: create table dest_table like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dest_table like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_table
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE source_table partition(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@source_table
+Failed with exception MetaException(message:Partition value '2008-04-08' contains a character not matched by whitelist pattern '[A-Za-z]*'.  (configure with hive.metastore.partition.name.whitelist.pattern))
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask

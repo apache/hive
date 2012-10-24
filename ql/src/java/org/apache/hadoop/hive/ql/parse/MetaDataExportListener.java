@@ -27,9 +27,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -40,8 +40,9 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext.PreEventType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
- * This class listens for drop events and, if set, exports the table's metadata as JSON
- * to the trash of the user performing the drop */
+ * This class listens for drop events and, if set, exports the table's metadata as JSON to the trash
+ * of the user performing the drop
+ */
 public class MetaDataExportListener extends MetaStorePreEventListener {
   public static final Log LOG = LogFactory.getLog(MetaDataExportListener.class);
   private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -56,8 +57,8 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     FileSystem fs = null;
     Table tbl = tableEvent.getTable();
     String name = tbl.getTableName();
-    org.apache.hadoop.hive.ql.metadata.Table mTbl =
-      new org.apache.hadoop.hive.ql.metadata.Table(tbl);
+    org.apache.hadoop.hive.ql.metadata.Table mTbl = new org.apache.hadoop.hive.ql.metadata.Table(
+        tbl);
     HMSHandler handler = tableEvent.getHandler();
     HiveConf hiveconf = handler.getHiveConf();
     Warehouse wh = new Warehouse(hiveconf);
@@ -66,8 +67,8 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     Date now = new Date();
     String dateString = sdf.format(now);
     String exportPathString = hiveconf.getVar(HiveConf.ConfVars.METADATA_EXPORT_LOCATION);
-    boolean moveMetadataToTrash =
-      hiveconf.getBoolVar(HiveConf.ConfVars.MOVE_EXPORTED_METADATA_TO_TRASH);
+    boolean moveMetadataToTrash = hiveconf
+        .getBoolVar(HiveConf.ConfVars.MOVE_EXPORTED_METADATA_TO_TRASH);
     Path exportPath = null;
     if (exportPathString != null && exportPathString.length() == 0) {
       exportPath = fs.getHomeDirectory();
@@ -75,8 +76,8 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
       exportPath = new Path(exportPathString);
     }
     Path metaPath = new Path(exportPath, name + "." + dateString);
-    LOG.info("Exporting the metadata of table " +
-      tbl.toString() + " to path " + metaPath.toString());
+    LOG.info("Exporting the metadata of table " + tbl.toString() + " to path "
+        + metaPath.toString());
     try {
       fs.mkdirs(metaPath);
     } catch (IOException e) {

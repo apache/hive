@@ -26,7 +26,6 @@ public class DropPartitionEvent extends ListenerEvent {
   private final Partition partition;
 
   public DropPartitionEvent (Partition partition, boolean status, HMSHandler handler) {
-
     super (status, handler);
     this.partition = partition;
   }

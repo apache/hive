@@ -21,18 +21,20 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-public class PreDropTableEvent extends PreEventContext{
+public class PreDropTableEvent extends PreEventContext {
 
   private final Table table;
 
-  public PreDropTableEvent (Table table, HMSHandler handler) {
-    super (PreEventType.DROP_TABLE, handler);
+  public PreDropTableEvent(Table table, HMSHandler handler) {
+    super(PreEventType.DROP_TABLE, handler);
     this.table = table;
   }
+
   /**
    * @return the table
    */
-  public Table getTable () {
+  public Table getTable() {
     return table;
   }
+
 }
