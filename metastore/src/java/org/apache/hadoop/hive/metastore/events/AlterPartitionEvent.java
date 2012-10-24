@@ -26,9 +26,9 @@ public class AlterPartitionEvent extends ListenerEvent {
   private final Partition oldPart;
   private final Partition newPart;
 
-  public AlterPartitionEvent (Partition oldPart, Partition newPart,
+  public AlterPartitionEvent(Partition oldPart, Partition newPart,
       boolean status, HMSHandler handler) {
-    super (status, handler);
+    super(status, handler);
     this.oldPart = oldPart;
     this.newPart = newPart;
   }

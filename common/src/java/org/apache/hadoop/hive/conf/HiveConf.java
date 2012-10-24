@@ -320,6 +320,9 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_CLEAN_FREQ("hive.metastore.event.clean.freq",0L),
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
     METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", false),
+    METASTORE_PARTITION_NAME_WHITELIST_PATTERN(
+        "hive.metastore.partition.name.whitelist.pattern", ""),
+
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", ""),

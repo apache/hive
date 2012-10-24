@@ -90,4 +90,5 @@ public class DummyListener extends MetaStoreEventListener{
   public void onLoadPartitionDone(LoadPartitionDoneEvent partEvent) throws MetaException {
     notifyList.add(partEvent);
   }
+
 }

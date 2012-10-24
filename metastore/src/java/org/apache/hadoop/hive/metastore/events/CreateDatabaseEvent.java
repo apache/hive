@@ -26,7 +26,6 @@ public class CreateDatabaseEvent extends ListenerEvent {
   private final Database db;
 
   public CreateDatabaseEvent (Database db, boolean status, HMSHandler handler) {
-
     super (status, handler);
     this.db = db;
   }

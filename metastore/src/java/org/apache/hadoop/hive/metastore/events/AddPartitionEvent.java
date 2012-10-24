@@ -26,7 +26,6 @@ public class AddPartitionEvent extends ListenerEvent {
   private final Partition partition;
 
   public AddPartitionEvent (Partition partition, boolean status, HMSHandler handler) {
-
     super (status, handler);
     this.partition = partition;
   }

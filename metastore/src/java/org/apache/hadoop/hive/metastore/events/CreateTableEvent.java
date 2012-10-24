@@ -26,7 +26,6 @@ public class CreateTableEvent extends ListenerEvent {
   private final Table table;
 
   public CreateTableEvent (Table table, boolean status, HMSHandler handler) {
-
     super (status, handler);
     this.table = table;
   }
