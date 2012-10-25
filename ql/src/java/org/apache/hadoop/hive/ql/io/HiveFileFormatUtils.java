@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -48,6 +49,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.Shell;
 
 /**
  * An util class for various Hive file format tasks.
@@ -265,8 +267,13 @@ public final class HiveFileFormatUtils {
     PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
 
     if (part == null
-        && (ignoreSchema || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
-            .equals("")))) {
+        && (ignoreSchema
+            || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
+            .equals(""))
+            || pathsContainNoScheme(pathToPartitionInfo)
+            )
+
+        ) {
 
       Map<String, PartitionDesc> newPathToPartitionInfo = null;
       if (cacheMap != null) {
@@ -289,6 +296,17 @@ public final class HiveFileFormatUtils {
       throw new IOException("cannot find dir = " + dir.toString()
                           + " in pathToPartitionInfo: " + pathToPartitionInfo.keySet());
     }
+  }
+
+  private static boolean pathsContainNoScheme(Map<String, PartitionDesc> pathToPartitionInfo) {
+
+    for( Entry<String, PartitionDesc> pe  : pathToPartitionInfo.entrySet()){
+      if(new Path(pe.getKey()).toUri().getScheme() != null){
+        return false;
+      }
+    }
+    return true;
+
   }
 
   private static void populateNewPartitionDesc(
@@ -355,6 +373,11 @@ public final class HiveFileFormatUtils {
     }
 
     String dirPath = dir.toUri().getPath();
+    if(Shell.WINDOWS){
+      //temp hack
+      //do this to get rid of "/" before the drive letter in windows
+      dirPath = new Path(dirPath).toString();
+    }
     if (foundAlias(pathToAliases, dirPath)) {
       return dirPath;
     }

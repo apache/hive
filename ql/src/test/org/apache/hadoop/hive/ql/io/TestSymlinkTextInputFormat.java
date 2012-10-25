@@ -187,9 +187,10 @@ public class TestSymlinkTextInputFormat extends TestCase {
       assertEquals(1, retSplits.length);
     } catch (Exception e) {
       e.printStackTrace();
+      fail("Caught exception " + e); 
     } finally {
       if (tblCreated) {
-        drv.run("drop table text_symlink_text;").getResponseCode();
+        drv.run("drop table text_symlink_text").getResponseCode();
       }
     }
   }
