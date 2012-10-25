@@ -74,6 +74,8 @@ TOK_SERDEPROPS;
 TOK_EXPLIST;
 TOK_ALIASLIST;
 TOK_GROUPBY;
+TOK_ROLLUP_GROUPBY;
+TOK_CUBE_GROUPBY;
 TOK_HAVING;
 TOK_ORDERBY;
 TOK_CLUSTERBY;
@@ -1794,6 +1796,9 @@ groupByClause
     KW_GROUP KW_BY
     groupByExpression
     ( COMMA groupByExpression )*
+    ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
+    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY groupByExpression+)
+    -> {cube != null}? ^(TOK_CUBE_GROUPBY groupByExpression+)
     -> ^(TOK_GROUPBY groupByExpression+)
     ;
 
@@ -2433,6 +2438,8 @@ KW_UPDATE: 'UPDATE';
 KW_RESTRICT: 'RESTRICT';
 KW_CASCADE: 'CASCADE';
 KW_SKEWED: 'SKEWED';
+KW_ROLLUP: 'ROLLUP';
+KW_CUBE: 'CUBE';
 
 
 // Operators

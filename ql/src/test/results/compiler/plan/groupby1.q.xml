@@ -627,12 +627,18 @@
                   <void property="groupByMemoryUsage"> 
                    <float>0.5</float> 
                   </void> 
+                  <void property="groupingSetPosition"> 
+                   <int>1</int> 
+                  </void> 
                   <void property="keys"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object idref="ExprNodeColumnDesc1"/> 
                     </void> 
                    </object> 
+                  </void> 
+                  <void property="listGroupingSets"> 
+                   <object class="java.util.ArrayList"/> 
                   </void> 
                   <void property="memoryThreshold"> 
                    <float>0.9</float> 

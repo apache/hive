@@ -207,6 +207,13 @@
         <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
+
+    <unzip src="${build.ivy.lib.dir}/default/javolution-${javolution.version}.jar" dest="${build.dir.hive}/javolution/classes">
+      <patternset>
+        <exclude name="META-INF"/>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
@@ -219,6 +226,7 @@
       <fileset dir="${build.dir.hive}/avro-mapred/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/shims/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/javaewah/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/javolution/classes" includes="**/*.class"/>
       <manifest>
         <!-- Not putting these in their own manifest section, since that inserts
              a new-line, which breaks the reading of the attributes. -->

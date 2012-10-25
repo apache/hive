@@ -263,6 +263,13 @@ public enum ErrorMsg {
   HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED(10208,
               "List Bucketing DDL is not allowed to use since feature is not completed yet."),
 
+  HIVE_GROUPING_SETS_AGGR_NOMAPAGGR(10209,
+    "Grouping sets aggregations (with rollups or cubes) are not allowed if map-side " +
+    " aggregation is turned off. Set hive.map.aggr=true if you want to use grouping sets"),
+  HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID(10210,
+    "Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function " +
+    "parameters overlap with the aggregation functions columns"),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),

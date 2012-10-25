@@ -160,6 +160,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.util.ObjectPair;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -217,6 +218,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   //Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
+
+  private static final String GROUPING_SET_KEY = "GROUPING_SET_KEY";
 
   private static class Phase1Ctx {
     String dest;
@@ -791,6 +794,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_GROUPBY:
+      case HiveParser.TOK_ROLLUP_GROUPBY:
+      case HiveParser.TOK_CUBE_GROUPBY:
         // Get the groupby aliases - these are aliased to the entries in the
         // select list
         queryProperties.setHasGroupBy(true);
@@ -803,6 +808,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         qbp.setGroupByExprForClause(ctx_1.dest, ast);
         skipRecursion = true;
+
+        // Rollup and Cubes are syntactic sugar on top of grouping sets
+        if (ast.getToken().getType() == HiveParser.TOK_ROLLUP_GROUPBY) {
+          qbp.getDestRollups().add(ctx_1.dest);
+        } else if (ast.getToken().getType() == HiveParser.TOK_CUBE_GROUPBY) {
+          qbp.getDestCubes().add(ctx_1.dest);
+        }
         break;
 
       case HiveParser.TOK_HAVING:
@@ -1980,6 +1992,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private List<Integer> getGroupingSetsForRollup(int size) {
+    List<Integer> groupingSetKeys = new ArrayList<Integer>();
+    for (int i = 0; i <= size; i++) {
+       groupingSetKeys.add((1 << i) - 1);
+    }
+    return groupingSetKeys;
+  }
+
+  private List<Integer> getGroupingSetsForCube(int size) {
+    int count = 1 << size;
+    List<Integer> results = new ArrayList<Integer>(count);
+    for(int i = 0; i < count; ++i)
+      results.add(i);
+    return results;
+  }
+
+  // This function returns the grouping sets along with the grouping expressions
+  // Even if rollups and cubes are present in the query, they are converted to
+  // grouping sets at this point
+  private ObjectPair<List<ASTNode>, List<Integer>> getGroupByGroupingSetsForClause(
+      QBParseInfo parseInfo, String dest) {
+    List<Integer> groupingSets = new ArrayList<Integer>();
+    List<ASTNode> groupByExprs = getGroupByForClause(parseInfo, dest);
+    if (parseInfo.getDestRollups().contains(dest)) {
+      groupingSets = getGroupingSetsForRollup(groupByExprs.size());
+    } else if (parseInfo.getDestCubes().contains(dest)) {
+      groupingSets = getGroupingSetsForCube(groupByExprs.size());
+    }
+
+    return new ObjectPair<List<ASTNode>, List<Integer>>(groupByExprs, groupingSets);
+  }
+
   /**
    * This function is a wrapper of parseInfo.getGroupByForClause which
    * automatically translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY
@@ -2652,13 +2696,74 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
-        reduceSinkOperatorInfo), groupByOutputRowResolver);
+      new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
+      false,groupByMemoryUsage,memoryThreshold, null, false, 0),
+      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+      reduceSinkOperatorInfo), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
   }
+
+  // Add the grouping set key to the group by operator.
+  // This is not the first group by operator, but it is a subsequent group by operator
+  // which is forwarding the grouping keys introduced by the grouping sets.
+  // For eg: consider: select key, value, count(1) from T group by key, value with rollup.
+  // Assuming map-side aggregation and no skew, the plan would look like:
+  //
+  //   TableScan --> Select --> GroupBy1 --> ReduceSink --> GroupBy2 --> Select --> FileSink
+  //
+  // This function is called for GroupBy2 to pass the additional grouping keys introduced by
+  // GroupBy1 for the grouping set (corresponding to the rollup).
+  private void addGroupingSetKey(List<ExprNodeDesc> groupByKeys,
+      RowResolver groupByInputRowResolver,
+      RowResolver groupByOutputRowResolver,
+      List<String> outputColumnNames,
+      Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
+    // For grouping sets, add a dummy grouping key
+    String groupingSetColumnName =
+      groupByInputRowResolver.get(null, GROUPING_SET_KEY).getInternalName();
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+      groupingSetColumnName, null, false);
+    groupByKeys.add(inputExpr);
+
+    String field = getColumnInternalName(groupByKeys.size() - 1);
+    outputColumnNames.add(field);
+    groupByOutputRowResolver.put(null, GROUPING_SET_KEY,
+      new ColumnInfo(field, TypeInfoFactory.stringTypeInfo, "", false));
+    colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
+  }
+
+  // Process grouping set for the reduce sink operator
+  // For eg: consider: select key, value, count(1) from T group by key, value with rollup.
+  // Assuming map-side aggregation and no skew, the plan would look like:
+  //
+  //   TableScan --> Select --> GroupBy1 --> ReduceSink --> GroupBy2 --> Select --> FileSink
+  //
+  // This function is called for ReduceSink to add the additional grouping keys introduced by
+  // GroupBy1 into the reduce keys.
+  private void processGroupingSetReduceSinkOperator(RowResolver reduceSinkInputRowResolver,
+      RowResolver reduceSinkOutputRowResolver,
+      List<ExprNodeDesc> reduceKeys,
+      List<String> outputKeyColumnNames,
+      Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
+    // add a key for reduce sink
+    String groupingSetColumnName =
+      reduceSinkInputRowResolver.get(null, GROUPING_SET_KEY).getInternalName();
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+      groupingSetColumnName, null, false);
+    reduceKeys.add(inputExpr);
+
+    outputKeyColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
+    String field = Utilities.ReduceField.KEY.toString() + "."
+      + getColumnInternalName(reduceKeys.size() - 1);
+    ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
+      reduceKeys.size() - 1).getTypeInfo(), null, false);
+    reduceSinkOutputRowResolver.put(null, GROUPING_SET_KEY, colInfo);
+    colExprMap.put(colInfo.getInternalName(), inputExpr);
+  }
+
 
   /**
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
@@ -2677,7 +2782,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genGroupByPlanGroupByOperator1(QBParseInfo parseInfo,
       String dest, Operator reduceSinkOperatorInfo, GroupByDesc.Mode mode,
       Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
-      boolean distPartAgg) throws SemanticException {
+      boolean distPartAgg,
+      boolean groupingSetsPresent) throws SemanticException {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     RowResolver groupByInputRowResolver = opParseCtx
         .get(reduceSinkOperatorInfo).getRowResolver();
@@ -2705,6 +2811,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
 
+    // For grouping sets, add a dummy grouping key
+    if (groupingSetsPresent) {
+      addGroupingSetKey(
+        groupByKeys,
+        groupByInputRowResolver,
+        groupByOutputRowResolver,
+        outputColumnNames,
+        colExprMap);
+    }
+
     HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     // get the last colName for the reduce KEY
@@ -2726,7 +2842,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
       boolean isDistinct = (value.getType() == HiveParser.TOK_FUNCTIONDI);
 
-      // If the function is distinct, partial aggregartion has not been done on
+      // If the function is distinct, partial aggregation has not been done on
       // the client side.
       // If distPartAgg is set, the client is letting us know that partial
       // aggregation has not been done.
@@ -2814,11 +2930,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+
+    // Nothing special needs to be done for grouping sets.
+    // This is the final group by operator, so multiple rows corresponding to the
+    // grouping sets have been generated upstream.
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        distPartAgg,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver
-        .getColumnInfos()), reduceSinkOperatorInfo),
-        groupByOutputRowResolver);
+      new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
+      distPartAgg,groupByMemoryUsage,memoryThreshold, null, false, 0),
+      new RowSchema(groupByOutputRowResolver.getColumnInfos()), reduceSinkOperatorInfo),
+      groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
   }
@@ -2837,10 +2957,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return the new GroupByOperator
    */
   @SuppressWarnings("nls")
-  private Operator genGroupByPlanMapGroupByOperator(QB qb, String dest,
-      Operator inputOperatorInfo, GroupByDesc.Mode mode,
-      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
-      throws SemanticException {
+  private Operator genGroupByPlanMapGroupByOperator(QB qb,
+      String dest,
+      List<ASTNode> grpByExprs,
+      Operator inputOperatorInfo,
+      GroupByDesc.Mode mode,
+      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
+      List<Integer> groupingSetKeys,
+      boolean groupingSetsPresent) throws SemanticException {
 
     RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
         .getRowResolver();
@@ -2851,43 +2975,64 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
       ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr,
-          groupByInputRowResolver);
+        groupByInputRowResolver);
 
       groupByKeys.add(grpByExprNode);
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
       groupByOutputRowResolver.putExpression(grpbyExpr,
-          new ColumnInfo(field, grpByExprNode.getTypeInfo(), "", false));
+        new ColumnInfo(field, grpByExprNode.getTypeInfo(), "", false));
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
+    }
+
+    // The grouping set key is present after the grouping keys, before the distinct keys
+    int groupingSetsPosition = groupByKeys.size();
+
+    // For grouping sets, add a dummy grouping key
+    // This dummy key needs to be added as a reduce key
+    // For eg: consider: select key, value, count(1) from T group by key, value with rollup.
+    // Assuming map-side aggregation and no skew, the plan would look like:
+    //
+    //   TableScan --> Select --> GroupBy1 --> ReduceSink --> GroupBy2 --> Select --> FileSink
+    //
+    // This function is called for GroupBy1 to create an additional grouping key
+    // for the grouping set (corresponding to the rollup).
+    if (groupingSetsPresent) {
+      // The value for the constant does not matter. It is replaced by the grouping set
+      // value for the actual implementation
+      ExprNodeConstantDesc constant = new ExprNodeConstantDesc("0");
+      groupByKeys.add(constant);
+      String field = getColumnInternalName(groupByKeys.size() - 1);
+      outputColumnNames.add(field);
+      groupByOutputRowResolver.put(null, GROUPING_SET_KEY,
+        new ColumnInfo(field, TypeInfoFactory.stringTypeInfo, "", false));
+      colExprMap.put(field, constant);
     }
 
     // If there is a distinctFuncExp, add all parameters to the reduceKeys.
     if (!parseInfo.getDistinctFuncExprsForClause(dest).isEmpty()) {
       List<ASTNode> list = parseInfo.getDistinctFuncExprsForClause(dest);
-      int numDistn = 0;
       for(ASTNode value: list) {
         // 0 is function name
         for (int i = 1; i < value.getChildCount(); i++) {
           ASTNode parameter = (ASTNode) value.getChild(i);
           if (groupByOutputRowResolver.getExpression(parameter) == null) {
             ExprNodeDesc distExprNode = genExprNodeDesc(parameter,
-                groupByInputRowResolver);
+              groupByInputRowResolver);
             groupByKeys.add(distExprNode);
-            numDistn++;
-            String field = getColumnInternalName(grpByExprs.size() + numDistn -
-                1);
+            String field = getColumnInternalName(groupByKeys.size()-1);
             outputColumnNames.add(field);
             groupByOutputRowResolver.putExpression(parameter, new ColumnInfo(
-                field, distExprNode.getTypeInfo(), "", false));
+              field, distExprNode.getTypeInfo(), "", false));
             colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
           }
         }
       }
     }
+
 
     // For each aggregation
     HashMap<String, ASTNode> aggregationTrees = parseInfo
@@ -2903,7 +3048,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 1; i < value.getChildCount(); i++) {
         ASTNode paraExpr = (ASTNode) value.getChild(i);
         ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr,
-            groupByInputRowResolver);
+          groupByInputRowResolver);
 
         aggParameters.add(paraExprNode);
       }
@@ -2934,9 +3079,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
-        inputOperatorInfo), groupByOutputRowResolver);
+      new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
+      false,groupByMemoryUsage,memoryThreshold,
+      groupingSetKeys, groupingSetsPresent, groupingSetsPosition),
+      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+      inputOperatorInfo), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
   }
@@ -2956,9 +3103,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private Operator genGroupByPlanReduceSinkOperator(QB qb, String dest,
-      Operator inputOperatorInfo, int numPartitionFields, int numReducers,
-      boolean mapAggrDone) throws SemanticException {
+  private Operator genGroupByPlanReduceSinkOperator(QB qb,
+      String dest,
+      Operator inputOperatorInfo,
+      List<ASTNode> grpByExprs,
+      int numPartitionFields,
+      boolean changeNumPartitionFields,
+      int numReducers,
+      boolean mapAggrDone,
+      boolean groupingSetsPresent) throws SemanticException {
 
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo)
         .getRowResolver();
@@ -2970,11 +3123,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     List<String> outputKeyColumnNames = new ArrayList<String>();
     List<String> outputValueColumnNames = new ArrayList<String>();
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
 
     ArrayList<ExprNodeDesc> reduceKeys = getReduceKeysForReduceSink(grpByExprs, dest,
-        reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
+      reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
+      colExprMap);
+
+    // add a key for reduce sink
+    if (groupingSetsPresent) {
+      // Process grouping set for the reduce sink operator
+      processGroupingSetReduceSinkOperator(
+        reduceSinkInputRowResolver,
+        reduceSinkOutputRowResolver,
+        reduceKeys,
+        outputKeyColumnNames,
         colExprMap);
+
+      if (changeNumPartitionFields) {
+        numPartitionFields++;
+      }
+    }
 
     List<List<Integer>> distinctColIndices = getDistinctColIndicesForReduceSink(parseInfo, dest,
         reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames);
@@ -3006,11 +3173,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
-        OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys,
-        grpByExprs.size(), reduceValues, distinctColIndices,
-        outputKeyColumnNames, outputValueColumnNames, true, -1, numPartitionFields,
-        numReducers), new RowSchema(reduceSinkOutputRowResolver
-        .getColumnInfos()), inputOperatorInfo), reduceSinkOutputRowResolver);
+      OperatorFactory.getAndMakeChild(
+      PlanUtils.getReduceSinkDesc(reduceKeys,
+      groupingSetsPresent ? grpByExprs.size() + 1 : grpByExprs.size(),
+      reduceValues, distinctColIndices,
+      outputKeyColumnNames, outputValueColumnNames, true, -1, numPartitionFields,
+      numReducers),
+      new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()), inputOperatorInfo),
+      reduceSinkOutputRowResolver);
     rsOp.setColumnExprMap(colExprMap);
     return rsOp;
   }
@@ -3025,7 +3195,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
       ExprNodeDesc inputExpr = genExprNodeDesc(grpbyExpr,
-          reduceSinkInputRowResolver);
+        reduceSinkInputRowResolver);
       reduceKeys.add(inputExpr);
       if (reduceSinkOutputRowResolver.getExpression(grpbyExpr) == null) {
         outputKeyColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
@@ -3045,7 +3215,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private List<List<Integer>> getDistinctColIndicesForReduceSink(QBParseInfo parseInfo, String dest,
-      ArrayList<ExprNodeDesc> reduceKeys, RowResolver reduceSinkInputRowResolver,
+      List<ExprNodeDesc> reduceKeys, RowResolver reduceSinkInputRowResolver,
       RowResolver reduceSinkOutputRowResolver, List<String> outputKeyColumnNames)
       throws SemanticException {
 
@@ -3235,8 +3405,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator2MR(QBParseInfo parseInfo,
-      String dest, Operator groupByOperatorInfo, int numPartitionFields,
-      int numReducers) throws SemanticException {
+      String dest,
+      Operator groupByOperatorInfo,
+      int numPartitionFields,
+      int numReducers,
+      boolean groupingSetsPresent) throws SemanticException {
     RowResolver reduceSinkInputRowResolver2 = opParseCtx.get(
         groupByOperatorInfo).getRowResolver();
     RowResolver reduceSinkOutputRowResolver2 = new RowResolver();
@@ -3260,6 +3433,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceSinkOutputRowResolver2.putExpression(grpbyExpr, colInfo);
       colExprMap.put(colInfo.getInternalName(), inputExpr);
     }
+
+    // add a key for reduce sink
+    if (groupingSetsPresent) {
+      // Note that partitioning fields dont need to change, since it is either
+      // partitioned randomly, or by all grouping keys + distinct keys
+      processGroupingSetReduceSinkOperator(
+        reduceSinkInputRowResolver2,
+        reduceSinkOutputRowResolver2,
+        reduceKeys,
+        outputColumnNames,
+        colExprMap);
+    }
+
     // Get partial aggregation results and store in reduceValues
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
     int inputField = reduceKeys.size();
@@ -3305,9 +3491,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator2MR(QBParseInfo parseInfo,
-      String dest, Operator reduceSinkOperatorInfo2, GroupByDesc.Mode mode,
-      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
-      throws SemanticException {
+      String dest,
+      Operator reduceSinkOperatorInfo2,
+      GroupByDesc.Mode mode,
+      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
+      boolean groupingSetsPresent) throws SemanticException {
+
     RowResolver groupByInputRowResolver2 = opParseCtx.get(
         reduceSinkOperatorInfo2).getRowResolver();
     RowResolver groupByOutputRowResolver2 = new RowResolver();
@@ -3333,6 +3522,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           new ColumnInfo(field, exprInfo.getType(), "", false));
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
+
+    // For grouping sets, add a dummy grouping key
+    if (groupingSetsPresent) {
+      addGroupingSetKey(
+        groupByKeys,
+        groupByInputRowResolver2,
+        groupByOutputRowResolver2,
+        outputColumnNames,
+        colExprMap);
+    }
+
     HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
@@ -3374,10 +3574,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
-        reduceSinkOperatorInfo2), groupByOutputRowResolver2);
+      new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
+      false,groupByMemoryUsage,memoryThreshold, null, false, 0),
+      new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
+      reduceSinkOperatorInfo2), groupByOutputRowResolver2);
     op.setColumnExprMap(colExprMap);
     return op;
   }
@@ -3414,14 +3616,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     int numReducers = -1;
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
+    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+      getGroupByGroupingSetsForClause(parseInfo, dest);
+
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
+    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+
     if (grpByExprs.isEmpty()) {
       numReducers = 1;
     }
 
+    // Grouping sets are not allowed
+    if (!groupingSets.isEmpty()) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR.getMsg());
+    }
+
     // ////// 1. Generate ReduceSinkOperator
-    Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(qb,
-        dest, input, grpByExprs.size(), numReducers, false);
+    Operator reduceSinkOperatorInfo =
+      genGroupByPlanReduceSinkOperator(qb,
+        dest,
+        input,
+        grpByExprs,
+        grpByExprs.size(),
+        false,
+        numReducers,
+        false,
+        false);
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
@@ -3572,19 +3792,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator1(parseInfo,
-        dest, input, GroupByDesc.Mode.HASH, genericUDAFEvaluators, true);
+        dest, input, GroupByDesc.Mode.HASH, genericUDAFEvaluators, true, false);
 
     int numReducers = -1;
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
 
     // ////// 3. Generate ReduceSinkOperator2
     Operator reduceSinkOperatorInfo2 = genGroupByPlanReduceSinkOperator2MR(
-        parseInfo, dest, groupByOperatorInfo, grpByExprs.size(), numReducers);
+      parseInfo, dest, groupByOperatorInfo, grpByExprs.size(), numReducers, false);
 
     // ////// 4. Generate GroupbyOperator2
     Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator2MR(parseInfo,
         dest, reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
-        genericUDAFEvaluators);
+        genericUDAFEvaluators, false);
 
     return groupByOperatorInfo2;
   }
@@ -3636,6 +3856,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
+    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+      getGroupByGroupingSetsForClause(parseInfo, dest);
+
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
+    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+
+    // Grouping sets are not allowed
+    // This restriction can be lifted in future.
+    // HIVE-3508 has been filed for this
+    if (!groupingSets.isEmpty()) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR.getMsg());
+    }
+
     // ////// 1. Generate ReduceSinkOperator
     // There is a special case when we want the rows to be randomly distributed
     // to
@@ -3643,31 +3876,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // DISTINCT
     // operator. We set the numPartitionColumns to -1 for this purpose. This is
     // captured by WritableComparableHiveObject.hashCode() function.
-    Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(qb,
-        dest, input, (parseInfo.getDistinctFuncExprsForClause(dest).isEmpty() ?
-        -1 : Integer.MAX_VALUE), -1, false);
+    Operator reduceSinkOperatorInfo =
+      genGroupByPlanReduceSinkOperator(qb,
+        dest,
+        input,
+        grpByExprs,
+        (parseInfo.getDistinctFuncExprsForClause(dest).isEmpty() ? -1 : Integer.MAX_VALUE),
+        false,
+        -1,
+        false,
+        false);
 
     // ////// 2. Generate GroupbyOperator
     Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
       new LinkedHashMap<String, GenericUDAFEvaluator>();
     GroupByOperator groupByOperatorInfo = (GroupByOperator) genGroupByPlanGroupByOperator(
-        parseInfo, dest, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIAL1,
-        genericUDAFEvaluators);
+      parseInfo, dest, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIAL1,
+      genericUDAFEvaluators);
 
     int numReducers = -1;
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     if (grpByExprs.isEmpty()) {
       numReducers = 1;
     }
 
     // ////// 3. Generate ReduceSinkOperator2
     Operator reduceSinkOperatorInfo2 = genGroupByPlanReduceSinkOperator2MR(
-        parseInfo, dest, groupByOperatorInfo, grpByExprs.size(), numReducers);
+      parseInfo, dest, groupByOperatorInfo, grpByExprs.size(), numReducers, false);
 
     // ////// 4. Generate GroupbyOperator2
     Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator2MR(parseInfo,
-        dest, reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
-        genericUDAFEvaluators);
+      dest, reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
+      genericUDAFEvaluators, false);
 
     return groupByOperatorInfo2;
   }
@@ -3683,6 +3922,83 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return true;
+  }
+
+  static private void extractColumns(Set<String> colNamesExprs,
+      ExprNodeDesc exprNode) throws SemanticException {
+    if (exprNode instanceof ExprNodeColumnDesc) {
+      colNamesExprs.add(((ExprNodeColumnDesc)exprNode).getColumn());
+      return;
+    }
+
+    if (exprNode instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)exprNode;
+      for (ExprNodeDesc childExpr: funcDesc.getChildExprs()) {
+        extractColumns(colNamesExprs, childExpr);
+      }
+    }
+  }
+
+  static private boolean hasCommonElement(Set<String> set1, Set<String> set2) {
+    for (String elem1 : set1) {
+      if (set2.contains(elem1)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private void checkExpressionsForGroupingSet(List<ASTNode> grpByExprs,
+      List<ASTNode> distinctGrpByExprs,
+      Map<String, ASTNode> aggregationTrees,
+      RowResolver   inputRowResolver) throws SemanticException {
+
+    Set<String> colNamesGroupByExprs = new HashSet<String>();
+    Set<String> colNamesGroupByDistinctExprs = new HashSet<String>();
+    Set<String> colNamesAggregateParameters = new HashSet<String>();
+
+    // The columns in the group by expressions should not intersect with the columns in the
+    // distinct expressions
+    for (ASTNode grpByExpr : grpByExprs) {
+      extractColumns(colNamesGroupByExprs, genExprNodeDesc(grpByExpr, inputRowResolver));
+    }
+
+    // If there is a distinctFuncExp, add all parameters to the reduceKeys.
+    if (!distinctGrpByExprs.isEmpty()) {
+      for(ASTNode value: distinctGrpByExprs) {
+        // 0 is function name
+        for (int i = 1; i < value.getChildCount(); i++) {
+          ASTNode parameter = (ASTNode) value.getChild(i);
+          ExprNodeDesc distExprNode = genExprNodeDesc(parameter, inputRowResolver);
+          // extract all the columns
+          extractColumns(colNamesGroupByDistinctExprs, distExprNode);
+        }
+
+        if (hasCommonElement(colNamesGroupByExprs, colNamesGroupByDistinctExprs)) {
+          throw
+            new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID.getMsg());
+        }
+      }
+    }
+
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
+      ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
+      // 0 is the function name
+      for (int i = 1; i < value.getChildCount(); i++) {
+        ASTNode paraExpr = (ASTNode) value.getChild(i);
+        ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, inputRowResolver);
+
+        // extract all the columns
+        extractColumns(colNamesAggregateParameters, paraExprNode);
+      }
+
+      if (hasCommonElement(colNamesGroupByExprs, colNamesAggregateParameters)) {
+        throw
+          new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_EXPRESSION_INVALID.getMsg());
+      }
+    }
   }
 
   /**
@@ -3708,28 +4024,55 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Operator inputOperatorInfo) throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
+    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+      getGroupByGroupingSetsForClause(parseInfo, dest);
+
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
+    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    boolean groupingSetsPresent = !groupingSets.isEmpty();
+
+    if (groupingSetsPresent) {
+      checkExpressionsForGroupingSet(grpByExprs,
+        parseInfo.getDistinctFuncExprsForClause(dest),
+        parseInfo.getAggregationExprsForClause(dest),
+        opParseCtx.get(inputOperatorInfo).getRowResolver());
+    }
 
     // ////// Generate GroupbyOperator for a map-side partial aggregation
     Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
       new LinkedHashMap<String, GenericUDAFEvaluator>();
-    GroupByOperator groupByOperatorInfo = (GroupByOperator) genGroupByPlanMapGroupByOperator(
-        qb, dest, inputOperatorInfo, GroupByDesc.Mode.HASH,
-        genericUDAFEvaluators);
+    GroupByOperator groupByOperatorInfo =
+      (GroupByOperator) genGroupByPlanMapGroupByOperator(
+        qb,
+        dest,
+        grpByExprs,
+        inputOperatorInfo,
+        GroupByDesc.Mode.HASH,
+        genericUDAFEvaluators,
+        groupingSets,
+        groupingSetsPresent);
 
     groupOpToInputTables.put(groupByOperatorInfo, opParseCtx.get(
-        inputOperatorInfo).getRowResolver().getTableNames());
+      inputOperatorInfo).getRowResolver().getTableNames());
     int numReducers = -1;
 
     // Optimize the scenario when there are no grouping keys - only 1 reducer is
     // needed
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     if (grpByExprs.isEmpty()) {
       numReducers = 1;
     }
 
     // ////// Generate ReduceSink Operator
-    Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(qb,
-        dest, groupByOperatorInfo, grpByExprs.size(), numReducers, true);
+    Operator reduceSinkOperatorInfo =
+      genGroupByPlanReduceSinkOperator(qb,
+        dest,
+        groupByOperatorInfo,
+        grpByExprs,
+        grpByExprs.size(),
+        true,
+        numReducers,
+        true,
+        groupingSetsPresent);
 
     // This is a 1-stage map-reduce processing of the groupby. Tha map-side
     // aggregates was just used to
@@ -3739,8 +4082,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // used, and merge is invoked
     // on the reducer.
     return genGroupByPlanGroupByOperator1(parseInfo, dest,
-        reduceSinkOperatorInfo, GroupByDesc.Mode.MERGEPARTIAL,
-        genericUDAFEvaluators, false);
+      reduceSinkOperatorInfo, GroupByDesc.Mode.MERGEPARTIAL,
+      genericUDAFEvaluators, false, groupingSetsPresent);
   }
 
   /**
@@ -3780,12 +4123,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
+    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+      getGroupByGroupingSetsForClause(parseInfo, dest);
+
+    List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
+    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    boolean groupingSetsPresent = !groupingSets.isEmpty();
+
+    if (groupingSetsPresent) {
+      checkExpressionsForGroupingSet(grpByExprs,
+        parseInfo.getDistinctFuncExprsForClause(dest),
+        parseInfo.getAggregationExprsForClause(dest),
+        opParseCtx.get(inputOperatorInfo).getRowResolver());
+    }
+
     // ////// Generate GroupbyOperator for a map-side partial aggregation
     Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
       new LinkedHashMap<String, GenericUDAFEvaluator>();
-    GroupByOperator groupByOperatorInfo = (GroupByOperator) genGroupByPlanMapGroupByOperator(
-        qb, dest, inputOperatorInfo, GroupByDesc.Mode.HASH,
-        genericUDAFEvaluators);
+    GroupByOperator groupByOperatorInfo =
+      (GroupByOperator) genGroupByPlanMapGroupByOperator(
+        qb, dest, grpByExprs, inputOperatorInfo, GroupByDesc.Mode.HASH,
+        genericUDAFEvaluators, groupingSets, groupingSetsPresent);
 
     groupOpToInputTables.put(groupByOperatorInfo, opParseCtx.get(
         inputOperatorInfo).getRowResolver().getTableNames());
@@ -3793,40 +4151,57 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // map-reduce jobs are not needed
     // For eg: select count(1) from T where t.ds = ....
     if (!optimizeMapAggrGroupBy(dest, qb)) {
+      List<ASTNode> distinctFuncExprs = parseInfo.getDistinctFuncExprsForClause(dest);
 
       // ////// Generate ReduceSink Operator
-      Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(qb,
-          dest, groupByOperatorInfo, (parseInfo
-          .getDistinctFuncExprsForClause(dest).isEmpty() ? -1
-          : Integer.MAX_VALUE), -1, true);
+      Operator reduceSinkOperatorInfo =
+        genGroupByPlanReduceSinkOperator(qb,
+          dest,
+          groupByOperatorInfo,
+          grpByExprs,
+          distinctFuncExprs.isEmpty() ? -1 : Integer.MAX_VALUE,
+          false,
+          -1,
+          true,
+          groupingSetsPresent);
 
       // ////// Generate GroupbyOperator for a partial aggregation
       Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo,
-          dest, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIALS,
-          genericUDAFEvaluators, false);
+        dest, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIALS,
+        genericUDAFEvaluators, false, groupingSetsPresent);
 
       int numReducers = -1;
-      List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
       if (grpByExprs.isEmpty()) {
         numReducers = 1;
       }
 
       // ////// Generate ReduceSinkOperator2
       Operator reduceSinkOperatorInfo2 = genGroupByPlanReduceSinkOperator2MR(
-          parseInfo, dest, groupByOperatorInfo2, grpByExprs.size(), numReducers);
+        parseInfo, dest, groupByOperatorInfo2, grpByExprs.size(), numReducers,
+        groupingSetsPresent);
 
       // ////// Generate GroupbyOperator3
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest,
-          reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
-          genericUDAFEvaluators);
+        reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
+        genericUDAFEvaluators, groupingSetsPresent);
     } else {
+      // If there are no grouping keys, grouping sets cannot be present
+      assert !groupingSetsPresent;
+
       // ////// Generate ReduceSink Operator
-      Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(qb,
-          dest, groupByOperatorInfo, getGroupByForClause(parseInfo, dest)
-          .size(), 1, true);
+      Operator reduceSinkOperatorInfo =
+        genGroupByPlanReduceSinkOperator(qb,
+          dest,
+          groupByOperatorInfo,
+          grpByExprs,
+          grpByExprs.size(),
+          false,
+          1,
+          true,
+          groupingSetsPresent);
 
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest,
-          reduceSinkOperatorInfo, GroupByDesc.Mode.FINAL, genericUDAFEvaluators);
+        reduceSinkOperatorInfo, GroupByDesc.Mode.FINAL, genericUDAFEvaluators, false);
     }
   }
 
@@ -5257,9 +5632,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
     float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
-        inputOperatorInfo), groupByOutputRowResolver);
+      new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
+      false,groupByMemoryUsage,memoryThreshold, null, false, 0),
+      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+      inputOperatorInfo), groupByOutputRowResolver);
 
     op.setColumnExprMap(colExprMap);
     return op;
@@ -5894,6 +6270,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ASTNode> oldASTList = null;
 
     for (String dest : ks) {
+      // If a grouping set aggregation is present, common processing is not possible
+      if (!qbp.getDestCubes().isEmpty() || !qbp.getDestRollups().isEmpty()) {
+        return null;
+      }
+
       // If a filter is present, common processing is not possible
       if (qbp.getWhrForClause(dest) != null) {
         return null;

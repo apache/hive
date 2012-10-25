@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
  * Implementation of the parse information related to a query block.
  *
  **/
-
 public class QBParseInfo {
 
   private final boolean isSubQ;
@@ -49,6 +48,8 @@ public class QBParseInfo {
   private final Map<String, ASTNode> destToSelExpr;
   private final HashMap<String, ASTNode> destToWhereExpr;
   private final HashMap<String, ASTNode> destToGroupby;
+  private final Set<String> destRollups;
+  private final Set<String> destCubes;
   private final Map<String, ASTNode> destToHaving;
   private final HashSet<String> insertIntoTables;
 
@@ -105,6 +106,8 @@ public class QBParseInfo {
     destToOrderby = new HashMap<String, ASTNode>();
     destToLimit = new HashMap<String, Integer>();
     insertIntoTables = new HashSet<String>();
+    destRollups = new HashSet<String>();
+    destCubes = new HashSet<String>();
 
     destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
     destToDistinctFuncExprs = new HashMap<String, List<ASTNode>>();
@@ -239,6 +242,14 @@ public class QBParseInfo {
 
   public ASTNode getGroupByForClause(String clause) {
     return destToGroupby.get(clause);
+  }
+
+  public Set<String> getDestRollups() {
+    return destRollups;
+  }
+
+  public Set<String> getDestCubes() {
+    return destCubes;
   }
 
   public HashMap<String, ASTNode> getDestToGroupBy() {
