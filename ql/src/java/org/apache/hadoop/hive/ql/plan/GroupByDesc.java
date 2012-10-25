@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -57,6 +58,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private boolean bucketGroup;
 
   private ArrayList<ExprNodeDesc> keys;
+  private List<Integer> listGroupingSets;
+  private boolean groupingSetsPresent;
+  private int groupingSetPosition;
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
@@ -70,9 +74,15 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<java.lang.String> outputColumnNames,
       final ArrayList<ExprNodeDesc> keys,
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey,float groupByMemoryUsage, float memoryThreshold) {
+      final boolean groupKeyNotReductionKey,
+      final float groupByMemoryUsage,
+      final float memoryThreshold,
+      final List<Integer> listGroupingSets,
+      final boolean groupingSetsPresent,
+      final int groupingSetsPosition) {
     this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
-        false, groupByMemoryUsage, memoryThreshold);
+      false, groupByMemoryUsage, memoryThreshold, listGroupingSets,
+      groupingSetsPresent, groupingSetsPosition);
   }
 
   public GroupByDesc(
@@ -80,7 +90,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final ArrayList<java.lang.String> outputColumnNames,
       final ArrayList<ExprNodeDesc> keys,
       final ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey, final boolean bucketGroup,float groupByMemoryUsage, float memoryThreshold) {
+      final boolean groupKeyNotReductionKey,
+      final boolean bucketGroup,
+      final float groupByMemoryUsage,
+      final float memoryThreshold,
+      final List<Integer> listGroupingSets,
+      final boolean groupingSetsPresent,
+      final int groupingSetsPosition) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
@@ -89,6 +105,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.bucketGroup = bucketGroup;
     this.groupByMemoryUsage = groupByMemoryUsage;
     this.memoryThreshold = memoryThreshold;
+    this.listGroupingSets = listGroupingSets;
+    this.groupingSetsPresent = groupingSetsPresent;
+    this.groupingSetPosition = groupingSetsPosition;
   }
 
   public Mode getMode() {
@@ -199,5 +218,35 @@ public class GroupByDesc extends AbstractOperatorDesc {
       }
     }
     return true;
+  }
+
+  // Consider a query like:
+  // select a, b, count(distinct c) from T group by a,b with rollup;
+  // Assume that hive.map.aggr is set to true and hive.groupby.skewindata is false,
+  // in which case the group by would execute as a single map-reduce job.
+  // For the group-by, the group by keys should be: a,b,groupingSet(for rollup), c
+  // So, the starting position of grouping set need to be known
+  public List<Integer> getListGroupingSets() {
+    return listGroupingSets;
+  }
+
+  public void setListGroupingSets(final List<Integer> listGroupingSets) {
+    this.listGroupingSets = listGroupingSets;
+  }
+
+  public boolean isGroupingSetsPresent() {
+    return groupingSetsPresent;
+  }
+
+  public void setGroupingSetsPresent(boolean groupingSetsPresent) {
+    this.groupingSetsPresent = groupingSetsPresent;
+  }
+
+  public int getGroupingSetPosition() {
+    return groupingSetPosition;
+  }
+
+  public void setGroupingSetPosition(int groupingSetPosition) {
+    this.groupingSetPosition = groupingSetPosition;
   }
 }
