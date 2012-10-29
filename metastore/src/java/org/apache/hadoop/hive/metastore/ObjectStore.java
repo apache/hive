@@ -1927,7 +1927,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
-      fullCopyMSD(newt.getSd(), oldt.getSd());
+      copyMSD(newt.getSd(), oldt.getSd());
       oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
@@ -2067,15 +2067,6 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.setSkewedColNames(newSd.getSkewedColNames());
     oldSd.setSkewedColValues(newSd.getSkewedColValues());
     oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
-  }
-
-  /**
-   * copy over all fields from newSd to oldSd
-   * @param newSd the new storage descriptor
-   * @param oldSd the old descriptor that gets copied over
-   */
-  private void fullCopyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
-    copyMSD(newSd, oldSd);
     oldSd.setSortCols(newSd.getSortCols());
     oldSd.setParameters(newSd.getParameters());
   }

@@ -158,7 +158,7 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	8                   	 
+Num Buckets:        	12                  	 
 Bucket Columns:     	[key]               	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
