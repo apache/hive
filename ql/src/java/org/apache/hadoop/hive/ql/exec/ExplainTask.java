@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +41,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.json.JSONException;
@@ -58,6 +61,51 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public static final String EXPL_COLUMN_NAME = "Explain";
   public ExplainTask() {
     super();
+  }
+
+  /*
+   * Below method returns the dependencies for the passed in query to EXPLAIN.
+   * The dependencies are the set of input tables and partitions, and are
+   * provided back as JSON output for the EXPLAIN command.
+   * Example output:
+   * {"input_tables":[{"tablename": "default@test_sambavi_v1", "tabletype": "TABLE"}],
+   *  "input partitions":["default@srcpart@ds=2008-04-08/hr=11"]}
+   */
+  private static JSONObject getJSONDependencies(ExplainWork work)
+      throws Exception {
+    assert(work.getDependency());
+
+    JSONObject outJSONObject = new JSONObject();
+    List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
+    Set<String> inputPartitions = new HashSet<String>();
+    Set<String> inputTables = new HashSet<String>();
+    Table table = null;
+    for (ReadEntity input: work.getInputs()) {
+      switch (input.getType()) {
+        case TABLE:
+          table = input.getTable();
+          break;
+        case PARTITION:
+          inputPartitions.add(input.getPartition().getCompleteName());
+          table = input.getPartition().getTable();
+          break;
+        default:
+          table = null;
+          break;
+      }
+
+      if (table != null && !inputTables.contains(table.getCompleteName())) {
+        Map<String, String> tableInfo = new HashMap<String, String>();
+        tableInfo.put("tablename", table.getCompleteName());
+        tableInfo.put("tabletype", table.getTableType().toString());
+        inputTableInfo.add(tableInfo);
+        inputTables.add(table.getCompleteName());
+      }
+    }
+
+    outJSONObject.put("input_tables", inputTableInfo);
+    outJSONObject.put("input_partitions", inputPartitions);
+    return outJSONObject;
   }
 
   static public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
@@ -112,10 +160,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      JSONObject jsonPlan = getJSONPlan(out, work);
-
-      if (work.isFormatted()) {
-        out.print(jsonPlan);
+      if (work.getDependency()) {
+        JSONObject jsonDependencies = getJSONDependencies(work);
+        out.print(jsonDependencies);
+      } else {
+        JSONObject jsonPlan = getJSONPlan(out, work);
+        if (work.isFormatted()) {
+          out.print(jsonPlan);
+        }
       }
 
       out.close();

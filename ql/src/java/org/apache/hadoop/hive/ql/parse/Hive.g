@@ -296,7 +296,7 @@ statement
 explainStatement
 @init { msgs.push("explain statement"); }
 @after { msgs.pop(); }
-	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED)? execStatement
+	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY)? execStatement
       -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 
@@ -2361,6 +2361,7 @@ KW_FUNCTION: 'FUNCTION';
 KW_EXPLAIN: 'EXPLAIN';
 KW_EXTENDED: 'EXTENDED';
 KW_FORMATTED: 'FORMATTED';
+KW_DEPENDENCY: 'DEPENDENCY';
 KW_SERDE: 'SERDE';
 KW_WITH: 'WITH';
 KW_DEFERRED: 'DEFERRED';
