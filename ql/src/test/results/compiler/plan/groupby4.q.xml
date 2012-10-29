@@ -319,21 +319,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_67_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_3_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_67_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_3_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_67_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_RS_3_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_67_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_RS_3_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>RS_67</string> 
+                     <string>RS_3</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -471,21 +471,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_66_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_2_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_66_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_2_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_66_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_GBY_2_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_66_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_GBY_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>GBY_66</string> 
+                 <string>GBY_2</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -623,21 +623,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_65_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_65_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_65_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_1_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_65_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_1_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_65</string> 
+             <string>SEL_1</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -684,16 +684,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_64_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_64_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_64_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_64_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -705,7 +705,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_64</string> 
+         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1029,21 +1029,21 @@
               <void property="counterNames"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_70_NUM_INPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_6_NUM_INPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_70_NUM_OUTPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_6_NUM_OUTPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_70_TIME_TAKEN</string> 
+                 <string>CNTR_NAME_FS_6_TIME_TAKEN</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_70_FATAL_ERROR</string> 
+                 <string>CNTR_NAME_FS_6_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
               <void property="operatorId"> 
-               <string>FS_70</string> 
+               <string>FS_6</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -1116,21 +1116,21 @@
           <void property="counterNames"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_69_NUM_INPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_69_NUM_OUTPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_69_TIME_TAKEN</string> 
+             <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_69_FATAL_ERROR</string> 
+             <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
           <void property="operatorId"> 
-           <string>SEL_69</string> 
+           <string>SEL_5</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -1214,21 +1214,21 @@
       <void property="counterNames"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_68_NUM_INPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_4_NUM_INPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_68_NUM_OUTPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_4_NUM_OUTPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_68_TIME_TAKEN</string> 
+         <string>CNTR_NAME_GBY_4_TIME_TAKEN</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_68_FATAL_ERROR</string> 
+         <string>CNTR_NAME_GBY_4_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 
       <void property="operatorId"> 
-       <string>GBY_68</string> 
+       <string>GBY_4</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 
