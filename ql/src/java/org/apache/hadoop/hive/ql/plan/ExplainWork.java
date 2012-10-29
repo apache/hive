@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 
 /**
  * ExplainWork.
@@ -34,22 +36,28 @@ public class ExplainWork implements Serializable {
   private String resFile;
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private String astStringTree;
+  private HashSet<ReadEntity> inputs;
   boolean extended;
   boolean formatted;
+  boolean dependency;
 
   public ExplainWork() {
   }
 
   public ExplainWork(String resFile,
-      List<Task<? extends Serializable>> rootTasks, 
+      List<Task<? extends Serializable>> rootTasks,
       String astStringTree,
+      HashSet<ReadEntity> inputs,
       boolean extended,
-      boolean formatted) {
+      boolean formatted,
+      boolean dependency) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.astStringTree = astStringTree;
+    this.inputs = inputs;
     this.extended = extended;
     this.formatted = formatted;
+    this.dependency = dependency;
   }
 
   public String getResFile() {
@@ -76,6 +84,14 @@ public class ExplainWork implements Serializable {
     this.astStringTree = astStringTree;
   }
 
+  public HashSet<ReadEntity> getInputs() {
+    return inputs;
+  }
+
+  public void setInputs(HashSet<ReadEntity> inputs) {
+    this.inputs = inputs;
+  }
+
   public boolean getExtended() {
     return extended;
   }
@@ -83,7 +99,15 @@ public class ExplainWork implements Serializable {
   public void setExtended(boolean extended) {
     this.extended = extended;
   }
-  
+
+  public boolean getDependency() {
+    return dependency;
+  }
+
+  public void setDependency(boolean dependency) {
+    this.dependency = dependency;
+  }
+
   public boolean isFormatted() {
     return formatted;
   }
