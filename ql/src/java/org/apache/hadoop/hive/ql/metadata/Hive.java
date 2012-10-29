@@ -31,13 +31,13 @@ import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -1465,6 +1464,11 @@ public class Hive {
             tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
             tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
             tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+            tpart.getSd().getSerdeInfo().setParameters(
+                tbl.getTTable().getSd().getSerdeInfo().getParameters());
+            tpart.getSd().setBucketCols(tbl.getBucketCols());
+            tpart.getSd().setNumBuckets(tbl.getNumBuckets());
+            tpart.getSd().setSortCols(tbl.getSortCols());
           }
           if (partPath == null || partPath.trim().equals("")) {
             throw new HiveException("new partition path should not be null or empty.");
