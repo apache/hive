@@ -94,6 +94,7 @@ public class $className extends TestCase {
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   public void testParse_$tname() throws Exception {
+    org.apache.hadoop.hive.ql.exec.Operator.resetId();
     long startTime = System.currentTimeMillis();
     try {
       System.out.println("Begin query: " + "$fname");
