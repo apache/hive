@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
  * UnionProcContext.
@@ -112,11 +113,13 @@ public class UnionProcContext implements NodeProcessorCtx {
       }
       return true;
     }
-
   }
 
   // the subqueries are map-only jobs
   private boolean mapOnlySubq;
+
+  // ParseContext
+  private ParseContext parseContext;
 
   /**
    * @return the mapOnlySubq
@@ -146,5 +149,13 @@ public class UnionProcContext implements NodeProcessorCtx {
 
   public UnionParseContext getUnionParseContext(UnionOperator u) {
     return uCtxMap.get(u);
+  }
+
+  public ParseContext getParseContext() {
+    return parseContext;
+  }
+
+  public void setParseContext(ParseContext parseContext) {
+    this.parseContext = parseContext;
   }
 }

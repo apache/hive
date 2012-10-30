@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
@@ -45,6 +46,19 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private DynamicPartitionCtx dpCtx;
   private String staticSpec; // static partition spec ends with a '/'
   private boolean gatherStats;
+
+  // This file descriptor is linked to other file descriptors.
+  // One use case is that, a union->select (star)->file sink, is broken down.
+  // For eg: consider a query like:
+  // select * from (subq1 union all subq2)x;
+  // where subq1 or subq2 involves a map-reduce job.
+  // It is broken into two independent queries involving subq1 and subq2 directly, and
+  // the sub-queries write to sub-directories of a common directory. So, the file sink
+  // descriptors for subq1 and subq2 are linked.
+  private boolean linkedFileSink = false;
+  private String parentDir;
+  transient private List<FileSinkDesc> linkedFileSinkDesc;
+
   private boolean statsReliable;
 
   public FileSinkDesc() {
@@ -79,6 +93,23 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.partitionCols = null;
   }
 
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
+        destTableId, multiFileSpray, numFiles, totalFiles,
+        partitionCols, dpCtx);
+    ret.setCompressCodec(compressCodec);
+    ret.setCompressType(compressType);
+    ret.setGatherStats(gatherStats);
+    ret.setStaticSpec(staticSpec);
+    ret.setStatsAggPrefix(statsKeyPref);
+    ret.setLinkedFileSink(linkedFileSink);
+    ret.setParentDir(parentDir);
+    ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
+    ret.setStatsReliable(statsReliable);
+    return (Object) ret;
+  }
+
   @Explain(displayName = "directory", normalExplain = false)
   public String getDirName() {
     return dirName;
@@ -86,6 +117,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setDirName(final String dirName) {
     this.dirName = dirName;
+  }
+
+  public String getFinalDirName() {
+    return linkedFileSink ? parentDir : dirName;
   }
 
   @Explain(displayName = "table")
@@ -248,11 +283,35 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     }
   }
 
+  public boolean isLinkedFileSink() {
+    return linkedFileSink;
+  }
+
+  public void setLinkedFileSink(boolean linkedFileSink) {
+    this.linkedFileSink = linkedFileSink;
+  }
+
+  public String getParentDir() {
+    return parentDir;
+  }
+
+  public void setParentDir(String parentDir) {
+    this.parentDir = parentDir;
+  }
+
   public boolean isStatsReliable() {
     return statsReliable;
   }
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
+  }
+
+  public List<FileSinkDesc> getLinkedFileSinkDesc() {
+    return linkedFileSinkDesc;
+  }
+
+  public void setLinkedFileSinkDesc(List<FileSinkDesc> linkedFileSinkDesc) {
+    this.linkedFileSinkDesc = linkedFileSinkDesc;
   }
 }

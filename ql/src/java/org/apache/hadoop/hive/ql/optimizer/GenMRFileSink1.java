@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -109,6 +110,14 @@ public class GenMRFileSink1 implements NodeProcessor {
       parseCtx.getQB().getParseInfo().isInsertToTable();
     HiveConf hconf = parseCtx.getConf();
 
+    // If this file sink desc has been processed due to a linked file sink desc,
+    // use that task
+    Map<FileSinkDesc, Task<? extends Serializable>> fileSinkDescs = ctx.getLinkedFileDescTasks();
+    if (fileSinkDescs != null) {
+      Task<? extends Serializable> childTask = fileSinkDescs.get(fsOp.getConf());
+      processLinkedFileDesc(ctx, childTask);
+      return null;
+    }
 
     // Has the user enabled merging of files for map-only jobs or for all jobs
     if ((ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) {
@@ -129,18 +138,30 @@ public class GenMRFileSink1 implements NodeProcessor {
         }
 
         if ((mvTask != null) && !mvTask.isLocal()) {
-          // There are separate configuration parameters to control whether to
-          // merge for a map-only job
-          // or for a map-reduce job
-          MapredWork currWork = (MapredWork) currTask.getWork();
-          boolean mergeMapOnly =
-            hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
-            currWork.getReducer() == null;
-          boolean mergeMapRed =
-            hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES) &&
-            currWork.getReducer() != null;
-          if (mergeMapOnly || mergeMapRed) {
-            chDir = true;
+          if (fsOp.getConf().isLinkedFileSink()) {
+            // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
+            // number of reducers are few, so the number of files anyway are small.
+            // However, with this optimization, we are increasing the number of files
+            // possibly by a big margin. So, merge aggresively.
+            if (hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) ||
+                hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES)) {
+              chDir = true;
+            }
+          }
+          else {
+            // There are separate configuration parameters to control whether to
+            // merge for a map-only job
+            // or for a map-reduce job
+            MapredWork currWork = (MapredWork) currTask.getWork();
+            boolean mergeMapOnly =
+              hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
+              currWork.getReducer() == null;
+            boolean mergeMapRed =
+              hconf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES) &&
+              currWork.getReducer() != null;
+            if (mergeMapOnly || mergeMapRed) {
+              chDir = true;
+            }
           }
         }
       }
@@ -153,7 +174,55 @@ public class GenMRFileSink1 implements NodeProcessor {
       createMergeJob((FileSinkOperator) nd, ctx, finalName);
     }
 
+    FileSinkDesc fileSinkDesc = fsOp.getConf();
+    if (fileSinkDesc.isLinkedFileSink()) {
+      Map<FileSinkDesc, Task<? extends Serializable>> linkedFileDescTasks =
+        ctx.getLinkedFileDescTasks();
+      if (linkedFileDescTasks == null) {
+        linkedFileDescTasks = new HashMap<FileSinkDesc, Task<? extends Serializable>>();
+        ctx.setLinkedFileDescTasks(linkedFileDescTasks);
+      }
+
+      // The child tasks may be null in case of a select
+      if ((currTask.getChildTasks() != null) &&
+        (currTask.getChildTasks().size() == 1)) {
+        for (FileSinkDesc fileDesc : fileSinkDesc.getLinkedFileSinkDesc()) {
+          linkedFileDescTasks.put(fileDesc, currTask.getChildTasks().get(0));
+        }
+      }
+    }
+
     return null;
+  }
+
+  /*
+   * Multiple file sink descriptors are linked.
+   * Use the task created by the first linked file descriptor
+   */
+  private void processLinkedFileDesc(GenMRProcContext ctx,
+    Task<? extends Serializable> childTask)
+    throws SemanticException {
+    Operator<? extends OperatorDesc> currTopOp = ctx.getCurrTopOp();
+    String currAliasId = ctx.getCurrAliasId();
+    List<Operator<? extends OperatorDesc>> seenOps = ctx.getSeenOps();
+    List<Task<? extends Serializable>> rootTasks = ctx.getRootTasks();
+    Task<? extends Serializable> currTask = ctx.getCurrTask();
+
+    if (currTopOp != null) {
+      if (!seenOps.contains(currTopOp)) {
+        seenOps.add(currTopOp);
+        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp,
+          (MapredWork) currTask.getWork(), false, ctx);
+      }
+
+      if (!rootTasks.contains(currTask)) {
+        rootTasks.add(currTask);
+      }
+    }
+
+    if (childTask != null) {
+      currTask.addDependentTask(childTask);
+    }
   }
 
   /**
@@ -262,10 +331,10 @@ public class GenMRFileSink1 implements NodeProcessor {
     // since it is unknown if the merge MR will be triggered at execution time.
 
     MoveWork dummyMv = new MoveWork(null, null, null,
-        new LoadFileDesc(fsConf.getDirName(), finalName, true, null, null), false);
+        new LoadFileDesc(fsConf.getFinalDirName(), finalName, true, null, null), false);
 
     ConditionalTask cndTsk = createCondTask(conf, currTask, dummyMv, cplan,
-        fsConf.getDirName());
+        fsConf.getFinalDirName());
 
     linkMoveTask(ctx, newOutput, cndTsk);
   }
@@ -387,7 +456,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     //
     MapRedTask currTask = (MapRedTask) ctx.getCurrTask();
     MoveWork dummyMv = new MoveWork(null, null, null,
-        new LoadFileDesc(fsInputDesc.getDirName(), finalName, true, null, null), false);
+        new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
     MapredWork cplan;
 
     if(parseCtx.getConf().getBoolVar(HiveConf.ConfVars.
@@ -417,7 +486,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
     ConditionalTask cndTsk = createCondTask(ctx.getConf(), ctx.getCurrTask(), dummyMv, cplan,
-        fsInputDesc.getDirName());
+        fsInputDesc.getFinalDirName());
 
     // keep the dynamic partition context in conditional task resolver context
     ConditionalResolverMergeFilesCtx mrCtx =
@@ -516,7 +585,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
-    String inputDir = fsDesc.getDirName();
+    String inputDir = fsDesc.getFinalDirName();
     TableDesc tblDesc = fsDesc.getTableInfo();
     aliases.add(inputDir); // dummy alias: just use the input path
 
@@ -541,7 +610,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   private MapredWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
       String finalName, boolean hasDynamicPartitions) throws SemanticException {
 
-    String inputDir = fsInputDesc.getDirName();
+    String inputDir = fsInputDesc.getFinalDirName();
     TableDesc tblDesc = fsInputDesc.getTableInfo();
 
     if(tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
@@ -637,8 +706,9 @@ public class GenMRFileSink1 implements NodeProcessor {
         srcDir = mvWork.getLoadTableWork().getSourceDir();
       }
 
+      String fsOpDirName = fsOp.getConf().getFinalDirName();
       if ((srcDir != null)
-          && (srcDir.equalsIgnoreCase(fsOp.getConf().getDirName()))) {
+          && (srcDir.equalsIgnoreCase(fsOpDirName))) {
         return mvTsk;
       }
     }
@@ -681,7 +751,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     String dest = null;
 
     if (chDir) {
-      dest = fsOp.getConf().getDirName();
+      dest = fsOp.getConf().getFinalDirName();
 
       // generate the temporary file
       // it must be on the same file system as the current destination
@@ -689,7 +759,17 @@ public class GenMRFileSink1 implements NodeProcessor {
       Context baseCtx = parseCtx.getContext();
       String tmpDir = baseCtx.getExternalTmpFileURI((new Path(dest)).toUri());
 
-      fsOp.getConf().setDirName(tmpDir);
+      FileSinkDesc fileSinkDesc = fsOp.getConf();
+      // Change all the linked file sink descriptors
+      if (fileSinkDesc.isLinkedFileSink()) {
+        for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
+          String fileName = Utilities.getFileNameFromDirName(fsConf.getDirName());
+          fsConf.setParentDir(tmpDir);
+          fsConf.setDirName(tmpDir + Path.SEPARATOR + fileName);
+        }
+      } else {
+        fileSinkDesc.setDirName(tmpDir);
+      }
     }
 
     Task<MoveWork> mvTask = null;
@@ -707,7 +787,6 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // Set the move task to be dependent on the current task
     if (mvTask != null) {
-
       addDependentMoveTasks(ctx, mvTask, currTask);
     }
 
@@ -742,7 +821,7 @@ public class GenMRFileSink1 implements NodeProcessor {
           }
         }
         // mapTask and currTask should be merged by and join/union operator
-        // (e.g., GenMRUnion1j) which has multiple topOps.
+        // (e.g., GenMRUnion1) which has multiple topOps.
         // assert mapTask == currTask : "mapTask.id = " + mapTask.getId()
         // + "; currTask.id = " + currTask.getId();
       }

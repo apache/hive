@@ -453,6 +453,29 @@
 </property>
 
 <property>
+  <name>hive.optimize.union.remove</name>
+  <value>false</value>
+  <description>
+    Whether to remove the union and push the operators between union and the filesink above
+    union. This avoids an extra scan of the output by union. This is independently useful for union 
+    queries, and specially useful when hive.optimize.skewjoin.compiletime is set to true, since an
+    extra union is inserted.
+
+    The merge is triggered if either of hive.merge.mapfiles or hive.merge.mapredfiles is set to true.
+    If the user has set hive.merge.mapfiles to true and hive.merge.mapredfiles to false, the idea was the
+    number of reducers are few, so the number of files anyway are small. However, with this optimization,
+    we are increasing the number of files possibly by a big margin. So, we merge aggresively.
+</property>
+
+<property>
+  <name>hive.mapred.supports.subdirectories</name>
+  <value>false</value>
+  <description>Whether the version of hadoop which is running supports sub-directories for tables/partitions.
+    Many hive optimizations can be applied if the hadoop version supports sub-directories for 
+    tables/partitions. It was added by MAPREDUCE-1501
+</property>
+
+<property>
   <name>hive.multigroupby.singlemr</name>
   <value>false</value>
   <description>Whether to optimize multi group by query to generate single M/R

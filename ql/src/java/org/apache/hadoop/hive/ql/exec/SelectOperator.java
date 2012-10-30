@@ -110,4 +110,9 @@ public class SelectOperator extends Operator<SelectDesc> implements
   public boolean columnNamesRowResolvedCanBeObtained() {
     return true;
   }
+
+  @Override
+  public boolean supportUnionRemoveOptimization() {
+    return true;
+  }
 }

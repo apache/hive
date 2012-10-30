@@ -180,4 +180,27 @@ public class ColumnInfo implements Serializable {
   public void setSkewedCol(boolean isSkewedCol) {
     this.isSkewedCol = isSkewedCol;
   }
+
+  private boolean checkEquals(Object obj1, Object obj2) {
+    return obj1 == null ? obj2 == null : obj1.equals(obj2);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof ColumnInfo) || (obj == null)) {
+      return false;
+    }
+
+    ColumnInfo dest = (ColumnInfo)obj;
+    if ((!checkEquals(internalName, dest.getInternalName())) ||
+        (!checkEquals(alias, dest.getAlias())) ||
+        (!checkEquals(getType(), dest.getType())) ||
+        (isSkewedCol != dest.isSkewedCol()) ||
+        (isVirtualCol != dest.getIsVirtualCol()) ||
+        (isHiddenVirtualCol != dest.isHiddenVirtualCol())) {
+      return false;
+    }
+
+    return true;
+  }
 }
