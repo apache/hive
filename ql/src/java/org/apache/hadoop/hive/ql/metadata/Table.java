@@ -622,7 +622,7 @@ public class Table implements Serializable {
     FileSystem fs;
     try {
       fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.copyFiles(srcf, new Path(getDataLocation().getPath()), fs);
+      Hive.copyFiles(Hive.get().getConf(), srcf, new Path(getDataLocation().getPath()), fs);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

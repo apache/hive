@@ -22,11 +22,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -77,13 +79,14 @@ public class UnionProcessor implements Transform {
     opRules.put(new RuleRegExp("R3",
       TableScanOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
       UnionProcFactory.getMapUnion());
-    opRules.put(new RuleRegExp("R3",
+    opRules.put(new RuleRegExp("R4",
       MapJoinOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
       UnionProcFactory.getMapJoinUnion());
 
     // The dispatcher fires the processor for the matching rule and passes the
     // context along
     UnionProcContext uCtx = new UnionProcContext();
+    uCtx.setParseContext(pCtx);
     Dispatcher disp = new DefaultRuleDispatcher(UnionProcFactory.getNoUnion(),
         opRules, uCtx);
     GraphWalker ogw = new PreOrderWalker(disp);
@@ -93,6 +96,29 @@ public class UnionProcessor implements Transform {
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
     pCtx.setUCtx(uCtx);
+
+    // Walk the tree again to see if the union can be removed completely
+    HiveConf conf = pCtx.getConf();
+    opRules.clear();
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)) {
+
+      if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES)) {
+        throw new
+        SemanticException(ErrorMsg.HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES.getMsg());
+      }
+
+      opRules.put(new RuleRegExp("R5", UnionOperator.getOperatorName() + "%" +
+                                 ".*" + FileSinkOperator.getOperatorName() + "%"),
+        UnionProcFactory.getUnionNoProcessFile());
+
+      disp = new DefaultRuleDispatcher(UnionProcFactory.getNoUnion(), opRules, uCtx);
+      ogw = new PreOrderWalker(disp);
+
+      // Create a list of topop nodes
+      topNodes.clear();
+      topNodes.addAll(pCtx.getTopOps().values());
+      ogw.startWalking(topNodes, null);
+    }
 
     return pCtx;
   }

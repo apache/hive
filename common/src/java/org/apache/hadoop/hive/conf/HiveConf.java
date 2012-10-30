@@ -510,6 +510,15 @@ public class HiveConf extends Configuration {
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
+    // whether to optimize union followed by select followed by filesink
+    // It creates sub-directories in the final output, so should not be turned on in systems
+    // where MAPREDUCE-1501 is not present
+    HIVE_OPTIMIZE_UNION_REMOVE("hive.optimize.union.remove", false),
+
+    // whether hadoop map-reduce supports sub-directories. It was added by MAPREDUCE-1501.
+    // Some optimizations can only be performed if the version of hadoop being used supports
+    // sub-directories
+    HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES("hive.mapred.supports.subdirectories", false),
 
     // optimize skewed join by changing the query plan at compile time
     HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME("hive.optimize.skewjoin.compiletime", false),

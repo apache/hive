@@ -1420,4 +1420,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
   }
+
+  public boolean supportUnionRemoveOptimization() {
+    return false;
+  }
 }

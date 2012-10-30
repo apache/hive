@@ -67,8 +67,9 @@ public class SelectDesc extends AbstractOperatorDesc {
   @Override
   public Object clone() {
     SelectDesc ret = new SelectDesc();
-    ret.setColList(new ArrayList<ExprNodeDesc>(getColList()));
-    ret.setOutputColumnNames(new ArrayList<String>(getOutputColumnNames()));
+    ret.setColList(getColList() == null ? null : new ArrayList<ExprNodeDesc>(getColList()));
+    ret.setOutputColumnNames(getOutputColumnNames() == null ? null :
+      new ArrayList<String>(getOutputColumnNames()));
     ret.setSelectStar(selectStar);
     ret.setSelStarNoCompute(selStarNoCompute);
     return ret;

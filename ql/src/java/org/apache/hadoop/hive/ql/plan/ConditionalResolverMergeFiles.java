@@ -258,6 +258,53 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     work.setMinSplitSizePerRack(targetSize);
   }
 
+  private static class AverageSize {
+    private final long totalSize;
+    private final int numFiles;
+
+    public AverageSize(long totalSize, int numFiles) {
+      this.totalSize = totalSize;
+      this.numFiles  = numFiles;
+    }
+
+    public long getTotalSize() {
+      return totalSize;
+    }
+
+    public int getNumFiles() {
+      return numFiles;
+    }
+  }
+
+  private AverageSize getAverageSize(FileSystem inpFs, Path dirPath) {
+    AverageSize dummy = new AverageSize(0, 0);
+    AverageSize error = new AverageSize(-1, -1);
+    try {
+      FileStatus[] fStats = inpFs.listStatus(dirPath);
+
+      long totalSz = 0;
+      int numFiles = 0;
+      for (FileStatus fStat : fStats) {
+        if (fStat.isDir()) {
+          AverageSize avgSzDir = getAverageSize(inpFs, fStat.getPath());
+          if (avgSzDir.getTotalSize() < 0) {
+            return error;
+          }
+          totalSz += avgSzDir.getTotalSize();
+          numFiles += avgSzDir.getNumFiles();
+        }
+        else {
+          totalSz += fStat.getLen();
+          numFiles++;
+        }
+      }
+
+      return new AverageSize(totalSz, numFiles);
+    } catch (IOException e) {
+      return error;
+    }
+  }
+
   /**
    * Whether to merge files inside directory given the threshold of the average file size.
    *
@@ -270,23 +317,18 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
    * This could be true when the table is bucketized and all buckets are empty.
    */
   private long getMergeSize(FileSystem inpFs, Path dirPath, long avgSize) {
-    try {
-      FileStatus[] fStats = inpFs.listStatus(dirPath);
-      if (fStats.length <= 1) {
-        return -1;
-      }
-      long totalSz = 0;
-      for (FileStatus fStat : fStats) {
-        totalSz += fStat.getLen();
-      }
-
-      if (totalSz < avgSize * fStats.length) {
-        return totalSz;
-      } else {
-        return -1;
-      }
-    } catch (IOException e) {
+    AverageSize averageSize = getAverageSize(inpFs, dirPath);
+    if (averageSize.getTotalSize() <= 0) {
       return -1;
     }
+
+    if (averageSize.getNumFiles() <= 1) {
+      return -1;
+    }
+
+    if (averageSize.getTotalSize()/averageSize.getNumFiles() < avgSize) {
+      return averageSize.getTotalSize();
+    }
+    return -1;
   }
 }

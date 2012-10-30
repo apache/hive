@@ -77,6 +77,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient Path parent;
   protected transient HiveOutputFormat<?, ?> hiveOutputFormat;
   protected transient Path specPath;
+  protected transient String childSpecPathDynLinkedPartitions;
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
@@ -116,16 +117,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
       stat = new Stat();
-    }
-
-    /**
-     * Append a subdirectory to the tmp path.
-     *
-     * @param dp
-     *          subdirecgtory name
-     */
-    public void appendTmpPath(String dp) {
-      tmpPath = new Path(tmpPath, dp);
     }
 
     /**
@@ -282,6 +273,30 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   private boolean filesCreated = false;
 
+  private void initializeSpecPath() {
+    // For a query of the type:
+    // insert overwrite table T1
+    // select * from (subq1 union all subq2)u;
+    // subQ1 and subQ2 write to directories Parent/Child_1 and
+    // Parent/Child_2 respectively, and union is removed.
+    // The movetask that follows subQ1 and subQ2 tasks moves the directory
+    // 'Parent'
+
+    // However, if the above query contains dynamic partitions, subQ1 and
+    // subQ2 have to write to directories: Parent/DynamicPartition/Child_1
+    // and Parent/DynamicPartition/Child_1 respectively.
+    // The movetask that follows subQ1 and subQ2 tasks still moves the directory
+    // 'Parent'
+    if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
+      specPath = new Path(conf.getDirName());
+      childSpecPathDynLinkedPartitions = null;
+      return;
+    }
+
+    specPath = new Path(conf.getParentDir());
+    childSpecPathDynLinkedPartitions = Utilities.getFileNameFromDirName(conf.getDirName());
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
@@ -294,7 +309,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       dpCtx = conf.getDynPartCtx();
       valToPaths = new HashMap<String, FSPaths>();
       taskId = Utilities.getTaskId(hconf);
-      specPath = new Path(conf.getDirName());
+      initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
       hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       isCompressed = conf.getCompressed();
@@ -625,8 +640,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           LOG.error("Fatal error was thrown due to exceeding number of dynamic partitions");
         }
         fsp2 = new FSPaths(specPath);
-        fsp2.tmpPath = new Path(fsp2.tmpPath, dpDir);
-        fsp2.taskOutputTempPath = new Path(fsp2.taskOutputTempPath, dpDir);
+        if (childSpecPathDynLinkedPartitions != null) {
+          fsp2.tmpPath = new Path(fsp2.tmpPath,
+            dpDir + Path.SEPARATOR + childSpecPathDynLinkedPartitions);
+          fsp2.taskOutputTempPath =
+            new Path(fsp2.taskOutputTempPath,
+              dpDir + Path.SEPARATOR + childSpecPathDynLinkedPartitions);
+        } else {
+          fsp2.tmpPath = new Path(fsp2.tmpPath, dpDir);
+          fsp2.taskOutputTempPath =
+            new Path(fsp2.taskOutputTempPath, dpDir);
+        }
         createBucketFiles(fsp2);
         valToPaths.put(dpDir, fsp2);
       }
@@ -668,7 +692,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
       int numDP = dpCtx.getNumDPCols();
       FileSystem fs = tmpPath.getFileSystem(jobConf);
-      FileStatus[] status = Utilities.getFileStatusRecurse(tmpPath, numDP, fs);
+      int level = numDP;
+      if (conf.isLinkedFileSink()) {
+        level++;
+      }
+      FileStatus[] status = Utilities.getFileStatusRecurse(tmpPath, level, fs);
       sb.append("Sample of ")
         .append(Math.min(status.length, 100))
         .append(" partitions created under ")
@@ -750,6 +778,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if ((conf != null) && isNativeTable) {
         String specPath = conf.getDirName();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
+        if (conf.isLinkedFileSink() && (dpCtx != null)) {
+          specPath = conf.getParentDir();
+        }
         Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf);
       }
     } catch (IOException e) {

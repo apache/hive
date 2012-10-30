@@ -1135,18 +1135,25 @@ public final class Utilities {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
       for (FileStatus file : files) {
+
         Path srcFilePath = file.getPath();
         String fileName = srcFilePath.getName();
         Path dstFilePath = new Path(dst, fileName);
-        if (fs.exists(dstFilePath)) {
-          int suffix = 0;
-          do {
-            suffix++;
-            dstFilePath = new Path(dst, fileName + "_" + suffix);
-          } while (fs.exists(dstFilePath));
+        if (file.isDir()) {
+          renameOrMoveFiles(fs, srcFilePath, dstFilePath);
         }
-        if (!fs.rename(srcFilePath, dstFilePath)) {
-          throw new HiveException("Unable to move: " + src + " to: " + dst);
+        else {
+          if (fs.exists(dstFilePath)) {
+            int suffix = 0;
+            do {
+              suffix++;
+              dstFilePath = new Path(dst, fileName + "_" + suffix);
+            } while (fs.exists(dstFilePath));
+          }
+
+          if (!fs.rename(srcFilePath, dstFilePath)) {
+            throw new HiveException("Unable to move: " + src + " to: " + dst);
+          }
         }
       }
     }
@@ -1211,6 +1218,14 @@ public final class Utilities {
     }
     LOG.debug("TaskId for " + filename + " = " + taskId);
     return taskId;
+  }
+
+  public static String getFileNameFromDirName(String dirName) {
+    int dirEnd = dirName.lastIndexOf(Path.SEPARATOR);
+    if (dirEnd != -1) {
+      return dirName.substring(dirEnd + 1);
+    }
+    return dirName;
   }
 
   /**

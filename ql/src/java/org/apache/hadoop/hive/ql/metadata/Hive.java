@@ -1180,7 +1180,7 @@ public class Hive {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
         FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
-        Hive.copyFiles(loadPath, newPartPath, fs);
+        Hive.copyFiles(conf, loadPath, newPartPath, fs);
       }
 
       // recreate the partition if it existed before
@@ -1224,7 +1224,9 @@ public class Hive {
       FileStatus[] leafStatus = Utilities.getFileStatusRecurse(loadPath, numDP+1, fs);
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
-        if (s.isDir()) {
+        // Check if the hadoop version supports sub-directories for tables/partitions
+        if (s.isDir() &&
+          !conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES)) {
           // No leaves in this directory
           LOG.info("NOT moving empty directory: " + s.getPath());
         } else {
@@ -1888,8 +1890,9 @@ public class Hive {
     }
   }
 
-  static private void checkPaths(FileSystem fs, FileStatus[] srcs, Path destf,
-      boolean replace) throws HiveException {
+  static private void checkPaths(HiveConf conf,
+    FileSystem fs, FileStatus[] srcs, Path destf,
+    boolean replace) throws HiveException {
     try {
       for (FileStatus src : srcs) {
         FileStatus[] items = fs.listStatus(src.getPath());
@@ -1903,7 +1906,9 @@ public class Hive {
             fs.delete(itemStaging, true);
             continue;
           }
-          if (item.isDir()) {
+
+          if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES) &&
+            item.isDir()) {
             throw new HiveException("checkPaths: " + src.getPath()
                 + " has nested directory" + itemStaging);
           }
@@ -1963,7 +1968,7 @@ public class Hive {
     }
   }
 
-  static protected void copyFiles(Path srcf, Path destf, FileSystem fs)
+  static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs)
       throws HiveException {
     try {
       // create the destination if it does not exist
@@ -1989,7 +1994,7 @@ public class Hive {
       // srcs = new FileStatus[0]; Why is this needed?
     }
     // check that source and target paths exist
-    checkPaths(fs, srcs, destf, false);
+    checkPaths(conf, fs, srcs, destf, false);
 
     // move it, move it
     try {
@@ -2024,7 +2029,7 @@ public class Hive {
    *          The directory where the old data location, need to be cleaned up.
    */
   static protected void replaceFiles(Path srcf, Path destf, Path oldPath,
-      Configuration conf) throws HiveException {
+      HiveConf conf) throws HiveException {
 
     try {
       FileSystem fs = srcf.getFileSystem(conf);
@@ -2040,7 +2045,7 @@ public class Hive {
         LOG.info("No sources specified to move: " + srcf);
         return;
       }
-      checkPaths(fs, srcs, destf, true);
+      checkPaths(conf, fs, srcs, destf, true);
 
       // point of no return -- delete oldPath
       if (oldPath != null) {

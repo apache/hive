@@ -170,4 +170,9 @@ public class FilterOperator extends Operator<FilterDesc> implements
   public boolean columnNamesRowResolvedCanBeObtained() {
     return true;
   }
+
+  @Override
+  public boolean supportUnionRemoveOptimization() {
+    return true;
+  }
 }
