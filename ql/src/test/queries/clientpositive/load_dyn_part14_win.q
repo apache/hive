@@ -1,5 +1,6 @@
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
+-- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
+
 
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string);

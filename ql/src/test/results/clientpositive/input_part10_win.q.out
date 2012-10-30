@@ -1,5 +1,4 @@
-PREHOOK: query: -- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
+PREHOOK: query: -- INCLUDE_OS_WINDOWS
 
 CREATE TABLE part_special (
   a STRING,
@@ -9,8 +8,7 @@ CREATE TABLE part_special (
   ts STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
+POSTHOOK: query: -- INCLUDE_OS_WINDOWS
 
 CREATE TABLE part_special (
   a STRING,
@@ -93,12 +91,12 @@ PREHOOK: query: INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', t
 SELECT 1, 2 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
+PREHOOK: Output: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 POSTHOOK: query: INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
 SELECT 1, 2 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
+POSTHOOK: Output: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 PREHOOK: query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
@@ -115,11 +113,11 @@ ts	string
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
+PREHOOK: Input: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
+POSTHOOK: Input: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
