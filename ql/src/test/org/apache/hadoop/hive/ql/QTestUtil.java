@@ -317,10 +317,29 @@ public class QTestUtil {
   }
 
   public void addFile(File qf) throws Exception {
+
     FileInputStream fis = new FileInputStream(qf);
     BufferedInputStream bis = new BufferedInputStream(fis);
     BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF8"));
     StringBuilder qsb = new StringBuilder();
+
+    // Read the entire query
+    String line;
+    while ((line = br.readLine()) != null) {
+      qsb.append(line + "\n");
+    }
+    String query = qsb.toString();
+
+    qMap.put(qf.getName(), query);
+
+    if(checkHadoopVersionExclude(qf.getName(), query)
+      || checkOSExclude(qf.getName(), query)) {
+      qSkipSet.add(qf.getName());
+    }
+    br.close();
+  }
+
+  private boolean checkHadoopVersionExclude(String fileName, String query){
 
     // Look for a hint to not run a test on some Hadoop versions
     Pattern pattern = Pattern.compile("-- (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS\\((.*)\\)");
@@ -329,58 +348,85 @@ public class QTestUtil {
     boolean includeQuery = false;
     Set<String> versionSet = new HashSet<String>();
     String hadoopVer = ShimLoader.getMajorVersion();
-    String line;
 
-    // Read the entire query
-    while ((line = br.readLine()) != null) {
+    Matcher matcher = pattern.matcher(query);
 
-      // Each qfile may include at most one INCLUDE or EXCLUDE directive.
-      //
-      // If a qfile contains an INCLUDE directive, and hadoopVer does
-      // not appear in the list of versions to include, then the qfile
-      // is skipped.
-      //
-      // If a qfile contains an EXCLUDE directive, and hadoopVer is
-      // listed in the list of versions to EXCLUDE, then the qfile is
-      // skipped.
-      //
-      // Otherwise, the qfile is included.
-      Matcher matcher = pattern.matcher(line);
-      if (matcher.find()) {
-        if (excludeQuery || includeQuery) {
-          String message = "QTestUtil: qfile " + qf.getName()
-            + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
-          throw new UnsupportedOperationException(message);
-        }
+    // Each qfile may include at most one INCLUDE or EXCLUDE directive.
+    //
+    // If a qfile contains an INCLUDE directive, and hadoopVer does
+    // not appear in the list of versions to include, then the qfile
+    // is skipped.
+    //
+    // If a qfile contains an EXCLUDE directive, and hadoopVer is
+    // listed in the list of versions to EXCLUDE, then the qfile is
+    // skipped.
+    //
+    // Otherwise, the qfile is included.
 
-        String prefix = matcher.group(1);
-        if ("EX".equals(prefix)) {
-          excludeQuery = true;
-        } else {
-          includeQuery = true;
-        }
+    if (matcher.find()) {
 
-        String versions = matcher.group(2);
-        for (String s : versions.split("\\,")) {
-          s = s.trim();
-          versionSet.add(s);
-        }
+      String prefix = matcher.group(1);
+      if ("EX".equals(prefix)) {
+        excludeQuery = true;
+      } else {
+        includeQuery = true;
       }
-      qsb.append(line + "\n");
+
+      String versions = matcher.group(2);
+      for (String s : versions.split("\\,")) {
+        s = s.trim();
+	versionSet.add(s);
+      }
     }
-    qMap.put(qf.getName(), qsb.toString());
+
+    if (matcher.find()) {
+      //2nd match is not supposed to be there
+      String message = "QTestUtil: qfile " + fileName
+	  + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
+      throw new UnsupportedOperationException(message);
+    }
 
     if (excludeQuery && versionSet.contains(hadoopVer)) {
-      System.out.println("QTestUtil: " + qf.getName()
+      System.out.println("QTestUtil: " + fileName
         + " EXCLUDE list contains Hadoop Version " + hadoopVer + ". Skipping...");
-      qSkipSet.add(qf.getName());
+      return true;
     } else if (includeQuery && !versionSet.contains(hadoopVer)) {
-      System.out.println("QTestUtil: " + qf.getName()
+      System.out.println("QTestUtil: " + fileName
         + " INCLUDE list does not contain Hadoop Version " + hadoopVer + ". Skipping...");
-      qSkipSet.add(qf.getName());
+      return true;
     }
-    br.close();
+    return false;
   }
+
+  private boolean checkOSExclude(String fileName, String query){
+    // Look for a hint to not run a test on some Hadoop versions
+    Pattern pattern = Pattern.compile("-- (EX|IN)CLUDE_OS_WINDOWS");
+
+    // detect whether this query wants to be excluded or included
+    // on windows
+    Matcher matcher = pattern.matcher(query);
+    if (matcher.find()) {
+      String prefix = matcher.group(1);
+      if ("EX".equals(prefix)) {
+	//windows is to be exluded
+	if(Shell.WINDOWS){
+	  System.out.println("Due to the OS being windows " +
+	    "adding the  query " + fileName +
+	    " to the set of tests to skip");
+	  return true;
+	}
+      }
+      else  if(!Shell.WINDOWS){
+	//non windows to be exluded
+	System.out.println("Due to the OS not being windows " +
+	    "adding the  query " + fileName +
+	    " to the set of tests to skip");
+	return true;
+      }
+    }
+    return false;
+  }
+
 
   /**
    * Clear out any side effects of running tests

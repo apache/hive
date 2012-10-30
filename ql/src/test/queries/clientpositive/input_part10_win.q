@@ -1,5 +1,5 @@
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
+-- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
 
 CREATE TABLE part_special (
   a STRING,

@@ -1,31 +1,13 @@
-PREHOOK: query: USE default
-PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: USE default
-POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: -- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
-
+PREHOOK: query: -- INCLUDE_OS_WINDOWS
 
 create table combine2(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
-
+POSTHOOK: query: -- INCLUDE_OS_WINDOWS
 
 create table combine2(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@combine2
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
--- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
--- in an attempt to force the generation of multiple splits and multiple output files.
--- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
--- when using CombineFileInputFormat, so only one split is generated. This has a
--- significant impact on the results results of this test.
--- This issue was fixed in MAPREDUCE-2046 which is included in 0.22.
-
-insert overwrite table combine2 partition(value) 
+PREHOOK: query: insert overwrite table combine2 partition(value) 
 select * from (
    select key, value from src where key < 10
    union all 
@@ -35,15 +17,7 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@combine2
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
--- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
--- in an attempt to force the generation of multiple splits and multiple output files.
--- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
--- when using CombineFileInputFormat, so only one split is generated. This has a
--- significant impact on the results results of this test.
--- This issue was fixed in MAPREDUCE-2046 which is included in 0.22.
-
-insert overwrite table combine2 partition(value) 
+POSTHOOK: query: insert overwrite table combine2 partition(value) 
 select * from (
    select key, value from src where key < 10
    union all 
@@ -52,14 +26,14 @@ select * from (
    select key, '2010-04-21 09:45:00' value from src where key = 19) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@combine2@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Output: default@combine2@value=%7C
+POSTHOOK: Output: default@combine2@value=2010-04-21%2009%3A45%3A00
 POSTHOOK: Output: default@combine2@value=val_0
 POSTHOOK: Output: default@combine2@value=val_2
 POSTHOOK: Output: default@combine2@value=val_4
 POSTHOOK: Output: default@combine2@value=val_5
 POSTHOOK: Output: default@combine2@value=val_8
 POSTHOOK: Output: default@combine2@value=val_9
-POSTHOOK: Output: default@combine2@value=|
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -80,14 +54,14 @@ POSTHOOK: Lineage: combine2 PARTITION(value=val_5).key EXPRESSION [(src)src.Fiel
 POSTHOOK: Lineage: combine2 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-value=2010-04-21 09%3A45%3A00
+value=%7C
+value=2010-04-21%2009%3A45%3A00
 value=val_0
 value=val_2
 value=val_4
 value=val_5
 value=val_8
 value=val_9
-value=|
 PREHOOK: query: explain
 select key, value from combine2 where value is not null order by key
 PREHOOK: type: QUERY
@@ -150,25 +124,25 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from combine2 where value is not null order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
+PREHOOK: Input: default@combine2@value=%7C
+PREHOOK: Input: default@combine2@value=2010-04-21%2009%3A45%3A00
 PREHOOK: Input: default@combine2@value=val_0
 PREHOOK: Input: default@combine2@value=val_2
 PREHOOK: Input: default@combine2@value=val_4
 PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
-PREHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from combine2 where value is not null order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Input: default@combine2@value=%7C
+POSTHOOK: Input: default@combine2@value=2010-04-21%2009%3A45%3A00
 POSTHOOK: Input: default@combine2@value=val_0
 POSTHOOK: Input: default@combine2@value=val_2
 POSTHOOK: Input: default@combine2@value=val_4
 POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
-POSTHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -238,7 +212,53 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: value=2010-04-21 09%3A45%3A00
+            base file name: value=%7C
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              value |
+            properties:
+              bucket_count -1
+              columns key
+              columns.types string
+#### A masked pattern was here ####
+              name default.combine2
+              numFiles 1
+              numPartitions 8
+              numRows 1
+              partition_columns value
+              rawDataSize 2
+              serialization.ddl struct combine2 { string key}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 3
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key
+                columns.types string
+#### A masked pattern was here ####
+                name default.combine2
+                numFiles 8
+                numPartitions 8
+                numRows 12
+                partition_columns value
+                rawDataSize 14
+                serialization.ddl struct combine2 { string key}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 26
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.combine2
+            name: default.combine2
+#### A masked pattern was here ####
+          Partition
+            base file name: value=2010-04-21%2009%3A45%3A00
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -558,52 +578,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-#### A masked pattern was here ####
-          Partition
-            base file name: value=|
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              value |
-            properties:
-              bucket_count -1
-              columns key
-              columns.types string
-#### A masked pattern was here ####
-              name default.combine2
-              numFiles 1
-              numPartitions 8
-              numRows 1
-              partition_columns value
-              rawDataSize 2
-              serialization.ddl struct combine2 { string key}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 3
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key
-                columns.types string
-#### A masked pattern was here ####
-                name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
-                partition_columns value
-                rawDataSize 14
-                serialization.ddl struct combine2 { string key}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.combine2
-            name: default.combine2
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -633,15 +607,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /combine2/value=2010-04-21 09%3A45%3A00 [combine2]
-        /combine2/value=val_0 [combine2]
-        /combine2/value=val_2 [combine2]
-        /combine2/value=val_4 [combine2]
-        /combine2/value=val_5 [combine2]
-        /combine2/value=val_8 [combine2]
-        /combine2/value=val_9 [combine2]
-        /combine2/value=| [combine2]
 
   Stage: Stage-0
     Fetch Operator
@@ -650,25 +615,25 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from combine2 where value is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
+PREHOOK: Input: default@combine2@value=%7C
+PREHOOK: Input: default@combine2@value=2010-04-21%2009%3A45%3A00
 PREHOOK: Input: default@combine2@value=val_0
 PREHOOK: Input: default@combine2@value=val_2
 PREHOOK: Input: default@combine2@value=val_4
 PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
-PREHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from combine2 where value is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Input: default@combine2@value=%7C
+POSTHOOK: Input: default@combine2@value=2010-04-21%2009%3A45%3A00
 POSTHOOK: Input: default@combine2@value=val_0
 POSTHOOK: Input: default@combine2@value=val_2
 POSTHOOK: Input: default@combine2@value=val_4
 POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
-POSTHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
