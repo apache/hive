@@ -197,7 +197,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private UnionProcContext uCtx;
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
-  private final Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner;
+  private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   /**
    * a map for the split sampling, from ailias to an instance of SplitSample
    * that describes percentage and number.
@@ -251,7 +251,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     autogenColAliasPrfxIncludeFuncName = HiveConf.getBoolVar(conf,
                          HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME);
     queryProperties = new QueryProperties();
-    opToSkewedPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
+    opToPartToSkewedPruner = new HashMap<TableScanOperator, Map<String, ExprNodeDesc>>();
   }
 
   @Override
@@ -299,7 +299,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToSkewedPruner);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
+        opToPartToSkewedPruner);
   }
 
   @SuppressWarnings("nls")
@@ -8019,7 +8020,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToSkewedPruner);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
+        opToPartToSkewedPruner);
 
     // Generate table access stats if required
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {
@@ -8581,43 +8583,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // skewed value
         Tree vNode = child.getChild(1);
         if (vNode == null) {
-          throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+          throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
         } else {
-          ASTNode vAstNode = (ASTNode) vNode;
-          switch (vAstNode.getToken().getType()) {
-            case HiveParser.TOK_TABCOLVALUE:
-              for (String str : getSkewedColumnValuesFromASTNode(vAstNode)) {
-                List<String> sList = new ArrayList<String>(Arrays.asList(str));
-                skewedValues.add(sList);
-              }
-              break;
-            case HiveParser.TOK_TABCOLVALUE_PAIR:
-              ArrayList<Node> vLNodes = vAstNode.getChildren();
-              for (Node node : vLNodes) {
-                if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
-                  throw new SemanticException(
-                      ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-                } else {
-                  Tree leafVNode = ((ASTNode) node).getChild(0);
-                  if (leafVNode == null) {
-                    throw new SemanticException(
-                        ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-                  } else {
-                    ASTNode lVAstNode = (ASTNode) leafVNode;
-                    if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
-                      throw new SemanticException(
-                          ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-                    } else {
-                      skewedValues.add(new ArrayList<String>(
-                          getSkewedColumnValuesFromASTNode(lVAstNode)));
-                    }
-                  }
-                }
-              }
-              break;
-            default:
-              break;
-          }
+          analyzeDDLSkewedValues(skewedValues, vNode);
         }
         break;
       default:
@@ -8710,6 +8678,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Handle skewed values in DDL.
+   *
+   * It can be used by both skewed by ... on () and set skewed location ().
+   *
+   * @param skewedValues
+   * @param vNode
+   * @throws SemanticException
+   */
+  private void analyzeDDLSkewedValues(List<List<String>> skewedValues, Tree vNode)
+      throws SemanticException {
+    ASTNode vAstNode = (ASTNode) vNode;
+    switch (vAstNode.getToken().getType()) {
+      case HiveParser.TOK_TABCOLVALUE:
+        for (String str : getSkewedValueFromASTNode(vAstNode)) {
+          List<String> sList = new ArrayList<String>(Arrays.asList(str));
+          skewedValues.add(sList);
+        }
+        break;
+      case HiveParser.TOK_TABCOLVALUE_PAIR:
+        ArrayList<Node> vLNodes = vAstNode.getChildren();
+        for (Node node : vLNodes) {
+          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
+            throw new SemanticException(
+                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+          } else {
+            skewedValues.add(getSkewedValuesFromASTNode(node));
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
    * Analyze list bucket column names
    *
    * @param skewedColNames
@@ -8721,37 +8724,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode child) throws SemanticException {
     Tree nNode = child.getChild(0);
     if (nNode == null) {
-      throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
     } else {
       ASTNode nAstNode = (ASTNode) nNode;
       if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
-        throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
       } else {
         skewedColNames = getColumnNames(nAstNode);
       }
     }
     return skewedColNames;
   }
-
-  /**
-   * Given a ASTNode, return list of values.
-   *
-   * use case:
-   *   create table xyz list bucketed (col1) with skew (1,2,5)
-   *   AST Node is for (1,2,5)
-   * @param ast
-   * @return
-   */
-  protected List<String> getSkewedColumnValuesFromASTNode(ASTNode ast) {
-    List<String> colList = new ArrayList<String>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(stripQuotes(child.getText()).toLowerCase());
-    }
-    return colList;
-  }
-
 
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
       throws SemanticException {

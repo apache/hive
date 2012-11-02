@@ -550,6 +550,13 @@ public class Table implements Serializable {
         .getSkewedColNames() : new ArrayList<String>();
   }
 
+  public SkewedInfo getSkewedInfo() {
+    return tTable.getSd().getSkewedInfo();
+  }
+
+  public void setSkewedInfo(SkewedInfo skewedInfo) throws HiveException {
+    tTable.getSd().setSkewedInfo(skewedInfo);
+  }
 
   private boolean isField(String col) {
     for (FieldSchema field : getCols()) {

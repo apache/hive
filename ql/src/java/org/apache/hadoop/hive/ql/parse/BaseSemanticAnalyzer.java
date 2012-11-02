@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -899,5 +900,49 @@ public abstract class BaseSemanticAnalyzer {
 
   public QueryProperties getQueryProperties() {
     return queryProperties;
+  }
+
+  /**
+   * Given a ASTNode, return list of values.
+   *
+   * use case:
+   *   create table xyz list bucketed (col1) with skew (1,2,5)
+   *   AST Node is for (1,2,5)
+   * @param ast
+   * @return
+   */
+  protected List<String> getSkewedValueFromASTNode(ASTNode ast) {
+    List<String> colList = new ArrayList<String>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      colList.add(stripQuotes(child.getText()).toLowerCase());
+    }
+    return colList;
+  }
+
+  /**
+   * Retrieve skewed values from ASTNode.
+   *
+   * @param node
+   * @return
+   * @throws SemanticException
+   */
+  protected List<String> getSkewedValuesFromASTNode(Node node) throws SemanticException {
+    List<String> result = null;
+    Tree leafVNode = ((ASTNode) node).getChild(0);
+    if (leafVNode == null) {
+      throw new SemanticException(
+          ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+    } else {
+      ASTNode lVAstNode = (ASTNode) leafVNode;
+      if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
+        throw new SemanticException(
+            ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+      } else {
+        result = new ArrayList<String>(getSkewedValueFromASTNode(lVAstNode));
+      }
+    }
+    return result;
   }
 }

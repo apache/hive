@@ -879,6 +879,10 @@ public class Driver implements CommandProcessor {
     errorMessage = null;
     SQLState = null;
 
+    if (!validateConfVariables()) {
+      return new CommandProcessorResponse(12, errorMessage, SQLState);
+    }
+
     HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf, command);
     // Get all the driver run hooks and pre-execute them.
     List<HiveDriverRunHook> driverRunHooks;
@@ -969,6 +973,26 @@ public class Driver implements CommandProcessor {
     }
 
     return new CommandProcessorResponse(ret);
+  }
+
+  /**
+   * Validate configuration variables.
+   *
+   * @return
+   */
+  private boolean validateConfVariables() {
+    boolean valid = true;
+    if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES))
+        && ((conf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))
+            || (conf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE)) || (conf
+              .getBoolVar(HiveConf.ConfVars.HIVEOPTLISTBUCKETING)))) {
+      errorMessage = "FAILED: Hive Internal Error: "
+          + ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getMsg();
+      SQLState = ErrorMsg.findSQLState(errorMessage);
+      console.printError(errorMessage + "\n");
+      valid = false;
+    }
+    return valid;
   }
 
   /**

@@ -444,9 +444,11 @@ public final class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          return new ExprNodeColumnDesc(colInfo.getType(), colInfo
+          ExprNodeColumnDesc exprNodColDesc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
               .getInternalName(), colInfo.getTabAlias(), colInfo
               .getIsVirtualCol());
+          exprNodColDesc.setSkewedCol(colInfo.isSkewedCol());
+          return exprNodColDesc;
         }
       }
 

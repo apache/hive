@@ -651,12 +651,17 @@ public class HiveConf extends Configuration {
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
         "hive.multi.insert.move.tasks.share.dependencies", false),
 
-    /**
-     * Enable list bucketing DDL. Default value is false so that we disable it by default.
-     *
-     * This will be removed once the rest of the DML changes are committed.
-     */
+    /* The following section contains all configurations used for list bucketing feature.*/
+    // Enable list bucketing DDL. Default value is false so that we disable it by default.
+    // This will be removed once the rest of the DML changes are committed.
     HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE("hive.internal.ddl.list.bucketing.enable", false),
+
+    // Default list bucketing directory name.
+    HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME("hive.exec.list.bucketing.default.dir",
+        "HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME"),
+    // Enable list bucketing optimizer. Default value is false so that we disable it by default.
+    // This will be removed once the rest of the DML changes are committed.
+    HIVEOPTLISTBUCKETING("hive.optimize.listbucketing", false),
 
     // Allow TCP Keep alive socket option for for HiveServer or a maximum timeout for the socket.
 

@@ -266,6 +266,11 @@ TOK_TABLESKEWED;
 TOK_TABCOLVALUE;
 TOK_TABCOLVALUE_PAIR;
 TOK_TABCOLVALUES;
+TOK_ALTERTABLE_SKEWED;
+TOK_ALTERTBLPART_SKEWED_LOCATION;
+TOK_SKEWED_LOCATIONS;
+TOK_SKEWED_LOCATION_LIST;
+TOK_SKEWED_LOCATION_MAP;
 }
 
 
@@ -589,6 +594,7 @@ alterTableStatementSuffix
     | alterStatementSuffixProperties
     | alterTblPartitionStatement
     | alterStatementSuffixClusterbySortby
+    | alterStatementSuffixSkewedby
     ;
 
 alterViewStatementSuffix
@@ -748,6 +754,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
   | alterStatementSuffixRenamePart
+  | alterTblPartitionStatementSuffixSkewedLocation
   ;
 
 alterStatementSuffixFileFormat
@@ -757,12 +764,51 @@ alterStatementSuffixFileFormat
 	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
 	;
 
+alterTblPartitionStatementSuffixSkewedLocation
+@init {msgs.push("alter partition skewed location");}
+@after {msgs.pop();}
+  : KW_SET KW_SKEWED KW_LOCATION skewedLocations
+  -> ^(TOK_ALTERTBLPART_SKEWED_LOCATION skewedLocations)
+  ;
+  
+skewedLocations
+@init { msgs.push("skewed locations"); }
+@after { msgs.pop(); }
+    :
+      LPAREN skewedLocationsList RPAREN -> ^(TOK_SKEWED_LOCATIONS skewedLocationsList)
+    ;
+
+skewedLocationsList
+@init { msgs.push("skewed locations list"); }
+@after { msgs.pop(); }
+    :
+      skewedLocationMap (COMMA skewedLocationMap)* -> ^(TOK_SKEWED_LOCATION_LIST skewedLocationMap+)
+    ;
+
+skewedLocationMap
+@init { msgs.push("specifying skewed location map"); }
+@after { msgs.pop(); }
+    :
+      key=skewedValueLocationElement EQUAL value=StringLiteral -> ^(TOK_SKEWED_LOCATION_MAP $key $value)
+    ;
+
 alterStatementSuffixLocation
 @init {msgs.push("alter location");}
 @after {msgs.pop();}
   : KW_SET KW_LOCATION newLoc=StringLiteral
   -> ^(TOK_ALTERTABLE_LOCATION $newLoc)
   ;
+
+	
+alterStatementSuffixSkewedby
+@init {msgs.push("alter skewed by statement");}
+@after{msgs.pop();}
+	:name=Identifier tableSkewed
+	->^(TOK_ALTERTABLE_SKEWED $name tableSkewed)
+	|
+	name=Identifier KW_NOT KW_SKEWED
+	->^(TOK_ALTERTABLE_SKEWED $name)
+	;
 
 alterStatementSuffixProtectMode
 @init { msgs.push("alter partition protect mode statement"); }
@@ -1294,6 +1340,14 @@ skewedColumnValue
       constant
     ;
 
+skewedValueLocationElement
+@init { msgs.push("skewed value location element"); }
+@after { msgs.pop(); }
+    : 
+      skewedColumnValue
+     | skewedColumnValuePair
+    ;
+    
 columnNameOrder
 @init { msgs.push("column name order"); }
 @after { msgs.pop(); }

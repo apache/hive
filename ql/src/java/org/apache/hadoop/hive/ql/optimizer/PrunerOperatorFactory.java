@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -100,7 +102,6 @@ public abstract class PrunerOperatorFactory {
      */
     protected abstract void generatePredicate(NodeProcessorCtx procCtx, FilterOperator fop,
         TableScanOperator top) throws SemanticException, UDFArgumentException;
-
     /**
      * Add pruning predicate.
      *
@@ -123,6 +124,42 @@ public abstract class PrunerOperatorFactory {
 
       // Put the mapping from table scan operator to pruner_pred
       opToPrunner.put(top, pruner_pred);
+
+      return;
+    }
+
+    /**
+     * Add pruning predicate.
+     *
+     * @param opToPrunner
+     * @param top
+     * @param new_pruner_pred
+     * @param part
+     * @throws UDFArgumentException
+     */
+    protected void addPruningPred(Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPrunner,
+        TableScanOperator top, ExprNodeDesc new_pruner_pred, Partition part)
+        throws UDFArgumentException {
+      Map<String, ExprNodeDesc> oldPartToPruner = opToPrunner.get(top);
+      ExprNodeDesc pruner_pred = null;
+      if (oldPartToPruner == null) {
+        pruner_pred = new_pruner_pred;
+      } else {
+        ExprNodeDesc old_pruner_pred = oldPartToPruner.get(part.getName());
+        if (old_pruner_pred != null) {
+          // or the old_pruner_pred and the new_ppr_pred
+          pruner_pred = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR",
+              old_pruner_pred, new_pruner_pred);
+        } else {
+          pruner_pred = new_pruner_pred;
+        }
+      }
+
+      // Put the mapping from part to pruner_pred
+      Map<String, ExprNodeDesc> partToPruner = new HashMap<String, ExprNodeDesc>();
+      partToPruner.put(part.getName(), pruner_pred);
+      // Put the mapping from table scan operator to part-pruner map
+      opToPrunner.put(top, partToPruner);
 
       return;
     }
