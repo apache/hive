@@ -548,11 +548,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     state = State.CLOSE;
     LOG.info(id + " finished. closing... ");
 
-    if (counterNameToEnum != null) {
-      incrCounter(numInputRowsCntr, inputRows);
-      incrCounter(numOutputRowsCntr, outputRows);
-      incrCounter(timeTakenCntr, totalTime);
-    }
+    incrCounter(numInputRowsCntr, inputRows);
+    incrCounter(numOutputRowsCntr, outputRows);
+    incrCounter(timeTakenCntr, totalTime);
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
@@ -766,10 +764,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       throws HiveException {
 
     if ((++outputRows % 1000) == 0) {
-      if (counterNameToEnum != null) {
-        incrCounter(numOutputRowsCntr, outputRows);
-        outputRows = 0;
-      }
+      incrCounter(numOutputRowsCntr, outputRows);
+      outputRows = 0;
     }
 
     if (isLogInfoEnabled) {
@@ -1107,16 +1103,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   private void preProcessCounter() {
     inputRows++;
-
-    if (counterNameToEnum != null) {
-      if ((inputRows % 1000) == 0) {
-        incrCounter(numInputRowsCntr, inputRows);
-        incrCounter(timeTakenCntr, totalTime);
-        inputRows = 0;
-        totalTime = 0;
-      }
-      beginTime = System.currentTimeMillis();
+    if ((inputRows % 1000) == 0) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(timeTakenCntr, totalTime);
+      inputRows = 0;
+      totalTime = 0;
     }
+    beginTime = System.currentTimeMillis();
   }
 
   /**
@@ -1135,7 +1128,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @param amount
    */
   protected void incrCounter(String name, long amount) {
-    String counterName = "CNTR_NAME_" + getOperatorId() + "_" + name;
+    if(counterNameToEnum == null) {
+      return;
+    }
+
+    String counterName = getWrappedCounterName(name);
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
     // Currently, we maintain fixed number of counters per plan - in case of a
@@ -1159,6 +1156,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public String getOperatorId() {
     return operatorId;
+  }
+
+  public final String getWrappedCounterName(String ctrName) {
+    return String.format(counterNameFormat, getOperatorId(), ctrName);
   }
 
   public void initOperatorId() {
@@ -1216,7 +1217,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return false;
     }
 
-    String counterName = "CNTR_NAME_" + getOperatorId() + "_" + fatalErrorCntr;
+    String counterName = getWrappedCounterName(fatalErrorCntr);
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
     // Currently, we maintain fixed number of counters per plan - in case of a
@@ -1292,14 +1293,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected static String numOutputRowsCntr = "NUM_OUTPUT_ROWS";
   protected static String timeTakenCntr = "TIME_TAKEN";
   protected static String fatalErrorCntr = "FATAL_ERROR";
+  private static String counterNameFormat = "CNTR_NAME_%s_%s";
 
   public void initializeCounters() {
     initOperatorId();
     counterNames = new ArrayList<String>();
-    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + numInputRowsCntr);
-    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + numOutputRowsCntr);
-    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + timeTakenCntr);
-    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + fatalErrorCntr);
+    counterNames.add(getWrappedCounterName(numInputRowsCntr));
+    counterNames.add(getWrappedCounterName(numOutputRowsCntr));
+    counterNames.add(getWrappedCounterName(timeTakenCntr));
+    counterNames.add(getWrappedCounterName(fatalErrorCntr));
+    /* getAdditionalCounter should return Wrapped counters */
     List<String> newCntrs = getAdditionalCounters();
     if (newCntrs != null) {
       counterNames.addAll(newCntrs);
@@ -1308,9 +1311,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   /*
    * By default, the list is empty - if an operator wants to add more counters,
-   * it should override this method and provide the new list.
+   * it should override this method and provide the new list. Counter names returned
+   * by this method should be wrapped counter names (i.e the strings should be passed
+   * through getWrappedCounterName).
    */
-  private List<String> getAdditionalCounters() {
+  protected List<String> getAdditionalCounters() {
     return null;
   }
 

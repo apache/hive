@@ -58,12 +58,12 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringOb
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -78,9 +78,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   private static final Log LOG = LogFactory.getLog(GroupByOperator.class
       .getName());
-
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
+
+  public static final String counterNameHashOut = "COUNT_HASH_OUT";
 
   protected transient ExprNodeEvaluator[] keyFields;
   protected transient ObjectInspector[] keyObjectInspectors;
@@ -1068,6 +1069,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   public void closeOp(boolean abort) throws HiveException {
     if (!abort) {
       try {
+        // put the hash related stats in statsMap if applicable, so that they
+        // are sent to jt as counters
+        if (hashAggr) {
+          incrCounter(counterNameHashOut, numRowsHashTbl);
+        }
+
         // If there is no grouping key and no row came to this operator
         if (firstRow && (keyFields.length == 0)) {
           firstRow = false;
@@ -1125,6 +1132,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         throw new HiveException(e);
       }
     }
+  }
+
+  @Override
+  protected List<String> getAdditionalCounters() {
+    List<String> ctrList = new ArrayList<String>();
+    ctrList.add(getWrappedCounterName(counterNameHashOut));
+    return ctrList;
   }
 
   // Group by contains the columns needed - no need to aggregate from children
