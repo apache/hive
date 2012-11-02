@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -611,5 +612,30 @@ public class Partition implements Serializable {
 
   public void setLastAccessTime(int lastAccessTime) {
     tPartition.setLastAccessTime(lastAccessTime);
+  }
+
+  public List<List<String>> getSkewedColValues(){
+    return tPartition.getSd().getSkewedInfo().getSkewedColValues();
+  }
+
+  public List<String> getSkewedColNames() {
+    return tPartition.getSd().getSkewedInfo().getSkewedColNames();
+  }
+
+  public void setSkewedValueLocationMap(List<String> valList, String dirName)
+      throws HiveException {
+    Map<List<String>, String> mappings = tPartition.getSd().getSkewedInfo()
+        .getSkewedColValueLocationMaps();
+    if (null == mappings) {
+      mappings = new HashMap<List<String>, String>();
+      tPartition.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
+    }
+
+    // Add or update new mapping
+    mappings.put(valList, dirName);
+  }
+
+  public Map<List<String>, String> getSkewedColValueLocationMaps() {
+    return tPartition.getSd().getSkewedInfo().getSkewedColValueLocationMaps();
   }
 }

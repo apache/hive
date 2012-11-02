@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 import org.apache.hadoop.util.Shell;
 
@@ -255,4 +256,28 @@ public final class FileUtils {
       results.add(fileStatus);
     }
   }
+
+  /**
+   * default directory will have the same depth as number of skewed columns
+   * this will make future operation easy like DML merge, concatenate merge
+   * @param skewedCols
+   * @param hconf
+   * @return
+   */
+  public static String makeDefaultListBucketingDirName(List<String> skewedCols,
+      Configuration hconf) {
+    String lbDirName;
+    String defaultDir = FileUtils.escapePathName(HiveConf.getVar(hconf,
+        HiveConf.ConfVars.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME));
+    StringBuilder defaultDirPath = new StringBuilder();
+    for (int i = 0; i < skewedCols.size(); i++) {
+      if (i > 0) {
+        defaultDirPath.append(Path.SEPARATOR);
+      }
+      defaultDirPath.append(defaultDir);
+    }
+    lbDirName = defaultDirPath.toString();
+    return lbDirName;
+  }
+
 }

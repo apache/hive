@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -3181,6 +3182,49 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       } catch (URISyntaxException e) {
         throw new HiveException(e);
+      }
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
+      /* Validation's been done at compile time. no validation is needed here. */
+      List<String> skewedColNames = null;
+      List<List<String>> skewedValues = null;
+
+      if (alterTbl.isTurnOffSkewed()) {
+        /* Convert skewed table to non-skewed table. */
+        skewedColNames = new ArrayList<String>();
+        skewedValues = new ArrayList<List<String>>();
+      } else {
+        skewedColNames = alterTbl.getSkewedColNames();
+        skewedValues = alterTbl.getSkewedColValues();
+      }
+
+      if ( null == tbl.getSkewedInfo()) {
+        /* Convert non-skewed table to skewed table. */
+        SkewedInfo skewedInfo = new SkewedInfo();
+        skewedInfo.setSkewedColNames(skewedColNames);
+        skewedInfo.setSkewedColValues(skewedValues);
+        tbl.setSkewedInfo(skewedInfo);
+      } else {
+        tbl.setSkewedColNames(skewedColNames);
+        tbl.setSkewedColValues(skewedValues);
+      }
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
+      // process location one-by-one
+      Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
+      Set<List<String>> keys = locMaps.keySet();
+      for(List<String> key:keys){
+        String newLocation = locMaps.get(key);
+        try {
+          URI locUri = new URI(newLocation);
+          if (part != null) {
+            List<String> slk = new ArrayList<String>(key);
+            part.setSkewedValueLocationMap(slk, locUri.toString());
+          } else {
+            List<String> slk = new ArrayList<String>(key);
+            tbl.setSkewedValueLocationMap(slk, locUri.toString());
+          }
+        } catch (URISyntaxException e) {
+          throw new HiveException(e);
+        }
       }
     } else {
       formatter.consoleError(console,

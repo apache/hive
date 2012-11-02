@@ -65,7 +65,7 @@ public class ParseContext {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
-  private Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner;
+  private Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private HashMap<String, Operator<? extends OperatorDesc>> topOps;
   private HashMap<String, Operator<? extends OperatorDesc>> topSelOps;
   private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
@@ -169,7 +169,7 @@ public class ParseContext {
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
-      Map<TableScanOperator, ExprNodeDesc> opToSkewedPruner) {
+      Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -195,7 +195,7 @@ public class ParseContext {
     this.globalLimitCtx = globalLimitCtx;
     this.semanticInputs = semanticInputs;
     this.rootTasks = rootTasks;
-    this.opToSkewedPruner = opToSkewedPruner;
+    this.opToPartToSkewedPruner = opToPartToSkewedPruner;
   }
 
   /**
@@ -563,17 +563,19 @@ public class ParseContext {
   }
 
   /**
-   * @return the opToSkewedPruner
+   * @return the opToPartToSkewedPruner
    */
-  public Map<TableScanOperator, ExprNodeDesc> getOpToSkewedPruner() {
-    return opToSkewedPruner;
+  public Map<TableScanOperator, Map<String, ExprNodeDesc>> getOpToPartToSkewedPruner() {
+    return opToPartToSkewedPruner;
   }
 
   /**
-   * @param opToSkewedPruner the opToSkewedPruner to set
+   * @param opToPartToSkewedPruner
+   *          the opToSkewedPruner to set
    */
-  public void setOpToSkewedPruner(HashMap<TableScanOperator, ExprNodeDesc> opToSkewedPruner) {
-    this.opToSkewedPruner = opToSkewedPruner;
+  public void setOpPartToSkewedPruner(
+      HashMap<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner) {
+    this.opToPartToSkewedPruner = opToPartToSkewedPruner;
   }
 
 }

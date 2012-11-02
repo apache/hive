@@ -1,3 +1,4 @@
+set hive.mapred.supports.subdirectories=true;
 set hive.internal.ddl.list.bucketing.enable=true;
 CREATE TABLE list_bucket_single (key STRING, value STRING) SKEWED BY (key) ON ('1','5','6');
 CREATE TABLE list_bucket_single_2 (key STRING, value STRING) SKEWED BY (key) ON ((1),(5),(6));

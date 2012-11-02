@@ -245,22 +245,31 @@ public enum ErrorMsg {
 
   SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
 
-  CREATE_SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
-  CREATE_SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
-  CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,
+
+  ALTER_TBL_SKEWED_LOC_NO_LOC(10197, "Alter table skewed location doesn't have locations."),
+  ALTER_TBL_SKEWED_LOC_NO_MAP(10198, "Alter table skewed location doesn't have location map."),
+  SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING(
+      10199,
+      "hive.mapred.supports.subdirectories must be true"
+          + " if any one of following is true: hive.internal.ddl.list.bucketing.enable,"
+          + " hive.optimize.listbucketing and mapred.input.dir.recursive"),
+  SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
+  SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
+  SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,
       "Duplicate skewed column name:"),
-  CREATE_SKEWED_TABLE_INVALID_COLUMN(10203,
+  SKEWED_TABLE_INVALID_COLUMN(10203,
       "Invalid skewed column name:"),
-  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_1(10204,
+  SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_1(10204,
       "Skewed column name is empty but skewed value is not."),
-  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2(10205,
+  SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2(10205,
       "Skewed column value is empty but skewed name is not."),
-  CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3(10206,
+  SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3(10206,
       "The number of skewed column names and the number of " +
       "skewed column values are different: "),
   ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN(10207,
-          " is a skewed column. It's not allowed to rename skewed column."),
-  HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED(10208,
+      " is a skewed column. It's not allowed to rename skewed column"
+          + " or change skewed column type."),
+ HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED(10208,
               "List Bucketing DDL is not allowed to use since feature is not completed yet."),
 
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR(10209,

@@ -22,10 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * AlterTableDesc.
@@ -43,7 +47,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
     TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
-    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION
+    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION
   };
 
   public static enum ProtectModeType {
@@ -75,6 +79,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   private String newLocation;
   boolean protectModeEnable;
   ProtectModeType protectModeType;
+  Map<List<String>, String> skewedLocations;
+  boolean turnOffSkewed = false;
+  List<String> skewedColNames;
+  List<List<String>> skewedColValues;
+  Table table;
 
   public AlterTableDesc() {
   }
@@ -182,6 +191,23 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.oldName = tableName;
     this.newLocation = newLocation;
     this.partSpec = partSpec;
+  }
+
+  public AlterTableDesc(String tableName, Map<List<String>, String> locations,
+      HashMap<String, String> partSpec) {
+    op = AlterTableTypes.ALTERSKEWEDLOCATION;
+    this.oldName = tableName;
+    this.skewedLocations = locations;
+    this.partSpec = partSpec;
+  }
+
+  public AlterTableDesc(String tableName, boolean turnOffSkewed,
+      List<String> skewedColNames, List<List<String>> skewedColValues) {
+    oldName = tableName;
+    op = AlterTableTypes.ADDSKEWEDBY;
+    this.turnOffSkewed = turnOffSkewed;
+    this.skewedColNames = new ArrayList<String>(skewedColNames);
+    this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
   }
 
   @Explain(displayName = "new columns")
@@ -538,4 +564,88 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public void setProtectModeType(ProtectModeType protectModeType) {
     this.protectModeType = protectModeType;
   }
+  /**
+   * @return the skewedLocations
+   */
+  public Map<List<String>, String> getSkewedLocations() {
+    return skewedLocations;
+  }
+
+  /**
+   * @param skewedLocations the skewedLocations to set
+   */
+  public void setSkewedLocations(Map<List<String>, String> skewedLocations) {
+    this.skewedLocations = skewedLocations;
+  }
+
+  /**
+   * @return the turnOffSkewed
+   */
+  public boolean isTurnOffSkewed() {
+    return turnOffSkewed;
+  }
+
+  /**
+   * @param turnOffSkewed the turnOffSkewed to set
+   */
+  public void setTurnOffSkewed(boolean turnOffSkewed) {
+    this.turnOffSkewed = turnOffSkewed;
+  }
+
+  /**
+   * @return the skewedColNames
+   */
+  public List<String> getSkewedColNames() {
+    return skewedColNames;
+  }
+
+  /**
+   * @param skewedColNames the skewedColNames to set
+   */
+  public void setSkewedColNames(List<String> skewedColNames) {
+    this.skewedColNames = skewedColNames;
+  }
+
+  /**
+   * @return the skewedColValues
+   */
+  public List<List<String>> getSkewedColValues() {
+    return skewedColValues;
+  }
+
+  /**
+   * @param skewedColValues the skewedColValues to set
+   */
+  public void setSkewedColValues(List<List<String>> skewedColValues) {
+    this.skewedColValues = skewedColValues;
+  }
+
+  /**
+   * Validate alter table description.
+   *
+   * @throws SemanticException
+   */
+  public void validate() throws SemanticException {
+    if (null != table) {
+      /* Validate skewed information. */
+      ValidationUtility.validateSkewedInformation(
+          ParseUtils.validateColumnNameUniqueness(table.getCols()), this.getSkewedColNames(),
+          this.getSkewedColValues());
+    }
+  }
+
+  /**
+   * @return the table
+   */
+  public Table getTable() {
+    return table;
+  }
+
+  /**
+   * @param table the table to set
+   */
+  public void setTable(Table table) {
+    this.table = table;
+  }
+
 }

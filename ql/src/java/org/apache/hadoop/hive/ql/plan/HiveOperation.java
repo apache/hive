@@ -91,6 +91,9 @@ public enum HiveOperation {
   DESCDATABASE("DESCDATABASE", null, null),
   ALTERTABLE_MERGEFILES("ALTER_TABLE_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
   ALTERPARTITION_MERGEFILES("ALTER_PARTITION_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
+  ALTERTABLE_SKEWED("ALTERTABLE_SKEWED", new Privilege[] {Privilege.ALTER_METADATA}, null),
+  ALTERTBLPART_SKEWED_LOCATION("ALTERTBLPART_SKEWED_LOCATION",
+      new Privilege[] {Privilege.ALTER_DATA}, null),
   ;
 
   private String operationName;

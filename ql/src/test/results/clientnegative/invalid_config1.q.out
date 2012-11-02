@@ -1,0 +1,2 @@
+FAILED: Hive Internal Error: hive.mapred.supports.subdirectories must be true if any one of following is true: hive.internal.ddl.list.bucketing.enable, hive.optimize.listbucketing and mapred.input.dir.recursive
+

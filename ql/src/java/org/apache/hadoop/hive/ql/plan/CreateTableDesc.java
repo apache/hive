@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -480,98 +478,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       }
     }
 
-    validateSkewedInformation(colNames);
-  }
-
-
-  /**
-   * Validate skewed table creation
-
-   * @param colNames
-   * @throws SemanticException
-   */
-  private void validateSkewedInformation(List<String> colNames)
-      throws SemanticException {
-    if (this.getSkewedColNames().size() > 0) {
-      /**
-       * all columns in skewed column name are valid columns
-       */
-      validateSkewedColNames(colNames);
-
-      /**
-       * find out duplicate skewed column name
-       */
-      validateSkewedColumnNameUniqueness(this.getSkewedColNames());
-
-      if (this.getSkewedColValues() == null || this.getSkewedColValues().size() == 0) {
-        /**
-         * skewed column value is empty but skewed col name is not empty. something is wrong
-         */
-        throw new SemanticException(
-            ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_2.getMsg());
-
-      } else {
-        /**
-         * each skewed col value should have the same number as number of skewed column names
-         */
-        validateSkewedColNameValueNumberMatch();
-
-      }
-    } else if (this.getSkewedColValues().size() > 0) {
-      /**
-       * skewed column name is empty but skewed col value is not empty. something is wrong
-       */
-      throw new SemanticException(
-          ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_1.getMsg());
-    }
-  }
-
-  private void validateSkewedColNameValueNumberMatch()
-      throws SemanticException {
-    for (List<String> colValue : this.getSkewedColValues()) {
-      if (colValue.size() != this.getSkewedColNames().size()) {
-        throw new SemanticException(
-            ErrorMsg.CREATE_SKEWED_TABLE_SKEWED_COL_NAME_VALUE_MISMATCH_3.getMsg()
-                + this.getSkewedColNames().size() + " : "
-                + colValue.size());
-      }
-    }
-  }
-
-  private void validateSkewedColNames(List<String> colNames)
-      throws SemanticException {
-    // make a copy
-    List<String> copySkewedColNames = new ArrayList<String>(this.getSkewedColNames());
-    // remove valid columns
-    copySkewedColNames.removeAll(colNames);
-    if (copySkewedColNames.size() > 0) {
-      StringBuilder invalidColNames = new StringBuilder();
-      for (String name : copySkewedColNames) {
-        invalidColNames.append(name);
-        invalidColNames.append(" ");
-      }
-      throw new SemanticException(
-          ErrorMsg.CREATE_SKEWED_TABLE_INVALID_COLUMN.getMsg(invalidColNames.toString()));
-    }
-  }
-
-
-  /**
-   * Find out duplicate name
-   * @param names
-   * @throws SemanticException
-   */
-  private void validateSkewedColumnNameUniqueness(
-      List<String> names) throws SemanticException {
-
-    Set<String> lookup = new HashSet<String>();
-    for (String name : names) {
-      if (lookup.contains(name)) {
-        throw new SemanticException(ErrorMsg.CREATE_SKEWED_TABLE_DUPLICATE_COLUMN_NAMES
-            .getMsg(name));
-      } else {
-        lookup.add(name);
-      }
-    }
+    /* Validate skewed information. */
+    ValidationUtility.validateSkewedInformation(colNames, this.getSkewedColNames(),
+        this.getSkewedColValues());
   }
 }
