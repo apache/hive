@@ -4350,6 +4350,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (enforceBucketing || enforceSorting) {
       int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      if (conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS) > 0) {
+        maxReducers = conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+      }
       int numBuckets  = dest_tab.getNumBuckets();
       if (numBuckets > maxReducers) {
         multiFileSpray = true;
