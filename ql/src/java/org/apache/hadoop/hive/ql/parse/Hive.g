@@ -875,16 +875,29 @@ tabTypeExpr
    : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
    ;
 
+descTabTypeExpr
+@init { msgs.push("specifying describe table types"); }
+@after { msgs.pop(); }
+
+   : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))* Identifier?
+   ;
+
 partTypeExpr
 @init { msgs.push("specifying table partitions"); }
 @after { msgs.pop(); }
     :  tabTypeExpr partitionSpec? -> ^(TOK_TABTYPE tabTypeExpr partitionSpec?)
     ;
 
+descPartTypeExpr
+@init { msgs.push("specifying describe table partitions"); }
+@after { msgs.pop(); }
+    :  descTabTypeExpr partitionSpec? -> ^(TOK_TABTYPE descTabTypeExpr partitionSpec?)
+    ;
+
 descStatement
 @init { msgs.push("describe statement"); }
 @after { msgs.pop(); }
-    : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
+    : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED)? (parttype=descPartTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     | (KW_DESCRIBE|KW_DESC) KW_DATABASE KW_EXTENDED? (dbName=Identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;

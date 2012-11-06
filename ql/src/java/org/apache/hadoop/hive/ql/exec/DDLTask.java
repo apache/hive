@@ -2779,9 +2779,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException {
-    String colPath = descTbl.getTableName();
-    String tableName = colPath.substring(0,
-        colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
+    String colPath = descTbl.getColumnPath();
+    String tableName = descTbl.getTableName();
 
     // describe the table - populate the output stream
     Table tbl = db.getTable(tableName, false);
