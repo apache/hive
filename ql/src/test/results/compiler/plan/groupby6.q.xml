@@ -482,6 +482,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_GBY_2_FATAL_ERROR</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_GBY_2_COUNT_HASH_OUT</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -1224,6 +1227,9 @@
         </void> 
         <void method="add"> 
          <string>CNTR_NAME_GBY_4_FATAL_ERROR</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_GBY_4_COUNT_HASH_OUT</string> 
         </void> 
        </object> 
       </void> 
