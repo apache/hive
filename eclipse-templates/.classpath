@@ -79,7 +79,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/JavaEWAH-@javaewah.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/javolution-@javolution-version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/javolution-@javolution.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-core-asl-1.8.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-jaxrs-1.8.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-mapper-asl-1.8.8.jar"/>
