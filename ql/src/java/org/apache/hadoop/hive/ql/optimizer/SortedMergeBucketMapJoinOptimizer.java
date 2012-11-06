@@ -320,10 +320,10 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       // compare the column names and the order with the first table/partition.
       for (int pos = 0; pos < sortCols.size(); pos++) {
         Order o = sortCols.get(pos);
-        if (!o.equals(sortColumnsFirstPartition.get(pos))) {
+        if (o.getOrder() != sortColumnsFirstPartition.get(pos).getOrder()) {
           return false;
         }
-        sortColNames.add(sortColumnsFirstPartition.get(pos).getCol());
+        sortColNames.add(o.getCol());
       }
 
       // The column names and order (ascending/descending) matched
