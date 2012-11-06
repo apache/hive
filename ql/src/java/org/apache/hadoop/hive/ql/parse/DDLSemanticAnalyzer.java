@@ -1374,20 +1374,234 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Get the fully qualified name in the ast. e.g. the ast of the form ^(DOT
-   * ^(DOT a b) c) will generate a name of the form a.b.c
-   *
-   * @param ast
-   *          The AST from which the qualified name has to be extracted
-   * @return String
+   * Utility class to resolve QualifiedName
    */
-  private String getFullyQualifiedName(ASTNode ast) {
-    if (ast.getChildCount() == 0) {
-      return ast.getText();
+  static class QualifiedNameUtil {
+
+    // delimiter to check DOT delimited qualified names
+    static String delimiter = "\\.";
+
+    /**
+     * Get the fully qualified name in the ast. e.g. the ast of the form ^(DOT
+     * ^(DOT a b) c) will generate a name of the form a.b.c
+     *
+     * @param ast
+     *          The AST from which the qualified name has to be extracted
+     * @return String
+     */
+    static public String getFullyQualifiedName(ASTNode ast) {
+      if (ast.getChildCount() == 0) {
+        return ast.getText();
+      } else if (ast.getChildCount() == 2) {
+        return getFullyQualifiedName((ASTNode) ast.getChild(0)) + "."
+        + getFullyQualifiedName((ASTNode) ast.getChild(1));
+      } else if (ast.getChildCount() == 3) {
+        return getFullyQualifiedName((ASTNode) ast.getChild(0)) + "."
+        + getFullyQualifiedName((ASTNode) ast.getChild(1)) + "."
+        + getFullyQualifiedName((ASTNode) ast.getChild(2));
+      } else {
+        return null;
+      }
     }
 
-    return getFullyQualifiedName((ASTNode) ast.getChild(0)) + "."
-        + getFullyQualifiedName((ASTNode) ast.getChild(1));
+    // assume the first component of DOT delimited name is tableName
+    // get the attemptTableName
+    static public String getAttemptTableName(Hive db, String qualifiedName, boolean isColumn) {
+      // check whether the name starts with table
+      // DESCRIBE table
+      // DESCRIBE table.column
+      // DECRIBE table column
+      String tableName = qualifiedName.substring(0,
+        qualifiedName.indexOf('.') == -1 ?
+        qualifiedName.length() : qualifiedName.indexOf('.'));
+      try {
+        Table tab = db.getTable(tableName);
+        if (tab != null) {
+          if (isColumn) {
+            // if attempt to get columnPath
+            // return the whole qualifiedName(table.column or table)
+            return qualifiedName;
+          } else {
+            // if attempt to get tableName
+            // return table
+            return tableName;
+          }
+        }
+      } catch (HiveException e) {
+        // assume the first DOT delimited component is tableName
+        // OK if it is not
+        // do nothing when having exception
+        return null;
+      }
+      return null;
+    }
+
+    // get Database Name
+    static public String getDBName(Hive db, ASTNode ast) {
+      String dbName = null;
+      String fullyQualifiedName = getFullyQualifiedName(ast);
+
+      // if database.table or database.table.column or table.column
+      // first try the first component of the DOT separated name
+      if (ast.getChildCount() >= 2) {
+        dbName = fullyQualifiedName.substring(0,
+          fullyQualifiedName.indexOf('.') == -1 ?
+          fullyQualifiedName.length() :
+          fullyQualifiedName.indexOf('.'));
+        try {
+          // if the database name is not valid
+          // it is table.column
+          // return null as dbName
+          if (!db.databaseExists(dbName)) {
+            return null;
+          }
+        } catch (HiveException e) {
+          return null;
+        }
+      } else {
+        // in other cases, return null
+        // database is not validated if null
+        return null;
+      }
+      return dbName;
+    }
+
+    // get Table Name
+    static public String getTableName(Hive db, ASTNode ast)
+      throws SemanticException {
+      String tableName = null;
+      String fullyQualifiedName = getFullyQualifiedName(ast);
+
+      // assume the first component of DOT delimited name is tableName
+      String attemptTableName = getAttemptTableName(db, fullyQualifiedName, false);
+      if (attemptTableName != null) {
+        return attemptTableName;
+      }
+
+      // if the name does not start with table
+      // it should start with database
+      // DESCRIBE database.table
+      // DESCRIBE database.table column
+      if (fullyQualifiedName.split(delimiter).length == 3) {
+        // if DESCRIBE database.table.column
+        // invalid syntax exception
+        if (ast.getChildCount() == 2) {
+          throw new SemanticException(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(fullyQualifiedName));
+        } else {
+          // if DESCRIBE database.table column
+          // return database.table as tableName
+          tableName = fullyQualifiedName.substring(0,
+            fullyQualifiedName.lastIndexOf('.'));
+        }
+      } else if (fullyQualifiedName.split(delimiter).length == 2) {
+        // if DESCRIBE database.table
+        // return database.table as tableName
+        tableName = fullyQualifiedName;
+      } else {
+        // if fullyQualifiedName only have one component
+        // it is an invalid table
+        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(fullyQualifiedName));
+      }
+
+      return tableName;
+    }
+
+    // get column path
+    static public String getColPath(
+      Hive db,
+      ASTNode parentAst,
+      ASTNode ast,
+      String tableName,
+      Map<String, String> partSpec) {
+
+      // if parent has two children
+      // it could be DESCRIBE table key
+      // or DESCRIBE table partition
+      if (parentAst.getChildCount() == 2 && partSpec == null) {
+        // if partitionSpec is null
+        // it is DESCRIBE table key
+        // return table as columnPath
+        return getFullyQualifiedName(parentAst);
+      }
+
+      // assume the first component of DOT delimited name is tableName
+      String attemptTableName = getAttemptTableName(db, tableName, true);
+      if (attemptTableName != null) {
+        return attemptTableName;
+      }
+
+      // if the name does not start with table
+      // it should start with database
+      // DESCRIBE database.table
+      // DESCRIBE database.table column
+      if (tableName.split(delimiter).length == 3) {
+        // if DESCRIBE database.table column
+        // return table.column as column path
+        return tableName.substring(
+          tableName.indexOf(".") + 1, tableName.length());
+      }
+
+      // in other cases, column path is the same as tableName
+      return tableName;
+    }
+
+    // get partition metadata
+    static public Map<String, String> getPartitionSpec(Hive db, ASTNode ast, String tableName)
+      throws SemanticException {
+      // if ast has two children
+      // it could be DESCRIBE table key
+      // or DESCRIBE table partition
+      // check whether it is DESCRIBE table partition
+      if (ast.getChildCount() == 2) {
+        ASTNode partNode = (ASTNode) ast.getChild(1);
+        HashMap<String, String> partSpec = null;
+        try {
+          partSpec = getPartSpec(partNode);
+        } catch (SemanticException e) {
+          // get exception in resolving partition
+          // it could be DESCRIBE table key
+          // return null
+          // continue processing for DESCRIBE table key
+          return null;
+        }
+
+        Table tab = null;
+        try {
+          tab = db.getTable(tableName);
+        } catch (HiveException e) {
+          // if table not valid
+          // throw semantic exception
+          throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
+        }
+
+        if (partSpec != null) {
+          Partition part = null;
+          try {
+            part = db.getPartition(tab, partSpec, false);
+          } catch (HiveException e) {
+            // if get exception in finding partition
+            // it could be DESCRIBE table key
+            // return null
+            // continue processing for DESCRIBE table key
+            return null;
+          }
+
+          // if partition is not found
+          // it is DESCRIBE table partition
+          // invalid partition exception
+          if (part == null) {
+            throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
+          }
+
+          // it is DESCRIBE table partition
+          // return partition metadata
+          return partSpec;
+        }
+      }
+
+      return null;
+    }
+
   }
 
   /**
@@ -1449,22 +1663,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeDescribeTable(ASTNode ast) throws SemanticException {
     ASTNode tableTypeExpr = (ASTNode) ast.getChild(0);
-    String tableName = getFullyQualifiedName((ASTNode) tableTypeExpr
-        .getChild(0));
 
-    HashMap<String, String> partSpec = null;
-    // get partition metadata if partition specified
-    if (tableTypeExpr.getChildCount() == 2) {
-      ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
-      partSpec = getPartSpec(partspec);
+    String qualifiedName =
+      QualifiedNameUtil.getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
+    String tableName =
+      QualifiedNameUtil.getTableName(db, (ASTNode)(tableTypeExpr.getChild(0)));
+    String dbName =
+      QualifiedNameUtil.getDBName(db, (ASTNode)(tableTypeExpr.getChild(0)));
+
+    Map<String, String> partSpec =
+      QualifiedNameUtil.getPartitionSpec(db, tableTypeExpr, tableName);
+
+    String colPath = QualifiedNameUtil.getColPath(
+        db, tableTypeExpr, (ASTNode) tableTypeExpr.getChild(0), qualifiedName, partSpec);
+
+    // if database is not the one currently using
+    // validate database
+    if (dbName != null) {
+      validateDatabase(dbName);
+    }
+    if (partSpec != null) {
+      validateTable(tableName, partSpec);
     }
 
-    // Handle xpath correctly
-    String actualTableName = tableName.substring(0,
-        tableName.indexOf('.') == -1 ? tableName.length() : tableName.indexOf('.'));
-    validateTable(actualTableName, partSpec);
+    DescTableDesc descTblDesc = new DescTableDesc(
+      ctx.getResFile(), tableName, partSpec, colPath);
 
-    DescTableDesc descTblDesc = new DescTableDesc(ctx.getResFile(), tableName, partSpec);
     if (ast.getChildCount() == 2) {
       int descOptions = ast.getChild(1).getType();
       descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
@@ -1746,7 +1970,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode child = (ASTNode) ast.getChild(i);
         if (child.getType() == HiveParser.TOK_TABTYPE) {
           ASTNode tableTypeExpr = (ASTNode) child;
-          tableName = getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
+          tableName =
+            QualifiedNameUtil.getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
           // get partition metadata if partition specified
           if (tableTypeExpr.getChildCount() == 2) {
             ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);

@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
@@ -29,15 +29,17 @@ import org.apache.hadoop.fs.Path;
  */
 @Explain(displayName = "Describe Table")
 public class DescTableDesc extends DDLDesc implements Serializable {
-  public void setPartSpec(HashMap<String, String> partSpec) {
+  public void setPartSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;
   }
 
   private static final long serialVersionUID = 1L;
 
   String tableName;
-  HashMap<String, String> partSpec;
+  Map<String, String> partSpec;
   String resFile;
+
+  String colPath;
   boolean isExt;
   boolean isFormatted;
   /**
@@ -58,12 +60,13 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    * @param tableName
    */
   public DescTableDesc(Path resFile, String tableName,
-      HashMap<String, String> partSpec) {
+      Map<String, String> partSpec, String colPath) {
     this.isExt = false;
     this.isFormatted = false;
     this.partSpec = partSpec;
     this.resFile = resFile.toString();
     this.tableName = tableName;
+    this.colPath = colPath;
   }
 
   public String getTable() {
@@ -121,10 +124,25 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @param colPath
+   *          the colPath to set
+   */
+  public void setColPath(String colPath) {
+    this.colPath = colPath;
+  }
+
+  /**
+   * @return the columnPath
+   */
+  public String getColumnPath() {
+    return colPath;
+  }
+
+  /**
    * @return the partSpec
    */
   @Explain(displayName = "partition")
-  public HashMap<String, String> getPartSpec() {
+  public Map<String, String> getPartSpec() {
     return partSpec;
   }
 
@@ -132,7 +150,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    * @param partSpec
    *          the partSpec to set
    */
-  public void setPartSpecs(HashMap<String, String> partSpec) {
+  public void setPartSpecs(Map<String, String> partSpec) {
     this.partSpec = partSpec;
   }
 
