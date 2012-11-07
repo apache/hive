@@ -3104,7 +3104,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         statsObj = getMS().getTableColumnStatistics(dbName, tableName, colName);
       } finally {
-        endFunction("get_column_statistics_by_table: ", statsObj != null);
+        endFunction("get_column_statistics_by_table: ", statsObj != null, null);
       }
       return statsObj;
     }
@@ -3126,7 +3126,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         statsObj = getMS().getPartitionColumnStatistics(dbName, tableName, convertedPartName,
                                                             partVals, colName);
       } finally {
-        endFunction("get_column_statistics_by_partition: ", statsObj != null);
+        endFunction("get_column_statistics_by_partition: ", statsObj != null, null);
       }
       return statsObj;
    }
@@ -3165,7 +3165,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().updateTableColumnStatistics(colStats);
         return ret;
       } finally {
-        endFunction("write_column_statistics: ", ret != false);
+        endFunction("write_column_statistics: ", ret != false, null);
       }
     }
 
@@ -3211,7 +3211,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().updatePartitionColumnStatistics(colStats, partVals);
         return ret;
       } finally {
-        endFunction("write_partition_column_statistics: ", ret != false);
+        endFunction("write_partition_column_statistics: ", ret != false, null);
       }
     }
 
@@ -3234,7 +3234,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().deletePartitionColumnStatistics(dbName, tableName,
                                                       convertedPartName, partVals, colName);
       } finally {
-        endFunction("delete_column_statistics_by_partition: ", ret != false);
+        endFunction("delete_column_statistics_by_partition: ", ret != false, null);
       }
       return ret;
     }
@@ -3256,7 +3256,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = getMS().deleteTableColumnStatistics(dbName, tableName, colName);
       } finally {
-        endFunction("delete_column_statistics_by_table: ", ret != false);
+        endFunction("delete_column_statistics_by_table: ", ret != false, null);
       }
       return ret;
    }
