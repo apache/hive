@@ -18,36 +18,30 @@
 
 package org.apache.hadoop.hive.metastore;
 
-/**
- * Base class which provides context to implementations of MetaStoreEndFunctionListener
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+
+
+/** A dummy implementation for
+ * {@link org.apache.hadoop.hive.metastore.MetaStoreEndFunctionListener}
+ * for testing purposes.
  */
+public class DummyEndFunctionListener extends MetaStoreEndFunctionListener{
 
-public class MetaStoreEndFunctionContext {
+  public static final List<String> funcNameList = new ArrayList<String>();
+  public static final List<MetaStoreEndFunctionContext> contextList =
+    new ArrayList<MetaStoreEndFunctionContext>();
 
-  /**
-   * whether method was successful or not.
-   */
-  private final boolean success;
-  private final Exception e;
-
-  public MetaStoreEndFunctionContext(boolean success, Exception e) {
-    this.success = success;
-    this.e = e;
+  public DummyEndFunctionListener(Configuration config) {
+    super(config);
   }
 
-  public MetaStoreEndFunctionContext(boolean success) {
-    this(success, null);
-  }
-
-  /**
-   * @return whether or not the method succeeded.
-   */
-  public boolean isSuccess() {
-    return success;
-  }
-
-  public Exception getException() {
-    return e;
+  @Override
+  public void onEndFunction(String functionName, MetaStoreEndFunctionContext context) {
+    funcNameList.add(functionName);
+    contextList.add(context);
   }
 
 }
