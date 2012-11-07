@@ -49,6 +49,7 @@ public class QB {
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
+  private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
 
   // results
@@ -222,5 +223,14 @@ public class QB {
       skewedColNames = tbl.getSkewedColNames();
     }
     return skewedColNames;
+
+  }
+
+  public boolean isAnalyzeRewrite() {
+    return isAnalyzeRewrite;
+  }
+
+  public void setAnalyzeRewrite(boolean isAnalyzeRewrite) {
+    this.isAnalyzeRewrite = isAnalyzeRewrite;
   }
 }

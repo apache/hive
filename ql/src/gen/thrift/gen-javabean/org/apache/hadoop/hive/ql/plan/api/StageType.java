@@ -21,7 +21,8 @@ public enum StageType implements org.apache.thrift.TEnum {
   MAPREDLOCAL(7),
   MOVE(8),
   STATS(9),
-  DEPENDENCY_COLLECTION(10);
+  DEPENDENCY_COLLECTION(10),
+  COLUMNSTATS(11);
 
   private final int value;
 
@@ -64,6 +65,8 @@ public enum StageType implements org.apache.thrift.TEnum {
         return STATS;
       case 10:
         return DEPENDENCY_COLLECTION;
+      case 11:
+        return COLUMNSTATS;
       default:
         return null;
     }

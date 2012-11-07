@@ -76,6 +76,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Index get_index_by_name(string db_name, string tbl_name, string index_name)'
   print '   get_indexes(string db_name, string tbl_name, i16 max_indexes)'
   print '   get_index_names(string db_name, string tbl_name, i16 max_indexes)'
+  print '  bool update_table_column_statistics(ColumnStatistics stats_obj)'
+  print '  bool update_partition_column_statistics(ColumnStatistics stats_obj)'
+  print '  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)'
+  print '  ColumnStatistics get_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
+  print '  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name)'
+  print '  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name)'
   print '  bool create_role(Role role)'
   print '  bool drop_role(string role_name)'
   print '   get_role_names()'
@@ -469,6 +475,42 @@ elif cmd == 'get_index_names':
     print 'get_index_names requires 3 args'
     sys.exit(1)
   pp.pprint(client.get_index_names(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'update_table_column_statistics':
+  if len(args) != 1:
+    print 'update_table_column_statistics requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.update_table_column_statistics(eval(args[0]),))
+
+elif cmd == 'update_partition_column_statistics':
+  if len(args) != 1:
+    print 'update_partition_column_statistics requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.update_partition_column_statistics(eval(args[0]),))
+
+elif cmd == 'get_table_column_statistics':
+  if len(args) != 3:
+    print 'get_table_column_statistics requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_table_column_statistics(args[0],args[1],args[2],))
+
+elif cmd == 'get_partition_column_statistics':
+  if len(args) != 4:
+    print 'get_partition_column_statistics requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.get_partition_column_statistics(args[0],args[1],args[2],args[3],))
+
+elif cmd == 'delete_partition_column_statistics':
+  if len(args) != 4:
+    print 'delete_partition_column_statistics requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.delete_partition_column_statistics(args[0],args[1],args[2],args[3],))
+
+elif cmd == 'delete_table_column_statistics':
+  if len(args) != 3:
+    print 'delete_table_column_statistics requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.delete_table_column_statistics(args[0],args[1],args[2],))
 
 elif cmd == 'create_role':
   if len(args) != 1:

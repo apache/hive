@@ -376,14 +376,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         case 1: // FIELD_SCHEMAS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list110 = iprot.readListBegin();
-              this.fieldSchemas = new ArrayList<FieldSchema>(_list110.size);
-              for (int _i111 = 0; _i111 < _list110.size; ++_i111)
+              org.apache.thrift.protocol.TList _list114 = iprot.readListBegin();
+              this.fieldSchemas = new ArrayList<FieldSchema>(_list114.size);
+              for (int _i115 = 0; _i115 < _list114.size; ++_i115)
               {
-                FieldSchema _elem112; // required
-                _elem112 = new FieldSchema();
-                _elem112.read(iprot);
-                this.fieldSchemas.add(_elem112);
+                FieldSchema _elem116; // required
+                _elem116 = new FieldSchema();
+                _elem116.read(iprot);
+                this.fieldSchemas.add(_elem116);
               }
               iprot.readListEnd();
             }
@@ -394,15 +394,15 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         case 2: // PROPERTIES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map113 = iprot.readMapBegin();
-              this.properties = new HashMap<String,String>(2*_map113.size);
-              for (int _i114 = 0; _i114 < _map113.size; ++_i114)
+              org.apache.thrift.protocol.TMap _map117 = iprot.readMapBegin();
+              this.properties = new HashMap<String,String>(2*_map117.size);
+              for (int _i118 = 0; _i118 < _map117.size; ++_i118)
               {
-                String _key115; // required
-                String _val116; // required
-                _key115 = iprot.readString();
-                _val116 = iprot.readString();
-                this.properties.put(_key115, _val116);
+                String _key119; // required
+                String _val120; // required
+                _key119 = iprot.readString();
+                _val120 = iprot.readString();
+                this.properties.put(_key119, _val120);
               }
               iprot.readMapEnd();
             }
@@ -427,9 +427,9 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       oprot.writeFieldBegin(FIELD_SCHEMAS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.fieldSchemas.size()));
-        for (FieldSchema _iter117 : this.fieldSchemas)
+        for (FieldSchema _iter121 : this.fieldSchemas)
         {
-          _iter117.write(oprot);
+          _iter121.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -439,10 +439,10 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.properties.size()));
-        for (Map.Entry<String, String> _iter118 : this.properties.entrySet())
+        for (Map.Entry<String, String> _iter122 : this.properties.entrySet())
         {
-          oprot.writeString(_iter118.getKey());
-          oprot.writeString(_iter118.getValue());
+          oprot.writeString(_iter122.getKey());
+          oprot.writeString(_iter122.getValue());
         }
         oprot.writeMapEnd();
       }

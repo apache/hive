@@ -1,0 +1,36 @@
+PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@UserVisits_web_text_none
+PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+PREHOOK: type: LOAD
+PREHOOK: Output: default@uservisits_web_text_none
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@uservisits_web_text_none
+FAILED: SemanticException [Error 10004]: Line 1:21 Invalid table alias or column reference 'destIP': (possible column names are: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite)

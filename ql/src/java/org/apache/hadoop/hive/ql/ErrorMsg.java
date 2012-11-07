@@ -314,6 +314,16 @@ public enum ErrorMsg {
     "might help. If you dont want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
 
+  COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
+    "statement"),
+  COLUMNSTATSCOLLECTOR_INCORRECT_NUM_PART_KEY(30006, "Incorrect number of partitioning key " +
+    "specified in ANALYZE statement"),
+  COLUMNSTATSCOLLECTOR_INVALID_PARTITION(30007, "Invalid partitioning key/value specified in " +
+    "ANALYZE statement"),
+  COLUMNSTATSCOLLECTOR_INVALID_SYNTAX(30008, "Dynamic partitioning is not supported yet while " +
+    "gathering column statistics through ANALYZE statement"),
+  COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
+  COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query")
     ;
 
   private int errorCode;

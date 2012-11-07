@@ -92,7 +92,8 @@ int _kStageTypeValues[] = {
   StageType::MAPREDLOCAL,
   StageType::MOVE,
   StageType::STATS,
-  StageType::DEPENDENCY_COLLECTION
+  StageType::DEPENDENCY_COLLECTION,
+  StageType::COLUMNSTATS
 };
 const char* _kStageTypeNames[] = {
   "CONDITIONAL",
@@ -105,9 +106,10 @@ const char* _kStageTypeNames[] = {
   "MAPREDLOCAL",
   "MOVE",
   "STATS",
-  "DEPENDENCY_COLLECTION"
+  "DEPENDENCY_COLLECTION",
+  "COLUMNSTATS"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(11, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 const char* Adjacency::ascii_fingerprint = "BC4F8C394677A1003AA9F56ED26D8204";
 const uint8_t Adjacency::binary_fingerprint[16] = {0xBC,0x4F,0x8C,0x39,0x46,0x77,0xA1,0x00,0x3A,0xA9,0xF5,0x6E,0xD2,0x6D,0x82,0x04};

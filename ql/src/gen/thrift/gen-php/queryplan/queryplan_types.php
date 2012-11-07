@@ -126,6 +126,7 @@ $GLOBALS['E_StageType'] = array(
   'MOVE' => 8,
   'STATS' => 9,
   'DEPENDENCY_COLLECTION' => 10,
+  'COLUMNSTATS' => 11,
 );
 
 final class StageType {
@@ -140,6 +141,7 @@ final class StageType {
   const MOVE = 8;
   const STATS = 9;
   const DEPENDENCY_COLLECTION = 10;
+  const COLUMNSTATS = 11;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -152,6 +154,7 @@ final class StageType {
     8 => 'MOVE',
     9 => 'STATS',
     10 => 'DEPENDENCY_COLLECTION',
+    11 => 'COLUMNSTATS',
   );
 }
 

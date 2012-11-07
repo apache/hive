@@ -1,0 +1,33 @@
+PREHOOK: query: create table tab_int(a int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tab_int(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/int.txt" INTO TABLE tab_int
+PREHOOK: type: LOAD
+PREHOOK: Output: default@tab_int
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/int.txt" INTO TABLE tab_int
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: select count(*) from tab_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+12
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+{"columntype":"Long","min":0,"max":344,"countnulls":1,"numdistinctvalues":16}

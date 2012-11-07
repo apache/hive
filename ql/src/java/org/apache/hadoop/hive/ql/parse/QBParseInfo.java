@@ -58,6 +58,12 @@ public class QBParseInfo {
 
   private final HashMap<String, tableSpec> tableSpecs; // used for statistics
 
+  private String tableName;   // used for column statistics
+  private List<String> colName;     // used for column statistics
+  private List<String> colType;    // used for column statistics
+  private String partName;  // used for column statistics
+  private boolean isTblLvl; // used for column statistics
+
   /**
    * ClusterBy is a short name for both DistributeBy and SortBy.
    */
@@ -119,6 +125,7 @@ public class QBParseInfo {
     aliasToLateralViews = new HashMap<String, ArrayList<ASTNode>>();
 
     tableSpecs = new HashMap<String, BaseSemanticAnalyzer.tableSpec>();
+
   }
 
   public void setAggregationExprsForClause(String clause,
@@ -420,7 +427,7 @@ public class QBParseInfo {
     while (iter.hasNext()) {
       Map.Entry<String, ASTNode> entry = iter.next();
       ASTNode v = entry.getValue();
-      if (!(((ASTNode) v.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE)) {
+      if (!(((ASTNode)v.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE)) {
         return false;
       }
     }
@@ -500,5 +507,53 @@ public class QBParseInfo {
 
   public HashMap<String, TableSample> getNameToSample() {
     return nameToSample;
+  }
+
+
+  protected static enum ClauseType {
+    CLUSTER_BY_CLAUSE,
+    DISTRIBUTE_BY_CLAUSE,
+    ORDER_BY_CLAUSE,
+    SORT_BY_CLAUSE
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(String tableName) {
+    this.tableName = tableName;
+  }
+
+  public List<String> getColName() {
+    return colName;
+  }
+
+  public void setColName(List<String> colName) {
+    this.colName = colName;
+  }
+
+  public String getPartName() {
+    return partName;
+  }
+
+  public void setPartName(String partName) {
+    this.partName = partName;
+  }
+
+  public boolean isTblLvl() {
+    return isTblLvl;
+  }
+
+  public void setTblLvl(boolean isTblLvl) {
+    this.isTblLvl = isTblLvl;
+  }
+
+  public List<String> getColType() {
+    return colType;
+  }
+
+  public void setColType(List<String> colType) {
+    this.colType = colType;
   }
 }

@@ -751,5 +751,104 @@
       </field>
 
     </class>
+
+    <class name="MTableColumnStatistics" table="TAB_COL_STATS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="CS_ID"/>
+      </datastore-identity>
+
+      <field name ="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="tableName">
+        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="table">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="colName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="colType">
+        <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="lowValue">
+        <column name="LOW_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      </field>
+      <field name="highValue">
+        <column name="HIGH_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      </field>
+      <field name="numNulls">
+        <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="numDVs">
+        <column name="NUM_DISTINCTS" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="avgColLen">
+        <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="maxColLen">
+        <column name="MAX_COL_LEN" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numTrues">
+        <column name="NUM_TRUES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numFalses">
+        <column name="NUM_FALSES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="lastAnalyzed">
+        <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+    </class>
+
+    <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="CS_ID"/>
+      </datastore-identity>
+
+      <field name ="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="tableName">
+        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="partition">
+        <column name="PART_ID"/>
+      </field>
+      <field name="colName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="colType">
+        <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="lowValue">
+        <column name="LOW_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      </field>
+      <field name="highValue">
+        <column name="HIGH_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      </field>
+      <field name="numNulls">
+        <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="numDVs">
+        <column name="NUM_DISTINCTS" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="avgColLen">
+        <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="maxColLen">
+        <column name="MAX_COL_LEN" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numTrues">
+        <column name="NUM_TRUES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numFalses">
+        <column name="NUM_FALSES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="lastAnalyzed">
+        <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+    </class>
+
   </package>
 </jdo>

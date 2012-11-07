@@ -539,5 +539,4 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return null;
   }
-
 }

@@ -297,6 +297,36 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_index_names\n");
   }
 
+  bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
+    // Your implementation goes here
+    printf("update_table_column_statistics\n");
+  }
+
+  bool update_partition_column_statistics(const ColumnStatistics& stats_obj) {
+    // Your implementation goes here
+    printf("update_partition_column_statistics\n");
+  }
+
+  void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("get_table_column_statistics\n");
+  }
+
+  void get_partition_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("get_partition_column_statistics\n");
+  }
+
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("delete_partition_column_statistics\n");
+  }
+
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("delete_table_column_statistics\n");
+  }
+
   bool create_role(const Role& role) {
     // Your implementation goes here
     printf("create_role\n");

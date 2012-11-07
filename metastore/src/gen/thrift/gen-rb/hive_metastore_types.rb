@@ -448,6 +448,247 @@ class Index
   ::Thrift::Struct.generate_accessors self
 end
 
+class BooleanColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NUMTRUES = 1
+  NUMFALSES = 2
+  NUMNULLS = 3
+
+  FIELDS = {
+    NUMTRUES => {:type => ::Thrift::Types::I64, :name => 'numTrues'},
+    NUMFALSES => {:type => ::Thrift::Types::I64, :name => 'numFalses'},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numTrues is unset!') unless @numTrues
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numFalses is unset!') unless @numFalses
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DoubleColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  LOWVALUE = 1
+  HIGHVALUE = 2
+  NUMNULLS = 3
+  NUMDVS = 4
+
+  FIELDS = {
+    LOWVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'lowValue'},
+    HIGHVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'highValue'},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class LongColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  LOWVALUE = 1
+  HIGHVALUE = 2
+  NUMNULLS = 3
+  NUMDVS = 4
+
+  FIELDS = {
+    LOWVALUE => {:type => ::Thrift::Types::I64, :name => 'lowValue'},
+    HIGHVALUE => {:type => ::Thrift::Types::I64, :name => 'highValue'},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowValue is unset!') unless @lowValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highValue is unset!') unless @highValue
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StringColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAXCOLLEN = 1
+  AVGCOLLEN = 2
+  NUMNULLS = 3
+  NUMDVS = 4
+
+  FIELDS = {
+    MAXCOLLEN => {:type => ::Thrift::Types::I64, :name => 'maxColLen'},
+    AVGCOLLEN => {:type => ::Thrift::Types::DOUBLE, :name => 'avgColLen'},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
+    NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxColLen is unset!') unless @maxColLen
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field avgColLen is unset!') unless @avgColLen
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numDVs is unset!') unless @numDVs
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class BinaryColumnStatsData
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAXCOLLEN = 1
+  AVGCOLLEN = 2
+  NUMNULLS = 3
+
+  FIELDS = {
+    MAXCOLLEN => {:type => ::Thrift::Types::I64, :name => 'maxColLen'},
+    AVGCOLLEN => {:type => ::Thrift::Types::DOUBLE, :name => 'avgColLen'},
+    NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxColLen is unset!') unless @maxColLen
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field avgColLen is unset!') unless @avgColLen
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field numNulls is unset!') unless @numNulls
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ColumnStatisticsData < ::Thrift::Union
+  include ::Thrift::Struct_Union
+  class << self
+    def booleanStats(val)
+      ColumnStatisticsData.new(:booleanStats, val)
+    end
+
+    def longStats(val)
+      ColumnStatisticsData.new(:longStats, val)
+    end
+
+    def doubleStats(val)
+      ColumnStatisticsData.new(:doubleStats, val)
+    end
+
+    def stringStats(val)
+      ColumnStatisticsData.new(:stringStats, val)
+    end
+
+    def binaryStats(val)
+      ColumnStatisticsData.new(:binaryStats, val)
+    end
+  end
+
+  BOOLEANSTATS = 1
+  LONGSTATS = 2
+  DOUBLESTATS = 3
+  STRINGSTATS = 4
+  BINARYSTATS = 5
+
+  FIELDS = {
+    BOOLEANSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'booleanStats', :class => BooleanColumnStatsData},
+    LONGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'longStats', :class => LongColumnStatsData},
+    DOUBLESTATS => {:type => ::Thrift::Types::STRUCT, :name => 'doubleStats', :class => DoubleColumnStatsData},
+    STRINGSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'stringStats', :class => StringColumnStatsData},
+    BINARYSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'binaryStats', :class => BinaryColumnStatsData}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+  end
+
+  ::Thrift::Union.generate_accessors self
+end
+
+class ColumnStatisticsObj
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COLNAME = 1
+  COLTYPE = 2
+  STATSDATA = 3
+
+  FIELDS = {
+    COLNAME => {:type => ::Thrift::Types::STRING, :name => 'colName'},
+    COLTYPE => {:type => ::Thrift::Types::STRING, :name => 'colType'},
+    STATSDATA => {:type => ::Thrift::Types::STRUCT, :name => 'statsData', :class => ColumnStatisticsData}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colName is unset!') unless @colName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colType is unset!') unless @colType
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsData is unset!') unless @statsData
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ColumnStatisticsDesc
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ISTBLLEVEL = 1
+  DBNAME = 2
+  TABLENAME = 3
+  PARTNAME = 4
+  LASTANALYZED = 5
+
+  FIELDS = {
+    ISTBLLEVEL => {:type => ::Thrift::Types::BOOL, :name => 'isTblLevel'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
+    LASTANALYZED => {:type => ::Thrift::Types::I64, :name => 'lastAnalyzed', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isTblLevel is unset!') if @isTblLevel.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ColumnStatistics
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATSDESC = 1
+  STATSOBJ = 2
+
+  FIELDS = {
+    STATSDESC => {:type => ::Thrift::Types::STRUCT, :name => 'statsDesc', :class => ColumnStatisticsDesc},
+    STATSOBJ => {:type => ::Thrift::Types::LIST, :name => 'statsObj', :element => {:type => ::Thrift::Types::STRUCT, :class => ColumnStatisticsObj}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsDesc is unset!') unless @statsDesc
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsObj is unset!') unless @statsObj
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Schema
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FIELDSCHEMAS = 1
@@ -693,6 +934,27 @@ class InvalidOperationException < ::Thrift::Exception
 end
 
 class ConfigValSecurityException < ::Thrift::Exception
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  def initialize(message=nil)
+    super()
+    self.message = message
+  end
+
+  MESSAGE = 1
+
+  FIELDS = {
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class InvalidInputException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)
     super()

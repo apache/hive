@@ -1308,6 +1308,512 @@ class Index {
 
 };
 
+
+class BooleanColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "EA2D65F1E0BB78760205682082304B41";
+  static const uint8_t binary_fingerprint[16]; // = {0xEA,0x2D,0x65,0xF1,0xE0,0xBB,0x78,0x76,0x02,0x05,0x68,0x20,0x82,0x30,0x4B,0x41};
+
+  BooleanColumnStatsData() : numTrues(0), numFalses(0), numNulls(0) {
+  }
+
+  virtual ~BooleanColumnStatsData() throw() {}
+
+  int64_t numTrues;
+  int64_t numFalses;
+  int64_t numNulls;
+
+  void __set_numTrues(const int64_t val) {
+    numTrues = val;
+  }
+
+  void __set_numFalses(const int64_t val) {
+    numFalses = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  bool operator == (const BooleanColumnStatsData & rhs) const
+  {
+    if (!(numTrues == rhs.numTrues))
+      return false;
+    if (!(numFalses == rhs.numFalses))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    return true;
+  }
+  bool operator != (const BooleanColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const BooleanColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class DoubleColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "97F958CB0709C3B109A57EEE01946C13";
+  static const uint8_t binary_fingerprint[16]; // = {0x97,0xF9,0x58,0xCB,0x07,0x09,0xC3,0xB1,0x09,0xA5,0x7E,0xEE,0x01,0x94,0x6C,0x13};
+
+  DoubleColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
+  }
+
+  virtual ~DoubleColumnStatsData() throw() {}
+
+  double lowValue;
+  double highValue;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  void __set_lowValue(const double val) {
+    lowValue = val;
+  }
+
+  void __set_highValue(const double val) {
+    highValue = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const DoubleColumnStatsData & rhs) const
+  {
+    if (!(lowValue == rhs.lowValue))
+      return false;
+    if (!(highValue == rhs.highValue))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const DoubleColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DoubleColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class LongColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "66C8E6F97F0275919D86FEB536251B17";
+  static const uint8_t binary_fingerprint[16]; // = {0x66,0xC8,0xE6,0xF9,0x7F,0x02,0x75,0x91,0x9D,0x86,0xFE,0xB5,0x36,0x25,0x1B,0x17};
+
+  LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0) {
+  }
+
+  virtual ~LongColumnStatsData() throw() {}
+
+  int64_t lowValue;
+  int64_t highValue;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  void __set_lowValue(const int64_t val) {
+    lowValue = val;
+  }
+
+  void __set_highValue(const int64_t val) {
+    highValue = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const LongColumnStatsData & rhs) const
+  {
+    if (!(lowValue == rhs.lowValue))
+      return false;
+    if (!(highValue == rhs.highValue))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const LongColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LongColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class StringColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "D017B08C3DF12C3AB98788B2E67DAAB3";
+  static const uint8_t binary_fingerprint[16]; // = {0xD0,0x17,0xB0,0x8C,0x3D,0xF1,0x2C,0x3A,0xB9,0x87,0x88,0xB2,0xE6,0x7D,0xAA,0xB3};
+
+  StringColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0), numDVs(0) {
+  }
+
+  virtual ~StringColumnStatsData() throw() {}
+
+  int64_t maxColLen;
+  double avgColLen;
+  int64_t numNulls;
+  int64_t numDVs;
+
+  void __set_maxColLen(const int64_t val) {
+    maxColLen = val;
+  }
+
+  void __set_avgColLen(const double val) {
+    avgColLen = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  void __set_numDVs(const int64_t val) {
+    numDVs = val;
+  }
+
+  bool operator == (const StringColumnStatsData & rhs) const
+  {
+    if (!(maxColLen == rhs.maxColLen))
+      return false;
+    if (!(avgColLen == rhs.avgColLen))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    if (!(numDVs == rhs.numDVs))
+      return false;
+    return true;
+  }
+  bool operator != (const StringColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StringColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class BinaryColumnStatsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "22B0CB67183FCDB945892B9974518D06";
+  static const uint8_t binary_fingerprint[16]; // = {0x22,0xB0,0xCB,0x67,0x18,0x3F,0xCD,0xB9,0x45,0x89,0x2B,0x99,0x74,0x51,0x8D,0x06};
+
+  BinaryColumnStatsData() : maxColLen(0), avgColLen(0), numNulls(0) {
+  }
+
+  virtual ~BinaryColumnStatsData() throw() {}
+
+  int64_t maxColLen;
+  double avgColLen;
+  int64_t numNulls;
+
+  void __set_maxColLen(const int64_t val) {
+    maxColLen = val;
+  }
+
+  void __set_avgColLen(const double val) {
+    avgColLen = val;
+  }
+
+  void __set_numNulls(const int64_t val) {
+    numNulls = val;
+  }
+
+  bool operator == (const BinaryColumnStatsData & rhs) const
+  {
+    if (!(maxColLen == rhs.maxColLen))
+      return false;
+    if (!(avgColLen == rhs.avgColLen))
+      return false;
+    if (!(numNulls == rhs.numNulls))
+      return false;
+    return true;
+  }
+  bool operator != (const BinaryColumnStatsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const BinaryColumnStatsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ColumnStatisticsData__isset {
+  _ColumnStatisticsData__isset() : booleanStats(false), longStats(false), doubleStats(false), stringStats(false), binaryStats(false) {}
+  bool booleanStats;
+  bool longStats;
+  bool doubleStats;
+  bool stringStats;
+  bool binaryStats;
+} _ColumnStatisticsData__isset;
+
+class ColumnStatisticsData {
+ public:
+
+  static const char* ascii_fingerprint; // = "3D106F26C0761EF37E58CAFAA3F1651C";
+  static const uint8_t binary_fingerprint[16]; // = {0x3D,0x10,0x6F,0x26,0xC0,0x76,0x1E,0xF3,0x7E,0x58,0xCA,0xFA,0xA3,0xF1,0x65,0x1C};
+
+  ColumnStatisticsData() {
+  }
+
+  virtual ~ColumnStatisticsData() throw() {}
+
+  BooleanColumnStatsData booleanStats;
+  LongColumnStatsData longStats;
+  DoubleColumnStatsData doubleStats;
+  StringColumnStatsData stringStats;
+  BinaryColumnStatsData binaryStats;
+
+  _ColumnStatisticsData__isset __isset;
+
+  void __set_booleanStats(const BooleanColumnStatsData& val) {
+    booleanStats = val;
+  }
+
+  void __set_longStats(const LongColumnStatsData& val) {
+    longStats = val;
+  }
+
+  void __set_doubleStats(const DoubleColumnStatsData& val) {
+    doubleStats = val;
+  }
+
+  void __set_stringStats(const StringColumnStatsData& val) {
+    stringStats = val;
+  }
+
+  void __set_binaryStats(const BinaryColumnStatsData& val) {
+    binaryStats = val;
+  }
+
+  bool operator == (const ColumnStatisticsData & rhs) const
+  {
+    if (!(booleanStats == rhs.booleanStats))
+      return false;
+    if (!(longStats == rhs.longStats))
+      return false;
+    if (!(doubleStats == rhs.doubleStats))
+      return false;
+    if (!(stringStats == rhs.stringStats))
+      return false;
+    if (!(binaryStats == rhs.binaryStats))
+      return false;
+    return true;
+  }
+  bool operator != (const ColumnStatisticsData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColumnStatisticsData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ColumnStatisticsObj {
+ public:
+
+  static const char* ascii_fingerprint; // = "DEE09584C51BCAF60824FE4509B59567";
+  static const uint8_t binary_fingerprint[16]; // = {0xDE,0xE0,0x95,0x84,0xC5,0x1B,0xCA,0xF6,0x08,0x24,0xFE,0x45,0x09,0xB5,0x95,0x67};
+
+  ColumnStatisticsObj() : colName(""), colType("") {
+  }
+
+  virtual ~ColumnStatisticsObj() throw() {}
+
+  std::string colName;
+  std::string colType;
+  ColumnStatisticsData statsData;
+
+  void __set_colName(const std::string& val) {
+    colName = val;
+  }
+
+  void __set_colType(const std::string& val) {
+    colType = val;
+  }
+
+  void __set_statsData(const ColumnStatisticsData& val) {
+    statsData = val;
+  }
+
+  bool operator == (const ColumnStatisticsObj & rhs) const
+  {
+    if (!(colName == rhs.colName))
+      return false;
+    if (!(colType == rhs.colType))
+      return false;
+    if (!(statsData == rhs.statsData))
+      return false;
+    return true;
+  }
+  bool operator != (const ColumnStatisticsObj &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColumnStatisticsObj & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ColumnStatisticsDesc__isset {
+  _ColumnStatisticsDesc__isset() : partName(false), lastAnalyzed(false) {}
+  bool partName;
+  bool lastAnalyzed;
+} _ColumnStatisticsDesc__isset;
+
+class ColumnStatisticsDesc {
+ public:
+
+  static const char* ascii_fingerprint; // = "261759FF6F8FAB53F941453007FE18CB";
+  static const uint8_t binary_fingerprint[16]; // = {0x26,0x17,0x59,0xFF,0x6F,0x8F,0xAB,0x53,0xF9,0x41,0x45,0x30,0x07,0xFE,0x18,0xCB};
+
+  ColumnStatisticsDesc() : isTblLevel(0), dbName(""), tableName(""), partName(""), lastAnalyzed(0) {
+  }
+
+  virtual ~ColumnStatisticsDesc() throw() {}
+
+  bool isTblLevel;
+  std::string dbName;
+  std::string tableName;
+  std::string partName;
+  int64_t lastAnalyzed;
+
+  _ColumnStatisticsDesc__isset __isset;
+
+  void __set_isTblLevel(const bool val) {
+    isTblLevel = val;
+  }
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+  }
+
+  void __set_partName(const std::string& val) {
+    partName = val;
+    __isset.partName = true;
+  }
+
+  void __set_lastAnalyzed(const int64_t val) {
+    lastAnalyzed = val;
+    __isset.lastAnalyzed = true;
+  }
+
+  bool operator == (const ColumnStatisticsDesc & rhs) const
+  {
+    if (!(isTblLevel == rhs.isTblLevel))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.partName != rhs.__isset.partName)
+      return false;
+    else if (__isset.partName && !(partName == rhs.partName))
+      return false;
+    if (__isset.lastAnalyzed != rhs.__isset.lastAnalyzed)
+      return false;
+    else if (__isset.lastAnalyzed && !(lastAnalyzed == rhs.lastAnalyzed))
+      return false;
+    return true;
+  }
+  bool operator != (const ColumnStatisticsDesc &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColumnStatisticsDesc & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ColumnStatistics {
+ public:
+
+  static const char* ascii_fingerprint; // = "681BDBD0CBB53373AC1C9C0C2E26BEAB";
+  static const uint8_t binary_fingerprint[16]; // = {0x68,0x1B,0xDB,0xD0,0xCB,0xB5,0x33,0x73,0xAC,0x1C,0x9C,0x0C,0x2E,0x26,0xBE,0xAB};
+
+  ColumnStatistics() {
+  }
+
+  virtual ~ColumnStatistics() throw() {}
+
+  ColumnStatisticsDesc statsDesc;
+  std::vector<ColumnStatisticsObj>  statsObj;
+
+  void __set_statsDesc(const ColumnStatisticsDesc& val) {
+    statsDesc = val;
+  }
+
+  void __set_statsObj(const std::vector<ColumnStatisticsObj> & val) {
+    statsObj = val;
+  }
+
+  bool operator == (const ColumnStatistics & rhs) const
+  {
+    if (!(statsDesc == rhs.statsDesc))
+      return false;
+    if (!(statsObj == rhs.statsObj))
+      return false;
+    return true;
+  }
+  bool operator != (const ColumnStatistics &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ColumnStatistics & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _Schema__isset {
   _Schema__isset() : fieldSchemas(false), properties(false) {}
   bool fieldSchemas;
@@ -1843,6 +2349,47 @@ class ConfigValSecurityException : public ::apache::thrift::TException {
   }
 
   bool operator < (const ConfigValSecurityException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _InvalidInputException__isset {
+  _InvalidInputException__isset() : message(false) {}
+  bool message;
+} _InvalidInputException__isset;
+
+class InvalidInputException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  InvalidInputException() : message("") {
+  }
+
+  virtual ~InvalidInputException() throw() {}
+
+  std::string message;
+
+  _InvalidInputException__isset __isset;
+
+  void __set_message(const std::string& val) {
+    message = val;
+  }
+
+  bool operator == (const InvalidInputException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const InvalidInputException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const InvalidInputException & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;

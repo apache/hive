@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -116,6 +117,8 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -272,7 +275,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     prunedPartitions.clear();
   }
 
-  public void init(ParseContext pctx) {
+  public void initParseCtx(ParseContext pctx) {
     opToPartPruner = pctx.getOpToPartPruner();
     opToPartList = pctx.getOpToPartList();
     opToSamplePruner = pctx.getOpToSamplePruner();
@@ -829,7 +832,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
+
         String table_name = getUnescapedName((ASTNode)ast.getChild(0).getChild(0));
+
+
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
@@ -851,11 +857,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_INSERT:
         ASTNode destination = (ASTNode) ast.getChild(0);
         Tree tab = destination.getChild(0);
+
         // Proceed if AST contains partition & If Not Exists
         if (destination.getChildCount() == 2 &&
             tab.getChildCount() == 2 &&
             destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
           String tableName = tab.getChild(0).getChild(0).getText();
+
           Tree partitions = tab.getChild(1);
           int childCount = partitions.getChildCount();
           HashMap<String, String> partition = new HashMap<String, String>();
@@ -2004,8 +2012,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<Integer> getGroupingSetsForCube(int size) {
     int count = 1 << size;
     List<Integer> results = new ArrayList<Integer>(count);
-    for(int i = 0; i < count; ++i)
+    for(int i = 0; i < count; ++i) {
       results.add(i);
+    }
     return results;
   }
 
@@ -7522,19 +7531,61 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * A helper function to generate a column stats task on top of map-red task. The column stats
+   * task fetches from the output of the map-red task, constructs the column stats object and
+   * persists  it to the metastore.
+   *
+   * This method generates a plan with a column stats task on top of map-red task and sets up the
+   * appropriate metadata to be used during execution.
+   *
+   * @param qb
+   */
+  private void genColumnStatsTask(QB qb) {
+    QBParseInfo qbParseInfo = qb.getParseInfo();
+    ColumnStatsTask cStatsTask = null;
+    ColumnStatsWork cStatsWork = null;
+    FetchWork fetch = null;
+    String tableName = qbParseInfo.getTableName();
+    String partName = qbParseInfo.getPartName();
+    List<String> colName = qbParseInfo.getColName();
+    List<String> colType = qbParseInfo.getColType();
+    boolean isTblLevel = qbParseInfo.isTblLvl();
+
+    String cols = loadFileWork.get(0).getColumns();
+    String colTypes = loadFileWork.get(0).getColumnTypes();
+
+    String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+    TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
+
+    fetch = new FetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
+        resultTab, qb.getParseInfo().getOuterQueryLimit());
+
+    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName, partName,
+                                       colName, colType, isTblLevel);
+    cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
+    cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
+    rootTasks.add(cStatsTask);
+  }
+
   @SuppressWarnings("nls")
   private void genMapRedTasks(ParseContext pCtx) throws SemanticException {
+    boolean isCStats = qb.isAnalyzeRewrite();
+
     if (pCtx.getFetchTask() != null) {
       // replaced by single fetch task
-      init(pCtx);
+      initParseCtx(pCtx);
       return;
     }
 
-    init(pCtx);
+    initParseCtx(pCtx);
     List<Task<MoveWork>> mvTask = new ArrayList<Task<MoveWork>>();
 
-    // In case of a select, use a fetch task instead of a move task
-    if (qb.getIsQuery()) {
+    /* In case of a select, use a fetch task instead of a move task.
+     * If the select is from analyze table column rewrite, don't create a fetch task. Instead create
+     * a column stats task later.
+     */
+    if (qb.getIsQuery() && !isCStats) {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1)) {
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
       }
@@ -7559,8 +7610,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             + ". Doesn't qualify limit optimiztion.");
         globalLimitCtx.disableOpt();
       }
-
-    } else {
+    } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
             conf);
@@ -7578,7 +7628,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
       }
-
 
       boolean oneLoadFile = true;
       for (LoadFileDesc lfd : loadFileWork) {
@@ -7677,6 +7726,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(topOps.values());
     ogw.startWalking(topNodes, null);
+
+    /* If the query was the result of analyze table column compute statistics rewrite, create
+     * a column stats task instead of a fetch task to persist stats to the metastore.
+     */
+    if (isCStats) {
+      genColumnStatsTask(qb);
+    }
 
     // reduce sink does not have any kids - since the plan by now has been
     // broken up into multiple
@@ -7955,14 +8011,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  @SuppressWarnings("nls")
-  public void analyzeInternal(ASTNode ast) throws SemanticException {
+  public void init() {
+    // clear most members
     reset();
 
+    // init
     QB qb = new QB(null, null, false);
     this.qb = qb;
-    this.ast = ast;
+  }
+
+  @Override
+  @SuppressWarnings("nls")
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
     ASTNode child = ast;
+    this.ast = ast;
     viewsExpanded = new ArrayList<String>();
 
     LOG.info("Starting Semantic Analysis");
@@ -8005,6 +8067,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // such as JDBC would prefer instead of the c0, c1 we'll end
     // up with later.
     Operator sinkOp = genPlan(qb);
+
     resultSchema =
         convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
 
@@ -8894,5 +8957,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+  }
+
+  public QB getQB() {
+    return qb;
+  }
+
+  public void setQB(QB qb) {
+    this.qb = qb;
   }
 }

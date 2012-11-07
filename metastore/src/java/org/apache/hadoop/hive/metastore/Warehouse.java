@@ -376,6 +376,38 @@ public class Warehouse {
     }
   }
 
+  public static Map<String, String> makeEscSpecFromName(String name) throws MetaException {
+
+    if (name == null || name.isEmpty()) {
+      throw new MetaException("Partition name is invalid. " + name);
+    }
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+
+    Path currPath = new Path(name);
+
+    List<String[]> kvs = new ArrayList<String[]>();
+    do {
+      String component = currPath.getName();
+      Matcher m = pat.matcher(component);
+      if (m.matches()) {
+        String k = m.group(1);
+        String v = m.group(2);
+        String[] kv = new String[2];
+        kv[0] = k;
+        kv[1] = v;
+        kvs.add(kv);
+      }
+      currPath = currPath.getParent();
+    } while (currPath != null && !currPath.getName().isEmpty());
+
+    // reverse the list since we checked the part from leaf dir to table's base dir
+    for (int i = kvs.size(); i > 0; i--) {
+      partSpec.put(kvs.get(i - 1)[0], kvs.get(i - 1)[1]);
+    }
+
+    return partSpec;
+  }
+
   public Path getPartitionPath(Database db, String tableName,
       LinkedHashMap<String, String> pm) throws MetaException {
     return new Path(getTablePath(db, tableName), makePartPath(pm));

@@ -1,0 +1,26 @@
+PREHOOK: query: DROP TABLE IF EXISTS table_complex_type
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS table_complex_type
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE table_complex_type (
+       a STRING,
+       b ARRAY<STRING>,
+       c ARRAY<MAP<STRING,STRING>>,
+       d MAP<STRING,ARRAY<STRING>>
+       ) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table_complex_type (
+       a STRING,
+       b ARRAY<STRING>,
+       c ARRAY<MAP<STRING,STRING>>,
+       d MAP<STRING,ARRAY<STRING>>
+       ) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table_complex_type
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table_complex_type
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table_complex_type
+FAILED: UDFArgumentTypeException Only primitive type arguments are accepted but map<string,array<string>> is passed.

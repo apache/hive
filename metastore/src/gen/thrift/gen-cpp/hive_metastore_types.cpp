@@ -2269,6 +2269,858 @@ uint32_t Index::write(::apache::thrift::protocol::TProtocol* oprot) const {
   return xfer;
 }
 
+const char* BooleanColumnStatsData::ascii_fingerprint = "EA2D65F1E0BB78760205682082304B41";
+const uint8_t BooleanColumnStatsData::binary_fingerprint[16] = {0xEA,0x2D,0x65,0xF1,0xE0,0xBB,0x78,0x76,0x02,0x05,0x68,0x20,0x82,0x30,0x4B,0x41};
+
+uint32_t BooleanColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_numTrues = false;
+  bool isset_numFalses = false;
+  bool isset_numNulls = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numTrues);
+          isset_numTrues = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numFalses);
+          isset_numFalses = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_numTrues)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numFalses)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t BooleanColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("BooleanColumnStatsData");
+  xfer += oprot->writeFieldBegin("numTrues", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->numTrues);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numFalses", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->numFalses);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* DoubleColumnStatsData::ascii_fingerprint = "97F958CB0709C3B109A57EEE01946C13";
+const uint8_t DoubleColumnStatsData::binary_fingerprint[16] = {0x97,0xF9,0x58,0xCB,0x07,0x09,0xC3,0xB1,0x09,0xA5,0x7E,0xEE,0x01,0x94,0x6C,0x13};
+
+uint32_t DoubleColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_lowValue = false;
+  bool isset_highValue = false;
+  bool isset_numNulls = false;
+  bool isset_numDVs = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->lowValue);
+          isset_lowValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->highValue);
+          isset_highValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numDVs);
+          isset_numDVs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_lowValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_highValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numDVs)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t DoubleColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("DoubleColumnStatsData");
+  xfer += oprot->writeFieldBegin("lowValue", ::apache::thrift::protocol::T_DOUBLE, 1);
+  xfer += oprot->writeDouble(this->lowValue);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("highValue", ::apache::thrift::protocol::T_DOUBLE, 2);
+  xfer += oprot->writeDouble(this->highValue);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numDVs", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->numDVs);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* LongColumnStatsData::ascii_fingerprint = "66C8E6F97F0275919D86FEB536251B17";
+const uint8_t LongColumnStatsData::binary_fingerprint[16] = {0x66,0xC8,0xE6,0xF9,0x7F,0x02,0x75,0x91,0x9D,0x86,0xFE,0xB5,0x36,0x25,0x1B,0x17};
+
+uint32_t LongColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_lowValue = false;
+  bool isset_highValue = false;
+  bool isset_numNulls = false;
+  bool isset_numDVs = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lowValue);
+          isset_lowValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->highValue);
+          isset_highValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numDVs);
+          isset_numDVs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_lowValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_highValue)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numDVs)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t LongColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("LongColumnStatsData");
+  xfer += oprot->writeFieldBegin("lowValue", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->lowValue);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("highValue", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->highValue);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numDVs", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->numDVs);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* StringColumnStatsData::ascii_fingerprint = "D017B08C3DF12C3AB98788B2E67DAAB3";
+const uint8_t StringColumnStatsData::binary_fingerprint[16] = {0xD0,0x17,0xB0,0x8C,0x3D,0xF1,0x2C,0x3A,0xB9,0x87,0x88,0xB2,0xE6,0x7D,0xAA,0xB3};
+
+uint32_t StringColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_maxColLen = false;
+  bool isset_avgColLen = false;
+  bool isset_numNulls = false;
+  bool isset_numDVs = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->maxColLen);
+          isset_maxColLen = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->avgColLen);
+          isset_avgColLen = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numDVs);
+          isset_numDVs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_maxColLen)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_avgColLen)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numDVs)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t StringColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("StringColumnStatsData");
+  xfer += oprot->writeFieldBegin("maxColLen", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->maxColLen);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("avgColLen", ::apache::thrift::protocol::T_DOUBLE, 2);
+  xfer += oprot->writeDouble(this->avgColLen);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numDVs", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->numDVs);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* BinaryColumnStatsData::ascii_fingerprint = "22B0CB67183FCDB945892B9974518D06";
+const uint8_t BinaryColumnStatsData::binary_fingerprint[16] = {0x22,0xB0,0xCB,0x67,0x18,0x3F,0xCD,0xB9,0x45,0x89,0x2B,0x99,0x74,0x51,0x8D,0x06};
+
+uint32_t BinaryColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_maxColLen = false;
+  bool isset_avgColLen = false;
+  bool isset_numNulls = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->maxColLen);
+          isset_maxColLen = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->avgColLen);
+          isset_avgColLen = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numNulls);
+          isset_numNulls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_maxColLen)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_avgColLen)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_numNulls)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t BinaryColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("BinaryColumnStatsData");
+  xfer += oprot->writeFieldBegin("maxColLen", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->maxColLen);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("avgColLen", ::apache::thrift::protocol::T_DOUBLE, 2);
+  xfer += oprot->writeDouble(this->avgColLen);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("numNulls", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->numNulls);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* ColumnStatisticsData::ascii_fingerprint = "3D106F26C0761EF37E58CAFAA3F1651C";
+const uint8_t ColumnStatisticsData::binary_fingerprint[16] = {0x3D,0x10,0x6F,0x26,0xC0,0x76,0x1E,0xF3,0x7E,0x58,0xCA,0xFA,0xA3,0xF1,0x65,0x1C};
+
+uint32_t ColumnStatisticsData::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->booleanStats.read(iprot);
+          this->__isset.booleanStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->longStats.read(iprot);
+          this->__isset.longStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->doubleStats.read(iprot);
+          this->__isset.doubleStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->stringStats.read(iprot);
+          this->__isset.stringStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->binaryStats.read(iprot);
+          this->__isset.binaryStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ColumnStatisticsData::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ColumnStatisticsData");
+  xfer += oprot->writeFieldBegin("booleanStats", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->booleanStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("longStats", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += this->longStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("doubleStats", ::apache::thrift::protocol::T_STRUCT, 3);
+  xfer += this->doubleStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("stringStats", ::apache::thrift::protocol::T_STRUCT, 4);
+  xfer += this->stringStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("binaryStats", ::apache::thrift::protocol::T_STRUCT, 5);
+  xfer += this->binaryStats.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* ColumnStatisticsObj::ascii_fingerprint = "DEE09584C51BCAF60824FE4509B59567";
+const uint8_t ColumnStatisticsObj::binary_fingerprint[16] = {0xDE,0xE0,0x95,0x84,0xC5,0x1B,0xCA,0xF6,0x08,0x24,0xFE,0x45,0x09,0xB5,0x95,0x67};
+
+uint32_t ColumnStatisticsObj::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_colName = false;
+  bool isset_colType = false;
+  bool isset_statsData = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->colName);
+          isset_colName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->colType);
+          isset_colType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->statsData.read(iprot);
+          isset_statsData = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_colName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_colType)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_statsData)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t ColumnStatisticsObj::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ColumnStatisticsObj");
+  xfer += oprot->writeFieldBegin("colName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->colName);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("colType", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->colType);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("statsData", ::apache::thrift::protocol::T_STRUCT, 3);
+  xfer += this->statsData.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* ColumnStatisticsDesc::ascii_fingerprint = "261759FF6F8FAB53F941453007FE18CB";
+const uint8_t ColumnStatisticsDesc::binary_fingerprint[16] = {0x26,0x17,0x59,0xFF,0x6F,0x8F,0xAB,0x53,0xF9,0x41,0x45,0x30,0x07,0xFE,0x18,0xCB};
+
+uint32_t ColumnStatisticsDesc::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_isTblLevel = false;
+  bool isset_dbName = false;
+  bool isset_tableName = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->isTblLevel);
+          isset_isTblLevel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          isset_dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tableName);
+          isset_tableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->partName);
+          this->__isset.partName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->lastAnalyzed);
+          this->__isset.lastAnalyzed = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_isTblLevel)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_tableName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t ColumnStatisticsDesc::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ColumnStatisticsDesc");
+  xfer += oprot->writeFieldBegin("isTblLevel", ::apache::thrift::protocol::T_BOOL, 1);
+  xfer += oprot->writeBool(this->isTblLevel);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->tableName);
+  xfer += oprot->writeFieldEnd();
+  if (this->__isset.partName) {
+    xfer += oprot->writeFieldBegin("partName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->partName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.lastAnalyzed) {
+    xfer += oprot->writeFieldBegin("lastAnalyzed", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->lastAnalyzed);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* ColumnStatistics::ascii_fingerprint = "681BDBD0CBB53373AC1C9C0C2E26BEAB";
+const uint8_t ColumnStatistics::binary_fingerprint[16] = {0x68,0x1B,0xDB,0xD0,0xCB,0xB5,0x33,0x73,0xAC,0x1C,0x9C,0x0C,0x2E,0x26,0xBE,0xAB};
+
+uint32_t ColumnStatistics::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_statsDesc = false;
+  bool isset_statsObj = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->statsDesc.read(iprot);
+          isset_statsDesc = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->statsObj.clear();
+            uint32_t _size173;
+            ::apache::thrift::protocol::TType _etype176;
+            iprot->readListBegin(_etype176, _size173);
+            this->statsObj.resize(_size173);
+            uint32_t _i177;
+            for (_i177 = 0; _i177 < _size173; ++_i177)
+            {
+              xfer += this->statsObj[_i177].read(iprot);
+            }
+            iprot->readListEnd();
+          }
+          isset_statsObj = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_statsDesc)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_statsObj)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t ColumnStatistics::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ColumnStatistics");
+  xfer += oprot->writeFieldBegin("statsDesc", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->statsDesc.write(oprot);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("statsObj", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->statsObj.size()));
+    std::vector<ColumnStatisticsObj> ::const_iterator _iter178;
+    for (_iter178 = this->statsObj.begin(); _iter178 != this->statsObj.end(); ++_iter178)
+    {
+      xfer += (*_iter178).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
 const char* Schema::ascii_fingerprint = "5CFEE46C975F4E2368D905109B8E3B5B";
 const uint8_t Schema::binary_fingerprint[16] = {0x5C,0xFE,0xE4,0x6C,0x97,0x5F,0x4E,0x23,0x68,0xD9,0x05,0x10,0x9B,0x8E,0x3B,0x5B};
 
@@ -2296,14 +3148,14 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fieldSchemas.clear();
-            uint32_t _size173;
-            ::apache::thrift::protocol::TType _etype176;
-            iprot->readListBegin(_etype176, _size173);
-            this->fieldSchemas.resize(_size173);
-            uint32_t _i177;
-            for (_i177 = 0; _i177 < _size173; ++_i177)
+            uint32_t _size179;
+            ::apache::thrift::protocol::TType _etype182;
+            iprot->readListBegin(_etype182, _size179);
+            this->fieldSchemas.resize(_size179);
+            uint32_t _i183;
+            for (_i183 = 0; _i183 < _size179; ++_i183)
             {
-              xfer += this->fieldSchemas[_i177].read(iprot);
+              xfer += this->fieldSchemas[_i183].read(iprot);
             }
             iprot->readListEnd();
           }
@@ -2316,17 +3168,17 @@ uint32_t Schema::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
-            uint32_t _size178;
-            ::apache::thrift::protocol::TType _ktype179;
-            ::apache::thrift::protocol::TType _vtype180;
-            iprot->readMapBegin(_ktype179, _vtype180, _size178);
-            uint32_t _i182;
-            for (_i182 = 0; _i182 < _size178; ++_i182)
+            uint32_t _size184;
+            ::apache::thrift::protocol::TType _ktype185;
+            ::apache::thrift::protocol::TType _vtype186;
+            iprot->readMapBegin(_ktype185, _vtype186, _size184);
+            uint32_t _i188;
+            for (_i188 = 0; _i188 < _size184; ++_i188)
             {
-              std::string _key183;
-              xfer += iprot->readString(_key183);
-              std::string& _val184 = this->properties[_key183];
-              xfer += iprot->readString(_val184);
+              std::string _key189;
+              xfer += iprot->readString(_key189);
+              std::string& _val190 = this->properties[_key189];
+              xfer += iprot->readString(_val190);
             }
             iprot->readMapEnd();
           }
@@ -2353,10 +3205,10 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("fieldSchemas", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->fieldSchemas.size()));
-    std::vector<FieldSchema> ::const_iterator _iter185;
-    for (_iter185 = this->fieldSchemas.begin(); _iter185 != this->fieldSchemas.end(); ++_iter185)
+    std::vector<FieldSchema> ::const_iterator _iter191;
+    for (_iter191 = this->fieldSchemas.begin(); _iter191 != this->fieldSchemas.end(); ++_iter191)
     {
-      xfer += (*_iter185).write(oprot);
+      xfer += (*_iter191).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -2364,11 +3216,11 @@ uint32_t Schema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 2);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
-    std::map<std::string, std::string> ::const_iterator _iter186;
-    for (_iter186 = this->properties.begin(); _iter186 != this->properties.end(); ++_iter186)
+    std::map<std::string, std::string> ::const_iterator _iter192;
+    for (_iter192 = this->properties.begin(); _iter192 != this->properties.end(); ++_iter192)
     {
-      xfer += oprot->writeString(_iter186->first);
-      xfer += oprot->writeString(_iter186->second);
+      xfer += oprot->writeString(_iter192->first);
+      xfer += oprot->writeString(_iter192->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -2405,17 +3257,17 @@ uint32_t EnvironmentContext::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
-            uint32_t _size187;
-            ::apache::thrift::protocol::TType _ktype188;
-            ::apache::thrift::protocol::TType _vtype189;
-            iprot->readMapBegin(_ktype188, _vtype189, _size187);
-            uint32_t _i191;
-            for (_i191 = 0; _i191 < _size187; ++_i191)
+            uint32_t _size193;
+            ::apache::thrift::protocol::TType _ktype194;
+            ::apache::thrift::protocol::TType _vtype195;
+            iprot->readMapBegin(_ktype194, _vtype195, _size193);
+            uint32_t _i197;
+            for (_i197 = 0; _i197 < _size193; ++_i197)
             {
-              std::string _key192;
-              xfer += iprot->readString(_key192);
-              std::string& _val193 = this->properties[_key192];
-              xfer += iprot->readString(_val193);
+              std::string _key198;
+              xfer += iprot->readString(_key198);
+              std::string& _val199 = this->properties[_key198];
+              xfer += iprot->readString(_val199);
             }
             iprot->readMapEnd();
           }
@@ -2442,11 +3294,11 @@ uint32_t EnvironmentContext::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
-    std::map<std::string, std::string> ::const_iterator _iter194;
-    for (_iter194 = this->properties.begin(); _iter194 != this->properties.end(); ++_iter194)
+    std::map<std::string, std::string> ::const_iterator _iter200;
+    for (_iter200 = this->properties.begin(); _iter200 != this->properties.end(); ++_iter200)
     {
-      xfer += oprot->writeString(_iter194->first);
-      xfer += oprot->writeString(_iter194->second);
+      xfer += oprot->writeString(_iter200->first);
+      xfer += oprot->writeString(_iter200->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -3042,6 +3894,60 @@ uint32_t ConfigValSecurityException::read(::apache::thrift::protocol::TProtocol*
 uint32_t ConfigValSecurityException::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("ConfigValSecurityException");
+  xfer += oprot->writeFieldBegin("message", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->message);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+const char* InvalidInputException::ascii_fingerprint = "EFB929595D312AC8F305D5A794CFEDA1";
+const uint8_t InvalidInputException::binary_fingerprint[16] = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+uint32_t InvalidInputException::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->message);
+          this->__isset.message = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t InvalidInputException::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("InvalidInputException");
   xfer += oprot->writeFieldBegin("message", ::apache::thrift::protocol::T_STRING, 1);
   xfer += oprot->writeString(this->message);
   xfer += oprot->writeFieldEnd();

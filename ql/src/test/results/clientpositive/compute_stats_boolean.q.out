@@ -1,0 +1,33 @@
+PREHOOK: query: create table tab_bool(a boolean)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tab_bool(a boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tab_bool
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/bool.txt" INTO TABLE tab_bool
+PREHOOK: type: LOAD
+PREHOOK: Output: default@tab_bool
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/bool.txt" INTO TABLE tab_bool
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tab_bool
+PREHOOK: query: select count(*) from tab_bool
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_bool
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab_bool
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_bool
+#### A masked pattern was here ####
+33
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_bool
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_bool
+#### A masked pattern was here ####
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_bool
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_bool
+#### A masked pattern was here ####
+{"columntype":"Boolean","counttrues":13,"countfalses":19,"countnulls":1}
