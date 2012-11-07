@@ -92,6 +92,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
+    commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
   }
 
   static {
@@ -200,9 +201,14 @@ public final class SemanticAnalyzerFactory {
         }
         setSessionCommandType(commandType);
         return new DDLSemanticAnalyzer(conf);
+
       case HiveParser.TOK_CREATEFUNCTION:
       case HiveParser.TOK_DROPFUNCTION:
         return new FunctionSemanticAnalyzer(conf);
+
+      case HiveParser.TOK_ANALYZE:
+        return new ColumnStatsSemanticAnalyzer(conf, tree);
+
       default:
         return new SemanticAnalyzer(conf);
       }

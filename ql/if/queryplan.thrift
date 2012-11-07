@@ -91,6 +91,7 @@ enum StageType {
   MOVE,
   STATS,
   DEPENDENCY_COLLECTION,
+  COLUMNSTATS,
 }
 
 struct Stage {

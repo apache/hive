@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+
 /**
  * RewriteParseContextGenerator is a class that offers methods to generate operator tree
  * for input queries. It is implemented on lines of the analyzeInternal(..) method
@@ -108,7 +109,7 @@ public final class RewriteParseContextGenerator {
     ASTNode child = ast;
     ParseContext subPCtx = ((SemanticAnalyzer) sem).getParseContext();
     subPCtx.setContext(ctx);
-    ((SemanticAnalyzer) sem).init(subPCtx);
+    ((SemanticAnalyzer) sem).initParseCtx(subPCtx);
 
     LOG.info("Starting Sub-query Semantic Analysis");
     sem.doPhase1(child, qb, sem.initPhase1Ctx());

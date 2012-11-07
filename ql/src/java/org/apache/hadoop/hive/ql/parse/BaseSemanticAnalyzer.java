@@ -242,9 +242,17 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
+  public void init() {
+    //no-op
+  }
+
+  public void initCtx(Context ctx) {
+    this.ctx = ctx;
+  }
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
-    this.ctx = ctx;
+    initCtx(ctx);
+    init();
     analyzeInternal(ast);
   }
 

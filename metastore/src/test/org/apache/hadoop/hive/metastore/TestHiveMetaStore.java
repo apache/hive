@@ -37,8 +37,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -49,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -1225,6 +1231,187 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
       throw e;
+    }
+  }
+
+  public void testColumnStatistics() throws Throwable {
+
+    String dbName = "columnstatstestdb";
+    String tblName = "tbl";
+    String typeName = "Person";
+    String tblOwner = "testowner";
+    int lastAccessed = 6796;
+
+    try {
+      cleanUp(dbName, tblName, typeName);
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
+      createTableForTestFilter(dbName,tblName, tblOwner, lastAccessed, true);
+
+      // Create a ColumnStatistics Obj
+      String[] colName = new String[]{"income", "name"};
+      double lowValue = 50000.21;
+      double highValue = 1200000.4525;
+      long numNulls = 3;
+      long numDVs = 22;
+      double avgColLen = 50.30;
+      long maxColLen = 102;
+      String[] colType = new String[] {"double", "string"};
+      boolean isTblLevel = true;
+      String partName = null;
+      List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+
+      ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tblName);
+      statsDesc.setIsTblLevel(isTblLevel);
+      statsDesc.setPartName(partName);
+
+      ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+      statsObj.setColName(colName[0]);
+      statsObj.setColType(colType[0]);
+
+      ColumnStatisticsData statsData = new ColumnStatisticsData();
+      DoubleColumnStatsData numericStats = new DoubleColumnStatsData();
+      statsData.setDoubleStats(numericStats);
+
+      statsData.getDoubleStats().setHighValue(highValue);
+      statsData.getDoubleStats().setLowValue(lowValue);
+      statsData.getDoubleStats().setNumDVs(numDVs);
+      statsData.getDoubleStats().setNumNulls(numNulls);
+
+      statsObj.setStatsData(statsData);
+      statsObjs.add(statsObj);
+
+      statsObj = new ColumnStatisticsObj();
+      statsObj.setColName(colName[1]);
+      statsObj.setColType(colType[1]);
+
+      statsData = new ColumnStatisticsData();
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      statsData.setStringStats(stringStats);
+      statsData.getStringStats().setAvgColLen(avgColLen);
+      statsData.getStringStats().setMaxColLen(maxColLen);
+      statsData.getStringStats().setNumDVs(numDVs);
+      statsData.getStringStats().setNumNulls(numNulls);
+
+      statsObj.setStatsData(statsData);
+      statsObjs.add(statsObj);
+
+      ColumnStatistics colStats = new ColumnStatistics();
+      colStats.setStatsDesc(statsDesc);
+      colStats.setStatsObj(statsObjs);
+
+      // write stats objs persistently
+      client.updateTableColumnStatistics(colStats);
+
+      // retrieve the stats obj that was just written
+      ColumnStatistics colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[0]);
+
+     // compare stats obj to ensure what we get is what we wrote
+      assertNotNull(colStats2);
+      assertEquals(colStats2.getStatsDesc().getDbName(), dbName);
+      assertEquals(colStats2.getStatsDesc().getTableName(), tblName);
+      assertEquals(colStats2.getStatsObj().get(0).getColName(), colName[0]);
+      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getLowValue(),
+        lowValue);
+      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getHighValue(),
+        highValue);
+      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getNumNulls(),
+        numNulls);
+      assertEquals(colStats2.getStatsObj().get(0).getStatsData().getDoubleStats().getNumDVs(),
+        numDVs);
+      assertEquals(colStats2.getStatsDesc().isIsTblLevel(), isTblLevel);
+
+      // test delete column stats; if no col name is passed all column stats associated with the
+      // table is deleted
+      boolean status = client.deleteTableColumnStatistics(dbName, tblName, null);
+      assertTrue(status);
+      // try to query stats for a column for which stats doesn't exist
+      try {
+        colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[1]);
+        assertTrue(true);
+      } catch (NoSuchObjectException e) {
+        System.out.println("Statistics for column=" + colName[1] + " not found");
+      }
+
+      colStats.setStatsDesc(statsDesc);
+      colStats.setStatsObj(statsObjs);
+
+      // update table level column stats
+      client.updateTableColumnStatistics(colStats);
+
+      // query column stats for column whose stats were updated in the previous call
+      colStats2 = client.getTableColumnStatistics(dbName, tblName, colName[0]);
+
+      // partition level column statistics test
+      // create a table with multiple partitions
+      cleanUp(dbName, tblName, typeName);
+
+      List<List<String>> values = new ArrayList<List<String>>();
+      values.add(makeVals("2008-07-01 14:13:12", "14"));
+      values.add(makeVals("2008-07-01 14:13:12", "15"));
+      values.add(makeVals("2008-07-02 14:13:12", "15"));
+      values.add(makeVals("2008-07-03 14:13:12", "151"));
+
+      createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+
+      List<String> partitions = client.listPartitionNames(dbName, tblName, (short)-1);
+
+      partName = partitions.get(0);
+      isTblLevel = false;
+
+      // create a new columnstatistics desc to represent partition level column stats
+      statsDesc = new ColumnStatisticsDesc();
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tblName);
+      statsDesc.setPartName(partName);
+      statsDesc.setIsTblLevel(isTblLevel);
+
+      colStats = new ColumnStatistics();
+      colStats.setStatsDesc(statsDesc);
+      colStats.setStatsObj(statsObjs);
+
+     client.updatePartitionColumnStatistics(colStats);
+
+     colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[1]);
+
+     // compare stats obj to ensure what we get is what we wrote
+     assertNotNull(colStats2);
+     assertEquals(colStats2.getStatsDesc().getDbName(), dbName);
+     assertEquals(colStats2.getStatsDesc().getTableName(), tblName);
+     assertEquals(colStats.getStatsDesc().getPartName(), partName);
+     assertEquals(colStats2.getStatsObj().get(0).getColName(), colName[1]);
+     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getMaxColLen(),
+       maxColLen);
+     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getAvgColLen(),
+       avgColLen);
+     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getNumNulls(),
+       numNulls);
+     assertEquals(colStats2.getStatsObj().get(0).getStatsData().getStringStats().getNumDVs(),
+       numDVs);
+     assertEquals(colStats2.getStatsDesc().isIsTblLevel(), isTblLevel);
+
+     // test stats deletion at partition level
+     client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[1]);
+
+     colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[0]);
+
+     // test get stats on a column for which stats doesn't exist
+     try {
+       colStats2 = client.getPartitionColumnStatistics(dbName, tblName, partName, colName[1]);
+       assertTrue(true);
+     } catch (NoSuchObjectException e) {
+       System.out.println("Statistics for column=" + colName[1] + " not found");
+     }
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testColumnStatistics() failed.");
+      throw e;
+    } finally {
+      cleanUp(dbName, tblName, typeName);
     }
   }
 

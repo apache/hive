@@ -41,7 +41,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
@@ -56,6 +55,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -2184,6 +2184,65 @@ public class Hive {
     }
     return indexes;
   }
+
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj) throws HiveException {
+    try {
+      return getMSC().updateTableColumnStatistics(statsObj);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj) throws HiveException {
+    try {
+      return getMSC().updatePartitionColumnStatistics(statsObj);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
+    throws HiveException {
+    try {
+      return getMSC().getTableColumnStatistics(dbName, tableName, colName);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+
+  }
+
+  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, String colName) throws HiveException {
+      try {
+        return getMSC().getPartitionColumnStatistics(dbName, tableName, partName, colName);
+      } catch (Exception e) {
+        LOG.error(StringUtils.stringifyException(e));
+        throw new HiveException(e);
+      }
+    }
+
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+    throws HiveException {
+    try {
+      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName);
+    } catch(Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
+    String colName) throws HiveException {
+      try {
+        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName);
+      } catch(Exception e) {
+        LOG.error(StringUtils.stringifyException(e));
+        throw new HiveException(e);
+      }
+    }
 
   public Table newTable(String tableName) throws HiveException {
     String[] names = getQualifiedNames(tableName);

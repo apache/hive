@@ -214,6 +214,7 @@
         <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
+
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>

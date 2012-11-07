@@ -905,7 +905,7 @@ descStatement
 analyzeStatement
 @init { msgs.push("analyze statement"); }
 @after { msgs.pop(); }
-    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS -> ^(TOK_ANALYZE $parttype)
+    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS (KW_FOR KW_COLUMNS statsColumnName=columnNameList)? -> ^(TOK_ANALYZE $parttype $statsColumnName?)
     ;
 
 showStatement
@@ -2508,6 +2508,7 @@ KW_CASCADE: 'CASCADE';
 KW_SKEWED: 'SKEWED';
 KW_ROLLUP: 'ROLLUP';
 KW_CUBE: 'CUBE';
+KW_FOR: 'FOR';
 
 
 // Operators

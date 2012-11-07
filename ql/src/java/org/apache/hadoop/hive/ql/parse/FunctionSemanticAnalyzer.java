@@ -17,9 +17,6 @@
  */
 
 package org.apache.hadoop.hive.ql.parse;
-
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -64,7 +61,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
-    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
     // we want to signal an error if the function doesn't exist and we're
     // configured not to ignore this
     boolean throwException =

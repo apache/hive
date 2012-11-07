@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_CASCADE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASECOMMENT;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SHOWDATABASES;
@@ -669,10 +671,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       case TOK_DATABASECOMMENT:
         dbComment = unescapeSQLString(childNode.getChild(0).getText());
         break;
-      case HiveParser.TOK_DATABASEPROPERTIES:
+      case TOK_DATABASEPROPERTIES:
         dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
         break;
-      case HiveParser.TOK_DATABASELOCATION:
+      case TOK_DATABASELOCATION:
         dbLocation = unescapeSQLString(childNode.getChild(0).getText());
         break;
       default:

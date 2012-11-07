@@ -55,6 +55,9 @@ import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -65,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.IndexAlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
@@ -648,7 +652,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void drop_database_core(RawStore ms,
         final String name, final boolean deleteData, final boolean cascade)
         throws NoSuchObjectException, InvalidOperationException, MetaException,
-        IOException {
+        IOException, InvalidObjectException, InvalidInputException {
       boolean success = false;
       Database db = null;
       List<Path> tablePaths = new ArrayList<Path>();
@@ -1113,10 +1117,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return (ms.getTable(dbname, name) != null);
     }
 
-    private void drop_table_core(final RawStore ms, final String dbname,
-        final String name, final boolean deleteData)
-        throws NoSuchObjectException, MetaException, IOException {
-
+    private void drop_table_core(final RawStore ms, final String dbname, final String name,
+      final boolean deleteData) throws NoSuchObjectException, MetaException, IOException,
+      InvalidObjectException, InvalidInputException {
       boolean success = false;
       boolean isExternal = false;
       Path tblPath = null;
@@ -1243,11 +1246,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @return
      * @throws MetaException
      * @throws IOException
+     * @throws InvalidInputException
+     * @throws InvalidObjectException
+     * @throws NoSuchObjectException
      */
     private List<Path> dropPartitionsAndGetLocations(RawStore ms, String dbName,
-        String tableName, Path tablePath, List<FieldSchema> partitionKeys, boolean checkLocation)
-        throws MetaException, IOException {
-
+      String tableName, Path tablePath, List<FieldSchema> partitionKeys, boolean checkLocation)
+      throws MetaException, IOException, NoSuchObjectException, InvalidObjectException,
+      InvalidInputException {
       int partitionBatchSize = HiveConf.getIntVar(hiveConf,
           ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
       Path tableDnsPath = null;
@@ -1816,9 +1822,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
-        List<String> part_vals, final boolean deleteData)
-        throws MetaException, NoSuchObjectException, IOException {
-
+      List<String> part_vals, final boolean deleteData)
+      throws MetaException, NoSuchObjectException, IOException, InvalidObjectException,
+      InvalidInputException {
       boolean success = false;
       Path partPath = null;
       Table tbl = null;
@@ -2628,7 +2634,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean drop_partition_by_name_core(final RawStore ms,
         final String db_name, final String tbl_name, final String part_name,
         final boolean deleteData) throws NoSuchObjectException,
-        MetaException, TException, IOException {
+        MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
 
       List<String> partVals = null;
       try {
@@ -2913,7 +2919,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean drop_index_by_name_core(final RawStore ms,
         final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws NoSuchObjectException,
-        MetaException, TException, IOException {
+        MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
 
       boolean success = false;
       Path tblPath = null;
@@ -3065,6 +3071,195 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+
+    private String lowerCaseConvertPartName(String partName) throws MetaException {
+      boolean isFirst = true;
+      Map<String, String> partSpec = Warehouse.makeEscSpecFromName(partName);
+      String convertedPartName = new String();
+
+      for (Map.Entry<String, String> entry : partSpec.entrySet()) {
+        String partColName = entry.getKey();
+        String partColVal = entry.getValue();
+
+        if (!isFirst) {
+          convertedPartName += "/";
+        } else {
+          isFirst = false;
+        }
+        convertedPartName += partColName.toLowerCase() + "=" + partColVal;
+      }
+      return convertedPartName;
+    }
+
+    public ColumnStatistics get_table_column_statistics(String dbName, String tableName,
+      String colName) throws NoSuchObjectException, MetaException, TException,
+      InvalidInputException, InvalidObjectException
+    {
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+      colName = colName.toLowerCase();
+      startFunction("get_column_statistics_by_table: db=" + dbName + " table=" + tableName +
+                    " column=" + colName);
+      ColumnStatistics statsObj = null;
+      try {
+        statsObj = getMS().getTableColumnStatistics(dbName, tableName, colName);
+      } finally {
+        endFunction("get_column_statistics_by_table: ", statsObj != null);
+      }
+      return statsObj;
+    }
+
+    public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
+      String partName, String colName) throws NoSuchObjectException, MetaException,
+      InvalidInputException, TException,InvalidObjectException
+    {
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+      colName = colName.toLowerCase();
+      String convertedPartName = lowerCaseConvertPartName(partName);
+      startFunction("get_column_statistics_by_partition: db=" + dbName + " table=" + tableName +
+          " partition=" + convertedPartName + " column=" + colName);
+      ColumnStatistics statsObj = null;
+
+      try {
+        List<String> partVals = getPartValsFromName(getMS(), dbName, tableName, partName);
+        statsObj = getMS().getPartitionColumnStatistics(dbName, tableName, convertedPartName,
+                                                            partVals, colName);
+      } finally {
+        endFunction("get_column_statistics_by_partition: ", statsObj != null);
+      }
+      return statsObj;
+   }
+
+    public boolean update_table_column_statistics(ColumnStatistics colStats)
+      throws NoSuchObjectException,InvalidObjectException,MetaException,TException,
+      InvalidInputException
+    {
+      String dbName = null;
+      String tableName = null;
+      String colName = null;
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      dbName = statsDesc.getDbName().toLowerCase();
+      tableName = statsDesc.getTableName().toLowerCase();
+
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tableName);
+      long time = System.currentTimeMillis() / 1000;
+      statsDesc.setLastAnalyzed(time);
+
+      List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
+
+      for (ColumnStatisticsObj statsObj:statsObjs) {
+        colName = statsObj.getColName().toLowerCase();
+        statsObj.setColName(colName);
+        startFunction("write_column_statistics:  db=" + dbName + " table=" + tableName +
+          " column=" + colName);
+      }
+
+     colStats.setStatsDesc(statsDesc);
+     colStats.setStatsObj(statsObjs);
+
+     boolean ret = false;
+
+      try {
+        ret = getMS().updateTableColumnStatistics(colStats);
+        return ret;
+      } finally {
+        endFunction("write_column_statistics: ", ret != false);
+      }
+    }
+
+    public boolean update_partition_column_statistics(ColumnStatistics colStats)
+      throws NoSuchObjectException,InvalidObjectException,MetaException,TException,
+      InvalidInputException
+    {
+
+      String dbName = null;
+      String tableName = null;
+      String partName = null;
+      String colName = null;
+
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      dbName = statsDesc.getDbName().toLowerCase();
+      tableName = statsDesc.getTableName().toLowerCase();
+      partName = lowerCaseConvertPartName(statsDesc.getPartName());
+
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tableName);
+      statsDesc.setPartName(partName);
+
+      long time = System.currentTimeMillis() / 1000;
+      statsDesc.setLastAnalyzed(time);
+
+      List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
+
+      for (ColumnStatisticsObj statsObj:statsObjs) {
+        colName = statsObj.getColName().toLowerCase();
+        statsObj.setColName(colName);
+        startFunction("write_partition_column_statistics:  db=" + dbName + " table=" + tableName +
+          " part=" + partName + "column=" + colName);
+      }
+
+      colStats.setStatsDesc(statsDesc);
+      colStats.setStatsObj(statsObjs);
+
+      boolean ret = false;
+
+      try {
+        List<String> partVals = getPartValsFromName(getMS(), dbName,
+            tableName, partName);
+        ret = getMS().updatePartitionColumnStatistics(colStats, partVals);
+        return ret;
+      } finally {
+        endFunction("write_partition_column_statistics: ", ret != false);
+      }
+    }
+
+    public boolean delete_partition_column_statistics(String dbName, String tableName,
+      String partName, String colName) throws NoSuchObjectException, MetaException,
+      InvalidObjectException, TException, InvalidInputException
+    {
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+      if (colName != null) {
+        colName = colName.toLowerCase();
+      }
+      String convertedPartName = lowerCaseConvertPartName(partName);
+      startFunction("delete_column_statistics_by_partition: db=" + dbName + " table=" + tableName +
+                    " partition=" + convertedPartName + " column=" + colName);
+      boolean ret = false;
+
+      try {
+        List<String> partVals = getPartValsFromName(getMS(), dbName, tableName, convertedPartName);
+        ret = getMS().deletePartitionColumnStatistics(dbName, tableName,
+                                                      convertedPartName, partVals, colName);
+      } finally {
+        endFunction("delete_column_statistics_by_partition: ", ret != false);
+      }
+      return ret;
+    }
+
+    public boolean delete_table_column_statistics(String dbName, String tableName, String colName)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException,
+      InvalidInputException
+   {
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+
+      if (colName != null) {
+        colName = colName.toLowerCase();
+      }
+      startFunction("delete_column_statistics_by_table: db=" + dbName + " table=" + tableName +
+                    " column=" + colName);
+
+      boolean ret = false;
+      try {
+        ret = getMS().deleteTableColumnStatistics(dbName, tableName, colName);
+      } finally {
+        endFunction("delete_column_statistics_by_table: ", ret != false);
+      }
+      return ret;
+   }
 
     @Override
     public List<Partition> get_partitions_by_filter(final String dbName,
@@ -3808,6 +4003,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static IHMSHandler newHMSHandler(String name, HiveConf hiveConf) throws MetaException {
     return RetryingHMSHandler.getProxy(hiveConf, name);
   }
+
 
 
   /**

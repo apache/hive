@@ -194,6 +194,67 @@ struct Index {
   10: bool         deferredRebuild
 }
 
+// column statistics
+struct BooleanColumnStatsData {
+1: required i64 numTrues,
+2: required i64 numFalses,
+3: required i64 numNulls
+}
+
+struct DoubleColumnStatsData {
+1: required double lowValue,
+2: required double highValue,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
+struct LongColumnStatsData {
+1: required i64 lowValue,
+2: required i64 highValue,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
+struct StringColumnStatsData {
+1: required i64 maxColLen,
+2: required double avgColLen,
+3: required i64 numNulls,
+4: required i64 numDVs
+}
+
+struct BinaryColumnStatsData {
+1: required i64 maxColLen,
+2: required double avgColLen,
+3: required i64 numNulls
+}
+
+union ColumnStatisticsData {
+1: BooleanColumnStatsData booleanStats,
+2: LongColumnStatsData longStats,
+3: DoubleColumnStatsData doubleStats,
+4: StringColumnStatsData stringStats,
+5: BinaryColumnStatsData binaryStats
+}
+
+struct ColumnStatisticsObj {
+1: required string colName,
+2: required string colType,
+3: required ColumnStatisticsData statsData
+}
+
+struct ColumnStatisticsDesc {
+1: required bool isTblLevel,
+2: required string dbName,
+3: required string tableName,
+4: optional string partName,
+5: optional i64 lastAnalyzed
+}
+
+struct ColumnStatistics {
+1: required ColumnStatisticsDesc statsDesc,
+2: required list<ColumnStatisticsObj> statsObj;
+}
+
 // schema of the table/query results etc.
 struct Schema {
  // column names, types, comments
@@ -250,6 +311,10 @@ exception InvalidOperationException {
 }
 
 exception ConfigValSecurityException {
+  1: string message
+}
+
+exception InvalidInputException {
   1: string message
 }
 
@@ -471,6 +536,37 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
                        throws(1:MetaException o2)
+
+  // column statistics interfaces
+
+  // update APIs persist the column statistics object(s) that are passed in. If statistics already
+  // exists for one or more columns, the existing statistics will be overwritten. The update APIs
+  // validate that the dbName, tableName, partName, colName[] passed in as part of the ColumnStatistics
+  // struct are valid, throws InvalidInputException/NoSuchObjectException if found to be invalid
+  bool update_table_column_statistics(1:ColumnStatistics stats_obj) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+  bool update_partition_column_statistics(1:ColumnStatistics stats_obj) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
+  // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if
+  // such statistics exists. If the required statistics doesn't exist, get APIs throw NoSuchObjectException
+  // For instance, if get_table_column_statistics is called on a partitioned table for which only
+  // partition level column stats exist, get_table_column_statistics will throw NoSuchObjectException
+  ColumnStatistics get_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidInputException o3, 4:InvalidObjectException o4)
+  ColumnStatistics get_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name,
+               4:string col_name) throws (1:NoSuchObjectException o1, 2:MetaException o2,
+               3:InvalidInputException o3, 4:InvalidObjectException o4)
+
+  // delete APIs attempt to delete column statistics, if found, associated with a given db_name, tbl_name, [part_name]
+  // and col_name. If the delete API doesn't find the statistics record in the metastore, throws NoSuchObjectException
+  // Delete API validates the input and if the input is invalid throws InvalidInputException/InvalidObjectException.
+  bool delete_partition_column_statistics(1:string db_name, 2:string tbl_name, 3:string part_name, 4:string col_name) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
+               4:InvalidInputException o4)
+  bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
+               4:InvalidInputException o4)
 
   //authorization privileges
                        

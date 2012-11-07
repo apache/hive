@@ -36,6 +36,7 @@ ceil
 ceiling
 coalesce
 collect_set
+compute_stats
 concat
 concat_ws
 context_ngrams
@@ -182,6 +183,7 @@ ceil
 ceiling
 coalesce
 collect_set
+compute_stats
 concat
 concat_ws
 context_ngrams

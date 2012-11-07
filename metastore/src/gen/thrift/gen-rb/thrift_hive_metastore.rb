@@ -948,6 +948,120 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_names failed: unknown result')
     end
 
+    def update_table_column_statistics(stats_obj)
+      send_update_table_column_statistics(stats_obj)
+      return recv_update_table_column_statistics()
+    end
+
+    def send_update_table_column_statistics(stats_obj)
+      send_message('update_table_column_statistics', Update_table_column_statistics_args, :stats_obj => stats_obj)
+    end
+
+    def recv_update_table_column_statistics()
+      result = receive_message(Update_table_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_table_column_statistics failed: unknown result')
+    end
+
+    def update_partition_column_statistics(stats_obj)
+      send_update_partition_column_statistics(stats_obj)
+      return recv_update_partition_column_statistics()
+    end
+
+    def send_update_partition_column_statistics(stats_obj)
+      send_message('update_partition_column_statistics', Update_partition_column_statistics_args, :stats_obj => stats_obj)
+    end
+
+    def recv_update_partition_column_statistics()
+      result = receive_message(Update_partition_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_partition_column_statistics failed: unknown result')
+    end
+
+    def get_table_column_statistics(db_name, tbl_name, col_name)
+      send_get_table_column_statistics(db_name, tbl_name, col_name)
+      return recv_get_table_column_statistics()
+    end
+
+    def send_get_table_column_statistics(db_name, tbl_name, col_name)
+      send_message('get_table_column_statistics', Get_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name)
+    end
+
+    def recv_get_table_column_statistics()
+      result = receive_message(Get_table_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_column_statistics failed: unknown result')
+    end
+
+    def get_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_get_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      return recv_get_partition_column_statistics()
+    end
+
+    def send_get_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_message('get_partition_column_statistics', Get_partition_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :part_name => part_name, :col_name => col_name)
+    end
+
+    def recv_get_partition_column_statistics()
+      result = receive_message(Get_partition_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_column_statistics failed: unknown result')
+    end
+
+    def delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      return recv_delete_partition_column_statistics()
+    end
+
+    def send_delete_partition_column_statistics(db_name, tbl_name, part_name, col_name)
+      send_message('delete_partition_column_statistics', Delete_partition_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :part_name => part_name, :col_name => col_name)
+    end
+
+    def recv_delete_partition_column_statistics()
+      result = receive_message(Delete_partition_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_partition_column_statistics failed: unknown result')
+    end
+
+    def delete_table_column_statistics(db_name, tbl_name, col_name)
+      send_delete_table_column_statistics(db_name, tbl_name, col_name)
+      return recv_delete_table_column_statistics()
+    end
+
+    def send_delete_table_column_statistics(db_name, tbl_name, col_name)
+      send_message('delete_table_column_statistics', Delete_table_column_statistics_args, :db_name => db_name, :tbl_name => tbl_name, :col_name => col_name)
+    end
+
+    def recv_delete_table_column_statistics()
+      result = receive_message(Delete_table_column_statistics_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_table_column_statistics failed: unknown result')
+    end
+
     def create_role(role)
       send_create_role(role)
       return recv_create_role()
@@ -1919,6 +2033,108 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_index_names', seqid)
+    end
+
+    def process_update_table_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Update_table_column_statistics_args)
+      result = Update_table_column_statistics_result.new()
+      begin
+        result.success = @handler.update_table_column_statistics(args.stats_obj)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue InvalidObjectException => o2
+        result.o2 = o2
+      rescue MetaException => o3
+        result.o3 = o3
+      rescue InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'update_table_column_statistics', seqid)
+    end
+
+    def process_update_partition_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Update_partition_column_statistics_args)
+      result = Update_partition_column_statistics_result.new()
+      begin
+        result.success = @handler.update_partition_column_statistics(args.stats_obj)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue InvalidObjectException => o2
+        result.o2 = o2
+      rescue MetaException => o3
+        result.o3 = o3
+      rescue InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'update_partition_column_statistics', seqid)
+    end
+
+    def process_get_table_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_column_statistics_args)
+      result = Get_table_column_statistics_result.new()
+      begin
+        result.success = @handler.get_table_column_statistics(args.db_name, args.tbl_name, args.col_name)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      rescue InvalidInputException => o3
+        result.o3 = o3
+      rescue InvalidObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'get_table_column_statistics', seqid)
+    end
+
+    def process_get_partition_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partition_column_statistics_args)
+      result = Get_partition_column_statistics_result.new()
+      begin
+        result.success = @handler.get_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      rescue InvalidInputException => o3
+        result.o3 = o3
+      rescue InvalidObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'get_partition_column_statistics', seqid)
+    end
+
+    def process_delete_partition_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Delete_partition_column_statistics_args)
+      result = Delete_partition_column_statistics_result.new()
+      begin
+        result.success = @handler.delete_partition_column_statistics(args.db_name, args.tbl_name, args.part_name, args.col_name)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      rescue InvalidObjectException => o3
+        result.o3 = o3
+      rescue InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'delete_partition_column_statistics', seqid)
+    end
+
+    def process_delete_table_column_statistics(seqid, iprot, oprot)
+      args = read_args(iprot, Delete_table_column_statistics_args)
+      result = Delete_table_column_statistics_result.new()
+      begin
+        result.success = @handler.delete_table_column_statistics(args.db_name, args.tbl_name, args.col_name)
+      rescue NoSuchObjectException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      rescue InvalidObjectException => o3
+        result.o3 = o3
+      rescue InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'delete_table_column_statistics', seqid)
     end
 
     def process_create_role(seqid, iprot, oprot)
@@ -4238,6 +4454,266 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_table_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    STATS_OBJ = 1
+
+    FIELDS = {
+      STATS_OBJ => {:type => ::Thrift::Types::STRUCT, :name => 'stats_obj', :class => ColumnStatistics}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_table_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_partition_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    STATS_OBJ = 1
+
+    FIELDS = {
+      STATS_OBJ => {:type => ::Thrift::Types::STRUCT, :name => 'stats_obj', :class => ColumnStatistics}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_partition_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    COL_NAME = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ColumnStatistics},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => InvalidInputException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    PART_NAME = 3
+    COL_NAME = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      PART_NAME => {:type => ::Thrift::Types::STRING, :name => 'part_name'},
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ColumnStatistics},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => InvalidInputException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_partition_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    PART_NAME = 3
+    COL_NAME = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      PART_NAME => {:type => ::Thrift::Types::STRING, :name => 'part_name'},
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_partition_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_table_column_statistics_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    COL_NAME = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      COL_NAME => {:type => ::Thrift::Types::STRING, :name => 'col_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_table_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => InvalidInputException}
     }
 
     def struct_fields; FIELDS; end

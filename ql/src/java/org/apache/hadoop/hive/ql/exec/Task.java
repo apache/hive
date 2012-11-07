@@ -81,6 +81,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   // Descendants tasks who subscribe feeds from this task
   protected transient List<Task<? extends Serializable>> feedSubscribers;
 
+  protected String id;
+  protected T work;
+
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
   };
@@ -324,8 +327,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return isrunnable;
   }
 
-  protected String id;
-  protected T work;
+
 
   public void setWork(T work) {
     this.work = work;

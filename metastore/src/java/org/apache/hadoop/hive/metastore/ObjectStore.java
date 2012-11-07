@@ -56,14 +56,23 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -77,6 +86,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -91,6 +101,7 @@ import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRole;
@@ -100,6 +111,7 @@ import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
@@ -673,7 +685,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public boolean dropTable(String dbName, String tableName) throws MetaException {
+  public boolean dropTable(String dbName, String tableName) throws MetaException,
+    NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
@@ -700,6 +713,13 @@ public class ObjectStore implements RawStore, Configurable {
             tableName);
         if (partColGrants != null && partColGrants.size() > 0) {
           pm.deletePersistentAll(partColGrants);
+        }
+        // delete column statistics if present
+        try {
+          deleteTableColumnStatistics(dbName, tableName, null);
+        } catch (NoSuchObjectException e) {
+          LOG.info("Found no table level column statistics associated with db " + dbName +
+          " table " + tableName + " record to delete");
         }
 
         preDropStorageDescriptor(tbl.getSd());
@@ -1267,7 +1287,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean dropPartition(String dbName, String tableName,
-      List<String> part_vals) throws MetaException {
+    List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
+    InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
@@ -1287,8 +1308,13 @@ public class ObjectStore implements RawStore, Configurable {
    *   drop the storage descriptor cleanly, etc.)
    * @param part - the MPartition to drop
    * @return whether the transaction committed successfully
+   * @throws InvalidInputException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws NoSuchObjectException
    */
-  private boolean dropPartitionCommon(MPartition part) {
+  private boolean dropPartitionCommon(MPartition part) throws NoSuchObjectException, MetaException,
+    InvalidObjectException, InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
@@ -1316,6 +1342,17 @@ public class ObjectStore implements RawStore, Configurable {
         if (partColumnGrants != null && partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
+
+        String dbName = part.getTable().getDatabase().getName();
+        String tableName = part.getTable().getTableName();
+
+        // delete partition level column stats if it exists
+       try {
+          deletePartitionColumnStatistics(dbName, tableName, partName, part.getValues(), null);
+        } catch (NoSuchObjectException e) {
+          LOG.info("No column statistics records found to delete");
+        }
+
         preDropStorageDescriptor(part.getSd());
         pm.deletePersistent(part);
       }
@@ -4446,6 +4483,743 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  // Methods to persist, maintain and retrieve Column Statistics
+  private MTableColumnStatistics convertToMTableColumnStatistics(ColumnStatisticsDesc statsDesc,
+      ColumnStatisticsObj statsObj) throws NoSuchObjectException,
+      MetaException, InvalidObjectException
+  {
+     if (statsObj == null || statsDesc == null) {
+       throw new InvalidObjectException("Invalid column stats object");
+     }
+
+     String dbName = statsDesc.getDbName();
+     String tableName = statsDesc.getTableName();
+     MTable table = getMTable(dbName, tableName);
+
+     if (table == null) {
+       throw new NoSuchObjectException("Table " + tableName +
+       " for which stats is gathered doesn't exist.");
+     }
+
+     MTableColumnStatistics mColStats = new MTableColumnStatistics();
+     mColStats.setTable(table);
+     mColStats.setDbName(statsDesc.getDbName());
+     mColStats.setTableName(statsDesc.getTableName());
+     mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
+     mColStats.setColName(statsObj.getColName());
+     mColStats.setColType(statsObj.getColType());
+
+     if (statsObj.getStatsData().isSetBooleanStats()) {
+       BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
+       mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
+           boolStats.getNumNulls());
+     } else if (statsObj.getStatsData().isSetLongStats()) {
+       LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
+       mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+           longStats.getLowValue(), longStats.getHighValue());
+     } else if (statsObj.getStatsData().isSetDoubleStats()) {
+       DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
+       mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+           doubleStats.getLowValue(), doubleStats.getHighValue());
+     } else if (statsObj.getStatsData().isSetStringStats()) {
+       StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
+       mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
+         stringStats.getMaxColLen(), stringStats.getAvgColLen());
+     } else if (statsObj.getStatsData().isSetBinaryStats()) {
+       BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
+       mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
+         binaryStats.getAvgColLen());
+     }
+     return mColStats;
+  }
+
+  private ColumnStatisticsObj getTableColumnStatisticsObj(MTableColumnStatistics mStatsObj) {
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+    statsObj.setColType(mStatsObj.getColType());
+    statsObj.setColName(mStatsObj.getColName());
+    String colType = mStatsObj.getColType();
+    ColumnStatisticsData colStatsData = new ColumnStatisticsData();
+
+    if (colType.equalsIgnoreCase("boolean")) {
+      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+      boolStats.setNumFalses(mStatsObj.getNumFalses());
+      boolStats.setNumTrues(mStatsObj.getNumTrues());
+      boolStats.setNumNulls(mStatsObj.getNumNulls());
+      colStatsData.setBooleanStats(boolStats);
+    } else if (colType.equalsIgnoreCase("string")) {
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      stringStats.setNumNulls(mStatsObj.getNumNulls());
+      stringStats.setAvgColLen(mStatsObj.getAvgColLen());
+      stringStats.setMaxColLen(mStatsObj.getMaxColLen());
+      stringStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setStringStats(stringStats);
+    } else if (colType.equalsIgnoreCase("binary")) {
+      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+      binaryStats.setNumNulls(mStatsObj.getNumNulls());
+      binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
+      binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
+      colStatsData.setBinaryStats(binaryStats);
+    } else if (colType.equalsIgnoreCase("bigint") || colType.equalsIgnoreCase("int") ||
+        colType.equalsIgnoreCase("smallint") || colType.equalsIgnoreCase("tinyint") ||
+        colType.equalsIgnoreCase("timestamp")) {
+      LongColumnStatsData longStats = new LongColumnStatsData();
+      longStats.setNumNulls(mStatsObj.getNumNulls());
+      longStats.setHighValue(mStatsObj.getHighValueAsLong());
+      longStats.setLowValue(mStatsObj.getLowValueAsLong());
+      longStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setLongStats(longStats);
+   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+     DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+     doubleStats.setNumNulls(mStatsObj.getNumNulls());
+     doubleStats.setHighValue(mStatsObj.getHighValueAsDouble());
+     doubleStats.setLowValue(mStatsObj.getLowValueAsDouble());
+     doubleStats.setNumDVs(mStatsObj.getNumDVs());
+     colStatsData.setDoubleStats(doubleStats);
+   }
+   statsObj.setStatsData(colStatsData);
+   return statsObj;
+  }
+
+  private ColumnStatisticsDesc getTableColumnStatisticsDesc(MTableColumnStatistics mStatsObj) {
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+    statsDesc.setIsTblLevel(true);
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+    return statsDesc;
+  }
+
+  private ColumnStatistics convertToTableColumnStatistics(MTableColumnStatistics mStatsObj)
+    throws MetaException
+  {
+    if (mStatsObj == null) {
+      return null;
+    }
+
+    ColumnStatisticsDesc statsDesc = getTableColumnStatisticsDesc(mStatsObj);
+    ColumnStatisticsObj statsObj = getTableColumnStatisticsObj(mStatsObj);
+    List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+    statsObjs.add(statsObj);
+
+    ColumnStatistics colStats = new ColumnStatistics();
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(statsObjs);
+    return colStats;
+  }
+
+  private MPartitionColumnStatistics convertToMPartitionColumnStatistics(ColumnStatisticsDesc
+    statsDesc, ColumnStatisticsObj statsObj, List<String> partVal)
+    throws MetaException, NoSuchObjectException
+  {
+    if (statsDesc == null || statsObj == null || partVal == null) {
+      return null;
+    }
+
+    MPartition partition  = getMPartition(statsDesc.getDbName(), statsDesc.getTableName(), partVal);
+
+    if (partition == null) {
+      throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
+    }
+
+    MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
+    mColStats.setPartition(partition);
+    mColStats.setDbName(statsDesc.getDbName());
+    mColStats.setTableName(statsDesc.getTableName());
+    mColStats.setPartitionName(statsDesc.getPartName());
+    mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
+    mColStats.setColName(statsObj.getColName());
+    mColStats.setColType(statsObj.getColType());
+
+    if (statsObj.getStatsData().isSetBooleanStats()) {
+      BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
+      mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
+          boolStats.getNumNulls());
+    } else if (statsObj.getStatsData().isSetLongStats()) {
+      LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
+      mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+          longStats.getLowValue(), longStats.getHighValue());
+    } else if (statsObj.getStatsData().isSetDoubleStats()) {
+      DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
+      mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+          doubleStats.getLowValue(), doubleStats.getHighValue());
+    } else if (statsObj.getStatsData().isSetStringStats()) {
+      StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
+      mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
+        stringStats.getMaxColLen(), stringStats.getAvgColLen());
+    } else if (statsObj.getStatsData().isSetBinaryStats()) {
+      BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
+      mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
+        binaryStats.getAvgColLen());
+    }
+    return mColStats;
+  }
+
+  private void writeMTableColumnStatistics(MTableColumnStatistics mStatsObj)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+     String dbName = mStatsObj.getDbName();
+     String tableName = mStatsObj.getTableName();
+     String colName = mStatsObj.getColName();
+
+     LOG.info("Updating table level column statistics for db=" + dbName + " tableName=" + tableName
+       + " colName=" + colName);
+
+     MTable mTable = getMTable(mStatsObj.getDbName(), mStatsObj.getTableName());
+     boolean foundCol = false;
+
+     if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          " for which stats gathering is requested doesn't exist.");
+      }
+
+      MStorageDescriptor mSDS = mTable.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(mStatsObj.getColName().trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new
+          NoSuchObjectException("Column " + colName +
+          " for which stats gathering is requested doesn't exist.");
+      }
+
+      MTableColumnStatistics oldStatsObj = getMTableColumnStatistics(dbName, tableName, colName);
+
+      if (oldStatsObj != null) {
+       oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+       oldStatsObj.setHighValue(mStatsObj.getHighValue());
+       oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+       oldStatsObj.setLowValue(mStatsObj.getLowValue());
+       oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+       oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+       oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+      } else {
+        pm.makePersistent(mStatsObj);
+      }
+   }
+
+  private ColumnStatisticsObj getPartitionColumnStatisticsObj(MPartitionColumnStatistics mStatsObj)
+  {
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+    statsObj.setColType(mStatsObj.getColType());
+    statsObj.setColName(mStatsObj.getColName());
+    String colType = mStatsObj.getColType();
+    ColumnStatisticsData colStatsData = new ColumnStatisticsData();
+
+    if (colType.equalsIgnoreCase("boolean")) {
+      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+      boolStats.setNumFalses(mStatsObj.getNumFalses());
+      boolStats.setNumTrues(mStatsObj.getNumTrues());
+      boolStats.setNumNulls(mStatsObj.getNumNulls());
+      colStatsData.setBooleanStats(boolStats);
+    } else if (colType.equalsIgnoreCase("string")) {
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      stringStats.setNumNulls(mStatsObj.getNumNulls());
+      stringStats.setAvgColLen(mStatsObj.getAvgColLen());
+      stringStats.setMaxColLen(mStatsObj.getMaxColLen());
+      stringStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setStringStats(stringStats);
+    } else if (colType.equalsIgnoreCase("binary")) {
+      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+      binaryStats.setNumNulls(mStatsObj.getNumNulls());
+      binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
+      binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
+      colStatsData.setBinaryStats(binaryStats);
+    } else if (colType.equalsIgnoreCase("tinyint") || colType.equalsIgnoreCase("smallint") ||
+        colType.equalsIgnoreCase("int") || colType.equalsIgnoreCase("bigint") ||
+        colType.equalsIgnoreCase("timestamp")) {
+      LongColumnStatsData longStats = new LongColumnStatsData();
+      longStats.setNumNulls(mStatsObj.getNumNulls());
+      longStats.setHighValue(mStatsObj.getHighValueAsLong());
+      longStats.setLowValue(mStatsObj.getLowValueAsLong());
+      longStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setLongStats(longStats);
+   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+     DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+     doubleStats.setNumNulls(mStatsObj.getNumNulls());
+     doubleStats.setHighValue(mStatsObj.getHighValueAsDouble());
+     doubleStats.setLowValue(mStatsObj.getLowValueAsDouble());
+     doubleStats.setNumDVs(mStatsObj.getNumDVs());
+     colStatsData.setDoubleStats(doubleStats);
+   }
+   statsObj.setStatsData(colStatsData);
+   return statsObj;
+  }
+
+  private ColumnStatisticsDesc getPartitionColumnStatisticsDesc(
+    MPartitionColumnStatistics mStatsObj) {
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+    statsDesc.setIsTblLevel(false);
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setPartName(mStatsObj.getPartitionName());
+    statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+    return statsDesc;
+  }
+
+  private void writeMPartitionColumnStatistics(MPartitionColumnStatistics mStatsObj,
+    List<String> partVal) throws NoSuchObjectException, MetaException, InvalidObjectException,
+    InvalidInputException
+  {
+    String dbName = mStatsObj.getDbName();
+    String tableName = mStatsObj.getTableName();
+    String partName = mStatsObj.getPartitionName();
+    String colName = mStatsObj.getColName();
+
+    LOG.info("Updating partition level column statistics for db=" + dbName + " tableName=" +
+      tableName + " partName=" + partName + " colName=" + colName);
+
+    MTable mTable = getMTable(mStatsObj.getDbName(), mStatsObj.getTableName());
+    boolean foundCol = false;
+
+    if (mTable == null) {
+      throw new
+        NoSuchObjectException("Table " + tableName +
+        " for which stats gathering is requested doesn't exist.");
+    }
+
+    MPartition mPartition =
+                 getMPartition(mStatsObj.getDbName(), mStatsObj.getTableName(), partVal);
+
+    if (mPartition == null) {
+      throw new
+        NoSuchObjectException("Partition " + partName +
+        " for which stats gathering is requested doesn't exist");
+    }
+
+    MStorageDescriptor mSDS = mPartition.getSd();
+    List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+    for(MFieldSchema mCol:colList) {
+      if (mCol.getName().equals(mStatsObj.getColName().trim())) {
+        foundCol = true;
+        break;
+      }
+    }
+
+    if (!foundCol) {
+      throw new
+        NoSuchObjectException("Column " + colName +
+        " for which stats gathering is requested doesn't exist.");
+    }
+
+    MPartitionColumnStatistics oldStatsObj = getMPartitionColumnStatistics(dbName, tableName,
+                                                               partName, partVal, colName);
+    if (oldStatsObj != null) {
+      oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+      oldStatsObj.setHighValue(mStatsObj.getHighValue());
+      oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+      oldStatsObj.setLowValue(mStatsObj.getLowValue());
+      oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+      oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+      oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+      oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+      oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    } else {
+      pm.makePersistent(mStatsObj);
+    }
+ }
+
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean committed = false;
+
+    try {
+      openTransaction();
+      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+
+      for (ColumnStatisticsObj statsObj:statsObjs) {
+          MTableColumnStatistics mStatsObj = convertToMTableColumnStatistics(statsDesc, statsObj);
+          writeMTableColumnStatistics(mStatsObj);
+      }
+      committed = commitTransaction();
+      return committed;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+ }
+
+  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean committed = false;
+
+    try {
+    openTransaction();
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+
+    for (ColumnStatisticsObj statsObj:statsObjs) {
+        MPartitionColumnStatistics mStatsObj =
+            convertToMPartitionColumnStatistics(statsDesc, statsObj, partVals);
+        writeMPartitionColumnStatistics(mStatsObj, partVals);
+    }
+    committed = commitTransaction();
+    return committed;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MTableColumnStatistics getMTableColumnStatistics(String dbName, String tableName,
+    String colName) throws NoSuchObjectException, InvalidInputException, MetaException
+  {
+    boolean committed = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null || colName == null) {
+      throw new InvalidInputException("TableName/ColName passed to get_table_column_statistics " +
+      "is null");
+    }
+
+    try {
+      openTransaction();
+      MTableColumnStatistics mStatsObj = null;
+      MTable mTable = getMTable(dbName.trim(), tableName.trim());
+      boolean foundCol = false;
+
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table " + tableName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      MStorageDescriptor mSDS = mTable.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(colName.trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new NoSuchObjectException("Column " + colName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      Query query = pm.newQuery(MTableColumnStatistics.class);
+      query.setFilter("table.tableName == t1 && " +
+        "dbName == t2 && " + "colName == t3");
+      query
+      .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      query.setUnique(true);
+
+      mStatsObj = (MTableColumnStatistics) query.execute(tableName.trim(),
+                                                        dbName.trim(), colName.trim());
+      pm.retrieve(mStatsObj);
+      committed = commitTransaction();
+      return mStatsObj;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return null;
+      }
+    }
+  }
+
+ public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
+   throws MetaException, NoSuchObjectException, InvalidInputException
+  {
+    ColumnStatistics statsObj;
+    MTableColumnStatistics mStatsObj = getMTableColumnStatistics(dbName, tableName, colName);
+
+    if (mStatsObj == null) {
+      throw new NoSuchObjectException("Statistics for dbName=" + dbName + " tableName=" + tableName
+        + " columnName=" + colName + " doesn't exist.");
+    }
+
+    statsObj = convertToTableColumnStatistics(mStatsObj);
+    return statsObj;
+  }
+
+  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVal, String colName)
+    throws MetaException, NoSuchObjectException, InvalidInputException
+  {
+    ColumnStatistics statsObj;
+    MPartitionColumnStatistics mStatsObj =
+          getMPartitionColumnStatistics(dbName, tableName, partName, partVal, colName);
+
+    if (mStatsObj == null) {
+      throw new NoSuchObjectException("Statistics for dbName=" + dbName + " tableName=" + tableName
+          + " partName= " + partName + " columnName=" + colName + " doesn't exist.");
+    }
+    statsObj = convertToPartColumnStatistics(mStatsObj);
+    return statsObj;
+  }
+
+  private ColumnStatistics convertToPartColumnStatistics(MPartitionColumnStatistics mStatsObj)
+  {
+    if (mStatsObj == null) {
+      return null;
+    }
+
+    ColumnStatisticsDesc statsDesc = getPartitionColumnStatisticsDesc(mStatsObj);
+    ColumnStatisticsObj statsObj = getPartitionColumnStatisticsObj(mStatsObj);
+    List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+    statsObjs.add(statsObj);
+
+    ColumnStatistics colStats = new ColumnStatistics();
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(statsObjs);
+    return colStats;
+  }
+
+  private MPartitionColumnStatistics getMPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVal, String colName) throws NoSuchObjectException,
+    InvalidInputException, MetaException
+  {
+    boolean committed = false;
+    MPartitionColumnStatistics mStatsObj = null;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null || partVal == null || colName == null) {
+      throw new InvalidInputException("TableName/PartName/ColName passed to " +
+        " get_partition_column_statistics is null");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName.trim(), tableName.trim());
+      boolean foundCol = false;
+
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table "  + tableName +
+          " for which stats is requested doesn't exist.");
+      }
+
+      MPartition mPartition =
+                  getMPartition(dbName, tableName, partVal);
+
+      if (mPartition == null) {
+        throw new
+          NoSuchObjectException("Partition " + partName +
+          " for which stats is requested doesn't exist");
+      }
+
+      MStorageDescriptor mSDS = mPartition.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(colName.trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new NoSuchObjectException("Column " + colName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      Query query = pm.newQuery(MPartitionColumnStatistics.class);
+      query.setFilter("partition.partitionName == t1 && " +
+        "dbName == t2 && " + "tableName == t3 && " + "colName == t4");
+      query
+      .declareParameters("java.lang.String t1, java.lang.String t2, " +
+         "java.lang.String t3, java.lang.String t4");
+      query.setUnique(true);
+
+      mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
+                                                        dbName.trim(), tableName.trim(),
+                                                        colName.trim());
+      pm.retrieve(mStatsObj);
+      committed = commitTransaction();
+      return mStatsObj;
+
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+       }
+    }
+  }
+
+  public boolean deletePartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVals,String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean ret = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName, tableName);
+      MPartitionColumnStatistics mStatsObj;
+      List<MPartitionColumnStatistics> mStatsObjColl;
+
+      if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          "  for which stats deletion is requested doesn't exist");
+      }
+
+      MPartition mPartition =
+          getMPartition(dbName, tableName, partVals);
+
+      if (mPartition == null) {
+        throw new
+          NoSuchObjectException("Partition " + partName +
+          " for which stats deletion is requested doesn't exist");
+      }
+
+      Query query = pm.newQuery(MPartitionColumnStatistics.class);
+      String filter;
+      String parameters;
+
+      if (colName != null) {
+        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3 && " +
+                    "colName == t4";
+        parameters = "java.lang.String t1, java.lang.String t2, " +
+                        "java.lang.String t3, java.lang.String t4";
+      } else {
+        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3";
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+      }
+
+      query.setFilter(filter);
+      query
+        .declareParameters(parameters);
+
+      if (colName != null) {
+        query.setUnique(true);
+        mStatsObj = (MPartitionColumnStatistics)query.executeWithArray(partName.trim(),
+                                                dbName.trim(), tableName.trim(), colName.trim());
+        pm.retrieve(mStatsObj);
+
+        if (mStatsObj != null) {
+          pm.deletePersistent(mStatsObj);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" +dbName + " table="
+              + tableName + " partition=" + partName + " col=" + colName);
+        }
+      } else {
+        mStatsObjColl= (List<MPartitionColumnStatistics>)query.execute(partName.trim(),
+                                  dbName.trim(), tableName.trim());
+        pm.retrieveAll(mStatsObjColl);
+
+        if (mStatsObjColl != null) {
+          pm.deletePersistentAll(mStatsObjColl);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+            " table=" + tableName + " partition" + partName);
+        }
+      }
+      ret = commitTransaction();
+    } catch(NoSuchObjectException e) {
+       rollbackTransaction();
+       throw e;
+    } finally {
+      if (!ret) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean ret = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName, tableName);
+      MTableColumnStatistics mStatsObj;
+        List<MTableColumnStatistics> mStatsObjColl;
+
+      if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          "  for which stats deletion is requested doesn't exist");
+      }
+
+      Query query = pm.newQuery(MTableColumnStatistics.class);
+      String filter;
+      String parameters;
+
+      if (colName != null) {
+        filter = "table.tableName == t1 && dbName == t2 && colName == t3";
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+      } else {
+        filter = "table.tableName == t1 && dbName == t2";
+        parameters = "java.lang.String t1, java.lang.String t2";
+      }
+
+      query.setFilter(filter);
+      query
+        .declareParameters(parameters);
+
+      if (colName != null) {
+        query.setUnique(true);
+        mStatsObj = (MTableColumnStatistics)query.execute(tableName.trim(),
+                                                    dbName.trim(), colName.trim());
+        pm.retrieve(mStatsObj);
+
+        if (mStatsObj != null) {
+          pm.deletePersistent(mStatsObj);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" +dbName + " table="
+              + tableName + " col=" + colName);
+        }
+      } else {
+        mStatsObjColl= (List<MTableColumnStatistics>)query.execute(tableName.trim(), dbName.trim());
+        pm.retrieveAll(mStatsObjColl);
+
+        if (mStatsObjColl != null) {
+          pm.deletePersistentAll(mStatsObjColl);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+            " table=" + tableName);
+        }
+      }
+      ret = commitTransaction();
+    } catch(NoSuchObjectException e) {
+       rollbackTransaction();
+       throw e;
+    } finally {
+      if (!ret) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
   @Override
   public long cleanupEvents() {
     boolean commited = false;
@@ -4468,4 +5242,5 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return delCnt;
   }
+
 }

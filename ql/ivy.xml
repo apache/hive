@@ -74,7 +74,7 @@
     <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}"
                 transitive="false"/>
     <dependency org="javolution" name="javolution" rev="${javolution.version}"/>
-    
+
     <!-- Hack to get jobclient tests dependency in. -->
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-jobclient" rev="${hadoop-0.23.version}"
                 conf="hadoop23.test->default" transitive="false">

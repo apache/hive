@@ -665,7 +665,7 @@ public final class PrimitiveObjectInspectorUtils {
   /**
    * Get the String value out of a primitive object. Note that
    * NullPointerException will be thrown if o is null. Note that
-   * NumberFormatException will be thrown if o is not a valid number.
+   * RuntimeException will be thrown if o is not a valid string.
    */
   public static String getString(Object o, PrimitiveObjectInspector oi) {
 

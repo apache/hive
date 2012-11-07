@@ -41,12 +41,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
@@ -941,6 +943,50 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<Index> listIndexes(String dbName, String tblName, short max)
       throws NoSuchObjectException, MetaException, TException {
     return client.get_indexes(dbName, tblName, max);
+  }
+
+  /** {@inheritDoc} */
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+    InvalidInputException{
+    return client.update_table_column_statistics(statsObj);
+  }
+
+  /** {@inheritDoc} */
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj)
+    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+    InvalidInputException{
+    return client.update_partition_column_statistics(statsObj);
+  }
+
+  /** {@inheritDoc} */
+  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName,String colName)
+    throws NoSuchObjectException, MetaException, TException, InvalidInputException,
+    InvalidObjectException {
+    return client.get_table_column_statistics(dbName, tableName, colName);
+  }
+
+  /** {@inheritDoc} */
+  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, String colName) throws NoSuchObjectException, MetaException, TException,
+    InvalidInputException, InvalidObjectException {
+    return client.get_partition_column_statistics(dbName, tableName, partName, colName);
+  }
+
+  /** {@inheritDoc} */
+  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
+    String colName) throws NoSuchObjectException, InvalidObjectException, MetaException,
+    TException, InvalidInputException
+  {
+    return client.delete_partition_column_statistics(dbName, tableName, partName, colName);
+  }
+
+  /** {@inheritDoc} */
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
+    InvalidInputException
+  {
+    return client.delete_table_column_statistics(dbName, tableName, colName);
   }
 
   /**
