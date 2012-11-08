@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * UDFRound.
@@ -36,33 +35,34 @@ import org.apache.hadoop.io.LongWritable;
     extended = "Example:\n"
     + "  > SELECT _FUNC_(12.3456, 1) FROM src LIMIT 1;\n" + "  12.3'")
 public class UDFRound extends UDF {
-  private DoubleWritable doubleWritable = new DoubleWritable();
-  private LongWritable longWritable = new LongWritable();
+  private final DoubleWritable doubleWritable = new DoubleWritable();
 
   public UDFRound() {
   }
 
-  public LongWritable evaluate(DoubleWritable n) {
+  private DoubleWritable evaluate(DoubleWritable n, int i) {
+    double d = n.get();
+    if (Double.isNaN(d) || Double.isInfinite(d)) {
+      doubleWritable.set(d);
+    } else {
+      doubleWritable.set(BigDecimal.valueOf(d).setScale(i,
+          RoundingMode.HALF_UP).doubleValue());
+    }
+    return doubleWritable;
+  }
+
+  public DoubleWritable evaluate(DoubleWritable n) {
     if (n == null) {
       return null;
     }
-    longWritable.set(BigDecimal.valueOf(n.get()).setScale(0,
-        RoundingMode.HALF_UP).longValue());
-    return longWritable;
+    return evaluate(n, 0);
   }
 
   public DoubleWritable evaluate(DoubleWritable n, IntWritable i) {
     if ((n == null) || (i == null)) {
       return null;
     }
-    double d = n.get();
-    if (Double.isNaN(d) || Double.isInfinite(d)) {
-      doubleWritable.set(d);
-    } else {
-      doubleWritable.set(BigDecimal.valueOf(d).setScale(i.get(),
-          RoundingMode.HALF_UP).doubleValue());
-    }
-    return doubleWritable;
+    return evaluate(n, i.get());
   }
 
 }
