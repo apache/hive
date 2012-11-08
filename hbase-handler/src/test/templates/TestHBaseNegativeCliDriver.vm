@@ -84,7 +84,7 @@ public class $className extends TestCase {
     try {
       System.out.println("Begin query: " + "$fname");
 
-      qt.addFile("$qf.getCanonicalPath()");
+      qt.addFile("$qfilesMap.get($fname)");
 
       if (qt.shouldBeSkipped("$fname")) {
         System.out.println("Test $fname skipped");
