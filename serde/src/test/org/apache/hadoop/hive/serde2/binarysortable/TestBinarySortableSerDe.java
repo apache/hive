@@ -26,7 +26,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -63,9 +63,9 @@ public class TestBinarySortableSerDe extends TestCase {
   private SerDe getSerDe(String fieldNames, String fieldTypes, String order)
       throws Throwable {
     Properties schema = new Properties();
-    schema.setProperty(Constants.LIST_COLUMNS, fieldNames);
-    schema.setProperty(Constants.LIST_COLUMN_TYPES, fieldTypes);
-    schema.setProperty(Constants.SERIALIZATION_SORT_ORDER, order);
+    schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
+    schema.setProperty(serdeConstants.SERIALIZATION_SORT_ORDER, order);
 
     BinarySortableSerDe serde = new BinarySortableSerDe();
     serde.initialize(new Configuration(), schema);

@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -576,10 +576,10 @@ public abstract class BaseSemanticAnalyzer {
       throws SemanticException {
     switch (typeNode.getType()) {
     case HiveParser.TOK_LIST:
-      return Constants.LIST_TYPE_NAME + "<"
+      return serdeConstants.LIST_TYPE_NAME + "<"
           + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ">";
     case HiveParser.TOK_MAP:
-      return Constants.MAP_TYPE_NAME + "<"
+      return serdeConstants.MAP_TYPE_NAME + "<"
           + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ","
           + getTypeStringFromAST((ASTNode) typeNode.getChild(1)) + ">";
     case HiveParser.TOK_STRUCT:
@@ -593,7 +593,7 @@ public abstract class BaseSemanticAnalyzer {
 
   private static String getStructTypeStringFromAST(ASTNode typeNode)
       throws SemanticException {
-    String typeStr = Constants.STRUCT_TYPE_NAME + "<";
+    String typeStr = serdeConstants.STRUCT_TYPE_NAME + "<";
     typeNode = (ASTNode) typeNode.getChild(0);
     int children = typeNode.getChildCount();
     if (children <= 0) {
@@ -615,7 +615,7 @@ public abstract class BaseSemanticAnalyzer {
 
   private static String getUnionTypeStringFromAST(ASTNode typeNode)
       throws SemanticException {
-    String typeStr = Constants.UNION_TYPE_NAME + "<";
+    String typeStr = serdeConstants.UNION_TYPE_NAME + "<";
     typeNode = (ASTNode) typeNode.getChild(0);
     int children = typeNode.getChildCount();
     if (children <= 0) {

@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1047,8 +1047,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         tbl.setCreateTime((int) time);
         if (tbl.getParameters() == null ||
-            tbl.getParameters().get(Constants.DDL_TIME) == null) {
-          tbl.putToParameters(Constants.DDL_TIME, Long.toString(time));
+            tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
+          tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
         ms.createTable(tbl);
         success = ms.commitTransaction();
@@ -1509,7 +1509,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // set create time
         long time = System.currentTimeMillis() / 1000;
         part.setCreateTime((int) time);
-        part.putToParameters(Constants.DDL_TIME, Long.toString(time));
+        part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
 
         success = ms.addPartition(part);
         if (success) {
@@ -1719,8 +1719,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         part.setCreateTime((int) time);
         if (part.getParameters() == null ||
-            part.getParameters().get(Constants.DDL_TIME) == null) {
-          part.putToParameters(Constants.DDL_TIME, Long.toString(time));
+            part.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
+          part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
 
         // Inherit table properties into partition properties.
@@ -2225,7 +2225,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws InvalidOperationException, MetaException {
       startFunction("alter_index", ": db=" + dbname + " base_tbl=" + base_table_name
           + " idx=" + index_name + " newidx=" + newIndex.getIndexName());
-      newIndex.putToParameters(Constants.DDL_TIME, Long.toString(System
+      newIndex.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
 
       boolean success = false;
@@ -2282,8 +2282,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       // Update the time if it hasn't been specified.
       if (newTable.getParameters() == null ||
-          newTable.getParameters().get(Constants.DDL_TIME) == null) {
-        newTable.putToParameters(Constants.DDL_TIME, Long.toString(System
+          newTable.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
+        newTable.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
             .currentTimeMillis() / 1000));
       }
       boolean success = false;
@@ -2863,7 +2863,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         index.setCreateTime((int) time);
-        index.putToParameters(Constants.DDL_TIME, Long.toString(time));
+        index.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
 
         ms.addIndex(index);
         success = ms.commitTransaction();

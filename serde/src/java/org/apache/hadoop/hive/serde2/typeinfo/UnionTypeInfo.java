@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
@@ -47,7 +47,7 @@ public class UnionTypeInfo extends TypeInfo implements Serializable {
   @Override
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
-    sb.append(Constants.UNION_TYPE_NAME + "<");
+    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
     for (int i = 0; i < allUnionObjectTypeInfos.size(); i++) {
       if (i > 0) {
         sb.append(",");

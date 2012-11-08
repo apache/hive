@@ -164,7 +164,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.util.ObjectPair;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -1742,28 +1742,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_TABLEROWFORMATFIELD:
           String fieldDelim = unescapeSQLString(rowChild.getChild(0).getText());
           tblDesc.getProperties()
-              .setProperty(Constants.FIELD_DELIM, fieldDelim);
-          tblDesc.getProperties().setProperty(Constants.SERIALIZATION_FORMAT,
+              .setProperty(serdeConstants.FIELD_DELIM, fieldDelim);
+          tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_FORMAT,
               fieldDelim);
 
           if (rowChild.getChildCount() >= 2) {
             String fieldEscape = unescapeSQLString(rowChild.getChild(1)
                 .getText());
-            tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR,
+            tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR,
                 fieldEscape);
           }
           break;
         case HiveParser.TOK_TABLEROWFORMATCOLLITEMS:
-          tblDesc.getProperties().setProperty(Constants.COLLECTION_DELIM,
+          tblDesc.getProperties().setProperty(serdeConstants.COLLECTION_DELIM,
               unescapeSQLString(rowChild.getChild(0).getText()));
           break;
         case HiveParser.TOK_TABLEROWFORMATMAPKEYS:
-          tblDesc.getProperties().setProperty(Constants.MAPKEY_DELIM,
+          tblDesc.getProperties().setProperty(serdeConstants.MAPKEY_DELIM,
               unescapeSQLString(rowChild.getChild(0).getText()));
           break;
         case HiveParser.TOK_TABLEROWFORMATLINES:
           String lineDelim = unescapeSQLString(rowChild.getChild(0).getText());
-          tblDesc.getProperties().setProperty(Constants.LINE_DELIM, lineDelim);
+          tblDesc.getProperties().setProperty(serdeConstants.LINE_DELIM, lineDelim);
           if (!lineDelim.equals("\n") && !lineDelim.equals("10")) {
             throw new SemanticException(generateErrorMessage(rowChild,
                     ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
@@ -4694,8 +4694,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // converted.
         //
         String tName = colInfo.getType().getTypeName();
-        if (tName.equals(Constants.VOID_TYPE_NAME)) {
-          colTypes = colTypes.concat(Constants.STRING_TYPE_NAME);
+        if (tName.equals(serdeConstants.VOID_TYPE_NAME)) {
+          colTypes = colTypes.concat(serdeConstants.STRING_TYPE_NAME);
         } else {
           colTypes = colTypes.concat(tName);
         }

@@ -151,7 +151,7 @@ import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -1109,12 +1109,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private void setIsArchived(Partition p, boolean state, int level) {
     Map<String, String> params = p.getParameters();
     if (state) {
-      params.put(org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED,
+      params.put(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IS_ARCHIVED,
           "true");
       params.put(ArchiveUtils.ARCHIVING_LEVEL, Integer
           .toString(level));
     } else {
-      params.remove(org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED);
+      params.remove(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IS_ARCHIVED);
       params.remove(ArchiveUtils.ARCHIVING_LEVEL);
     }
   }
@@ -1125,7 +1125,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private String getOriginalLocation(Partition p) {
     Map<String, String> params = p.getParameters();
     return params.get(
-        org.apache.hadoop.hive.metastore.api.Constants.ORIGINAL_LOCATION);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ORIGINAL_LOCATION);
   }
 
   /**
@@ -1134,9 +1134,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private void setOriginalLocation(Partition p, String loc) {
     Map<String, String> params = p.getParameters();
     if (loc == null) {
-      params.remove(org.apache.hadoop.hive.metastore.api.Constants.ORIGINAL_LOCATION);
+      params.remove(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ORIGINAL_LOCATION);
     } else {
-      params.put(org.apache.hadoop.hive.metastore.api.Constants.ORIGINAL_LOCATION, loc);
+      params.put(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ORIGINAL_LOCATION, loc);
     }
   }
 
@@ -1992,25 +1992,25 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // If the four delimiters all exist in a CREATE TABLE query,
           // this following order needs to be strictly followed,
           // or the query will fail with a ParseException.
-          if (delims.containsKey(Constants.FIELD_DELIM)) {
+          if (delims.containsKey(serdeConstants.FIELD_DELIM)) {
             tbl_row_format += "  FIELDS TERMINATED BY '" +
                 escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                Constants.FIELD_DELIM))) + "' \n";
+                serdeConstants.FIELD_DELIM))) + "' \n";
           }
-          if (delims.containsKey(Constants.COLLECTION_DELIM)) {
+          if (delims.containsKey(serdeConstants.COLLECTION_DELIM)) {
             tbl_row_format += "  COLLECTION ITEMS TERMINATED BY '" +
                 escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                Constants.COLLECTION_DELIM))) + "' \n";
+                serdeConstants.COLLECTION_DELIM))) + "' \n";
           }
-          if (delims.containsKey(Constants.MAPKEY_DELIM)) {
+          if (delims.containsKey(serdeConstants.MAPKEY_DELIM)) {
             tbl_row_format += "  MAP KEYS TERMINATED BY '" +
                 escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                Constants.MAPKEY_DELIM))) + "' \n";
+                serdeConstants.MAPKEY_DELIM))) + "' \n";
           }
-          if (delims.containsKey(Constants.LINE_DELIM)) {
+          if (delims.containsKey(serdeConstants.LINE_DELIM)) {
             tbl_row_format += "  LINES TERMINATED BY '" +
                 escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
-                Constants.LINE_DELIM))) + "' \n";
+                serdeConstants.LINE_DELIM))) + "' \n";
           }
         }
         else {
@@ -2023,11 +2023,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             escapeHiveCommand(sd.getOutputFormat()) + "'";
       }
       else {
-        duplicateProps.add(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE);
+        duplicateProps.add(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
         tbl_row_format += " SERDE \n  '" +
             escapeHiveCommand(serdeInfo.getSerializationLib()) + "' \n";
         tbl_row_format += "STORED BY \n  '" + escapeHiveCommand(tbl.getParameters().get(
-            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)) + "' \n";
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)) + "' \n";
         // SerDe Properties
         if (serdeInfo.getParametersSize() > 0) {
           tbl_row_format += "WITH SERDEPROPERTIES ( \n";
@@ -2304,7 +2304,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = fs.create(resFile);
       SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
       // To remove the primitive types
-      sortedFuncs.removeAll(Constants.PrimitiveTypes);
+      sortedFuncs.removeAll(serdeConstants.PrimitiveTypes);
       Iterator<String> iterFuncs = sortedFuncs.iterator();
 
       while (iterFuncs.hasNext()) {
@@ -3562,7 +3562,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (crtTbl.getStorageHandler() != null) {
       tbl.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
         crtTbl.getStorageHandler());
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
@@ -3590,21 +3590,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (crtTbl.getFieldDelim() != null) {
-      tbl.setSerdeParam(Constants.FIELD_DELIM, crtTbl.getFieldDelim());
-      tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, crtTbl.getFieldDelim());
+      tbl.setSerdeParam(serdeConstants.FIELD_DELIM, crtTbl.getFieldDelim());
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, crtTbl.getFieldDelim());
     }
     if (crtTbl.getFieldEscape() != null) {
-      tbl.setSerdeParam(Constants.ESCAPE_CHAR, crtTbl.getFieldEscape());
+      tbl.setSerdeParam(serdeConstants.ESCAPE_CHAR, crtTbl.getFieldEscape());
     }
 
     if (crtTbl.getCollItemDelim() != null) {
-      tbl.setSerdeParam(Constants.COLLECTION_DELIM, crtTbl.getCollItemDelim());
+      tbl.setSerdeParam(serdeConstants.COLLECTION_DELIM, crtTbl.getCollItemDelim());
     }
     if (crtTbl.getMapKeyDelim() != null) {
-      tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
+      tbl.setSerdeParam(serdeConstants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
     }
     if (crtTbl.getLineDelim() != null) {
-      tbl.setSerdeParam(Constants.LINE_DELIM, crtTbl.getLineDelim());
+      tbl.setSerdeParam(serdeConstants.LINE_DELIM, crtTbl.getLineDelim());
     }
 
     if (crtTbl.getSerdeProps() != null) {

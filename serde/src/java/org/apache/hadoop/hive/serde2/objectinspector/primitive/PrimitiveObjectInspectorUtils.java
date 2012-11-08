@@ -25,7 +25,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -144,39 +144,39 @@ public final class PrimitiveObjectInspectorUtils {
   }
 
   public static final PrimitiveTypeEntry binaryTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BINARY, Constants.BINARY_TYPE_NAME, byte[].class,
+      PrimitiveCategory.BINARY, serdeConstants.BINARY_TYPE_NAME, byte[].class,
       byte[].class, BytesWritable.class);
   public static final PrimitiveTypeEntry stringTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.STRING, Constants.STRING_TYPE_NAME, null, String.class,
+      PrimitiveCategory.STRING, serdeConstants.STRING_TYPE_NAME, null, String.class,
       Text.class);
   public static final PrimitiveTypeEntry booleanTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BOOLEAN, Constants.BOOLEAN_TYPE_NAME, Boolean.TYPE,
+      PrimitiveCategory.BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME, Boolean.TYPE,
       Boolean.class, BooleanWritable.class);
   public static final PrimitiveTypeEntry intTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.INT, Constants.INT_TYPE_NAME, Integer.TYPE,
+      PrimitiveCategory.INT, serdeConstants.INT_TYPE_NAME, Integer.TYPE,
       Integer.class, IntWritable.class);
   public static final PrimitiveTypeEntry longTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.LONG, Constants.BIGINT_TYPE_NAME, Long.TYPE,
+      PrimitiveCategory.LONG, serdeConstants.BIGINT_TYPE_NAME, Long.TYPE,
       Long.class, LongWritable.class);
   public static final PrimitiveTypeEntry floatTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.FLOAT, Constants.FLOAT_TYPE_NAME, Float.TYPE,
+      PrimitiveCategory.FLOAT, serdeConstants.FLOAT_TYPE_NAME, Float.TYPE,
       Float.class, FloatWritable.class);
   public static final PrimitiveTypeEntry voidTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.VOID, Constants.VOID_TYPE_NAME, Void.TYPE, Void.class,
+      PrimitiveCategory.VOID, serdeConstants.VOID_TYPE_NAME, Void.TYPE, Void.class,
       NullWritable.class);
 
   // No corresponding Writable classes for the following 3 in hadoop 0.17.0
   public static final PrimitiveTypeEntry doubleTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.DOUBLE, Constants.DOUBLE_TYPE_NAME, Double.TYPE,
+      PrimitiveCategory.DOUBLE, serdeConstants.DOUBLE_TYPE_NAME, Double.TYPE,
       Double.class, DoubleWritable.class);
   public static final PrimitiveTypeEntry byteTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BYTE, Constants.TINYINT_TYPE_NAME, Byte.TYPE,
+      PrimitiveCategory.BYTE, serdeConstants.TINYINT_TYPE_NAME, Byte.TYPE,
       Byte.class, ByteWritable.class);
   public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE,
+      PrimitiveCategory.SHORT, serdeConstants.SMALLINT_TYPE_NAME, Short.TYPE,
       Short.class, ShortWritable.class);
   public static final PrimitiveTypeEntry timestampTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.TIMESTAMP, Constants.TIMESTAMP_TYPE_NAME, null,
+      PrimitiveCategory.TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME, null,
       Object.class, TimestampWritable.class);
 
   // The following is a complex type for special handling

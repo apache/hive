@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -56,7 +56,7 @@ public class GenericUDFIf extends GenericUDF {
     if (!conditionTypeIsOk) {
       throw new UDFArgumentTypeException(0,
           "The first argument of function IF should be \""
-          + Constants.BOOLEAN_TYPE_NAME + "\", but \""
+          + serdeConstants.BOOLEAN_TYPE_NAME + "\", but \""
           + arguments[0].getTypeName() + "\" is found");
     }
 

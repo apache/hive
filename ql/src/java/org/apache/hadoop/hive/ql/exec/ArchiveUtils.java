@@ -204,7 +204,7 @@ public final class ArchiveUtils {
   public static boolean isArchived(Partition p) {
     Map<String, String> params = p.getParameters();
     if ("true".equalsIgnoreCase(params.get(
-        org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED))) {
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IS_ARCHIVED))) {
       return true;
     } else {
       return false;

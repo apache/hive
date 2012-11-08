@@ -257,7 +257,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
     String pcols = tblProps
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     // Log LOG = LogFactory.getLog(MapOperator.class.getName());
     if (pcols != null && pcols.length() > 0) {
       String[] partKeys = pcols.trim().split("/");

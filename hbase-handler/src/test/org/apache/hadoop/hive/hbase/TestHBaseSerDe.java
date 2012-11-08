@@ -30,7 +30,7 @@ import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -234,7 +234,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -249,7 +249,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -264,7 +264,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -281,7 +281,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -375,7 +375,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -390,7 +390,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -405,7 +405,7 @@ public class TestHBaseSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns", "key,abyte,ashort,aint,along,afloat,adouble,astring,abool");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:float:double:string:boolean");
@@ -542,10 +542,10 @@ public class TestHBaseSerDe extends TestCase {
 
   private Properties createPropertiesForHiveMapHBaseColumnFamily() {
     Properties tbl = new Properties();
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty(Constants.LIST_COLUMNS,
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
         "key,valint,valbyte,valshort,vallong,valfloat,valdouble,valbool");
-    tbl.setProperty(Constants.LIST_COLUMN_TYPES,
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<int,int>:map<tinyint,tinyint>:map<smallint,smallint>:map<bigint,bigint>:"
         + "map<float,float>:map<double,double>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
@@ -556,10 +556,10 @@ public class TestHBaseSerDe extends TestCase {
 
   private Properties createPropertiesForHiveMapHBaseColumnFamilyII() {
     Properties tbl = new Properties();
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty(Constants.LIST_COLUMNS,
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
         "key,valint,valbyte,valshort,vallong,valfloat,valdouble,valbool");
-    tbl.setProperty(Constants.LIST_COLUMN_TYPES,
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<int,int>:map<tinyint,tinyint>:map<smallint,smallint>:map<bigint,bigint>:"
         + "map<float,float>:map<double,double>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
@@ -627,10 +627,10 @@ public class TestHBaseSerDe extends TestCase {
 
   private Properties createPropertiesForHiveMapHBaseColumnFamilyII_I() {
     Properties tbl = new Properties();
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty(Constants.LIST_COLUMNS,
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
         "key,valbyte,valshort,valint,vallong,valfloat,valdouble,valstring,valbool");
-    tbl.setProperty(Constants.LIST_COLUMN_TYPES,
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<tinyint,tinyint>:map<smallint,smallint>:map<int,int>:map<bigint,bigint>:"
         + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
@@ -641,10 +641,10 @@ public class TestHBaseSerDe extends TestCase {
 
   private Properties createPropertiesForHiveMapHBaseColumnFamilyII_II() {
     Properties tbl = new Properties();
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
-    tbl.setProperty(Constants.LIST_COLUMNS,
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
         "key,valbyte,valshort,valint,vallong,valfloat,valdouble,valstring,valbool");
-    tbl.setProperty(Constants.LIST_COLUMN_TYPES,
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "string:map<tinyint,tinyint>:map<smallint,smallint>:map<int,int>:map<bigint,bigint>:"
         + "map<float,float>:map<double,double>:map<string,string>:map<boolean,boolean>");
     tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,

@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
@@ -155,9 +155,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       typ1.setName(typeName);
       typ1.setFields(new ArrayList<FieldSchema>(2));
       typ1.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
-          new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
       client.createType(typ1);
 
       Table tbl = new Table();
@@ -176,7 +176,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
-          .put(Constants.SERIALIZATION_FORMAT, "1");
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
 
       //skewed information
@@ -191,9 +191,9 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(
-          new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("ds", serdeConstants.STRING_TYPE_NAME, ""));
       tbl.getPartitionKeys().add(
-          new FieldSchema("hr", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("hr", serdeConstants.STRING_TYPE_NAME, ""));
 
       client.createTable(tbl);
 
@@ -603,8 +603,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.createDatabase(db);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -622,14 +622,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
-          .put(Constants.SERIALIZATION_FORMAT, "1");
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(
-          new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("ds", serdeConstants.STRING_TYPE_NAME, ""));
       tbl.getPartitionKeys().add(
-          new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("hr", serdeConstants.INT_TYPE_NAME, ""));
 
       client.createTable(tbl);
 
@@ -699,8 +699,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.createDatabase(db);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -718,14 +718,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
-          .put(Constants.SERIALIZATION_FORMAT, "1");
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(
-          new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("ds", serdeConstants.STRING_TYPE_NAME, ""));
       tbl.getPartitionKeys().add(
-          new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("hr", serdeConstants.INT_TYPE_NAME, ""));
 
       client.createTable(tbl);
 
@@ -943,23 +943,23 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   public void testSimpleTypeApi() throws Exception {
     try {
-      client.dropType(Constants.INT_TYPE_NAME);
+      client.dropType(serdeConstants.INT_TYPE_NAME);
 
       Type typ1 = new Type();
-      typ1.setName(Constants.INT_TYPE_NAME);
+      typ1.setName(serdeConstants.INT_TYPE_NAME);
       boolean ret = client.createType(typ1);
       assertTrue("Unable to create type", ret);
 
-      Type typ1_2 = client.getType(Constants.INT_TYPE_NAME);
+      Type typ1_2 = client.getType(serdeConstants.INT_TYPE_NAME);
       assertNotNull(typ1_2);
       assertEquals(typ1.getName(), typ1_2.getName());
 
-      ret = client.dropType(Constants.INT_TYPE_NAME);
+      ret = client.dropType(serdeConstants.INT_TYPE_NAME);
       assertTrue("unable to drop type integer", ret);
 
       boolean exceptionThrown = false;
       try {
-        client.getType(Constants.INT_TYPE_NAME);
+        client.getType(serdeConstants.INT_TYPE_NAME);
       } catch (NoSuchObjectException e) {
         exceptionThrown = true;
       }
@@ -980,9 +980,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       typ1.setName("Person");
       typ1.setFields(new ArrayList<FieldSchema>(2));
       typ1.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
-          new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
       boolean ret = client.createType(typ1);
       assertTrue("Unable to create type", ret);
 
@@ -999,7 +999,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       fam.setName("Family");
       fam.setFields(new ArrayList<FieldSchema>(2));
       fam.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       fam.getFields().add(
           new FieldSchema("members",
               MetaStoreUtils.getListType(typ1.getName()), ""));
@@ -1053,9 +1053,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       typ1.setName(typeName);
       typ1.setFields(new ArrayList<FieldSchema>(2));
       typ1.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
-          new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
       client.createType(typ1);
 
       Table tbl = new Table();
@@ -1074,7 +1074,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
@@ -1100,7 +1100,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertNotNull(tbl2.getSd().getSerdeInfo());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
 
       tbl2.setTableName(tblName2);
       tbl2.setParameters(new HashMap<String, String>());
@@ -1429,8 +1429,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.createDatabase(db);
 
       ArrayList<FieldSchema> invCols = new ArrayList<FieldSchema>(2);
-      invCols.add(new FieldSchema("n-ame", Constants.STRING_TYPE_NAME, ""));
-      invCols.add(new FieldSchema("in.come", Constants.INT_TYPE_NAME, ""));
+      invCols.add(new FieldSchema("n-ame", serdeConstants.STRING_TYPE_NAME, ""));
+      invCols.add(new FieldSchema("in.come", serdeConstants.INT_TYPE_NAME, ""));
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -1448,7 +1448,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
       boolean failed = false;
       try {
         client.createTable(tbl);
@@ -1460,8 +1460,8 @@ public abstract class TestHiveMetaStore extends TestCase {
             false);
       }
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
       // create a valid table
       tbl.setTableName(tblName);
@@ -1565,9 +1565,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       typ1.setName(typeName);
       typ1.setFields(new ArrayList<FieldSchema>(2));
       typ1.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
-          new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
       client.createType(typ1);
 
       Table tbl = new Table();
@@ -1586,17 +1586,17 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "9");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "9");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
 
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(
           new FieldSchema("ds",
-              org.apache.hadoop.hive.serde.Constants.DATE_TYPE_NAME, ""));
+              org.apache.hadoop.hive.serde.serdeConstants.DATE_TYPE_NAME, ""));
       tbl.getPartitionKeys().add(
           new FieldSchema("hr",
-              org.apache.hadoop.hive.serde.Constants.INT_TYPE_NAME, ""));
+              org.apache.hadoop.hive.serde.serdeConstants.INT_TYPE_NAME, ""));
 
       client.createTable(tbl);
 
@@ -1613,9 +1613,9 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       assertNotNull(tbl2.getPartitionKeys());
       assertEquals(2, tbl2.getPartitionKeys().size());
-      assertEquals(Constants.DATE_TYPE_NAME, tbl2.getPartitionKeys().get(0)
+      assertEquals(serdeConstants.DATE_TYPE_NAME, tbl2.getPartitionKeys().get(0)
           .getType());
-      assertEquals(Constants.INT_TYPE_NAME, tbl2.getPartitionKeys().get(1)
+      assertEquals(serdeConstants.INT_TYPE_NAME, tbl2.getPartitionKeys().get(1)
           .getType());
       assertEquals("ds", tbl2.getPartitionKeys().get(0).getName());
       assertEquals("hr", tbl2.getPartitionKeys().get(1).getName());
@@ -1670,8 +1670,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       tbl.setTableName(tblName_1);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
       StorageDescriptor sd = new StorageDescriptor();
       sd.setSerdeInfo(new SerDeInfo());
@@ -1679,7 +1679,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "9");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "9");
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
 
@@ -1715,10 +1715,10 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertEquals(client.getConfigValue("hive.key4", val), "0");
         assertEquals(client.getConfigValue("hive.key5", val), val);
         assertEquals(client.getConfigValue(null, val), val);
-      } catch (TException e) {
-        e.printStackTrace();
-          assert (false);
       } catch (ConfigValSecurityException e) {
+        e.printStackTrace();
+        assert (false);
+      } catch (TException e) {
         e.printStackTrace();
         assert (false);
       }
@@ -1728,12 +1728,12 @@ public abstract class TestHiveMetaStore extends TestCase {
     try {
       // Attempting to get the password should throw an exception
       client.getConfigValue("javax.jdo.option.ConnectionPassword", "password");
+    } catch (ConfigValSecurityException e) {
+      threwException = true;
     } catch (TException e) {
       e.printStackTrace();
       assert (false);
-    } catch (ConfigValSecurityException e) {
-      threwException = true;
-    }
+    } 
     assert (threwException);
   }
 
@@ -1742,7 +1742,7 @@ public abstract class TestHiveMetaStore extends TestCase {
   throws NoSuchObjectException, MetaException, TException {
     Partition part_get = client.getPartition(dbName, tblName, part.getValues());
     part.setCreateTime(part_get.getCreateTime());
-    part.putToParameters(org.apache.hadoop.hive.metastore.api.Constants.DDL_TIME, Long.toString(part_get.getCreateTime()));
+    part.putToParameters(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DDL_TIME, Long.toString(part_get.getCreateTime()));
   }
 
   private static void silentDropDatabase(String dbName) throws MetaException, TException {
@@ -1797,13 +1797,13 @@ public abstract class TestHiveMetaStore extends TestCase {
     client.createDatabase(db);
 
     ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-    cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
-    cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+    cols.add(new FieldSchema("c1", serdeConstants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("c2", serdeConstants.INT_TYPE_NAME, ""));
 
     ArrayList<FieldSchema> partCols = new ArrayList<FieldSchema>(3);
-    partCols.add(new FieldSchema("p1", Constants.STRING_TYPE_NAME, ""));
-    partCols.add(new FieldSchema("p2", Constants.STRING_TYPE_NAME, ""));
-    partCols.add(new FieldSchema("p3", Constants.INT_TYPE_NAME, ""));
+    partCols.add(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema("p2", serdeConstants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema("p3", serdeConstants.INT_TYPE_NAME, ""));
 
     Table tbl = new Table();
     tbl.setDbName(dbName);
@@ -1819,7 +1819,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setName(tbl.getTableName());
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters()
-        .put(Constants.SERIALIZATION_FORMAT, "1");
+        .put(serdeConstants.SERIALIZATION_FORMAT, "1");
     sd.setSortCols(new ArrayList<Order>());
 
     tbl.setPartitionKeys(partCols);
@@ -1939,11 +1939,11 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.createDatabase(db);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c1", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c2", serdeConstants.INT_TYPE_NAME, ""));
 
       ArrayList<FieldSchema> partCols = new ArrayList<FieldSchema>(1);
-      partCols.add(new FieldSchema("p1", Constants.STRING_TYPE_NAME, ""));
+      partCols.add(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, ""));
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -1959,7 +1959,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters()
-          .put(Constants.SERIALIZATION_FORMAT, "1");
+          .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
 
       tbl.setPartitionKeys(partCols);
@@ -2007,15 +2007,15 @@ public abstract class TestHiveMetaStore extends TestCase {
       createDb(dbName);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c1", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c2", serdeConstants.INT_TYPE_NAME, ""));
 
       ArrayList<FieldSchema> partCols = new ArrayList<FieldSchema>(2);
-      partCols.add(new FieldSchema("p1", Constants.STRING_TYPE_NAME, ""));
-      partCols.add(new FieldSchema("p2", Constants.STRING_TYPE_NAME, ""));
+      partCols.add(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, ""));
+      partCols.add(new FieldSchema("p2", serdeConstants.STRING_TYPE_NAME, ""));
 
       Map<String, String> serdParams = new HashMap<String, String>();
-      serdParams.put(Constants.SERIALIZATION_FORMAT, "1");
+      serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
       StorageDescriptor sd = createStorageDescriptor(tblName, partCols, null, serdParams);
 
       Table tbl = new Table();
@@ -2116,9 +2116,9 @@ public abstract class TestHiveMetaStore extends TestCase {
       String filter;
       //test owner
       //owner like ".*Owner.*" and owner like "test.*"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER +
           " like \".*Owner.*\" and " +
-          org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER +
           " like  \"test.*\"";
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(tableNames.size(), 3);
@@ -2127,7 +2127,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assert(tableNames.contains(table3.getTableName()));
 
       //owner = "testOwner1"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER +
           " = \"testOwner1\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
@@ -2136,7 +2136,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assert(tableNames.contains(table3.getTableName()));
 
       //lastAccessTime < 90
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS +
           " < 90";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
@@ -2145,7 +2145,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assert(tableNames.contains(table3.getTableName()));
 
       //lastAccessTime > 90
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS +
       " > 90";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
@@ -2153,7 +2153,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       //test params
       //test_param_2 = "50"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_2 = \"50\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
@@ -2162,38 +2162,38 @@ public abstract class TestHiveMetaStore extends TestCase {
       assert(tableNames.contains(table2.getTableName()));
 
       //test_param_2 = "75"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_2 = \"75\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(0, tableNames.size());
 
       //key_dne = "50"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "key_dne = \"50\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(0, tableNames.size());
 
       //test_param_1 != "yellow"
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_1 <> \"yellow\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
       assertEquals(2, tableNames.size());
 
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_1 != \"yellow\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
       assertEquals(2, tableNames.size());
 
       //owner = "testOwner1" and (lastAccessTime = 30 or test_param_1 = "hi")
-      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER +
         " = \"testOwner1\" and (" +
-        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS +
         " = 30 or " +
-        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
         "test_param_1 = \"hi\")";
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
 
@@ -2228,20 +2228,20 @@ public abstract class TestHiveMetaStore extends TestCase {
     int lastAccessTime, boolean hasSecondParam) throws Exception {
 
     ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-    cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
-    cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+    cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
     Map<String, String> params = new HashMap<String, String>();
     params.put("sd_param_1", "Use this for comments etc");
 
     Map<String, String> serdParams = new HashMap<String, String>();
-    serdParams.put(Constants.SERIALIZATION_FORMAT, "1");
+    serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
 
     StorageDescriptor sd = createStorageDescriptor(tableName, cols, params, serdParams);
 
     Map<String, String> partitionKeys = new HashMap<String, String>();
-    partitionKeys.put("ds", Constants.STRING_TYPE_NAME);
-    partitionKeys.put("hr", Constants.INT_TYPE_NAME);
+    partitionKeys.put("ds", serdeConstants.STRING_TYPE_NAME);
+    partitionKeys.put("hr", serdeConstants.INT_TYPE_NAME);
 
     Map<String, String> tableParams =  new HashMap<String, String>();
     tableParams.put("test_param_1", "hi");
@@ -2278,14 +2278,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       createDb(dbName);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
-      cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
-      cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c1", serdeConstants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c2", serdeConstants.INT_TYPE_NAME, ""));
 
       Map<String, String> params = new HashMap<String, String>();
       params.put("test_param_1", "Use this for comments etc");
 
       Map<String, String> serdParams = new HashMap<String, String>();
-      serdParams.put(Constants.SERIALIZATION_FORMAT, "1");
+      serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
 
       StorageDescriptor sd =  createStorageDescriptor(tblName, cols, params, serdParams);
 
@@ -2423,7 +2423,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setName(tableName);
     sd.getSerdeInfo().setParameters(serdParams);
     sd.getSerdeInfo().getParameters()
-        .put(Constants.SERIALIZATION_FORMAT, "1");
+        .put(serdeConstants.SERIALIZATION_FORMAT, "1");
     sd.setSortCols(new ArrayList<Order>());
 
     return sd;
@@ -2459,20 +2459,20 @@ public abstract class TestHiveMetaStore extends TestCase {
     createDb(dbName);
 
     Map<String, String> fields = new HashMap<String, String>();
-    fields.put("name", Constants.STRING_TYPE_NAME);
-    fields.put("income", Constants.INT_TYPE_NAME);
+    fields.put("name", serdeConstants.STRING_TYPE_NAME);
+    fields.put("income", serdeConstants.INT_TYPE_NAME);
 
     Type typ1 = createType(typeName, fields);
 
     Map<String , String> partitionKeys = new HashMap<String, String>();
-    partitionKeys.put("ds", Constants.STRING_TYPE_NAME);
-    partitionKeys.put("hr", Constants.STRING_TYPE_NAME);
+    partitionKeys.put("ds", serdeConstants.STRING_TYPE_NAME);
+    partitionKeys.put("hr", serdeConstants.STRING_TYPE_NAME);
 
     Map<String, String> params = new HashMap<String, String>();
     params.put("test_param_1", "Use this for comments etc");
 
     Map<String, String> serdParams = new HashMap<String, String>();
-    serdParams.put(Constants.SERIALIZATION_FORMAT, "1");
+    serdParams.put(serdeConstants.SERIALIZATION_FORMAT, "1");
 
     StorageDescriptor sd =  createStorageDescriptor(tblName, typ1.getFields(), params, serdParams);
 

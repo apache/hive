@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.tools.HiveMetaTool;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.util.StringUtils;
 
@@ -92,9 +92,9 @@ public class TestHiveMetaTool extends TestCase {
       typ1.setName(typeName);
       typ1.setFields(new ArrayList<FieldSchema>(2));
       typ1.getFields().add(
-          new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+          new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
-          new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
       client.createType(typ1);
 
       Table tbl = new Table();
@@ -113,7 +113,7 @@ public class TestHiveMetaTool extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, avroUri);
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());
@@ -137,7 +137,7 @@ public class TestHiveMetaTool extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.getParameters().put(AvroSerdeUtils.SCHEMA_URL, badAvroUri);
       sd.getSerdeInfo().setSerializationLib(
           org.apache.hadoop.hive.serde2.avro.AvroSerDe.class.getName());

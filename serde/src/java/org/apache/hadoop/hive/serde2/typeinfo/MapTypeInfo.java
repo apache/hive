@@ -46,7 +46,7 @@ public final class MapTypeInfo extends TypeInfo implements Serializable {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME + "<"
+    return org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME + "<"
         + mapKeyTypeInfo.getTypeName() + "," + mapValueTypeInfo.getTypeName()
         + ">";
   }

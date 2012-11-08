@@ -218,12 +218,12 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   @Explain(displayName = "sort order")
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER);
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER);
   }
 
   public void setOrder(String orderStr) {
     keySerializeInfo.getProperties().setProperty(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER,
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_SORT_ORDER,
         orderStr);
   }
 

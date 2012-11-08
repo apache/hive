@@ -25,7 +25,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
@@ -129,8 +129,8 @@ public class TestStatsSerde extends TestCase {
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.LIST_COLUMNS, fieldNames);
-      schema.setProperty(Constants.LIST_COLUMN_TYPES, fieldTypes);
+      schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+      schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
 
       LazyBinarySerDe serDe = new LazyBinarySerDe();
       serDe.initialize(new Configuration(), schema);
@@ -233,12 +233,12 @@ public class TestStatsSerde extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns",
         "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
     tbl.setProperty("columns.types",
         "tinyint:smallint:int:bigint:double:string:int:string");
-    tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
+    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;
   }
 

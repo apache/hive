@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -65,8 +65,8 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
 
     // this is the default serialization format
     if (serde instanceof DelimitedJSONSerDe) {
-      serdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-      serdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, getConf().getSerializationNullFormat());
+      serdeProp.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
+      serdeProp.put(serdeConstants.SERIALIZATION_NULL_FORMAT, getConf().getSerializationNullFormat());
     }
     serde.initialize(conf, serdeProp);
     return serde;

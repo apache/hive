@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
@@ -56,11 +56,11 @@ public class GenericUDFTestTranslate extends GenericUDF {
     }
 
     for (int i = 0; i < 3; i++) {
-      if (arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
-          && arguments[i].getTypeName() != Constants.VOID_TYPE_NAME) {
+      if (arguments[i].getTypeName() != serdeConstants.STRING_TYPE_NAME
+          && arguments[i].getTypeName() != serdeConstants.VOID_TYPE_NAME) {
         throw new UDFArgumentTypeException(i, "The " + getOrdinal(i + 1)
             + " argument of function TRANSLATE is expected to \""
-            + Constants.STRING_TYPE_NAME + "\", but \""
+            + serdeConstants.STRING_TYPE_NAME + "\", but \""
             + arguments[i].getTypeName() + "\" is found");
       }
     }

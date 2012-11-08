@@ -230,7 +230,7 @@ public class FetchOperator implements Serializable {
     Deserializer serde = partition.getDeserializerClass().newInstance();
     serde.initialize(job, partition.getProperties());
     String pcols = partition.getTableDesc().getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     String[] partKeys = pcols.trim().split("/");
     row[1] = createPartValue(partKeys, partition.getPartSpec());
     return createRowInspector(getCurrent(serde), partKeys);
@@ -240,7 +240,7 @@ public class FetchOperator implements Serializable {
     Deserializer serde = table.getDeserializerClass().newInstance();
     serde.initialize(job, table.getProperties());
     String pcols = table.getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     String[] partKeys = pcols.trim().split("/");
     row[1] = null;
     return createRowInspector(getCurrent(serde), partKeys);

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -54,10 +54,10 @@ public class GenericUDFEvaluateNPE extends GenericUDF {
             + "needs only one argument.");
     }
 
-    if (!arguments[0].getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+    if (!arguments[0].getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
       throw new UDFArgumentTypeException(0,
         "Argument 1 of function evaluate_npe must be \""
-        + Constants.STRING_TYPE_NAME + "but \""
+        + serdeConstants.STRING_TYPE_NAME + "but \""
         + arguments[0].getTypeName() + "\" was found.");
     }
 

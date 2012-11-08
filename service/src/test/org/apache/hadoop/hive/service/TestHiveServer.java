@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -302,11 +302,11 @@ public class TestHiveServer extends TestCase {
     // Instantiate DynamicSerDe
     DynamicSerDe ds = new DynamicSerDe();
     Properties dsp = new Properties();
-    dsp.setProperty(Constants.SERIALIZATION_FORMAT,
+    dsp.setProperty(serdeConstants.SERIALIZATION_FORMAT,
         org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
             .getName());
     dsp.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
         "result");
     String serDDL = new String("struct result { ");
     List<FieldSchema> schema = client.getThriftSchema().getFieldSchemas();
@@ -320,9 +320,9 @@ public class TestHiveServer extends TestCase {
     }
     serDDL = serDDL.concat("}");
 
-    dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
-    dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
-    dsp.setProperty(Constants.FIELD_DELIM, "9");
+    dsp.setProperty(serdeConstants.SERIALIZATION_DDL, serDDL);
+    dsp.setProperty(serdeConstants.SERIALIZATION_LIB, ds.getClass().toString());
+    dsp.setProperty(serdeConstants.FIELD_DELIM, "9");
     ds.initialize(new Configuration(), dsp);
 
     String row = client.fetchOne();
@@ -349,7 +349,7 @@ public class TestHiveServer extends TestCase {
     }
     serDDL = serDDL.concat("}");
 
-    dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
+    dsp.setProperty(serdeConstants.SERIALIZATION_DDL, serDDL);
     // Need a new DynamicSerDe instance - re-initialization is not supported.
     ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);

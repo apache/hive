@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -482,25 +482,25 @@ public final class TypeCheckProcFactory {
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
       conversionFunctionTextHashMap = new HashMap<Integer, String>();
       conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN,
-          Constants.BOOLEAN_TYPE_NAME);
+          serdeConstants.BOOLEAN_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT,
-          Constants.TINYINT_TYPE_NAME);
+          serdeConstants.TINYINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT,
-          Constants.SMALLINT_TYPE_NAME);
+          serdeConstants.SMALLINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INT,
-          Constants.INT_TYPE_NAME);
+          serdeConstants.INT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT,
-          Constants.BIGINT_TYPE_NAME);
+          serdeConstants.BIGINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT,
-          Constants.FLOAT_TYPE_NAME);
+          serdeConstants.FLOAT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_DOUBLE,
-          Constants.DOUBLE_TYPE_NAME);
+          serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
-          Constants.STRING_TYPE_NAME);
+          serdeConstants.STRING_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
-          Constants.BINARY_TYPE_NAME);
+          serdeConstants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
-          Constants.TIMESTAMP_TYPE_NAME);
+          serdeConstants.TIMESTAMP_TYPE_NAME);
     }
 
     public static boolean isRedundantConversionFunction(ASTNode expr,
@@ -715,13 +715,13 @@ public final class TypeCheckProcFactory {
               children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
           Set<String> inferTypes = new HashSet<String>(Arrays.asList(
-              Constants.TINYINT_TYPE_NAME.toLowerCase(),
-              Constants.SMALLINT_TYPE_NAME.toLowerCase(),
-              Constants.INT_TYPE_NAME.toLowerCase(),
-              Constants.BIGINT_TYPE_NAME.toLowerCase(),
-              Constants.FLOAT_TYPE_NAME.toLowerCase(),
-              Constants.DOUBLE_TYPE_NAME.toLowerCase(),
-              Constants.STRING_TYPE_NAME.toLowerCase()
+              serdeConstants.TINYINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.SMALLINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.INT_TYPE_NAME.toLowerCase(),
+              serdeConstants.BIGINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.FLOAT_TYPE_NAME.toLowerCase(),
+              serdeConstants.DOUBLE_TYPE_NAME.toLowerCase(),
+              serdeConstants.STRING_TYPE_NAME.toLowerCase()
               ));
 
           String constType = children.get(constIdx).getTypeString().toLowerCase();
@@ -735,19 +735,19 @@ public final class TypeCheckProcFactory {
 
             Number value = null;
             try {
-              if (columnType.equalsIgnoreCase(Constants.TINYINT_TYPE_NAME)) {
+              if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)) {
                 value = new Byte(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.SMALLINT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)) {
                 value = new Short(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.INT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)) {
                 value = new Integer(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
                 value = new Long(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.FLOAT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
                 value = new Float(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.DOUBLE_TYPE_NAME)
-                  || (columnType.equalsIgnoreCase(Constants.STRING_TYPE_NAME)
-                     && !constType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME))) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
+                  || (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
+                     && !constType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME))) {
                 // no smart inference for queries like "str_col = bigint_const"
                 triedDouble = true;
                 value = new Double(constValue);
@@ -759,7 +759,7 @@ public final class TypeCheckProcFactory {
               // the operator is EQUAL, return false due to the type mismatch
               if (triedDouble ||
                   (fi.getGenericUDF() instanceof GenericUDFOPEqual
-                  && !columnType.equals(Constants.STRING_TYPE_NAME))) {
+                  && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
                 return new ExprNodeConstantDesc(false);
               }
 

@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
 
@@ -161,14 +161,14 @@ public class TestExecDriver extends TestCase {
         column, "", false));
     ExprNodeDesc lhs = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getFunctionInfo(
-        Constants.DOUBLE_TYPE_NAME).getGenericUDF(), children1);
+        serdeConstants.DOUBLE_TYPE_NAME).getGenericUDF(), children1);
 
     ArrayList<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>();
     children2.add(new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long
         .valueOf(100)));
     ExprNodeDesc rhs = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getFunctionInfo(
-        Constants.DOUBLE_TYPE_NAME).getGenericUDF(), children2);
+        serdeConstants.DOUBLE_TYPE_NAME).getGenericUDF(), children2);
 
     ArrayList<ExprNodeDesc> children3 = new ArrayList<ExprNodeDesc>();
     children3.add(lhs);

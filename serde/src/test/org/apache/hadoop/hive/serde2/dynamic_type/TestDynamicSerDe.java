@@ -28,7 +28,7 @@ import java.util.Map.Entry;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
 import org.apache.hadoop.io.BytesWritable;
@@ -110,15 +110,15 @@ public class TestDynamicSerDe extends TestCase {
 
         System.out.println("Testing protocol: " + protocol);
         Properties schema = new Properties();
-        schema.setProperty(Constants.SERIALIZATION_FORMAT, protocol);
+        schema.setProperty(serdeConstants.SERIALIZATION_FORMAT, protocol);
         schema.setProperty(
-            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             "test");
         schema
             .setProperty(
-                Constants.SERIALIZATION_DDL,
+                serdeConstants.SERIALIZATION_DDL,
                 "struct test { i32 _hello, list<string> 2bye, map<string,i32> another, i32 nhello, double d, double nd}");
-        schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+        schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
             .getClass().toString());
         HashMap<String, String> p = additionalParams.get(pp);
         if (p != null) {
@@ -182,15 +182,15 @@ public class TestDynamicSerDe extends TestCase {
     }
 
     Properties schema = new Properties();
-    schema.setProperty(Constants.SERIALIZATION_FORMAT,
+    schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
         org.apache.hadoop.hive.serde2.thrift.TBinarySortableProtocol.class
         .getName());
     schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "test");
-    schema.setProperty(Constants.SERIALIZATION_DDL, ddl);
-    schema.setProperty(Constants.SERIALIZATION_LIB, DynamicSerDe.class
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME, "test");
+    schema.setProperty(serdeConstants.SERIALIZATION_DDL, ddl);
+    schema.setProperty(serdeConstants.SERIALIZATION_LIB, DynamicSerDe.class
         .getName());
-    schema.setProperty(Constants.SERIALIZATION_SORT_ORDER, order);
+    schema.setProperty(serdeConstants.SERIALIZATION_SORT_ORDER, order);
 
     DynamicSerDe serde = new DynamicSerDe();
     serde.initialize(new Configuration(), schema);
@@ -417,22 +417,22 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
 
-      schema.setProperty(Constants.FIELD_DELIM, "9");
-      schema.setProperty(Constants.COLLECTION_DELIM, "1");
-      schema.setProperty(Constants.LINE_DELIM, "2");
-      schema.setProperty(Constants.MAPKEY_DELIM, "4");
+      schema.setProperty(serdeConstants.FIELD_DELIM, "9");
+      schema.setProperty(serdeConstants.COLLECTION_DELIM, "1");
+      schema.setProperty(serdeConstants.LINE_DELIM, "2");
+      schema.setProperty(serdeConstants.MAPKEY_DELIM, "4");
 
       DynamicSerDe serde = new DynamicSerDe();
       serde.initialize(new Configuration(), schema);
@@ -494,16 +494,16 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
       schema.setProperty(TCTLSeparatedProtocol.ReturnNullsKey, "true");
 
@@ -544,16 +544,16 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
       schema.setProperty(TCTLSeparatedProtocol.ReturnNullsKey, "true");
 
@@ -602,16 +602,16 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
 
       schema.setProperty(TCTLSeparatedProtocol.ReturnNullsKey, "true");
@@ -660,16 +660,16 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
 
       schema.setProperty(TCTLSeparatedProtocol.ReturnNullsKey, "false");
@@ -712,17 +712,17 @@ public class TestDynamicSerDe extends TestCase {
     try {
 
       Properties schema = new Properties();
-      // schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      // schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
       // org.apache.thrift.protocol.TJSONProtocol.class.getName());
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.thrift.protocol.TBinaryProtocol.class.getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema.setProperty(
-          Constants.SERIALIZATION_DDL,
+          serdeConstants.SERIALIZATION_DDL,
       "struct inner { i32 field1, string field2 },struct  test {inner foo,  i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
 
       //
@@ -790,22 +790,22 @@ public class TestDynamicSerDe extends TestCase {
       struct.add(another);
 
       Properties schema = new Properties();
-      schema.setProperty(Constants.SERIALIZATION_FORMAT,
+      schema.setProperty(serdeConstants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
           .getName());
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
           "test");
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, list<string> bye, map<string,i32> another}");
-      schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe()
+      schema.setProperty(serdeConstants.SERIALIZATION_LIB, new DynamicSerDe()
           .getClass().toString());
 
-      schema.setProperty(Constants.FIELD_DELIM, "9");
-      schema.setProperty(Constants.COLLECTION_DELIM, "1");
-      schema.setProperty(Constants.LINE_DELIM, "2");
-      schema.setProperty(Constants.MAPKEY_DELIM, "4");
+      schema.setProperty(serdeConstants.FIELD_DELIM, "9");
+      schema.setProperty(serdeConstants.COLLECTION_DELIM, "1");
+      schema.setProperty(serdeConstants.LINE_DELIM, "2");
+      schema.setProperty(serdeConstants.MAPKEY_DELIM, "4");
 
       DynamicSerDe serde = new DynamicSerDe();
       serde.initialize(new Configuration(), schema);
@@ -831,7 +831,7 @@ public class TestDynamicSerDe extends TestCase {
       assertTrue(compare.equals(new String(bytes.get(), 0, bytes.getSize())));
 
       schema
-          .setProperty(Constants.SERIALIZATION_DDL,
+          .setProperty(serdeConstants.SERIALIZATION_DDL,
           "struct test { i32 hello, skip list<string> bye, map<string,i32> another}");
 
       serde.initialize(new Configuration(), schema);

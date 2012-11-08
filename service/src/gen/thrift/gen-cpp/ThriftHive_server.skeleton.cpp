@@ -2,10 +2,10 @@
 // You should copy it to another filename to avoid overwriting it.
 
 #include "ThriftHive.h"
-#include <protocol/TBinaryProtocol.h>
-#include <server/TSimpleServer.h>
-#include <transport/TServerSocket.h>
-#include <transport/TBufferTransports.h>
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -14,7 +14,7 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-using namespace Apache::Hadoop::Hive;
+using namespace  ::Apache::Hadoop::Hive;
 
 class ThriftHiveHandler : virtual public ThriftHiveIf {
  public:
@@ -42,12 +42,12 @@ class ThriftHiveHandler : virtual public ThriftHiveIf {
     printf("fetchAll\n");
   }
 
-  void getSchema(Apache::Hadoop::Hive::Schema& _return) {
+  void getSchema( ::Apache::Hadoop::Hive::Schema& _return) {
     // Your implementation goes here
     printf("getSchema\n");
   }
 
-  void getThriftSchema(Apache::Hadoop::Hive::Schema& _return) {
+  void getThriftSchema( ::Apache::Hadoop::Hive::Schema& _return) {
     // Your implementation goes here
     printf("getThriftSchema\n");
   }
@@ -57,7 +57,7 @@ class ThriftHiveHandler : virtual public ThriftHiveIf {
     printf("getClusterStatus\n");
   }
 
-  void getQueryPlan(Apache::Hadoop::Hive::QueryPlan& _return) {
+  void getQueryPlan( ::Apache::Hadoop::Hive::QueryPlan& _return) {
     // Your implementation goes here
     printf("getQueryPlan\n");
   }

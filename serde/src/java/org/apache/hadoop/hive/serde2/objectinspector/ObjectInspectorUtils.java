@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -312,7 +312,7 @@ public final class ObjectInspectorUtils {
 
   public static String getStandardUnionTypeName(UnionObjectInspector uoi) {
     StringBuilder sb = new StringBuilder();
-    sb.append(Constants.UNION_TYPE_NAME + "<");
+    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
     List<ObjectInspector> ois = uoi.getObjectInspectors();
     for(int i = 0; i < ois.size(); i++) {
       if (i > 0) {

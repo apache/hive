@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -212,22 +212,22 @@ public class LazySimpleSerDe implements SerDe {
     // should change this when we allow users to specify more than 10 levels
     // of separators through DDL.
     serdeParams.separators = new byte[8];
-    serdeParams.separators[0] = getByte(tbl.getProperty(Constants.FIELD_DELIM,
-        tbl.getProperty(Constants.SERIALIZATION_FORMAT)), DefaultSeparators[0]);
+    serdeParams.separators[0] = getByte(tbl.getProperty(serdeConstants.FIELD_DELIM,
+        tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT)), DefaultSeparators[0]);
     serdeParams.separators[1] = getByte(tbl
-        .getProperty(Constants.COLLECTION_DELIM), DefaultSeparators[1]);
+        .getProperty(serdeConstants.COLLECTION_DELIM), DefaultSeparators[1]);
     serdeParams.separators[2] = getByte(
-        tbl.getProperty(Constants.MAPKEY_DELIM), DefaultSeparators[2]);
+        tbl.getProperty(serdeConstants.MAPKEY_DELIM), DefaultSeparators[2]);
     for (int i = 3; i < serdeParams.separators.length; i++) {
       serdeParams.separators[i] = (byte) (i + 1);
     }
 
     serdeParams.nullString = tbl.getProperty(
-        Constants.SERIALIZATION_NULL_FORMAT, "\\N");
+        serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");
     serdeParams.nullSequence = new Text(serdeParams.nullString);
 
     String lastColumnTakesRestString = tbl
-        .getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+        .getProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     serdeParams.lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
 
@@ -238,7 +238,7 @@ public class LazySimpleSerDe implements SerDe {
         serdeParams.columnNames, serdeParams.columnTypes);
 
     // Get the escape information
-    String escapeProperty = tbl.getProperty(Constants.ESCAPE_CHAR);
+    String escapeProperty = tbl.getProperty(serdeConstants.ESCAPE_CHAR);
     serdeParams.escaped = (escapeProperty != null);
     if (serdeParams.escaped) {
       serdeParams.escapeChar = getByte(escapeProperty, (byte) '\\');
