@@ -196,15 +196,18 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
 
       // Read paths from each symlink file.
       for (FileStatus symlink : symlinks) {
-        BufferedReader reader =
-            new BufferedReader(
-                new InputStreamReader(
-                    fileSystem.open(symlink.getPath())));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-          targetPaths.add(new Path(line));
-          symlinkPaths.add(symlink.getPath());
+        BufferedReader reader = null;
+        try {
+          reader = new BufferedReader(
+              new InputStreamReader(
+                  fileSystem.open(symlink.getPath())));
+          String line;
+          while ((line = reader.readLine()) != null) {
+            targetPaths.add(new Path(line));
+            symlinkPaths.add(symlink.getPath());
+          }
+        } finally {
+          org.apache.hadoop.io.IOUtils.closeStream(reader);
         }
       }
     }

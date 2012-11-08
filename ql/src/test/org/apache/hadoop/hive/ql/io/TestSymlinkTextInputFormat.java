@@ -154,6 +154,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
             + " failed with exit code= " + ecode);
       }
 
+      tblCreated = true;
       String loadFileCommand = "LOAD DATA LOCAL INPATH '" + 
         new Path(symlinkDir, "symlink_file").toString() + "' INTO TABLE " + tblName;
       
@@ -263,6 +264,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
       while (reader.next(key, value)) {
         received.add(value.toString());
       }
+      reader.close();
     }
 
     List<String> expected = new ArrayList<String>();
@@ -307,6 +309,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
       while (reader.next(key, value)) {
         received.add(value.toString());
       }
+      reader.close();
     }
 
     List<String> expected = new ArrayList<String>();
