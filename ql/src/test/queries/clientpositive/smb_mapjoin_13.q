@@ -24,13 +24,13 @@ INSERT OVERWRITE TABLE test_table4 SELECT *;
 -- Join data from 2 tables on their respective sorted columns (one each, with different names) and
 -- verify sort merge join is used
 EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value LIMIT 10;
+SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10;
 
-SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value LIMIT 10;
+SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10;
 
 -- Join data from 2 tables on their respective columns (two each, with the same names but sorted
 -- with different priorities) and verify sort merge join is not used
 EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value LIMIT 10;
+SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10;
 
-SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value LIMIT 10;
+SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10;
