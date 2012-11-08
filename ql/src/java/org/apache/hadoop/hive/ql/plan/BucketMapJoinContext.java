@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -199,7 +200,7 @@ public class BucketMapJoinContext implements Serializable {
   private String prependPartSpec(String inputPath, String fileName) {
     Map<String, String> mapping = inputToPartSpecMapping == null ?
         inputToPartSpecMapping = revert(bigTablePartSpecToFileMapping) : inputToPartSpecMapping;
-    String partSpec = mapping.get(inputPath);
+    String partSpec = mapping.get(URI.create(inputPath).getPath());
     return partSpec == null || partSpec.isEmpty() ? fileName :
       "(" + FileUtils.escapePathName(partSpec) + ")" + fileName;
   }
@@ -210,7 +211,7 @@ public class BucketMapJoinContext implements Serializable {
     for (Map.Entry<String, List<String>> entry : mapping.entrySet()) {
       String partSpec = entry.getKey();
       for (String file : entry.getValue()) {
-        converted.put(file, partSpec);
+        converted.put(URI.create(file).getPath(), partSpec);
       }
     }
     return converted;
