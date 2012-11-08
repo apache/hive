@@ -232,9 +232,9 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       for (String path : paths) {
         PartitionDesc newPartition = changePartitionToMetadataOnly(work.getPathToPartitionInfo().get(
             path));
-        Path fakePath = new Path("file", null,
-            "/fake-path-metadata-only-query-" + newPartition.getTableName()
-                + newPartition.getPartSpec().toString());
+        Path fakePath = new Path(physicalContext.getContext().getMRTmpFileURI()
+            + newPartition.getTableName()
+            + newPartition.getPartSpec().toString());
         work.getPathToPartitionInfo().remove(path);
         work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
         ArrayList<String> aliases = work.getPathToAliases().remove(path);
