@@ -360,11 +360,11 @@ public class JoinUtil {
       TableDesc tblDesc = new TableDesc(LazyBinarySerDe.class,
           SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
           Utilities.makeProperties(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, ""
           + Utilities.ctrlaCode,
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames
+          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames
           .toString(),
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
+          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
           colTypes.toString()));
       spillTableDesc.put((byte) tag, tblDesc);
     }

@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -171,19 +171,19 @@ public final class PlanUtils {
       boolean useDelimitedJSON, String fileFormat) {
 
     Properties properties = Utilities.makeProperties(
-        Constants.SERIALIZATION_FORMAT, separatorCode, Constants.LIST_COLUMNS,
+        serdeConstants.SERIALIZATION_FORMAT, separatorCode, serdeConstants.LIST_COLUMNS,
         columns);
 
     if (!separatorCode.equals(Integer.toString(Utilities.ctrlaCode))) {
-      properties.setProperty(Constants.FIELD_DELIM, separatorCode);
+      properties.setProperty(serdeConstants.FIELD_DELIM, separatorCode);
     }
 
     if (columnTypes != null) {
-      properties.setProperty(Constants.LIST_COLUMN_TYPES, columnTypes);
+      properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, columnTypes);
     }
 
     if (lastColumnTakesRestOfTheLine) {
-      properties.setProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
+      properties.setProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
           "true");
     }
 
@@ -216,7 +216,7 @@ public final class PlanUtils {
       String fileFormat) {
     TableDesc tblDesc = getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
         false, false, fileFormat);
-    tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR, "\\");
+    tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     return tblDesc;
   }
 
@@ -250,26 +250,26 @@ public final class PlanUtils {
       Properties properties = ret.getProperties();
 
       if (crtTblDesc.getCollItemDelim() != null) {
-        properties.setProperty(Constants.COLLECTION_DELIM, crtTblDesc
+        properties.setProperty(serdeConstants.COLLECTION_DELIM, crtTblDesc
             .getCollItemDelim());
       }
 
       if (crtTblDesc.getMapKeyDelim() != null) {
-        properties.setProperty(Constants.MAPKEY_DELIM, crtTblDesc
+        properties.setProperty(serdeConstants.MAPKEY_DELIM, crtTblDesc
             .getMapKeyDelim());
       }
 
       if (crtTblDesc.getFieldEscape() != null) {
-        properties.setProperty(Constants.ESCAPE_CHAR, crtTblDesc
+        properties.setProperty(serdeConstants.ESCAPE_CHAR, crtTblDesc
             .getFieldEscape());
       }
 
       if (crtTblDesc.getLineDelim() != null) {
-        properties.setProperty(Constants.LINE_DELIM, crtTblDesc.getLineDelim());
+        properties.setProperty(serdeConstants.LINE_DELIM, crtTblDesc.getLineDelim());
       }
 
       if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
-        properties.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+        properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
             crtTblDesc.getDatabaseName() + "." + crtTblDesc.getTableName());
       }
 
@@ -299,7 +299,7 @@ public final class PlanUtils {
     return new TableDesc(MetadataTypedColumnsetSerDe.class,
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
         .makeProperties(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
         separatorCode));
   }
 
@@ -310,11 +310,11 @@ public final class PlanUtils {
       String order) {
     return new TableDesc(BinarySortableSerDe.class,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
-        Utilities.makeProperties(Constants.LIST_COLUMNS, MetaStoreUtils
+        Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
-        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        Constants.SERIALIZATION_SORT_ORDER, order));
+        serdeConstants.SERIALIZATION_SORT_ORDER, order));
   }
 
   /**
@@ -326,7 +326,7 @@ public final class PlanUtils {
         MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
         "columns.types", MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        Constants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -339,7 +339,7 @@ public final class PlanUtils {
         MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
         "columns.types", MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        Constants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -349,11 +349,11 @@ public final class PlanUtils {
       List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
-        Constants.LIST_COLUMNS, MetaStoreUtils
+        serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
-        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        Constants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -362,11 +362,11 @@ public final class PlanUtils {
   public static TableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
-        Constants.LIST_COLUMNS, MetaStoreUtils
+        serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
-        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        Constants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -686,7 +686,7 @@ public final class PlanUtils {
         HiveUtils.getStorageHandler(
           Hive.get().getConf(),
           tableDesc.getProperties().getProperty(
-            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE));
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<String, String>();
         if(input) {

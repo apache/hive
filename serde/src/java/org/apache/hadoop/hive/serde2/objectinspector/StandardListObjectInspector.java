@@ -102,7 +102,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
   }
 
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<"
+    return org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "<"
         + listElementObjectInspector.getTypeName() + ">";
   }
 

@@ -30,7 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -243,9 +243,9 @@ public class HiveAlterHandler implements AlterHandler {
     String newPartLoc = null;
     // Set DDL time to now if not specified
     if (new_part.getParameters() == null ||
-        new_part.getParameters().get(Constants.DDL_TIME) == null ||
-        Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
-      new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
+        new_part.getParameters().get(hive_metastoreConstants.DDL_TIME) == null ||
+        Integer.parseInt(new_part.getParameters().get(hive_metastoreConstants.DDL_TIME)) == 0) {
+      new_part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
     }
     //alter partition
@@ -386,9 +386,9 @@ public class HiveAlterHandler implements AlterHandler {
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
         if (tmpPart.getParameters() == null ||
-            tmpPart.getParameters().get(Constants.DDL_TIME) == null ||
-            Integer.parseInt(tmpPart.getParameters().get(Constants.DDL_TIME)) == 0) {
-          tmpPart.putToParameters(Constants.DDL_TIME, Long.toString(System
+            tmpPart.getParameters().get(hive_metastoreConstants.DDL_TIME) == null ||
+            Integer.parseInt(tmpPart.getParameters().get(hive_metastoreConstants.DDL_TIME)) == 0) {
+          tmpPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
               .currentTimeMillis() / 1000));
         }
         Partition oldTmpPart = msdb.getPartition(dbname, name, tmpPart.getValues());

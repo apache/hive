@@ -54,7 +54,7 @@ public class TableDesc implements Serializable, Cloneable {
         .getOutputFormatSubstitute(class1);
     this.properties = properties;
     serdeClassName = properties
-        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     ;
   }
 
@@ -131,7 +131,7 @@ public class TableDesc implements Serializable, Cloneable {
   @Explain(displayName = "name")
   public String getTableName() {
     return properties
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
+        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME);
   }
 
   @Explain(displayName = "input format")
@@ -146,7 +146,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   public boolean isNonNative() {
     return (properties.getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
       != null);
   }
   

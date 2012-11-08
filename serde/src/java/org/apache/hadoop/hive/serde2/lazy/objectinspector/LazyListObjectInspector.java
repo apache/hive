@@ -98,7 +98,7 @@ public class LazyListObjectInspector implements ListObjectInspector {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<"
+    return org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "<"
         + listElementObjectInspector.getTypeName() + ">";
   }
 

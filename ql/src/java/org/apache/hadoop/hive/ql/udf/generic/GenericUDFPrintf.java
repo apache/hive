@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -70,10 +70,10 @@ public class GenericUDFPrintf extends GenericUDF {
           "The function PRINTF(String format, Obj... args) needs at least one arguments.");
     }
 
-    if (arguments[0].getTypeName() != Constants.STRING_TYPE_NAME
-      && arguments[0].getTypeName() != Constants.VOID_TYPE_NAME) {
+    if (arguments[0].getTypeName() != serdeConstants.STRING_TYPE_NAME
+      && arguments[0].getTypeName() != serdeConstants.VOID_TYPE_NAME) {
         throw new UDFArgumentTypeException(0, "Argument 1"
-        + " of function PRINTF must be \"" + Constants.STRING_TYPE_NAME
+        + " of function PRINTF must be \"" + serdeConstants.STRING_TYPE_NAME
         + "\", but \"" + arguments[0].getTypeName() + "\" was found.");
       }
 

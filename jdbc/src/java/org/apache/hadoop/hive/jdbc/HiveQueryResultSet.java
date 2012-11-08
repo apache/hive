@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -102,11 +102,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       Properties props = new Properties();
       if (names.length() > 0) {
         LOG.debug("Column names: " + names);
-        props.setProperty(Constants.LIST_COLUMNS, names);
+        props.setProperty(serdeConstants.LIST_COLUMNS, names);
       }
       if (types.length() > 0) {
         LOG.debug("Column types: " + types);
-        props.setProperty(Constants.LIST_COLUMN_TYPES, types);
+        props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
       }
       serde.initialize(new Configuration(), props);
 

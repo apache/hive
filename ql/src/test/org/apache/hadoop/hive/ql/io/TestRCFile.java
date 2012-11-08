@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
@@ -380,12 +380,12 @@ public class TestRCFile extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns",
         "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
     tbl.setProperty("columns.types",
         "tinyint:smallint:int:bigint:double:string:int:string");
-    tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
+    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;
   }
 

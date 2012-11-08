@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde.Constants.COLLECTION_DELIM;
-import static org.apache.hadoop.hive.serde.Constants.ESCAPE_CHAR;
-import static org.apache.hadoop.hive.serde.Constants.FIELD_DELIM;
-import static org.apache.hadoop.hive.serde.Constants.LINE_DELIM;
-import static org.apache.hadoop.hive.serde.Constants.MAPKEY_DELIM;
-import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT;
-import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
+import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -370,7 +370,7 @@ public class Hive {
     try {
       // Remove the DDL_TIME so it gets refreshed
       if (newTbl.getParameters() != null) {
-        newTbl.getParameters().remove(Constants.DDL_TIME);
+        newTbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       getMSC().alter_table(t.getDbName(), t.getTableName(), newTbl.getTTable());
     } catch (MetaException e) {
@@ -419,7 +419,7 @@ public class Hive {
     try {
       // Remove the DDL time so that it gets refreshed
       if (newPart.getParameters() != null) {
-        newPart.getParameters().remove(Constants.DDL_TIME);
+        newPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       getMSC().alter_partition(t.getDbName(), t.getTableName(),
           newPart.getTPartition());
@@ -451,7 +451,7 @@ public class Hive {
       // Remove the DDL time so that it gets refreshed
       for (Partition tmpPart: newParts) {
         if (tmpPart.getParameters() != null) {
-          tmpPart.getParameters().remove(Constants.DDL_TIME);
+          tmpPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
         }
         newTParts.add(tmpPart.getTPartition());
       }
@@ -552,7 +552,7 @@ public class Hive {
       }
       tbl.checkValidity();
       if (tbl.getParameters() != null) {
-        tbl.getParameters().remove(Constants.DDL_TIME);
+        tbl.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
       org.apache.hadoop.hive.metastore.api.Table tTbl = tbl.getTTable();
       PrincipalPrivilegeSet principalPrivs = new PrincipalPrivilegeSet();

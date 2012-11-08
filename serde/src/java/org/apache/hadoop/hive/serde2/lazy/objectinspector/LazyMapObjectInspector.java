@@ -71,7 +71,7 @@ public class LazyMapObjectInspector implements MapObjectInspector {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME + "<"
+    return org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME + "<"
         + mapKeyObjectInspector.getTypeName() + ","
         + mapValueObjectInspector.getTypeName() + ">";
   }

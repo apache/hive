@@ -218,7 +218,7 @@ import org.apache.hadoop.hive.ql.udf.xml.UDFXPathInteger;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathLong;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathShort;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathString;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -380,26 +380,26 @@ public final class FunctionRegistry {
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
-    registerUDF(Constants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, false,
+    registerUDF(serdeConstants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, false,
         UDFToBoolean.class.getSimpleName());
-    registerUDF(Constants.TINYINT_TYPE_NAME, UDFToByte.class, false,
+    registerUDF(serdeConstants.TINYINT_TYPE_NAME, UDFToByte.class, false,
         UDFToByte.class.getSimpleName());
-    registerUDF(Constants.SMALLINT_TYPE_NAME, UDFToShort.class, false,
+    registerUDF(serdeConstants.SMALLINT_TYPE_NAME, UDFToShort.class, false,
         UDFToShort.class.getSimpleName());
-    registerUDF(Constants.INT_TYPE_NAME, UDFToInteger.class, false,
+    registerUDF(serdeConstants.INT_TYPE_NAME, UDFToInteger.class, false,
         UDFToInteger.class.getSimpleName());
-    registerUDF(Constants.BIGINT_TYPE_NAME, UDFToLong.class, false,
+    registerUDF(serdeConstants.BIGINT_TYPE_NAME, UDFToLong.class, false,
         UDFToLong.class.getSimpleName());
-    registerUDF(Constants.FLOAT_TYPE_NAME, UDFToFloat.class, false,
+    registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false,
         UDFToFloat.class.getSimpleName());
-    registerUDF(Constants.DOUBLE_TYPE_NAME, UDFToDouble.class, false,
+    registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false,
         UDFToDouble.class.getSimpleName());
-    registerUDF(Constants.STRING_TYPE_NAME, UDFToString.class, false,
+    registerUDF(serdeConstants.STRING_TYPE_NAME, UDFToString.class, false,
         UDFToString.class.getSimpleName());
 
-    registerGenericUDF(Constants.TIMESTAMP_TYPE_NAME,
+    registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME,
         GenericUDFTimestamp.class);
-    registerGenericUDF(Constants.BINARY_TYPE_NAME,
+    registerGenericUDF(serdeConstants.BINARY_TYPE_NAME,
         GenericUDFToBinary.class);
 
     // Aggregate functions
@@ -628,13 +628,13 @@ public final class FunctionRegistry {
   }
 
   static {
-    registerNumericType(Constants.TINYINT_TYPE_NAME, 1);
-    registerNumericType(Constants.SMALLINT_TYPE_NAME, 2);
-    registerNumericType(Constants.INT_TYPE_NAME, 3);
-    registerNumericType(Constants.BIGINT_TYPE_NAME, 4);
-    registerNumericType(Constants.FLOAT_TYPE_NAME, 5);
-    registerNumericType(Constants.DOUBLE_TYPE_NAME, 6);
-    registerNumericType(Constants.STRING_TYPE_NAME, 7);
+    registerNumericType(serdeConstants.TINYINT_TYPE_NAME, 1);
+    registerNumericType(serdeConstants.SMALLINT_TYPE_NAME, 2);
+    registerNumericType(serdeConstants.INT_TYPE_NAME, 3);
+    registerNumericType(serdeConstants.BIGINT_TYPE_NAME, 4);
+    registerNumericType(serdeConstants.FLOAT_TYPE_NAME, 5);
+    registerNumericType(serdeConstants.DOUBLE_TYPE_NAME, 6);
+    registerNumericType(serdeConstants.STRING_TYPE_NAME, 7);
   }
 
   /**

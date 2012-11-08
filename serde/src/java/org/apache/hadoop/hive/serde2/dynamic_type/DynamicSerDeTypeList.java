@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -70,7 +70,7 @@ public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
 
   @Override
   public String toString() {
-    return Constants.LIST_TYPE_NAME + "<" + getElementType().toString() + ">";
+    return serdeConstants.LIST_TYPE_NAME + "<" + getElementType().toString() + ">";
   }
 
   @Override

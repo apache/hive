@@ -29,7 +29,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -112,8 +112,8 @@ public class BinarySortableSerDe implements SerDe {
       throws SerDeException {
 
     // Get column names and sort order
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
@@ -138,7 +138,7 @@ public class BinarySortableSerDe implements SerDe {
 
     // Get the sort order
     String columnSortOrder = tbl
-        .getProperty(Constants.SERIALIZATION_SORT_ORDER);
+        .getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
     columnSortOrderIsDesc = new boolean[columnNames.size()];
     for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
       columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder

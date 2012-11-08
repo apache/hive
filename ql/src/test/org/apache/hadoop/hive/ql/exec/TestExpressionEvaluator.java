@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -162,7 +162,7 @@ public class TestExpressionEvaluator extends TestCase {
           false);
       ExprNodeDesc col11desc = getListIndexNode(col1desc, 1);
       ExprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc(Constants.DOUBLE_TYPE_NAME, col11desc);
+          .getFuncExprNodeDesc(serdeConstants.DOUBLE_TYPE_NAME, col11desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row

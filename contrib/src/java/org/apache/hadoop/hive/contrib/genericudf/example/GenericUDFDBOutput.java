@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -94,7 +94,7 @@ public class GenericUDFDBOutput extends GenericUDF {
         if (!(poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.STRING)) {
           throw new UDFArgumentTypeException(i,
               "The argument of function  should be \""
-              + Constants.STRING_TYPE_NAME + "\", but \""
+              + serdeConstants.STRING_TYPE_NAME + "\", but \""
               + arguments[i].getTypeName() + "\" is found");
         }
       }

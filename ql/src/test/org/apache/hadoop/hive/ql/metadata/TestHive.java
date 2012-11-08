@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
@@ -94,9 +94,9 @@ public class TestHive extends TestCase {
       Table tbl = new Table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       List<FieldSchema> fields = tbl.getCols();
 
-      fields.add(new FieldSchema("col1", Constants.INT_TYPE_NAME, "int -- first column"));
-      fields.add(new FieldSchema("col2", Constants.STRING_TYPE_NAME, "string -- second column"));
-      fields.add(new FieldSchema("col3", Constants.DOUBLE_TYPE_NAME, "double -- thrift column"));
+      fields.add(new FieldSchema("col1", serdeConstants.INT_TYPE_NAME, "int -- first column"));
+      fields.add(new FieldSchema("col2", serdeConstants.STRING_TYPE_NAME, "string -- second column"));
+      fields.add(new FieldSchema("col3", serdeConstants.DOUBLE_TYPE_NAME, "double -- thrift column"));
       tbl.setFields(fields);
 
       tbl.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
@@ -117,7 +117,7 @@ public class TestHive extends TestCase {
       partCols
           .add(new FieldSchema(
           "ds",
-          Constants.STRING_TYPE_NAME,
+          serdeConstants.STRING_TYPE_NAME,
           "partition column, date but in string format as date type is not yet supported in QL"));
       tbl.setPartCols(partCols);
 
@@ -127,12 +127,12 @@ public class TestHive extends TestCase {
 
       // set output format parameters (these are not supported by QL but only
       // for demo purposes)
-      tbl.setSerdeParam(Constants.FIELD_DELIM, "1");
-      tbl.setSerdeParam(Constants.LINE_DELIM, "\n");
-      tbl.setSerdeParam(Constants.MAPKEY_DELIM, "3");
-      tbl.setSerdeParam(Constants.COLLECTION_DELIM, "2");
+      tbl.setSerdeParam(serdeConstants.FIELD_DELIM, "1");
+      tbl.setSerdeParam(serdeConstants.LINE_DELIM, "\n");
+      tbl.setSerdeParam(serdeConstants.MAPKEY_DELIM, "3");
+      tbl.setSerdeParam(serdeConstants.COLLECTION_DELIM, "2");
 
-      tbl.setSerdeParam(Constants.FIELD_DELIM, "1");
+      tbl.setSerdeParam(serdeConstants.FIELD_DELIM, "1");
       tbl.setSerializationLib(LazySimpleSerDe.class.getName());
 
       // create table
@@ -206,8 +206,8 @@ public class TestHive extends TestCase {
       tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
       tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
       tbl.setSerializationLib(ThriftDeserializer.class.getName());
-      tbl.setSerdeParam(Constants.SERIALIZATION_CLASS, Complex.class.getName());
-      tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, TBinaryProtocol.class
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_CLASS, Complex.class.getName());
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, TBinaryProtocol.class
           .getName());
       try {
         hm.createTable(tbl);
@@ -257,8 +257,8 @@ public class TestHive extends TestCase {
     tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
     tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     tbl.setSerializationLib(ThriftDeserializer.class.getName());
-    tbl.setSerdeParam(Constants.SERIALIZATION_CLASS, Complex.class.getName());
-    tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, TBinaryProtocol.class
+    tbl.setSerdeParam(serdeConstants.SERIALIZATION_CLASS, Complex.class.getName());
+    tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, TBinaryProtocol.class
         .getName());
     return tbl;
   }

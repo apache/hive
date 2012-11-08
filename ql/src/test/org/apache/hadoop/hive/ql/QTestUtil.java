@@ -71,7 +71,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -593,9 +593,9 @@ public class QTestUtil {
     srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
     srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     srcThrift.setSerializationLib(ThriftDeserializer.class.getName());
-    srcThrift.setSerdeParam(Constants.SERIALIZATION_CLASS, Complex.class
+    srcThrift.setSerdeParam(serdeConstants.SERIALIZATION_CLASS, Complex.class
         .getName());
-    srcThrift.setSerdeParam(Constants.SERIALIZATION_FORMAT,
+    srcThrift.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT,
         TBinaryProtocol.class.getName());
     db.createTable(srcThrift);
 

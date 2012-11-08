@@ -28,7 +28,7 @@ import java.util.TreeMap;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.CrossMapEqualComparer;
@@ -69,8 +69,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -110,8 +110,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -145,8 +145,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -178,8 +178,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -202,8 +202,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 

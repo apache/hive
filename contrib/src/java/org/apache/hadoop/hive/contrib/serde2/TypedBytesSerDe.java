@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesWritableInput;
 import org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesWritableOutput;
 import org.apache.hadoop.hive.ql.io.NonSyncDataInputBuffer;
 import org.apache.hadoop.hive.ql.io.NonSyncDataOutputBuffer;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -105,8 +105,8 @@ public class TypedBytesSerDe implements SerDe {
     tbIn = new TypedBytesWritableInput(inBarrStr);
 
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
 
     columnNames = Arrays.asList(columnNameProperty.split(","));
     columnTypes = null;

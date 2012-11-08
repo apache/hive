@@ -22,7 +22,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,8 +38,8 @@ public class TestRegexSerDe extends TestCase {
   private SerDe createSerDe(String fieldNames, String fieldTypes,
       String inputRegex, String outputFormatString) throws Throwable {
     Properties schema = new Properties();
-    schema.setProperty(Constants.LIST_COLUMNS, fieldNames);
-    schema.setProperty(Constants.LIST_COLUMN_TYPES, fieldTypes);
+    schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
     schema.setProperty("input.regex", inputRegex);
     schema.setProperty("output.format.string", outputFormatString);
 

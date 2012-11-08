@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -68,7 +68,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
       Properties tableProperties, Progressable progress) throws IOException {
     int rowSeparator = 0;
     String rowSeparatorString = tableProperties.getProperty(
-        Constants.LINE_DELIM, "\n");
+        serdeConstants.LINE_DELIM, "\n");
     try {
       rowSeparator = Byte.parseByte(rowSeparatorString);
     } catch (NumberFormatException e) {

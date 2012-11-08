@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
@@ -42,9 +42,9 @@ public class GenericUDFWhen extends GenericUDF {
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
-      if (!arguments[i].getTypeName().equals(Constants.BOOLEAN_TYPE_NAME)) {
+      if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         throw new UDFArgumentTypeException(i, "\""
-            + Constants.BOOLEAN_TYPE_NAME + "\" is expected after WHEN, "
+            + serdeConstants.BOOLEAN_TYPE_NAME + "\" is expected after WHEN, "
             + "but \"" + arguments[i].getTypeName() + "\" is found");
       }
       if (!returnOIResolver.update(arguments[i + 1])) {

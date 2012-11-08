@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -315,9 +315,9 @@ public final class LazyUtils {
   public static void extractColumnInfo(Properties tbl, SerDeParameters serdeParams,
       String serdeName) throws SerDeException {
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
+    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
 
     // Parse the configuration parameters
 
@@ -333,7 +333,7 @@ public final class LazyUtils {
         if (i > 0) {
           sb.append(":");
         }
-        sb.append(Constants.STRING_TYPE_NAME);
+        sb.append(serdeConstants.STRING_TYPE_NAME);
       }
       columnTypeProperty = sb.toString();
     }

@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -62,18 +62,18 @@ public class GenericUDFConcatWS extends GenericUDF {
       switch(arguments[i].getCategory()) {
         case LIST:
           if (((ListObjectInspector)arguments[i]).getListElementObjectInspector()
-            .getTypeName().equals(Constants.STRING_TYPE_NAME)
+            .getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
             || ((ListObjectInspector)arguments[i]).getListElementObjectInspector()
-            .getTypeName().equals(Constants.VOID_TYPE_NAME))
+            .getTypeName().equals(serdeConstants.VOID_TYPE_NAME))
           break;
         case PRIMITIVE:
-          if (arguments[i].getTypeName().equals(Constants.STRING_TYPE_NAME)
-            || arguments[i].getTypeName().equals(Constants.VOID_TYPE_NAME))
+          if (arguments[i].getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
+            || arguments[i].getTypeName().equals(serdeConstants.VOID_TYPE_NAME))
           break;
         default:
           throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
-            + " of function CONCAT_WS must be \"" + Constants.STRING_TYPE_NAME
-            + " or " + Constants.LIST_TYPE_NAME + "<" + Constants.STRING_TYPE_NAME
+            + " of function CONCAT_WS must be \"" + serdeConstants.STRING_TYPE_NAME
+            + " or " + serdeConstants.LIST_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME
             + ">\", but \"" + arguments[i].getTypeName() + "\" was found.");
       }
     }

@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -51,12 +51,12 @@ public class TestLazySimpleSerDe extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = new Properties();
-      tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+      tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
       tbl.setProperty("columns",
           "abyte,ashort,aint,along,adouble,astring,anullint,anullstring,aba");
       tbl.setProperty("columns.types",
           "tinyint:smallint:int:bigint:double:string:int:string:binary");
-      tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
+      tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
       serDe.initialize(conf, tbl);
 
       // Data
@@ -105,12 +105,12 @@ public class TestLazySimpleSerDe extends TestCase {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
-    tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns",
         "abyte,ashort,aint,along,adouble,astring,anullint,anullstring");
     tbl.setProperty("columns.types",
         "tinyint:smallint:int:bigint:double:string:int:string");
-    tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
+    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;
   }
 
@@ -123,7 +123,7 @@ public class TestLazySimpleSerDe extends TestCase {
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
-      tbl.setProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
+      tbl.setProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
       serDe.initialize(conf, tbl);
 
       // Data

@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.MetadataListStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -96,14 +96,14 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
   }
 
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
-    String altSep = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
+    String altSep = tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT);
     separator = getByteValue(altSep, DefaultSeparator);
 
-    String altNull = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT);
+    String altNull = tbl.getProperty(serdeConstants.SERIALIZATION_NULL_FORMAT);
     nullString = getByteValue(altNull, defaultNullString);
 
     String columnProperty = tbl.getProperty("columns");
-    String serdeName = tbl.getProperty(Constants.SERIALIZATION_LIB);
+    String serdeName = tbl.getProperty(serdeConstants.SERIALIZATION_LIB);
     // tables that were serialized with columnsetSerDe doesn't have metadata
     // so this hack applies to all such tables
     boolean columnsetSerDe = false;
@@ -125,7 +125,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     }
 
     String lastColumnTakesRestString = tbl
-        .getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+        .getProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
     splitLimit = (lastColumnTakesRest && columnNames != null) ? columnNames

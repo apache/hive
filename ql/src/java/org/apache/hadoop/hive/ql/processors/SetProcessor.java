@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_NULL_FORMAT;
-import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
 import java.util.Map;

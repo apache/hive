@@ -75,7 +75,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -422,7 +422,7 @@ public class MapJoinProcessor implements Transform {
       }
       if (filterMap != null && filterMap[pos] != null && pos != mapJoinPos) {
         ExprNodeColumnDesc isFilterDesc = new ExprNodeColumnDesc(TypeInfoFactory
-            .getPrimitiveTypeInfo(Constants.TINYINT_TYPE_NAME), "filter", "filter", false);
+            .getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME), "filter", "filter", false);
         valueFilteredCols.add(isFilterDesc);
       }
 

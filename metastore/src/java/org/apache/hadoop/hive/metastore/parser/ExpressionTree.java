@@ -28,7 +28,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
@@ -180,20 +180,20 @@ public class ExpressionTree {
 
     private String generateJDOFilterOverTables(Map<String, Object> params)
         throws MetaException {
-      if (keyName.equals(Constants.HIVE_FILTER_FIELD_OWNER)) {
+      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
         keyName = "this.owner";
-      } else if (keyName.equals(Constants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
         //lastAccessTime expects an integer, so we cannot use the "like operator"
         if (operator == Operator.LIKE) {
           throw new MetaException("Like is not supported for HIVE_FILTER_FIELD_LAST_ACCESS");
         }
         keyName = "this.lastAccessTime";
-      } else if (keyName.startsWith(Constants.HIVE_FILTER_FIELD_PARAMS)) {
+      } else if (keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)) {
         if (!TABLE_FILTER_OPS.contains(operator)) {
           throw new MetaException("Only " + TABLE_FILTER_OPS + " are supported " +
             "operators for HIVE_FILTER_FIELD_PARAMS");
         }
-        String paramKeyName = keyName.substring(Constants.HIVE_FILTER_FIELD_PARAMS.length());
+        String paramKeyName = keyName.substring(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS.length());
         keyName = "this.parameters.get(\"" + paramKeyName + "\")";
         //value is persisted as a string in the db, so make sure it's a string here
         // in case we get an integer.
@@ -259,7 +259,7 @@ public class ExpressionTree {
 
       //Can only support partitions whose types are string
       if( ! table.getPartitionKeys().get(partitionColumnIndex).
-          getType().equals(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME) ) {
+          getType().equals(org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME) ) {
         throw new MetaException
         ("Filtering is supported only on partition keys of type string");
       }

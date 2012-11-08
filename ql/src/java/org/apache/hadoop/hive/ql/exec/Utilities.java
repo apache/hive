@@ -127,7 +127,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -697,9 +697,9 @@ public final class Utilities {
   public static TableDesc getTableDesc(String cols, String colTypes) {
     return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
-        org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cols,
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes)));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
@@ -1644,7 +1644,7 @@ public final class Utilities {
 
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
-    String colNames = props.getProperty(Constants.LIST_COLUMNS);
+    String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
     String[] cols = colNames.trim().split(",");
     if (cols != null) {
       for (String col : cols) {
@@ -1658,7 +1658,7 @@ public final class Utilities {
 
   public static List<String> getColumnTypes(Properties props) {
     List<String> names = new ArrayList<String>();
-    String colNames = props.getProperty(Constants.LIST_COLUMN_TYPES);
+    String colNames = props.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     String[] cols = colNames.trim().split(",");
     if (cols != null) {
       for (String col : cols) {
@@ -2003,7 +2003,7 @@ public final class Utilities {
       columnNames.append(colInfo.getInternalName());
     }
     String columnNamesString = columnNames.toString();
-    jobConf.set(Constants.LIST_COLUMNS, columnNamesString);
+    jobConf.set(serdeConstants.LIST_COLUMNS, columnNamesString);
   }
 
   public static void setColumnTypeList(JobConf jobConf, Operator op) {
@@ -2019,7 +2019,7 @@ public final class Utilities {
       columnTypes.append(colInfo.getType().getTypeName());
     }
     String columnTypesString = columnTypes.toString();
-    jobConf.set(Constants.LIST_COLUMN_TYPES, columnTypesString);
+    jobConf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypesString);
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec)
@@ -2122,11 +2122,11 @@ public final class Utilities {
     } else if (expr instanceof ExprNodeColumnDesc) {
       // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
       TypeInfo type = expr.getTypeInfo();
-      if (type.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+      if (type.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
         String colName = ((ExprNodeColumnDesc)expr).getColumn();
         for (FieldSchema fs: tab.getPartCols()) {
           if (fs.getName().equals(colName)) {
-            if (fs.getType().equals(Constants.STRING_TYPE_NAME)) {
+            if (fs.getType().equals(serdeConstants.STRING_TYPE_NAME)) {
               return null;
             }
             return "Partition column " + fs.getName() + " is not string type";

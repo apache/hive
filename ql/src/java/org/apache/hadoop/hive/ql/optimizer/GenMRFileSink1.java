@@ -316,7 +316,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     TableDesc ts = (TableDesc) fsConf.getTableInfo().clone();
     fsConf.getTableInfo().getProperties().remove(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
 
     FileSinkDesc newFSD = new FileSinkDesc(finalName, ts, parseCtx.getConf()
         .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT));
@@ -443,12 +443,12 @@ public class GenMRFileSink1 implements NodeProcessor {
 
       // update the FileSinkOperator to include partition columns
       fsInputDesc.getTableInfo().getProperties().setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
         partCols.toString()); // list of dynamic partition column names
     } else {
       // non-partitioned table
       fsInputDesc.getTableInfo().getProperties().remove(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     }
 
     //

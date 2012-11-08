@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -257,8 +257,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     ExprNodeDesc filterExpr =
       Utilities.deserializeExpression(filterExprSerialized, jobConf);
 
-    String colName = jobConf.get(Constants.LIST_COLUMNS).split(",")[iKey];
-    String colType = jobConf.get(Constants.LIST_COLUMN_TYPES).split(",")[iKey];
+    String colName = jobConf.get(serdeConstants.LIST_COLUMNS).split(",")[iKey];
+    String colType = jobConf.get(serdeConstants.LIST_COLUMN_TYPES).split(",")[iKey];
     IndexPredicateAnalyzer analyzer = newIndexPredicateAnalyzer(colName,colType, isKeyBinary);
 
     List<IndexSearchCondition> searchConditions =

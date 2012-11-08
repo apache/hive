@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -77,12 +77,12 @@ public class GenericUDFFormatNumber extends GenericUDF {
       default:
         throw new UDFArgumentTypeException(0, "Argument 1"
           + " of function FORMAT_NUMBER must be \""
-          + Constants.TINYINT_TYPE_NAME + "\""
-          + " or \"" + Constants.SMALLINT_TYPE_NAME + "\""
-          + " or \"" + Constants.INT_TYPE_NAME + "\""
-          + " or \"" + Constants.BIGINT_TYPE_NAME + "\""
-          + " or \"" + Constants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + Constants.FLOAT_TYPE_NAME + "\", but \""
+          + serdeConstants.TINYINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
           + arguments[0].getTypeName() + "\" was found.");
     }
 
@@ -92,10 +92,10 @@ public class GenericUDFFormatNumber extends GenericUDF {
       default:
         throw new UDFArgumentTypeException(1, "Argument 2"
           + " of function FORMAT_NUMBER must be \""
-          + Constants.TINYINT_TYPE_NAME + "\""
-          + " or \"" + Constants.SMALLINT_TYPE_NAME + "\""
-          + " or \"" + Constants.INT_TYPE_NAME + "\""
-          + " or \"" + Constants.BIGINT_TYPE_NAME + "\", but \""
+          + serdeConstants.TINYINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\", but \""
           + arguments[1].getTypeName() + "\" was found.");
     }
 
@@ -114,12 +114,12 @@ public class GenericUDFFormatNumber extends GenericUDF {
       default:
         throw new UDFArgumentTypeException(0, "Argument 1"
           + " of function FORMAT_NUMBER must be \""
-          + Constants.TINYINT_TYPE_NAME + "\""
-          + " or \"" + Constants.SMALLINT_TYPE_NAME + "\""
-          + " or \"" + Constants.INT_TYPE_NAME + "\""
-          + " or \"" + Constants.BIGINT_TYPE_NAME + "\""
-          + " or \"" + Constants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + Constants.FLOAT_TYPE_NAME + "\", but \""
+          + serdeConstants.TINYINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
           + arguments[0].getTypeName() + "\" was found.");
     }
 
@@ -133,10 +133,10 @@ public class GenericUDFFormatNumber extends GenericUDF {
       default:
         throw new UDFArgumentTypeException(1, "Argument 2"
           + " of function FORMAT_NUMBER must be \""
-          + Constants.TINYINT_TYPE_NAME + "\""
-          + " or \"" + Constants.SMALLINT_TYPE_NAME + "\""
-          + " or \"" + Constants.INT_TYPE_NAME + "\""
-          + " or \"" + Constants.BIGINT_TYPE_NAME + "\", but \""
+          + serdeConstants.TINYINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\", but \""
           + arguments[1].getTypeName() + "\" was found.");
     }
 
@@ -194,12 +194,12 @@ public class GenericUDFFormatNumber extends GenericUDF {
         break;
       default:
         throw new HiveException("Argument 1 of function FORMAT_NUMBER must be "
-          + Constants.TINYINT_TYPE_NAME + "\""
-          + " or \"" + Constants.SMALLINT_TYPE_NAME + "\""
-          + " or \"" + Constants.INT_TYPE_NAME + "\""
-          + " or \"" + Constants.BIGINT_TYPE_NAME + "\""
-          + " or \"" + Constants.DOUBLE_TYPE_NAME + "\""
-          + " or \"" + Constants.FLOAT_TYPE_NAME + "\", but \""
+          + serdeConstants.TINYINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.DOUBLE_TYPE_NAME + "\""
+          + " or \"" + serdeConstants.FLOAT_TYPE_NAME + "\", but \""
           + argumentOIs[0].getTypeName() + "\" was found.");
     }
     return resultText;
