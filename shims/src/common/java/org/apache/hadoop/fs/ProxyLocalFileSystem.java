@@ -53,11 +53,9 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     if (Shell.WINDOWS) {
       // Replace the encoded backward slash with forward slash
       // Remove the windows drive letter
-      // replace the '=' with special string '------' to handle the unsupported char '=' in windows.
       nameUriString = nameUriString.replaceAll("%5C", "/")
           .replaceFirst("/[c-zC-Z]:", "/")
-          .replaceFirst("^[c-zC-Z]:", "")
-          .replaceAll("=", "------");
+          .replaceFirst("^[c-zC-Z]:", "");
       name = URI.create(nameUriString);
     }
 
