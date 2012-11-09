@@ -37,6 +37,16 @@ public class VirtualColumn implements Serializable {
 
   public static VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
 
+  /**
+   * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
+   * It composes a bit vector with the "0" and "1" values for every
+   * column which is GROUP BY section. "1" is for a row in the result
+   * set if that column has been aggregated in that row. Otherwise the
+   * value is "0".  Returns the decimal representation of the bit vector.
+   */
+  public static VirtualColumn GROUPINGID =
+      new VirtualColumn("GROUPING__ID", (PrimitiveTypeInfo) TypeInfoFactory.intTypeInfo);
+
 
   private String name;
   private PrimitiveTypeInfo typeInfo;

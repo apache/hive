@@ -221,8 +221,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   //Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
-  private static final String GROUPING_SET_KEY = "GROUPING_SET_KEY";
-
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -2732,15 +2730,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
     // For grouping sets, add a dummy grouping key
     String groupingSetColumnName =
-      groupByInputRowResolver.get(null, GROUPING_SET_KEY).getInternalName();
+      groupByInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
     ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
       groupingSetColumnName, null, false);
     groupByKeys.add(inputExpr);
 
     String field = getColumnInternalName(groupByKeys.size() - 1);
     outputColumnNames.add(field);
-    groupByOutputRowResolver.put(null, GROUPING_SET_KEY,
-      new ColumnInfo(field, TypeInfoFactory.stringTypeInfo, "", false));
+    groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+        new ColumnInfo(
+            field,
+            TypeInfoFactory.stringTypeInfo,
+            null,
+            true));
     colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
   }
 
@@ -2759,7 +2761,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
     // add a key for reduce sink
     String groupingSetColumnName =
-      reduceSinkInputRowResolver.get(null, GROUPING_SET_KEY).getInternalName();
+      reduceSinkInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
     ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
       groupingSetColumnName, null, false);
     reduceKeys.add(inputExpr);
@@ -2768,8 +2770,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String field = Utilities.ReduceField.KEY.toString() + "."
       + getColumnInternalName(reduceKeys.size() - 1);
     ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
-      reduceKeys.size() - 1).getTypeInfo(), null, false);
-    reduceSinkOutputRowResolver.put(null, GROUPING_SET_KEY, colInfo);
+      reduceKeys.size() - 1).getTypeInfo(), null, true);
+    reduceSinkOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(), colInfo);
     colExprMap.put(colInfo.getInternalName(), inputExpr);
   }
 
@@ -3016,8 +3018,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupByKeys.add(constant);
       String field = getColumnInternalName(groupByKeys.size() - 1);
       outputColumnNames.add(field);
-      groupByOutputRowResolver.put(null, GROUPING_SET_KEY,
-        new ColumnInfo(field, TypeInfoFactory.stringTypeInfo, "", false));
+      groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+        new ColumnInfo(
+            field,
+            TypeInfoFactory.stringTypeInfo,
+            null,
+            true));
       colExprMap.put(field, constant);
     }
 
