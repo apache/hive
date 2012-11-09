@@ -3,18 +3,20 @@
 Configuration file is JSON formated, example:
 
 {
-    "qfile_hosts": [
-        ["hostname1", 2],
-        ["hostname2", 4],
-        ["hostname3", 4],
-    ],
-    "other_hosts": [
-        ["hostname1", 2],
-        ["hostname4", 5]
-    ],
-    "master_base_path": "${{HOME}}/hivetests",
-    "host_base_path": "/mnt/drive/hivetests"
-    "java_home": "/opt/jdk"
+  "qfile_hosts": [
+  ["username@hostname1", 4],
+  ["username@hostname2", 8],
+  ["username@hostname3", 8]
+  ],
+
+  "other_hosts": [
+    ["username@hostname4", 5],
+    ["username@hostname5", 8]
+  ],
+
+  "master_base_path": "${{HOME}}/hivetests",
+  "host_base_path": "/data/users/hivetests",
+  "java_home": "/opt/jdk"
 }
 
 == qfile_hosts ==
