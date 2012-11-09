@@ -191,6 +191,9 @@ public final class MetaDataFormatUtils {
     formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
     formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
     formatOutput("Sort Columns:", storageDesc.getSortCols().toString(), tableInfo);
+    if (storageDesc.isStoredAsSubDirectories()) {// optional parameter
+      formatOutput("Stored As SubDirectories:", "Yes", tableInfo);
+    }
 
     if (null != storageDesc.getSkewedInfo()) {
       List<String> skewedColNames = storageDesc.getSkewedInfo().getSkewedColNames();

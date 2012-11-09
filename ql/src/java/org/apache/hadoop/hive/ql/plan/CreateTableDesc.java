@@ -69,6 +69,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   boolean ifNotExists;
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
+  boolean isStoredAsSubDirectories = false;
 
   public CreateTableDesc() {
   }
@@ -481,5 +482,19 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     /* Validate skewed information. */
     ValidationUtility.validateSkewedInformation(colNames, this.getSkewedColNames(),
         this.getSkewedColValues());
+  }
+
+  /**
+   * @return the isStoredAsSubDirectories
+   */
+  public boolean isStoredAsSubDirectories() {
+    return isStoredAsSubDirectories;
+  }
+
+  /**
+   * @param isStoredAsSubDirectories the isStoredAsSubDirectories to set
+   */
+  public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
+    this.isStoredAsSubDirectories = isStoredAsSubDirectories;
   }
 }

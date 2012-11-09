@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -108,7 +109,7 @@ public class QTestUtil {
   private Hive db;
   protected HiveConf conf;
   private Driver drv;
-  private SemanticAnalyzer sem;
+  private BaseSemanticAnalyzer sem;
   private FileSystem fs;
   protected final boolean overWrite;
   private CliDriver cliDriver;

@@ -45,6 +45,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   private static final org.apache.thrift.protocol.TField SORT_COLS_FIELD_DESC = new org.apache.thrift.protocol.TField("sortCols", org.apache.thrift.protocol.TType.LIST, (short)9);
   private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)10);
   private static final org.apache.thrift.protocol.TField SKEWED_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("skewedInfo", org.apache.thrift.protocol.TType.STRUCT, (short)11);
+  private static final org.apache.thrift.protocol.TField STORED_AS_SUB_DIRECTORIES_FIELD_DESC = new org.apache.thrift.protocol.TField("storedAsSubDirectories", org.apache.thrift.protocol.TType.BOOL, (short)12);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -63,6 +64,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   private List<Order> sortCols; // required
   private Map<String,String> parameters; // required
   private SkewedInfo skewedInfo; // optional
+  private boolean storedAsSubDirectories; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -76,7 +78,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     BUCKET_COLS((short)8, "bucketCols"),
     SORT_COLS((short)9, "sortCols"),
     PARAMETERS((short)10, "parameters"),
-    SKEWED_INFO((short)11, "skewedInfo");
+    SKEWED_INFO((short)11, "skewedInfo"),
+    STORED_AS_SUB_DIRECTORIES((short)12, "storedAsSubDirectories");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -113,6 +116,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           return PARAMETERS;
         case 11: // SKEWED_INFO
           return SKEWED_INFO;
+        case 12: // STORED_AS_SUB_DIRECTORIES
+          return STORED_AS_SUB_DIRECTORIES;
         default:
           return null;
       }
@@ -155,8 +160,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   // isset id assignments
   private static final int __COMPRESSED_ISSET_ID = 0;
   private static final int __NUMBUCKETS_ISSET_ID = 1;
+  private static final int __STOREDASSUBDIRECTORIES_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private _Fields optionals[] = {_Fields.SKEWED_INFO};
+  private _Fields optionals[] = {_Fields.SKEWED_INFO,_Fields.STORED_AS_SUB_DIRECTORIES};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -187,6 +193,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.SKEWED_INFO, new org.apache.thrift.meta_data.FieldMetaData("skewedInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SkewedInfo.class)));
+    tmpMap.put(_Fields.STORED_AS_SUB_DIRECTORIES, new org.apache.thrift.meta_data.FieldMetaData("storedAsSubDirectories", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StorageDescriptor.class, metaDataMap);
   }
@@ -279,6 +287,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     if (other.isSetSkewedInfo()) {
       this.skewedInfo = new SkewedInfo(other.skewedInfo);
     }
+    this.storedAsSubDirectories = other.storedAsSubDirectories;
   }
 
   public StorageDescriptor deepCopy() {
@@ -300,6 +309,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     this.sortCols = null;
     this.parameters = null;
     this.skewedInfo = null;
+    setStoredAsSubDirectoriesIsSet(false);
+    this.storedAsSubDirectories = false;
   }
 
   public int getColsSize() {
@@ -609,6 +620,28 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     }
   }
 
+  public boolean isStoredAsSubDirectories() {
+    return this.storedAsSubDirectories;
+  }
+
+  public void setStoredAsSubDirectories(boolean storedAsSubDirectories) {
+    this.storedAsSubDirectories = storedAsSubDirectories;
+    setStoredAsSubDirectoriesIsSet(true);
+  }
+
+  public void unsetStoredAsSubDirectories() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STOREDASSUBDIRECTORIES_ISSET_ID);
+  }
+
+  /** Returns true if field storedAsSubDirectories is set (has been assigned a value) and false otherwise */
+  public boolean isSetStoredAsSubDirectories() {
+    return EncodingUtils.testBit(__isset_bitfield, __STOREDASSUBDIRECTORIES_ISSET_ID);
+  }
+
+  public void setStoredAsSubDirectoriesIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STOREDASSUBDIRECTORIES_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COLS:
@@ -699,6 +732,14 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       }
       break;
 
+    case STORED_AS_SUB_DIRECTORIES:
+      if (value == null) {
+        unsetStoredAsSubDirectories();
+      } else {
+        setStoredAsSubDirectories((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -737,6 +778,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     case SKEWED_INFO:
       return getSkewedInfo();
 
+    case STORED_AS_SUB_DIRECTORIES:
+      return Boolean.valueOf(isStoredAsSubDirectories());
+
     }
     throw new IllegalStateException();
   }
@@ -770,6 +814,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       return isSetParameters();
     case SKEWED_INFO:
       return isSetSkewedInfo();
+    case STORED_AS_SUB_DIRECTORIES:
+      return isSetStoredAsSubDirectories();
     }
     throw new IllegalStateException();
   }
@@ -886,6 +932,15 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         return false;
     }
 
+    boolean this_present_storedAsSubDirectories = true && this.isSetStoredAsSubDirectories();
+    boolean that_present_storedAsSubDirectories = true && that.isSetStoredAsSubDirectories();
+    if (this_present_storedAsSubDirectories || that_present_storedAsSubDirectories) {
+      if (!(this_present_storedAsSubDirectories && that_present_storedAsSubDirectories))
+        return false;
+      if (this.storedAsSubDirectories != that.storedAsSubDirectories)
+        return false;
+    }
+
     return true;
   }
 
@@ -947,6 +1002,11 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     builder.append(present_skewedInfo);
     if (present_skewedInfo)
       builder.append(skewedInfo);
+
+    boolean present_storedAsSubDirectories = true && (isSetStoredAsSubDirectories());
+    builder.append(present_storedAsSubDirectories);
+    if (present_storedAsSubDirectories)
+      builder.append(storedAsSubDirectories);
 
     return builder.toHashCode();
   }
@@ -1069,6 +1129,16 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStoredAsSubDirectories()).compareTo(typedOther.isSetStoredAsSubDirectories());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStoredAsSubDirectories()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.storedAsSubDirectories, typedOther.storedAsSubDirectories);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1168,6 +1238,12 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       } else {
         sb.append(this.skewedInfo);
       }
+      first = false;
+    }
+    if (isSetStoredAsSubDirectories()) {
+      if (!first) sb.append(", ");
+      sb.append("storedAsSubDirectories:");
+      sb.append(this.storedAsSubDirectories);
       first = false;
     }
     sb.append(")");
@@ -1334,7 +1410,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
                 for (int _i150 = 0; _i150 < _map149.size; ++_i150)
                 {
                   String _key151; // required
-                  String _val152; // required
+                  String _val152; // optional
                   _key151 = iprot.readString();
                   _val152 = iprot.readString();
                   struct.parameters.put(_key151, _val152);
@@ -1351,6 +1427,14 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
               struct.skewedInfo = new SkewedInfo();
               struct.skewedInfo.read(iprot);
               struct.setSkewedInfoIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 12: // STORED_AS_SUB_DIRECTORIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.storedAsSubDirectories = iprot.readBool();
+              struct.setStoredAsSubDirectoriesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1450,6 +1534,11 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetStoredAsSubDirectories()) {
+        oprot.writeFieldBegin(STORED_AS_SUB_DIRECTORIES_FIELD_DESC);
+        oprot.writeBool(struct.storedAsSubDirectories);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1501,7 +1590,10 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       if (struct.isSetSkewedInfo()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetStoredAsSubDirectories()) {
+        optionals.set(11);
+      }
+      oprot.writeBitSet(optionals, 12);
       if (struct.isSetCols()) {
         {
           oprot.writeI32(struct.cols.size());
@@ -1560,12 +1652,15 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       if (struct.isSetSkewedInfo()) {
         struct.skewedInfo.write(oprot);
       }
+      if (struct.isSetStoredAsSubDirectories()) {
+        oprot.writeBool(struct.storedAsSubDirectories);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, StorageDescriptor struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(11);
+      BitSet incoming = iprot.readBitSet(12);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list161 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -1639,7 +1734,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           for (int _i171 = 0; _i171 < _map170.size; ++_i171)
           {
             String _key172; // required
-            String _val173; // required
+            String _val173; // optional
             _key172 = iprot.readString();
             _val173 = iprot.readString();
             struct.parameters.put(_key172, _val173);
@@ -1651,6 +1746,10 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         struct.skewedInfo = new SkewedInfo();
         struct.skewedInfo.read(iprot);
         struct.setSkewedInfoIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.storedAsSubDirectories = iprot.readBool();
+        struct.setStoredAsSubDirectoriesIsSet(true);
       }
     }
   }

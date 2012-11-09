@@ -80,7 +80,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean protectModeEnable;
   ProtectModeType protectModeType;
   Map<List<String>, String> skewedLocations;
-  boolean turnOffSkewed = false;
+  boolean isTurnOffSkewed = false;
+  boolean isStoredAsSubDirectories = false;
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
   Table table;
@@ -205,7 +206,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
       List<String> skewedColNames, List<List<String>> skewedColValues) {
     oldName = tableName;
     op = AlterTableTypes.ADDSKEWEDBY;
-    this.turnOffSkewed = turnOffSkewed;
+    this.isTurnOffSkewed = turnOffSkewed;
     this.skewedColNames = new ArrayList<String>(skewedColNames);
     this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
   }
@@ -582,14 +583,14 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @return the turnOffSkewed
    */
   public boolean isTurnOffSkewed() {
-    return turnOffSkewed;
+    return isTurnOffSkewed;
   }
 
   /**
    * @param turnOffSkewed the turnOffSkewed to set
    */
   public void setTurnOffSkewed(boolean turnOffSkewed) {
-    this.turnOffSkewed = turnOffSkewed;
+    this.isTurnOffSkewed = turnOffSkewed;
   }
 
   /**
@@ -646,6 +647,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public void setTable(Table table) {
     this.table = table;
+  }
+
+  /**
+   * @return the isStoredAsSubDirectories
+   */
+  public boolean isStoredAsSubDirectories() {
+    return isStoredAsSubDirectories;
+  }
+
+  /**
+   * @param isStoredAsSubDirectories the isStoredAsSubDirectories to set
+   */
+  public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
+    this.isStoredAsSubDirectories = isStoredAsSubDirectories;
   }
 
 }

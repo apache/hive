@@ -1,0 +1,319 @@
+PREHOOK: query: -- Test stored as directories
+-- it covers a few cases
+
+-- 1. create a table with stored as directories
+CREATE TABLE  if not exists stored_as_dirs_multiple (col1 STRING, col2 int, col3 STRING) 
+SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))  stored as DIRECTORIES
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test stored as directories
+-- it covers a few cases
+
+-- 1. create a table with stored as directories
+CREATE TABLE  if not exists stored_as_dirs_multiple (col1 STRING, col2 int, col3 STRING) 
+SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))  stored as DIRECTORIES
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@stored_as_dirs_multiple
+PREHOOK: query: describe formatted stored_as_dirs_multiple
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_multiple
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
+col2                	int                 	None                
+col3                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[col1, col2]        	 
+Skewed Values:      	[[s1, 1], [s3, 3], [s13, 13], [s78, 78]]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 2. turn off stored as directories but table is still a skewed table
+alter table stored_as_dirs_multiple not stored as DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@stored_as_dirs_multiple
+PREHOOK: Output: default@stored_as_dirs_multiple
+POSTHOOK: query: -- 2. turn off stored as directories but table is still a skewed table
+alter table stored_as_dirs_multiple not stored as DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@stored_as_dirs_multiple
+POSTHOOK: Output: default@stored_as_dirs_multiple
+PREHOOK: query: describe formatted stored_as_dirs_multiple
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_multiple
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
+col2                	int                 	None                
+col3                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[col1, col2]        	 
+Skewed Values:      	[[s1, 1], [s3, 3], [s13, 13], [s78, 78]]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 3. turn off skewed
+alter table stored_as_dirs_multiple not skewed
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@stored_as_dirs_multiple
+PREHOOK: Output: default@stored_as_dirs_multiple
+POSTHOOK: query: -- 3. turn off skewed
+alter table stored_as_dirs_multiple not skewed
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@stored_as_dirs_multiple
+POSTHOOK: Output: default@stored_as_dirs_multiple
+PREHOOK: query: describe formatted stored_as_dirs_multiple
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_multiple
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
+col2                	int                 	None                
+col3                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 4. alter a table to stored as directories
+CREATE TABLE stored_as_dirs_single (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- 4. alter a table to stored as directories
+CREATE TABLE stored_as_dirs_single (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@stored_as_dirs_single
+PREHOOK: query: alter table stored_as_dirs_single SKEWED BY (key) ON ('1','5','6') 
+stored as DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@stored_as_dirs_single
+PREHOOK: Output: default@stored_as_dirs_single
+POSTHOOK: query: alter table stored_as_dirs_single SKEWED BY (key) ON ('1','5','6') 
+stored as DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@stored_as_dirs_single
+POSTHOOK: Output: default@stored_as_dirs_single
+PREHOOK: query: describe formatted stored_as_dirs_single
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_single
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 5. turn off skewed should turn off stored as directories too
+alter table stored_as_dirs_single not skewed
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@stored_as_dirs_single
+PREHOOK: Output: default@stored_as_dirs_single
+POSTHOOK: query: -- 5. turn off skewed should turn off stored as directories too
+alter table stored_as_dirs_single not skewed
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@stored_as_dirs_single
+POSTHOOK: Output: default@stored_as_dirs_single
+PREHOOK: query: describe formatted stored_as_dirs_single
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_single
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 6. turn on stored as directories again
+alter table stored_as_dirs_single SKEWED BY (key) ON ('1','5','6') 
+stored as DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@stored_as_dirs_single
+PREHOOK: Output: default@stored_as_dirs_single
+POSTHOOK: query: -- 6. turn on stored as directories again
+alter table stored_as_dirs_single SKEWED BY (key) ON ('1','5','6') 
+stored as DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@stored_as_dirs_single
+POSTHOOK: Output: default@stored_as_dirs_single
+PREHOOK: query: describe formatted stored_as_dirs_single
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_single
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- 7. create table like
+create table stored_as_dirs_single_like like stored_as_dirs_single
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- 7. create table like
+create table stored_as_dirs_single_like like stored_as_dirs_single
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@stored_as_dirs_single_like
+PREHOOK: query: describe formatted stored_as_dirs_single_like
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted stored_as_dirs_single_like
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- cleanup
+drop table stored_as_dirs_single
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stored_as_dirs_single
+PREHOOK: Output: default@stored_as_dirs_single
+POSTHOOK: query: -- cleanup
+drop table stored_as_dirs_single
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stored_as_dirs_single
+POSTHOOK: Output: default@stored_as_dirs_single
+PREHOOK: query: drop table stored_as_dirs_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stored_as_dirs_multiple
+PREHOOK: Output: default@stored_as_dirs_multiple
+POSTHOOK: query: drop table stored_as_dirs_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stored_as_dirs_multiple
+POSTHOOK: Output: default@stored_as_dirs_multiple

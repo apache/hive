@@ -859,7 +859,7 @@ class SkewedInfo {
 void swap(SkewedInfo &a, SkewedInfo &b);
 
 typedef struct _StorageDescriptor__isset {
-  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false), skewedInfo(false) {}
+  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false), skewedInfo(false), storedAsSubDirectories(false) {}
   bool cols;
   bool location;
   bool inputFormat;
@@ -871,15 +871,16 @@ typedef struct _StorageDescriptor__isset {
   bool sortCols;
   bool parameters;
   bool skewedInfo;
+  bool storedAsSubDirectories;
 } _StorageDescriptor__isset;
 
 class StorageDescriptor {
  public:
 
-  static const char* ascii_fingerprint; // = "BDC4DB93B74677CE1C04198D60E6CB80";
-  static const uint8_t binary_fingerprint[16]; // = {0xBD,0xC4,0xDB,0x93,0xB7,0x46,0x77,0xCE,0x1C,0x04,0x19,0x8D,0x60,0xE6,0xCB,0x80};
+  static const char* ascii_fingerprint; // = "CA8C9AA5FE4C32643757D8639CEF0CD7";
+  static const uint8_t binary_fingerprint[16]; // = {0xCA,0x8C,0x9A,0xA5,0xFE,0x4C,0x32,0x64,0x37,0x57,0xD8,0x63,0x9C,0xEF,0x0C,0xD7};
 
-  StorageDescriptor() : location(), inputFormat(), outputFormat(), compressed(0), numBuckets(0) {
+  StorageDescriptor() : location(), inputFormat(), outputFormat(), compressed(0), numBuckets(0), storedAsSubDirectories(0) {
   }
 
   virtual ~StorageDescriptor() throw() {}
@@ -895,6 +896,7 @@ class StorageDescriptor {
   std::vector<Order>  sortCols;
   std::map<std::string, std::string>  parameters;
   SkewedInfo skewedInfo;
+  bool storedAsSubDirectories;
 
   _StorageDescriptor__isset __isset;
 
@@ -943,6 +945,11 @@ class StorageDescriptor {
     __isset.skewedInfo = true;
   }
 
+  void __set_storedAsSubDirectories(const bool val) {
+    storedAsSubDirectories = val;
+    __isset.storedAsSubDirectories = true;
+  }
+
   bool operator == (const StorageDescriptor & rhs) const
   {
     if (!(cols == rhs.cols))
@@ -968,6 +975,10 @@ class StorageDescriptor {
     if (__isset.skewedInfo != rhs.__isset.skewedInfo)
       return false;
     else if (__isset.skewedInfo && !(skewedInfo == rhs.skewedInfo))
+      return false;
+    if (__isset.storedAsSubDirectories != rhs.__isset.storedAsSubDirectories)
+      return false;
+    else if (__isset.storedAsSubDirectories && !(storedAsSubDirectories == rhs.storedAsSubDirectories))
       return false;
     return true;
   }
@@ -1004,8 +1015,8 @@ typedef struct _Table__isset {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "F21F7F0ACA98ECCFC83F6605440D007F";
-  static const uint8_t binary_fingerprint[16]; // = {0xF2,0x1F,0x7F,0x0A,0xCA,0x98,0xEC,0xCF,0xC8,0x3F,0x66,0x05,0x44,0x0D,0x00,0x7F};
+  static const char* ascii_fingerprint; // = "68640B4B66B355CF317429AF70D2C260";
+  static const uint8_t binary_fingerprint[16]; // = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
 
   Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType() {
   }
@@ -1141,8 +1152,8 @@ typedef struct _Partition__isset {
 class Partition {
  public:
 
-  static const char* ascii_fingerprint; // = "E5EF1F030CF964C052658DD22257D025";
-  static const uint8_t binary_fingerprint[16]; // = {0xE5,0xEF,0x1F,0x03,0x0C,0xF9,0x64,0xC0,0x52,0x65,0x8D,0xD2,0x22,0x57,0xD0,0x25};
+  static const char* ascii_fingerprint; // = "31A52241B88A426C34087FE38343FF51";
+  static const uint8_t binary_fingerprint[16]; // = {0x31,0xA5,0x22,0x41,0xB8,0x8A,0x42,0x6C,0x34,0x08,0x7F,0xE3,0x83,0x43,0xFF,0x51};
 
   Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0) {
   }
@@ -1245,8 +1256,8 @@ typedef struct _Index__isset {
 class Index {
  public:
 
-  static const char* ascii_fingerprint; // = "BA1090E838C806A4F8D8D137C5085EDD";
-  static const uint8_t binary_fingerprint[16]; // = {0xBA,0x10,0x90,0xE8,0x38,0xC8,0x06,0xA4,0xF8,0xD8,0xD1,0x37,0xC5,0x08,0x5E,0xDD};
+  static const char* ascii_fingerprint; // = "09EEF655216AC81802850988D6C470A6";
+  static const uint8_t binary_fingerprint[16]; // = {0x09,0xEE,0xF6,0x55,0x21,0x6A,0xC8,0x18,0x02,0x85,0x09,0x88,0xD6,0xC4,0x70,0xA6};
 
   Index() : indexName(), indexHandlerClass(), dbName(), origTableName(), createTime(0), lastAccessTime(0), indexTableName(), deferredRebuild(0) {
   }

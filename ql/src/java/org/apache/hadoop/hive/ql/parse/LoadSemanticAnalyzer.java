@@ -204,6 +204,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ts.tableHandle.isNonNative()) {
       throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
     }
+
+    if(ts.tableHandle.isStoredAsSubDirectories()) {
+      throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
+    }
+
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation()
         : ts.tableHandle.getDataLocation();
 

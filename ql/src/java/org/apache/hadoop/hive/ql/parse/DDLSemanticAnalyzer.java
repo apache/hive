@@ -30,7 +30,6 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -234,7 +233,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescribeTable(ast);
       break;
-    case TOK_SHOWDATABASES:
+    case HiveParser.TOK_SHOWDATABASES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowDatabases(ast);
       break;
@@ -665,10 +664,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 1; i < ast.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
       switch (childNode.getToken().getType()) {
-      case TOK_IFNOTEXISTS:
+      case HiveParser.TOK_IFNOTEXISTS:
         ifNotExists = true;
         break;
-      case TOK_DATABASECOMMENT:
+      case HiveParser.TOK_DATABASECOMMENT:
         dbComment = unescapeSQLString(childNode.getChild(0).getText());
         break;
       case TOK_DATABASEPROPERTIES:
@@ -697,11 +696,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean ifExists = false;
     boolean ifCascade = false;
 
-    if (null != ast.getFirstChildWithType(TOK_IFEXISTS)) {
+    if (null != ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS)) {
       ifExists = true;
     }
 
-    if (null != ast.getFirstChildWithType(TOK_CASCADE)) {
+    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
       ifCascade = true;
     }
 
@@ -721,7 +720,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeDropTable(ASTNode ast, boolean expectView)
       throws SemanticException {
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
     // we want to signal an error if the table/view doesn't exist and we're
     // configured not to fail silently
     boolean throwException =
@@ -827,7 +826,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeDropIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
     String tableName = getUnescapedName((ASTNode) ast.getChild(1));
-    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
     // we want to signal an error if the index doesn't exist and we're
     // configured not to ignore this
     boolean throwException =
@@ -2232,7 +2231,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (partSpecs != null) {
-      boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+      boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
       // we want to signal an error if the partition doesn't exist and we're
       // configured not to fail silently
       boolean throwException =
@@ -2728,65 +2727,75 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       /* Convert a skewed table to non-skewed table. */
       AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, true,
           new ArrayList<String>(), new ArrayList<List<String>>());
+      alterTblDesc.setStoredAsSubDirectories(false);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           alterTblDesc), conf));
     } else {
-      List<String> skewedColNames = new ArrayList<String>();
-      List<List<String>> skewedValues = new ArrayList<List<String>>();
-      /* skewed column names. */
-      ASTNode skewedNode = (ASTNode) ast.getChild(1);
-      skewedColNames = analyzeAlterTableSkewedColNames(skewedColNames, skewedNode);
-      /* skewed value. */
-      Tree vNode = skewedNode.getChild(1);
-      if (vNode == null) {
-        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-      } else {
-        ASTNode vAstNode = (ASTNode) vNode;
-        switch (vAstNode.getToken().getType()) {
-        case HiveParser.TOK_TABCOLVALUE:
-          for (String str : getColumnValues(vAstNode)) {
-            List<String> sList = new ArrayList<String>(Arrays.asList(str));
-            skewedValues.add(sList);
-          }
-          break;
-        case HiveParser.TOK_TABCOLVALUE_PAIR:
-          List<Node> vLNodes = vAstNode.getChildren();
-          for (Node node : vLNodes) {
-            if (((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
-              throw new SemanticException(
-                  ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-            } else {
-              Tree leafVNode = ((ASTNode) node).getChild(0);
-              if (leafVNode == null) {
-                throw new SemanticException(
-                    ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-              } else {
-                ASTNode lVAstNode = (ASTNode) leafVNode;
-                if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
-                  throw new SemanticException(
-                      ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-                } else {
-                  skewedValues.add(new ArrayList<String>(getColumnValues(lVAstNode)));
-                }
-              }
-            }
-          }
-          break;
-        default:
-          break;
-        }
+      switch (((ASTNode) ast.getChild(1)).getToken().getType()) {
+      case HiveParser.TOK_TABLESKEWED:
+        handleAlterTableSkewedBy(ast, tableName, tab);
+        break;
+      case HiveParser.TOK_STOREDASDIRS:
+        handleAlterTableDisableStoredAsDirs(tableName, tab);
+        break;
+      default:
+        assert false;
       }
-
-      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, false,
-          skewedColNames, skewedValues);
-      /**
-       * Validate information about skewed table
-       */
-      alterTblDesc.setTable(tab);
-      alterTblDesc.validate();
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          alterTblDesc), conf));
     }
+  }
+
+  /**
+   * Handle alter table <name> not stored as directories
+   *
+   * @param tableName
+   * @param tab
+   * @throws SemanticException
+   */
+  private void handleAlterTableDisableStoredAsDirs(String tableName, Table tab)
+      throws SemanticException {
+  List<String> skewedColNames = tab.getSkewedColNames();
+    List<List<String>> skewedColValues = tab.getSkewedColValues();
+    if ((skewedColNames == null) || (skewedColNames.size() == 0) || (skewedColValues == null)
+        || (skewedColValues.size() == 0)) {
+      throw new SemanticException(ErrorMsg.ALTER_TBL_STOREDASDIR_NOT_SKEWED.getMsg(tableName));
+    }
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, false,
+        skewedColNames, skewedColValues);
+    alterTblDesc.setStoredAsSubDirectories(false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        alterTblDesc), conf));
+  }
+
+  /**
+   * Process "alter table <name> skewed by .. on .. stored as directories
+   * @param ast
+   * @param tableName
+   * @param tab
+   * @throws SemanticException
+   */
+  private void handleAlterTableSkewedBy(ASTNode ast, String tableName, Table tab)
+      throws SemanticException {
+    List<String> skewedColNames = new ArrayList<String>();
+    List<List<String>> skewedValues = new ArrayList<List<String>>();
+    /* skewed column names. */
+    ASTNode skewedNode = (ASTNode) ast.getChild(1);
+    skewedColNames = analyzeSkewedTablDDLColNames(skewedColNames, skewedNode);
+    /* skewed value. */
+    analyzeDDLSkewedValues(skewedValues, skewedNode);
+    // stored as directories
+    boolean storedAsDirs = analyzeStoredAdDirs(skewedNode);
+
+
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, false,
+        skewedColNames, skewedValues);
+    alterTblDesc.setStoredAsSubDirectories(storedAsDirs);
+    /**
+     * Validate information about skewed table
+     */
+    alterTblDesc.setTable(tab);
+    alterTblDesc.validate();
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        alterTblDesc), conf));
   }
 
   /**

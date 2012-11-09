@@ -2073,6 +2073,7 @@ class StorageDescriptor {
   public $sortCols = null;
   public $parameters = null;
   public $skewedInfo = null;
+  public $storedAsSubDirectories = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2145,6 +2146,10 @@ class StorageDescriptor {
           'type' => TType::STRUCT,
           'class' => '\metastore\SkewedInfo',
           ),
+        12 => array(
+          'var' => 'storedAsSubDirectories',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -2180,6 +2185,9 @@ class StorageDescriptor {
       }
       if (isset($vals['skewedInfo'])) {
         $this->skewedInfo = $vals['skewedInfo'];
+      }
+      if (isset($vals['storedAsSubDirectories'])) {
+        $this->storedAsSubDirectories = $vals['storedAsSubDirectories'];
       }
     }
   }
@@ -2327,6 +2335,13 @@ class StorageDescriptor {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 12:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->storedAsSubDirectories);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2448,6 +2463,11 @@ class StorageDescriptor {
       }
       $xfer += $output->writeFieldBegin('skewedInfo', TType::STRUCT, 11);
       $xfer += $this->skewedInfo->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->storedAsSubDirectories !== null) {
+      $xfer += $output->writeFieldBegin('storedAsSubDirectories', TType::BOOL, 12);
+      $xfer += $output->writeBool($this->storedAsSubDirectories);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

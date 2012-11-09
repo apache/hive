@@ -178,6 +178,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().getParameters()
           .put(serdeConstants.SERIALIZATION_FORMAT, "1");
       sd.setSortCols(new ArrayList<Order>());
+      sd.setStoredAsSubDirectories(false);
 
       //skewed information
       SkewedInfo skewInfor = new SkewedInfo();
@@ -1605,6 +1606,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals(tbl2.getTableName(), tblName);
       assertEquals(tbl2.getSd().getCols().size(), typ1.getFields().size());
       assertFalse(tbl2.getSd().isCompressed());
+      assertFalse(tbl2.getSd().isStoredAsSubDirectories());
       assertEquals(tbl2.getSd().getNumBuckets(), 1);
 
       assertEquals("Use this for comments etc", tbl2.getSd().getParameters()

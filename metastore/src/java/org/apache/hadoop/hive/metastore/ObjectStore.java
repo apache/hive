@@ -1008,6 +1008,7 @@ public class ObjectStore implements RawStore, Configurable {
         convertToSkewedValues(msd.getSkewedColValues()),
         covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
     sd.setSkewedInfo(skewedInfo);
+    sd.setStoredAsSubDirectories(msd.isStoredAsSubDirectories());
     return sd;
   }
 
@@ -1120,7 +1121,7 @@ public class ObjectStore implements RawStore, Configurable {
         convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValues()),
         covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
-            .getSkewedColValueLocationMaps()));
+            .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
   public boolean addPartition(Partition part) throws InvalidObjectException,
@@ -2106,6 +2107,7 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
     oldSd.setSortCols(newSd.getSortCols());
     oldSd.setParameters(newSd.getParameters());
+    oldSd.setStoredAsSubDirectories(newSd.isStoredAsSubDirectories());
   }
 
   /**

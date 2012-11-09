@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -952,5 +953,84 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return result;
+  }
+
+  /**
+   * Analyze list bucket column names
+   *
+   * @param skewedColNames
+   * @param child
+   * @return
+   * @throws SemanticException
+   */
+  protected List<String> analyzeSkewedTablDDLColNames(List<String> skewedColNames, ASTNode child)
+      throws SemanticException {
+  Tree nNode = child.getChild(0);
+    if (nNode == null) {
+      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+    } else {
+      ASTNode nAstNode = (ASTNode) nNode;
+      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
+        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+      } else {
+        skewedColNames = getColumnNames(nAstNode);
+      }
+    }
+    return skewedColNames;
+  }
+
+  /**
+   * Handle skewed values in DDL.
+   *
+   * It can be used by both skewed by ... on () and set skewed location ().
+   *
+   * @param skewedValues
+   * @param child
+   * @throws SemanticException
+   */
+  protected void analyzeDDLSkewedValues(List<List<String>> skewedValues, ASTNode child)
+      throws SemanticException {
+  Tree vNode = child.getChild(1);
+    if (vNode == null) {
+      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+    }
+    ASTNode vAstNode = (ASTNode) vNode;
+    switch (vAstNode.getToken().getType()) {
+      case HiveParser.TOK_TABCOLVALUE:
+        for (String str : getSkewedValueFromASTNode(vAstNode)) {
+          List<String> sList = new ArrayList<String>(Arrays.asList(str));
+          skewedValues.add(sList);
+        }
+        break;
+      case HiveParser.TOK_TABCOLVALUE_PAIR:
+        ArrayList<Node> vLNodes = vAstNode.getChildren();
+        for (Node node : vLNodes) {
+          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
+            throw new SemanticException(
+                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+          } else {
+            skewedValues.add(getSkewedValuesFromASTNode(node));
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * process stored as directories
+   *
+   * @param child
+   * @return
+   */
+  protected boolean analyzeStoredAdDirs(ASTNode child) {
+    boolean storedAsDirs = false;
+    if ((child.getChildCount() == 3)
+        && (((ASTNode) child.getChild(2)).getToken().getType()
+            == HiveParser.TOK_STOREDASDIRS)) {
+      storedAsDirs = true;
+    }
+    return storedAsDirs;
   }
 }

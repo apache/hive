@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8527,6 +8526,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> skewedColNames = new ArrayList<String>();
     List<List<String>> skewedValues = new ArrayList<List<String>>();
     Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
+    boolean storedAsDirs = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat();
@@ -8645,14 +8645,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // skewed column names
-        skewedColNames = analyzeCreateTableSkewedColNames(skewedColNames, child);
+        skewedColNames = analyzeSkewedTablDDLColNames(skewedColNames, child);
         // skewed value
-        Tree vNode = child.getChild(1);
-        if (vNode == null) {
-          throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-        } else {
-          analyzeDDLSkewedValues(skewedValues, vNode);
-        }
+        analyzeDDLSkewedValues(skewedValues, child);
+        // stored as directories
+        storedAsDirs = analyzeStoredAdDirs(child);
+
         break;
       default:
         assert false;
@@ -8690,6 +8688,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.inputFormat, storageFormat.outputFormat, location, shared.serde,
           storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists, skewedColNames,
           skewedValues);
+      crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
 
       crtTblDesc.validate();
       // outputs is empty, which means this create table happens in the current
@@ -8732,6 +8731,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment, storageFormat.inputFormat,
           storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler, shared.serdeProps,
           tblProps, ifNotExists, skewedColNames, skewedValues);
+      crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       qb.setTableDesc(crtTblDesc);
 
       SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
@@ -8741,65 +8741,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unrecognized command.");
     }
     return null;
-  }
-
-  /**
-   * Handle skewed values in DDL.
-   *
-   * It can be used by both skewed by ... on () and set skewed location ().
-   *
-   * @param skewedValues
-   * @param vNode
-   * @throws SemanticException
-   */
-  private void analyzeDDLSkewedValues(List<List<String>> skewedValues, Tree vNode)
-      throws SemanticException {
-    ASTNode vAstNode = (ASTNode) vNode;
-    switch (vAstNode.getToken().getType()) {
-      case HiveParser.TOK_TABCOLVALUE:
-        for (String str : getSkewedValueFromASTNode(vAstNode)) {
-          List<String> sList = new ArrayList<String>(Arrays.asList(str));
-          skewedValues.add(sList);
-        }
-        break;
-      case HiveParser.TOK_TABCOLVALUE_PAIR:
-        ArrayList<Node> vLNodes = vAstNode.getChildren();
-        for (Node node : vLNodes) {
-          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
-            throw new SemanticException(
-                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
-          } else {
-            skewedValues.add(getSkewedValuesFromASTNode(node));
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  /**
-   * Analyze list bucket column names
-   *
-   * @param skewedColNames
-   * @param child
-   * @return
-   * @throws SemanticException
-   */
-  private List<String> analyzeCreateTableSkewedColNames(List<String> skewedColNames,
-      ASTNode child) throws SemanticException {
-    Tree nNode = child.getChild(0);
-    if (nNode == null) {
-      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-    } else {
-      ASTNode nAstNode = (ASTNode) nNode;
-      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
-        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
-      } else {
-        skewedColNames = getColumnNames(nAstNode);
-      }
-    }
-    return skewedColNames;
   }
 
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
