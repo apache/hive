@@ -263,6 +263,9 @@
         <column name="OUTPUT_FORMAT" length="4000" jdbc-type="VARCHAR"/>
       </field>
       <field name="isCompressed"/>
+      <field name="isStoredAsSubDirectories">
+        <column name="IS_STOREDASSUBDIRECTORIES"/>
+      </field>
       <field name="numBuckets">
         <column name="NUM_BUCKETS" jdbc-type="integer"/>
       </field>

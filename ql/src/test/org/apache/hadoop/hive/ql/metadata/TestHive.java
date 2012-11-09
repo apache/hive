@@ -134,6 +134,7 @@ public class TestHive extends TestCase {
 
       tbl.setSerdeParam(serdeConstants.FIELD_DELIM, "1");
       tbl.setSerializationLib(LazySimpleSerDe.class.getName());
+      tbl.setStoredAsSubDirectories(false);
 
       // create table
       try {
@@ -209,6 +210,7 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(serdeConstants.SERIALIZATION_CLASS, Complex.class.getName());
       tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, TBinaryProtocol.class
           .getName());
+      tbl.setStoredAsSubDirectories(false);
       try {
         hm.createTable(tbl);
       } catch (HiveException e) {

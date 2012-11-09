@@ -117,7 +117,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                 .getSkewedColNames(),
             (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
                 .getSkewedColValues());
-
+        tblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
 
         List<FieldSchema> partCols = tblDesc.getPartCols();
         List<String> partColNames = new ArrayList<String>(partCols.size());

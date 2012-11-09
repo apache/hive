@@ -1596,8 +1596,8 @@ void swap(SkewedInfo &a, SkewedInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* StorageDescriptor::ascii_fingerprint = "BDC4DB93B74677CE1C04198D60E6CB80";
-const uint8_t StorageDescriptor::binary_fingerprint[16] = {0xBD,0xC4,0xDB,0x93,0xB7,0x46,0x77,0xCE,0x1C,0x04,0x19,0x8D,0x60,0xE6,0xCB,0x80};
+const char* StorageDescriptor::ascii_fingerprint = "CA8C9AA5FE4C32643757D8639CEF0CD7";
+const uint8_t StorageDescriptor::binary_fingerprint[16] = {0xCA,0x8C,0x9A,0xA5,0xFE,0x4C,0x32,0x64,0x37,0x57,0xD8,0x63,0x9C,0xEF,0x0C,0xD7};
 
 uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1758,6 +1758,14 @@ uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->storedAsSubDirectories);
+          this->__isset.storedAsSubDirectories = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1852,6 +1860,11 @@ uint32_t StorageDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += this->skewedInfo.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.storedAsSubDirectories) {
+    xfer += oprot->writeFieldBegin("storedAsSubDirectories", ::apache::thrift::protocol::T_BOOL, 12);
+    xfer += oprot->writeBool(this->storedAsSubDirectories);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -1870,11 +1883,12 @@ void swap(StorageDescriptor &a, StorageDescriptor &b) {
   swap(a.sortCols, b.sortCols);
   swap(a.parameters, b.parameters);
   swap(a.skewedInfo, b.skewedInfo);
+  swap(a.storedAsSubDirectories, b.storedAsSubDirectories);
   swap(a.__isset, b.__isset);
 }
 
-const char* Table::ascii_fingerprint = "F21F7F0ACA98ECCFC83F6605440D007F";
-const uint8_t Table::binary_fingerprint[16] = {0xF2,0x1F,0x7F,0x0A,0xCA,0x98,0xEC,0xCF,0xC8,0x3F,0x66,0x05,0x44,0x0D,0x00,0x7F};
+const char* Table::ascii_fingerprint = "68640B4B66B355CF317429AF70D2C260";
+const uint8_t Table::binary_fingerprint[16] = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
 
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2136,8 +2150,8 @@ void swap(Table &a, Table &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Partition::ascii_fingerprint = "E5EF1F030CF964C052658DD22257D025";
-const uint8_t Partition::binary_fingerprint[16] = {0xE5,0xEF,0x1F,0x03,0x0C,0xF9,0x64,0xC0,0x52,0x65,0x8D,0xD2,0x22,0x57,0xD0,0x25};
+const char* Partition::ascii_fingerprint = "31A52241B88A426C34087FE38343FF51";
+const uint8_t Partition::binary_fingerprint[16] = {0x31,0xA5,0x22,0x41,0xB8,0x8A,0x42,0x6C,0x34,0x08,0x7F,0xE3,0x83,0x43,0xFF,0x51};
 
 uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2334,8 +2348,8 @@ void swap(Partition &a, Partition &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Index::ascii_fingerprint = "BA1090E838C806A4F8D8D137C5085EDD";
-const uint8_t Index::binary_fingerprint[16] = {0xBA,0x10,0x90,0xE8,0x38,0xC8,0x06,0xA4,0xF8,0xD8,0xD1,0x37,0xC5,0x08,0x5E,0xDD};
+const char* Index::ascii_fingerprint = "09EEF655216AC81802850988D6C470A6";
+const uint8_t Index::binary_fingerprint[16] = {0x09,0xEE,0xF6,0x55,0x21,0x6A,0xC8,0x18,0x02,0x85,0x09,0x88,0xD6,0xC4,0x70,0xA6};
 
 uint32_t Index::read(::apache::thrift::protocol::TProtocol* iprot) {
 

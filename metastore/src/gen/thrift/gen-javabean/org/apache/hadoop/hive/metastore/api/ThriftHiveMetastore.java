@@ -16721,7 +16721,7 @@ public class ThriftHiveMetastore {
                   for (int _i273 = 0; _i273 < _map272.size; ++_i273)
                   {
                     String _key274; // required
-                    Type _val275; // required
+                    Type _val275; // optional
                     _key274 = iprot.readString();
                     _val275 = new Type();
                     _val275.read(iprot);
@@ -16825,7 +16825,7 @@ public class ThriftHiveMetastore {
             for (int _i279 = 0; _i279 < _map278.size; ++_i279)
             {
               String _key280; // required
-              Type _val281; // required
+              Type _val281; // optional
               _key280 = iprot.readString();
               _val281 = new Type();
               _val281.read(iprot);
@@ -59785,7 +59785,7 @@ public class ThriftHiveMetastore {
                   for (int _i523 = 0; _i523 < _map522.size; ++_i523)
                   {
                     String _key524; // required
-                    String _val525; // required
+                    String _val525; // optional
                     _key524 = iprot.readString();
                     _val525 = iprot.readString();
                     struct.success.put(_key524, _val525);
@@ -59888,7 +59888,7 @@ public class ThriftHiveMetastore {
             for (int _i529 = 0; _i529 < _map528.size; ++_i529)
             {
               String _key530; // required
-              String _val531; // required
+              String _val531; // optional
               _key530 = iprot.readString();
               _val531 = iprot.readString();
               struct.success.put(_key530, _val531);
@@ -60502,7 +60502,7 @@ public class ThriftHiveMetastore {
                   for (int _i533 = 0; _i533 < _map532.size; ++_i533)
                   {
                     String _key534; // required
-                    String _val535; // required
+                    String _val535; // optional
                     _key534 = iprot.readString();
                     _val535 = iprot.readString();
                     struct.part_vals.put(_key534, _val535);
@@ -60634,7 +60634,7 @@ public class ThriftHiveMetastore {
             for (int _i539 = 0; _i539 < _map538.size; ++_i539)
             {
               String _key540; // required
-              String _val541; // required
+              String _val541; // optional
               _key540 = iprot.readString();
               _val541 = iprot.readString();
               struct.part_vals.put(_key540, _val541);
@@ -62137,7 +62137,7 @@ public class ThriftHiveMetastore {
                   for (int _i543 = 0; _i543 < _map542.size; ++_i543)
                   {
                     String _key544; // required
-                    String _val545; // required
+                    String _val545; // optional
                     _key544 = iprot.readString();
                     _val545 = iprot.readString();
                     struct.part_vals.put(_key544, _val545);
@@ -62269,7 +62269,7 @@ public class ThriftHiveMetastore {
             for (int _i549 = 0; _i549 < _map548.size; ++_i549)
             {
               String _key550; // required
-              String _val551; // required
+              String _val551; // optional
               _key550 = iprot.readString();
               _val551 = iprot.readString();
               struct.part_vals.put(_key550, _val551);

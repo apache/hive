@@ -271,6 +271,7 @@ TOK_ALTERTBLPART_SKEWED_LOCATION;
 TOK_SKEWED_LOCATIONS;
 TOK_SKEWED_LOCATION_LIST;
 TOK_SKEWED_LOCATION_MAP;
+TOK_STOREDASDIRS;
 }
 
 
@@ -388,6 +389,13 @@ ifNotExists
 @after { msgs.pop(); }
     : KW_IF KW_NOT KW_EXISTS
     -> ^(TOK_IFNOTEXISTS)
+    ;
+
+storedAsDirs
+@init { msgs.push("stored as directories"); }
+@after { msgs.pop(); }
+    : KW_STORED KW_AS KW_DIRECTORIES
+    -> ^(TOK_STOREDASDIRS)
     ;
 
 orReplace
@@ -808,6 +816,9 @@ alterStatementSuffixSkewedby
 	|
 	name=Identifier KW_NOT KW_SKEWED
 	->^(TOK_ALTERTABLE_SKEWED $name)
+	|
+	name=Identifier KW_NOT storedAsDirs
+	->^(TOK_ALTERTABLE_SKEWED $name storedAsDirs)
 	;
 
 alterStatementSuffixProtectMode
@@ -1153,8 +1164,8 @@ tableSkewed
 @init { msgs.push("table skewed specification"); }
 @after { msgs.pop(); }
     :
-     KW_SKEWED KW_BY LPAREN skewedCols=columnNameList RPAREN KW_ON LPAREN (skewedValues=skewedValueElement) RPAREN
-    -> ^(TOK_TABLESKEWED $skewedCols $skewedValues)
+     KW_SKEWED KW_BY LPAREN skewedCols=columnNameList RPAREN KW_ON LPAREN (skewedValues=skewedValueElement) RPAREN (storedAsDirs)?
+    -> ^(TOK_TABLESKEWED $skewedCols $skewedValues storedAsDirs?)
     ;
 
 rowFormat
@@ -2508,6 +2519,7 @@ KW_CASCADE: 'CASCADE';
 KW_SKEWED: 'SKEWED';
 KW_ROLLUP: 'ROLLUP';
 KW_CUBE: 'CUBE';
+KW_DIRECTORIES: 'DIRECTORIES';
 KW_FOR: 'FOR';
 
 

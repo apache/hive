@@ -3206,6 +3206,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.setSkewedColNames(skewedColNames);
         tbl.setSkewedColValues(skewedValues);
       }
+
+      tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
       // process location one-by-one
       Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
@@ -3638,6 +3640,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getSkewedColValues() != null) {
       tbl.setSkewedColValues(crtTbl.getSkewedColValues());
     }
+
+    tbl.setStoredAsSubDirectories(crtTbl.isStoredAsSubDirectories());
 
     tbl.setInputFormatClass(crtTbl.getInputFormat());
     tbl.setOutputFormatClass(crtTbl.getOutputFormat());

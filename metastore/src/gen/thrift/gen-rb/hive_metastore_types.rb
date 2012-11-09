@@ -322,6 +322,7 @@ class StorageDescriptor
   SORTCOLS = 9
   PARAMETERS = 10
   SKEWEDINFO = 11
+  STOREDASSUBDIRECTORIES = 12
 
   FIELDS = {
     COLS => {:type => ::Thrift::Types::LIST, :name => 'cols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
@@ -334,7 +335,8 @@ class StorageDescriptor
     BUCKETCOLS => {:type => ::Thrift::Types::LIST, :name => 'bucketCols', :element => {:type => ::Thrift::Types::STRING}},
     SORTCOLS => {:type => ::Thrift::Types::LIST, :name => 'sortCols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Order}},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-    SKEWEDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'skewedInfo', :class => ::SkewedInfo, :optional => true}
+    SKEWEDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'skewedInfo', :class => ::SkewedInfo, :optional => true},
+    STOREDASSUBDIRECTORIES => {:type => ::Thrift::Types::BOOL, :name => 'storedAsSubDirectories', :optional => true}
   }
 
   def struct_fields; FIELDS; end

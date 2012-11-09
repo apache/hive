@@ -149,8 +149,9 @@ struct StorageDescriptor {
   7: SerDeInfo    serdeInfo,  // serialization and deserialization information
   8: list<string> bucketCols, // reducer grouping columns and clustering columns and bucketing columns`
   9: list<Order>  sortCols,   // sort order of the data in each bucket
-  10: map<string, string> parameters // any user supplied key value hash
-  11: optional SkewedInfo skewedInfo // skewed information
+  10: map<string, string> parameters, // any user supplied key value hash
+  11: optional SkewedInfo skewedInfo, // skewed information
+  12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
 // table information

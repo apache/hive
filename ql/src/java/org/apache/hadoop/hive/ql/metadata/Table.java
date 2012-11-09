@@ -558,6 +558,14 @@ public class Table implements Serializable {
     tTable.getSd().setSkewedInfo(skewedInfo);
   }
 
+  public boolean isStoredAsSubDirectories() {
+    return tTable.getSd().isStoredAsSubDirectories();
+  }
+
+  public void setStoredAsSubDirectories(boolean storedAsSubDirectories) throws HiveException {
+    tTable.getSd().setStoredAsSubDirectories(storedAsSubDirectories);
+  }
+
   private boolean isField(String col) {
     for (FieldSchema field : getCols()) {
       if (field.getName().equals(col)) {
