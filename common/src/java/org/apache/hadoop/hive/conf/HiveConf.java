@@ -348,6 +348,7 @@ public class HiveConf extends Configuration {
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
     CLIPRINTCURRENTDB("hive.cli.print.current.db", false),
+    CLIPROMPT("hive.cli.prompt", "hive"),
 
     HIVE_METASTORE_FS_HANDLER_CLS("hive.metastore.fs.handler.class", "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl"),
 

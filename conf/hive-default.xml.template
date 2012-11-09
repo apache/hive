@@ -63,6 +63,14 @@
 </property>
 
 <property>
+  <name>hive.cli.prompt</name>
+  <value>hive</value>
+  <description>Command line prompt configuration value. Other hiveconf can be used in
+        this configuration value. Variable substitution will only be invoked at the hive
+        cli startup.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>

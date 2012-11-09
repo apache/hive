@@ -78,8 +78,8 @@ import sun.misc.SignalHandler;
  */
 public class CliDriver {
 
-  public static String prompt = "hive";
-  public static String prompt2 = "    "; // when ';' is not yet seen
+  public static String prompt = null;
+  public static String prompt2 = null; // when ';' is not yet seen
   public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
 
   public static final String HIVERCFILE = ".hiverc";
@@ -660,6 +660,11 @@ public class CliDriver {
       conf.set((String) item.getKey(), (String) item.getValue());
       ss.getOverriddenConfigurations().put((String) item.getKey(), (String) item.getValue());
     }
+
+    // read prompt configuration and substitute variables.
+    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = new VariableSubstitution().substitute(conf, prompt);
+    prompt2 = spacesForString(prompt);
 
     SessionState.start(ss);
 
