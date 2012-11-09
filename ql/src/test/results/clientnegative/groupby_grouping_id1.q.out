@@ -1,0 +1,6 @@
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+FAILED: SemanticException [Error 10004]: Line 3:7 Invalid table alias or column reference 'GROUPING__ID': (possible column names are: key, val)
