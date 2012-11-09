@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -367,7 +366,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       if (!done) {
         if (f == null) {
-          f = new CombineFilter(job, filterPath);
+          f = new CombineFilter(filterPath);
           LOG.info("CombineHiveInputSplit creating pool for " + path +
                    "; using filter path " + filterPath);
           combine.createPool(job, f);
@@ -394,7 +393,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       if (inpFiles.size() > 0) {
         // Processing files
         for (Path filterPath : poolSet) {
-          combine.createPool(job, new CombineFilter(job, filterPath));
+          combine.createPool(job, new CombineFilter(filterPath));
         }
         processPaths(job, combine, iss, inpFiles.toArray(new Path[0]));
       }
@@ -545,13 +544,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   static class CombineFilter implements PathFilter {
-    private final Set<Path> filterPaths = new HashSet<Path>();
-    private final Configuration conf;
+    private final Set<String> pStrings = new HashSet<String>();
 
     // store a path prefix in this TestFilter
     // PRECONDITION: p should always be a directory
-    public CombineFilter(Configuration conf, Path p) {
-      this.conf = conf;
+    public CombineFilter(Path p) {
       // we need to keep the path part only because the Hadoop CombineFileInputFormat will
       // pass the path part only to accept().
       // Trailing the path with a separator to prevent partial matching.
@@ -559,7 +556,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     public void addPath(Path p) {
-      filterPaths.add(p);
+      String pString = p.toUri().getPath().toString();
+      pStrings.add(pString);
     }
 
     // returns true if the specified path matches the prefix stored
@@ -567,7 +565,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public boolean accept(Path path) {
       boolean find = false;
       while (path != null && !find) {
-        if(checkFilterPathContains(filterPaths, path)){
+        if(pStrings.contains(path.toString())) {
           find = true;
           break;
         }
@@ -576,31 +574,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       return find;
     }
 
-    private boolean checkFilterPathContains(Set<Path> filterPaths, Path path) {
-      for(Path filterPath : filterPaths){
-        try {
-          //if path does not have scheme, use the scheme from filterPath
-          //for comparison
-          path = path.makeQualified(filterPath.getFileSystem(conf));
-        } catch (IOException e) {
-          //this is not supposed to happen
-          //if it happens it can lead to incorrect splits being generated
-          // and files that should not be combined could end up being combied
-          throw new RuntimeException("Error making path " + path + " qualified ", e);
-        }
-        if(filterPath.equals(path)){
-          return true;
-        }
-      }
-      return false;
-    }
-
     @Override
     public String toString() {
       StringBuilder s = new StringBuilder();
       s.append("PathFilter: ");
-      for (Path filterPath : filterPaths) {
-        s.append(filterPath + " ");
+      for (String pString : pStrings) {
+        s.append(pString + " ");
       }
       return s.toString();
     }
