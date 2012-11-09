@@ -42,7 +42,7 @@ class SSHConnection():
         pre = []
         pre.append('cd "{0}"'.format(self.pwd))
         for (e, v) in self.env.iteritems():
-            pre.append('export {0}="{1}"'.format(e, v))
+            pre.append('export {0}=\\"{1}\\"'.format(e, v))
         for p in self.path:
             pre.append('export PATH="{0}:${{PATH}}"'.format(p))
         pre.append(cmd)
