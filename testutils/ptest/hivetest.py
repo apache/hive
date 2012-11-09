@@ -99,6 +99,12 @@ def read_conf(config_file):
 
     # Setup of needed environmental variables and paths
 
+    # Proxy
+    if args.http_proxy is not None:
+      all_set.export('http_proxy', args.http_proxy + ':' + args.http_proxy_port)
+      all_set.export('https_proxy', args.http_proxy + ':' + args.http_proxy_port)
+      all_set.export('ANT_OPTS', get_ant_opts_proxy())
+
     # Ant
     all_set.export('ANT_HOME', ant_path)
     all_set.add_path(ant_path + '/bin')
@@ -113,6 +119,13 @@ def read_conf(config_file):
     # Hive
     remote_set.export('HIVE_HOME', host_code_path + '/build/dist')
     remote_set.add_path(host_code_path + '/build/dist/bin')
+
+def get_ant_opts_proxy():
+  cmd  = ' -Dhttp.proxyHost='  + args.http_proxy
+  cmd += ' -Dhttp.proxyPort='  + args.http_proxy_port
+  cmd += ' -Dhttps.proxyHost=' + args.http_proxy
+  cmd += ' -Dhttps.proxyPort=' + args.http_proxy_port
+  return cmd
 
 def get_ant():
     # Gets Ant 1.8.4 from one of Apache mirrors.
@@ -133,19 +146,19 @@ def get_arc():
     if local.run('test -d "{0}"'.format(arc_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(os.path.dirname(arc_path)))
-        local.run('git clone git://github.com/facebook/arcanist.git "{0}"'
+        local.run('git clone https://github.com/facebook/arcanist.git "{0}"'
                 .format(arc_path))
 
     if local.run('test -d "{0}"'.format(phutil_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(os.path.dirname(phutil_path)))
-        local.run('git clone git://github.com/facebook/libphutil.git "{0}"'
+        local.run('git clone https://github.com/facebook/libphutil.git "{0}"'
                 .format(phutil_path))
 
     local.cd(arc_path)
-    local.run('git pull')
+    local.run('git pull https://github.com/facebook/arcanist.git')
     local.cd(phutil_path)
-    local.run('git pull')
+    local.run('git pull https://github.com/facebook/libphutil.git')
 
 def get_clean_hive():
     # Gets latest Hive from Apache Git repository and cleans the repository
@@ -153,15 +166,17 @@ def get_clean_hive():
     # `arc-setup` so the repo is ready to be used.
     print('\n-- Updating Hive repo\n')
 
-    if local.run('test -d "{0}"'.format(code_path), warn_only = True,
-            abandon_output = False) is not None:
-      local.run('rm -rf "{0}"'.format(code_path))
-
-
-    local.run('mkdir -p "{0}"'.format(code_path))
-    local.run('svn checkout http://svn.apache.org/repos/asf/hive/trunk "{0}"'.format(code_path), quiet = True)
-    
     local.cd(code_path)
+    if local.run('test -d "{0}"'.format(code_path), warn_only = True,
+            abandon_output = False) is None:
+      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
+      local.run('git clone http://git.apache.org/hive.git "{0}"'.format(code_path))
+    else:
+      # Clean repo and checkout to t he last revision
+      local.run('git reset --hard HEAD')
+      local.run('git clean -dffx')
+      local.run('git pull')
+    
     local.run('ant arc-setup')
 
 def copy_local_hive():
@@ -459,12 +474,13 @@ def overwrite_results():
 def save_svn_info():
   if args.svn_info:
     local.cd(master_base_path + '/trunk')
-    local.run('svn info > "{0}"'.format(report_path + '/svn-info'))
+    local.run('git show --summary > "{0}"'.format(report_path + '/svn-info'))
 
 def save_patch():
   if args.save_patch:
-    local.cd(master_base_path + '/trunk')
-    local.run('svn diff > "{0}"'.format(report_path + '/patch'))
+    local.cd(code_path)
+    local.run('git add --all')
+    local.run('git diff --no-prefix HEAD > "{0}"'.format(report_path + '/patch'))
   
 # -- Tasks that can be called from command line start here.
 
@@ -556,6 +572,10 @@ parser.add_argument('--svn-info', dest = 'svn_info', action = 'store_true',
         help = 'Save result of `svn info` into ${report_path}/svn-info')
 parser.add_argument('--save-patch', dest = 'save_patch', action = 'store_true',
         help = 'Save applied patch into ${report_path}/patch')
+parser.add_argument('--http-proxy', dest = 'http_proxy',
+        help = 'Proxy host')
+parser.add_argument('--http-proxy-port', dest = 'http_proxy_port',
+        help = 'Proxy port')
 
 args = parser.parse_args()
 
