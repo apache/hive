@@ -51,13 +51,10 @@ public class TestHiveHistory extends TestCase {
 
   static HiveConf conf;
 
-  private static String tmpdir = "/tmp/" + System.getProperty("user.name")
-      + "/";
+  private static String tmpdir = System.getProperty("test.tmp.dir");
   private static Path tmppath = new Path(tmpdir);
   private static Hive db;
   private static FileSystem fs;
-  private QTestSetup setup;
-
   /*
    * intialize the tables
    */
@@ -78,9 +75,8 @@ public class TestHiveHistory extends TestCase {
               + tmpdir);
         }
       }
-
-      setup = new QTestSetup();
-      setup.preTest(conf);
+      
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
       // copy the test files into hadoop if required.
       int i = 0;
@@ -112,19 +108,6 @@ public class TestHiveHistory extends TestCase {
     } catch (Throwable e) {
       e.printStackTrace();
       throw new RuntimeException("Encountered throwable");
-    }
-  }
-
-  @Override
-  protected void tearDown() {
-    try {
-      setup.tearDown();
-    }
-    catch (Exception e) {
-      System.out.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.out.flush();
-      fail("Unexpected exception in tearDown");
     }
   }
 
