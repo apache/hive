@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
@@ -640,7 +641,7 @@ public class HadoopJobExecHelper {
     for (Appender a : Collections.list((Enumeration<Appender>)
           LogManager.getRootLogger().getAllAppenders())) {
       if (a instanceof FileAppender) {
-        console.printError(((FileAppender)a).getFile());
+        console.printError((new Path(((FileAppender)a).getFile())).toUri().getPath());
       }
     }
   }
