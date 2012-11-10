@@ -48,7 +48,7 @@
 
 <property>
   <name>hive.exec.local.scratchdir</name>
-  <value>${build.dir}/scratchdir/local/</value>
+  <value>${build.dir}/localscratchdir/</value>
   <description>Local scratch space for Hive jobs</description>
 </property>
 
