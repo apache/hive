@@ -159,7 +159,7 @@ public class HBaseSerDe implements SerDe {
     ColumnMapping columnMapping = null;
 
     for (int i = 0; i < columnSpecs.length; i++) {
-      String mappingSpec = columnSpecs[i];
+      String mappingSpec = columnSpecs[i].trim();
       String [] mapInfo = mappingSpec.split("#");
       String colInfo = mapInfo[0];
 
