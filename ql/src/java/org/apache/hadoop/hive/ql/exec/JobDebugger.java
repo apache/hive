@@ -193,10 +193,10 @@ public class JobDebugger implements Runnable {
           // Also keep track of the total number of failures for that
           // task (typically, a task gets re-run up to 4 times if it fails.
           if (t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
+            String[] diags = rj.getTaskDiagnostics(t.getTaskAttemptId());
+            ti.setDiagnosticMesgs(diags);
             if (ti.getErrorCode() == 0) {
-              String[] diags = rj.getTaskDiagnostics(t.getTaskAttemptId());
               ti.setErrorCode(extractErrorCode(diags));
-              ti.setDiagnosticMesgs(diags);
             }
 
             Integer failAttempts = failures.get(taskId);
@@ -229,6 +229,10 @@ public class JobDebugger implements Runnable {
   @SuppressWarnings("deprecation")
   private void showJobFailDebugInfo() throws IOException {
     console.printError("Error during job, obtaining debugging information...");
+    if (!conf.get("mapred.job.tracker", "local").equals("local")) {
+      // Show Tracking URL for remotely running jobs.
+      console.printError("Job Tracking URL: " + rj.getTrackingURL());
+    }
     // Loop to get all task completion events because getTaskCompletionEvents
     // only returns a subset per call
     TaskInfoGrabber tlg = new TaskInfoGrabber();
@@ -265,8 +269,8 @@ public class JobDebugger implements Runnable {
       if (failures.get(task).intValue() == maxFailures) {
         TaskInfo ti = taskIdToInfo.get(task);
         String jobId = ti.getJobId();
-        String taskUrl = (jtUrl == null) ? "Unavailable" :
-            jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
+        String taskUrl = (jtUrl == null) ? null :
+          jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
 
         TaskLogProcessor tlp = new TaskLogProcessor(conf);
         for (String logUrl : ti.getLogUrls()) {
@@ -293,7 +297,9 @@ public class JobDebugger implements Runnable {
           sb.append("Task with the most failures(" + maxFailures + "): \n");
           sb.append("-----\n");
           sb.append("Task ID:\n  " + task + "\n\n");
-          sb.append("URL:\n  " + taskUrl + "\n");
+          if (taskUrl != null) {
+            sb.append("URL:\n  " + taskUrl + "\n");
+          }
 
           for (ErrorAndSolution e : errors) {
             sb.append("\n");
