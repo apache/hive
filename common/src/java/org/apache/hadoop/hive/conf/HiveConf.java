@@ -996,13 +996,6 @@ public class HiveConf extends Configuration {
       		"connecting to a remote metastore.");
     }
 
-    if (null != this.get(ConfVars.METASTOREURIS.varname, null) &&
-        null != this.get(ConfVars.METASTORECONNECTURLKEY.varname, null)) {
-      l4j.error("Found both " + ConfVars.METASTOREURIS.varname + " and " +
-        ConfVars.METASTORECONNECTURLKEY + " Recommended to have exactly one of those config key" +
-        "in configuration");
-    }
-
     // if the running class was loaded directly (through eclipse) rather than through a
     // jar then this would be needed
     if (hiveJar == null) {

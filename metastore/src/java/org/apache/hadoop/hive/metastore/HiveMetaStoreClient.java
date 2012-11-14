@@ -197,21 +197,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   private void open() throws MetaException {
     for (URI store : metastoreUris) {
-      LOG.info("Trying to connect to metastore with URI " + store);
+      LOG.info("Trying to connect to HiveMetaStore with URI " + store);
       try {
         openStore(store);
       } catch (MetaException e) {
-        LOG.error("Unable to connect to metastore with URI " + store, e);
+        LOG.error("Unable to connect to HiveMetaStore with URI " + store, e);
       }
       if (isConnected) {
+        LOG.info("Connected to HiveMetaStore with URI " + store);
         break;
       }
     }
     if (!isConnected) {
-      throw new MetaException(
-          "Could not connect to meta store using any of the URIs provided");
+      throw new MetaException("Could not connect to HiveMetaStore using any of the provided URIs: "
+          + Arrays.asList(metastoreUris));
     }
-    LOG.info("Connected to metastore.");
   }
 
   private void openStore(URI store) throws MetaException {
