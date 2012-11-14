@@ -483,7 +483,7 @@ public class MetaStoreUtils {
     }
     ddl.append("}");
 
-    LOG.info("DDL: " + ddl);
+    LOG.debug("DDL: " + ddl);
     return ddl.toString();
   }
 
