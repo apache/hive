@@ -532,7 +532,6 @@
       <fileset dir="${target.bin.dir}"/>
     </chmod>
 
-    <symlink overwrite="true" link="${target.lib.dir}/hive_contrib.jar" resource="hive-contrib-${version}.jar"/>
     <!-- special case because builtins compilation depends on packaging
          up everything else first -->
     <ant antfile="${hive.root}/builtins/build.xml" target="package"
