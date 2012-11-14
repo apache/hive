@@ -6,18 +6,16 @@ PREHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
 
-
 create table combine2(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
 -- excluded on windows because of difference in file name encoding logic
 
 
-
 create table combine2(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@combine2
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
@@ -35,7 +33,7 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@combine2
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
@@ -269,7 +267,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -295,7 +293,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 3
+              numFiles 1
               numPartitions 8
               numRows 3
               partition_columns value
@@ -315,7 +313,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -361,7 +359,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -407,7 +405,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -433,7 +431,7 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.combine2
-              numFiles 3
+              numFiles 1
               numPartitions 8
               numRows 3
               partition_columns value
@@ -453,7 +451,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -499,7 +497,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -545,7 +543,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value
@@ -591,7 +589,7 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 12
+                numFiles 8
                 numPartitions 8
                 numRows 12
                 partition_columns value

@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -220,8 +221,25 @@ public class QTestUtil {
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfsUriString,
                             "/build/ql/test/data/warehouse/")).toString());
+      int port = 0;
+
+      try {
+        // Hadoop20 MiniMRCluster will return a proper port.
+        // Hadoop23 MiniMRCluster does not implement this method so use the default RM port.
+        port = mr.getJobTrackerPort();
+      } catch (UnsupportedOperationException e) {
+        String address =
+            StringUtils.substringAfterLast(conf.get("yarn.resourcemanager.address"), ":");
+
+        if (StringUtils.isBlank(address)) {
+          throw new IllegalArgumentException("Invalid YARN resource manager port.");
+        }
+
+        port = Integer.parseInt(address);
+      }
+
       ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf,
-          "localhost:" + mr.getJobTrackerPort());
+              "localhost:" + port);
     }
   }
 
@@ -986,12 +1004,15 @@ public class QTestUtil {
         ".*USING 'java -cp.*",
         "^Deleted.*",
     };
-    maskPatterns(patterns, (new File(logDir, tname + ".out")).getPath());
-    int exitVal = executeDiffCommand((new File(logDir, tname + ".out")).getPath(),
+
+    File f = new File(logDir, tname + ".out");
+
+    maskPatterns(patterns, f.getPath());
+    int exitVal = executeDiffCommand(f.getPath(),
                     outFileName, false);
 
     if (exitVal != 0 && overWrite) {
-      exitVal = overwriteResults((new File(logDir, tname + ".out")).getPath(), outFileName);
+      exitVal = overwriteResults(f.getPath(), outFileName);
     }
 
     return exitVal;

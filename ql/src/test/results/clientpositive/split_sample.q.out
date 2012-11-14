@@ -2,10 +2,26 @@ PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: -- create multiple file inputs (two enable multiple splits)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- create multiple file inputs (two enable multiple splits)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@ss_i_part
@@ -62,27 +78,11 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
--- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
--- in an attempt to force the generation of multiple splits and multiple output files.
--- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
--- when using CombineFileInputFormat, so only one split is generated. This has a
--- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
--- fixed in MAPREDUCE-2046 which is included in 0.22.
-
-select count(1) from ss_src2 tablesample(1 percent)
+PREHOOK: query: select count(1) from ss_src2 tablesample(1 percent)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ss_src2
 #### A masked pattern was here ####
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
--- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
--- in an attempt to force the generation of multiple splits and multiple output files.
--- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
--- when using CombineFileInputFormat, so only one split is generated. This has a
--- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
--- fixed in MAPREDUCE-2046 which is included in 0.22.
-
-select count(1) from ss_src2 tablesample(1 percent)
+POSTHOOK: query: select count(1) from ss_src2 tablesample(1 percent)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_src2
 #### A masked pattern was here ####

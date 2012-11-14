@@ -1,9 +1,9 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 
 create table t1(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 
 create table t1(key string, value string) partitioned by (ds string)
@@ -192,5 +192,4 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:va
 POSTHOOK: Lineage: t2 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 18
-mapreduce.framework.name=yarn
-mapreduce.jobtracker.address=local
+mapred.job.tracker=localhost:58

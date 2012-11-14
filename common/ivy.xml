@@ -59,7 +59,7 @@
                 conf="hadoop23.compile->default" transitive="false" />
 
     <dependency org="org.apache.hadoop" name="hadoop-core"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.20.version}"
                 conf="hadoop20.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
@@ -67,14 +67,14 @@
     </dependency>
 
     <dependency org="org.apache.hadoop" name="hadoop-test"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.20.version}"
                 conf="hadoop20.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-tools"
-                rev="${hadoop.version}"
+                rev="${hadoop-0.20.version}"
                 conf="hadoop20.compile->default" transitive="false">
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
