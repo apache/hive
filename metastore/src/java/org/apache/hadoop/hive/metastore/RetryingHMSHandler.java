@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -131,7 +132,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       }
 
       if (retryCount >= retryLimit) {
-        throw caughtException;
+        throw new MetaException(ExceptionUtils.getStackTrace(caughtException));
       }
 
       assert (retryInterval >= 0);
