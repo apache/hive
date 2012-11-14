@@ -52,7 +52,7 @@ public class TestHiveServerSessions extends TestCase {
       }
     });
     server.start();
-    Thread.sleep(1000);
+    Thread.sleep(5000);
 
     for (int i = 0; i < transports.length ; i++) {
       TSocket transport = new TSocket("localhost", port);

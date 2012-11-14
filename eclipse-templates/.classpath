@@ -57,7 +57,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-@commons-logging.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-api-@commons-logging-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/derby-@derby.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava-hadoop20.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@-tests.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>

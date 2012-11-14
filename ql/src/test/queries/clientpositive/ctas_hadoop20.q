@@ -1,4 +1,4 @@
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 
 create table nzhang_Tmp(a int, b string);
 select * from nzhang_Tmp;
@@ -49,8 +49,7 @@ describe formatted nzhang_CTAS4;
 
 explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;
 
-set mapreduce.framework.name=yarn;
-set mapreduce.jobtracker.address=localhost:58;
+set mapred.job.tracker=localhost:58;
 set hive.exec.mode.local.auto=true;
 
 create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;

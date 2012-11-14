@@ -14,10 +14,9 @@ set hive.merge.smallfiles.avgsize=0;
 -- excluded on windows because of difference in file name encoding logic
 
 
-
 create table combine2(key string) partitioned by (value string);
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- This test sets mapred.max.split.size=256 and hive.merge.smallfiles.avgsize=0
 -- in an attempt to force the generation of multiple splits and multiple output files.
 -- However, Hadoop 0.20 is incapable of generating splits smaller than the block size

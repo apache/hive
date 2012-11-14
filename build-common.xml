@@ -94,9 +94,11 @@
       <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
       <pathelement location="${build.classes}" />
 
-      <!-- we strip out hadoop jars present in places other than the hadoop shimmed dir-->
+      <!-- test directory may contain hadoop jars used by tests only (e.g. mini cluster) -->
       <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false"
-               excludes="**/hive_*.jar,**/hive-*.jar,**/hadoop-*.jar"/>
+               excludes="**/hive_*.jar,**/hive-*.jar"/>
+
+      <!-- we strip out hadoop jars present in places other than the hadoop shimmed dir-->
       <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false"
                excludes="**/hive_*.jar,**/hive-*.jar,**/hadoop-*.jar" />
     </distinctelementsclasspath>
@@ -304,6 +306,9 @@
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="test.classpath"/>
     </javac>
+    <!-- Generate a classpath to have YARN use downloaded dependencies. -->
+    <property name="mrapp-classpath" refid="test.classpath" />
+    <echo file="${test.build.classes}/mrapp-generated-classpath" message="${mrapp-classpath}" />
   </target>
 
   <target name="test-jar" depends="compile-test">
