@@ -76,6 +76,8 @@ TOK_ALIASLIST;
 TOK_GROUPBY;
 TOK_ROLLUP_GROUPBY;
 TOK_CUBE_GROUPBY;
+TOK_GROUPING_SETS;
+TOK_GROUPING_SETS_EXPRESSION;
 TOK_HAVING;
 TOK_ORDERBY;
 TOK_CLUSTERBY;
@@ -1875,10 +1877,31 @@ groupByClause
     groupByExpression
     ( COMMA groupByExpression )*
     ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
+    (sets=KW_GROUPING KW_SETS 
+    LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
     -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY groupByExpression+)
     -> {cube != null}? ^(TOK_CUBE_GROUPBY groupByExpression+)
+    -> {sets != null}? ^(TOK_GROUPING_SETS groupByExpression+ groupingSetExpression+)
     -> ^(TOK_GROUPBY groupByExpression+)
     ;
+
+groupingSetExpression
+@init {msgs.push("grouping set expression"); }
+@after {msgs.pop(); }
+   :
+   groupByExpression
+   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression)
+   |
+   LPAREN 
+   groupByExpression (COMMA groupByExpression)*
+   RPAREN
+   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression+)
+   |
+   LPAREN
+   RPAREN
+   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression*)
+   ;
+
 
 groupByExpression
 @init { msgs.push("group by expression"); }
@@ -2521,7 +2544,8 @@ KW_ROLLUP: 'ROLLUP';
 KW_CUBE: 'CUBE';
 KW_DIRECTORIES: 'DIRECTORIES';
 KW_FOR: 'FOR';
-
+KW_GROUPING: 'GROUPING';
+KW_SETS: 'SETS';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

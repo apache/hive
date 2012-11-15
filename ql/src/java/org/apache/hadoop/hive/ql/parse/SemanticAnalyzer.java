@@ -797,6 +797,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_GROUPBY:
       case HiveParser.TOK_ROLLUP_GROUPBY:
       case HiveParser.TOK_CUBE_GROUPBY:
+      case HiveParser.TOK_GROUPING_SETS:
         // Get the groupby aliases - these are aliased to the entries in the
         // select list
         queryProperties.setHasGroupBy(true);
@@ -815,6 +816,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qbp.getDestRollups().add(ctx_1.dest);
         } else if (ast.getToken().getType() == HiveParser.TOK_CUBE_GROUPBY) {
           qbp.getDestCubes().add(ctx_1.dest);
+        } else if (ast.getToken().getType() == HiveParser.TOK_GROUPING_SETS) {
+          qbp.getDestGroupingSets().add(ctx_1.dest);
         }
         break;
 
@@ -2019,16 +2022,67 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Even if rollups and cubes are present in the query, they are converted to
   // grouping sets at this point
   private ObjectPair<List<ASTNode>, List<Integer>> getGroupByGroupingSetsForClause(
-      QBParseInfo parseInfo, String dest) {
+      QBParseInfo parseInfo, String dest) throws SemanticException {
     List<Integer> groupingSets = new ArrayList<Integer>();
     List<ASTNode> groupByExprs = getGroupByForClause(parseInfo, dest);
     if (parseInfo.getDestRollups().contains(dest)) {
       groupingSets = getGroupingSetsForRollup(groupByExprs.size());
     } else if (parseInfo.getDestCubes().contains(dest)) {
       groupingSets = getGroupingSetsForCube(groupByExprs.size());
+    } else if (parseInfo.getDestGroupingSets().contains(dest)) {
+      groupingSets = getGroupingSets(groupByExprs, parseInfo, dest);
     }
 
     return new ObjectPair<List<ASTNode>, List<Integer>>(groupByExprs, groupingSets);
+  }
+
+  private List<Integer> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
+      String dest) throws SemanticException {
+    Map<String, Integer> exprPos = new HashMap<String, Integer>();
+    for (int i = 0; i < groupByExpr.size(); ++i) {
+      ASTNode node = groupByExpr.get(i);
+      exprPos.put(node.toStringTree(), i);
+    }
+
+    ASTNode root = parseInfo.getGroupByForClause(dest);
+    List<Integer> result = new ArrayList<Integer>(root == null ? 0 : root.getChildCount());
+    if (root != null) {
+      for (int i = 0; i < root.getChildCount(); ++i) {
+        ASTNode child = (ASTNode) root.getChild(i);
+        if(child.getType() != HiveParser.TOK_GROUPING_SETS_EXPRESSION) {
+          continue;
+        }
+        int bitmap = 0;
+        for (int j = 0; j < child.getChildCount(); ++j) {
+          String treeAsString = child.getChild(j).toStringTree();
+          Integer pos = exprPos.get(treeAsString);
+          if(pos == null) {
+            throw new SemanticException(
+                generateErrorMessage((ASTNode)child.getChild(j),
+                    ErrorMsg.HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY.getErrorCodedMsg()));
+          }
+          bitmap = setBit(bitmap, pos);
+        }
+        result.add(bitmap);
+      }
+    }
+    if(checkForNoAggr(result)) {
+      throw new SemanticException(
+          ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOFUNC.getMsg());
+    }
+    return result;
+  }
+
+  private boolean checkForNoAggr(List<Integer> bitmaps) {
+    boolean ret = true;
+    for(int mask : bitmaps) {
+      ret &= mask == 0;
+    }
+    return ret;
+  }
+
+  private int setBit(int bitmap, int bitIdx) {
+    return bitmap | (1 << bitIdx);
   }
 
   /**
@@ -2059,7 +2113,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (grpByExprs != null) {
         for (int i = 0; i < grpByExprs.getChildCount(); ++i) {
           ASTNode grpbyExpr = (ASTNode) grpByExprs.getChild(i);
-          result.add(grpbyExpr);
+          if (grpbyExpr.getType() != HiveParser.TOK_GROUPING_SETS_EXPRESSION) {
+            result.add(grpbyExpr);
+          }
         }
       }
       return result;

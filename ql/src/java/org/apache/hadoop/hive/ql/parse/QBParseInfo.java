@@ -50,6 +50,7 @@ public class QBParseInfo {
   private final HashMap<String, ASTNode> destToGroupby;
   private final Set<String> destRollups;
   private final Set<String> destCubes;
+  private final Set<String> destGroupingSets;
   private final Map<String, ASTNode> destToHaving;
   private final HashSet<String> insertIntoTables;
 
@@ -114,6 +115,7 @@ public class QBParseInfo {
     insertIntoTables = new HashSet<String>();
     destRollups = new HashSet<String>();
     destCubes = new HashSet<String>();
+    destGroupingSets = new HashSet<String>();
 
     destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
     destToDistinctFuncExprs = new HashMap<String, List<ASTNode>>();
@@ -257,6 +259,10 @@ public class QBParseInfo {
 
   public Set<String> getDestCubes() {
     return destCubes;
+  }
+
+  public Set<String> getDestGroupingSets() {
+    return destGroupingSets;
   }
 
   public HashMap<String, ASTNode> getDestToGroupBy() {
