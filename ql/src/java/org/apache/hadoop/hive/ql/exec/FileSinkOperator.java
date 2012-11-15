@@ -83,6 +83,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient List<Object> dpWritables;
   protected transient RecordWriter[] rowOutWriters; // row specific RecordWriters
   protected transient int maxPartitions;
+  private transient boolean statsCollectRawDataSize;
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
@@ -314,6 +315,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       isCompressed = conf.getCompressed();
       parent = Utilities.toTempPath(conf.getDirName());
+      statsCollectRawDataSize =
+          HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE);
 
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
@@ -586,7 +589,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       rowOutWriters = fpaths.outWriters;
       if (conf.isGatherStats()) {
-        if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE)) {
+        if (statsCollectRawDataSize) {
           SerDeStats stats = serializer.getSerDeStats();
           if (stats != null) {
             fpaths.stat.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
