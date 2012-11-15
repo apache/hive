@@ -280,11 +280,17 @@ public enum ErrorMsg {
     "Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function " +
     "parameters overlap with the aggregation functions columns"),
 
+  HIVE_GROUPING_SETS_AGGR_NOFUNC(10211,
+    "Grouping sets aggregations are not allowed if no aggregation function is presented"),
+
   HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES(10212,
     "In order to use hive.optimize.union.remove, the hadoop version that you are using " +
     "should support sub-directories for tables/partitions. If that is true, set " +
     "hive.hadoop.supports.subdirectories to true. Otherwise, set hive.optimize.union.remove " +
     "to false"),
+
+  HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY(10213,
+    "Grouping sets expression is not in GROUP BY key"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
