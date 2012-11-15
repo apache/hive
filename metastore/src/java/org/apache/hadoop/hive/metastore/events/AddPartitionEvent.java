@@ -20,13 +20,16 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 public class AddPartitionEvent extends ListenerEvent {
 
+  private final Table table;
   private final Partition partition;
 
-  public AddPartitionEvent (Partition partition, boolean status, HMSHandler handler) {
+  public AddPartitionEvent (Table table, Partition partition, boolean status, HMSHandler handler) {
     super (status, handler);
+    this.table = table;
     this.partition = partition;
   }
 
@@ -35,5 +38,12 @@ public class AddPartitionEvent extends ListenerEvent {
    */
   public Partition getPartition() {
     return partition;
+  }
+
+  /**
+   * @return the table
+   */
+  public Table getTable() {
+    return table;
   }
 }

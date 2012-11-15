@@ -125,6 +125,10 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals(expectedPartition, actualPartition);
   }
 
+  private void validateTableInAddPartition(Table expectedTable, Table actualTable) {
+    assertEquals(expectedTable, actualTable);
+  }
+
   private void validatePartition(Partition expectedPartition, Partition actualPartition) {
     assertEquals(expectedPartition.getValues(), actualPartition.getValues());
     assertEquals(expectedPartition.getDbName(), actualPartition.getDbName());
@@ -165,6 +169,10 @@ public class TestMetaStoreEventListener extends TestCase {
 
   private void validateDropPartition(Partition expectedPartition, Partition actualPartition) {
     validatePartition(expectedPartition, actualPartition);
+  }
+
+  private void validateTableInDropPartition(Table expectedTable, Table actualTable) {
+    validateTable(expectedTable, actualTable);
   }
 
   private void validateDropTable(Table expectedTable, Table actualTable) {
@@ -222,6 +230,7 @@ public class TestMetaStoreEventListener extends TestCase {
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     assert partEvent.getStatus();
     validateAddPartition(part, partEvent.getPartition());
+    validateTableInAddPartition(tbl, partEvent.getTable());
 
     PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
     validateAddPartition(part, prePartEvent.getPartition());
@@ -324,6 +333,7 @@ public class TestMetaStoreEventListener extends TestCase {
     DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
     assert dropPart.getStatus();
     validateDropPartition(part, dropPart.getPartition());
+    validateTableInDropPartition(tbl, dropPart.getTable());
 
     PreDropPartitionEvent preDropPart = (PreDropPartitionEvent)preNotifyList.get(listSize - 1);
     validateDropPartition(part, preDropPart.getPartition());

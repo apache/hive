@@ -1462,6 +1462,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Partition part = new Partition();
       boolean success = false, madeDir = false;
       Path partLocation = null;
+      Table tbl = null;
       try {
         ms.openTransaction();
         part.setDbName(dbName);
@@ -1471,7 +1472,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         PreAddPartitionEvent event = new PreAddPartitionEvent(part, this);
         firePreEvent(event);
 
-        Table tbl = ms.getTable(part.getDbName(), part.getTableName());
+        tbl = ms.getTable(part.getDbName(), part.getTableName());
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
@@ -1525,7 +1526,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         for (MetaStoreEventListener listener : listeners) {
           AddPartitionEvent addPartitionEvent =
-              new AddPartitionEvent(part, success, this);
+              new AddPartitionEvent(tbl, part, success, this);
           listener.onAddPartition(addPartitionEvent);
         }
       }
@@ -1658,6 +1659,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws InvalidObjectException, AlreadyExistsException, MetaException {
       boolean success = false, madeDir = false;
       Path partLocation = null;
+      Table tbl = null;
       try {
         firePreEvent(new PreAddPartitionEvent(part, this));
 
@@ -1672,7 +1674,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (old_part != null) {
           throw new AlreadyExistsException("Partition already exists:" + part);
         }
-        Table tbl = ms.getTable(part.getDbName(), part.getTableName());
+        tbl = ms.getTable(part.getDbName(), part.getTableName());
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
@@ -1750,7 +1752,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         for (MetaStoreEventListener listener : listeners) {
           AddPartitionEvent addPartitionEvent =
-              new AddPartitionEvent(part, success, this);
+              new AddPartitionEvent(tbl, part, success, this);
           addPartitionEvent.setEnvironmentContext(envContext);
           listener.onAddPartition(addPartitionEvent);
         }
@@ -1883,7 +1885,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         for (MetaStoreEventListener listener : listeners) {
-          listener.onDropPartition(new DropPartitionEvent(part, success, this));
+          listener.onDropPartition(new DropPartitionEvent(tbl, part, success, this));
         }
       }
       return true;
