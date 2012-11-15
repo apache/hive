@@ -71,7 +71,9 @@ public class HadoopJobExecHelper {
    */
   private void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     mapProgress = Math.round(rj.mapProgress() * 100);
+    mapProgress = mapProgress == 100 ? (int)Math.floor(rj.mapProgress() * 100) : mapProgress;
     reduceProgress = Math.round(rj.reduceProgress() * 100);
+    reduceProgress = reduceProgress == 100 ? (int)Math.floor(rj.reduceProgress() * 100) : reduceProgress;
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_MAP_PROGRESS", Long.valueOf(mapProgress));
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_REDUCE_PROGRESS", Long.valueOf(reduceProgress));
     if (ctrs == null) {
