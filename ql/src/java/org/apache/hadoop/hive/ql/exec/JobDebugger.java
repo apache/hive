@@ -146,7 +146,11 @@ public class JobDebugger implements Runnable {
           }
           // These tasks should have come from the same job.
           assert (ti.getJobId() != null &&  ti.getJobId().equals(jobId));
-          ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+          String taskAttemptLogUrl = ShimLoader.getHadoopShims().getTaskAttemptLogUrl(
+                  conf, t.getTaskTrackerHttp(), t.getTaskId());
+          if (taskAttemptLogUrl != null) {
+              ti.getLogUrls().add(taskAttemptLogUrl);
+          }
 
           // If a task failed, then keep track of the total number of failures
           // for that task (typically, a task gets re-run up to 4 times if it

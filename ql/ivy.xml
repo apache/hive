@@ -39,6 +39,12 @@
     <dependency org="org.antlr" name="antlr" rev="${antlr.version}"
                 transitive="false"/>
 
+    <!-- hadoop specific guava -->
+    <dependency org="com.google.guava" name="guava" rev="${guava-hadoop20.version}"
+                conf="hadoop20.compile->default" transitive="false"/>
+    <dependency org="com.google.guava" name="guava" rev="${guava-hadoop23.version}"
+                conf="hadoop23.compile->default" transitive="false"/>
+
     <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}"/>
     <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
     <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"
@@ -47,8 +53,6 @@
                 rev="${zookeeper.version}" transitive="false">
       <include type="jar"/>
     </dependency>
-    <dependency org="com.google.guava" name="guava" rev="${guava.version}"
-                transitive="false"/>
     <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
                 transitive="false"/>
     <dependency org="log4j" name="log4j" rev="${log4j.version}" transitive="false"/>
@@ -79,6 +83,27 @@
                 conf="hadoop23.test->default" transitive="false">
       <artifact name="hadoop-mapreduce-client-jobclient" ext="jar" />
       <artifact name="hadoop-mapreduce-client-jobclient" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-server-tests"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <artifact name="hadoop-yarn-server-tests" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-app"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-hs"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>

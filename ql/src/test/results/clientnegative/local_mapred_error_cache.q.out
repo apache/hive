@@ -1,4 +1,6 @@
-PREHOOK: query: FROM src SELECT TRANSFORM(key, value) USING 'python ../data/scripts/cat_error.py' AS (key, value)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
+FROM src SELECT TRANSFORM(key, value) USING 'python ../data/scripts/cat_error.py' AS (key, value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####

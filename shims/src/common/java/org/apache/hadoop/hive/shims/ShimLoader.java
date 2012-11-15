@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.lang.IllegalArgumentException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,8 +117,16 @@ public abstract class ShimLoader {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
           " (expected A.B.* format)");
     }
-    if (Integer.parseInt(parts[0]) > 0){
-      return "0.20S";
+
+    switch (Integer.parseInt(parts[0])) {
+        case 0:
+            break;
+        case 1:
+            return "0.20S";
+        case 2:
+            return "0.23";
+        default:
+            throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }
     String majorVersion = parts[0] + "." + parts[1];
 

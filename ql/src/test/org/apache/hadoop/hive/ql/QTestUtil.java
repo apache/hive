@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -212,8 +213,25 @@ public class QTestUtil {
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfs.getFileSystem().getUri().toString(),
                             "/build/ql/test/data/warehouse/")).toString());
+      int port = 0;
+
+      try {
+        // Hadoop20 MiniMRCluster will return a proper port.
+        // Hadoop23 MiniMRCluster does not implement this method so use the default RM port.
+        port = mr.getJobTrackerPort();
+      } catch (UnsupportedOperationException e) {
+        String address =
+            StringUtils.substringAfterLast(conf.get("yarn.resourcemanager.address"), ":");
+
+        if (StringUtils.isBlank(address)) {
+          throw new IllegalArgumentException("Invalid YARN resource manager port.");
+        }
+
+        port = Integer.parseInt(address);
+      }
+
       ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf,
-          "localhost:" + mr.getJobTrackerPort());
+          "localhost:" + port);
     }
   }
 
@@ -284,43 +302,62 @@ public class QTestUtil {
     StringBuilder qsb = new StringBuilder();
 
     // Look for a hint to not run a test on some Hadoop versions
-    Pattern pattern = Pattern.compile("-- EXCLUDE_HADOOP_MAJOR_VERSIONS(.*)");
+    Pattern pattern = Pattern.compile("-- (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS\\((.*)\\)");
 
 
     // Read the entire query
     boolean excludeQuery = false;
+    boolean includeQuery = false;
+    Set<String> versionSet = new HashSet<String>();
     String hadoopVer = ShimLoader.getMajorVersion();
     while (dis.available() != 0) {
       String line = dis.readLine();
 
-      // While we are reading the lines, detect whether this query wants to be
-      // excluded from running because the Hadoop version is incorrect
+      // Each qfile may include at most one INCLUDE or EXCLUDE directive.
+      //
+      // If a qfile contains an INCLUDE directive, and hadoopVer does
+      // not appear in the list of versions to include, then the qfile
+      // is skipped.
+      //
+      // If a qfile contains an EXCLUDE directive, and hadoopVer is
+      // listed in the list of versions to EXCLUDE, then the qfile is
+      // skipped.
+      //
+      // Otherwise, the qfile is included.
       Matcher matcher = pattern.matcher(line);
       if (matcher.find()) {
-        String group = matcher.group();
-        int start = group.indexOf('(');
-        int end = group.indexOf(')');
-        assert end > start;
-        // versions might be something like '0.17, 0.19'
-        String versions = group.substring(start+1, end);
+        if (excludeQuery || includeQuery) {
+          String message = "QTestUtil: qfile " + qf.getName()
+            + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
+          throw new UnsupportedOperationException(message);
+        }
 
-        Set<String> excludedVersionSet = new HashSet<String>();
+        String prefix = matcher.group(1);
+        if ("EX".equals(prefix)) {
+          excludeQuery = true;
+        } else {
+          includeQuery = true;
+        }
+
+        String versions = matcher.group(2);
         for (String s : versions.split("\\,")) {
           s = s.trim();
-          excludedVersionSet.add(s);
-        }
-        if (excludedVersionSet.contains(hadoopVer)) {
-          excludeQuery = true;
+          versionSet.add(s);
         }
       }
       qsb.append(line + "\n");
     }
     qMap.put(qf.getName(), qsb.toString());
-    if(excludeQuery) {
-      System.out.println("Due to the Hadoop Version ("+ hadoopVer + "), " +
-          "adding query " + qf.getName() + " to the set of tests to skip");
+
+    if (excludeQuery && versionSet.contains(hadoopVer)) {
+      System.out.println("QTestUtil: " + qf.getName()
+        + " EXCLUDE list contains Hadoop Version " + hadoopVer + ". Skipping...");
       qSkipSet.add(qf.getName());
-     }
+    } else if (includeQuery && !versionSet.contains(hadoopVer)) {
+      System.out.println("QTestUtil: " + qf.getName()
+        + " INCLUDE list does not contain Hadoop Version " + hadoopVer + ". Skipping...");
+      qSkipSet.add(qf.getName());
+    }
     dis.close();
   }
 
@@ -521,6 +558,7 @@ public class QTestUtil {
     fpath = new Path(testFiles, "json.txt");
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_json");
+
     conf.setBoolean("hive.test.init.phase", false);
   }
 
@@ -934,11 +972,14 @@ public class QTestUtil {
         ".*USING 'java -cp.*",
         "^Deleted.*",
     };
-    maskPatterns(patterns, (new File(logDir, tname + ".out")).getPath());
+
+    File f = new File(logDir, tname + ".out");
+
+    maskPatterns(patterns, f.getPath());
 
     cmdArray = new String[] {
         "diff", "-a",
-        (new File(logDir, tname + ".out")).getPath(),
+        f.getPath(),
         outFileName
     };
 
@@ -960,7 +1001,7 @@ public class QTestUtil {
       System.out.println("Overwriting results");
       cmdArray = new String[3];
       cmdArray[0] = "cp";
-      cmdArray[1] = (new File(logDir, tname + ".out")).getPath();
+      cmdArray[1] = f.getPath();
       cmdArray[2] = outFileName;
       executor = Runtime.getRuntime().exec(cmdArray);
       exitVal = executor.waitFor();

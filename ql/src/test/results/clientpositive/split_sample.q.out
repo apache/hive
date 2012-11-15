@@ -26,10 +26,26 @@ PREHOOK: query: drop table ss_t5
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ss_t5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- create multiple file inputs (two enable multiple splits)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- create multiple file inputs (two enable multiple splits)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@ss_i_part
@@ -406,7 +422,7 @@ STAGE PLANS:
       Percentage Sample:
         ss_src2 
             percentage: 70.0
-            seed number: 5
+            seed number: 7
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -523,7 +539,7 @@ STAGE PLANS:
       Percentage Sample:
         subq:ss_src2 
             percentage: 1.0
-            seed number: 5
+            seed number: 7
       Reduce Operator Tree:
         Extract
           Limit
@@ -4098,10 +4114,10 @@ STAGE PLANS:
       Percentage Sample:
         subq:t1 
             percentage: 80.0
-            seed number: 5
+            seed number: 7
         subq:t2 
             percentage: 2.0
-            seed number: 5
+            seed number: 7
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -4242,7 +4258,7 @@ STAGE PLANS:
       Percentage Sample:
         ss_src2 
             percentage: 1.0
-            seed number: 5
+            seed number: 7
       Reduce Operator Tree:
         Group By Operator
           aggregations:

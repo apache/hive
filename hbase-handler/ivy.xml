@@ -46,5 +46,34 @@
                 transitive="false"/>
     <dependency org="org.codehaus.jackson" name="jackson-jaxrs" rev="${jackson.version}"/>
     <dependency org="org.codehaus.jackson" name="jackson-xc" rev="${jackson.version}"/>
+
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-jobclient" rev="${hadoop.version.ant-internal}"
+                conf="hadoop23.test->default" transitive="false">
+      <artifact name="hadoop-mapreduce-client-jobclient" ext="jar" />
+      <artifact name="hadoop-mapreduce-client-jobclient" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-server-tests"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <artifact name="hadoop-yarn-server-tests" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-app"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-hs"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
   </dependencies>
 </ivy-module>

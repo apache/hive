@@ -297,11 +297,11 @@ POSTHOOK: Lineage: dest_g4.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: dest_g4.c3 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest_g4.c4 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest_g4.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest_g2
+PREHOOK: query: SELECT * FROM dest_g2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g2
+POSTHOOK: query: SELECT * FROM dest_g2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
@@ -325,11 +325,11 @@ POSTHOOK: Lineage: dest_g4.key SIMPLE [(src)src.FieldSchema(name:value, type:str
 7	6	7735.0	447	10
 8	8	8762.0	595	10
 9	7	91047.0	577	12
-PREHOOK: query: SELECT * FROM dest_g3
+PREHOOK: query: SELECT * FROM dest_g3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g3
+POSTHOOK: query: SELECT * FROM dest_g3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g3
 #### A masked pattern was here ####
@@ -353,11 +353,11 @@ POSTHOOK: Lineage: dest_g4.key SIMPLE [(src)src.FieldSchema(name:value, type:str
 2	69	225571.0	15780	111
 3	62	332004.0	20119	99
 4	74	452763.0	30965	124
-PREHOOK: query: SELECT * FROM dest_g4
+PREHOOK: query: SELECT * FROM dest_g4 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g4
+POSTHOOK: query: SELECT * FROM dest_g4 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g4
 #### A masked pattern was here ####
@@ -909,11 +909,11 @@ POSTHOOK: Lineage: dest_h3.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: dest_h3.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_h3.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest_g2
+PREHOOK: query: SELECT * FROM dest_g2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g2
+POSTHOOK: query: SELECT * FROM dest_g2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
@@ -962,11 +962,11 @@ POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 7	6	7735.0	447	10
 8	8	8762.0	595	10
 9	7	91047.0	577	12
-PREHOOK: query: SELECT * FROM dest_g3
+PREHOOK: query: SELECT * FROM dest_g3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g3
+POSTHOOK: query: SELECT * FROM dest_g3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g3
 #### A masked pattern was here ####
@@ -1015,11 +1015,11 @@ POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 2	69	225571.0	15780	111
 3	62	332004.0	20119	99
 4	74	452763.0	30965	124
-PREHOOK: query: SELECT * FROM dest_g4
+PREHOOK: query: SELECT * FROM dest_g4 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_g4
+POSTHOOK: query: SELECT * FROM dest_g4 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g4
 #### A masked pattern was here ####
@@ -1073,11 +1073,11 @@ POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 7	6	7735.0	447	10
 8	8	8762.0	595	10
 9	7	91047.0	577	12
-PREHOOK: query: SELECT * FROM dest_h2
+PREHOOK: query: SELECT * FROM dest_h2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_h2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_h2
+POSTHOOK: query: SELECT * FROM dest_h2 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_h2
 #### A masked pattern was here ####
@@ -1122,20 +1122,20 @@ POSTHOOK: Lineage: dest_h3.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: dest_h3.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	1	00.0	0	3
+1	4	1878.0	878	6
 1	5	1729.0	729	8
-1	7	11171.0	1171	11
 1	6	11282.0	1282	12
 1	6	11494.0	1494	11
-1	4	1878.0	878	6
-1	8	11263.0	1263	10
-1	9	12654.0	2654	16
-1	9	12294.0	2294	14
+1	7	11171.0	1171	11
 1	7	11516.0	1516	10
-PREHOOK: query: SELECT * FROM dest_h3
+1	8	11263.0	1263	10
+1	9	12294.0	2294	14
+1	9	12654.0	2654	16
+PREHOOK: query: SELECT * FROM dest_h3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_h3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest_h3
+POSTHOOK: query: SELECT * FROM dest_h3 ORDER BY key ASC, c1 ASC, c2 ASC, c3 ASC, c4 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_h3
 #### A masked pattern was here ####
@@ -1179,38 +1179,38 @@ POSTHOOK: Lineage: dest_h3.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: dest_h3.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_h3.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_h3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-5	1	515.0	15	3
 5	1	5102.0	102	2
+5	1	5116.0	116	2
+5	1	515.0	15	3
 5	1	553.0	53	1
 5	1	554.0	54	1
 5	1	557.0	57	1
-5	1	5116.0	116	2
+6	1	6134.0	134	2
 6	1	664.0	64	1
 6	1	665.0	65	1
 6	1	666.0	66	1
-6	1	6134.0	134	2
 6	1	669.0	69	1
-7	1	7210.0	210	3
 7	1	7144.0	144	2
-7	1	774.0	74	1
 7	1	7152.0	152	2
+7	1	7210.0	210	3
+7	1	774.0	74	1
 7	1	777.0	77	1
 7	1	778.0	78	1
+8	1	8166.0	166	2
+8	1	8168.0	168	2
 8	1	88.0	8	1
 8	1	880.0	80	1
 8	1	882.0	82	1
-8	1	8166.0	166	2
-8	1	8168.0	168	2
 8	1	885.0	85	1
 8	1	886.0	86	1
 8	1	887.0	87	1
-9	1	99.0	9	1
-9	1	9270.0	270	3
-9	1	992.0	92	1
 9	1	9190.0	190	2
-9	1	996.0	96	1
 9	1	9194.0	194	2
 9	1	9196.0	196	2
+9	1	9270.0	270	3
+9	1	99.0	9	1
+9	1	992.0	92	1
+9	1	996.0	96	1
 PREHOOK: query: DROP TABLE dest_g2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g2

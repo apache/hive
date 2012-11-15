@@ -12,6 +12,15 @@ set mapred.min.split.size=300;
 set mapred.min.split.size.per.node=300;
 set mapred.min.split.size.per.rack=300;
 set hive.merge.smallfiles.avgsize=1;
+set hive.sample.seednumber=7;
+
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
 
 -- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string);
@@ -40,6 +49,7 @@ set hive.sample.seednumber=5;
 create table ss_t5 as select sum(key) % 397 as s from ss_src3 tablesample(1 percent) limit 10;
 select sum(s) from (select s from ss_t3 union all select s from ss_t4 union all select s from ss_t5) t;
 
+set hive.sample.seednumber=7;
 -- sample more than one split
 explain select count(distinct key) from ss_src2 tablesample(70 percent) limit 10;
 select count(distinct key) from ss_src2 tablesample(70 percent) limit 10;

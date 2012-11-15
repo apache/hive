@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
@@ -64,6 +65,17 @@ public interface HadoopShims {
    * command line interpretation.
    */
   boolean usesJobShell();
+
+  /**
+   * Constructs and Returns TaskAttempt Log Url
+   * or null if the TaskLogServlet is not available
+   *
+   *  @return TaskAttempt Log Url
+   */
+  String getTaskAttemptLogUrl(JobConf conf,
+    String taskTrackerHttpAddress,
+    String taskAttemptId)
+    throws MalformedURLException;
 
   /**
    * Return true if the job has not switched to RUNNING state yet

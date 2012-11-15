@@ -1,6 +1,10 @@
-PREHOOK: query: create table nzhang_Tmp(a int, b string)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
+create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table nzhang_Tmp(a int, b string)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
+create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp

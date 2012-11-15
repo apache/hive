@@ -1,6 +1,12 @@
-PREHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
+
+create table t1(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
+
+create table t1(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2(key string, value string) partitioned by (ds string)
@@ -186,4 +192,5 @@ POSTHOOK: Lineage: t1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:va
 POSTHOOK: Lineage: t2 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 18
-mapred.job.tracker=does.notexist.com:666
+mapreduce.framework.name=yarn
+mapreduce.jobtracker.address=local

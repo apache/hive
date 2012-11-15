@@ -13,11 +13,11 @@ load data local inpath '../data/files/sales.txt' INTO TABLE sales;
 load data local inpath '../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23');
 load data local inpath '../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24');
 
-SELECT name,id FROM sales;
+SELECT name,id FROM sales ORDER BY name ASC, id ASC;
 
-SELECT id,name FROM things;
+SELECT id,name FROM things ORDER BY id ASC, name ASC;
 
-SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id);
+SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id) ORDER BY name ASC, id ASC;
 
 drop table sales;
 drop table things;

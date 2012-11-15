@@ -17,10 +17,15 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.util.Progressable;
 
@@ -28,6 +33,17 @@ import org.apache.hadoop.util.Progressable;
  * Implemention of shims against Hadoop 0.20 with Security.
  */
 public class Hadoop20SShims extends HadoopShimsSecure {
+
+  @Override
+  public String getTaskAttemptLogUrl(JobConf conf,
+    String taskTrackerHttpAddress, String taskAttemptId)
+    throws MalformedURLException {
+    URL taskTrackerHttpURL = new URL(taskTrackerHttpAddress);
+    return TaskLogServlet.getTaskLogUrl(
+      taskTrackerHttpURL.getHost(),
+      Integer.toString(taskTrackerHttpURL.getPort()),
+      taskAttemptId);
+  }
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
