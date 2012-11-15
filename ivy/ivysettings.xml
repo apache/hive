@@ -55,9 +55,9 @@
       <artifact pattern="${sourceforge-repo}/[module]/files/[module]/[branch]/[module]-[revision].[ext]"/>
     </url>
 
-    <filesystem name="fs" m2compatible="true" force="true">
-       <artifact pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].[ext]"/>
-       <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
+    <filesystem name="fs" m2compatible="true" alwaysCheckExactRevision="true">
+       <artifact pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
+       <ivy pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].pom"/>
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" 
