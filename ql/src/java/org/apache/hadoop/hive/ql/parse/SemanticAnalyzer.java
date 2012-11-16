@@ -704,7 +704,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_INSERT_INTO:
-        String tab_name = getUnescapedName((ASTNode)ast.getChild(0).getChild(0), true);
+        String currentDatabase = db.getCurrentDatabase();
+        String tab_name = getUnescapedName((ASTNode)ast.getChild(0).getChild(0), currentDatabase);
         qbp.addInsertIntoTable(tab_name);
 
       case HiveParser.TOK_DESTINATION:
@@ -946,7 +947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // Disallow INSERT INTO on bucketized tables
-        if(qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab_name) &&
+        if(qb.getParseInfo().isInsertIntoTable(tab.getDbName(), tab.getTableName()) &&
             tab.getNumBuckets() > 0) {
           throw new SemanticException(ErrorMsg.INSERT_INTO_BUCKETIZED_TABLE.
               getMsg("Table: " + tab_name));

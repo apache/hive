@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -322,28 +323,30 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * Get the name from a table node.
-   * @param tableNameNode the table node
-   * @return if DB name is give, db.tab is returned. Otherwise, tab.
+   * Get dequoted name from a table/column node.
+   * @param tableOrColumnNode the table or column node
+   * @return for table node, db.tab or tab. for column node column.
    */
-  public static String getUnescapedName(ASTNode tableNameNode) {
-    return getUnescapedName(tableNameNode, false);
+  public static String getUnescapedName(ASTNode tableOrColumnNode) {
+    return getUnescapedName(tableOrColumnNode, null);
   }
 
-  public static String getUnescapedName(ASTNode tableNameNode, boolean prependDefaultDB) {
-    if (tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME) {
-      if (tableNameNode.getChildCount() == 2) {
-        String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
-        String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
+    if (tableOrColumnNode.getToken().getType() == HiveParser.TOK_TABNAME) {
+      // table node
+      if (tableOrColumnNode.getChildCount() == 2) {
+        String dbName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
+        String tableName = unescapeIdentifier(tableOrColumnNode.getChild(1).getText());
         return dbName + "." + tableName;
       }
-      String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
-      if (prependDefaultDB) {
-        return MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + tableName;
+      String tableName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
+      if (currentDatabase != null) {
+        return currentDatabase + "." + tableName;
       }
       return tableName;
     }
-    return unescapeIdentifier(tableNameNode.getText());
+    // column node
+    return unescapeIdentifier(tableOrColumnNode.getText());
   }
 
   /**
