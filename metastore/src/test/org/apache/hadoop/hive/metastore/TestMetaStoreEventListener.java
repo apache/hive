@@ -66,6 +66,10 @@ public class TestMetaStoreEventListener extends TestCase {
   private HiveMetaStoreClient msc;
   private Driver driver;
 
+  private static final String dbName = "tmpdb";
+  private static final String tblName = "tmptbl";
+  private static final String renamed = "tmptbl2";
+
   private static class RunMS implements Runnable {
 
     @Override
@@ -83,13 +87,16 @@ public class TestMetaStoreEventListener extends TestCase {
   protected void setUp() throws Exception {
 
     super.setUp();
+
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
+
     Thread t = new Thread(new RunMS());
     t.start();
     Thread.sleep(40000);
+
     hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
@@ -99,6 +106,11 @@ public class TestMetaStoreEventListener extends TestCase {
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf, null);
     driver = new Driver(hiveConf);
+
+    driver.run("drop database if exists " + dbName + " cascade");
+
+    DummyListener.notifyList.clear();
+    DummyPreListener.notifyList.clear();
   }
 
   @Override
@@ -184,9 +196,6 @@ public class TestMetaStoreEventListener extends TestCase {
   }
 
   public void testListener() throws Exception {
-    String dbName = "tmpdb";
-    String tblName = "tmptbl";
-    String renamed = "tmptbl2";
     int listSize = 0;
 
     List<ListenerEvent> notifyList = DummyListener.notifyList;
