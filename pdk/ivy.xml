@@ -31,5 +31,13 @@
                 conf="compile->default" transitive="false" />
     <dependency org="junit" name="junit" rev="${junit.version}"
                 conf="compile->default" />
+
+    <!-- Test Dependencies -->
+    <dependency org="org.apache.hadoop" name="hadoop-minicluster"
+                rev="${hadoop-0.23.version}" conf="hadoop23.test->default">
+      <artifact name="hadoop-minicluster" ext="jar" />
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
   </dependencies>
 </ivy-module>
