@@ -852,6 +852,53 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  public void testDatabaseLocationWithPermissionProblems() throws Exception {
+
+    // Note: The following test will fail if you are running this test as root. Setting 
+    // permission to '0' on the database folder will not preclude root from being able 
+    // to create the necessary files.
+
+    if (System.getProperty("user.name").equals("root")) {
+      System.err.println("Skipping test because you are running as root!");
+      return;
+    }
+
+    silentDropDatabase(TEST_DB1_NAME);
+
+    Database db = new Database();
+    db.setName(TEST_DB1_NAME);
+    String dbLocation =
+      HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test/_testDB_create_";
+    FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+    fs.mkdirs(
+              new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+              new FsPermission((short) 0));
+    db.setLocationUri(dbLocation);
+
+
+    boolean createFailed = false;
+    try {
+      client.createDatabase(db);
+    } catch (MetaException cantCreateDB) {
+      createFailed = true;
+    } finally {
+      // Cleanup
+      if (!createFailed) {
+        try {
+          client.dropDatabase(TEST_DB1_NAME);
+        } catch(Exception e) {
+          System.err.println("Failed to remove database in cleanup: " + e.getMessage());
+        }
+      }
+
+      fs.setPermission(new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+                       new FsPermission((short) 755));
+      fs.delete(new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"), true);
+    }
+
+    assertTrue("Database creation succeeded even with permission problem", createFailed);
+  }
+
   public void testDatabaseLocation() throws Throwable {
     try {
       // clear up any existing databases
@@ -874,24 +921,6 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.dropDatabase(TEST_DB1_NAME);
       silentDropDatabase(TEST_DB1_NAME);
 
-      db = new Database();
-      db.setName(TEST_DB1_NAME);
-      dbLocation =
-          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test/_testDB_create_";
-      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
-      fs.mkdirs(
-          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
-          new FsPermission((short) 0));
-      db.setLocationUri(dbLocation);
-
-      boolean createFailed = false;
-      try {
-        client.createDatabase(db);
-      } catch (MetaException cantCreateDB) {
-        createFailed = true;
-      }
-      assertTrue("Database creation succeeded even with permission problem", createFailed);
-
       boolean objectNotExist = false;
       try {
         client.getDatabase(TEST_DB1_NAME);
@@ -900,23 +929,16 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Database " + TEST_DB1_NAME + " exists ", objectNotExist);
 
-      // Cleanup
-      fs.setPermission(
-          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
-          new FsPermission((short) 755));
-      fs.delete(new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"), true);
-
-
       db = new Database();
       db.setName(TEST_DB1_NAME);
       dbLocation =
           HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/_testDB_file_";
-      fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
       fs.createNewFile(new Path(dbLocation));
       fs.deleteOnExit(new Path(dbLocation));
       db.setLocationUri(dbLocation);
 
-      createFailed = false;
+      boolean createFailed = false;
       try {
         client.createDatabase(db);
       } catch (MetaException cantCreateDB) {
@@ -2084,10 +2106,12 @@ public abstract class TestHiveMetaStore extends TestCase {
    * at least works correctly.
    */
   public void testSynchronized() throws Exception {
+    int currentNumberOfDbs = client.getAllDatabases().size(); 
+
     IMetaStoreClient synchronizedClient =
       HiveMetaStoreClient.newSynchronizedClient(client);
     List<String> databases = synchronizedClient.getAllDatabases();
-    assertEquals(1, databases.size());
+    assertEquals(currentNumberOfDbs, databases.size());
   }
 
   public void testTableFilter() throws Exception {
