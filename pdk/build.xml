@@ -42,7 +42,7 @@
     </javac>
   </target>
 
-  <target name="test" unless="testcase">
+  <target name="test" unless="testcase" depends="ivy-retrieve-test">
     <echo message="Project: ${ant.project.name}"/>
     <delete quiet="true" dir="${build.dir}/test-plugin"/>
     <copy todir="${build.dir}/test-plugin">

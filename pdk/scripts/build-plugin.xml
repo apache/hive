@@ -25,7 +25,7 @@
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.metadata" location="${build.dir}/metadata"/>
   <property name="install.dir" location="${pdk.script.dir}/../.."/>
-  <property name="pdk.test.conf.dir" location="${pdk.script.dir}/../test-plugin/test/conf"/>
+  <property name="pdk.test.conf.dir" location="${pdk.script.dir}/conf"/>
   <property name="function.sql.prefix" value=""/>
   <property name="plugin.jar.basename" 
             value="${plugin.libname}-${plugin.version}.jar"/>
@@ -123,6 +123,7 @@
   <target name="test" depends="package" unless="testcase">
     <path id="hive.hadoop.mock.classpath">
        <fileset dir="${build.ivy.lib.dir}/test" includes="*.jar" excludes="hive*.jar"/>
+       <pathelement path="${pdk.test.conf.dir}"/>
     </path>
     <property name="hive.hadoop.mock.classpath" refid="hive.hadoop.mock.classpath"/>
     <junit fork="true" printsummary="on" haltonfailure="true"
