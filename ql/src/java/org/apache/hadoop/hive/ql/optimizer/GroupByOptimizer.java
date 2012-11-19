@@ -84,26 +84,26 @@ public class GroupByOptimizer implements Transform {
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
       // process group-by pattern
       opRules.put(new RuleRegExp("R1",
-        GroupByOperator.getOperatorName() + "%" +
-        ReduceSinkOperator.getOperatorName() + "%" +
-        GroupByOperator.getOperatorName() + "%"),
-        getMapSortedGroupbyProc(pctx));
+          GroupByOperator.getOperatorName() + "%" +
+              ReduceSinkOperator.getOperatorName() + "%" +
+              GroupByOperator.getOperatorName() + "%"),
+          getMapSortedGroupbyProc(pctx));
     } else {
       // If hive.groupby.skewindata is set to true, the operator tree is as below
       opRules.put(new RuleRegExp("R2",
-        GroupByOperator.getOperatorName() + "%" +
-        ReduceSinkOperator.getOperatorName() + "%" +
-        GroupByOperator.getOperatorName() + "%" +
-        ReduceSinkOperator.getOperatorName() + "%" +
-        GroupByOperator.getOperatorName() + "%"),
-        getMapSortedGroupbySkewProc(pctx));
+          GroupByOperator.getOperatorName() + "%" +
+              ReduceSinkOperator.getOperatorName() + "%" +
+              GroupByOperator.getOperatorName() + "%" +
+              ReduceSinkOperator.getOperatorName() + "%" +
+              GroupByOperator.getOperatorName() + "%"),
+          getMapSortedGroupbySkewProc(pctx));
     }
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp =
-      new DefaultRuleDispatcher(getDefaultProc(), opRules,
-      new GroupByOptimizerContext(conf));
+        new DefaultRuleDispatcher(getDefaultProc(), opRules,
+            new GroupByOptimizerContext(conf));
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
     // Create a list of topop nodes
@@ -118,7 +118,7 @@ public class GroupByOptimizer implements Transform {
     return new NodeProcessor() {
       @Override
       public Object process(Node nd, Stack<Node> stack,
-        NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+          NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
         return null;
       }
     };
@@ -136,6 +136,10 @@ public class GroupByOptimizer implements Transform {
     NO_MATCH, PARTIAL_MATCH, COMPLETE_MATCH
   };
 
+  private enum ColumnOrderMatch {
+    NO_MATCH, PREFIX_COL1_MATCH, PREFIX_COL2_MATCH, COMPLETE_MATCH
+  };
+
   /**
    * SortGroupByProcessor.
    *
@@ -150,8 +154,8 @@ public class GroupByOptimizer implements Transform {
 
     // Check if the group by operator has already been processed
     protected boolean checkGroupByOperatorProcessed(
-      GroupByOptimizerContext groupBySortOptimizerContext,
-      GroupByOperator groupByOp) {
+        GroupByOptimizerContext groupBySortOptimizerContext,
+        GroupByOperator groupByOp) {
 
       // The group by operator has already been processed
       if (groupBySortOptimizerContext.getListGroupByOperatorsProcessed().contains(groupByOp)) {
@@ -163,21 +167,19 @@ public class GroupByOptimizer implements Transform {
     }
 
     protected void processGroupBy(GroupByOptimizerContext ctx,
-      Stack<Node> stack,
-      GroupByOperator groupByOp,
-      int depth) throws SemanticException {
+        Stack<Node> stack,
+        GroupByOperator groupByOp,
+        int depth) throws SemanticException {
       HiveConf hiveConf = ctx.getConf();
       GroupByOptimizerSortMatch match = checkSortGroupBy(stack, groupByOp);
       boolean useMapperSort =
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT);
+          HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT);
 
-      if (useMapperSort) {
-        if (match == GroupByOptimizerSortMatch.COMPLETE_MATCH) {
-          convertGroupByMapSideSortedGroupBy(groupByOp, depth);
-        }
+      if (useMapperSort && (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
+        convertGroupByMapSideSortedGroupBy(groupByOp, depth);
       }
       else if ((match == GroupByOptimizerSortMatch.PARTIAL_MATCH) ||
-        (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
+          (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
         groupByOp.getConf().setBucketGroup(true);
       }
     }
@@ -188,7 +190,7 @@ public class GroupByOptimizer implements Transform {
       // GBY,RS,GBY... (top to bottom)
       GroupByOperator groupByOp = (GroupByOperator) stack.get(stack.size() - 3);
 
-      GroupByOptimizerContext ctx = (GroupByOptimizerContext)procCtx;
+      GroupByOptimizerContext ctx = (GroupByOptimizerContext) procCtx;
 
       if (!checkGroupByOperatorProcessed(ctx, groupByOp)) {
         processGroupBy(ctx, stack, groupByOp, 2);
@@ -199,8 +201,8 @@ public class GroupByOptimizer implements Transform {
     // Should this group by be converted to a map-side group by, because the grouping keys for
     // the base table for the group by matches the skewed keys
     protected GroupByOptimizerSortMatch checkSortGroupBy(Stack<Node> stack,
-      GroupByOperator groupByOp)
-      throws SemanticException {
+        GroupByOperator groupByOp)
+        throws SemanticException {
 
       // if this is not a HASH groupby, return
       if (groupByOp.getConf().getMode() != GroupByDesc.Mode.HASH) {
@@ -226,7 +228,7 @@ public class GroupByOptimizer implements Transform {
       }
 
       // currOp now points to the top-most tablescan operator
-      TableScanOperator tableScanOp = (TableScanOperator)currOp;
+      TableScanOperator tableScanOp = (TableScanOperator) currOp;
       int stackPos = 0;
       assert stack.get(0) == tableScanOp;
 
@@ -241,11 +243,11 @@ public class GroupByOptimizer implements Transform {
       while (currOp != groupByOp) {
         Operator<? extends OperatorDesc> processOp = currOp;
         Set<String> newConstantCols = new HashSet<String>();
-        currOp = (Operator<? extends OperatorDesc>)(stack.get(++stackPos));
+        currOp = (Operator<? extends OperatorDesc>) (stack.get(++stackPos));
 
         // Filters don't change the column names - so, no need to do anything for them
         if (processOp instanceof SelectOperator) {
-          SelectOperator selectOp = (SelectOperator)processOp;
+          SelectOperator selectOp = (SelectOperator) processOp;
           SelectDesc selectDesc = selectOp.getConf();
 
           if (selectDesc.isSelStarNoCompute()) {
@@ -264,7 +266,7 @@ public class GroupByOptimizer implements Transform {
             ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
             if (selectColList instanceof ExprNodeColumnDesc) {
               String newValue =
-                tableColsMapping.get(((ExprNodeColumnDesc) selectColList).getColumn());
+                  tableColsMapping.get(((ExprNodeColumnDesc) selectColList).getColumn());
               tableColsMapping.put(outputColumnName, newValue);
             }
             else {
@@ -287,7 +289,7 @@ public class GroupByOptimizer implements Transform {
       // the sorting property is not obeyed
       for (ExprNodeDesc expr : groupByOp.getConf().getKeys()) {
         if (expr instanceof ExprNodeColumnDesc) {
-          String groupByKeyColumn = ((ExprNodeColumnDesc)expr).getColumn();
+          String groupByKeyColumn = ((ExprNodeColumnDesc) expr).getColumn();
           // ignore if it is a constant
           if (constantCols.contains(groupByKeyColumn)) {
             continue;
@@ -303,7 +305,7 @@ public class GroupByOptimizer implements Transform {
         }
         // Constants and nulls are OK
         else if ((expr instanceof ExprNodeConstantDesc) ||
-          (expr instanceof ExprNodeNullDesc)) {
+            (expr instanceof ExprNodeNullDesc)) {
           continue;
         } else {
           return GroupByOptimizerSortMatch.NO_MATCH;
@@ -312,17 +314,18 @@ public class GroupByOptimizer implements Transform {
 
       if (!table.isPartitioned()) {
         List<String> sortCols = Utilities.getColumnNamesFromSortCols(table.getSortCols());
-        return matchSortColumns(groupByCols, sortCols);
+        List<String> bucketCols = table.getBucketCols();
+        return matchBucketSortCols(groupByCols, bucketCols, sortCols);
       } else {
         PrunedPartitionList partsList = null;
         try {
           partsList = pGraphContext.getOpToPartList().get(tableScanOp);
           if (partsList == null) {
             partsList = PartitionPruner.prune(table,
-              pGraphContext.getOpToPartPruner().get(tableScanOp),
-              pGraphContext.getConf(),
-              table.getTableName(),
-              pGraphContext.getPrunedPartitions());
+                pGraphContext.getOpToPartPruner().get(tableScanOp),
+                pGraphContext.getConf(),
+                table.getTableName(),
+                pGraphContext.getPrunedPartitions());
             pGraphContext.getOpToPartList().put(tableScanOp, partsList);
           }
         } catch (HiveException e) {
@@ -333,7 +336,8 @@ public class GroupByOptimizer implements Transform {
         GroupByOptimizerSortMatch currentMatch = GroupByOptimizerSortMatch.COMPLETE_MATCH;
         for (Partition part : partsList.getNotDeniedPartns()) {
           List<String> sortCols = part.getSortColNames();
-          GroupByOptimizerSortMatch match = matchSortColumns(groupByCols, sortCols);
+          List<String> bucketCols = part.getBucketCols();
+          GroupByOptimizerSortMatch match = matchBucketSortCols(groupByCols, bucketCols, sortCols);
           if (match == GroupByOptimizerSortMatch.NO_MATCH) {
             return match;
           }
@@ -346,34 +350,100 @@ public class GroupByOptimizer implements Transform {
       }
     }
 
+    /*
+     * Return how the list of columns passed in match.
+     * Return NO_MATCH if either of the list is empty or null, or if there is a mismatch.
+     * For eg: ([], []), ([], ["a"]), (["a"],["b"]) and (["a", "b"], ["a","c"]) return NO_MATCH
+     *
+     * Return COMPLETE_MATCH if both the lists are non-empty and are same
+     * Return PREFIX_COL1_MATCH if list1 is a strict subset of list2 and
+     * return PREFIX_COL2_MATCH if list2 is a strict subset of list1
+     *
+     * For eg: (["a"], ["a"]), (["a"], ["a", "b"]) and (["a", "b"], ["a"]) return
+     * COMPLETE_MATCH, PREFIX_COL1_MATCH and PREFIX_COL2_MATCH respectively.
+     */
+    private ColumnOrderMatch matchColumnOrder(List<String> cols1, List<String> cols2) {
+      int numCols1 = cols1 == null ? 0 : cols1.size();
+      int numCols2 = cols2 == null ? 0 : cols2.size();
+
+      if (numCols1 == 0 || numCols2 == 0) {
+        return ColumnOrderMatch.NO_MATCH;
+      }
+
+      for (int pos = 0; pos < Math.min(numCols1, numCols2); pos++) {
+        if (!cols1.get(pos).equals(cols2.get(pos))) {
+          return ColumnOrderMatch.NO_MATCH;
+        }
+      }
+
+      return (numCols1 == numCols2) ?
+          ColumnOrderMatch.COMPLETE_MATCH :
+          ((numCols1 < numCols2) ? ColumnOrderMatch.PREFIX_COL1_MATCH :
+              ColumnOrderMatch.PREFIX_COL2_MATCH);
+    }
+
     /**
-     * Given the group by keys, sort columns, this method
+     * Given the group by keys, bucket columns and sort columns, this method
      * determines if we can use sorted group by or not.
-     * We can use map-side sort group by group by columns match the sorted columns
-     * in exactly the same order.
      *
      * @param groupByCols
+     * @param bucketCols
      * @param sortCols
      * @return
      * @throws SemanticException
      */
-    private GroupByOptimizerSortMatch matchSortColumns(
-      List<String> groupByCols,
-      List<String> sortCols) throws SemanticException {
+    private GroupByOptimizerSortMatch matchBucketSortCols(
+        List<String> groupByCols,
+        List<String> bucketCols,
+        List<String> sortCols) throws SemanticException {
 
-      if (sortCols == null || sortCols.size() == 0) {
+      /*
+       * >> Super set of
+       * If the grouping columns are a,b,c and the sorting columns are a,b
+       * grouping columns >> sorting columns
+       * (or grouping columns are a superset of sorting columns)
+       *
+       * Similarly << means subset of
+       *
+       * No intersection between Sort Columns and BucketCols:
+       *
+       * 1. Sort Cols = Group By Cols ---> Partial Match
+       * 2. Group By Cols >> Sort By Cols --> No Match
+       * 3. Group By Cols << Sort By Cols --> Partial Match
+       *
+       * BucketCols <= SortCols (bucket columns is either same or a prefix of sort columns)
+       *
+       * 1. Sort Cols = Group By Cols ---> Complete Match
+       * 2. Group By Cols >> Sort By Cols --> No Match
+       * 3. Group By Cols << Sort By Cols --> Complete Match if Group By Cols >= BucketCols
+       * --> Partial Match otherwise
+       *
+       * BucketCols >> SortCols (bucket columns is a superset of sorting columns)
+       *
+       * 1. group by cols <= sort cols --> partial match
+       * 2. group by cols >> sort cols --> no match
+       *
+       * One exception to this rule is:
+       * If GroupByCols == SortCols and all bucketing columns are part of sorting columns
+       * (in any order), it is a complete match
+       */
+      ColumnOrderMatch bucketSortColsMatch = matchColumnOrder(bucketCols, sortCols);
+      ColumnOrderMatch sortGroupByColsMatch = matchColumnOrder(sortCols, groupByCols);
+      switch (sortGroupByColsMatch) {
+      case NO_MATCH:
         return GroupByOptimizerSortMatch.NO_MATCH;
+      case COMPLETE_MATCH:
+        return ((bucketCols != null) && !bucketCols.isEmpty() && sortCols.containsAll(bucketCols)) ?
+          GroupByOptimizerSortMatch.COMPLETE_MATCH : GroupByOptimizerSortMatch.PARTIAL_MATCH;
+      case PREFIX_COL1_MATCH:
+        return GroupByOptimizerSortMatch.NO_MATCH;
+      case PREFIX_COL2_MATCH:
+        return ((bucketSortColsMatch == ColumnOrderMatch.NO_MATCH) ||
+            (bucketCols.size() > groupByCols.size())) ?
+            GroupByOptimizerSortMatch.PARTIAL_MATCH :
+            GroupByOptimizerSortMatch.COMPLETE_MATCH;
       }
-
-      int num = sortCols.size() <  groupByCols.size() ? sortCols.size() : groupByCols.size();
-      for (int i = 0; i < num; i++) {
-        if (!sortCols.get(i).equals(groupByCols.get(i))) {
-          return GroupByOptimizerSortMatch.NO_MATCH;
-        }
-      }
-
-      return sortCols.size() == groupByCols.size() ?
-        GroupByOptimizerSortMatch.COMPLETE_MATCH : GroupByOptimizerSortMatch.PARTIAL_MATCH;
+      return GroupByOptimizerSortMatch.NO_MATCH;
     }
 
     // Convert the group by to a map-side group by
@@ -401,7 +471,7 @@ public class GroupByOptimizer implements Transform {
         Object... nodeOutputs) throws SemanticException {
       // GBY,RS,GBY,RS,GBY... (top to bottom)
       GroupByOperator groupByOp = (GroupByOperator) stack.get(stack.size() - 5);
-      GroupByOptimizerContext ctx = (GroupByOptimizerContext)procCtx;
+      GroupByOptimizerContext ctx = (GroupByOptimizerContext) procCtx;
 
       if (!checkGroupByOperatorProcessed(ctx, groupByOp)) {
         processGroupBy(ctx, stack, groupByOp, 4);
@@ -424,7 +494,7 @@ public class GroupByOptimizer implements Transform {
     }
 
     public void setListGroupByOperatorsProcessed(
-      List<GroupByOperator> listGroupByOperatorsProcessed) {
+        List<GroupByOperator> listGroupByOperatorsProcessed) {
       this.listGroupByOperatorsProcessed = listGroupByOperatorsProcessed;
     }
 

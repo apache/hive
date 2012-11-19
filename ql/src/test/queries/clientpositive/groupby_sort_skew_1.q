@@ -15,7 +15,7 @@ INSERT OVERWRITE TABLE T1 select key, val from T1;
 CREATE TABLE outputTbl1(key int, cnt int);
 
 -- The plan should be converted to a map-side group by if the group by key
--- matches the skewed key
+-- matches the sorted key
 -- addind a order by at the end to make the test results deterministic
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
@@ -28,7 +28,7 @@ SELECT * FROM outputTbl1 ORDER BY key;
 
 CREATE TABLE outputTbl2(key1 int, key2 string, cnt int);
 
--- no map-side group by even if the group by key is a superset of skewed key
+-- no map-side group by even if the group by key is a superset of sorted key
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val;
@@ -61,7 +61,7 @@ SELECT * FROM outputTbl1 ORDER BY key;
 CREATE TABLE outputTbl3(key1 int, key2 int, cnt int);
 
 -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the skewed key
+-- by a match to the sorted key
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key;
@@ -189,7 +189,7 @@ SELECT key, count(1) FROM T2 GROUP BY key;
 SELECT * FROM outputTbl1 ORDER BY key;
 
 -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys
+-- sorted keys
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val;
@@ -202,7 +202,7 @@ SELECT * FROM outputTbl4 ORDER BY key1, key2, key3;
 CREATE TABLE outputTbl5(key1 int, key2 int, key3 string, key4 int, cnt int);
 
 -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys followed by anything
+-- sorted keys followed by anything
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2;
