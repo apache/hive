@@ -31,14 +31,14 @@ POSTHOOK: Output: default@outputTbl1
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the skewed key
+-- matches the sorted key
 -- addind a order by at the end to make the test results deterministic
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the skewed key
+-- matches the sorted key
 -- addind a order by at the end to make the test results deterministic
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
@@ -234,12 +234,12 @@ POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- no map-side group by even if the group by key is a superset of skewed key
+PREHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by even if the group by key is a superset of skewed key
+POSTHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
@@ -935,13 +935,13 @@ POSTHOOK: Lineage: outputtbl2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:str
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the skewed key
+-- by a match to the sorted key
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the skewed key
+-- by a match to the sorted key
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
@@ -3772,7 +3772,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: key
                       type: string
@@ -4018,13 +4018,13 @@ POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	1
 8	2
 PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys
+-- sorted keys
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys
+-- sorted keys
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
@@ -4375,13 +4375,13 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys followed by anything
+-- sorted keys followed by anything
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
 POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- skewed keys followed by anything
+-- sorted keys followed by anything
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
@@ -5645,7 +5645,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
-                bucketGroup: false
+                bucketGroup: true
                 keys:
                       expr: key
                       type: string
@@ -6076,7 +6076,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
-                    bucketGroup: false
+                    bucketGroup: true
                     keys:
                           expr: _col0
                           type: string
