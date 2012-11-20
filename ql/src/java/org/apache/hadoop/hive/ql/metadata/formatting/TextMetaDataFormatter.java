@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -403,7 +405,15 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     {
         try {
             for (String part : parts) {
-                outStream.writeBytes(part);
+                // Partition names are URL encoded. We decode the names unless Hive
+                // is configured to use the encoded names.
+                SessionState ss = SessionState.get();
+                if (ss != null && ss.getConf() != null &&
+                      !ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_DECODE_PARTITION_NAME)) {
+                    outStream.writeBytes(part);
+                } else {
+                    outStream.writeBytes(FileUtils.unescapePathName(part));
+                }
                 outStream.write(terminator);
             }
         } catch (IOException e) {
