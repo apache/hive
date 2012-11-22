@@ -176,7 +176,7 @@ def get_clean_hive():
       local.run('git reset --hard HEAD')
       local.run('git clean -dffx')
       local.run('git pull')
-    
+
     local.run('ant arc-setup')
 
 def copy_local_hive():
@@ -246,7 +246,7 @@ def propagate_hive():
     remote_set.run('cp -r "{0}/*" "{1}"'.format(
                     code_path, host_code_path))
 
-    # It should avoid issues with 'ivy publish' exceptions during testing phase. 
+    # It should avoid issues with 'ivy publish' exceptions during testing phase.
     remote_set.run('cp -r "{0}" "{1}"'.format(ivy_path, host_code_path))
 
 
@@ -312,7 +312,7 @@ def run_tests():
     # irrelevant if one of the first tests fails and Ant reports a failure after
     # running all the other test, fortunately JUnit report saves the Ant output
     # if you need it for some reason).
-    
+
     remote_ivy_path = '$(pwd)/.ivy2'
 
     qfile_set.cd(host_code_path)
@@ -481,7 +481,7 @@ def save_patch():
     local.cd(code_path)
     local.run('git add --all')
     local.run('git diff --no-prefix HEAD > "{0}"'.format(report_path + '/patch'))
-  
+
 # -- Tasks that can be called from command line start here.
 
 def cmd_prepare(patches = [], revision = None):
@@ -521,8 +521,9 @@ def cmd_test(patches = [], revision = None, one_file_report = False):
       local.run('rm -rf "' + master_base_path + '/templogs/"')
       local.run('mkdir -p "' + master_base_path + '/templogs/"')
       tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
+      
       for test in tests:
-        local.run('sudo -u hadoop ant -Dtestcase=' + test + ' test')
+        local.run('sudo -u root ant -Divy.default.ivy.user.dir={0} '.format(ivy_path) + ' -Dtestcase=' + test + ' test')
         local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
 
     cmd_run_tests(one_file_report)
@@ -594,6 +595,6 @@ elif args.stop:
     cmd_stop()
 elif args.remove:
     cmd_remove()
-else: 
+else:
   parser.print_help()
 
