@@ -15,4 +15,4 @@ SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx6
 #### A masked pattern was here ####
-FAILED: SemanticException value not found in table's partition spec: {v=val_86}
+FAILED: SemanticException [Error 10214]: Invalid partition spec specified value not found in table's partition spec: {v=val_86}
