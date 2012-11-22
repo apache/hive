@@ -42,13 +42,14 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -251,12 +252,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? json : null;
   }
 
-  private static String outputList(List<?> l, String header, PrintStream out,
+  private static JSONArray outputList(List<?> l, String header, PrintStream out,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     boolean first_el = true;
     boolean nl = false;
-    StringBuffer s = new StringBuffer();
+    JSONArray outputArray = new JSONArray();
+
     for (Object o : l) {
       if (first_el && (out != null)) {
         out.print(header);
@@ -270,8 +272,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
 
         if (jsonOutput) {
-          s.append(delim);
-          s.append(o);
+          outputArray.put(o);
         }
         nl = true;
       }
@@ -282,10 +283,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonOut = outputPlan((Serializable) o, out, extended,
             jsonOutput, jsonOutput ? 0 : indent + 2);
         if (jsonOutput) {
-          if (!first_el) {
-            s.append(", ");
-          }
-          s.append(jsonOut);
+          outputArray.put(jsonOut);
         }
       }
 
@@ -295,7 +293,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (nl && (out != null)) {
       out.println();
     }
-    return jsonOutput ? s.toString() : null;
+
+    return jsonOutput ? outputArray : null;
   }
 
   private static boolean isPrintable(Object val) {
@@ -400,6 +399,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             header = indentString(prop_indents);
           }
 
+          // Try the output as a primitive object
           if (isPrintable(val)) {
             if (out != null) {
               out.printf("%s ", header);
@@ -428,11 +428,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Try this as a list
           try {
             List<?> l = (List<?>) val;
-            String jsonOut = outputList(l, header, out, extended, jsonOutput,
+            JSONArray jsonOut = outputList(l, header, out, extended, jsonOutput,
                 jsonOutput ? 0 : prop_indents + 2);
+
             if (jsonOutput) {
               json.put(header, jsonOut);
             }
+
             continue;
           }
           catch (ClassCastException ce) {
@@ -468,7 +470,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       return json;
     }
-
     return null;
   }
 
