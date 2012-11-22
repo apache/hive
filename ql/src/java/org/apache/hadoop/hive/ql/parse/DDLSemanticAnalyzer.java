@@ -2325,6 +2325,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     for (AddPartitionDesc addPartitionDesc : partitionDescs) {
+      try {
+        tab.isValidSpec(addPartitionDesc.getPartSpec());
+      } catch (HiveException ex) {
+        throw new SemanticException(ErrorMsg.INVALID_PARTITION_SPEC.getMsg(ex.getMessage()));
+      }
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           addPartitionDesc), conf));
     }
@@ -2344,7 +2349,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           // actually returns false).
           tab.isValidSpec(partitionDesc.getPartSpec());
         } catch (HiveException ex) {
-          throw new SemanticException(ex.getMessage(), ex);
+          throw new SemanticException(ErrorMsg.INVALID_PARTITION_SPEC.getMsg(ex.getMessage()));
         }
         if (firstOr) {
           firstOr = false;
