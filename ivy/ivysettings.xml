@@ -48,16 +48,16 @@
              changingPattern="${ivy.changingPattern}"/>
 
     <url name="datanucleus-repo" m2compatible="true">
-      <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
+      <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"/>
     </url>
 
     <url name="sourceforge" m2compatible="false" checksums="">
-      <artifact pattern="${sourceforge-repo}/[module]/files/[module]/[branch]/[module]-[revision].[ext]"/>
+      <artifact pattern="${sourceforge-repo}/[module]/files/[module]/[branch]/[module]-[revision](-[classifier]).[ext]"/>
     </url>
 
     <filesystem name="fs" m2compatible="true" alwaysCheckExactRevision="true">
-       <artifact pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
-       <ivy pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].pom"/>
+       <artifact pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"/>
+       <ivy pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom"/>
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" 
