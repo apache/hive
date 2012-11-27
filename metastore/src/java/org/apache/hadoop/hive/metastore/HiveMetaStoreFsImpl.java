@@ -25,8 +25,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
@@ -37,16 +38,10 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
       Configuration conf) throws MetaException {
     LOG.info("deleting  " + f);
-
-    // older versions of Hadoop don't have a Trash constructor based on the
-    // Path or FileSystem. So need to achieve this by creating a dummy conf.
-    // this needs to be filtered out based on version
-    Configuration dupConf = new Configuration(conf);
-    FileSystem.setDefaultUri(dupConf, fs.getUri());
+    HadoopShims hadoopShim = ShimLoader.getHadoopShims();
 
     try {
-      Trash trashTmp = new Trash(dupConf);
-      if (trashTmp.moveToTrash(f)) {
+      if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
         LOG.info("Moved to trash: " + f);
         return true;
       }
