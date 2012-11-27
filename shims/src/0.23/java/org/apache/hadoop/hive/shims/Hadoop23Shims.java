@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.shims.HadoopShims.JobTrackerState;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -112,5 +114,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public String getJobLauncherHttpAddress(Configuration conf) {
     return conf.get("yarn.resourcemanager.webapp.address");
   }
+
+  @Override
+  public long getDefaultBlockSize(FileSystem fs, Path path) {
+    return fs.getDefaultBlockSize(path);
+  }
+
+  @Override
+  public short getDefaultReplication(FileSystem fs, Path path) {
+    return fs.getDefaultReplication(path);
+  }
+
 
 }

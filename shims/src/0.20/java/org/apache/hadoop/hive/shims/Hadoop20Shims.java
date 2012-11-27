@@ -624,4 +624,14 @@ public class Hadoop20Shims implements HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf) {
     return conf.get("mapred.job.tracker.http.address");
   }
+
+  @Override
+  public long getDefaultBlockSize(FileSystem fs, Path path) {
+    return fs.getDefaultBlockSize();
+  }
+
+  @Override
+  public short getDefaultReplication(FileSystem fs, Path path) {
+    return fs.getDefaultReplication();
+  }
 }

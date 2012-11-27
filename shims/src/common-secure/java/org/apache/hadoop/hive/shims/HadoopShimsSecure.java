@@ -576,4 +576,10 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public String getJobLauncherRpcAddress(Configuration conf);
+
+  @Override
+  abstract public short getDefaultReplication(FileSystem fs, Path path);
+
+  @Override
+  abstract public long getDefaultBlockSize(FileSystem fs, Path path);
 }
