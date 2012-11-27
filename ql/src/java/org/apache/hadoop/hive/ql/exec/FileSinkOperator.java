@@ -494,7 +494,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // only create bucket files only if no dynamic partitions,
         // buckets of dynamic partitions will be created for each newly created partition
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(
-            jc, conf.getTableInfo(), outputClass, conf, fsp.outPaths[filesIdx]);
+            jc, conf.getTableInfo(), outputClass, conf, fsp.outPaths[filesIdx],
+            reporter);
         // increment the CREATED_FILES counter
         if (reporter != null) {
           reporter.incrCounter(ProgressCounter.CREATED_FILES, 1);
@@ -521,8 +522,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * Report status to JT so that JT won't kill this task if closing takes too long
    * due to too many files to close and the NN is overloaded.
    *
-   * @param lastUpdateTime
-   *          the time (msec) that progress update happened.
    * @return true if a new progress update is reported, false otherwise.
    */
   private boolean updateProgress() {
@@ -784,7 +783,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
           specPath = conf.getParentDir();
         }
-        Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf);
+        Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf,
+          reporter);
       }
     } catch (IOException e) {
       throw new HiveException(e);

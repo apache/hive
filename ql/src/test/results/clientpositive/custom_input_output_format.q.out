@@ -1,0 +1,54 @@
+PREHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
+  STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
+            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
+  STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
+            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src1_rot13_iof
+PREHOOK: query: INSERT OVERWRITE TABLE src1_rot13_iof SELECT * FROM src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@src1_rot13_iof
+POSTHOOK: query: INSERT OVERWRITE TABLE src1_rot13_iof SELECT * FROM src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@src1_rot13_iof
+POSTHOOK: Lineage: src1_rot13_iof.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rot13_iof.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM src1_rot13_iof
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_rot13_iof
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src1_rot13_iof
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_rot13_iof
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src1_rot13_iof.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rot13_iof.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238
+	
+311	val_311
+	val_27
+	val_165
+	val_409
+255	val_255
+278	val_278
+98	val_98
+	val_484
+	val_265
+	val_193
+401	val_401
+150	val_150
+273	val_273
+224	
+369	
+66	val_66
+128	
+213	val_213
+146	val_146
+406	val_406
+	
+	
+	

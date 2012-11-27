@@ -313,7 +313,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       // there should be only 1 dummy object in the RowContainer
       RowContainer<ArrayList<Object>> values = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)pos),
-          alias, 1, spillTableDesc, conf, !hasFilter(pos));
+          alias, 1, spillTableDesc, conf, !hasFilter(pos), reporter);
 
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
@@ -322,7 +322,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       // e.g., the output columns does not contains the input table
       RowContainer rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)pos),
-          alias, joinCacheSize,spillTableDesc, conf, !hasFilter(pos));
+          alias, joinCacheSize,spillTableDesc, conf, !hasFilter(pos), reporter);
       storage.put(pos, rc);
 
       pos++;
