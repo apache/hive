@@ -109,6 +109,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   InputFormat<WritableComparable, Writable> inputFormat = null;
   InputSplit[] inputSplits = null;
   private Row dummyRow = null;
+  private final Reporter reporter;
 
   Writable val = null; // cached to use serialize data
 
@@ -116,11 +117,12 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   JobConf jobCloneUsingLocalFs = null;
   private LocalFileSystem localFs;
 
-  public RowContainer(Configuration jc) throws HiveException {
-    this(BLOCKSIZE, jc);
+  public RowContainer(Configuration jc, Reporter reporter) throws HiveException {
+    this(BLOCKSIZE, jc, reporter);
   }
 
-  public RowContainer(int bs, Configuration jc) throws HiveException {
+  public RowContainer(int bs, Configuration jc, Reporter reporter
+                     ) throws HiveException {
     // no 0-sized block
     this.blockSize = bs <= 0 ? BLOCKSIZE : bs;
     this.size = 0;
@@ -134,6 +136,11 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
     this.serde = null;
     this.standardOI = null;
     this.jc = jc;
+    if (reporter == null) {
+      this.reporter = Reporter.NULL;
+    } else {
+      this.reporter = reporter;
+    }
   }
   
   private JobConf getLocalFSJobConfClone(Configuration jc) {
@@ -210,7 +217,8 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
           acutalSplitNum = inputSplits.length;
         }
         currentSplitPointer = 0;
-        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], localJc, Reporter.NULL);
+        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
+          localJc, reporter);
         currentSplitPointer++;
 
         nextBlock();
@@ -307,8 +315,9 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
         HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
         tempOutPath = new Path(tmpFile.toString());
         JobConf localJc = getLocalFSJobConfClone(jc);
-        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs, hiveOutputFormat, serde
-            .getSerializedClass(), false, tblDesc.getProperties(), tempOutPath);
+        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
+            hiveOutputFormat, serde.getSerializedClass(), false,
+            tblDesc.getProperties(), tempOutPath, reporter);
       } else if (rw == null) {
         throw new HiveException("RowContainer has already been closed for writing.");
       }
@@ -382,7 +391,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
         JobConf localJc = getLocalFSJobConfClone(jc);
         // open record reader to read next split
         rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], jobCloneUsingLocalFs,
-            Reporter.NULL);
+            reporter);
         currentSplitPointer++;
         return nextBlock();
       }
