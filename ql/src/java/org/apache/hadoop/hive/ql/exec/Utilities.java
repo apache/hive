@@ -142,6 +142,7 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -1342,7 +1343,8 @@ public final class Utilities {
   }
 
   public static void mvFileToFinalPath(String specPath, Configuration hconf,
-      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf) throws IOException,
+      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+      Reporter reporter) throws IOException,
       HiveException {
 
     FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
@@ -1363,7 +1365,7 @@ public final class Utilities {
             Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
-          createEmptyBuckets(hconf, emptyBuckets, conf);
+          createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
         }
 
         // Step3: move to the file destination
@@ -1380,17 +1382,15 @@ public final class Utilities {
    * Check the existence of buckets according to bucket specification. Create empty buckets if
    * needed.
    *
-   * @param specPath
-   *          The final path where the dynamic partitions should be in.
-   * @param conf
-   *          FileSinkDesc.
-   * @param dpCtx
-   *          dynamic partition context.
+   * @param hconf
+   * @param paths A list of empty buckets to create
+   * @param conf The definition of the FileSink.
+   * @param reporter The mapreduce reporter object
    * @throws HiveException
    * @throws IOException
    */
   private static void createEmptyBuckets(Configuration hconf, ArrayList<String> paths,
-      FileSinkDesc conf)
+      FileSinkDesc conf, Reporter reporter)
       throws HiveException, IOException {
 
     JobConf jc;
@@ -1420,7 +1420,8 @@ public final class Utilities {
     for (String p : paths) {
       Path path = new Path(p);
       RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
-          jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), path);
+          jc, hiveOutputFormat, outputClass, isCompressed,
+          tableInfo.getProperties(), path, reporter);
       writer.close(false);
       LOG.info("created empty bucket for enforcing bucketing at " + path);
     }

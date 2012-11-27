@@ -95,11 +95,12 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     // all other tables are small, and are cached in the hash table
     posBigTable = conf.getPosBigTable();
 
-    emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
+    emptyList = new RowContainer<ArrayList<Object>>(1, hconf, reporter);
 
     RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
         rowContainerStandardObjectInspectors.get((byte) posBigTable),
-        order[posBigTable], joinCacheSize,spillTableDesc, conf, !hasFilter(posBigTable));
+        order[posBigTable], joinCacheSize,spillTableDesc, conf,
+        !hasFilter(posBigTable), reporter);
     storage.put((byte) posBigTable, bigPosRC);
 
     mapJoinRowsKey = HiveConf.getIntVar(hconf,

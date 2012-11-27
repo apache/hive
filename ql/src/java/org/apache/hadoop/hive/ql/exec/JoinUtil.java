@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -375,7 +376,7 @@ public class JoinUtil {
   public static RowContainer getRowContainer(Configuration hconf,
       List<ObjectInspector> structFieldObjectInspectors,
       Byte alias,int containerSize, Map<Byte, TableDesc> spillTableDesc,
-      JoinDesc conf,boolean noFilter) throws HiveException {
+      JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
 
     TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);
     SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
@@ -384,7 +385,7 @@ public class JoinUtil {
       containerSize = -1;
     }
 
-    RowContainer rc = new RowContainer(containerSize, hconf);
+    RowContainer rc = new RowContainer(containerSize, hconf, reporter);
     StructObjectInspector rcOI = null;
     if (tblDesc != null) {
       // arbitrary column names used internally for serializing to spill table

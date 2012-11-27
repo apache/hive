@@ -116,11 +116,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     for (Byte alias : order) {
       RowContainer rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get(storePos),
-          alias, bucketSize,spillTableDesc, conf, !hasFilter(storePos));
+          alias, bucketSize,spillTableDesc, conf, !hasFilter(storePos),
+          reporter);
       nextGroupStorage[storePos] = rc;
       RowContainer candidateRC = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors.get((byte)storePos),
-          alias,bucketSize,spillTableDesc, conf, !hasFilter(storePos));
+          alias,bucketSize,spillTableDesc, conf, !hasFilter(storePos),
+          reporter);
       candidateStorage[alias] = candidateRC;
       storePos++;
     }

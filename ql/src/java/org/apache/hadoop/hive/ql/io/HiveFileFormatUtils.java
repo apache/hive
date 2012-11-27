@@ -46,6 +46,7 @@ import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -213,7 +214,7 @@ public final class HiveFileFormatUtils {
 
   public static RecordWriter getHiveRecordWriter(JobConf jc,
       TableDesc tableInfo, Class<? extends Writable> outputClass,
-      FileSinkDesc conf, Path outPath) throws HiveException {
+      FileSinkDesc conf, Path outPath, Reporter reporter) throws HiveException {
     try {
       HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo
           .getOutputFileFormatClass().newInstance();
@@ -234,7 +235,7 @@ public final class HiveFileFormatUtils {
         }
       }
       return getRecordWriter(jc_output, hiveOutputFormat, outputClass,
-          isCompressed, tableInfo.getProperties(), outPath);
+          isCompressed, tableInfo.getProperties(), outPath, reporter);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -243,10 +244,11 @@ public final class HiveFileFormatUtils {
   public static RecordWriter getRecordWriter(JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat,
       final Class<? extends Writable> valueClass, boolean isCompressed,
-      Properties tableProp, Path outPath) throws IOException, HiveException {
+      Properties tableProp, Path outPath, Reporter reporter
+      ) throws IOException, HiveException {
     if (hiveOutputFormat != null) {
       return hiveOutputFormat.getHiveRecordWriter(jc, outPath, valueClass,
-          isCompressed, tableProp, null);
+          isCompressed, tableProp, reporter);
     }
     return null;
   }
