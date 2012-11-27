@@ -21,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
@@ -92,5 +94,15 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public String getJobLauncherHttpAddress(Configuration conf) {
     return conf.get("mapred.job.tracker.http.address");
+  }
+
+  @Override
+  public long getDefaultBlockSize(FileSystem fs, Path path) {
+    return fs.getDefaultBlockSize();
+  }
+
+  @Override
+  public short getDefaultReplication(FileSystem fs, Path path) {
+    return fs.getDefaultReplication();
   }
 }
