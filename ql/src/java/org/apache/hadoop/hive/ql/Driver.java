@@ -845,20 +845,6 @@ public class Driver implements CommandProcessor {
   }
 
   /**
-   * Release all the locks acquired implicitly by the statement. Note that the locks acquired with
-   * 'keepAlive' set to True are not released.
-   **/
-  private void releaseLocks() {
-    if (ctx != null && ctx.getHiveLockMgr() != null) {
-      try {
-        ctx.getHiveLockMgr().close();
-        ctx.setHiveLocks(null);
-      } catch (LockException e) {
-      }
-    }
-  }
-
-  /**
    * @param hiveLocks
    *          list of hive locks to be released Release all the locks specified. If some of the
    *          locks have already been released, ignore them
@@ -1488,7 +1474,18 @@ public class Driver implements CommandProcessor {
   }
 
   public void destroy() {
-    releaseLocks();
+    if (ctx != null) {
+      releaseLocks(ctx.getHiveLocks());
+    }
+
+    if (hiveLockMgr != null) {
+      try {
+        hiveLockMgr.close();
+      } catch(LockException e) {
+        LOG.warn("Exception in closing hive lock manager. "
+            + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
+    }
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
