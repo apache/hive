@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.IOException;
 import java.lang.Integer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,6 +25,7 @@ import java.net.URL;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.shims.HadoopShims.JobTrackerState;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -125,5 +127,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return fs.getDefaultReplication(path);
   }
 
-
+  @Override
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException {
+    return Trash.moveToAppropriateTrash(fs, path, conf);
+  }
 }

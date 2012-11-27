@@ -582,4 +582,8 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public long getDefaultBlockSize(FileSystem fs, Path path);
+
+  @Override
+  abstract public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException;
 }
