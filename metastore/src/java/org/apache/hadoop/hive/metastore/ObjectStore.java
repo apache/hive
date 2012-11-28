@@ -4566,15 +4566,15 @@ public class ObjectStore implements RawStore, Configurable {
         colType.equalsIgnoreCase("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls(mStatsObj.getNumNulls());
-      longStats.setHighValue(mStatsObj.getHighValueAsLong());
-      longStats.setLowValue(mStatsObj.getLowValueAsLong());
+      longStats.setHighValue(mStatsObj.getLongHighValue());
+      longStats.setLowValue(mStatsObj.getLongLowValue());
       longStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setLongStats(longStats);
    } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
      doubleStats.setNumNulls(mStatsObj.getNumNulls());
-     doubleStats.setHighValue(mStatsObj.getHighValueAsDouble());
-     doubleStats.setLowValue(mStatsObj.getLowValueAsDouble());
+     doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
+     doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
      doubleStats.setNumDVs(mStatsObj.getNumDVs());
      colStatsData.setDoubleStats(doubleStats);
    }
@@ -4695,9 +4695,11 @@ public class ObjectStore implements RawStore, Configurable {
 
       if (oldStatsObj != null) {
        oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
-       oldStatsObj.setHighValue(mStatsObj.getHighValue());
+       oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
+       oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
        oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
-       oldStatsObj.setLowValue(mStatsObj.getLowValue());
+       oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
+       oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
        oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
        oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
        oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
@@ -4740,15 +4742,15 @@ public class ObjectStore implements RawStore, Configurable {
         colType.equalsIgnoreCase("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls(mStatsObj.getNumNulls());
-      longStats.setHighValue(mStatsObj.getHighValueAsLong());
-      longStats.setLowValue(mStatsObj.getLowValueAsLong());
+      longStats.setHighValue(mStatsObj.getLongHighValue());
+      longStats.setLowValue(mStatsObj.getLongLowValue());
       longStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setLongStats(longStats);
    } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
      doubleStats.setNumNulls(mStatsObj.getNumNulls());
-     doubleStats.setHighValue(mStatsObj.getHighValueAsDouble());
-     doubleStats.setLowValue(mStatsObj.getLowValueAsDouble());
+     doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
+     doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
      doubleStats.setNumDVs(mStatsObj.getNumDVs());
      colStatsData.setDoubleStats(doubleStats);
    }
@@ -4817,9 +4819,11 @@ public class ObjectStore implements RawStore, Configurable {
                                                                partName, partVal, colName);
     if (oldStatsObj != null) {
       oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
-      oldStatsObj.setHighValue(mStatsObj.getHighValue());
+      oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
+      oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
       oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
-      oldStatsObj.setLowValue(mStatsObj.getLowValue());
+      oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
+      oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
       oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
       oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());

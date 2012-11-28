@@ -475,6 +475,58 @@ CREATE TABLE "SKEWED_VALUES" (
 );
 
 
+--
+-- Name: TAB_COL_STATS Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE TABLE "TAB_COL_STATS" (
+ "CS_ID" bigint NOT NULL,
+ "DB_NAME" character varying(128) DEFAULT NULL::character varying,
+ "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+ "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
+ "TBL_ID" bigint NOT NULL,
+ "LONG_LOW_VALUE" bigint,
+ "LONG_HIGH_VALUE" bigint,
+ "DOUBLE_LOW_VALUE" double precision,
+ "DOUBLE_HIGH_VALUE" double precision,
+ "BIG_DECIMAL_LOW_VALUE" character varying(4000) DEFAULT NULL::character varying,
+ "BIG_DECIMAL_HIGH_VALUE" character varying(4000) DEFAULT NULL::character varying,
+ "NUM_NULLS" bigint NOT NULL,
+ "NUM_DISTINCTS" bigint,
+ "AVG_COL_LEN" double precision,
+ "MAX_COL_LEN" bigint,
+ "NUM_TRUES" bigint,
+ "NUM_FALSES" bigint,
+ "LAST_ANALYZED" bigint NOT NULL
+);
+
+--
+-- Name: PART_COL_STATS Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE TABLE "PART_COL_STATS" (
+ "CS_ID" bigint NOT NULL,
+ "DB_NAME" character varying(128) DEFAULT NULL::character varying,
+ "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
+ "PART_NAME" character varying(767) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
+ "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
+ "PART_ID" bigint NOT NULL,
+ "LONG_LOW_VALUE" bigint,
+ "LONG_HIGH_VALUE" bigint,
+ "DOUBLE_LOW_VALUE" double precision,
+ "DOUBLE_HIGH_VALUE" double precision,
+ "BIG_DECIMAL_LOW_VALUE" character varying(4000) DEFAULT NULL::character varying,
+ "BIG_DECIMAL_HIGH_VALUE" character varying(4000) DEFAULT NULL::character varying,
+ "NUM_NULLS" bigint NOT NULL,
+ "NUM_DISTINCTS" bigint,
+ "AVG_COL_LEN" double precision,
+ "MAX_COL_LEN" bigint,
+ "NUM_TRUES" bigint,
+ "NUM_FALSES" bigint,
+ "LAST_ANALYZED" bigint NOT NULL
+);
 
 --
 -- Name: BUCKETING_COLS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
@@ -772,6 +824,16 @@ ALTER TABLE ONLY "SKEWED_VALUES"
     ADD CONSTRAINT "SKEWED_VALUES_pkey" PRIMARY KEY ("SD_ID_OID", "INTEGER_IDX");
 
 --
+-- Name: TAB_COL_STATS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+ALTER TABLE ONLY "TAB_COL_STATS" ADD CONSTRAINT "TAB_COL_STATS_pkey" PRIMARY KEY("CS_ID");
+
+--
+-- Name: PART_COL_STATS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+ALTER TABLE ONLY "PART_COL_STATS" ADD CONSTRAINT "PART_COL_STATS_pkey" PRIMARY KEY("CS_ID");
+
+--
 -- Name: UNIQUEINDEX; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1035,6 +1097,17 @@ CREATE INDEX "TBL_PRIVS_N49" ON "TBL_PRIVS" USING btree ("TBL_ID");
 
 CREATE INDEX "TYPE_FIELDS_N49" ON "TYPE_FIELDS" USING btree ("TYPE_NAME");
 
+--
+-- Name: TAB_COL_STATS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "TAB_COL_STATS_N49" ON "TAB_COL_STATS" USING btree ("TBL_ID");
+
+--
+-- Name: PART_COL_STATS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "PART_COL_STATS_N49" ON "PART_COL_STATS" USING btree ("PART_ID");
 
 
 ALTER TABLE ONLY "SKEWED_STRING_LIST_VALUES"
@@ -1281,6 +1354,16 @@ ALTER TABLE ONLY "TBL_PRIVS"
 ALTER TABLE ONLY "TYPE_FIELDS"
     ADD CONSTRAINT "TYPE_FIELDS_TYPE_NAME_fkey" FOREIGN KEY ("TYPE_NAME") REFERENCES "TYPES"("TYPES_ID") DEFERRABLE;
 
+--
+-- Name: TAB_COL_STATS_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+ALTER TABLE ONLY "TAB_COL_STATS" ADD CONSTRAINT "TAB_COL_STATS_fkey" FOREIGN KEY("TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+
+--
+-- Name: PART_COL_STATS_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
+--
+ALTER TABLE ONLY "PART_COL_STATS" ADD CONSTRAINT "PART_COL_STATS_fkey" FOREIGN KEY("PART_ID") REFERENCES "PARTITIONS"("PART_ID") DEFERRABLE;
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: hiveuser
