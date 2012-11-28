@@ -26,11 +26,11 @@ USE db2;
 CREATE TABLE result(col1 STRING);
 INSERT OVERWRITE TABLE result SELECT 'db2_insert1' FROM default.src LIMIT 1;
 INSERT INTO TABLE result SELECT 'db2_insert2' FROM default.src LIMIT 1;
-SELECT * FROM result;
+SELECT * FROM result order by col1;
 
 USE default;
 CREATE DATABASE db1;
 CREATE TABLE db1.result(col1 STRING);
 INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1;
 INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT 1;
-SELECT * FROM db1.result;
+SELECT * FROM db1.result order by col1;
