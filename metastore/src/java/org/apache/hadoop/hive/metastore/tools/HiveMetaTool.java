@@ -438,15 +438,11 @@ public class HiveMetaTool {
         }
 
         /*
-         * validate input - if the old uri contains a valid port, the new uri
-         * should contain a valid port as well. Both new and old uri should
-         * contain valid host names and valid schemes.
+         * validate input - Both new and old URI should contain valid host names and valid schemes.
+         * port is optional in both the URIs since HDFS HA NN URI doesn't have a port.
          */
           if (oldURI.getHost() == null || newURI.getHost() == null) {
             System.err.println("HiveMetaTool:A valid host is required in both old-loc and new-loc");
-          } else if (oldURI.getPort() > 0 && newURI.getPort() < 0) {
-            System.err.println("HiveMetaTool:old-loc has a valid port, new-loc should " +
-                "also contain a valid port");
           } else if (oldURI.getScheme() == null || newURI.getScheme() == null) {
             System.err.println("HiveMetaTool:A valid scheme is required in both old-loc and new-loc");
           } else {
