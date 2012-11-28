@@ -21,7 +21,6 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
-import java.nio.ByteBuffer;
 
 
 /**
@@ -39,8 +38,10 @@ public class MTableColumnStatistics {
   private String colName;
   private String colType;
 
-  private byte[] lowValue;
-  private byte[] highValue;
+  private long longLowValue;
+  private long longHighValue;
+  private double doubleLowValue;
+  private double doubleHighValue;
   private long numNulls;
   private long numDVs;
   private double avgColLen;
@@ -83,46 +84,9 @@ public class MTableColumnStatistics {
     this.colType = colType;
   }
 
-  public byte[] getLowValue() {
-    return lowValue;
-  }
-
-  public long getLowValueAsLong() {
-    ByteBuffer byteBuf = ByteBuffer.wrap(lowValue);
-    return byteBuf.getLong();
-  }
-
-  public double getLowValueAsDouble() {
-    ByteBuffer byteBuf = ByteBuffer.wrap(lowValue);
-    return byteBuf.getDouble();
-  }
-
-  public byte[] getHighValue() {
-    return highValue;
-  }
-
-  public long getHighValueAsLong() {
-    ByteBuffer byteBuf = ByteBuffer.wrap(highValue);
-    return byteBuf.getLong();
-  }
-
-  public double getHighValueAsDouble() {
-    ByteBuffer byteBuf = ByteBuffer.wrap(highValue);
-    return byteBuf.getDouble();
-  }
-
-  public void setHighValue(byte[] b) {
-    this.highValue = b;
-  }
-
-  public void setLowValue(byte[] b) {
-    this.lowValue = b;
-  }
-
   public long getNumNulls() {
     return numNulls;
   }
-
 
   public void setNumNulls(long numNulls) {
     this.numNulls = numNulls;
@@ -193,19 +157,15 @@ public class MTableColumnStatistics {
   public void setLongStats(long numNulls, long numNDVs, long lowValue, long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    byte[] bytes = ByteBuffer.allocate(Long.SIZE/8).putLong(lowValue).array();
-    this.lowValue = bytes;
-    bytes = ByteBuffer.allocate(Long.SIZE/8).putLong(highValue).array();
-    this.highValue = bytes;
+    this.longLowValue = lowValue;
+    this.longHighValue = highValue;
   }
 
   public void setDoubleStats(long numNulls, long numNDVs, double lowValue, double highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    byte[] bytes = ByteBuffer.allocate(Double.SIZE/8).putDouble(lowValue).array();
-    this.lowValue = bytes;
-    bytes = ByteBuffer.allocate(Double.SIZE/8).putDouble(highValue).array();
-    this.highValue = bytes;
+    this.doubleLowValue = lowValue;
+    this.doubleHighValue = highValue;
   }
 
   public void setStringStats(long numNulls, long numNDVs, long maxColLen, double avgColLen) {
@@ -219,5 +179,37 @@ public class MTableColumnStatistics {
     this.numNulls = numNulls;
     this.maxColLen = maxColLen;
     this.avgColLen = avgColLen;
+  }
+
+  public long getLongLowValue() {
+    return longLowValue;
+  }
+
+  public void setLongLowValue(long longLowValue) {
+    this.longLowValue = longLowValue;
+  }
+
+  public long getLongHighValue() {
+    return longHighValue;
+  }
+
+  public void setLongHighValue(long longHighValue) {
+    this.longHighValue = longHighValue;
+  }
+
+  public double getDoubleLowValue() {
+    return doubleLowValue;
+  }
+
+  public void setDoubleLowValue(double doubleLowValue) {
+    this.doubleLowValue = doubleLowValue;
+  }
+
+  public double getDoubleHighValue() {
+    return doubleHighValue;
+  }
+
+  public void setDoubleHighValue(double doubleHighValue) {
+    this.doubleHighValue = doubleHighValue;
   }
 }

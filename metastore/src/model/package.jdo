@@ -775,11 +775,17 @@
       <field name="colType">
         <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
-      <field name="lowValue">
-        <column name="LOW_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      <field name="longLowValue">
+        <column name="LONG_LOW_VALUE"  jdbc-type="BIGINT" allows-null="true"/>
       </field>
-      <field name="highValue">
-        <column name="HIGH_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      <field name="longHighValue">
+        <column name="LONG_HIGH_VALUE" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+       <field name="doubleLowValue">
+        <column name="DOUBLE_LOW_VALUE"  jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="doubleHighValue">
+        <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
@@ -815,6 +821,9 @@
       <field name="tableName">
         <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
+      <field name="partitionName">
+        <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
       <field name="partition">
         <column name="PART_ID"/>
       </field>
@@ -824,11 +833,17 @@
       <field name="colType">
         <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
-      <field name="lowValue">
-        <column name="LOW_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      <field name="longLowValue">
+        <column name="LONG_LOW_VALUE"  jdbc-type="BIGINT" allows-null="true"/>
       </field>
-      <field name="highValue">
-        <column name="HIGH_VALUE" jdbc-type="LONGVARBINARY" allows-null="true"/>
+      <field name="longHighValue">
+        <column name="LONG_HIGH_VALUE" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+       <field name="doubleLowValue">
+        <column name="DOUBLE_LOW_VALUE"  jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="doubleHighValue">
+        <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
