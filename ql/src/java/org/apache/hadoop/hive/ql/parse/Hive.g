@@ -1899,7 +1899,7 @@ groupingSetExpression
    |
    LPAREN
    RPAREN
-   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression*)
+   -> ^(TOK_GROUPING_SETS_EXPRESSION)
    ;
 
 
