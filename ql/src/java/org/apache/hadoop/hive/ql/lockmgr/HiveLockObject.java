@@ -118,6 +118,10 @@ public class HiveLockObject {
     this(new String[] { par.getName() }, lockData);
   }
 
+  public String[] getPaths() {
+    return pathNames;
+  }
+
   public String getName() {
     if (this.pathNames == null) {
       return null;
