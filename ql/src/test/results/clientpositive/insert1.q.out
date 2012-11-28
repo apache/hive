@@ -668,11 +668,11 @@ POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: result.col1 SIMPLE []
 POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: SELECT * FROM result
+PREHOOK: query: SELECT * FROM result order by col1
 PREHOOK: type: QUERY
 PREHOOK: Input: db2@result
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM result
+POSTHOOK: query: SELECT * FROM result order by col1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db2@result
 #### A masked pattern was here ####
@@ -734,11 +734,11 @@ POSTHOOK: Lineage: result.col1 SIMPLE []
 POSTHOOK: Lineage: result.col1 SIMPLE []
 POSTHOOK: Lineage: result.col1 SIMPLE []
 POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: SELECT * FROM db1.result
+PREHOOK: query: SELECT * FROM db1.result order by col1
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@result
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1.result
+POSTHOOK: query: SELECT * FROM db1.result order by col1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@result
 #### A masked pattern was here ####
