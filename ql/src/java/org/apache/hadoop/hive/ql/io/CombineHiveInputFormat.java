@@ -556,7 +556,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     public void addPath(Path p) {
-      String pString = p.toUri().getPath().toString();
+      String pString = p.toUri().getPath();
       pStrings.add(pString);
     }
 
@@ -565,7 +565,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public boolean accept(Path path) {
       boolean find = false;
       while (path != null && !find) {
-        if(pStrings.contains(path.toString())) {
+         if(pStrings.contains(path.toUri().getPath())) {
           find = true;
           break;
         }
