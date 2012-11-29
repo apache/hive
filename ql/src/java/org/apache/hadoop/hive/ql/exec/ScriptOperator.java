@@ -81,6 +81,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   transient RecordWriter scriptOutWriter = null;
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING = "Broken pipe";
+  static final String IO_EXCEPTION_STREAM_CLOSED = "Stream closed";
   static final String IO_EXCEPTION_PIPE_ENDED_WIN = "The pipe has been ended";
   static final String IO_EXCEPTION_PIPE_CLOSED_WIN = "The pipe is being closed";
 
@@ -253,7 +254,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       return errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_CLOSED_WIN) ||
           errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_ENDED_WIN);
     }
-    return (e.getMessage().equalsIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING));
+    return (e.getMessage().equalsIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) ||
+            e.getMessage().equalsIgnoreCase(IO_EXCEPTION_STREAM_CLOSED));
   }
 
   boolean allowPartialConsumption() {
