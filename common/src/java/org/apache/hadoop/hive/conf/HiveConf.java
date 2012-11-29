@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.conf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class HiveConf extends Configuration {
   protected String auxJars;
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
   private static URL hiveSiteURL = null;
-  private static URL confVarURL = null;
+  private static byte[] confVarByteArray = null;
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
 
@@ -789,35 +790,34 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * Writes the default ConfVars out to a temporary File and returns
-   * a URL pointing to the temporary file.
+   * Writes the default ConfVars out to a byte array and returns an input
+   * stream wrapping that byte array.
+   *
    * We need this in order to initialize the ConfVar properties
-   * in the underling Configuration object using the addResource(URL)
+   * in the underling Configuration object using the addResource(InputStream)
    * method.
    *
-   * Using Configuration.addResource(InputStream) would be a preferable
-   * approach, but it turns out that method is broken since Configuration
-   * tries to read the entire contents of the same InputStream repeatedly.
+   * It is important to use a LoopingByteArrayInputStream because it turns out
+   * addResource(InputStream) is broken since Configuration tries to read the
+   * entire contents of the same InputStream repeatedly without resetting it.
+   * LoopingByteArrayInputStream has special logic to handle this.
    */
-  private static synchronized URL getConfVarURL() {
-    if (confVarURL == null) {
+  private static synchronized InputStream getConfVarInputStream() {
+    if (confVarByteArray == null) {
       try {
         Configuration conf = new Configuration();
-        File confVarFile = File.createTempFile("hive-default-", ".xml");
-        confVarFile.deleteOnExit();
 
         applyDefaultNonNullConfVars(conf);
 
-        FileOutputStream fout = new FileOutputStream(confVarFile);
-        conf.writeXml(fout);
-        fout.close();
-        confVarURL = confVarFile.toURI().toURL();
+        ByteArrayOutputStream confVarBaos = new ByteArrayOutputStream();
+        conf.writeXml(confVarBaos);
+        confVarByteArray = confVarBaos.toByteArray();
       } catch (Exception e) {
         // We're pretty screwed if we can't load the default conf vars
         throw new RuntimeException("Failed to initialize default Hive configuration variables!", e);
       }
     }
-    return confVarURL;
+    return new LoopingByteArrayInputStream(confVarByteArray);
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {
@@ -982,7 +982,7 @@ public class HiveConf extends Configuration {
     origProp = getAllProperties();
 
     // Overlay the ConfVars. Note that this ignores ConfVars with null values
-    addResource(getConfVarURL());
+    addResource(getConfVarInputStream());
 
     // Overlay hive-site.xml if it exists
     if (hiveSiteURL != null) {
