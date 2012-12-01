@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +40,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -797,6 +798,19 @@ public class MetaStoreUtils {
       }
     }
     throw exc;
+  }
+
+  /**
+   * Finds a free port on the machine.
+   *
+   * @return
+   * @throws IOException
+   */
+  public static int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
   }
 
   /**

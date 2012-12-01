@@ -28,28 +28,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 /**
  * TestMetaStoreEventListener. Test case for
  * {@link org.apache.hadoop.hive.metastore.MetaStoreEndFunctionListener}
  */
 public class TestMetaStoreEndFunctionListener extends TestCase {
-  private static final String msPort = "20002";
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
   private Driver driver;
-
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[]{msPort});
-      } catch (Throwable e) {
-        e.printStackTrace(System.err);
-        assert false;
-      }
-    }
-  }
 
   @Override
   protected void setUp() throws Exception {
@@ -61,11 +48,10 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
         DummyPreListener.class.getName());
     System.setProperty("hive.metastore.end.function.listeners",
         DummyEndFunctionListener.class.getName());
-    Thread t = new Thread(new RunMS());
-    t.start();
-    Thread.sleep(40000);
+    int port = MetaStoreUtils.findFreePort();
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
