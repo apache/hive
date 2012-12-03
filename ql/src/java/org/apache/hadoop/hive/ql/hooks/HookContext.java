@@ -143,4 +143,7 @@ public class HookContext {
     this.hookType = hookType;
   }
 
+  public String getOperationName() {
+    return SessionState.get().getHiveOperation().name();
+  }
 }
