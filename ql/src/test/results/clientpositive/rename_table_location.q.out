@@ -1,0 +1,42 @@
+PREHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
+-- the table location scheme
+
+CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
+-- the table location scheme
+
+CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@rename_partition_table
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table PARTITION (part = '1') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table PARTITION (part = '1') SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table@part=1
+POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@rename_partition_table
+PREHOOK: Output: default@rename_partition_table
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@rename_partition_table
+POSTHOOK: Output: default@rename_partition_table
+POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- If the metastore attempts to change the scheme of the table back to the default pfile, it will get
+-- an exception related to the source and destination file systems not matching
+
+ALTER TABLE rename_partition_table RENAME TO rename_partition_table_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@rename_partition_table
+PREHOOK: Output: default@rename_partition_table
