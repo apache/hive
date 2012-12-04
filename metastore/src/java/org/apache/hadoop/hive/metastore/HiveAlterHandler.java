@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
 /**
  * Hive specific implementation of alter
@@ -127,7 +127,11 @@ public class HiveAlterHandler implements AlterHandler {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()), newt.getTableName()).toString();
+        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()),
+            newt.getTableName()).toString();
+        Path newTblPath = constructRenamedPath(new Path(newTblLoc),
+            new Path(newt.getSd().getLocation()));
+        newTblLoc = newTblPath.toString();
         newt.getSd().setLocation(newTblLoc);
         oldTblLoc = oldt.getSd().getLocation();
         moveData = true;
@@ -296,7 +300,7 @@ public class HiveAlterHandler implements AlterHandler {
         try {
           destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
-          destPath = constructRenamedPartitionPath(destPath, new_part);
+          destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug(e);
           throw new InvalidOperationException(
@@ -431,13 +435,13 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   /**
-   * Uses the scheme and authority of the partition's current location, and the path constructed
-   * using the partition's new name to construct a path for the partition's new location.
+   * Uses the scheme and authority of the object's current location and the path constructed
+   * using the object's new name to construct a path for the object's new location.
    */
-  private Path constructRenamedPartitionPath(Path defaultPath, Partition part) {
-    Path oldPath = new Path(part.getSd().getLocation());
-    URI oldUri = oldPath.toUri();
+  private Path constructRenamedPath(Path defaultNewPath, Path currentPath) {
+    URI currentUri = currentPath.toUri();
 
-    return new Path(oldUri.getScheme(), oldUri.getAuthority(), defaultPath.toUri().getPath());
+    return new Path(currentUri.getScheme(), currentUri.getAuthority(),
+        defaultNewPath.toUri().getPath());
   }
 }
