@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -256,11 +257,15 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       if (pspecs.isEmpty()) {
         // In case of a non-partitioned table, the key for temp storage is just
         // "tableName + taskID"
-        key = conf.getStatsAggPrefix() + taskID;
+        String keyPrefix = Utilities.getHashedStatsPrefix(
+            conf.getStatsAggPrefix(), conf.getMaxStatsKeyPrefixLength());
+        key = keyPrefix + taskID;
       } else {
         // In case of a partition, the key for temp storage is
         // "tableName + partitionSpecs + taskID"
-        key = conf.getStatsAggPrefix() + pspecs + Path.SEPARATOR + taskID;
+        String keyPrefix = Utilities.getHashedStatsPrefix(
+            conf.getStatsAggPrefix() + pspecs + Path.SEPARATOR, conf.getMaxStatsKeyPrefixLength());
+        key = keyPrefix + taskID;
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));

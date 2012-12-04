@@ -7339,6 +7339,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       tsDesc.setGatherStats(true);
       tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+      tsDesc.setMaxStatsKeyPrefixLength(
+          conf.getIntVar(HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
 
       // append additional virtual columns for storing statistics
       Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();

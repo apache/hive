@@ -860,11 +860,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (fspKey == "") {
         // for non-partitioned/static partitioned table, the key for temp storage is
         // common key prefix + static partition spec + taskID
-        key = conf.getStatsAggPrefix() + spSpec + taskID;
+        String keyPrefix = Utilities.getHashedStatsPrefix(
+            conf.getStatsAggPrefix() + spSpec, conf.getMaxStatsKeyPrefixLength());
+        key = keyPrefix + taskID;
       } else {
         // for partitioned table, the key is
         // common key prefix + static partition spec + DynamicPartSpec + taskID
-        key = conf.getStatsAggPrefix() + spSpec + fspKey + Path.SEPARATOR + taskID;
+        String keyPrefix = Utilities.getHashedStatsPrefix(
+            conf.getStatsAggPrefix() + spSpec + fspKey + Path.SEPARATOR,
+            conf.getMaxStatsKeyPrefixLength());
+        key = keyPrefix + taskID;
       }
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {

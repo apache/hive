@@ -43,6 +43,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -1989,6 +1991,29 @@ public final class Utilities {
     } else {
       return null;
     }
+  }
+
+  /**
+   * If statsPrefix's length is greater than maxPrefixLength and maxPrefixLength > 0,
+   * then it returns an MD5 hash of statsPrefix followed by path separator, otherwise
+   * it returns statsPrefix
+   *
+   * @param statsPrefix
+   * @param maxPrefixLength
+   * @return
+   */
+  public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
+    String ret = statsPrefix;
+    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
+      try {
+        MessageDigest digester = MessageDigest.getInstance("MD5");
+        digester.update(statsPrefix.getBytes());
+        ret = new String(digester.digest()) + Path.SEPARATOR;
+      } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return ret;
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {

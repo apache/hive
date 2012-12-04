@@ -1096,6 +1096,17 @@
 </property>
 
 <property>
+  <name>hive.stats.key.prefix.max.length</name>
+  <value>200</value>
+  <description>
+    Determines if when the prefix of the key used for intermediate stats collection
+    exceeds a certain length, a hash of the key is used instead.  If the value < 0 then hashing
+    is never used, if the value >= 0 then hashing is used only when the key prefixes length
+    exceeds that value.  The key prefix is defined as everything preceding the task ID in the key.
+  </description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

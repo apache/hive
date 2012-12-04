@@ -60,6 +60,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   transient private List<FileSinkDesc> linkedFileSinkDesc;
 
   private boolean statsReliable;
+  private int maxStatsKeyPrefixLength = -1;
 
   public FileSinkDesc() {
   }
@@ -107,6 +108,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setParentDir(parentDir);
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
+    ret.setMaxStatsKeyPrefixLength(maxStatsKeyPrefixLength);
     return (Object) ret;
   }
 
@@ -313,5 +315,13 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setLinkedFileSinkDesc(List<FileSinkDesc> linkedFileSinkDesc) {
     this.linkedFileSinkDesc = linkedFileSinkDesc;
+  }
+
+  public int getMaxStatsKeyPrefixLength() {
+    return maxStatsKeyPrefixLength;
+  }
+
+  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
+    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
   }
 }
