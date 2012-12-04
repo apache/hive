@@ -49,6 +49,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
    */
   private boolean gatherStats;
   private boolean statsReliable;
+  private int maxStatsKeyPrefixLength = -1;
 
   private ExprNodeDesc filterExpr;
 
@@ -139,5 +140,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setStatsReliable(boolean statsReliable) {
     this.statsReliable = statsReliable;
+  }
+
+  public int getMaxStatsKeyPrefixLength() {
+    return maxStatsKeyPrefixLength;
+  }
+
+  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
+    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
   }
 }

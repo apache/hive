@@ -306,6 +306,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       List<Partition> partitions = getPartitionsList();
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
+      int maxPrefixLength = HiveConf.getIntVar(conf,
+          HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH);
 
       if (partitions == null) {
         // non-partitioned tables:
@@ -325,9 +327,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
+          String aggKey = Utilities.getHashedStatsPrefix(work.getAggKey(), maxPrefixLength);
           updateStats(collectableStats, tblStats, statsAggregator, parameters,
-              work.getAggKey(), atomic);
-          statsAggregator.cleanUp(work.getAggKey());
+              aggKey, atomic);
+          statsAggregator.cleanUp(aggKey);
         }
         // The collectable stats for the aggregator needs to be cleared.
         // For eg. if a file is being loaded, the old number of rows are not valid
@@ -368,7 +371,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
           // In that case of a partition, the key for stats temporary store is
           // "rootDir/[dynamic_partition_specs/]%"
-          String partitionID = work.getAggKey() + Warehouse.makePartPath(partn.getSpec());
+          String partitionID = Utilities.getHashedStatsPrefix(
+              work.getAggKey() + Warehouse.makePartPath(partn.getSpec()), maxPrefixLength);
 
           LOG.info("Stats aggregator : " + partitionID);
 

@@ -257,6 +257,8 @@ public class GenMRFileSink1 implements NodeProcessor {
     nd.getConf().setGatherStats(true);
     mrWork.setGatheringStats(true);
     nd.getConf().setStatsReliable(hconf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+    nd.getConf().setMaxStatsKeyPrefixLength(
+        hconf.getIntVar(HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
     // mrWork.addDestinationTable(nd.getConf().getTableInfo().getTableName());
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
