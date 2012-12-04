@@ -190,6 +190,16 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     return fetchSize;
   }
 
+  public <T> T getObject(String columnLabel, Class<T> type)  throws SQLException {
+    //JDK 1.7
+        throw new SQLException("Method not supported");
+  }
+
+  public <T> T getObject(int columnIndex, Class<T> type)  throws SQLException {
+    //JDK 1.7
+        throw new SQLException("Method not supported");
+  }
+
   /**
    * Convert a LazyObject to a standard Java object in compliance with JDBC 3.0 (see JDBC 3.0
    * Specification, Table B-3: Mapping from JDBC Types to Java Object Types).
@@ -207,4 +217,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
     return obj;
   }
+
 }
+

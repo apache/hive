@@ -117,6 +117,11 @@ public class HiveStatement implements java.sql.Statement {
     isClosed = true;
   }
 
+  public void closeOnCompletion() throws SQLException {
+     // JDK 1.7
+     throw new SQLException("Method not supported");
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -398,6 +403,11 @@ public class HiveStatement implements java.sql.Statement {
 
   public boolean isClosed() throws SQLException {
     return isClosed;
+  }
+
+  public boolean isCloseOnCompletion() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
   }
 
   /*

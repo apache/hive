@@ -124,6 +124,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
             return false;
           }
         }
+
+        public <T> T getObject(String columnLabel, Class<T> type)
+            throws SQLException {
+          // JDK 1.7  
+          throw new SQLException("Method not supported");
+        }
+
+        public <T> T getObject(int columnIndex, Class<T> type)
+            throws SQLException {
+          // JDK 1.7  
+          throw new SQLException("Method not supported");
+        }
       };
     } catch (Exception e) {
       throw new SQLException(e);
@@ -138,6 +150,17 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
       String table, String columnNamePattern) throws SQLException {
     throw new SQLException("Method not supported");
   }
+
+  public ResultSet getPseudoColumns(String catalog, String schemaPattern, 
+       String tableNamePattern, String columnNamePattern) throws SQLException {
+    throw new SQLException("Method not supported");
+  }
+
+  public boolean generatedKeyAlwaysReturned() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
 
   /**
    * Convert a pattern containing JDBC catalog search wildcards into
@@ -255,6 +278,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
           } else {
             return false;
           }
+        }
+
+        public <T> T getObject(String columnLabel, Class<T> type)
+            throws SQLException {
+          // JDK 1.7  
+          throw new SQLException("Method not supported");
+        }
+
+        public <T> T getObject(int columnIndex, Class<T> type)
+            throws SQLException {
+          // JDK 1.7  
+          throw new SQLException("Method not supported");
         }
       };
     } catch (Exception e) {
@@ -514,6 +549,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
       public boolean next() throws SQLException {
         return false;
       }
+
+      public <T> T getObject(String columnLabel, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
+      public <T> T getObject(int columnIndex, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
     };
 
   }
@@ -562,6 +609,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
         } else {
           return false;
         }
+      }
+
+      public <T> T getObject(String columnLabel, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
+      public <T> T getObject(int columnIndex, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
       }
     };
     return result;
@@ -630,6 +689,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
         }
       }
 
+      public <T> T getObject(String columnLabel, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
+      public <T> T getObject(int columnIndex, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
     };
     return result;
   }
@@ -688,6 +759,18 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
       public boolean next() throws SQLException {
         return false;
+      }
+
+      public <T> T getObject(String columnLabel, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
+      public <T> T getObject(int columnIndex, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
       }
     };
   }
@@ -1086,4 +1169,6 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     System.out.println("DriverName: " + meta.getDriverName());
     System.out.println("DriverVersion: " + meta.getDriverVersion());
   }
+
 }
+
