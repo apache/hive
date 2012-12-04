@@ -277,6 +277,24 @@ public interface HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf);
 
   /**
+   * Get the default block size for the path. FileSystem alone is not sufficient to
+   * determine the same, as in case of CSMT the underlying file system determines that.
+   * @param fs
+   * @param path
+   * @return
+   */
+  public long getDefaultBlockSize(FileSystem fs, Path path);
+
+  /**
+   * Get the default replication for a path. In case of CSMT the given path will be used to
+   * locate the actual filesystem.
+   * @param fs
+   * @param path
+   * @return
+   */
+  public short getDefaultReplication(FileSystem fs, Path path);
+
+  /**
    * InputSplitShim.
    *
    */

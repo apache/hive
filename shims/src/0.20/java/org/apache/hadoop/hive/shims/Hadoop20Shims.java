@@ -589,6 +589,16 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public long getDefaultBlockSize(FileSystem fs, Path path) {
+    return fs.getDefaultBlockSize();
+  }
+
+  @Override
+  public short getDefaultReplication(FileSystem fs, Path path) {
+    return fs.getDefaultReplication();
+  }
+
+  @Override
   public void closeAllForUGI(UserGroupInformation ugi) {
     // No such functionality in ancient hadoop
     return;
