@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -729,6 +730,28 @@ public final class PlanUtils {
       val = val.substring(1, val.length() - 1);
     }
     return val;
+  }
+
+  /**
+   * Remove prefix from "Path -> Alias"
+   * This is required for testing.
+   * In order to verify that path is right, we need to display it in expected test result.
+   * But, mask pattern masks path with some patterns.
+   * So, we need to remove prefix from path which triggers mask pattern.
+   * @param origiKey
+   * @return
+   */
+  public static String removePrefixFromWarehouseConfig(String origiKey) {
+    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    if ((prefix != null) && (prefix.length() > 0)) {
+      //Local file system is using pfile:/// {@link ProxyLocalFileSystem}
+      prefix = prefix.replace("pfile:///", "pfile:/");
+      int index = origiKey.indexOf(prefix);
+      if (index > -1) {
+        origiKey = origiKey.substring(index + prefix.length());
+      }
+    }
+    return origiKey;
   }
 
   private PlanUtils() {

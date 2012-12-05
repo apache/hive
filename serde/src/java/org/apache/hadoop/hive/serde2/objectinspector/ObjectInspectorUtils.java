@@ -200,6 +200,26 @@ public final class ObjectInspectorUtils {
   }
 
   /**
+   * Copy fields in the input row to the output array of standard objects.
+   *
+   * @param result
+   *          output list of standard objects.
+   * @param row
+   *          input row.
+   * @param soi
+   *          Object inspector for the to-be-copied columns.
+   * @param objectInspectorOption
+   */
+  public static void copyToStandardObject(List<Object> result, Object row,
+      StructObjectInspector soi, ObjectInspectorCopyOption objectInspectorOption) {
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    for (StructField f : fields) {
+      result.add(copyToStandardObject(soi.getStructFieldData(row, f),
+          f.getFieldObjectInspector(), objectInspectorOption));
+    }
+  }
+
+  /**
    * Returns a deep copy of the Object o that can be scanned by a
    * StandardObjectInspector returned by getStandardObjectInspector(oi).
    */

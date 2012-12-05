@@ -252,7 +252,7 @@ public enum ErrorMsg {
   SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING(
       10199,
       "hive.mapred.supports.subdirectories must be true"
-          + " if any one of following is true: hive.internal.ddl.list.bucketing.enable,"
+          + " if any one of following is true: "
           + " hive.optimize.listbucketing and mapred.input.dir.recursive"),
   SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
@@ -270,9 +270,6 @@ public enum ErrorMsg {
   ALTER_TABLE_NOT_ALLOWED_RENAME_SKEWED_COLUMN(10207,
       " is a skewed column. It's not allowed to rename skewed column"
           + " or change skewed column type."),
- HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED(10208,
-              "List Bucketing DDL is not allowed to use since feature is not completed yet."),
-
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR(10209,
     "Grouping sets aggregations (with rollups or cubes) are not allowed if map-side " +
     " aggregation is turned off. Set hive.map.aggr=true if you want to use grouping sets"),

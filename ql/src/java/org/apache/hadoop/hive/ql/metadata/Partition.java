@@ -614,6 +614,10 @@ public class Partition implements Serializable {
     tPartition.setLastAccessTime(lastAccessTime);
   }
 
+  public boolean isStoredAsSubDirectories() {
+    return tPartition.getSd().isStoredAsSubDirectories();
+  }
+
   public List<List<String>> getSkewedColValues(){
     return tPartition.getSd().getSkewedInfo().getSkewedColValues();
   }

@@ -37,8 +37,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -263,7 +263,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 	tbd.getPartitionSpec(),
                 	tbd.getReplace(),
                 	dpCtx.getNumDPCols(),
-                	tbd.getHoldDDLTime());
+                	tbd.getHoldDDLTime(),
+                	isSkewedStoredAsDirs(tbd));
 
             if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
               throw new HiveException("This query creates no partitions." +
@@ -302,7 +303,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(), tbd.getInheritTableSpecs());
+                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
+                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd));
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
@@ -323,6 +325,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           + StringUtils.stringifyException(e));
       return (1);
     }
+  }
+
+  private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
+    return (tbd.getLbCtx() == null) ? false : tbd.getLbCtx()
+        .isSkewedStoredAsDir();
   }
 
   /*

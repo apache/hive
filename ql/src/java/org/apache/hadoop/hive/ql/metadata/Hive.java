@@ -28,6 +28,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -71,9 +73,11 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1116,7 +1120,7 @@ public class Hive {
 
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
-   * the partition with the contents of loadPath. - If he partition does not
+   * the partition with the contents of loadPath. - If the partition does not
    * exist - one is created - files in loadPath are moved into Hive. But the
    * directory itself is not removed.
    *
@@ -1135,7 +1139,7 @@ public class Hive {
    */
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
-      boolean inheritTableSpecs)
+      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir)
       throws HiveException {
     Table tbl = getTable(tableName);
     try {
@@ -1187,7 +1191,21 @@ public class Hive {
 
       // recreate the partition if it existed before
       if (!holdDDLTime) {
-        getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
+        Partition newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(),
+            inheritTableSpecs);
+        if (isSkewedStoreAsSubdir) {
+          org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
+          SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
+          /* Construct list bucketing location mappings from sub-directory name. */
+          Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
+              newPartPath, skewedInfo);
+          /* Add list bucketing location mappings. */
+          skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
+          newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
+          alterPartition(tbl.getTableName(), new Partition(tbl, newCreatedTpart));
+          newTPart = getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
+          newCreatedTpart = newTPart.getTPartition();
+        }
       }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -1195,9 +1213,95 @@ public class Hive {
     } catch (MetaException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
+    } catch (InvalidOperationException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
 
   }
+
+  /**
+ * Walk through sub-directory tree to construct list bucketing location map.
+ *
+ * @param fSta
+ * @param fSys
+ * @param skewedColValueLocationMaps
+ * @param newPartPath
+ * @param skewedInfo
+ * @throws IOException
+ */
+private void walkDirTree(FileStatus fSta, FileSystem fSys,
+    Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
+    throws IOException {
+  /* Base Case. It's leaf. */
+  if (!fSta.isDir()) {
+    /* construct one location map if not exists. */
+    constructOneLBLocationMap(fSta, skewedColValueLocationMaps, newPartPath, skewedInfo);
+    return;
+  }
+
+  /* dfs. */
+  FileStatus[] children = fSys.listStatus(fSta.getPath());
+  if (children != null) {
+    for (FileStatus child : children) {
+      walkDirTree(child, fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
+    }
+  }
+}
+
+/**
+ * Construct a list bucketing location map
+ * @param fSta
+ * @param skewedColValueLocationMaps
+ * @param newPartPath
+ * @param skewedInfo
+ */
+private void constructOneLBLocationMap(FileStatus fSta,
+    Map<List<String>, String> skewedColValueLocationMaps,
+    Path newPartPath, SkewedInfo skewedInfo) {
+  Path lbdPath = fSta.getPath().getParent();
+  List<String> skewedValue = new ArrayList<String>();
+  String lbDirName = FileUtils.unescapePathName(lbdPath.toString());
+  String partDirName = FileUtils.unescapePathName(newPartPath.toString());
+  String lbDirSuffix = lbDirName.replace(partDirName, "");
+  String[] dirNames = lbDirSuffix.split(Path.SEPARATOR);
+  for (String dirName : dirNames) {
+    if ((dirName != null) && (dirName.length() > 0)) {
+      // Construct skewed-value to location map except default directory.
+      // why? query logic knows default-dir structure and don't need to get from map
+        if (!dirName
+            .equalsIgnoreCase(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)) {
+        String[] kv = dirName.split("=");
+        if (kv.length == 2) {
+          skewedValue.add(kv[1]);
+        }
+      }
+    }
+  }
+  if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
+      && !skewedColValueLocationMaps.containsKey(skewedValue)) {
+    skewedColValueLocationMaps.put(skewedValue, lbDirName);
+  }
+}
+
+  /**
+   * Construct location map from path
+   *
+   * @param newPartPath
+   * @param skewedInfo
+   * @return
+   * @throws IOException
+   * @throws FileNotFoundException
+   */
+  private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
+      SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
+    Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
+    FileSystem fSys = newPartPath.getFileSystem(conf);
+    walkDirTree(fSys.getFileStatus(newPartPath), fSys, skewedColValueLocationMaps, newPartPath,
+        skewedInfo);
+    return skewedColValueLocationMaps;
+  }
+
 
   /**
    * Given a source directory name of the load path, load all dynamically generated partitions
@@ -1214,7 +1318,7 @@ public class Hive {
    */
   public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean holdDDLTime)
+      int numDP, boolean holdDDLTime, boolean listBucketingEnabled)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1263,7 +1367,8 @@ public class Hive {
         fullPartSpecs.add(fullPartSpec);
 
         // finally load the partition -- move the file to the final table address
-        loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true);
+        loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true,
+            listBucketingEnabled);
         LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
       }
       return fullPartSpecs;
@@ -2030,9 +2135,8 @@ public class Hive {
    * @param oldPath
    *          The directory where the old data location, need to be cleaned up.
    */
-  static protected void replaceFiles(Path srcf, Path destf, Path oldPath,
-      HiveConf conf) throws HiveException {
-
+  static protected void replaceFiles(Path srcf, Path destf, Path oldPath, HiveConf conf)
+      throws HiveException {
     try {
       FileSystem fs = srcf.getFileSystem(conf);
 

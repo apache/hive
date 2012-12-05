@@ -36,6 +36,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
  */
 public final class ListBucketingPrunerUtils {
 
+  /* Default list bucketing directory name. internal use only not for client. */
+  public static String HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME =
+      "HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME";
+  /* Default list bucketing directory key. internal use only not for client. */
+  public static String HIVE_LIST_BUCKETING_DEFAULT_KEY = "HIVE_DEFAULT_LIST_BUCKETING_KEY";
+
   /**
    * Decide if pruner skips the skewed directory
    * Input: if the skewed value matches the expression tree
@@ -280,9 +286,9 @@ public final class ListBucketingPrunerUtils {
     //   but, if unknown. not(c=3) will be unknown. we will choose default dir.
     // 3 all others, return false
     if (cellValueInPosition.equals(constantValueInFilter)
-        && !cellValueInPosition.equals(ListBucketingPruner.DEFAULT_SKEWED_KEY)) {
+        && !cellValueInPosition.equals(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY)) {
       result = Boolean.TRUE;
-    } else if (cellValueInPosition.equals(ListBucketingPruner.DEFAULT_SKEWED_KEY)
+    } else if (cellValueInPosition.equals(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY)
         && !uniqSkewedValuesInPosition.contains(constantValueInFilter)) {
       result = null;
     } else {

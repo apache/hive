@@ -1,5 +1,4 @@
 set hive.mapred.supports.subdirectories=true;
-set hive.internal.ddl.list.bucketing.enable=true;
 
 create table original (key STRING, value STRING); 
 

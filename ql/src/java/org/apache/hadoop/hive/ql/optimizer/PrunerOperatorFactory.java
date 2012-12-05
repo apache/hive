@@ -141,10 +141,14 @@ public abstract class PrunerOperatorFactory {
         TableScanOperator top, ExprNodeDesc new_pruner_pred, Partition part)
         throws UDFArgumentException {
       Map<String, ExprNodeDesc> oldPartToPruner = opToPrunner.get(top);
+      Map<String, ExprNodeDesc> partToPruner = null;
       ExprNodeDesc pruner_pred = null;
       if (oldPartToPruner == null) {
         pruner_pred = new_pruner_pred;
+        // create new mapping
+        partToPruner = new HashMap<String, ExprNodeDesc>();
       } else {
+        partToPruner = oldPartToPruner;
         ExprNodeDesc old_pruner_pred = oldPartToPruner.get(part.getName());
         if (old_pruner_pred != null) {
           // or the old_pruner_pred and the new_ppr_pred
@@ -156,8 +160,8 @@ public abstract class PrunerOperatorFactory {
       }
 
       // Put the mapping from part to pruner_pred
-      Map<String, ExprNodeDesc> partToPruner = new HashMap<String, ExprNodeDesc>();
       partToPruner.put(part.getName(), pruner_pred);
+
       // Put the mapping from table scan operator to part-pruner map
       opToPrunner.put(top, partToPruner);
 

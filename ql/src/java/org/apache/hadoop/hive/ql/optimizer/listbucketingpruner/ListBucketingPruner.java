@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
@@ -36,17 +35,12 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * The transformation step that does list bucketing pruning.
  *
  */
 public class ListBucketingPruner implements Transform {
-
-  public static final String DEFAULT_SKEWED_DIRECTORY = SessionState.get()
-      .getConf().getVar(ConfVars.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
-  public static final String DEFAULT_SKEWED_KEY = "HIVE_DEFAULT_LIST_BUCKETING_KEY";
   static final Log LOG = LogFactory.getLog(ListBucketingPruner.class.getName());
 
   /*
@@ -312,9 +306,12 @@ public class ListBucketingPruner implements Transform {
       // Handle skewed value.
       if (skewedValues.contains(cell)) { // if it is skewed value
         if ((matchResult == null) || matchResult) { // add directory to path unless value is false
-          assert (mappings.containsKey(cell)) : "Skewed location mappings doesn't have an entry "
-            + "for a skewed value: " + cell;
-          selectedPaths.add(new Path(mappings.get(cell)));
+          /* It's valid case if a partition: */
+          /* 1. is defined with skewed columns and skewed values in metadata */
+          /* 2. doesn't have all skewed values within its data */
+          if (mappings.get(cell) != null) {
+            selectedPaths.add(new Path(mappings.get(cell)));
+          }
         }
       } else {
         // Non-skewed value, add it to list for later handle on default directory.
@@ -344,8 +341,10 @@ public class ListBucketingPruner implements Transform {
       StringBuilder builder = new StringBuilder();
       builder.append(part.getLocation());
       builder.append(Path.SEPARATOR);
-      builder.append((FileUtils.makeDefaultListBucketingDirName(
-          part.getSkewedColNames(), SessionState.get().getConf())));
+      builder
+          .append((FileUtils.makeDefaultListBucketingDirName(
+              part.getSkewedColNames(),
+              ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)));
       selectedPaths.add(new Path(builder.toString()));
     }
   }
@@ -480,7 +479,7 @@ public class ListBucketingPruner implements Transform {
         throws SemanticException {
       // Calculate unique skewed elements for each skewed column.
       List<List<String>> uniqSkewedElements = DynamicMultiDimensionalCollection.uniqueElementsList(
-          values, DEFAULT_SKEWED_KEY);
+          values, ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
       // Calculate complete dynamic-multi-dimension collection.
       return DynamicMultiDimensionalCollection.flat(uniqSkewedElements);
     }

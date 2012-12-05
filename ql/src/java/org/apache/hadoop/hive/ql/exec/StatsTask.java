@@ -395,7 +395,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           }
 
           fileSys = partn.getPartitionPath().getFileSystem(conf);
-          fileStatus = Utilities.getFileStatusRecurse(partn.getPartitionPath(), 1, fileSys);
+          /* consider sub-directory created from list bucketing. */
+          int listBucketingDepth = calculateListBucketingDMLDepth(partn);
+          fileStatus = Utilities.getFileStatusRecurse(partn.getPartitionPath(),
+              (1 + listBucketingDepth), fileSys);
           newPartStats.setStat(StatsSetupConst.NUM_FILES, fileStatus.length);
 
           long partitionSize = 0L;
@@ -468,6 +471,28 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     // The return value of 0 indicates success,
     // anything else indicates failure
     return ret;
+  }
+
+  /**
+   * List bucketing will introduce sub-directories.
+   *
+   * calculate it here in order to go to the leaf directory
+   *
+   * so that we can count right number of files.
+   *
+   * @param partn
+   * @return
+   */
+  private int calculateListBucketingDMLDepth(Partition partn) {
+    // list bucketing will introduce more files
+    int listBucketingDepth = 0;
+    if ((partn.getSkewedColNames() != null) && (partn.getSkewedColNames().size() > 0)
+        && (partn.getSkewedColValues() != null) && (partn.getSkewedColValues().size() > 0)
+        && (partn.getSkewedColValueLocationMaps() != null)
+        && (partn.getSkewedColValueLocationMaps().size() > 0)) {
+      listBucketingDepth = partn.getSkewedColNames().size();
+    }
+    return listBucketingDepth;
   }
 
   private boolean existStats(Map<String, String> parameters) {

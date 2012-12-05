@@ -35,7 +35,6 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -56,8 +55,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -915,6 +915,28 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * Construct list bucketing context.
+   *
+   * @param skewedColNames
+   * @param skewedValues
+   * @param skewedColValueLocationMaps
+   * @param isStoredAsSubDirectories
+   * @return
+   */
+  protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
+      List<List<String>> skewedValues, Map<List<String>, String> skewedColValueLocationMaps,
+      boolean isStoredAsSubDirectories, HiveConf conf) {
+    ListBucketingCtx lbCtx = new ListBucketingCtx();
+    lbCtx.setSkewedColNames(skewedColNames);
+    lbCtx.setSkewedColValues(skewedValues);
+    lbCtx.setLbLocationMap(skewedColValueLocationMaps);
+    lbCtx.setStoredAsSubDirectories(isStoredAsSubDirectories);
+    lbCtx.setDefaultKey(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
+    lbCtx.setDefaultDirName(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
+    return lbCtx;
+  }
+
+  /**
    * Given a ASTNode, return list of values.
    *
    * use case:
@@ -1036,4 +1058,5 @@ public abstract class BaseSemanticAnalyzer {
     }
     return storedAsDirs;
   }
+
 }

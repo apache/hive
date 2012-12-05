@@ -1,5 +1,4 @@
 set hive.mapred.supports.subdirectories=true;
-set hive.internal.ddl.list.bucketing.enable=true;
 
 -- Load data can't work with table with stored as directories
 CREATE TABLE  if not exists stored_as_dirs_multiple (col1 STRING, col2 int, col3 STRING) 

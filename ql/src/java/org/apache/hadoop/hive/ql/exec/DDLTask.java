@@ -464,6 +464,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // merge work only needs input and output.
     MergeWork mergeWork = new MergeWork(mergeFilesDesc.getInputDir(),
         mergeFilesDesc.getOutputDir());
+    mergeWork.setListBucketingCtx(mergeFilesDesc.getLbCtx());
+    mergeWork.resolveConcatenateMerge(db.getConf());
+    mergeWork.setMapperCannotSpanPartns(true);
     DriverContext driverCxt = new DriverContext();
     BlockMergeTask taskExec = new BlockMergeTask();
     taskExec.initialize(db.getConf(), null, driverCxt);

@@ -537,23 +537,6 @@
 </property>
 
 <property>
-  <name>hive.exec.list.bucketing.default.dir</name>
-  <value>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</value>
-  <description>Default directory name used in list bucketing.
-    List bucketing feature will create sub-directory for each skewed-value and a default directory
-    for non-skewed value. This config specifies the default name for the default directory.
-    Sub-directory is created by list bucketing DML and under partition directory. User doesn't need 
-    to know how to construct the canonical path. It just gives user choice if they want to change 
-    the default directory name.
-    For example, there are 2 skewed column c1 and c2. 2 skewed value: (1,a) and (2,b). subdirectory:
-    <partition-dir>/c1=1/c2=a/
-    <partition-dir>/c1=2/c2=b/
-    <partition-dir>/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
-    Note: This config won't impact users if they don't list bucketing.
-</description>
-</property>
-
-<property>
   <name>hive.skewjoin.key</name>
   <value>100000</value>
   <description>Determine if we get a skew key in join. If we see more

@@ -161,6 +161,16 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
         HiveConf.ConfVars.HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS,
         work.hasDynamicPartitions());
 
+    HiveConf.setBoolVar(job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETING,
+        work.isListBucketingAlterTableConcatenate());
+
+    HiveConf.setIntVar(
+        job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH,
+        ((work.getListBucketingCtx() == null) ? 0 : work.getListBucketingCtx()
+            .calculateListBucketingLevel()));
+
     int returnVal = 0;
     RunningJob rj = null;
     boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,

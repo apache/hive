@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -34,6 +37,7 @@ import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 
 
@@ -209,8 +213,18 @@ public final class MetaDataFormatUtils {
       Map<List<String>, String> skewedColMap = storageDesc.getSkewedInfo()
           .getSkewedColValueLocationMaps();
       if ((skewedColMap!=null) && (skewedColMap.size() > 0)) {
-        formatOutput("Skewed Value to Location Mapping:", skewedColMap.toString(),
+        formatOutput("Skewed Value to Path:", skewedColMap.toString(),
             tableInfo);
+        Map<List<String>, String> truncatedSkewedColMap = new HashMap<List<String>, String>();
+        // walk through existing map to truncate path so that test won't mask it
+        // then we can verify location is right
+        Set<Entry<List<String>, String>> entries = skewedColMap.entrySet();
+        for (Entry<List<String>, String> entry : entries) {
+          truncatedSkewedColMap.put(entry.getKey(),
+              PlanUtils.removePrefixFromWarehouseConfig(entry.getValue()));
+        }
+        formatOutput("Skewed Value to Truncated Path:",
+            truncatedSkewedColMap.toString(), tableInfo);
       }
     }
 

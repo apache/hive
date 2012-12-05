@@ -18,13 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_CASCADE;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASECOMMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SHOWDATABASES;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -94,6 +89,7 @@ import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -1217,6 +1213,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Path oldTblPartLoc = null;
     Path newTblPartLoc = null;
     Table tblObj = null;
+    ListBucketingCtx lbCtx = null;
 
     try {
       tblObj = db.getTable(tableName);
@@ -1258,6 +1255,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               .getAuthority(), partPath.toUri().getPath());
 
           oldTblPartLoc = partPath;
+
+          lbCtx = constructListBucketingCtx(part.getSkewedColNames(), part.getSkewedColValues(),
+              part.getSkewedColValueLocationMaps(), part.isStoredAsSubDirectories(), conf);
         }
       } else {
         inputFormatClass = tblObj.getInputFormatClass();
@@ -1266,6 +1266,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         // input and output are the same
         oldTblPartLoc = tblObj.getPath();
         newTblPartLoc = tblObj.getPath();
+
+        lbCtx = constructListBucketingCtx(tblObj.getSkewedColNames(), tblObj.getSkewedColValues(),
+            tblObj.getSkewedColValueLocationMaps(), tblObj.isStoredAsSubDirectories(), conf);
       }
 
       // throw a HiveException for non-rcfile.
@@ -1290,6 +1293,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       mergeDesc.setInputDir(inputDir);
 
+      mergeDesc.setLbCtx(lbCtx);
+
       addInputsOutputsAlterTable(tableName, partSpec);
       DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
       ddlWork.setNeedLock(true);
@@ -1299,6 +1304,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       mergeDesc.setOutputDir(queryTmpdir);
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
+      ltd.setLbCtx(lbCtx);
       Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
           conf);
       mergeTask.addDependentTask(moveTsk);
@@ -2711,9 +2717,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
     HiveConf hiveConf = SessionState.get().getConf();
-    if (!(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))) {
-      throw new SemanticException(ErrorMsg.HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED.getMsg());
-    }
 
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
     Table tab = null;
@@ -2863,9 +2866,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
      * hive.internal.ddl.list.bucketing.enable set to false.
      */
     HiveConf hiveConf = SessionState.get().getConf();
-    if (!(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))) {
-      throw new SemanticException(ErrorMsg.HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED.getMsg());
-    }
     /**
      * Retrieve mappings from parser
      */

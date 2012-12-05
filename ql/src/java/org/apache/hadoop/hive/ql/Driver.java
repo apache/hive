@@ -969,8 +969,7 @@ public class Driver implements CommandProcessor {
   private boolean validateConfVariables() {
     boolean valid = true;
     if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES))
-        && ((conf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))
-            || (conf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE)) || (conf
+        && ((conf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE)) || (conf
               .getBoolVar(HiveConf.ConfVars.HIVEOPTLISTBUCKETING)))) {
       errorMessage = "FAILED: Hive Internal Error: "
           + ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getMsg();
