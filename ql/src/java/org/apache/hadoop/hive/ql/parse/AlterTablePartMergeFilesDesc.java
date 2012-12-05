@@ -23,13 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 
 @Explain(displayName = "Alter Table Partition Merge Files")
 public class AlterTablePartMergeFilesDesc {
-  
+
   private String tableName;
   private HashMap<String, String> partSpec;
-  
+  private ListBucketingCtx lbCtx; // context for list bucketing.
+
   private List<String> inputDir = new ArrayList<String>();
   private String outputDir = null;
 
@@ -71,6 +73,20 @@ public class AlterTablePartMergeFilesDesc {
 
   public void setInputDir(List<String> inputDir) {
     this.inputDir = inputDir;
+  }
+
+  /**
+   * @return the lbCtx
+   */
+  public ListBucketingCtx getLbCtx() {
+    return lbCtx;
+  }
+
+  /**
+   * @param lbCtx the lbCtx to set
+   */
+  public void setLbCtx(ListBucketingCtx lbCtx) {
+    this.lbCtx = lbCtx;
   }
 
 }

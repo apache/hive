@@ -22,12 +22,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.BitSet;
 import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-
 import org.apache.hadoop.util.Shell;
 
 
@@ -121,6 +120,47 @@ public final class FileUtils {
     return name.toString();
   }
 
+  /**
+   * default directory will have the same depth as number of skewed columns
+   * this will make future operation easy like DML merge, concatenate merge
+   * @param skewedCols
+   * @param name
+   * @return
+   */
+  public static String makeDefaultListBucketingDirName(List<String> skewedCols,
+      String name) {
+    String lbDirName;
+    String defaultDir = FileUtils.escapePathName(name);
+    StringBuilder defaultDirPath = new StringBuilder();
+    for (int i = 0; i < skewedCols.size(); i++) {
+      if (i > 0) {
+        defaultDirPath.append(Path.SEPARATOR);
+      }
+      defaultDirPath.append(defaultDir);
+    }
+    lbDirName = defaultDirPath.toString();
+    return lbDirName;
+  }
+
+  /**
+   * Makes a valid list bucketing directory name.
+   * @param lbCols The skewed keys' names
+   * @param vals The skewed values
+   * @return An escaped, valid list bucketing directory name.
+   */
+  public static String makeListBucketingDirName(List<String> lbCols, List<String> vals) {
+    StringBuilder name = new StringBuilder();
+    for (int i = 0; i < lbCols.size(); i++) {
+      if (i > 0) {
+        name.append(Path.SEPARATOR);
+      }
+      name.append(escapePathName((lbCols.get(i)).toLowerCase()));
+      name.append('=');
+      name.append(escapePathName(vals.get(i)));
+    }
+    return name.toString();
+  }
+
   // NOTE: This is for generating the internal path name for partitions. Users
   // should always use the MetaStore API to get the path name for a partition.
   // Users should not directly take partition values and turn it into a path
@@ -157,7 +197,7 @@ public final class FileUtils {
     for (char c : clist) {
       charToEscape.set(c);
     }
-    
+
     if(Shell.WINDOWS){
       //On windows, following chars need to be escaped as well
       char [] winClist = {' ', '<','>','|'};
@@ -255,29 +295,6 @@ public final class FileUtils {
     } else {
       results.add(fileStatus);
     }
-  }
-
-  /**
-   * default directory will have the same depth as number of skewed columns
-   * this will make future operation easy like DML merge, concatenate merge
-   * @param skewedCols
-   * @param hconf
-   * @return
-   */
-  public static String makeDefaultListBucketingDirName(List<String> skewedCols,
-      Configuration hconf) {
-    String lbDirName;
-    String defaultDir = FileUtils.escapePathName(HiveConf.getVar(hconf,
-        HiveConf.ConfVars.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME));
-    StringBuilder defaultDirPath = new StringBuilder();
-    for (int i = 0; i < skewedCols.size(); i++) {
-      if (i > 0) {
-        defaultDirPath.append(Path.SEPARATOR);
-      }
-      defaultDirPath.append(defaultDir);
-    }
-    lbDirName = defaultDirPath.toString();
-    return lbDirName;
   }
 
 }

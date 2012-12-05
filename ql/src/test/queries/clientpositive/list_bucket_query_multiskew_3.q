@@ -1,5 +1,4 @@
 set hive.mapred.supports.subdirectories=true;
-set hive.internal.ddl.list.bucketing.enable=true;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -18,71 +17,41 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 -- 1. pruner only pick up right directory
 -- 2. query result is right
 
--- create 2 tables: fact_daily and fact_daily
--- fact_daily will be used for list bucketing query
--- fact_daily is a table used to prepare data and test directories		
-CREATE TABLE fact_daily(x int, y STRING, z STRING) PARTITIONED BY (ds STRING, hr STRING)	
-LOCATION '${hiveconf:hive.metastore.warehouse.dir}/fact_daily';	
+-- create a skewed table
+create table fact_daily (key String, value String) 
+partitioned by (ds String, hr String) ;
 
--- create /fact_daily/ds=1/hr=1 directory	
-INSERT OVERWRITE TABLE fact_daily PARTITION (ds='1', hr='1')	
-SELECT key, value, value FROM src WHERE key=484;	
+-- partition no skew
+insert overwrite table fact_daily partition (ds = '1', hr = '1')
+select key, value from src;
+describe formatted fact_daily PARTITION (ds = '1', hr='1');
 
--- create /fact_daily/ds=1/hr=2 directory	
-INSERT OVERWRITE TABLE fact_daily PARTITION (ds='1', hr='2')	
-SELECT key+11, value, value FROM src WHERE key=484;
+-- partition. skewed value is 484/238
+alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES;
+insert overwrite table fact_daily partition (ds = '1', hr = '2')
+select key, value from src;
+describe formatted fact_daily PARTITION (ds = '1', hr='2');
 
--- create /fact_daily/ds=1/hr=3 directory	
-INSERT OVERWRITE TABLE fact_daily PARTITION (ds='1', hr='3')	
-SELECT key, value, value FROM src WHERE key=238;
-
--- create /fact_daily/ds=1/hr=4 directory	
-INSERT OVERWRITE TABLE fact_daily PARTITION (ds='1', hr='4')	
-SELECT key, value, value FROM src WHERE key=98;
-
-dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1;
-dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=1 ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=484/y=val_484;
-dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=2 ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=495/y=val_484;
-dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=3 ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=238/y=val_238;
-dfs -mv ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=4 ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME;
-dfs -lsr ${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1;	
-
--- create a non-skewed partition ds=200 and hr =1 in fact_daily table
-INSERT OVERWRITE TABLE fact_daily PARTITION (ds='200', hr='1') SELECT key, value, value FROM src WHERE key=145 or key=406 or key=429;
-
--- switch fact_daily to skewed table, create partition ds=1 and hr=5 and point its location to /fact_daily/ds=1
-alter table fact_daily skewed by (x,y) on ((484,'val_484'),(238,'val_238'));
-ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE');	
-ALTER TABLE fact_daily ADD PARTITION (ds='1', hr='5')	
-LOCATION '${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5';	
-
--- set List Bucketing location map
-alter table fact_daily PARTITION (ds = '1', hr='5') set skewed location ((484,'val_484')='${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=484/y=val_484',
-(238,'val_238')='${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=238/y=val_238');
-describe formatted fact_daily PARTITION (ds = '1', hr='5');
-
--- alter skewed information and create partition ds=100 and hr=1
-alter table fact_daily skewed by (x,y) on ((495,'val_484'));
-ALTER TABLE fact_daily ADD PARTITION (ds='100', hr='1')	
-LOCATION '${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5';
-alter table fact_daily PARTITION (ds = '100', hr='1') set skewed location ((495,'val_484')='${hiveconf:hive.metastore.warehouse.dir}/fact_daily/ds=1/hr=5/x=495/y=val_484');
-describe formatted fact_daily PARTITION (ds = '100', hr='1');
-
+-- another partition. skewed value is 327
+alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES;
+insert overwrite table fact_daily partition (ds = '1', hr = '3')
+select key, value from src;
+describe formatted fact_daily PARTITION (ds = '1', hr='3');
 
 -- query non-skewed partition
 explain extended
-select * from fact_daily where ds='200' and  hr='1' and x=145;
-select * from fact_daily where ds='200' and  hr='1' and x=145;
+select * from fact_daily where ds = '1' and  hr='1' and key='145';
+select * from fact_daily where ds = '1' and  hr='1' and key='145';
 explain extended
-select * from fact_daily where ds='200' and  hr='1';
-select * from fact_daily where ds='200' and  hr='1';
+select count(*) from fact_daily where ds = '1' and  hr='1';
+select count(*) from fact_daily where ds = '1' and  hr='1';
 	
 -- query skewed partition
 explain extended
-SELECT * FROM fact_daily WHERE ds='1' and hr='5' and (x=484 and y ='val_484');	
-SELECT * FROM fact_daily WHERE ds='1' and hr='5' and (x=484 and y ='val_484');
+SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484');	
+SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484');
 
 -- query another skewed partition
 explain extended
-SELECT * FROM fact_daily WHERE ds='100' and hr='1' and (x=495 and y ='val_484');	
-SELECT * FROM fact_daily WHERE ds='100' and hr='1' and (x=495 and y ='val_484');	
+SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327');	
+SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327');	

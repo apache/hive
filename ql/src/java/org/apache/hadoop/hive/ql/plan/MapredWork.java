@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * MapredWork.
@@ -161,31 +160,13 @@ public class MapredWork extends AbstractOperatorDesc {
     while (itr.hasNext()) {
       final Entry<String, ArrayList<String>> entry = itr.next();
       String origiKey = entry.getKey();
-      String newKey = removePrefixFromWarehouseConfig(origiKey);
+      String newKey = PlanUtils.removePrefixFromWarehouseConfig(origiKey);
       ArrayList<String> value = entry.getValue();
       trunPathToAliases.put(newKey, value);
     }
     return trunPathToAliases;
   }
 
-  /**
-   * Remove prefix from "Path -> Alias"
-   *
-   * @param origiKey
-   * @return
-   */
-  private String removePrefixFromWarehouseConfig(String origiKey) {
-    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
-    if ((prefix != null) && (prefix.length() > 0)) {
-      //Local file system is using pfile:/// {@link ProxyLocalFileSystem}
-      prefix = prefix.replace("pfile:///", "pfile:/");
-      int index = origiKey.indexOf(prefix);
-      if (index > -1) {
-        origiKey = origiKey.substring(index + prefix.length());
-      }
-    }
-    return origiKey;
-  }
 
 
   @Explain(displayName = "Path -> Partition", normalExplain = false)
@@ -499,7 +480,7 @@ public class MapredWork extends AbstractOperatorDesc {
     this.inputFormatSorted = inputFormatSorted;
   }
 
-  public void resolveDynamicPartitionMerge(HiveConf conf, Path path,
+  public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf, Path path,
       TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
     pathToAliases.put(path.toString(), aliases);
     pathToPartitionInfo.put(path.toString(), partDesc);

@@ -1,4 +1,3 @@
-set hive.internal.ddl.list.bucketing.enable=true;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;

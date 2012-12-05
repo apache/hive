@@ -427,6 +427,25 @@
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx0" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"/> 
                   </void> 
@@ -480,6 +499,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx0"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -922,6 +944,25 @@
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx1" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"/> 
                   </void> 
@@ -975,6 +1016,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx1"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -1421,6 +1465,25 @@
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx2" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"> 
                     <void method="put"> 
@@ -1483,6 +1546,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx2"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -2091,6 +2157,9 @@
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
                       </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx0"/> 
+                      </void> 
                       <void property="maxStatsKeyPrefixLength"> 
                        <int>200</int> 
                       </void> 
@@ -2395,6 +2464,9 @@
                       </void> 
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
+                      </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx1"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
                        <int>200</int> 
@@ -2720,6 +2792,9 @@
                       </void> 
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
+                      </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx2"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
                        <int>200</int> 

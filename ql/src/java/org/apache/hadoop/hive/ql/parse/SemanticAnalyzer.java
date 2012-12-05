@@ -141,6 +141,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -4492,6 +4493,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     DynamicPartitionCtx dpCtx = null;
     LoadTableDesc ltd = null;
     boolean holdDDLTime = checkHoldDDLTime(qb);
+    ListBucketingCtx lbCtx = null;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -4579,6 +4581,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
+      lbCtx = constructListBucketingCtx(dest_tab.getSkewedColNames(),
+          dest_tab.getSkewedColValues(), dest_tab.getSkewedColValueLocationMaps(),
+          dest_tab.isStoredAsSubDirectories(), conf);
+
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
@@ -4586,6 +4592,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             table_desc, dpCtx);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
+        ltd.setLbCtx(lbCtx);
 
         if (holdDDLTime) {
           LOG.info("this query will not update transient_lastDdlTime!");
@@ -4655,10 +4662,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
+      lbCtx = constructListBucketingCtx(dest_part.getSkewedColNames(),
+          dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
+          dest_part.isStoredAsSubDirectories(), conf);
       ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
           table_desc, dest_part.getSpec());
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
           dest_tab.getTableName()));
+      ltd.setLbCtx(lbCtx);
 
       if (holdDDLTime) {
         try {
@@ -4832,6 +4843,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rsCtx.getPartnCols(),
       dpCtx);
 
+    /* Set List Bucketing context. */
+    if (lbCtx != null) {
+      lbCtx.processRowSkewedIndex(fsRS);
+      lbCtx.calculateSkewedValueSubDirList();
+    }
+    fileSinkDesc.setLbCtx(lbCtx);
+
     // set the stats publishing/aggregating key prefix
     // the same as directory name. The directory name
     // can be changed in the optimizer  but the key should not be changed
@@ -4864,7 +4882,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return output;
   }
-
 
   /**
    * Generate the conversion SelectOperator that converts the columns into the
@@ -8705,9 +8722,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          * hive.internal.ddl.list.bucketing.enable set to false.
          */
         HiveConf hiveConf = SessionState.get().getConf();
-        if (!(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE))) {
-          throw new SemanticException(ErrorMsg.HIVE_INTERNAL_DDL_LIST_BUCKETING_DISABLED.getMsg());
-        }
 
         // skewed column names
         skewedColNames = analyzeSkewedTablDDLColNames(skewedColNames, child);

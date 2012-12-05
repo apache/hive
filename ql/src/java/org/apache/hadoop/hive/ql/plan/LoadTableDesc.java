@@ -32,8 +32,9 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   private boolean replace;
   private String tmpDir;
   private DynamicPartitionCtx dpCtx;
+  private ListBucketingCtx lbCtx;
   private boolean holdDDLTime;
-  private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current 
+  private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
 
   // TODO: the below seems like they should just be combined into partitionDesc
@@ -137,5 +138,19 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   public void setInheritTableSpecs(boolean inheritTableSpecs) {
     this.inheritTableSpecs = inheritTableSpecs;
+  }
+
+  /**
+   * @return the lbCtx
+   */
+  public ListBucketingCtx getLbCtx() {
+    return lbCtx;
+  }
+
+  /**
+   * @param lbCtx the lbCtx to set
+   */
+  public void setLbCtx(ListBucketingCtx lbCtx) {
+    this.lbCtx = lbCtx;
   }
 }

@@ -60,6 +60,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   transient private List<FileSinkDesc> linkedFileSinkDesc;
 
   private boolean statsReliable;
+  private ListBucketingCtx lbCtx;
   private int maxStatsKeyPrefixLength = -1;
 
   public FileSinkDesc() {
@@ -309,6 +310,20 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.statsReliable = statsReliable;
   }
 
+  /**
+   * @return the lbCtx
+   */
+  public ListBucketingCtx getLbCtx() {
+    return lbCtx;
+  }
+
+  /**
+   * @param lbCtx the lbCtx to set
+   */
+  public void setLbCtx(ListBucketingCtx lbCtx) {
+    this.lbCtx = lbCtx;
+  }
+
   public List<FileSinkDesc> getLinkedFileSinkDesc() {
     return linkedFileSinkDesc;
   }
@@ -324,4 +339,5 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
     this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
   }
+
 }

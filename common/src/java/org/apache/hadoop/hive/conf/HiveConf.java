@@ -658,15 +658,17 @@ public class HiveConf extends Configuration {
         "hive.multi.insert.move.tasks.share.dependencies", false),
 
     /* The following section contains all configurations used for list bucketing feature.*/
-    // Enable list bucketing DDL. Default value is false so that we disable it by default.
-    // This will be removed once the rest of the DML changes are committed.
-    HIVE_INTERNAL_DDL_LIST_BUCKETING_ENABLE("hive.internal.ddl.list.bucketing.enable", false),
-
-    // Default list bucketing directory name.
-    HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME("hive.exec.list.bucketing.default.dir",
-        "HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME"),
+    /* This is not for clients. but only for block merge task. */
+    /* This is used by BlockMergeTask to send out flag to RCFileMergeMapper */
+    /* about alter table...concatenate and list bucketing case. */
+    HIVEMERGECURRENTJOBCONCATENATELISTBUCKETING(
+        "hive.merge.current.job.concatenate.list.bucketing", true),
+    /* This is not for clients. but only for block merge task. */
+    /* This is used by BlockMergeTask to send out flag to RCFileMergeMapper */
+    /* about depth of list bucketing. */
+    HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH(
+            "hive.merge.current.job.concatenate.list.bucketing.depth", 0),
     // Enable list bucketing optimizer. Default value is false so that we disable it by default.
-    // This will be removed once the rest of the DML changes are committed.
     HIVEOPTLISTBUCKETING("hive.optimize.listbucketing", false),
 
     // Allow TCP Keep alive socket option for for HiveServer or a maximum timeout for the socket.
