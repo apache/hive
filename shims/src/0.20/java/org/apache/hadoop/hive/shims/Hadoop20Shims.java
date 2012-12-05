@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Text;
@@ -602,5 +603,18 @@ public class Hadoop20Shims implements HadoopShims {
   public void closeAllForUGI(UserGroupInformation ugi) {
     // No such functionality in ancient hadoop
     return;
+  }
+
+  @Override
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException {
+    // older versions of Hadoop don't have a Trash constructor based on the
+    // Path or FileSystem. So need to achieve this by creating a dummy conf.
+    // this needs to be filtered out based on version
+
+    Configuration dupConf = new Configuration(conf);
+    FileSystem.setDefaultUri(dupConf, fs.getUri());
+    Trash trash = new Trash(dupConf);
+    return trash.moveToTrash(path);
   }
 }

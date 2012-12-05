@@ -275,7 +275,7 @@ public interface HadoopShims {
    * @return
    */
   public String getJobLauncherHttpAddress(Configuration conf);
-
+  
   /**
    * Get the default block size for the path. FileSystem alone is not sufficient to
    * determine the same, as in case of CSMT the underlying file system determines that.
@@ -293,11 +293,22 @@ public interface HadoopShims {
    * @return
    */
   public short getDefaultReplication(FileSystem fs, Path path);
-
   /**
-   * InputSplitShim.
-   *
+   * Move the directory/file to trash. In case of the symlinks or mount points, the file is
+   * moved to the trashbin in the actual volume of the path p being deleted
+   * @param fs
+   * @param path
+   * @param conf
+   * @return false if the item is already in the trash or trash is disabled
+   * @throws IOException
    */
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException;
+
+ /**
+  * InputSplitShim.
+  *
+  */
   public interface InputSplitShim extends InputSplit {
     JobConf getJob();
 

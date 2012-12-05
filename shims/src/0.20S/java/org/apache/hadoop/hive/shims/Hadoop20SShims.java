@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapreduce.Job;
@@ -97,6 +99,19 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException {
+    // older versions of Hadoop don't have a Trash constructor based on the
+    // Path or FileSystem. So need to achieve this by creating a dummy conf.
+    // this needs to be filtered out based on version
+
+    Configuration dupConf = new Configuration(conf);
+    FileSystem.setDefaultUri(dupConf, fs.getUri());
+    Trash trash = new Trash(dupConf);
+    return trash.moveToTrash(path);
+  }
+  
+  @Override
   public long getDefaultBlockSize(FileSystem fs, Path path) {
     return fs.getDefaultBlockSize();
   }
@@ -104,5 +119,5 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public short getDefaultReplication(FileSystem fs, Path path) {
     return fs.getDefaultReplication();
-  }
+  }  
 }
