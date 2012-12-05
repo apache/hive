@@ -1258,6 +1258,9 @@
                     <void property="gatherStats"> 
                      <boolean>true</boolean> 
                     </void> 
+                    <void property="maxStatsKeyPrefixLength"> 
+                     <int>200</int> 
+                    </void> 
                     <void property="numFiles"> 
                      <int>1</int> 
                     </void> 
