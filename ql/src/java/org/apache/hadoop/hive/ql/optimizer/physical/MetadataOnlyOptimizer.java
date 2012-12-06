@@ -230,16 +230,21 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
       List<String> paths = getPathsForAlias(work, alias);
       for (String path : paths) {
-        PartitionDesc newPartition = changePartitionToMetadataOnly(work.getPathToPartitionInfo().get(
-            path));
+        PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+        PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
         Path fakePath = new Path(physicalContext.getContext().getMRTmpFileURI()
             + newPartition.getTableName()
-            + newPartition.getPartSpec().toString());
+            + encode(newPartition.getPartSpec()));
         work.getPathToPartitionInfo().remove(path);
         work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
         ArrayList<String> aliases = work.getPathToAliases().remove(path);
         work.getPathToAliases().put(fakePath.getName(), aliases);
       }
+    }
+
+    // considered using URLEncoder, but it seemed too much
+    private String encode(Map<String, String> partSpec) {
+      return partSpec.toString().replaceAll("[:/#\\?]", "_");
     }
 
     private void convertToMetadataOnlyQuery(MapredWork work,
