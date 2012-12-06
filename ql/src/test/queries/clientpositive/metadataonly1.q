@@ -36,3 +36,10 @@ select max(ds) from TEST1;
 
 select distinct ds from srcpart;
 select min(ds),max(ds) from srcpart;
+
+-- HIVE-3594 URI encoding for temporary path
+alter table TEST2 add partition (ds='01:10:10', hr='01');
+alter table TEST2 add partition (ds='01:10:20', hr='02');
+
+explain extended select ds, count(distinct hr) from TEST2 group by ds;
+select ds, count(distinct hr) from TEST2 group by ds;
