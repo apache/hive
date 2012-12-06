@@ -631,7 +631,7 @@ public class HiveConf extends Configuration {
     HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true),
     HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", ""),
 
-    //prefix used to auto generated column aliases
+    // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c"),
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME(
                                "hive.autogen.columnalias.prefix.includefuncname", false),

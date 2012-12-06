@@ -126,6 +126,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
@@ -2413,6 +2414,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We allow stateful functions in the SELECT list (but nowhere else)
         tcCtx.setAllowStatefulFunctions(true);
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
+        String recommended = recommendName(exp, colAlias);
+        if (recommended != null && out_rwsch.get(null, recommended) == null) {
+          colAlias = recommended;
+        }
         col_list.add(exp);
         if (subQuery) {
           out_rwsch.checkColumn(tabAlias, colAlias);
@@ -2459,6 +2464,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
     }
     return output;
+  }
+
+  private String recommendName(ExprNodeDesc exp, String colAlias) {
+    if (!colAlias.startsWith(autogenColAliasPrfxLbl)) {
+      return null;
+    }
+    String column = ExprNodeDescUtils.recommendInputName(exp);
+    if (column != null && !column.startsWith(autogenColAliasPrfxLbl)) {
+      return column;
+    }
+    return null;
   }
 
   /**
