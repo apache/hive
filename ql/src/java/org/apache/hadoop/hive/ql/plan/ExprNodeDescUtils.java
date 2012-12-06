@@ -98,4 +98,19 @@ public class ExprNodeDescUtils {
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
         FunctionRegistry.getGenericUDFForAnd(), children);
   }
+
+  /**
+   * Recommend name for the expression
+   */
+  public static String recommendInputName(ExprNodeDesc desc) {
+    if (desc instanceof ExprNodeColumnDesc) {
+      return ((ExprNodeColumnDesc)desc).getColumn();
+    }
+    List<ExprNodeDesc> children = desc.getChildren();
+    if (FunctionRegistry.isOpPreserveInputName(desc) && !children.isEmpty() &&
+      children.get(0) instanceof ExprNodeColumnDesc) {
+      return ((ExprNodeColumnDesc)children.get(0)).getColumn();
+    }
+    return null;
+  }
 }

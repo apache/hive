@@ -1180,6 +1180,34 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the exprNodeDesc is node of "cast".
+   */
+  private static boolean isOpCast(ExprNodeDesc desc) {
+    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
+      return false;
+    }
+    GenericUDF genericUDF = ((ExprNodeGenericFuncDesc)desc).getGenericUDF();
+    Class udfClass;
+    if (genericUDF instanceof GenericUDFBridge) {
+      udfClass = ((GenericUDFBridge)genericUDF).getUdfClass();
+    } else {
+      udfClass = genericUDF.getClass();
+    }
+    return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
+        udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
+        udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
+        udfClass == UDFToShort.class || udfClass == UDFToString.class ||
+        udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class;
+  }
+
+  /**
+   * Returns whether the exprNodeDesc can recommend name for the expression
+   */
+  public static boolean isOpPreserveInputName(ExprNodeDesc desc) {
+    return isOpCast(desc);
+  }
+
+  /**
    * Registers the appropriate kind of temporary function based on a class's
    * type.
    *
