@@ -53,6 +53,11 @@ import org.apache.thrift.TException;
  */
 public interface IMetaStoreClient {
 
+  /**
+   *  Tries to reconnect this MetaStoreClient to the MetaStore.
+   */
+  public void reconnect() throws MetaException;
+
   public void close();
 
   /**

@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -2236,7 +2237,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       };
-    return new HiveMetaStoreClient(conf, hookLoader);
+    return RetryingMetaStoreClient.getProxy(conf, hookLoader,
+        HiveMetaStoreClient.class.getName());
   }
 
   /**
