@@ -32,9 +32,11 @@ PREHOOK: Input: default@shcol_test
 POSTHOOK: query: SHOW COLUMNS from shcol_test
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: default@shcol_test
-key
-value
-ds
+# col_name            
+
+key                 
+value               
+ds                  
 PREHOOK: query: -- SHOW COLUMNS
 CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
@@ -62,14 +64,18 @@ PREHOOK: Input: test_db@foo
 POSTHOOK: query: SHOW COLUMNS from foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
-a
+# col_name            
+
+a                   
 PREHOOK: query: SHOW COLUMNS in foo
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo
 POSTHOOK: query: SHOW COLUMNS in foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
-a
+# col_name            
+
+a                   
 PREHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
 CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
@@ -91,7 +97,9 @@ PREHOOK: Input: database@foo
 POSTHOOK: query: SHOW COLUMNS from foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: database@foo
-a
+# col_name            
+
+a                   
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
@@ -102,11 +110,15 @@ PREHOOK: Input: test_db@foo
 POSTHOOK: query: SHOW COLUMNS from test_db.foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
-a
+# col_name            
+
+a                   
 PREHOOK: query: SHOW COLUMNS from foo from test_db
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo
 POSTHOOK: query: SHOW COLUMNS from foo from test_db
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
-a
+# col_name            
+
+a                   

@@ -7,7 +7,9 @@ PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format
 POSTHOOK: type: DESCTABLE
-key	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE rcfile_default_format_ctas AS SELECT key,value FROM src
@@ -21,8 +23,10 @@ PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
@@ -44,7 +48,9 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_txtfile
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-key	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE textfile_default_format_ctas AS SELECT key,value FROM rcfile_default_format_ctas
@@ -60,7 +66,9 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED textfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####

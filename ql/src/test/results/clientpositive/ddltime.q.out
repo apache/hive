@@ -7,8 +7,10 @@ PREHOOK: query: desc extended T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T1 select * from src
@@ -27,8 +29,10 @@ POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T1 select /*+ HOLD_DDLTIME*/ * from src
@@ -51,8 +55,10 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T1 select * from src
@@ -79,8 +85,10 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create table if not exists T2 like srcpart
@@ -104,10 +112,18 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr = '1') select key, value from src where key > 10
@@ -138,10 +154,18 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr='1') select /*+ HOLD_DDLTIME */ key, value from src where key > 10
@@ -176,10 +200,18 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table T2 partition (ds='2010-06-01', hr='1') select key, value from src where key > 10
@@ -218,9 +250,17 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####

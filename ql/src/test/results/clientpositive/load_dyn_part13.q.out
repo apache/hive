@@ -15,10 +15,18 @@ PREHOOK: query: describe extended nzhang_part13
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part13
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain

@@ -47,8 +47,10 @@ PREHOOK: query: desc extended load_overwrite
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended load_overwrite
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from load_overwrite
@@ -87,8 +89,10 @@ PREHOOK: query: desc extended load_overwrite2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended load_overwrite2
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from load_overwrite2

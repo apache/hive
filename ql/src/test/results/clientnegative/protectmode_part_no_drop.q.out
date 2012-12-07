@@ -31,9 +31,16 @@ PREHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 POSTHOOK: type: DESCTABLE
-c1	string	
-c2	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+c1                  	string              	None                
+c2                  	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl_protectmode_no_drop drop partition (p='p1')

@@ -17,18 +17,22 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	array<string>	
-c	array<map<string,string>>	
-d	map<string,array<string>>	
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	array<string>       	None                
+c                   	array<map<string,string>>	None                
+d                   	map<string,array<string>>	None                
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	array<string>	
-c	array<map<string,string>>	
-d	map<string,array<string>>	
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	array<string>       	None                
+c                   	array<map<string,string>>	None                
+d                   	map<string,array<string>>	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1

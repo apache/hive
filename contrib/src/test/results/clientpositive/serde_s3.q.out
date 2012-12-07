@@ -15,23 +15,25 @@ PREHOOK: query: DESCRIBE s3log
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE s3log
 POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
 #### A masked pattern was here ####
-bucketname	string	from deserializer
-rdatetime	string	from deserializer
-rip	string	from deserializer
-requester	string	from deserializer
-requestid	string	from deserializer
-operation	string	from deserializer
-rkey	string	from deserializer
-requesturi	string	from deserializer
-httpstatus	int	from deserializer
-errorcode	string	from deserializer
-bytessent	int	from deserializer
-objsize	int	from deserializer
-totaltime	int	from deserializer
-turnaroundtime	int	from deserializer
-referer	string	from deserializer
-useragent	string	from deserializer
+bucketname          	string              	from deserializer   
+rdatetime           	string              	from deserializer   
+rip                 	string              	from deserializer   
+requester           	string              	from deserializer   
+requestid           	string              	from deserializer   
+operation           	string              	from deserializer   
+rkey                	string              	from deserializer   
+requesturi          	string              	from deserializer   
+httpstatus          	int                 	from deserializer   
+errorcode           	string              	from deserializer   
+bytessent           	int                 	from deserializer   
+objsize             	int                 	from deserializer   
+totaltime           	int                 	from deserializer   
+turnaroundtime      	int                 	from deserializer   
+referer             	string              	from deserializer   
+useragent           	string              	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log
 PREHOOK: type: LOAD
 PREHOOK: Output: default@s3log

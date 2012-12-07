@@ -13,8 +13,10 @@ PREHOOK: query: describe extended ba_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended ba_test
 POSTHOOK: type: DESCTABLE
-ba_key	binary	
-ba_val	binary	
+# col_name            	data_type           	comment             
+	 	 
+ba_key              	binary              	None                
+ba_val              	binary              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)

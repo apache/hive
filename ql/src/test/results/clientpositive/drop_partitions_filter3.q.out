@@ -7,10 +7,18 @@ PREHOOK: query: describe ptestfilter
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe ptestfilter
 POSTHOOK: type: DESCTABLE
-a	string	
-b	int	
-c	string	
-d	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	int                 	None                
+c                   	string              	None                
+d                   	int                 	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+c                   	string              	None                
+d                   	int                 	None                
 PREHOOK: query: alter table ptestfilter add partition (c='1', d=1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@ptestfilter

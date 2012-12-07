@@ -19,13 +19,21 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 POSTHOOK: type: DESCTABLE
-aint	int	from deserializer
-astring	string	from deserializer
-lint	array<int>	from deserializer
-lstring	array<string>	from deserializer
-lintstring	array<struct<myint:int,mystring:string,underscore_int:int>>	from deserializer
-mstringstring	map<string,string>	from deserializer
-ds	string	
-country	string	
+# col_name            	data_type           	comment             
+	 	 
+aint                	int                 	from deserializer   
+astring             	string              	from deserializer   
+lint                	array<int>          	from deserializer   
+lstring             	array<string>       	from deserializer   
+lintstring          	array<struct<myint:int,mystring:string,underscore_int:int>>	from deserializer   
+mstringstring       	map<string,string>  	from deserializer   
+ds                  	string              	None                
+country             	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
 	 	 
 #### A masked pattern was here ####

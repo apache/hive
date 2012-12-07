@@ -11,8 +11,10 @@ PREHOOK: query: DESCRIBE src_authorization_7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE src_authorization_7
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 PREHOOK: query: DROP TABLE  src_authorization_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_authorization_7
@@ -38,8 +40,10 @@ PREHOOK: query: DESCRIBE src_authorization_7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE src_authorization_7
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 PREHOOK: query: DROP TABLE  src_authorization_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_authorization_7

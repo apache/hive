@@ -63,9 +63,11 @@ PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
-number	int	from deserializer
-first_name	string	from deserializer
-last_name	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+number              	int                 	from deserializer   
+first_name          	string              	from deserializer   
+last_name           	string              	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors
 PREHOOK: type: LOAD
 PREHOOK: Output: default@doctors
