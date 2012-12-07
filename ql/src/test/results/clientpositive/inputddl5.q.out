@@ -17,7 +17,9 @@ PREHOOK: query: DESCRIBE INPUTDDL5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL5
 POSTHOOK: type: DESCTABLE
-name	string	
+# col_name            	data_type           	comment             
+	 	 
+name                	string              	None                
 PREHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl5

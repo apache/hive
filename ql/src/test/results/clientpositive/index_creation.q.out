@@ -43,9 +43,11 @@ PREHOOK: query: desc extended default__src_src_index_2__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_2__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
@@ -57,9 +59,11 @@ PREHOOK: query: desc extended src_idx_src_index_3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_3
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
@@ -71,9 +75,11 @@ PREHOOK: query: desc extended default__src_src_index_4__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_4__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
@@ -85,9 +91,11 @@ PREHOOK: query: desc extended default__src_src_index_5__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_5__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
@@ -99,9 +107,11 @@ PREHOOK: query: desc extended default__src_src_index_6__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_6__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
@@ -113,9 +123,11 @@ PREHOOK: query: desc extended src_idx_src_index_7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_7
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
@@ -127,9 +139,11 @@ PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create index src_index_9 on table src(key) as 'compact' WITH DEFERRED REBUILD TBLPROPERTIES ("prop1"="val1", "prop2"="val2")
@@ -141,9 +155,11 @@ PREHOOK: query: desc extended default__src_src_index_9__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_9__
 POSTHOOK: type: DESCTABLE
-key	string	default
-_bucketname	string	
-_offsets	array<bigint>	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+_bucketname         	string              	                    
+_offsets            	array<bigint>       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create table `_t`(`_i` int, `_j` int)

@@ -2267,7 +2267,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       List<FieldSchema> cols = table.getCols();
       cols.addAll(table.getPartCols());
-      outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
+      outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
       ((FSDataOutputStream) outStream).close();
       outStream = null;
     } catch (IOException e) {

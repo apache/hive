@@ -764,17 +764,23 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
+    // "describe [table_name]" result format
+    // first line should be format name:
+    // "# col_name             data_type               comment"
+    // second line is empty
+    // the following lines contain the values
     res.next();
-    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
-    assertEquals("Column type 'under_col' for column under_col not found", "int", res
-        .getString(2));
+    assertEquals(true, res.getString(1).contains("col_name"));
+    assertEquals(true, res.getString(2).contains("data_type"));
+    assertEquals(true, res.getString(3).contains("comment"));
     res.next();
-    assertEquals("Column name 'value' not found", "value", res.getString(1));
-    assertEquals("Column type 'string' for column key not found", "string", res
-        .getString(2));
-
+    res.next();
+    assertEquals(true, res.getString(1).contains("under_col"));
+    assertEquals(true, res.getString(2).contains("int"));
+    res.next();
+    assertEquals(true, res.getString(1).contains("value"));
+    assertEquals(true, res.getString(2).contains("string"));
     assertFalse("More results found than expected", res.next());
-
   }
 
   public void testDatabaseMetaData() throws SQLException {

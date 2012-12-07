@@ -92,29 +92,47 @@ PREHOOK: query: DESCRIBE EXTENDED T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T1
 POSTHOOK: type: DESCTABLE
-name	string	
+# col_name            	data_type           	comment             
+	 	 
+name                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T2
 POSTHOOK: type: DESCTABLE
-name	string	
+# col_name            	data_type           	comment             
+	 	 
+name                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+name                	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+name                	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####

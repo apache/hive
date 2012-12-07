@@ -15,10 +15,18 @@ PREHOOK: query: describe extended nzhang_part7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part7
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table nzhang_part7 partition (ds='2010-03-03', hr='12') select key, value from srcpart where ds = '2008-04-08' and hr = '12'

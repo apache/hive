@@ -125,60 +125,50 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
                               String colPath, String tableName,
                               Table tbl, Partition part, List<FieldSchema> cols,
                               boolean isFormatted, boolean isExt)
-         throws HiveException
-   {
-       try {
-         if (colPath.equals(tableName)) {
-           if (!isFormatted) {
-             outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
-           } else {
-             outStream.writeBytes(
-               MetaDataFormatUtils.getAllColumnsInformation(cols,
-                 tbl.isPartitioned() ? tbl.getPartCols() : null));
-           }
-         } else {
-           if (isFormatted) {
-             outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
-           } else {
-             outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
-           }
-         }
+         throws HiveException {
+        try {
+          if (colPath.equals(tableName)) {
+            outStream.writeBytes(
+              MetaDataFormatUtils.getAllColumnsInformation(
+                cols, tbl.isPartitioned() ? tbl.getPartCols() : null));
+          } else {
+            outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
+          }
 
-         if (tableName.equals(colPath)) {
+          if (tableName.equals(colPath)) {
+            if (isFormatted) {
+              if (part != null) {
+                outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
+              } else {
+                outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
+              }
+            }
 
-           if (isFormatted) {
-             if (part != null) {
-               outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
-             } else {
-               outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
-             }
-           }
-
-           // if extended desc table then show the complete details of the table
-           if (isExt) {
-             // add empty line
-             outStream.write(terminator);
-             if (part != null) {
-               // show partition information
-               outStream.writeBytes("Detailed Partition Information");
-               outStream.write(separator);
-               outStream.writeBytes(part.getTPartition().toString());
-               outStream.write(separator);
-               // comment column is empty
-               outStream.write(terminator);
-             } else {
-               // show table information
-               outStream.writeBytes("Detailed Table Information");
-               outStream.write(separator);
-               outStream.writeBytes(tbl.getTTable().toString());
-               outStream.write(separator);
-               outStream.write(terminator);
-             }
-           }
-         }
-       } catch (IOException e) {
-           throw new HiveException(e);
-       }
+          // if extended desc table then show the complete details of the table
+            if (isExt) {
+              // add empty line
+              outStream.write(terminator);
+              if (part != null) {
+                // show partition information
+                outStream.writeBytes("Detailed Partition Information");
+                outStream.write(separator);
+                outStream.writeBytes(part.getTPartition().toString());
+                outStream.write(separator);
+                // comment column is empty
+                outStream.write(terminator);
+              } else {
+                // show table information
+                outStream.writeBytes("Detailed Table Information");
+                outStream.write(separator);
+                outStream.writeBytes(tbl.getTTable().toString());
+                outStream.write(separator);
+                outStream.write(terminator);
+              }
+            }
+          }
+        } catch (IOException e) {
+          throw new HiveException(e);
+        }
     }
 
     public void showTableStatus(DataOutputStream outStream,

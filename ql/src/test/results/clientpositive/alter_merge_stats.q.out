@@ -42,8 +42,10 @@ PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: analyze table src_rc_merge_test_stat compute statistics
@@ -58,8 +60,10 @@ PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table src_rc_merge_test_stat concatenate
@@ -91,8 +95,10 @@ PREHOOK: query: desc extended src_rc_merge_test_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create table src_rc_merge_test_part_stat(key int, value string) partitioned by (ds string) stored as rcfile
@@ -146,9 +152,16 @@ PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: analyze table src_rc_merge_test_part_stat partition(ds='2011') compute statistics
@@ -165,9 +178,16 @@ PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table src_rc_merge_test_part_stat partition (ds='2011') concatenate
@@ -199,9 +219,16 @@ PREHOOK: query: desc extended src_rc_merge_test_part_stat
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_part_stat
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table src_rc_merge_test_stat

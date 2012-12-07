@@ -14,10 +14,18 @@ PREHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03',
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
-ds	string	
-ts	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+ds                  	string              	None                
+ts                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+ts                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')

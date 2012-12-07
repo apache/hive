@@ -35,8 +35,15 @@ PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED vp1
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 FROM src	 	 

@@ -17,10 +17,17 @@ PREHOOK: query: describe int_string
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe int_string
 POSTHOOK: type: DESCTABLE
-myint	int	from deserializer
-mystring	string	from deserializer
-underscore_int	int	from deserializer
-b	string	
+# col_name            	data_type           	comment             
+	 	 
+myint               	int                 	from deserializer   
+mystring            	string              	from deserializer   
+underscore_int      	int                 	from deserializer   
+b                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+b                   	string              	None                
 PREHOOK: query: alter table int_string add partition (b='part1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@int_string
@@ -32,7 +39,14 @@ PREHOOK: query: describe int_string partition (b='part1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe int_string partition (b='part1')
 POSTHOOK: type: DESCTABLE
-myint	int	from deserializer
-mystring	string	from deserializer
-underscore_int	int	from deserializer
-b	string	
+# col_name            	data_type           	comment             
+	 	 
+myint               	int                 	from deserializer   
+mystring            	string              	from deserializer   
+underscore_int      	int                 	from deserializer   
+b                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+b                   	string              	None                

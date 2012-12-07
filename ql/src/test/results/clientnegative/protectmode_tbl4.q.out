@@ -55,8 +55,15 @@ PREHOOK: query: desc extended tbl_protectmode_tbl4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode_tbl4
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table tbl_protectmode_tbl4

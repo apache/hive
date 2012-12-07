@@ -14,9 +14,11 @@ PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-foo	int	
-bar	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+foo                 	int                 	None                
+bar                 	string              	None                
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW view1 RENAME TO view2
@@ -32,9 +34,11 @@ PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-foo	int	
-bar	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+foo                 	int                 	None                
+bar                 	string              	None                
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM view2

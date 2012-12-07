@@ -38,18 +38,34 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe table
 DESCRIBE t1
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED t1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED t1
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED t1
@@ -93,18 +109,34 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe database.table
 DESCRIBE db1.t1
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED db1.t1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED db1.t1
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED db1.t1
@@ -148,12 +180,16 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe table column
 DESCRIBE t1 key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE EXTENDED t1 key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED t1 key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED t1 key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED t1 key1
@@ -167,12 +203,16 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe database.tabe column
 DESCRIBE db1.t1 key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE EXTENDED db1.t1 key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED db1.t1 key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED db1.t1 key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED db1.t1 key1
@@ -190,12 +230,16 @@ POSTHOOK: query: -- describe table.column
 -- fall back to the old syntax table.column
 DESCRIBE t1.key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE EXTENDED t1.key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED t1.key1
 POSTHOOK: type: DESCTABLE
-key1	int	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED t1.key1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED t1.key1
@@ -209,18 +253,34 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe table partition
 DESCRIBE t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='4', part='5')
@@ -264,18 +324,34 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- describe database.table partition
 DESCRIBE db1.t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED db1.t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED db1.t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
-key1	int	
-value1	string	
-ds	string	
-part	string	
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED db1.t1 PARTITION(ds='4', part='5')

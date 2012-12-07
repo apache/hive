@@ -44,8 +44,10 @@ PREHOOK: query: DESCRIBE EXTENDED base64_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED base64_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: FROM src

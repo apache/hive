@@ -182,8 +182,10 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable

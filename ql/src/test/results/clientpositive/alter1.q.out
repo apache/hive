@@ -7,8 +7,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
@@ -23,8 +25,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
@@ -39,8 +43,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
@@ -55,8 +61,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
@@ -71,8 +79,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
@@ -87,8 +97,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
@@ -103,8 +115,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
@@ -119,8 +133,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	string	from deserializer
-b	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
@@ -135,8 +151,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-a	string	from deserializer
-b	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table alter1 replace columns (a int, b int, c string)
@@ -151,9 +169,11 @@ PREHOOK: query: describe alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-c	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+c                   	string              	None                
 PREHOOK: query: -- Cleanup
 DROP TABLE alter1
 PREHOOK: type: DROPTABLE
@@ -201,8 +221,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
@@ -217,8 +239,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
@@ -233,8 +257,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
@@ -249,8 +275,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
@@ -265,8 +293,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET SERDEPROPERTIES('s1'='9')
@@ -281,8 +311,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
@@ -297,8 +329,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' WITH SERDEPROPERTIES ('s1'='9')
@@ -313,8 +347,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	string	from deserializer
-b	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
@@ -329,8 +365,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-a	string	from deserializer
-b	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	from deserializer   
+b                   	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE alter1 REPLACE COLUMNS (a int, b int, c string)
@@ -345,9 +383,11 @@ PREHOOK: query: DESCRIBE alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE alter1
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-c	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+c                   	string              	None                
 PREHOOK: query: DROP TABLE alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1

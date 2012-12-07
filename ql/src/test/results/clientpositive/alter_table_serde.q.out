@@ -9,9 +9,11 @@ PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -26,9 +28,11 @@ PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
-id	int	from deserializer
-query	string	from deserializer
-name	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	from deserializer   
+query               	string              	from deserializer   
+name                	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
@@ -43,9 +47,11 @@ PREHOOK: query: describe extended test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table
 POSTHOOK: type: DESCTABLE
-id	int	from deserializer
-query	string	from deserializer
-name	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	from deserializer   
+query               	string              	from deserializer   
+name                	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table test_table
@@ -74,10 +80,17 @@ PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
-dt	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
+dt                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -92,10 +105,17 @@ PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
-dt	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
+dt                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
@@ -110,10 +130,17 @@ PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
-dt	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
+dt                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- test partitions
@@ -133,10 +160,17 @@ PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
-dt	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
+dt                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table test_table partition(dt='2011') set serdeproperties ('field.delim' = ',')
@@ -152,10 +186,17 @@ PREHOOK: query: describe extended test_table partition (dt='2011')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended test_table partition (dt='2011')
 POSTHOOK: type: DESCTABLE
-id	int	
-query	string	
-name	string	
-dt	string	
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	None                
+query               	string              	None                
+name                	string              	None                
+dt                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: drop table test_table

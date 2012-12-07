@@ -17,8 +17,10 @@ PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
-key	int	from deserializer
-value	string	from deserializer
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	from deserializer   
+value               	string              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from hbase_table_1
