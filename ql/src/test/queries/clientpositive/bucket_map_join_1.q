@@ -14,7 +14,6 @@ load data local inpath '../data/files/SortCol2Col1.txt' overwrite into table tab
 
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 -- The tables are bucketed in same columns in different order,
 -- but sorted in different column orders
