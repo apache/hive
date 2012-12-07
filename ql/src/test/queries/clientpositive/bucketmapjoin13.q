@@ -22,7 +22,6 @@ CLUSTERED BY (key) INTO 2 BUCKETS;
 INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src;
 
-set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.optimize.bucketmapjoin=true;
 
 -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'

@@ -288,7 +288,11 @@ public final class GenMapRedUtils {
         bucketMJCxt.setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
         bucketMJCxt.setBigTablePartSpecToFileMapping(
           currMapJoinOp.getConf().getBigTablePartSpecToFileMapping());
-        plan.setUseBucketizedHiveInputFormat(currMapJoinOp instanceof SMBMapJoinOperator);
+        // BucketizedHiveInputFormat should be used for either sort merge join or bucket map join
+        if ((currMapJoinOp instanceof SMBMapJoinOperator)
+            || (currMapJoinOp.getConf().isBucketMapJoin())) {
+          plan.setUseBucketizedHiveInputFormat(true);
+        }
       }
     }
   }

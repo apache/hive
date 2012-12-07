@@ -15,8 +15,6 @@ insert overwrite table tmp2 select * from src where key < 50;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.merge.mapfiles=false;
-set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
 create table tmp3 (a string, b string, c string) clustered by (a) sorted by (a) into 10 buckets;
 
 

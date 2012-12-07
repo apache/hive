@@ -54,6 +54,9 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   //map join dump file name
   private String dumpFilePrefix;
 
+  // flag for bucket map join. One usage is to set BucketizedHiveInputFormat
+  private boolean isBucketMapJoin;
+
   public MapJoinDesc() {
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
@@ -232,5 +235,13 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public void setBigTablePartSpecToFileMapping(Map<String, List<String>> partToFileMapping) {
     this.bigTablePartSpecToFileMapping = partToFileMapping;
+  }
+
+  public boolean isBucketMapJoin() {
+    return isBucketMapJoin;
+  }
+
+  public void setBucketMapJoin(boolean isBucketMapJoin) {
+    this.isBucketMapJoin = isBucketMapJoin;
   }
 }
