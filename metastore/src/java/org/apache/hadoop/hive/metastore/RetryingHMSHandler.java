@@ -132,6 +132,8 @@ public class RetryingHMSHandler implements InvocationHandler {
       }
 
       if (retryCount >= retryLimit) {
+        // Since returning exceptions with a nested "cause" can be a problem in
+        // Thrift, we are stuffing the stack trace into the message itself.
         throw new MetaException(ExceptionUtils.getStackTrace(caughtException));
       }
 

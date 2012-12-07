@@ -40,7 +40,7 @@ public class TestMetaStoreAuthorization extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS.varname,
         "true");
     conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
+    conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     conf.setIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60);
   }
 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -1041,6 +1042,38 @@ public class MetaStoreUtils {
       return Class.forName(rawStoreClassName, true, JavaUtils.getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new MetaException(rawStoreClassName + " class not found");
+    }
+  }
+
+  /**
+   * Create an object of the given class.
+   * @param theClass
+   * @param parameterTypes
+   *          an array of parameterTypes for the constructor
+   * @param initargs
+   *          the list of arguments for the constructor
+   */
+  public static <T> T newInstance(Class<T> theClass, Class<?>[] parameterTypes,
+      Object[] initargs) {
+    // Perform some sanity checks on the arguments.
+    if (parameterTypes.length != initargs.length) {
+      throw new IllegalArgumentException(
+          "Number of constructor parameter types doesn't match number of arguments");
+    }
+    for (int i = 0; i < parameterTypes.length; i++) {
+      Class<?> clazz = parameterTypes[i];
+      if (!(clazz.isInstance(initargs[i]))) {
+        throw new IllegalArgumentException("Object : " + initargs[i]
+            + " is not an instance of " + clazz);
+      }
+    }
+
+    try {
+      Constructor<T> meth = theClass.getDeclaredConstructor(parameterTypes);
+      meth.setAccessible(true);
+      return meth.newInstance(initargs);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
   }
 }
