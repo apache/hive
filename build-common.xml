@@ -68,7 +68,7 @@
 
   <property name="hadoop.opts.23" value="-D mapreduce.framework.name=local" />
   <property name="hadoop.opts.20" value="" />
-  
+
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="${test.build.resources}" />
@@ -185,7 +185,7 @@
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
-    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" 
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"
              excludes="**/hadoop-*.jar"
              erroronmissingdir="false"/>
   </path>
@@ -395,7 +395,7 @@
     </if>
     <if>
       <equals arg1="${test.print.classpath}" arg2="true" />
-      <then>        
+      <then>
         <echo message="Test Classpath: ${hadoop.testcp}"/>
       </then>
     </if>
@@ -429,6 +429,7 @@
       <sysproperty key="derby.version" value="${derby.version}"/>
       <sysproperty key="hive.version" value="${version}"/>
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}"/>
+      <jvmarg line="${jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
