@@ -23,7 +23,7 @@
 <!-- WARNING!!! Any changes you make to this file will be ignored by Hive. -->
 <!-- WARNING!!! You must make your changes in hive-site.xml instead.       -->
 
-  
+
 <!-- Hive Execution Parameters -->
 <property>
   <name>mapred.reduce.tasks</name>
@@ -306,6 +306,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.failure.retries</name>
+  <value>3</value>
+  <description>Number of retries upon failure of Thrift metastore calls</description>
+</property>
+
+<property>
   <name>hive.metastore.client.connect.retry.delay</name>
   <value>1</value>
   <description>Number of seconds for the client to wait between consecutive connection attempts</description>
@@ -450,7 +456,7 @@
 
     The main difference between this paramater and hive.optimize.skewjoin is that this parameter
     uses the skew information stored in the metastore to optimize the plan at compile time itself.
-    If there is no skew information in the metadata, this parameter will not have any affect. 
+    If there is no skew information in the metadata, this parameter will not have any affect.
     Both hive.optimize.skewjoin.compiletime and hive.optimize.skewjoin should be set to true.
     Ideally, hive.optimize.skewjoin should be renamed as hive.optimize.skewjoin.runtime, but not doing
     so for backward compatibility.
@@ -465,7 +471,7 @@
   <value>false</value>
   <description>
     Whether to remove the union and push the operators between union and the filesink above
-    union. This avoids an extra scan of the output by union. This is independently useful for union 
+    union. This avoids an extra scan of the output by union. This is independently useful for union
     queries, and specially useful when hive.optimize.skewjoin.compiletime is set to true, since an
     extra union is inserted.
 
@@ -479,7 +485,7 @@
   <name>hive.mapred.supports.subdirectories</name>
   <value>false</value>
   <description>Whether the version of hadoop which is running supports sub-directories for tables/partitions.
-    Many hive optimizations can be applied if the hadoop version supports sub-directories for 
+    Many hive optimizations can be applied if the hadoop version supports sub-directories for
     tables/partitions. It was added by MAPREDUCE-1501
 </property>
 
@@ -494,9 +500,9 @@
 <property>
   <name>hive.map.groupby.sorted</name>
   <value>false</value>
-  <description>If the bucketing/sorting properties of the table exactly match the grouping key, whether to 
+  <description>If the bucketing/sorting properties of the table exactly match the grouping key, whether to
     perform the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this
-    is that it limits the number of mappers to the number of files. 
+    is that it limits the number of mappers to the number of files.
   </description>
 </property>
 
@@ -531,7 +537,7 @@
     The algorithm is as follows: At runtime, detect the keys with a large skew. Instead of
     processing those keys, store them temporarily in a hdfs directory. In a follow-up map-reduce
     job, process those skewed keys. The same key need not be skewed for all the tables, and so,
-    the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a 
+    the follow-up map-reduce job (for the skewed keys) would be much faster, since it would be a
     map-join.
 </description>
 </property>
@@ -580,7 +586,7 @@
 <property>
   <name>hive.mapred.mode</name>
   <value>nonstrict</value>
-  <description>The mode in which the hive operations are being performed. 
+  <description>The mode in which the hive operations are being performed.
      In strict mode, some risky queries are not allowed to run. They include:
        Cartesian Product.
        No partition being picked up for a query.
@@ -594,8 +600,8 @@
   <name>hive.enforce.bucketmapjoin</name>
   <value>false</value>
   <description>If the user asked for bucketed map-side join, and it cannot be performed,
-    should the query fail or not ? For eg, if the buckets in the tables being joined are 
-    not a multiple of each other, bucketed map-side join cannot be performed, and the 
+    should the query fail or not ? For eg, if the buckets in the tables being joined are
+    not a multiple of each other, bucketed map-side join cannot be performed, and the
     query will fail if hive.enforce.bucketmapjoin is set to true.
   </description>
 </property>
@@ -1074,8 +1080,8 @@
 <property>
   <name>hive.stats.reliable</name>
   <value>false</value>
-  <description>Whether queries will fail because stats cannot be collected completely accurately. 
-    If this is set to true, reading/writing from/into a partition may fail becuase the stats 
+  <description>Whether queries will fail because stats cannot be collected completely accurately.
+    If this is set to true, reading/writing from/into a partition may fail becuase the stats
     could not be computed accurately.
   </description>
 </property>
@@ -1253,45 +1259,45 @@
   <name>hive.security.authorization.manager</name>
   <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider</value>
   <description>the hive client authorization manager class name.
-  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider. 
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider.
   </description>
 </property>
 
 <property>
   <name>hive.security.authenticator.manager</name>
   <value>org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator</value>
-  <description>hive client authenticator manager class name. 
+  <description>hive client authenticator manager class name.
   The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.user.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some users whenever a table gets created. 
-   An example like "userX,userY:select;userZ:create" will grant select privilege to userX and userY, 
+  <description>the privileges automatically granted to some users whenever a table gets created.
+   An example like "userX,userY:select;userZ:create" will grant select privilege to userX and userY,
    and grant create privilege to userZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.group.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some groups whenever a table gets created. 
-   An example like "groupX,groupY:select;groupZ:create" will grant select privilege to groupX and groupY, 
+  <description>the privileges automatically granted to some groups whenever a table gets created.
+   An example like "groupX,groupY:select;groupZ:create" will grant select privilege to groupX and groupY,
    and grant create privilege to groupZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.role.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some roles whenever a table gets created. 
-   An example like "roleX,roleY:select;roleZ:create" will grant select privilege to roleX and roleY, 
+  <description>the privileges automatically granted to some roles whenever a table gets created.
+   An example like "roleX,roleY:select;roleZ:create" will grant select privilege to roleX and roleY,
    and grant create privilege to roleZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.owner.grants</name>
   <value></value>
-  <description>the privileges automatically granted to the owner whenever a table gets created. 
+  <description>the privileges automatically granted to the owner whenever a table gets created.
    An example like "select,drop" will grant select and drop privilege to the owner of the table</description>
 </property>
 
@@ -1299,7 +1305,7 @@
   <name>hive.metastore.authorization.storage.checks</name>
   <value>false</value>
   <description>Should the metastore do authorization checks against the underlying storage
-  for operations like drop-partition (disallow the drop-partition if the user in 
+  for operations like drop-partition (disallow the drop-partition if the user in
   question doesn't have permissions to delete the corresponding directory
   on the storage).</description>
 </property>
@@ -1313,7 +1319,7 @@
 <property>
   <name>hive.index.compact.file.ignore.hdfs</name>
   <value>false</value>
-  <description>True the hdfs location stored in the index file will be igbored at runtime. 
+  <description>True the hdfs location stored in the index file will be igbored at runtime.
   If the data got moved or the name of the cluster got changed, the index data should still be usable.</description>
 </property>
 
@@ -1357,7 +1363,7 @@
 <property>
   <name>hive.lock.mapred.only.operation</name>
   <value>false</value>
-  <description>This param is to control whether or not only do lock on queries 
+  <description>This param is to control whether or not only do lock on queries
   that need to execute at least one mapred job.</description>
 </property>
 
@@ -1391,7 +1397,7 @@
 <property>
   <name>hive.rework.mapredwork</name>
   <value>false</value>
-  <description>should rework the mapred work or not. 
+  <description>should rework the mapred work or not.
   This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time.</description>
 </property>
 
@@ -1399,9 +1405,9 @@
   <name>hive.exec.concatenate.check.index</name>
   <value>true</value>
   <description>If this sets to true, hive will throw error when doing
-   'alter table tbl_name [partSpec] concatenate' on a table/partition 
-    that has indexes on it. The reason the user want to set this to true 
-    is because it can help user to avoid handling all index drop, recreation, 
+   'alter table tbl_name [partSpec] concatenate' on a table/partition
+    that has indexes on it. The reason the user want to set this to true
+    is because it can help user to avoid handling all index drop, recreation,
     rebuild work. This is very helpful for tables with thousands of partitions.</description>
 </property>
 
@@ -1416,14 +1422,14 @@
 	<name>hive.io.exception.handlers</name>
 	<value></value>
 	<description>A list of io exception handler class names. This is used
-		to construct a list exception handlers to handle exceptions thrown 
+		to construct a list exception handlers to handle exceptions thrown
 		by record readers</description>
 </property>
 
 <property>
   <name>hive.autogen.columnalias.prefix.label</name>
   <value>_c</value>
-  <description>String used as a prefix when auto generating column alias. 
+  <description>String used as a prefix when auto generating column alias.
   By default the prefix label will be appended with a column position number to form the column alias. Auto generation would happen if an aggregate function is used in a select clause without an explicit alias.</description>
 </property>
 
@@ -1454,15 +1460,15 @@
 <property>
   <name>hive.insert.into.multilevel.dirs</name>
   <value>false</value>
-  <description>Where to insert into multilevel directories like 
+  <description>Where to insert into multilevel directories like
   "insert directory '/HIVEFT25686/chinna/' from table"</description>
 </property>
 
 <property>
   <name>hive.warehouse.subdir.inherit.perms</name>
   <value>false</value>
-  <description>Set this to true if the the table directories should inherit the 
-    permission of the warehouse or database directory instead of being created 
+  <description>Set this to true if the the table directories should inherit the
+    permission of the warehouse or database directory instead of being created
     with the permissions derived from dfs umask</description>
 </property>
 
@@ -1515,7 +1521,7 @@
   <name>hive.multi.insert.move.tasks.share.dependencies</name>
   <value>false</value>
   <description>
-    If this is set all move tasks for tables/partitions (not directories) at the end of a 
+    If this is set all move tasks for tables/partitions (not directories) at the end of a
     multi-insert query will only begin once the dependencies for all these move tasks have been
     met.
     Advantages: If concurrency is enabled, the locks will only be released once the query has

@@ -90,7 +90,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
-      HiveConf.ConfVars.METASTORETHRIFTRETRIES,
+      HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
+      HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
       HiveConf.ConfVars.METASTOREPWD,
@@ -242,7 +243,10 @@ public class HiveConf extends Configuration {
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse"),
     METASTOREURIS("hive.metastore.uris", ""),
     // Number of times to retry a connection to a Thrift metastore server
-    METASTORETHRIFTRETRIES("hive.metastore.connect.retries", 5),
+    METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3),
+    // Number of times to retry a Thrift metastore call upon failure
+    METASTORETHRIFTFAILURERETRIES("hive.metastore.failure.retries", 1),
+
     // Number of seconds the client should wait between connection attempts
     METASTORE_CLIENT_CONNECT_RETRY_DELAY("hive.metastore.client.connect.retry.delay", 1),
     // Socket timeout for the client connection (in seconds)
