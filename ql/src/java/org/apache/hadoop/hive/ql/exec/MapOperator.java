@@ -270,7 +270,8 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
         partNames.add(key);
         // Partitions do not exist for this table
         if (partSpec == null) {
-          partValues[i] = new Text();
+          // for partitionless table, initialize partValue to null
+          partValues[i] = null;
         } else {
           partValues[i] = new Text(partSpec.get(key));
         }
