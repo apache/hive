@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CompressionUtils;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -563,18 +564,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    */
 
   private static void setupChildLog4j(Configuration conf) {
-    URL hive_l4j = ExecDriver.class.getClassLoader().getResource(LogUtils.HIVE_EXEC_L4J);
-    if (hive_l4j == null) {
-      hive_l4j = ExecDriver.class.getClassLoader().getResource(LogUtils.HIVE_L4J);
-    }
-
-    if (hive_l4j != null) {
-      // setting queryid so that log4j configuration can use it to generate
-      // per query log file
-      System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), HiveConf.getVar(conf,
-          HiveConf.ConfVars.HIVEQUERYID));
-      LogManager.resetConfiguration();
-      PropertyConfigurator.configure(hive_l4j);
+    try {
+      LogUtils.initHiveExecLog4j();
+    } catch (LogInitializationException e) {
+      System.err.println(e.getMessage());
     }
   }
 

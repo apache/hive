@@ -4097,8 +4097,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // any log specific settings via hiveconf will be ignored
     Properties hiveconf = cli.addHiveconfToSystemProperties();
 
-    // If the log4j.configuration property hasn't already been explicitly set, use Hive's default
-    // log4j configuration
+    // If the log4j.configuration property hasn't already been explicitly set,
+    // use Hive's default log4j configuration
     if (System.getProperty("log4j.configuration") == null) {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before any of the other core hive classes are loaded
