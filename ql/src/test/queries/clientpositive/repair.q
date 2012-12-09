@@ -19,6 +19,7 @@ MSCK TABLE repairtable;
 
 dfs -mkdir -p ../build/ql/test/data/warehouse/repairtable/p1=a/p2=a;
 dfs -mkdir -p ../build/ql/test/data/warehouse/repairtable/p1=b/p2=a;
+dfs -touchz ../build/ql/test/data/warehouse/repairtable/p1=b/p2=a/datafile;
 
 MSCK TABLE repairtable;
 
