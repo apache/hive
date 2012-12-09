@@ -76,6 +76,7 @@
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="sourceforge"/>
     </chain>
 
     <chain name="external">
