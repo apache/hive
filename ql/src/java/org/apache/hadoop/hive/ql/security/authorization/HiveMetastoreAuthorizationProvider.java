@@ -18,16 +18,23 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
-public class DefaultHiveAuthorizationProvider extends
-    BitSetCheckedAuthorizationProvider {
+/**
+ * HiveMetastoreAuthorizationProvider : An extension of HiveAuthorizaytionProvider
+ * that is intended to be called from the metastore-side. It will be invoked
+ * by AuthorizationPreEventListener.
+ *
+ */
+public interface HiveMetastoreAuthorizationProvider extends HiveAuthorizationProvider {
 
-  public void init(Configuration conf) throws HiveException {
-    hive_db = new HiveProxy(Hive.get(new HiveConf(conf, HiveAuthorizationProvider.class)));
-  }
+  /**
+   * Allows invoker of HiveMetaStoreAuthorizationProvider to send in a
+   * hive metastore handler that can be used to make calls to test
+   * whether or not authorizations can/will succeed. Intended to be called
+   * before any of the authorize methods are called.
+   * @param handler
+   */
+  void setMetaStoreHandler(HMSHandler handler);
 
 }

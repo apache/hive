@@ -16,18 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security.authorization;
+package org.apache.hadoop.hive.ql.security;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
-public class DefaultHiveAuthorizationProvider extends
-    BitSetCheckedAuthorizationProvider {
 
-  public void init(Configuration conf) throws HiveException {
-    hive_db = new HiveProxy(Hive.get(new HiveConf(conf, HiveAuthorizationProvider.class)));
-  }
+/**
+ * HiveMetastoreAuthenticationProvider is an interface extension
+ * from HiveAuthenticationProvider for authentication from the
+ * metastore side. The implementation should return userNames
+ * and groupNames, and take care that if the metastore is running
+ * a particular command as a user, it returns that user.
+ */
+public interface HiveMetastoreAuthenticationProvider extends HiveAuthenticationProvider{
+
+  /**
+   * Allows invoker of HiveMetastoreAuthenticationProvider to send in a
+   * hive metastore handler that can be used to provide data for any
+   * authentication that needs to be done.
+   * @param handler
+   */
+  void setMetaStoreHandler(HMSHandler handler);
 
 }

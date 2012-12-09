@@ -321,10 +321,10 @@ public final class HiveUtils {
 
   @SuppressWarnings("unchecked")
   public static HiveAuthorizationProvider getAuthorizeProviderManager(
-      Configuration conf, HiveAuthenticationProvider authenticator) throws HiveException {
+      Configuration conf, HiveConf.ConfVars authorizationProviderConfKey,
+      HiveAuthenticationProvider authenticator) throws HiveException {
 
-    String clsStr = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+    String clsStr = HiveConf.getVar(conf, authorizationProviderConfKey);
 
     HiveAuthorizationProvider ret = null;
     try {
@@ -346,11 +346,11 @@ public final class HiveUtils {
   }
 
   @SuppressWarnings("unchecked")
-  public static HiveAuthenticationProvider getAuthenticator(Configuration conf)
-      throws HiveException {
+  public static HiveAuthenticationProvider getAuthenticator(
+      Configuration conf, HiveConf.ConfVars authenticatorConfKey
+      ) throws HiveException {
 
-    String clsStr = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+    String clsStr = HiveConf.getVar(conf, authenticatorConfKey);
 
     HiveAuthenticationProvider ret = null;
     try {
@@ -369,6 +369,7 @@ public final class HiveUtils {
     }
     return ret;
   }
+
 
   /**
    * Convert FieldSchemas to columnNames with backticks around them.
