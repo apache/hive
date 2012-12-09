@@ -93,7 +93,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       }
       retriesMade++;
       LOG.warn("MetaStoreClient lost connection. Attempting to reconnect.",
-          caughtException.getCause());
+          caughtException);
       Thread.sleep(retryDelaySeconds * 1000);
       base.reconnect();
     }
