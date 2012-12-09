@@ -37,6 +37,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
@@ -52,6 +54,7 @@ public class HiveConf extends Configuration {
   protected Properties origProp;
   protected String auxJars;
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
+  private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
   private static byte[] confVarByteArray = null;
 
@@ -63,20 +66,10 @@ public class HiveConf extends Configuration {
       classLoader = HiveConf.class.getClassLoader();
     }
 
-    // Log a warning if hive-default.xml is found on the classpath
-    URL hiveDefaultURL = classLoader.getResource("hive-default.xml");
-    if (hiveDefaultURL != null) {
-      l4j.warn("DEPRECATED: Ignoring hive-default.xml found on the CLASSPATH at " +
-               hiveDefaultURL.getPath());
-    }
+    hiveDefaultURL = classLoader.getResource("hive-default.xml");
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
     hiveSiteURL = classLoader.getResource("hive-site.xml");
-    if (hiveSiteURL == null) {
-      l4j.warn("hive-site.xml not found on CLASSPATH");
-    } else {
-      l4j.debug("Using hive-site.xml found on CLASSPATH at " + hiveSiteURL.getPath());
-    }
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
     }
@@ -640,6 +633,10 @@ public class HiveConf extends Configuration {
     HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true),
     HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", ""),
 
+    // logging configuration
+    HIVE_LOG4J_FILE("hive.log4j.file", ""),
+    HIVE_EXEC_LOG4J_FILE("hive.exec.log4j.file", ""),
+
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c"),
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME(
@@ -1081,10 +1078,6 @@ public class HiveConf extends Configuration {
     return (ret);
   }
 
-  public String getHiveSitePath() {
-    return hiveSiteURL.getPath();
-  }
-
   public String getJar() {
     return hiveJar;
   }
@@ -1102,6 +1095,14 @@ public class HiveConf extends Configuration {
   public void setAuxJars(String auxJars) {
     this.auxJars = auxJars;
     setVar(this, ConfVars.HIVEAUXJARS, auxJars);
+  }
+
+  public URL getHiveDefaultLocation() {
+    return hiveDefaultURL;
+  }
+
+  public URL getHiveSiteLocation() {
+    return hiveSiteURL;
   }
 
   /**

@@ -119,12 +119,10 @@ public class TestHiveHistory extends TestCase {
     try {
 
       // NOTE: It is critical to do this here so that log4j is reinitialized
-      // before
-      // any of the other core hive classes are loaded
+      // before any of the other core hive classes are loaded
       try {
         LogUtils.initHiveLog4j();
       } catch (LogInitializationException e) {
-        // ignore
       }
 
       CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));

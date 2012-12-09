@@ -35,7 +35,7 @@ public class TestHiveConf extends TestCase {
   public void testHiveSitePath() throws Exception {
     String expectedPath =
         new Path(System.getProperty("test.build.resources") + "/hive-site.xml").toUri().getPath();
-    assertEquals(expectedPath, new HiveConf().getHiveSitePath());
+    assertEquals(expectedPath, new HiveConf().getHiveSiteLocation().getPath());
   }
 
   private void checkHadoopConf(String name, String expectedHadoopVal) throws Exception {
