@@ -81,7 +81,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-
+NULL
 PREHOOK: query: alter table TEST1 add partition (ds='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@test1
