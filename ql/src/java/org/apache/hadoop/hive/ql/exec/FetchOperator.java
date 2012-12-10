@@ -440,7 +440,7 @@ public class FetchOperator implements Serializable {
         totalSize += split.getLength();
     }
     List<FetchInputFormatSplit> result = new ArrayList<FetchInputFormatSplit>();
-    long targetSize = (long) (totalSize * splitSample.getPercent() / 100D);
+    long targetSize = splitSample.getTargetSize(totalSize);
     int startIndex = splitSample.getSeedNum() % splits.length;
     long size = 0;
     for (int i = 0; i < splits.length; i++) {

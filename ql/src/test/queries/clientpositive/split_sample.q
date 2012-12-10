@@ -78,3 +78,31 @@ set mapred.min.split.size.per.node=300000;
 set mapred.min.split.size.per.rack=300000;
 select count(1) from ss_src2 tablesample(1 percent);
 select count(1) from ss_src2 tablesample(50 percent);
+
+--HIVE-3401 more split samplings
+
+-- total length
+explain
+select count(1) from ss_src2 tablesample(100B);
+select count(1) from ss_src2 tablesample(100B);
+
+explain
+select count(1) from ss_src2 tablesample(1K);
+select count(1) from ss_src2 tablesample(1K);
+
+-- row per split
+explain
+select key, value from ss_src2 tablesample(0 ROWS);
+select key, value from ss_src2 tablesample(0 ROWS);
+
+explain
+select count(1) from ss_src2 tablesample(10 ROWS);
+select count(1) from ss_src2 tablesample(10 ROWS);
+
+explain
+select count(1) from ss_src2 tablesample(100 ROWS);
+select count(1) from ss_src2 tablesample(100 ROWS);
+
+set hive.fetch.task.conversion=more;
+select key from ss_src2 tablesample(200B);
+select key from ss_src2 tablesample(10 ROWS);

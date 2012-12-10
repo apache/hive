@@ -44,6 +44,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private List<String> partColumns;
 
   /**
+   * Used for split sampling (row count per split)
+   * For example,
+   *   select count(1) from ss_src2 tablesample(10 ROWS);
+   * provides first 10 rows from all input splits
+   */
+  private int rowLimit = -1;
+
+  /**
    * A boolean variable set to true by the semantic analyzer only in case of the analyze command.
    *
    */
@@ -148,5 +156,18 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
     this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
+  }
+
+  public void setRowLimit(int rowLimit) {
+    this.rowLimit = rowLimit;
+  }
+
+  public int getRowLimit() {
+    return rowLimit;
+  }
+
+  @Explain(displayName = "Row Limit Per Split")
+  public Integer getRowLimitExplain() {
+    return rowLimit >= 0 ? rowLimit : null;
   }
 }

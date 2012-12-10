@@ -299,7 +299,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   private static boolean isPrintable(Object val) {
     if (val instanceof Boolean || val instanceof String
-        || val instanceof Integer || val instanceof Byte
+        || val instanceof Integer || val instanceof Long || val instanceof Byte
         || val instanceof Float || val instanceof Double) {
       return true;
     }

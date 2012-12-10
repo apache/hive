@@ -438,6 +438,7 @@ public class ParseDriver {
     try {
       r = parser.statement();
     } catch (RecognitionException e) {
+      e.printStackTrace();
       throw new ParseException(parser.getErrors());
     }
 
