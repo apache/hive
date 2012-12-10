@@ -50,8 +50,8 @@ public class GenericUDFReflect extends GenericUDF {
   StringObjectInspector classNameOI;
   StringObjectInspector methodNameOI;
   
-  Class<?>[] parameterJavaClasses; // Classes are Integer, Double, String
-  Class<?>[] parameterJavaTypes;   // Types are int, double, etc
+  PrimitiveTypeEntry[] parameterTypes;
+  Class[] parameterClasses;
   Object[] parameterJavaValues;
   
   @Override
@@ -77,8 +77,8 @@ public class GenericUDFReflect extends GenericUDF {
     methodNameOI = (StringObjectInspector)
         ObjectInspectorUtils.getStandardObjectInspector(arguments[1]);
     
-    parameterJavaClasses = new Class[arguments.length - 2];
-    parameterJavaTypes = new Class[arguments.length - 2];
+    parameterTypes = new PrimitiveTypeEntry[arguments.length - 2];
+    parameterClasses = new Class[arguments.length - 2];
     for (int i = 2; i < arguments.length; i++) {
       if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
         throw new UDFArgumentTypeException(i,
@@ -87,10 +87,10 @@ public class GenericUDFReflect extends GenericUDF {
       }
       PrimitiveCategory category =
           ((PrimitiveObjectInspector)arguments[i]).getPrimitiveCategory();
-      PrimitiveTypeEntry t =
+      parameterTypes[i - 2] =
           PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveCategory(category);
-      parameterJavaClasses[i - 2] = t.primitiveJavaClass;
-      parameterJavaTypes[i - 2] = t.primitiveJavaType;
+      parameterClasses[i - 2] = parameterTypes[i - 2].primitiveJavaType == null ?
+          parameterTypes[i - 2].primitiveJavaClass : parameterTypes[i - 2].primitiveJavaType;
     }
     
     parameterJavaValues = new Object[arguments.length - 2];
@@ -152,17 +152,9 @@ public class GenericUDFReflect extends GenericUDF {
       methodName = ObjectInspectorUtils.copyToStandardObject(newMethodName, newMethodNameOI);
       String methodNameString = methodNameOI.getPrimitiveJavaObject(methodName);
       try {
-        m = c.getMethod(methodNameString, parameterJavaClasses);
-      } catch (SecurityException e) {
+        m = findMethod(c, methodNameString, parameterTypes, parameterClasses);
+      } catch (Exception e) {
         throw new HiveException("UDFReflect getMethod ", e);
-      } catch (NoSuchMethodException e) {
-        try {
-          m = c.getMethod(methodNameString, parameterJavaTypes);
-        } catch (SecurityException ex) {
-          throw new HiveException("UDFReflect getMethod ", ex);
-        } catch (NoSuchMethodException ex) {
-          throw new HiveException("UDFReflect getMethod ", ex);
-        }
       }
     }
     
@@ -200,5 +192,32 @@ public class GenericUDFReflect extends GenericUDF {
     sb.append(')');
     return sb.toString();
   }
-  
+
+  // a(string,int,int) can be matched with methods like
+  // a(string,int,int), a(string,int,Integer), a(string,Integer,int) and a(string,Integer,Integer)
+  // and accepts the first one clazz.getMethods() returns
+  private Method findMethod(Class clazz, String name, PrimitiveTypeEntry[] parameterTypes,
+      Class[] parameterClasses) throws Exception {
+    for (Method method : clazz.getMethods()) {
+      if (!method.getName().equals(name) || method.getReturnType() != String.class ||
+          method.getParameterTypes().length != parameterTypes.length) {
+        continue;
+      }
+      // returns first one matches all of the params
+      boolean match = true;
+      Class<?>[] types = method.getParameterTypes();
+      for (int i = 0; i < parameterTypes.length; i++) {
+        if (types[i] != parameterTypes[i].primitiveJavaType &&
+            types[i] != parameterTypes[i].primitiveJavaClass) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        return method;
+      }
+    }
+    // tried all, back to original code (for error message)
+    return clazz.getMethod(name, parameterClasses);
+  }
 }
