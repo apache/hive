@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 
 /**
  * ObjectInspectorConverters.
@@ -124,13 +125,13 @@ public final class ObjectInspectorConverters {
             + " not supported yet.");
       }
     case STRUCT:
-      return new StructConverter((StructObjectInspector) inputOI,
+      return new StructConverter(inputOI,
           (SettableStructObjectInspector) outputOI);
     case LIST:
-      return new ListConverter((ListObjectInspector) inputOI,
+      return new ListConverter(inputOI,
           (SettableListObjectInspector) outputOI);
     case MAP:
-      return new MapConverter((MapObjectInspector) inputOI,
+      return new MapConverter(inputOI,
           (SettableMapObjectInspector) outputOI);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
@@ -154,14 +155,20 @@ public final class ObjectInspectorConverters {
 
     Object output;
 
-    public ListConverter(ListObjectInspector inputOI,
+    public ListConverter(ObjectInspector inputOI,
         SettableListObjectInspector outputOI) {
-      this.inputOI = inputOI;
-      this.outputOI = outputOI;
-      inputElementOI = inputOI.getListElementObjectInspector();
-      outputElementOI = outputOI.getListElementObjectInspector();
-      output = outputOI.create(0);
-      elementConverters = new ArrayList<Converter>();
+      if (inputOI instanceof ListObjectInspector) {
+        this.inputOI = (ListObjectInspector)inputOI;
+        this.outputOI = outputOI;
+        inputElementOI = this.inputOI.getListElementObjectInspector();
+        outputElementOI = outputOI.getListElementObjectInspector();
+        output = outputOI.create(0);
+        elementConverters = new ArrayList<Converter>();
+      } else if (!(inputOI instanceof VoidObjectInspector)) {
+        throw new RuntimeException("Hive internal error: conversion of " +
+            inputOI.getTypeName() + " to " + outputOI.getTypeName() +
+            "not supported yet.");
+      }
     }
 
     @Override
@@ -207,22 +214,27 @@ public final class ObjectInspectorConverters {
 
     Object output;
 
-    public StructConverter(StructObjectInspector inputOI,
+    public StructConverter(ObjectInspector inputOI,
         SettableStructObjectInspector outputOI) {
+      if (inputOI instanceof StructObjectInspector) {
+        this.inputOI = (StructObjectInspector)inputOI;
+        this.outputOI = outputOI;
+        inputFields = this.inputOI.getAllStructFieldRefs();
+        outputFields = outputOI.getAllStructFieldRefs();
+        assert (inputFields.size() == outputFields.size());
 
-      this.inputOI = inputOI;
-      this.outputOI = outputOI;
-      inputFields = inputOI.getAllStructFieldRefs();
-      outputFields = outputOI.getAllStructFieldRefs();
-      assert (inputFields.size() == outputFields.size());
-
-      fieldConverters = new ArrayList<Converter>(inputFields.size());
-      for (int f = 0; f < inputFields.size(); f++) {
-        fieldConverters.add(getConverter(inputFields.get(f)
-            .getFieldObjectInspector(), outputFields.get(f)
-            .getFieldObjectInspector()));
+        fieldConverters = new ArrayList<Converter>(inputFields.size());
+        for (int f = 0; f < inputFields.size(); f++) {
+          fieldConverters.add(getConverter(inputFields.get(f)
+              .getFieldObjectInspector(), outputFields.get(f)
+              .getFieldObjectInspector()));
+        }
+        output = outputOI.create();
+      } else if (!(inputOI instanceof VoidObjectInspector)) {
+        throw new RuntimeException("Hive internal error: conversion of " +
+            inputOI.getTypeName() + " to " + outputOI.getTypeName() +
+            "not supported yet.");
       }
-      output = outputOI.create();
     }
 
     @Override
@@ -263,17 +275,23 @@ public final class ObjectInspectorConverters {
 
     Object output;
 
-    public MapConverter(MapObjectInspector inputOI,
+    public MapConverter(ObjectInspector inputOI,
         SettableMapObjectInspector outputOI) {
-      this.inputOI = inputOI;
-      this.outputOI = outputOI;
-      inputKeyOI = inputOI.getMapKeyObjectInspector();
-      outputKeyOI = outputOI.getMapKeyObjectInspector();
-      inputValueOI = inputOI.getMapValueObjectInspector();
-      outputValueOI = outputOI.getMapValueObjectInspector();
-      keyConverters = new ArrayList<Converter>();
-      valueConverters = new ArrayList<Converter>();
-      output = outputOI.create();
+      if (inputOI instanceof MapObjectInspector) {
+        this.inputOI = (MapObjectInspector)inputOI;
+        this.outputOI = outputOI;
+        inputKeyOI = this.inputOI.getMapKeyObjectInspector();
+        outputKeyOI = outputOI.getMapKeyObjectInspector();
+        inputValueOI = this.inputOI.getMapValueObjectInspector();
+        outputValueOI = outputOI.getMapValueObjectInspector();
+        keyConverters = new ArrayList<Converter>();
+        valueConverters = new ArrayList<Converter>();
+        output = outputOI.create();
+      } else if (!(inputOI instanceof VoidObjectInspector)) {
+        throw new RuntimeException("Hive internal error: conversion of " +
+            inputOI.getTypeName() + " to " + outputOI.getTypeName() +
+            "not supported yet.");
+      }
     }
 
     @Override
