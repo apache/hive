@@ -105,6 +105,7 @@ named_struct
 negative
 ngrams
 not
+nvl
 or
 parse_url
 parse_url_tuple

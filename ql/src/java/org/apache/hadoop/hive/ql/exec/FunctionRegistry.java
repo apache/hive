@@ -177,6 +177,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapKeys;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapValues;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNamedStruct;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
@@ -306,6 +307,7 @@ public final class FunctionRegistry {
     registerUDF("regexp_replace", UDFRegExpReplace.class, false);
     registerUDF("regexp_extract", UDFRegExpExtract.class, false);
     registerUDF("parse_url", UDFParseUrl.class, false);
+    registerGenericUDF("nvl", GenericUDFNvl.class);
     registerGenericUDF("split", GenericUDFSplit.class);
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     registerGenericUDF("translate", GenericUDFTranslate.class);
