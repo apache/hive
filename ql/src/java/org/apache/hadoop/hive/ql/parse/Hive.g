@@ -186,6 +186,9 @@ TOK_TABLELOCATION;
 TOK_PARTITIONLOCATION;
 TOK_TABLEBUCKETSAMPLE;
 TOK_TABLESPLITSAMPLE;
+TOK_PERCENT;
+TOK_LENGTH;
+TOK_ROWCOUNT;
 TOK_TMP_FILE;
 TOK_TABSORTCOLNAMEASC;
 TOK_TABSORTCOLNAMEDESC;
@@ -1810,7 +1813,12 @@ splitSample
 @init { msgs.push("table split sample specification"); }
 @after { msgs.pop(); }
     :
-    KW_TABLESAMPLE LPAREN  (numerator=Number) KW_PERCENT RPAREN -> ^(TOK_TABLESPLITSAMPLE $numerator)
+    KW_TABLESAMPLE LPAREN  (numerator=Number) (percent=KW_PERCENT|KW_ROWS) RPAREN
+    -> {percent != null}? ^(TOK_TABLESPLITSAMPLE TOK_PERCENT $numerator)
+    -> ^(TOK_TABLESPLITSAMPLE TOK_ROWCOUNT $numerator)
+    |
+    KW_TABLESAMPLE LPAREN  (numerator=ByteLengthLiteral) RPAREN
+    -> ^(TOK_TABLESPLITSAMPLE TOK_LENGTH $numerator)
     ;
 
 tableSample
@@ -2426,6 +2434,7 @@ KW_SORTED: 'SORTED';
 KW_INTO: 'INTO';
 KW_BUCKETS: 'BUCKETS';
 KW_ROW: 'ROW';
+KW_ROWS: 'ROWS';
 KW_FORMAT: 'FORMAT';
 KW_DELIMITED: 'DELIMITED';
 KW_FIELDS: 'FIELDS';
@@ -2645,6 +2654,11 @@ SmallintLiteral
 TinyintLiteral
     :
     (Digit)+ 'Y'
+    ;
+
+ByteLengthLiteral
+    :
+    (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
     ;
 
 Number

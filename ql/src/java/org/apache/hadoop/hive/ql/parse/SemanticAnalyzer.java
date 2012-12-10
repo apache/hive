@@ -514,14 +514,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       ASTNode sampleClause = (ASTNode) tabref.getChild(1);
       String alias_id = getAliasId(alias, qb);
-      String strPercentage = unescapeIdentifier(sampleClause.getChild(0).getText());
-      Double percent = Double.valueOf(strPercentage).doubleValue();
-      if (percent < 0  || percent > 100) {
-        throw new SemanticException(generateErrorMessage(sampleClause,
-                    "Sampling percentage should be between 0 and 100"));
+
+      Tree type = sampleClause.getChild(0);
+      String numerator = unescapeIdentifier(sampleClause.getChild(1).getText());
+
+      SplitSample sample;
+      if (type.getType() == HiveParser.TOK_PERCENT) {
+        Double percent = Double.valueOf(numerator).doubleValue();
+        if (percent < 0  || percent > 100) {
+          throw new SemanticException(generateErrorMessage(sampleClause,
+              "Sampling percentage should be between 0 and 100"));
+        }
+        int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
+        sample = new SplitSample(percent, seedNum);
+      } else if (type.getType() == HiveParser.TOK_ROWCOUNT) {
+        sample = new SplitSample(Integer.valueOf(numerator));
+      } else {
+        assert type.getType() == HiveParser.TOK_LENGTH;
+        long length = Integer.valueOf(numerator.substring(0, numerator.length() - 1));
+        char last = numerator.charAt(numerator.length() - 1);
+        if (last == 'k' || last == 'K') {
+          length <<= 10;
+        } else if (last == 'm' || last == 'M') {
+          length <<= 20;
+        } else if (last == 'g' || last == 'G') {
+          length <<= 30;
+        }
+        int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
+        sample = new SplitSample(length, seedNum);
       }
-      nameToSplitSample.put(alias_id, new SplitSample(
-          percent, conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM)));
+      nameToSplitSample.put(alias_id, sample);
     }
     // Insert this map into the stats
     qb.setTabAlias(alias, tabIdName);
@@ -7203,6 +7225,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
+
+      SplitSample sample = nameToSplitSample.get(alias);
+      if (sample != null && sample.getRowCount() != null) {
+        tsDesc.setRowLimit(sample.getRowCount());
+        nameToSplitSample.remove(alias);
+      }
 
       top = putOpInsertMap(OperatorFactory.get(tsDesc,
         new RowSchema(rwsch.getColumnInfos())), rwsch);

@@ -242,7 +242,7 @@ public class MapredWork extends AbstractOperatorDesc {
     return reducer;
   }
 
-  @Explain(displayName = "Percentage Sample")
+  @Explain(displayName = "Split Sample")
   public HashMap<String, SplitSample> getNameToSplitSample() {
     return nameToSplitSample;
   }

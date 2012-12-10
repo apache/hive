@@ -482,8 +482,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
     for (String alias : work.getAliasToWork().keySet()) {
       if (work.getNameToSplitSample().containsKey(alias)) {
         allSample = true;
-        double rate = work.getNameToSplitSample().get(alias).getPercent();
-        if (rate > highestSamplePercentage) {
+        Double rate = work.getNameToSplitSample().get(alias).getPercent();
+        if (rate != null && rate > highestSamplePercentage) {
           highestSamplePercentage = rate;
         }
       } else {
