@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -54,6 +53,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * TestMetaStoreEventListener. Test case for
@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * {@link org.apache.hadoop.hive.metastore.MetaStorePreEventListener}
  */
 public class TestMetaStoreEventListener extends TestCase {
-  private static final String msPort = "20001";
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
   private Driver driver;
@@ -69,19 +68,6 @@ public class TestMetaStoreEventListener extends TestCase {
   private static final String dbName = "tmpdb";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
-
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[]{msPort});
-      } catch (Throwable e) {
-        e.printStackTrace(System.err);
-        assert false;
-      }
-    }
-  }
 
   @Override
   protected void setUp() throws Exception {
@@ -93,12 +79,11 @@ public class TestMetaStoreEventListener extends TestCase {
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
 
-    Thread t = new Thread(new RunMS());
-    t.start();
-    Thread.sleep(40000);
+    int port = MetaStoreUtils.findFreePort();
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
 
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");

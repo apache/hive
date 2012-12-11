@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.metastore;
 public class TestSetUGIOnOnlyServer extends TestSetUGIOnBothClientServer {
 
   @Override
-  protected void createClient(boolean setugi) throws Exception {
+  protected void createClient(boolean setugi, int port) throws Exception {
     // It is turned on for both client and server because of super class. Turn it off for client.
-    super.createClient(false);
+    super.createClient(false, port);
   }
 }
