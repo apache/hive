@@ -68,6 +68,8 @@ public class MetaStoreUtils {
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
 
+  public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+
   /**
    * printStackTrace
    *
@@ -1076,4 +1078,5 @@ public class MetaStoreUtils {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
   }
+
 }

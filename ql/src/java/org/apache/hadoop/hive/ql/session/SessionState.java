@@ -282,10 +282,11 @@ public class SessionState {
     }
 
     try {
-      startSs.authenticator = HiveUtils.getAuthenticator(startSs
-          .getConf());
-      startSs.authorizer = HiveUtils.getAuthorizeProviderManager(startSs
-          .getConf(), startSs.authenticator);
+      startSs.authenticator = HiveUtils.getAuthenticator(
+          startSs.getConf(),HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+      startSs.authorizer = HiveUtils.getAuthorizeProviderManager(
+          startSs.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+          startSs.authenticator);
       startSs.createTableGrants = CreateTableAutomaticGrant.create(startSs
           .getConf());
     } catch (HiveException e) {

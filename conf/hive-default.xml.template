@@ -1264,9 +1264,39 @@
 </property>
 
 <property>
+  <name>hive.security.metastore.authorization.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider</value>
+  <description>authorization manager class name to be used in the metastore for authorization.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. 
+  </description>
+</property>
+
+<property>
+  <name>hive.security.metastore.authorization.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider</value>
+  <description>authorization manager class name to be used in the metastore for authorization.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider. 
+  </description>
+</property>
+
+<property>
   <name>hive.security.authenticator.manager</name>
   <value>org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator</value>
   <description>hive client authenticator manager class name.
+  The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
+</property>
+
+<property>
+  <name>hive.security.metastore.authenticator.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator</value>
+  <description>authenticator manager class name to be used in the metastore for authentication. 
+  The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
+</property>
+
+<property>
+  <name>hive.security.metastore.authenticator.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator</value>
+  <description>authenticator manager class name to be used in the metastore for authentication. 
   The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
 </property>
 

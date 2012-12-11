@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DATABASE_WAREHOUSE_SUFFIX;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.FileNotFoundException;
@@ -163,6 +164,14 @@ public class Warehouse {
     }
     return new Path(db.getLocationUri());
   }
+
+  public Path getDefaultDatabasePath(String dbName) throws MetaException {
+    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return getWhRoot();
+    }
+    return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+  }
+
 
   public Path getTablePath(Database db, String tableName)
       throws MetaException {

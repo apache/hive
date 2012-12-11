@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -87,6 +86,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -365,6 +365,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return conf;
     }
 
+    public Warehouse getWh() {
+      return wh;
+    }
+
     /**
      * Get a cached RawStore.
      *
@@ -397,7 +401,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (NoSuchObjectException e) {
         ms.createDatabase(
             new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-                getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
+                wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
       }
       HMSHandler.createDefaultDB = true;
     }
@@ -515,22 +519,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return counters;
     }
 
-    private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
-
-    private Path getDefaultDatabasePath(String dbName) throws MetaException {
-      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return wh.getWhRoot();
-      }
-      return new Path(wh.getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
-    }
-
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
       if (!validateName(db.getName())) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
       if (null == db.getLocationUri()) {
-        db.setLocationUri(getDefaultDatabasePath(db.getName()).toString());
+        db.setLocationUri(wh.getDefaultDatabasePath(db.getName()).toString());
       } else {
         db.setLocationUri(wh.getDnsPath(new Path(db.getLocationUri())).toString());
       }

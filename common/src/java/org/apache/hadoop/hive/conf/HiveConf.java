@@ -610,6 +610,11 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider"),
     HIVE_AUTHENTICATOR_MANAGER("hive.security.authenticator.manager",
         "org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator"),
+    HIVE_METASTORE_AUTHORIZATION_MANAGER("hive.security.metastore.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization."
+        + "DefaultHiveMetastoreAuthorizationProvider"),
+    HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
+        "org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator"),
     HIVE_AUTHORIZATION_TABLE_USER_GRANTS("hive.security.authorization.createtable.user.grants", ""),
     HIVE_AUTHORIZATION_TABLE_GROUP_GRANTS("hive.security.authorization.createtable.group.grants",
         ""),
