@@ -266,11 +266,13 @@ public class CliDriver {
 
             printHeader(qp, out);
 
+            int counter = 0;
             try {
               while (qp.getResults(res)) {
                 for (String r : res) {
                   out.println(r);
                 }
+                counter += res.size();
                 res.clear();
                 if (out.checkError()) {
                   break;
@@ -289,10 +291,9 @@ public class CliDriver {
             }
 
             long end = System.currentTimeMillis();
-            if (end > start) {
-              double timeTaken = (end - start) / 1000.0;
-              console.printInfo("Time taken: " + timeTaken + " seconds", null);
-            }
+            double timeTaken = (end - start) / 1000.0;
+            console.printInfo("Time taken: " + timeTaken + " seconds" +
+                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
 
           } else {
             String firstToken = tokenizeCmd(cmd.trim())[0];
