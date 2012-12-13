@@ -37,7 +37,8 @@ public class KeyVerifyingStatsAggregator implements StatsAggregator {
     SessionState ss = SessionState.get();
     // Have to use the length instead of the actual prefix because the prefix is location dependent
     // 17 is 16 (16 byte MD5 hash) + 1 for the path separator
-    ss.out.println("Stats prefix is hashed: " + new Boolean(keyPrefix.length() == 17));
+    // Can be less than 17 due to unicode characters
+    ss.out.println("Stats prefix is hashed: " + new Boolean(keyPrefix.length() <= 17));
     return null;
   }
 
