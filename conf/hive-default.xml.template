@@ -688,6 +688,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.init.hooks</name>
+  <value></value>
+  <description>A comma separated list of hooks to be invoked at the beginning of HMSHandler initialization. Aninit hook is specified as the name of Java class which extends org.apache.hadoop.hive.metastore.MetaStoreInitListener.</description>
+</property>
+
+<property>
   <name>hive.client.stats.publishers</name>
   <value></value>
   <description>Comma-separated list of statistics publishers to be invoked on counters on each job.  A client stats publisher is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.stats.ClientStatsPublisher interface.</description>

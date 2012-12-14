@@ -294,6 +294,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private List<MetaStorePreEventListener> preListeners;
     private List<MetaStoreEventListener> listeners;
     private List<MetaStoreEndFunctionListener> endFunctionListeners;
+    private List<MetaStoreInitListener> initListeners;
 
     {
       classLoader = Thread.currentThread().getContextClassLoader();
@@ -306,6 +307,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
       checkForDefaultDb = hiveConf.getBoolean(
           "hive.metastore.checkForDefaultDb", true);
+      initListeners = MetaStoreUtils.getMetaStoreListeners(
+          MetaStoreInitListener.class, hiveConf,
+          hiveConf.getVar(HiveConf.ConfVars.METASTORE_INIT_HOOKS));
+      for (MetaStoreInitListener singleInitListener: initListeners) {
+          MetaStoreInitContext context = new MetaStoreInitContext();
+          singleInitListener.onInit(context);
+      }
+
       String alterHandlerName = hiveConf.get("hive.metastore.alter.impl",
           HiveAlterHandler.class.getName());
       alterHandler = (AlterHandler) ReflectionUtils.newInstance(MetaStoreUtils.getClass(
