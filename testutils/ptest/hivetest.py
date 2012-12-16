@@ -258,12 +258,15 @@ def segment_tests(path):
     tests = local.run('ls -1', quiet = True, abandon_output = False).strip().split('\n')
 
     qfile_set.cd(host_code_path + path)
-    cmd = []
+    test_splits = [[] for i in range(len(qfile_set))]
     i = 0
     for test in tests:
-        host = qfile_set.conn[i].hostname
-        cmd.append('if [[ "{host}" != "' + host + '" ]]; then rm -f "' + test + '"; fi')
+        test_splits[i].append(test)
         i = (i + 1) % len(qfile_set)
+    cmd = []
+    for i in range(len(qfile_set)):
+        host = qfile_set.conn[i].hostname
+        cmd.append('if [[ "{host}" != "' + host + '" ]]; then rm -f ' + ' '.join(test_splits[i]) + '; fi')
     cmd = ' && '.join(cmd)
     # The command is huge and printing it out is not very useful, using wabbit
     # hunting mode.
@@ -521,7 +524,7 @@ def cmd_test(patches = [], revision = None, one_file_report = False):
       local.run('rm -rf "' + master_base_path + '/templogs/"')
       local.run('mkdir -p "' + master_base_path + '/templogs/"')
       tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
-      
+
       for test in tests:
         local.run('sudo -u root ant -Divy.default.ivy.user.dir={0} '.format(ivy_path) + ' -Dtestcase=' + test + ' test')
         local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
