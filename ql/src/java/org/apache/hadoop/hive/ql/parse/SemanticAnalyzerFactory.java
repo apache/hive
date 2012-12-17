@@ -120,6 +120,9 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTBLPART_SKEWED_LOCATION,
         new HiveOperation[] {HiveOperation.ALTERTBLPART_SKEWED_LOCATION,
             HiveOperation.ALTERTBLPART_SKEWED_LOCATION });
+    tablePartitionCommandType.put(HiveParser.TOK_TABLEBUCKETS,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_BUCKETNUM,
+            HiveOperation.ALTERPARTITION_BUCKETNUM});
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
