@@ -34,6 +34,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   ArrayList<PartitionSpec> partSpecs;
   boolean expectView;
   boolean ifExists;
+  boolean ignoreProtection;
   boolean stringPartitionColumns; // This is due to JDO not working very well with
                                   // non-string partition columns.
                                   // We need a different codepath for them
@@ -50,17 +51,20 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     partSpecs = null;
     this.expectView = expectView;
     this.ifExists = ifExists;
+    this.ignoreProtection = false;
     this.stringPartitionColumns = stringPartitionColumns;
   }
 
   public DropTableDesc(String tableName, List<PartitionSpec> partSpecs,
-                       boolean expectView, boolean stringPartitionColumns) {
+                       boolean expectView, boolean stringPartitionColumns,
+                       boolean ignoreProtection) {
 
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartitionSpec>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
       this.partSpecs.add(partSpecs.get(i));
     }
+    this.ignoreProtection = ignoreProtection;
     this.expectView = expectView;
     this.stringPartitionColumns = stringPartitionColumns;
   }
@@ -95,6 +99,21 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   public void setPartSpecs(ArrayList<PartitionSpec> partSpecs) {
     this.partSpecs = partSpecs;
   }
+
+  /**
+   * @return whether or not protection will be ignored for the partition
+   */
+  public boolean getIgnoreProtection() {
+    return ignoreProtection;
+  }
+
+  /**
+   * @param ignoreProtection
+   *          set whether or not protection will be ignored for the partition
+   */
+   public void setIgnoreProtection(boolean ignoreProtection) {
+     this.ignoreProtection = ignoreProtection;
+   }
 
   /**
    * @return whether to expect a view being dropped

@@ -2211,9 +2211,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
       addTableDropPartsOutputs(tblName, partSpecs, throwException, stringPartitionColumns);
     }
-
+    boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
     DropTableDesc dropTblDesc =
-        new DropTableDesc(tblName, partSpecs, expectView, stringPartitionColumns);
+        new DropTableDesc(tblName, partSpecs, expectView, stringPartitionColumns, ignoreProtection);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));

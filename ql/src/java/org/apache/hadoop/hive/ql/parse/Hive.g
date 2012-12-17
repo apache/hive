@@ -1,9 +1,9 @@
 /**
-   Licensed to the Apache Software Foundation (ASF) under one or more
-   contributor license agreements.  See the NOTICE file distributed with
+   Licensed to the Apache Software Foundation (ASF) under one or more 
+   contributor license agreements.  See the NOTICE file distributed with 
    this work for additional information regarding copyright ownership.
    The ASF licenses this file to You under the Apache License, Version 2.0
-   (the "License"); you may not use this file except in compliance with
+   (the "License"); you may not use this file except in compliance with 
    the License.  You may obtain a copy of the License at
 
        http://www.apache.org/licenses/LICENSE-2.0
@@ -277,6 +277,7 @@ TOK_SKEWED_LOCATIONS;
 TOK_SKEWED_LOCATION_LIST;
 TOK_SKEWED_LOCATION_MAP;
 TOK_STOREDASDIRS;
+TOK_IGNOREPROTECTION;
 }
 
 
@@ -410,6 +411,12 @@ orReplace
     -> ^(TOK_ORREPLACE)
     ;
 
+ignoreProtection
+@init { msgs.push("ignore protection clause"); }
+@after { msgs.pop(); }
+        : KW_IGNORE KW_PROTECTION
+        -> ^(TOK_IGNOREPROTECTION)
+        ;
 
 createDatabaseStatement
 @init { msgs.push("create database statement"); }
@@ -717,8 +724,8 @@ partitionLocation
 alterStatementSuffixDropPartitions
 @init { msgs.push("drop partition statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)*
-    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier dropPartitionSpec+ ifExists?)
+    : Identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
+    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier dropPartitionSpec+ ifExists? ignoreProtection?)
     ;
 
 alterStatementSuffixProperties
@@ -2417,6 +2424,8 @@ KW_AFTER: 'AFTER';
 KW_DESCRIBE: 'DESCRIBE';
 KW_DROP: 'DROP';
 KW_RENAME: 'RENAME';
+KW_IGNORE: 'IGNORE';
+KW_PROTECTION: 'PROTECTION';
 KW_TO: 'TO';
 KW_COMMENT: 'COMMENT';
 KW_BOOLEAN: 'BOOLEAN';

@@ -3416,18 +3416,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             break;
           }
         }
-        for (Partition p : partitions) {
-          if (!p.canDrop()) {
-            throw new HiveException("Table " + tbl.getTableName()
-                + " Partition " + p.getName()
-                + " is protected from being dropped");
-          } else if (ArchiveUtils.isArchived(p)) {
-            int partAchiveLevel = ArchiveUtils.getArchivingLevel(p);
-            // trying to drop partitions inside a har, disallow it.
-            if (partAchiveLevel < partPrefixToDrop) {
-              throw new HiveException(
-                  "Cannot drop a subset of partitions in an archive, partition "
-                      + p.getName());
+        if (!dropTbl.getIgnoreProtection()) {
+          for (Partition p : partitions) {
+            if (!p.canDrop()) {
+              throw new HiveException("Table " + tbl.getTableName()
+                  + " Partition " + p.getName()
+                  + " is protected from being dropped");
+            } else if (ArchiveUtils.isArchived(p)) {
+              int partAchiveLevel = ArchiveUtils.getArchivingLevel(p);
+              // trying to drop partitions inside a har, disallow it.
+              if (partAchiveLevel < partPrefixToDrop) {
+                throw new HiveException(
+                    "Cannot drop a subset of partitions in an archive, partition "
+                        + p.getName());
+              }
             }
           }
         }
