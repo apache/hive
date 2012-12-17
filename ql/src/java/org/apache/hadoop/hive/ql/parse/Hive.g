@@ -767,6 +767,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
   | alterStatementSuffixRenamePart
+  | alterStatementSuffixBucketNum
   | alterTblPartitionStatementSuffixSkewedLocation
   ;
 
@@ -862,6 +863,12 @@ alterProtectModeMode
     | KW_READONLY  -> ^(TOK_READONLY)
     ;
 
+alterStatementSuffixBucketNum
+@init { msgs.push(""); }
+@after { msgs.pop(); }
+    : KW_INTO num=Number KW_BUCKETS
+    -> ^(TOK_TABLEBUCKETS $num)
+    ;
 
 alterStatementSuffixClusterbySortby
 @init {msgs.push("alter cluster by sort by statement");}

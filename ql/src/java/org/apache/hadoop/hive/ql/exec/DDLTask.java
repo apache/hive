@@ -3230,6 +3230,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException(e);
         }
       }
+    } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
+      if (part != null) {
+        if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
+          return 0;
+        }
+        part.setBucketCount(alterTbl.getNumberBuckets());
+      } else {
+        if (tbl.getNumBuckets() == alterTbl.getNumberBuckets()) {
+          return 0;
+        }
+        tbl.setNumBuckets(alterTbl.getNumberBuckets());
+      }
     } else {
       formatter.consoleError(console,
                              "Unsupported Alter commnad",

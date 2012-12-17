@@ -47,12 +47,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
     TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
-    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION
-  };
+    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION,
+    ALTERBUCKETNUM
+  }
 
   public static enum ProtectModeType {
     NO_DROP, OFFLINE, READ_ONLY, NO_DROP_CASCADE
-  };
+  }
 
 
   AlterTableTypes op;
@@ -209,6 +210,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.isTurnOffSkewed = turnOffSkewed;
     this.skewedColNames = new ArrayList<String>(skewedColNames);
     this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
+  }
+
+  public AlterTableDesc(String tableName, HashMap<String, String> partSpec, int numBuckets) {
+    op = AlterTableTypes.ALTERBUCKETNUM;
+    this.oldName = tableName;
+    this.partSpec = partSpec;
+    this.numberBuckets = numBuckets;
   }
 
   @Explain(displayName = "new columns")

@@ -363,6 +363,10 @@ public class Partition implements Serializable {
      */
   }
 
+  public void setBucketCount(int newBucketNum) {
+    tPartition.getSd().setNumBuckets(newBucketNum);
+  }
+
   public List<String> getBucketCols() {
     return tPartition.getSd().getBucketCols();
   }

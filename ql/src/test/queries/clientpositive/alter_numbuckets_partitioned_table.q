@@ -20,6 +20,20 @@ describe formatted tst1 partition (ds = '1');
 
 describe formatted tst1;
 
+-- Test changing bucket number of (table/partition)
+
+alter table tst1 into 4 buckets;
+
+describe formatted tst1;
+
+describe formatted tst1 partition (ds = '1');
+
+alter table tst1 partition (ds = '1') into 6 buckets;
+
+describe formatted tst1;
+
+describe formatted tst1 partition (ds = '1');
+
 -- Test adding sort order
 
 alter table tst1 clustered by (key) sorted by (key asc) into 12 buckets;
