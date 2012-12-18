@@ -31,7 +31,7 @@ CREATE TABLE "PART_COL_STATS" (
  "CS_ID" bigint NOT NULL,
  "DB_NAME" character varying(128) DEFAULT NULL::character varying,
  "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
- "PART_NAME" character varying(767) DEFAULT NULL::character varying,
+ "PARTITION_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_NAME" character varying(128) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "PART_ID" bigint NOT NULL,
