@@ -125,7 +125,9 @@ public final class PcrExprProcFactory {
   }
 
   static Boolean opAnd(Boolean op1, Boolean op2) {
-    if (op1.equals(Boolean.FALSE) || op2.equals(Boolean.FALSE)) {
+    // When people forget to quote a string, op1/op2 is null.
+    // For example, select * from some_table where ds > 2012-12-1 and ds < 2012-12-2 .
+    if (op1 != null && op1.equals(Boolean.FALSE) || op2 != null && op2.equals(Boolean.FALSE)) {
       return Boolean.FALSE;
     }
     if (op1 == null || op2 == null) {
@@ -135,7 +137,9 @@ public final class PcrExprProcFactory {
   }
 
   static Boolean opOr(Boolean op1, Boolean op2) {
-    if (op1.equals(Boolean.TRUE) || op2.equals(Boolean.TRUE)) {
+    // When people forget to quote a string, op1/op2 is null.
+    // For example, select * from some_table where ds > 2012-12-1 or ds < 2012-12-2 .
+    if (op1 != null && op1.equals(Boolean.TRUE) || op2 != null && op2.equals(Boolean.TRUE)) {
       return Boolean.TRUE;
     }
     if (op1 == null || op2 == null) {
@@ -145,11 +149,15 @@ public final class PcrExprProcFactory {
   }
 
   static Boolean opNot(Boolean op) {
-    if (op.equals(Boolean.TRUE)) {
-      return Boolean.FALSE;
-    }
-    if (op.equals(Boolean.FALSE)) {
-      return Boolean.TRUE;
+    // When people forget to quote a string, op1/op2 is null.
+    // For example, select * from some_table where not ds > 2012-12-1 .
+    if (op != null) {
+      if (op.equals(Boolean.TRUE)) {
+        return Boolean.FALSE;
+      }
+      if (op.equals(Boolean.FALSE)) {
+        return Boolean.TRUE;
+      }
     }
     return null;
   }
