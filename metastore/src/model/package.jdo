@@ -318,7 +318,7 @@
         <collection element-type="MStringList"/>
         <join/>
       </field>
-      <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOCATION_MAPPING">
+      <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOC_MAP">
         <map key-type="MStringList" value-type="java.lang.String"/>
         <join>
           <column name="SD_ID"/>
