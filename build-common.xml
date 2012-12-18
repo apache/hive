@@ -492,6 +492,7 @@
     <ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${build.dir}/pom.xml">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="compile" />
+      <mapping conf="compile" scope="compile" />
     </ivy:makepom>
     <replace file="${build.dir}/pom.xml">
       <replacetoken>&lt;dependencies&gt;</replacetoken>
