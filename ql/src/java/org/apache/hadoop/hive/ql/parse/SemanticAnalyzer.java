@@ -505,34 +505,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     } else if (splitSamplePresent) {
-      // only CombineHiveInputFormat supports this optimize
-      String inputFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
-      if (!inputFormat.equals(
-        CombineHiveInputFormat.class.getName())) {
-        throw new SemanticException(generateErrorMessage((ASTNode) tabref.getChild(1),
-            "Percentage sampling is not supported in " + inputFormat));
-      }
       ASTNode sampleClause = (ASTNode) tabref.getChild(1);
-      String alias_id = getAliasId(alias, qb);
 
       Tree type = sampleClause.getChild(0);
-      String numerator = unescapeIdentifier(sampleClause.getChild(1).getText());
+      Tree numerator = sampleClause.getChild(1);
+      String value = unescapeIdentifier(numerator.getText());
+
 
       SplitSample sample;
       if (type.getType() == HiveParser.TOK_PERCENT) {
-        Double percent = Double.valueOf(numerator).doubleValue();
+        assertCombineInputFormat(numerator, "Percentage");
+        Double percent = Double.valueOf(value).doubleValue();
         if (percent < 0  || percent > 100) {
-          throw new SemanticException(generateErrorMessage(sampleClause,
+          throw new SemanticException(generateErrorMessage((ASTNode) numerator,
               "Sampling percentage should be between 0 and 100"));
         }
         int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
         sample = new SplitSample(percent, seedNum);
       } else if (type.getType() == HiveParser.TOK_ROWCOUNT) {
-        sample = new SplitSample(Integer.valueOf(numerator));
+        sample = new SplitSample(Integer.valueOf(value));
       } else {
         assert type.getType() == HiveParser.TOK_LENGTH;
-        long length = Integer.valueOf(numerator.substring(0, numerator.length() - 1));
-        char last = numerator.charAt(numerator.length() - 1);
+        assertCombineInputFormat(numerator, "Total Length");
+        long length = Integer.valueOf(value.substring(0, value.length() - 1));
+        char last = value.charAt(value.length() - 1);
         if (last == 'k' || last == 'K') {
           length <<= 10;
         } else if (last == 'm' || last == 'M') {
@@ -543,6 +539,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
         sample = new SplitSample(length, seedNum);
       }
+      String alias_id = getAliasId(alias, qb);
       nameToSplitSample.put(alias_id, sample);
     }
     // Insert this map into the stats
@@ -558,6 +555,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return alias;
+  }
+
+  private void assertCombineInputFormat(Tree numerator, String message) throws SemanticException {
+    String inputFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    if (!inputFormat.equals(CombineHiveInputFormat.class.getName())) {
+      throw new SemanticException(generateErrorMessage((ASTNode) numerator,
+          message + " sampling is not supported in " + inputFormat));
+    }
   }
 
   private String processSubQuery(QB qb, ASTNode subq) throws SemanticException {
