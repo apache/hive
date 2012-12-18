@@ -4821,3 +4821,26 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 278
 98
 484
+PREHOOK: query: -- ROW type works with other input formats (others, don't)
+select count(1) from ss_src2 tablesample(10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: -- ROW type works with other input formats (others, don't)
+select count(1) from ss_src2 tablesample(10 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+10

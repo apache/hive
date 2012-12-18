@@ -106,3 +106,7 @@ select count(1) from ss_src2 tablesample(100 ROWS);
 set hive.fetch.task.conversion=more;
 select key from ss_src2 tablesample(200B);
 select key from ss_src2 tablesample(10 ROWS);
+
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+-- ROW type works with other input formats (others, don't)
+select count(1) from ss_src2 tablesample(10 ROWS);

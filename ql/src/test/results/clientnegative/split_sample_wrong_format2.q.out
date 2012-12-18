@@ -1,0 +1,1 @@
+FAILED: SemanticException 3:32 Total Length sampling is not supported in org.apache.hadoop.hive.ql.io.HiveInputFormat. Error encountered near token '1K'
