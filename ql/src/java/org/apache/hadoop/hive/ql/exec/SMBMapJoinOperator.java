@@ -142,7 +142,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     super.initializeLocalWork(hconf);
   }
 
-  public void initializeMapredLocalWork(MapJoinDesc conf, Configuration hconf,
+  public void initializeMapredLocalWork(MapJoinDesc mjConf, Configuration hconf,
       MapredLocalWork localWork, Log l4j) throws HiveException {
     if (localWork == null || localWorkInited) {
       return;
@@ -154,7 +154,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // create map local operators
     Map<String,FetchWork> aliasToFetchWork = localWork.getAliasToFetchWork();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = localWork.getAliasToWork();
+    Map<String, DummyStoreOperator> aliasToSinkWork = conf.getAliasToSink();
 
+    // The operator tree till the sink operator needs to be processed while
+    // fetching the next row to fetch from the priority queue (possibly containing
+    // multiple files in the small table given a file in the big table). The remaining
+    // tree will be processed while processing the join.
+    // Look at comments in DummyStoreOperator for additional explanation.
     for (Map.Entry<String, FetchWork> entry : aliasToFetchWork.entrySet()) {
       String alias = entry.getKey();
       FetchWork fetchWork = entry.getValue();
@@ -167,7 +173,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       forwardOp.initialize(jobClone, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
       fetchOp.clearFetchContext();
 
-      MergeQueue mergeQueue = new MergeQueue(alias, fetchWork, jobClone);
+      DummyStoreOperator sinkOp = aliasToSinkWork.get(alias);
+
+      MergeQueue mergeQueue = new MergeQueue(alias, fetchWork, jobClone, forwardOp, sinkOp);
 
       aliasToMergeQueue.put(alias, mergeQueue);
       l4j.info("fetch operators for " + alias + " initialized");
@@ -515,15 +523,20 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     String table = tagToAlias.get(tag);
     MergeQueue mergeQueue = aliasToMergeQueue.get(table);
 
-    Operator<? extends OperatorDesc> forwardOp = localWork.getAliasToWork()
-        .get(table);
+    // The operator tree till the sink operator has already been processed while
+    // fetching the next row to fetch from the priority queue (possibly containing
+    // multiple files in the small table given a file in the big table). Now, process
+    // the remaining tree. Look at comments in DummyStoreOperator for additional
+    // explanation.
+    Operator<? extends OperatorDesc> forwardOp =
+        conf.getAliasToSink().get(table).getChildOperators().get(0);
     try {
       InspectableObject row = mergeQueue.getNextRow();
       if (row == null) {
         fetchDone[tag] = true;
         return;
       }
-      forwardOp.process(row.o, 0);
+      forwardOp.process(row.o, tag);
       // check if any operator had a fatal error or early exit during
       // execution
       if (forwardOp.getDone()) {
@@ -624,15 +637,21 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     transient FetchOperator[] segments;
     transient List<ExprNodeEvaluator> keyFields;
     transient List<ObjectInspector> keyFieldOIs;
+    transient Operator<? extends OperatorDesc> forwardOp;
+    transient DummyStoreOperator sinkOp;
 
     // index of FetchOperator which is providing smallest one
     transient Integer currentMinSegment;
     transient ObjectPair<List<Object>, InspectableObject>[] keys;
 
-    public MergeQueue(String alias, FetchWork fetchWork, JobConf jobConf) {
+    public MergeQueue(String alias, FetchWork fetchWork, JobConf jobConf,
+        Operator<? extends OperatorDesc> forwardOp,
+        DummyStoreOperator sinkOp) {
       this.alias = alias;
       this.fetchWork = fetchWork;
       this.jobConf = jobConf;
+      this.forwardOp = forwardOp;
+      this.sinkOp = sinkOp;
     }
 
     // paths = bucket files of small table for current bucket file of big table
@@ -684,6 +703,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
     }
 
+    @Override
     protected boolean lessThan(Object a, Object b) {
       return compareKeys(keys[(Integer) a].getFirst(), keys[(Integer)b].getFirst()) < 0;
     }
@@ -730,20 +750,31 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // return true if current min segment(FetchOperator) has next row
     private boolean next(Integer current) throws IOException, HiveException {
       if (keyFields == null) {
-        // joinKeys/joinKeysOI are initialized after making merge queue, so setup lazily at runtime
         byte tag = tagForAlias(alias);
+        // joinKeys/joinKeysOI are initialized after making merge queue, so setup lazily at runtime
         keyFields = joinKeys.get(tag);
         keyFieldOIs = joinKeysObjectInspectors.get(tag);
       }
       InspectableObject nextRow = segments[current].getNextRow();
-      if (nextRow != null) {
+      while (nextRow != null) {
+        sinkOp.reset();
         if (keys[current] == null) {
           keys[current] = new ObjectPair<List<Object>, InspectableObject>();
         }
-        // todo this should be changed to be evaluated lazily, especially for single segment case
-        keys[current].setFirst(JoinUtil.computeKeys(nextRow.o, keyFields, keyFieldOIs));
-        keys[current].setSecond(nextRow);
-        return true;
+
+        // Pass the row though the operator tree. It is guaranteed that not more than 1 row can
+        // be produced from a input row.
+        forwardOp.process(nextRow.o, 0);
+        nextRow = sinkOp.getResult();
+
+        // It is possible that the row got absorbed in the operator tree.
+        if (nextRow.o != null) {
+          // todo this should be changed to be evaluated lazily, especially for single segment case
+          keys[current].setFirst(JoinUtil.computeKeys(nextRow.o, keyFields, keyFieldOIs));
+          keys[current].setSecond(nextRow);
+          return true;
+        }
+        nextRow = segments[current].getNextRow();
       }
       keys[current] = null;
       return false;

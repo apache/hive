@@ -226,10 +226,9 @@ public class TableAccessAnalyzer {
    * names on that table that map to the keys used for the input
    * operator (which is currently only a join or group by).
    */
-  private static TableScanOperator genRootTableScan(
+  public static TableScanOperator genRootTableScan(
       Operator<? extends OperatorDesc> op, List<String> keyNames) {
 
-    boolean complexTree = false;
     Operator<? extends OperatorDesc> currOp = op;
     List<String> currColNames = keyNames;
     List<Operator<? extends OperatorDesc>> parentOps = null;
@@ -238,26 +237,24 @@ public class TableAccessAnalyzer {
     // along the way that changes the rows from the table through
     // joins or aggregations. Only allowed operators are selects
     // and filters.
-    while (!complexTree) {
+    while (true) {
       parentOps = currOp.getParentOperators();
       if (parentOps == null) {
-        break;
+        return (TableScanOperator) currOp;
       }
 
       if (parentOps.size() > 1 ||
           !(currOp.columnNamesRowResolvedCanBeObtained())) {
-        complexTree = true;
+        return null;
       } else {
         // Generate the map of the input->output column name for the keys
         // we are about
         if (!TableAccessAnalyzer.genColNameMap(currOp, currColNames)) {
-          complexTree = true;
+          return null;
         }
         currOp = parentOps.get(0);
       }
     }
-
-    return complexTree? null: (TableScanOperator) currOp;
   }
 
   /*
