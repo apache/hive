@@ -384,10 +384,14 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         List<String> joinCols,
         List<Order> sortColumnsFirstPartition) {
 
-      if (sortCols == null || sortCols.size() != joinCols.size()) {
+      if (sortCols == null || sortCols.size() < joinCols.size()) {
         return false;
       }
 
+      // A join is eligible for a sort-merge join, only if it is eligible for
+      // a bucketized map join. So, we dont need to check for bucketized map
+      // join here. We are guaranteed that the join keys contain all the
+      // bucketized keys (note that the order need not be the same).
       List<String> sortColNames = new ArrayList<String>();
 
       // The join columns should contain all the sort columns
@@ -402,8 +406,13 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       }
 
       // The column names and order (ascending/descending) matched
-      // The join columns should contain sort columns
-      return sortColNames.containsAll(joinCols);
+      // The first 'n' sorted columns should be the same as the joinCols, where
+      // 'n' is the size of join columns.
+      // For eg: if the table is sorted by (a,b,c), it is OK to convert if the join is
+      // on (a), (a,b), or any combination of (a,b,c):
+      //   (a,b,c), (a,c,b), (c,a,b), (c,b,a), (b,c,a), (b,a,c)
+      // but it is not OK to convert if the join is on (a,c)
+      return sortColNames.subList(0, joinCols.size()).containsAll(joinCols);
     }
   }
 
