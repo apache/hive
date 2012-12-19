@@ -4493,9 +4493,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setNumFiles(numFiles);
       ctx.setPartnCols(partnColsNoConvert);
       ctx.setTotalFiles(totalFiles);
-      //disable "merge mapfiles" and "merge mapred files".
-      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
-      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     }
     return input;
   }
@@ -4877,12 +4874,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowSchema fsRS = new RowSchema(vecCol);
 
+    // The output files of a FileSink can be merged if they are either not being written to a table
+    // or are being written to a table which is either not bucketed or enforce bucketing is not set
+    // and table the table is either not sorted or enforce sorting is not set
+    boolean canBeMerged = (dest_tab == null || !((dest_tab.getNumBuckets() > 0 &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING)) ||
+        (dest_tab.getSortCols() != null && dest_tab.getSortCols().size() > 0 &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))));
+
     FileSinkDesc fileSinkDesc = new FileSinkDesc(
       queryTmpdir,
       table_desc,
       conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT),
       currentTableId,
       rsCtx.isMultiFileSpray(),
+      canBeMerged,
       rsCtx.getNumFiles(),
       rsCtx.getTotalFiles(),
       rsCtx.getPartnCols(),

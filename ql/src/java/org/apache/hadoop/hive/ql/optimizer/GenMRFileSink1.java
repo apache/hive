@@ -137,7 +137,7 @@ public class GenMRFileSink1 implements NodeProcessor {
           addStatsTask(fsOp, mvTask, currTask, parseCtx.getConf());
         }
 
-        if ((mvTask != null) && !mvTask.isLocal()) {
+        if ((mvTask != null) && !mvTask.isLocal() && fsOp.getConf().canBeMerged()) {
           if (fsOp.getConf().isLinkedFileSink()) {
             // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
             // number of reducers are few, so the number of files anyway are small.

@@ -40,6 +40,9 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private String compressCodec;
   private String compressType;
   private boolean multiFileSpray;
+  // Whether the files output by this FileSink can be merged, e.g. if they are to be put into a
+  // bucketed or sorted table/partition they cannot be merged.
+  private boolean canBeMerged;
   private int     totalFiles;
   private ArrayList<ExprNodeDesc> partitionCols;
   private int     numFiles;
@@ -68,14 +71,15 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
-      final int numFiles, final int totalFiles, final ArrayList<ExprNodeDesc> partitionCols,
-      final DynamicPartitionCtx dpCtx) {
+      final boolean canBeMerged, final int numFiles, final int totalFiles,
+      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
     this.compressed = compressed;
     this.destTableId = destTableId;
     this.multiFileSpray = multiFileSpray;
+    this.canBeMerged = canBeMerged;
     this.numFiles = numFiles;
     this.totalFiles = totalFiles;
     this.partitionCols = partitionCols;
@@ -90,6 +94,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.compressed = compressed;
     destTableId = 0;
     this.multiFileSpray = false;
+    this.canBeMerged = false;
     this.numFiles = 1;
     this.totalFiles = 1;
     this.partitionCols = null;
@@ -98,7 +103,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   @Override
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
-        destTableId, multiFileSpray, numFiles, totalFiles,
+        destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
         partitionCols, dpCtx);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
@@ -182,6 +187,14 @@ public class FileSinkDesc extends AbstractOperatorDesc {
    */
   public void setMultiFileSpray(boolean multiFileSpray) {
     this.multiFileSpray = multiFileSpray;
+  }
+
+  public boolean canBeMerged() {
+    return canBeMerged;
+  }
+
+  public void setCanBeMerged(boolean canBeMerged) {
+    this.canBeMerged = canBeMerged;
   }
 
   /**
