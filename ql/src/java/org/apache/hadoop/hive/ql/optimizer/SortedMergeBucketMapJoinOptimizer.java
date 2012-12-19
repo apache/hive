@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
@@ -50,14 +50,12 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 //try to replace a bucket map join with a sorted merge map join
 public class SortedMergeBucketMapJoinOptimizer implements Transform {
@@ -104,7 +102,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
     };
   }
 
-  class SortedMergeBucketMapjoinProc implements NodeProcessor {
+  class SortedMergeBucketMapjoinProc extends AbstractBucketJoinProc implements NodeProcessor {
     private ParseContext pGraphContext;
 
     public SortedMergeBucketMapjoinProc(ParseContext pctx) {
@@ -134,7 +132,9 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         return false;
       }
       String[] srcs = joinCxt.getBaseSrc();
-      int pos = 0;
+      for (int srcPos = 0; srcPos < srcs.length; srcPos++) {
+        srcs[srcPos] = QB.getAppendedAliasFromId(joinCxt.getId(), srcs[srcPos]);
+      }
 
       // All the tables/partitions columns should be sorted in the same order
       // For example, if tables A and B are being joined on columns c1, c2 and c3
@@ -142,15 +142,14 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       // c1, c2 and c3 are sorted in the same order.
       List<Order> sortColumnsFirstTable = new ArrayList<Order>();
 
-      for (String src : srcs) {
+      for (int pos = 0; pos < srcs.length; pos++) {
         tableSorted = tableSorted
             && isTableSorted(this.pGraphContext,
                              mapJoinOp,
                              joinCxt,
-                             src,
                              pos,
-                             sortColumnsFirstTable);
-        pos++;
+                             sortColumnsFirstTable,
+                             srcs);
       }
       if (!tableSorted) {
         //this is a mapjoin but not suit for a sort merge bucket map join. check outer joins
@@ -196,13 +195,55 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         this.pGraphContext.getListMapJoinOpsNoReducer().add(indexInListMapJoinNoReducer, smbJop);
       }
 
+      Map<String, DummyStoreOperator> aliasToSink =
+          new HashMap<String, DummyStoreOperator>();
+      // For all parents (other than the big table), insert a dummy store operator
+      /* Consider a query like:
+        *
+        * select * from
+        *   (subq1 --> has a filter)
+        *   join
+        *   (subq2 --> has a filter)
+        * on some key
+        *
+        * Let us assume that subq1 is the small table (either specified by the user or inferred
+        * automatically). The following operator tree will be created:
+        *
+        * TableScan (subq1) --> Select --> Filter --> DummyStore
+        *                                                         \
+        *                                                          \     SMBJoin
+        *                                                          /
+        *                                                         /
+        * TableScan (subq2) --> Select --> Filter
+        */
       List<? extends Operator> parentOperators = mapJoinOp.getParentOperators();
       for (int i = 0; i < parentOperators.size(); i++) {
         Operator par = parentOperators.get(i);
         int index = par.getChildOperators().indexOf(mapJoinOp);
         par.getChildOperators().remove(index);
-        par.getChildOperators().add(index, smbJop);
+        if (i == smbJoinDesc.getPosBigTable()) {
+          par.getChildOperators().add(index, smbJop);
+        }
+        else {
+          DummyStoreOperator dummyStoreOp = new DummyStoreOperator();
+          par.getChildOperators().add(index, dummyStoreOp);
+
+          List<Operator<? extends OperatorDesc>> childrenOps =
+              new ArrayList<Operator<? extends OperatorDesc>>();
+          childrenOps.add(smbJop);
+          dummyStoreOp.setChildOperators(childrenOps);
+
+          List<Operator<? extends OperatorDesc>> parentOps =
+              new ArrayList<Operator<? extends OperatorDesc>>();
+          parentOps.add(par);
+          dummyStoreOp.setParentOperators(parentOps);
+
+          aliasToSink.put(srcs[i], dummyStoreOp);
+          smbJop.getParentOperators().remove(i);
+          smbJop.getParentOperators().add(i, dummyStoreOp);
+        }
       }
+      smbJoinDesc.setAliasToSink(aliasToSink);
       List<? extends Operator> childOps = mapJoinOp.getChildOperators();
       for (int i = 0; i < childOps.size(); i++) {
         Operator child = childOps.get(i);
@@ -229,40 +270,74 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
     private boolean isTableSorted(ParseContext pctx,
       MapJoinOperator op,
       QBJoinTree joinTree,
-      String alias,
       int pos,
-      List<Order> sortColumnsFirstTable)
+      List<Order> sortColumnsFirstTable,
+      String[] aliases)
       throws SemanticException {
-
-      Map<String, Operator<? extends OperatorDesc>> topOps = this.pGraphContext
-          .getTopOps();
+      String alias = aliases[pos];
       Map<TableScanOperator, Table> topToTable = this.pGraphContext
           .getTopToTable();
-      TableScanOperator tso = (TableScanOperator) topOps.get(alias);
+
+      /*
+       * Consider a query like:
+       *
+       * select -- mapjoin(subq1) --  * from
+       * (select a.key, a.value from tbl1 a) subq1
+       *   join
+       * (select a.key, a.value from tbl2 a) subq2
+       * on subq1.key = subq2.key;
+       *
+       * aliasToOpInfo contains the SelectOperator for subq1 and subq2.
+       * We need to traverse the tree (using TableAccessAnalyzer) to get to the base
+       * table. If the object being map-joined is a base table, then aliasToOpInfo
+       * contains the TableScanOperator, and TableAccessAnalyzer is a no-op.
+       */
+      Operator<? extends OperatorDesc> topOp = joinTree.getAliasToOpInfo().get(alias);
+      if (topOp == null) {
+        return false;
+      }
+      List<String> joinCols = toColumns(op.getConf().getKeys().get((byte) pos));
+      if (joinCols == null || joinCols.isEmpty()) {
+        return false;
+      }
+      TableScanOperator tso = TableAccessAnalyzer.genRootTableScan(topOp, joinCols);
       if (tso == null) {
         return false;
       }
 
-      List<ExprNodeDesc> keys = op.getConf().getKeys().get((byte) pos);
-      // get all join columns from join keys stored in MapJoinDesc
-      List<String> joinCols = new ArrayList<String>();
-      List<ExprNodeDesc> joinKeys = new ArrayList<ExprNodeDesc>();
-      joinKeys.addAll(keys);
-      while (joinKeys.size() > 0) {
-        ExprNodeDesc node = joinKeys.remove(0);
-        if (node instanceof ExprNodeColumnDesc) {
-          joinCols.addAll(node.getCols());
-        } else if (node instanceof ExprNodeGenericFuncDesc) {
-          ExprNodeGenericFuncDesc udfNode = ((ExprNodeGenericFuncDesc) node);
-          GenericUDF udf = udfNode.getGenericUDF();
-          if (!FunctionRegistry.isDeterministic(udf)) {
-            return false;
+      // For nested sub-queries, the alias mapping is not maintained in QB currently.
+      /*
+       * Consider a query like:
+       *
+       * select count(*) from
+       *   (
+       *     select key, count(*) from
+       *       (
+       *         select --mapjoin(a)-- a.key as key, a.value as val1, b.value as val2
+       *         from tbl1 a join tbl2 b on a.key = b.key
+       *       ) subq1
+       *     group by key
+       *   ) subq2;
+       *
+       * The table alias should be subq2:subq1:a which needs to be fetched from topOps.
+       */
+      if (pGraphContext.getTopOps().containsValue(tso)) {
+        for (Map.Entry<String, Operator<? extends OperatorDesc>> topOpEntry :
+          this.pGraphContext.getTopOps().entrySet()) {
+          if (topOpEntry.getValue() == tso) {
+            alias = topOpEntry.getKey();
+            aliases[pos] = alias;
+            break;
           }
-          joinKeys.addAll(0, udfNode.getChildExprs());
         }
+      }
+      else {
+        // Ideally, this should never happen, and this should be an assert.
+        return false;
       }
 
       Table tbl = topToTable.get(tso);
+
       if (tbl.isPartitioned()) {
         PrunedPartitionList prunedParts = null;
         try {

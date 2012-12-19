@@ -5630,7 +5630,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
-      HashMap<String, Operator> map) throws SemanticException {
+      Map<String, Operator> map) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
     Operator joinSrcOp = null;
     if (leftChild != null) {
@@ -5829,7 +5829,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Operator genJoinPlan(QB qb, HashMap<String, Operator> map)
+  private Operator genJoinPlan(QB qb, Map<String, Operator> map)
       throws SemanticException {
     QBJoinTree joinTree = qb.getQbJoinTree();
     Operator joinOp = genJoinOperator(qb, joinTree, map);
@@ -5841,7 +5841,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * source operators. This procedure traverses the query tree recursively,
    */
   private void pushJoinFilters(QB qb, QBJoinTree joinTree,
-      HashMap<String, Operator> map) throws SemanticException {
+      Map<String, Operator> map) throws SemanticException {
     if (joinTree.getJoinSrc() != null) {
       pushJoinFilters(qb, joinTree.getJoinSrc(), map);
     }
@@ -5881,7 +5881,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return cols;
   }
 
-  private QBJoinTree genUniqueJoinTree(QB qb, ASTNode joinParseTree)
+  // The join alias is modified before being inserted for consumption by sort-merge
+  // join queries. If the join is part of a sub-query the alias is modified to include
+  // the sub-query alias.
+  private String getModifiedAlias(QB qb, String alias) {
+    return QB.getAppendedAliasFromId(qb.getId(), alias);
+  }
+
+  private QBJoinTree genUniqueJoinTree(QB qb, ASTNode joinParseTree,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
     joinTree.setNoOuterJoin(false);
@@ -5920,6 +5928,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           rightAliases.add(alias);
         }
+        joinTree.getAliasToOpInfo().put(
+            getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
+        joinTree.setId(qb.getId());
         baseSrc.add(alias);
 
         preserved.add(lastPreserved);
@@ -5977,7 +5988,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return joinTree;
   }
 
-  private QBJoinTree genJoinTree(QB qb, ASTNode joinParseTree)
+  private QBJoinTree genJoinTree(QB qb, ASTNode joinParseTree,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
     JoinCond[] condn = new JoinCond[1];
@@ -6024,8 +6036,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String[] children = new String[2];
       children[0] = alias;
       joinTree.setBaseSrc(children);
+      joinTree.setId(qb.getId());
+      joinTree.getAliasToOpInfo().put(
+          getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
     } else if (isJoinToken(left)) {
-      QBJoinTree leftTree = genJoinTree(qb, left);
+      QBJoinTree leftTree = genJoinTree(qb, left, aliasToOpInfo);
       joinTree.setJoinSrc(leftTree);
       String[] leftChildAliases = leftTree.getLeftAliases();
       String leftAliases[] = new String[leftChildAliases.length + 1];
@@ -6054,6 +6069,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       children[1] = alias;
       joinTree.setBaseSrc(children);
+      aliasToOpInfo.get(alias);
+      joinTree.setId(qb.getId());
+      joinTree.getAliasToOpInfo().put(
+          getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
       // remember rhs table for semijoin
       if (joinTree.getNoSemiJoin() == false) {
         joinTree.addRHSSemijoin(alias);
@@ -6158,6 +6177,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rightAliases[i + trgtRightAliases.length] = nodeRightAliases[i];
     }
     target.setRightAliases(rightAliases);
+    target.getAliasToOpInfo().putAll(node.getAliasToOpInfo());
 
     String[] nodeBaseSrc = node.getBaseSrc();
     String[] trgtBaseSrc = target.getBaseSrc();
@@ -7477,7 +7497,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public Operator genPlan(QB qb) throws SemanticException {
 
     // First generate all the opInfos for the elements in the from clause
-    HashMap<String, Operator> aliasToOpInfo = new HashMap<String, Operator>();
+    Map<String, Operator> aliasToOpInfo = new HashMap<String, Operator>();
 
     // Recurse over the subqueries to fill the subquery part of the plan
     for (String alias : qb.getSubqAliases()) {
@@ -7503,10 +7523,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode joinExpr = qb.getParseInfo().getJoinExpr();
 
       if (joinExpr.getToken().getType() == HiveParser.TOK_UNIQUEJOIN) {
-        QBJoinTree joinTree = genUniqueJoinTree(qb, joinExpr);
+        QBJoinTree joinTree = genUniqueJoinTree(qb, joinExpr, aliasToOpInfo);
         qb.setQbJoinTree(joinTree);
       } else {
-        QBJoinTree joinTree = genJoinTree(qb, joinExpr);
+        QBJoinTree joinTree = genJoinTree(qb, joinExpr, aliasToOpInfo);
         qb.setQbJoinTree(joinTree);
         mergeJoinTree(qb);
       }
@@ -7542,7 +7562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
 
-  void genLateralViewPlans(HashMap<String, Operator> aliasToOpInfo, QB qb)
+  void genLateralViewPlans(Map<String, Operator> aliasToOpInfo, QB qb)
       throws SemanticException {
     Map<String, ArrayList<ASTNode>> aliasToLateralViews = qb.getParseInfo()
         .getAliasToLateralViews();

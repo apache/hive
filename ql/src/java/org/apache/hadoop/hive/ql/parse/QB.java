@@ -76,7 +76,20 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    id = (outer_id == null ? alias : outer_id + ":" + alias);
+    id = getAppendedAliasFromId(outer_id, alias);
+  }
+
+  // For sub-queries, the id. and alias should be appended since same aliases can be re-used
+  // within different sub-queries.
+  // For a query like:
+  // select ...
+  //   (select * from T1 a where ...) subq1
+  //  join
+  //   (select * from T2 a where ...) subq2
+  // ..
+  // the alias is modified to subq1:a and subq2:a from a, to identify the right sub-query.
+  public static String getAppendedAliasFromId(String outer_id, String alias) {
+    return (outer_id == null ? alias : outer_id + ":" + alias);
   }
 
   public QBParseInfo getParseInfo() {
