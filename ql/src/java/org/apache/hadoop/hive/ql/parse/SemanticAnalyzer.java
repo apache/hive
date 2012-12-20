@@ -6707,7 +6707,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // currently. It doesnt matter whether he has asked to do
     // map-side aggregation or not. Map side aggregation is turned off
     List<ASTNode> commonDistinctExprs = getCommonDistinctExprs(qb, input);
-    boolean optimizeMultiGroupBy = commonDistinctExprs != null;
+
+    // Consider a query like:
+    //
+    //  from src
+    //    insert overwrite table dest1 select col1, count(distinct colx) group by col1
+    //    insert overwrite table dest2 select col2, count(distinct colx) group by col2;
+    //
+    // With HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS set to true, first we spray by the distinct
+    // value (colx), and then perform the 2 groups bys. This makes sense if map-side aggregation is
+    // turned off. However, with maps-side aggregation, it might be useful in some cases to treat
+    // the 2 inserts independently, thereby performing the query above in 2MR jobs instead of 3
+    // (due to spraying by distinct key first).
+    boolean optimizeMultiGroupBy = commonDistinctExprs != null &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_MULTI_GROUPBY_COMMON_DISTINCTS);
 
     Operator curr = input;
 

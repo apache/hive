@@ -366,6 +366,25 @@
 </property>
 
 <property>
+  <name>hive.optimize.multigroupby.common.distincts</name>
+  <value>true</value>
+  <description>Whether to optimize a multi-groupby query with the same distinct.
+    Consider a query like:
+
+      from src
+        insert overwrite table dest1 select col1, count(distinct colx) group by col1
+        insert overwrite table dest2 select col2, count(distinct colx) group by col2;
+
+    With this parameter set to true, first we spray by the distinct value (colx), and then
+    perform the 2 groups bys. This makes sense if map-side aggregation is turned off. However,
+    with maps-side aggregation, it might be useful in some cases to treat the 2 inserts independently, 
+    thereby performing the query above in 2MR jobs instead of 3 (due to spraying by distinct key first).
+    If this parameter is turned off, we dont consider the fact that the distinct key is the same across
+    different MR jobs.
+  </description>
+</property>
+
+<property>
   <name>hive.groupby.mapaggr.checkinterval</name>
   <value>100000</value>
   <description>Number of rows after which size of the grouping keys/aggregation classes is performed</description>
