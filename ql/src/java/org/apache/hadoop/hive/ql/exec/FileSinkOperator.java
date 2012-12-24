@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
@@ -719,8 +720,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       "The row has less number of columns than no. of skewed column.";
 
     skewedValsCandidate = new ArrayList<String>(skewedCols.size());
-    for (int index : lbCtx.getRowSkewedIndex()) {
-      skewedValsCandidate.add(index, standObjs.get(index).toString());
+    for (SkewedColumnPositionPair posPair : lbCtx.getRowSkewedIndex()) {
+      skewedValsCandidate.add(posPair.getSkewColPosition(),
+          standObjs.get(posPair.getTblColPosition()).toString());
     }
     /* The row matches skewed column names. */
     if (allSkewedVals.contains(skewedValsCandidate)) {
