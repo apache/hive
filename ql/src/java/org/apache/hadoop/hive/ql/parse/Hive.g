@@ -119,6 +119,7 @@ TOK_CREATEINDEX;
 TOK_CREATEINDEX_INDEXTBLNAME;
 TOK_DEFERRED_REBUILDINDEX;
 TOK_DROPINDEX;
+TOK_DROPTABLE_PROPERTIES;
 TOK_LIKETABLE;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
@@ -199,6 +200,7 @@ TOK_DROPFUNCTION;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
 TOK_ALTERVIEW_PROPERTIES;
+TOK_DROPVIEW_PROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
@@ -733,6 +735,8 @@ alterStatementSuffixProperties
 @after { msgs.pop(); }
     : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_PROPERTIES $name tableProperties)
+    | name=Identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    -> ^(TOK_DROPTABLE_PROPERTIES $name tableProperties ifExists?)
     ;
 
 alterViewSuffixProperties
@@ -740,6 +744,8 @@ alterViewSuffixProperties
 @after { msgs.pop(); }
     : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES $name tableProperties)
+    | name=Identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    -> ^(TOK_DROPVIEW_PROPERTIES $name tableProperties ifExists?)
     ;
 
 alterStatementSuffixSerdeProperties
@@ -1253,6 +1259,8 @@ tablePropertiesList
 @after { msgs.pop(); }
     :
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_TABLEPROPLIST keyValueProperty+)
+    |
+      keyProperty (COMMA keyProperty)* -> ^(TOK_TABLEPROPLIST keyProperty+)
     ;
 
 keyValueProperty
@@ -1260,6 +1268,13 @@ keyValueProperty
 @after { msgs.pop(); }
     :
       key=StringLiteral EQUAL value=StringLiteral -> ^(TOK_TABLEPROPERTY $key $value)
+    ;
+
+keyProperty
+@init { msgs.push("specifying key property"); }
+@after { msgs.pop(); }
+    :
+      key=StringLiteral -> ^(TOK_TABLEPROPERTY $key TOK_NULL)
     ;
 
 tableRowFormatFieldIdentifier
@@ -2499,6 +2514,7 @@ KW_SERDEPROPERTIES: 'SERDEPROPERTIES';
 KW_DBPROPERTIES: 'DBPROPERTIES';
 KW_LIMIT: 'LIMIT';
 KW_SET: 'SET';
+KW_UNSET: 'UNSET';
 KW_TBLPROPERTIES: 'TBLPROPERTIES';
 KW_IDXPROPERTIES: 'IDXPROPERTIES';
 KW_VALUE_TYPE: '$VALUE$';

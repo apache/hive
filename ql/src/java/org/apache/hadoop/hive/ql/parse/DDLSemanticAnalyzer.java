@@ -275,7 +275,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeDropTable(ast, true);
       break;
     case HiveParser.TOK_ALTERVIEW_PROPERTIES:
-      analyzeAlterTableProps(ast, true);
+      analyzeAlterTableProps(ast, true, false);
+      break;
+    case HiveParser.TOK_DROPVIEW_PROPERTIES:
+      analyzeAlterTableProps(ast, true, true);
       break;
     case HiveParser.TOK_ALTERVIEW_ADDPARTS:
       // for ALTER VIEW ADD PARTITION, we wrapped the ADD to discriminate
@@ -320,7 +323,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableDropParts(ast, false);
       break;
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
-      analyzeAlterTableProps(ast, false);
+      analyzeAlterTableProps(ast, false, false);
+      break;
+    case HiveParser.TOK_DROPTABLE_PROPERTIES:
+      analyzeAlterTableProps(ast, false, true);
       break;
     case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       analyzeAlterTableClusterSort(ast);
@@ -962,6 +968,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       case DROPPARTITION:
       case RENAMEPARTITION:
       case ADDPROPS:
+      case DROPPROPS:
       case RENAME:
         // allow this form
         break;
@@ -978,14 +985,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeAlterTableProps(ASTNode ast, boolean expectView)
+  private void analyzeAlterTableProps(ASTNode ast, boolean expectView, boolean isUnset)
       throws SemanticException {
 
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
         .getChild(0));
-    AlterTableDesc alterTblDesc =
-        new AlterTableDesc(AlterTableTypes.ADDPROPS, expectView);
+    AlterTableDesc alterTblDesc = null;
+    if (isUnset == true) {
+      alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, expectView);
+      if (ast.getChild(2) != null) {
+        alterTblDesc.setDropIfExists(true);
+      }
+    } else {
+      alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS, expectView);
+    }
     alterTblDesc.setProps(mapProp);
     alterTblDesc.setOldName(tableName);
 
@@ -1127,6 +1141,22 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (desc != null) {
       validateAlterTableType(tab, desc.getOp(), desc.getExpectView());
+
+      // validate Unset Non Existed Table Properties
+      if (desc.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS &&
+            desc.getIsDropIfExists() == false) {
+        Iterator<String> keyItr = desc.getProps().keySet().iterator();
+        while (keyItr.hasNext()) {
+          String currKey = keyItr.next();
+          if (tab.getTTable().getParameters().containsKey(currKey) == false) {
+            String errorMsg =
+                "The following property " + currKey +
+                " does not exist in " + tab.getTableName();
+            throw new SemanticException(
+              ErrorMsg.ALTER_TBL_UNSET_NON_EXIST_PROPERTY.getMsg(errorMsg));
+          }
+        }
+      }
     }
   }
 
