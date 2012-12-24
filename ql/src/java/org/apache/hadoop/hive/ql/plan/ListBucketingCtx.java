@@ -40,14 +40,14 @@ public class ListBucketingCtx implements Serializable {
   private List<String> skewedColNames;
   private List<List<String>> skewedColValues;
   private Map<List<String>, String> lbLocationMap;
-  private List<Integer> rowSkewedIndex;
+  private List<SkewedColumnPositionPair> rowSkewedIndex;
   private boolean isStoredAsSubDirectories;
   private String defaultKey;
   private String defaultDirName;
   private List<String> skewedValuesDirNames;
 
   public ListBucketingCtx() {
-    rowSkewedIndex = new ArrayList<Integer>();
+    rowSkewedIndex = new ArrayList<SkewedColumnPositionPair>();
     skewedValuesDirNames = new ArrayList<String>();
   }
 
@@ -109,7 +109,8 @@ public class ListBucketingCtx implements Serializable {
         int index = this.skewedColNames.indexOf(cols.get(i).getInternalName());
         if (index > -1) {
           hitNo++;
-          rowSkewedIndex.add(index);
+          SkewedColumnPositionPair pair = new SkewedColumnPositionPair(i, index);
+          rowSkewedIndex.add(pair);
         }
       }
       assert (hitNo == this.skewedColNames.size()) : "RowSchema doesn't have all skewed columns."
@@ -136,20 +137,6 @@ public class ListBucketingCtx implements Serializable {
           this.skewedColNames,
           ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME));
     }
-  }
-
-  /**
-   * @return the rowSkewedIndex
-   */
-  public List<Integer> getRowSkewedIndex() {
-    return rowSkewedIndex;
-  }
-
-  /**
-   * @param rowSkewedIndex the rowSkewedIndex to set
-   */
-  public void setRowSkewedIndex(List<Integer> rowSkewedIndex) {
-    this.rowSkewedIndex = rowSkewedIndex;
   }
 
   /**
@@ -235,4 +222,20 @@ public class ListBucketingCtx implements Serializable {
   public void setSkewedValuesDirNames(List<String> skewedValuesDirNames) {
     this.skewedValuesDirNames = skewedValuesDirNames;
   }
+
+  /**
+   * @return the rowSkewedIndex
+   */
+  public List<SkewedColumnPositionPair> getRowSkewedIndex() {
+    return rowSkewedIndex;
+  }
+
+  /**
+   * @param rowSkewedIndex the rowSkewedIndex to set
+   */
+  public void setRowSkewedIndex(List<SkewedColumnPositionPair> rowSkewedIndex) {
+    this.rowSkewedIndex = rowSkewedIndex;
+  }
 }
+
+
