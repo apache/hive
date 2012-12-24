@@ -291,6 +291,10 @@ public enum ErrorMsg {
   HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY(10213,
     "Grouping sets expression is not in GROUP BY key"),
   INVALID_PARTITION_SPEC(10214, "Invalid partition spec specified"),
+  ALTER_TBL_UNSET_NON_EXIST_PROPERTY(10215,
+    "Please use the following syntax if not sure " +
+    "whether the property existed or not:\n" +
+    "ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)\n"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

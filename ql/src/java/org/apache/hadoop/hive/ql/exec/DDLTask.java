@@ -3082,6 +3082,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
+      Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
+      while (keyItr.hasNext()) {
+        tbl.getTTable().getParameters().remove(keyItr.next());
+      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
       if (part != null) {
         part.getTPartition().getSd().getSerdeInfo().getParameters().putAll(

@@ -44,7 +44,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *
    */
   public static enum AlterTableTypes {
-    RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
+    RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, DROPPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
     TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
     ALTERLOCATION, DROPPARTITION, RENAMEPARTITION, ADDSKEWEDBY, ALTERSKEWEDLOCATION,
@@ -86,6 +86,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
   Table table;
+  boolean isDropIfExists = false;
 
   public AlterTableDesc() {
   }
@@ -669,6 +670,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
     this.isStoredAsSubDirectories = isStoredAsSubDirectories;
+  }
+
+  /**
+   * @param isDropIfExists the isDropIfExists to set
+   */
+  public void setDropIfExists(boolean isDropIfExists) {
+    this.isDropIfExists = isDropIfExists;
+  }
+
+  /**
+   * @return isDropIfExists
+   */
+  public boolean getIsDropIfExists() {
+    return isDropIfExists;
   }
 
 }

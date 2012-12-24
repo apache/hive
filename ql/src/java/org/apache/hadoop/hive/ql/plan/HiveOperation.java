@@ -72,6 +72,7 @@ public enum HiveOperation {
   DROPINDEX("DROPINDEX", null, null),
   ALTERINDEX_REBUILD("ALTERINDEX_REBUILD", null, null),
   ALTERVIEW_PROPERTIES("ALTERVIEW_PROPERTIES", null, null),
+  DROPVIEW_PROPERTIES("DROPVIEW_PROPERTIES", null, null),
   LOCKTABLE("LOCKTABLE",  new Privilege[]{Privilege.LOCK}, null),
   UNLOCKTABLE("UNLOCKTABLE",  new Privilege[]{Privilege.LOCK}, null),
   CREATEROLE("CREATEROLE", null, null),
