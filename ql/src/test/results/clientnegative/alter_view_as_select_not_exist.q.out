@@ -1,0 +1,6 @@
+PREHOOK: query: DROP VIEW testView
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW testView
+POSTHOOK: type: DROPVIEW
+FAILED: SemanticException [Error 10216]: Cannot ALTER VIEW AS SELECT if view currently does not exist
+ The following view does not exist: testView

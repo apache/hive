@@ -161,6 +161,7 @@ STAGE PLANS:
       Create View Operator:
         Create View
           if not exists: false
+          is alter view as select: false
           or replace: false
           columns: valoo string
           expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`

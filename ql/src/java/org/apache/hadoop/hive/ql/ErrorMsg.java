@@ -295,6 +295,13 @@ public enum ErrorMsg {
     "Please use the following syntax if not sure " +
     "whether the property existed or not:\n" +
     "ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)\n"),
+  ALTER_VIEW_AS_SELECT_NOT_EXIST(10216,
+    "Cannot ALTER VIEW AS SELECT if view currently does not exist\n"),
+  REPLACE_VIEW_WITH_PARTITION(10217,
+    "Cannot replace a view with CREATE VIEW or REPLACE VIEW or " +
+    "ALTER VIEW AS SELECT if the view has paritions\n"),
+  EXISTING_TABLE_IS_NOT_VIEW(10218,
+    "Existing table is not a view\n"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

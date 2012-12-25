@@ -1,7 +1,2 @@
-PREHOOK: query: -- Existing table is not a view
-
-create or replace view src as select ds, hr from srcpart
-PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
-FAILED: Error in metadata: Existing table is not a view
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 10218]: Existing table is not a view
+ The following is an existing table, not a view: src

@@ -3837,21 +3837,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table oldview = db.getTable(crtView.getViewName(), false);
     if (crtView.getOrReplace() && oldview != null) {
       // replace existing view
-      if (!oldview.getTableType().equals(TableType.VIRTUAL_VIEW)) {
-        throw new HiveException("Existing table is not a view");
-      }
-
-      if (crtView.getPartCols() == null
-          || crtView.getPartCols().isEmpty()
-          || !crtView.getPartCols().equals(oldview.getPartCols())) {
-        // if we are changing partition columns, check that partitions don't exist
-        if (!oldview.getPartCols().isEmpty() &&
-            !db.getPartitions(oldview).isEmpty()) {
-          throw new HiveException(
-              "Cannot add or drop partition columns with CREATE OR REPLACE VIEW if partitions currently exist");
-        }
-      }
-
       // remove the existing partition columns from the field schema
       oldview.setViewOriginalText(crtView.getViewOriginalText());
       oldview.setViewExpandedText(crtView.getViewExpandedText());
