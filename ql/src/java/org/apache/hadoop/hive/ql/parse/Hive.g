@@ -199,6 +199,7 @@ TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
+TOK_ALTERVIEW_AS;
 TOK_ALTERVIEW_PROPERTIES;
 TOK_DROPVIEW_PROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
@@ -629,6 +630,8 @@ alterViewStatementSuffix
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions
         -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
+    | name=tableName KW_AS selectStatement
+        -> ^(TOK_ALTERVIEW_AS $name selectStatement)
     ;
 
 alterIndexStatementSuffix

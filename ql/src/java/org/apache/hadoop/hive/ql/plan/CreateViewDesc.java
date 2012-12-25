@@ -43,6 +43,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String comment;
   private boolean ifNotExists;
   private boolean orReplace;
+  private boolean isAlterViewAs;
 
   /**
    * For serialization only.
@@ -52,7 +53,8 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
       String comment, Map<String, String> tblProps,
-      List<String> partColNames, boolean ifNotExists, boolean orReplace) {
+      List<String> partColNames, boolean ifNotExists,
+      boolean orReplace, boolean isAlterViewAs) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
@@ -60,6 +62,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.partColNames = partColNames;
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
+    this.isAlterViewAs = isAlterViewAs;
   }
 
   @Explain(displayName = "name")
@@ -157,5 +160,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setOrReplace(boolean orReplace) {
     this.orReplace = orReplace;
+  }
+
+  @Explain(displayName = "is alter view as select")
+  public boolean getIsAlterViewAs() {
+    return isAlterViewAs;
+  }
+
+  public void setIsAlterViewAs(boolean isAlterViewAs) {
+    this.isAlterViewAs = isAlterViewAs;
   }
 }

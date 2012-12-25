@@ -8211,7 +8211,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // analyze create view command
-    if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW) {
+    if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
+        ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
       child = analyzeCreateView(ast, qb);
       SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
@@ -8244,6 +8245,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (createVwDesc != null) {
       saveViewDefinition();
+
+      // validate the create view statement
+      // at this point, the createVwDesc gets all the information for semantic check
+      validateCreateView(createVwDesc);
+
       // Since we're only creating a view (not executing it), we
       // don't need to optimize or translate the plan (and in fact, those
       // procedures can interfere with the view creation). So
@@ -8918,6 +8924,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
     boolean orReplace = false;
+    boolean isAlterViewAs = false;
     String comment = null;
     ASTNode selectStmt = null;
     Map<String, String> tblProps = null;
@@ -8959,13 +8966,71 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
     }
 
+    if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_AS) {
+      isAlterViewAs = true;
+      orReplace = true;
+    }
+
     createVwDesc = new CreateViewDesc(
-      tableName, cols, comment, tblProps, partColNames, ifNotExists, orReplace);
+      tableName, cols, comment, tblProps, partColNames,
+      ifNotExists, orReplace, isAlterViewAs);
+
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));
 
     return selectStmt;
+  }
+
+  // validate the create view statement
+  // the statement could be CREATE VIEW, REPLACE VIEW, or ALTER VIEW AS SELECT
+  // check semantic conditions
+  private void validateCreateView(CreateViewDesc createVwDesc)
+    throws SemanticException {
+    try {
+      Table oldView = db.getTable(createVwDesc.getViewName(), false);
+
+      // ALTER VIEW AS SELECT requires the view must exist
+      if (createVwDesc.getIsAlterViewAs() && oldView == null) {
+        String viewNotExistErrorMsg =
+          "The following view does not exist: " + createVwDesc.getViewName();
+        throw new SemanticException(
+          ErrorMsg.ALTER_VIEW_AS_SELECT_NOT_EXIST.getMsg(viewNotExistErrorMsg));
+      }
+
+      //replace view
+      if (createVwDesc.getOrReplace() && oldView != null) {
+
+        // Existing table is not a view
+        if (!oldView.getTableType().equals(TableType.VIRTUAL_VIEW)) {
+          String tableNotViewErrorMsg =
+            "The following is an existing table, not a view: " +
+            createVwDesc.getViewName();
+          throw new SemanticException(
+            ErrorMsg.EXISTING_TABLE_IS_NOT_VIEW.getMsg(tableNotViewErrorMsg));
+        }
+
+        // if old view has partitions, it could not be replaced
+        String partitionViewErrorMsg =
+          "The following view has partition, it could not be replaced: " +
+          createVwDesc.getViewName();
+        try {
+          if ((createVwDesc.getPartCols() == null ||
+            createVwDesc.getPartCols().isEmpty() ||
+            !createVwDesc.getPartCols().equals(oldView.getPartCols())) &&
+            !oldView.getPartCols().isEmpty() &&
+            !db.getPartitions(oldView).isEmpty()) {
+            throw new SemanticException(
+              ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
+          }
+        } catch (HiveException e) {
+          throw new SemanticException(
+            ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
+        }
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(e.getMessage());
+    }
   }
 
   private void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
