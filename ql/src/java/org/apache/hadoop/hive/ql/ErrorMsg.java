@@ -302,6 +302,12 @@ public enum ErrorMsg {
     "ALTER VIEW AS SELECT if the view has paritions\n"),
   EXISTING_TABLE_IS_NOT_VIEW(10218,
     "Existing table is not a view\n"),
+  NO_SUPPORTED_ORDERBY_ALLCOLREF_POS(10219,
+    "Position in ORDER BY is not supported when using SELECT *"),
+  INVALID_POSITION_ALIAS_IN_GROUPBY(10220,
+    "Invalid position alias in Group By\n"),
+  INVALID_POSITION_ALIAS_IN_ORDERBY(10221,
+    "Invalid position alias in Order By\n"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
