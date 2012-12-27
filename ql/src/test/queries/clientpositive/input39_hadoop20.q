@@ -1,4 +1,4 @@
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 
 create table t1(key string, value string) partitioned by (ds string);
