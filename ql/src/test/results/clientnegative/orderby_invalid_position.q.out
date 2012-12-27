@@ -1,0 +1,3 @@
+FAILED: SemanticException [Error 10221]: Invalid position alias in Order By
+ Position alias: 0 does not exist
+The Select List is indexed from 1 to 2

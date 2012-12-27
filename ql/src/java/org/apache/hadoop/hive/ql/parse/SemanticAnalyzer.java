@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.antlr.runtime.tree.BaseTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
@@ -8200,6 +8201,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Starting Semantic Analysis");
 
+    // analyze and process the position alias
+    processPositionAlias(ast);
+
     // analyze create table command
     if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE) {
       // if it is not CTAS, we don't need to go further and just return
@@ -9133,6 +9137,98 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
   }
+
+  // Process the position alias in GROUPBY and ORDERBY
+  private void processPositionAlias(ASTNode ast) throws SemanticException {
+    if (HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS) == false) {
+      return;
+    }
+
+    if (ast.getChildCount()  == 0) {
+      return;
+    }
+
+    boolean isAllCol;
+    ASTNode selectNode = null;
+    ASTNode groupbyNode = null;
+    ASTNode orderbyNode = null;
+
+    // get node type
+    int child_count = ast.getChildCount();
+    for (int child_pos = 0; child_pos < child_count; ++child_pos) {
+      ASTNode node = (ASTNode) ast.getChild(child_pos);
+      int type = node.getToken().getType();
+      if (type == HiveParser.TOK_SELECT) {
+        selectNode = node;
+      } else if (type == HiveParser.TOK_GROUPBY) {
+        groupbyNode = node;
+      } else if (type == HiveParser.TOK_ORDERBY) {
+        orderbyNode = node;
+      }
+    }
+
+    if (selectNode != null) {
+      int selectExpCnt = selectNode.getChildCount();
+
+      // replace each of the position alias in GROUPBY with the actual column name
+      if (groupbyNode != null) {
+        for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
+          ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
+          if (node.getToken().getType() == HiveParser.Number) {
+            int pos = Integer.parseInt(node.getText());
+            if (pos > 0 && pos <= selectExpCnt) {
+              groupbyNode.setChild(child_pos,
+                (BaseTree) selectNode.getChild(pos - 1).getChild(0));
+            } else {
+              throw new SemanticException(
+                ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
+                "Position alias: " + pos + " does not exist\n" +
+                "The Select List is indexed from 1 to " + selectExpCnt));
+            }
+          }
+        }
+      }
+
+      // replace each of the position alias in ORDERBY with the actual column name
+      if (orderbyNode != null) {
+        isAllCol = false;
+        for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
+          ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
+          if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+            isAllCol = true;
+          }
+        }
+        for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
+          ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos);
+          ASTNode node = (ASTNode) colNode.getChild(0);
+          if (node.getToken().getType() == HiveParser.Number) {
+            if (!isAllCol) {
+              int pos = Integer.parseInt(node.getText());
+              if (pos > 0 && pos <= selectExpCnt) {
+                colNode.setChild(0, (BaseTree) selectNode.getChild(pos - 1).getChild(0));
+              } else {
+                throw new SemanticException(
+                  ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                  "Position alias: " + pos + " does not exist\n" +
+                  "The Select List is indexed from 1 to " + selectExpCnt));
+              }
+            } else {
+              throw new SemanticException(
+                ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
+            }
+          }
+        }
+      }
+    }
+
+    // Recursively process through the children ASTNodes
+    for (int child_pos = 0; child_pos < child_count; ++child_pos) {
+      processPositionAlias((ASTNode) ast.getChild(child_pos));
+    }
+    return;
+  }
+
 
   public QB getQB() {
     return qb;

@@ -1626,5 +1626,11 @@
   If the property is not set, then logging will be initialized using hive-exec-log4j.properties found on the classpath.
   If the property is set, the value must be a valid URI (java.net.URI, e.g. "file:///tmp/my-logging.properties"), which you can then extract a URL from and pass to PropertyConfigurator.configure(URL).</description>
 </property>
+
+<property>
+  <name>hive.groupby.orderby.position.alias</name>
+  <value>false</value>
+  <description>Whether to enable using Column Position Alias in Group By or Order By</description>
+</property>
 </configuration>
 
