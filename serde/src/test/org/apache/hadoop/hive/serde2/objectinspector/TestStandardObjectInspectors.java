@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -89,6 +91,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
       doTestStandardPrimitiveObjectInspector(Text.class, String.class);
       doTestStandardPrimitiveObjectInspector(BytesWritable.class, byte[].class);
+      doTestStandardPrimitiveObjectInspector(TimestampWritable.class, Timestamp.class);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
