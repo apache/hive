@@ -21,7 +21,8 @@
 <project name="hive" default="jar"
          xmlns:ivy="antlib:org.apache.ivy.ant"
          xmlns:artifact="urn:maven-artifact-ant"
-         xmlns:rat="antlib:org.apache.rat.anttasks" >
+         xmlns:rat="antlib:org.apache.rat.anttasks"
+         xmlns:maven="antlib:org.apache.maven.artifact.ant">
 
   <property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
