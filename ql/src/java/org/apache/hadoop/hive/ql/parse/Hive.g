@@ -115,6 +115,7 @@ TOK_UNIONTYPE;
 TOK_COLTYPELIST;
 TOK_CREATEDATABASE;
 TOK_CREATETABLE;
+TOK_TRUNCATETABLE;
 TOK_CREATEINDEX;
 TOK_CREATEINDEX_INDEXTBLNAME;
 TOK_DEFERRED_REBUILDINDEX;
@@ -354,6 +355,7 @@ ddlStatement
     | dropDatabaseStatement
     | createTableStatement
     | dropTableStatement
+    | truncateTableStatement
     | alterStatement
     | descStatement
     | showStatement
@@ -507,6 +509,11 @@ createTableStatement
          selectStatement?
         )
     ;
+
+truncateTableStatement
+@init { msgs.push("truncate table statement"); }
+@after { msgs.pop(); }
+    : KW_TRUNCATE KW_TABLE tablePartitionPrefix -> ^(TOK_TRUNCATETABLE tablePartitionPrefix);
 
 createIndexStatement
 @init { msgs.push("create index statement");}
@@ -2594,6 +2601,7 @@ KW_DIRECTORIES: 'DIRECTORIES';
 KW_FOR: 'FOR';
 KW_GROUPING: 'GROUPING';
 KW_SETS: 'SETS';
+KW_TRUNCATE: 'TRUNCATE';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

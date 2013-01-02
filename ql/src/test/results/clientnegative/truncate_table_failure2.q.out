@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10006]: Partition not found {ds=2012-12-17, hr=15}

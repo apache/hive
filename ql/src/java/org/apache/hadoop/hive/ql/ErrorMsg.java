@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -244,8 +245,11 @@ public enum ErrorMsg {
   INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
 
   SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
+  ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
 
-  ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized"),
+  TRUNCATE_FOR_NON_MANAGED_TABLE(10146, "Cannot truncate non-managed table {0}.", true),
+  TRUNCATE_FOR_NON_NATIVE_TABLE(10147, "Cannot truncate non-native table {0}.", true),
+  PARTSPEC_FOR_NON_PARTITIONED_TABLE(10148, "Partition spec for non partitioned table {0}.", true),
 
   LOAD_INTO_STORED_AS_DIR(10195, "A stored-as-directories table cannot be used as target for LOAD"),
   ALTER_TBL_STOREDASDIR_NOT_SKEWED(10196, "This operation is only valid on skewed table."),
@@ -353,21 +357,27 @@ public enum ErrorMsg {
   private int errorCode;
   private String mesg;
   private String sqlState;
+  private MessageFormat format;
 
   private static final char SPACE = ' ';
   private static final Pattern ERROR_MESSAGE_PATTERN = Pattern.compile(".*Line [0-9]+:[0-9]+ (.*)");
   private static final Pattern ERROR_CODE_PATTERN =
     Pattern.compile("HiveException:\\s+\\[Error ([0-9]+)\\]: (.*)");
   private static Map<String, ErrorMsg> mesgToErrorMsgMap = new HashMap<String, ErrorMsg>();
+  private static Map<Pattern, ErrorMsg> formatToErrorMsgMap = new HashMap<Pattern, ErrorMsg>();
   private static int minMesgLength = -1;
 
   static {
     for (ErrorMsg errorMsg : values()) {
-      mesgToErrorMsgMap.put(errorMsg.getMsg().trim(), errorMsg);
-
-      int length = errorMsg.getMsg().trim().length();
-      if (minMesgLength == -1 || length < minMesgLength) {
-        minMesgLength = length;
+      if (errorMsg.format != null) {
+        String pattern = errorMsg.mesg.replaceAll("\\{.*\\}", ".*");
+        formatToErrorMsgMap.put(Pattern.compile("^" + pattern + "$"), errorMsg);
+      } else {
+        mesgToErrorMsgMap.put(errorMsg.getMsg().trim(), errorMsg);
+        int length = errorMsg.getMsg().trim().length();
+        if (minMesgLength == -1 || length < minMesgLength) {
+          minMesgLength = length;
+        }
       }
     }
   }
@@ -386,6 +396,12 @@ public enum ErrorMsg {
     ErrorMsg errorMsg = mesgToErrorMsgMap.get(mesg);
     if (errorMsg != null) {
       return errorMsg;
+    }
+
+    for (Map.Entry<Pattern, ErrorMsg> entry : formatToErrorMsgMap.entrySet()) {
+      if (entry.getKey().matcher(mesg).matches()) {
+        return entry.getValue();
+      }
     }
 
     // if not see if the mesg follows type of format, which is typically the
@@ -449,14 +465,23 @@ public enum ErrorMsg {
   }
 
   private ErrorMsg(int errorCode, String mesg) {
+    this(errorCode, mesg, "42000", false);
+  }
+
+  private ErrorMsg(int errorCode, String mesg, boolean format) {
     // 42000 is the generic SQLState for syntax error.
-    this(errorCode, mesg, "42000");
+    this(errorCode, mesg, "42000", format);
   }
 
   private ErrorMsg(int errorCode, String mesg, String sqlState) {
+    this(errorCode, mesg, sqlState, false);
+  }
+
+  private ErrorMsg(int errorCode, String mesg, String sqlState, boolean format) {
     this.errorCode = errorCode;
     this.mesg = mesg;
     this.sqlState = sqlState;
+    this.format = format ? new MessageFormat(mesg) : null;
   }
 
   private static int getLine(ASTNode tree) {
@@ -536,6 +561,15 @@ public enum ErrorMsg {
 
   public String getMsg(String reason) {
     return mesg + " " + reason;
+  }
+
+  public String format(String reason) {
+    return format(new String[]{reason});
+  }
+
+  public String format(String... reasons) {
+    assert format != null;
+    return format.format(reasons);
   }
 
   public String getErrorCodedMsg() {
