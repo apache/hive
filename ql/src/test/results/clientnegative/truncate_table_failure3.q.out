@@ -1,0 +1,6 @@
+PREHOOK: query: create external table external1 (a int, b int) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table external1 (a int, b int) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@external1
+FAILED: SemanticException [Error 10146]: Cannot truncate non-managed table external1.

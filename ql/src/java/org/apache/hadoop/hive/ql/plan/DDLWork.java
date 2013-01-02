@@ -62,6 +62,7 @@ public class DDLWork implements Serializable {
   private ShowIndexesDesc showIndexesDesc;
   private DescDatabaseDesc descDbDesc;
   private AlterDatabaseDesc alterDbDesc;
+  private TruncateTableDesc truncateTblDesc;
 
   private RoleDDLDesc roleDDLDesc;
   private GrantDesc grantDesc;
@@ -124,6 +125,12 @@ public class DDLWork implements Serializable {
       AlterDatabaseDesc alterDbDesc) {
     this(inputs, outputs);
     this.alterDbDesc = alterDbDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      TruncateTableDesc truncateTblDesc) {
+    this(inputs, outputs);
+    this.truncateTblDesc = truncateTblDesc;
   }
 
   public DescDatabaseDesc getDescDatabaseDesc() {
@@ -988,4 +995,12 @@ public class DDLWork implements Serializable {
     this.needLock = needLock;
   }
 
+  @Explain(displayName = "Truncate Table Operator")
+  public TruncateTableDesc getTruncateTblDesc() {
+    return truncateTblDesc;
+  }
+
+  public void setTruncateTblDesc(TruncateTableDesc truncateTblDesc) {
+    this.truncateTblDesc = truncateTblDesc;
+  }
 }

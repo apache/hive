@@ -148,6 +148,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
@@ -412,8 +413,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
-      if(mergeFilesDesc != null) {
+      if (mergeFilesDesc != null) {
         return mergeFiles(db, mergeFilesDesc);
+      }
+
+      TruncateTableDesc truncateTableDesc = work.getTruncateTblDesc();
+      if (truncateTableDesc != null) {
+        return truncateTable(db, truncateTableDesc);
       }
 
     } catch (InvalidTableException e) {
@@ -3884,6 +3890,49 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       work.getOutputs().add(new WriteEntity(tbl));
     }
     return 0;
+  }
+
+  private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
+    String tableName = truncateTableDesc.getTableName();
+    Map<String, String> partSpec = truncateTableDesc.getPartSpec();
+
+    Table table = db.getTable(tableName, true);
+
+    FsShell fshell = new FsShell(conf);
+    try {
+      for (Path location : getLocations(db, table, partSpec)) {
+        fshell.run(new String[]{"-rmr", location.toString()});
+        location.getFileSystem(conf).mkdirs(location);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      try {
+        fshell.close();
+      } catch (IOException e) {
+        // ignore
+      }
+    }
+    return 0;
+  }
+
+  private List<Path> getLocations(Hive db, Table table, Map<String, String> partSpec)
+      throws HiveException {
+    List<Path> locations = new ArrayList<Path>();
+    if (partSpec == null) {
+      if (table.isPartitioned()) {
+        for (Partition partition : db.getPartitions(table)) {
+          locations.add(partition.getPartitionPath());
+        }
+      } else {
+        locations.add(table.getPath());
+      }
+    } else {
+      for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
+        locations.add(partition.getPartitionPath());
+      }
+    }
+    return locations;
   }
 
   private int setGenericTableAttributes(Table tbl) {
