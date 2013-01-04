@@ -2259,15 +2259,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
     if (partSpecs != null) {
       boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
       // we want to signal an error if the partition doesn't exist and we're
       // configured not to fail silently
       boolean throwException =
           !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTableDropPartsOutputs(tblName, partSpecs, throwException, stringPartitionColumns);
+      addTableDropPartsOutputs(tblName, partSpecs, throwException,
+                                stringPartitionColumns, ignoreProtection);
     }
-    boolean ignoreProtection = (ast.getFirstChildWithType(HiveParser.TOK_IGNOREPROTECTION) != null);
     DropTableDesc dropTblDesc =
         new DropTableDesc(tblName, partSpecs, expectView, stringPartitionColumns, ignoreProtection);
 
@@ -2653,7 +2654,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * throwIfNonExistent is true, otherwise ignore it.
    */
   private void addTableDropPartsOutputs(String tblName, List<PartitionSpec> partSpecs,
-      boolean throwIfNonExistent, boolean stringPartitionColumns)
+      boolean throwIfNonExistent, boolean stringPartitionColumns, boolean ignoreProtection)
       throws SemanticException {
     Table tab = getTable(tblName);
 
@@ -2683,6 +2684,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       for (Partition p : parts) {
+        if (!ignoreProtection && !p.canDrop()) {
+          throw new SemanticException(
+            ErrorMsg.DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION.getMsg(p.getCompleteName()));
+        }
         outputs.add(new WriteEntity(p));
       }
     }

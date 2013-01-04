@@ -49,9 +49,4 @@ POSTHOOK: query: alter table tbl_protectmode_tbl8 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@tbl_protectmode_tbl8
 POSTHOOK: Output: default@tbl_protectmode_tbl8@p=p1
-PREHOOK: query: alter table tbl_protectmode_tbl8 drop partition (p='p1')
-PREHOOK: type: ALTERTABLE_DROPPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl8
-PREHOOK: Output: default@tbl_protectmode_tbl8@p=p1
-FAILED: Error in metadata: Table tbl_protectmode_tbl8 Partition p=p1 is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 30011]: Partition protected from being dropped default@tbl_protectmode_tbl8@p=p1
