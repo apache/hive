@@ -23,12 +23,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Processor;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_result;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -53,10 +51,11 @@ import org.apache.thrift.protocol.TType;
  *  Note that old clients will never call set_ugi() and thus ugi will never be received on server
  *  side, in which case server exhibits previous behavior and continues as usual.
  */
+@SuppressWarnings("rawtypes")
 public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<Iface> {
 
   private final I iface;
-  private final Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  TBase<?,?>>>
+  private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase>>
     functions;
   private final HadoopShims shim;
 
@@ -66,11 +65,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     InvocationTargetException {
     super(iface);
     this.iface = iface;
-    // TODO get rid of following reflection after THRIFT-1465 is fixed.
-    Method map = Processor.class.getDeclaredMethod("getProcessMap",Map.class);
-    map.setAccessible(true);
-    this.functions = (Map<String,  ProcessFunction<I, ? extends  TBase<?,?>>>)
-        map.invoke(null, new HashMap<String, ProcessFunction<I, ? extends TBase<?,?>>>());
+    this.functions = getProcessMapView();
     shim = ShimLoader.getHadoopShims();
   }
 
@@ -79,7 +74,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     setIpAddress(in);
 
     final TMessage msg = in.readMessageBegin();
-    final ProcessFunction<I, ? extends  TBase<?,?>> fn = functions.get(msg.name);
+    final ProcessFunction<Iface, ? extends  TBase> fn = functions.get(msg.name);
     if (fn == null) {
       TProtocolUtil.skip(in, TType.STRUCT);
       in.readMessageEnd();
@@ -138,7 +133,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
   }
 
   private void handleSetUGI(TUGIContainingTransport ugiTrans,
-      ProcessFunction<I, ? extends  TBase<?,?>> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
+      ProcessFunction<Iface, ? extends  TBase> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
       throws TException, SecurityException, NoSuchMethodException, IllegalArgumentException,
       IllegalAccessException, InvocationTargetException{
 
