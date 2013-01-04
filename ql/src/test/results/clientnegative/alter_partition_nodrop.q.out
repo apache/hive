@@ -33,10 +33,4 @@ POSTHOOK: Input: default@alter_part_nodrop_part@year=1996/month=10
 POSTHOOK: Input: default@alter_part_nodrop_part@year=1996/month=12
 POSTHOOK: Output: default@alter_part_nodrop_part@year=1996/month=10
 POSTHOOK: Output: default@alter_part_nodrop_part@year=1996/month=12
-PREHOOK: query: alter table alter_part_nodrop_part drop partition (year='1996')
-PREHOOK: type: ALTERTABLE_DROPPARTS
-PREHOOK: Input: default@alter_part_nodrop_part
-PREHOOK: Output: default@alter_part_nodrop_part@year=1996/month=10
-PREHOOK: Output: default@alter_part_nodrop_part@year=1996/month=12
-FAILED: Error in metadata: Table alter_part_nodrop_part Partition year=1996/month=10 is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 30011]: Partition protected from being dropped default@alter_part_nodrop_part@year=1996/month=10

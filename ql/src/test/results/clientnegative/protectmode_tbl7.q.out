@@ -49,9 +49,4 @@ POSTHOOK: query: alter table tbl_protectmode_tbl7 enable no_drop cascade
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode_tbl7
 POSTHOOK: Output: default@tbl_protectmode_tbl7
-PREHOOK: query: alter table tbl_protectmode_tbl7 drop partition (p='p1')
-PREHOOK: type: ALTERTABLE_DROPPARTS
-PREHOOK: Input: default@tbl_protectmode_tbl7
-PREHOOK: Output: default@tbl_protectmode_tbl7@p=p1
-FAILED: Error in metadata: Table tbl_protectmode_tbl7 Partition p=p1 is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 30011]: Partition protected from being dropped default@tbl_protectmode_tbl7@p=p1
