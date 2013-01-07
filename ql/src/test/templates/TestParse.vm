@@ -93,40 +93,45 @@ public class $className extends TestCase {
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
+  #set ($fpath = $qfilesMap.get($fname))
   public void testParse_$tname() throws Exception {
-    org.apache.hadoop.hive.ql.exec.Operator.resetId();
+    runTest("$tname", "$fname", "$fpath");
+  }
+
+#end
+
+  private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
-      System.out.println("Begin query: " + "$fname");
+      System.out.println("Begin query: " + fname);
 
-      qt.addFile("$qfilesMap.get($fname)");
+      qt.addFile(fpath);
+      org.apache.hadoop.hive.ql.exec.Operator.resetId();
 
-      qt.init("$fname");
-      ASTNode tree = qt.parseQuery("$fname");
-      int ecode = qt.checkParseResults("$fname", tree);
+      qt.init(fname);
+      ASTNode tree = qt.parseQuery(fname);
+      int ecode = qt.checkParseResults(fname, tree);
       if (ecode != 0) {
         fail("Parse has unexpected out with error code = " + ecode + debugHint);
       }
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
-      ecode = qt.checkPlan("$fname", tasks);
+      ecode = qt.checkPlan(fname, tasks);
       if (ecode != 0) {
         fail("Semantic Analysis has unexpected output with error code = " + ecode
             + debugHint);
       }
-      System.out.println("Done query: " + "$fname");
+      System.out.println("Done query: " + fname);
     }
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Failed query: " + "$fname");
+      System.out.println("Failed query: " + fname);
       System.out.flush();
       fail("Unexpected exception" + debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.out.println("Done query: " + "$fname" + " elapsedTime=" + elapsedTime/1000 + "s");
+    System.out.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
-
-#end
 }
