@@ -92,26 +92,33 @@ public class $className extends TestCase {
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
+  #set ($fpath = $qfilesMap.get($fname))
   public void testParseNegative_$tname() throws Exception {
+    runTest("$tname", "$fname", "$fpath");
+  }
+
+#end
+
+  private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
-      System.out.println("Begin query: " + "$fname");
+      System.out.println("Begin query: " + fname);
 
-      qt.addFile("$qfilesMap.get($fname)");
+      qt.addFile(fpath);
 
-      qt.init("$fname");
-      ASTNode tree = qt.parseQuery("$fname");
+      qt.init(fname);
+      ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
-      fail("Unexpected success for query: " + "$fname" + debugHint);
+      fail("Unexpected success for query: " + fname + debugHint);
     }
     catch (ParseException pe) {
-      int ecode = qt.checkNegativeResults("$fname", pe);
+      int ecode = qt.checkNegativeResults(fname, pe);
       if (ecode != 0) {
         fail("failed with error code = " + ecode + debugHint);
       }
     }
     catch (SemanticException se) {
-      int ecode = qt.checkNegativeResults("$fname", se);
+      int ecode = qt.checkNegativeResults(fname, se);
       if (ecode != 0) {
         fail("failed with error code = " + ecode + debugHint);
       }
@@ -119,16 +126,13 @@ public class $className extends TestCase {
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Failed query: " + "$fname");
+      System.out.println("Failed query: " + fname);
       System.out.flush();
       fail("Unexpected exception" + debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.out.println("Done query: " + "$fname" + " elapsedTime=" + elapsedTime/1000 + "s");
+    System.out.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
-
-#end
 }
-
