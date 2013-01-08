@@ -77,6 +77,19 @@ public class ProxyFileSystem extends FilterFileSystem {
   }
 
   /**
+   *
+   * @param p
+   * @return
+   * @throws IOException
+   */
+  public Path resolvePath(final Path p) throws IOException {
+    // Return the fully-qualified path of path f resolving the path
+    // through any symlinks or mount point
+    checkPath(p);
+    return getFileStatus(p).getPath();
+  }
+
+  /**
    * Create a proxy file system for fs.
    *
    * @param fs FileSystem to create proxy for
@@ -124,7 +137,7 @@ public class ProxyFileSystem extends FilterFileSystem {
 
 
   @Override
-  protected void checkPath(Path path) {
+  protected void checkPath(final Path path) {
     super.checkPath(swizzleParamPath(path));
   }
 
