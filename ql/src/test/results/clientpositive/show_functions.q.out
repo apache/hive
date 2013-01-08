@@ -150,6 +150,7 @@ substring
 sum
 tan
 to_date
+to_unix_timestamp
 to_utc_timestamp
 translate
 trim
