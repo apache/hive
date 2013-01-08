@@ -97,7 +97,7 @@ STAGE PLANS:
             alias: dest1
             Select Operator
               expressions:
-                    expr: from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss')
+                    expr: from_unixtime(unix_timestamp('2010-01-13 11:57:40','yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss')
                     type: string
                     expr: from_unixtime(unix_timestamp('2010-01-13 11:57:40'))
                     type: string
