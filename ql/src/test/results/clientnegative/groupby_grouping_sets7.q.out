@@ -1,0 +1,6 @@
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+FAILED: SemanticException [Error 10225]: An additional MR job is introduced since the number of rows created per input row due to grouping sets is more than hive.new.job.grouping.set.cardinality. There is no need to handle skew separately. set hive.groupby.skewindata to false. The number of rows per input row due to grouping sets is 4

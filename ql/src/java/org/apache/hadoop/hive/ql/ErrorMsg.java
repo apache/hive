@@ -313,6 +313,17 @@ public enum ErrorMsg {
   INVALID_POSITION_ALIAS_IN_ORDERBY(10221,
     "Invalid position alias in Order By\n"),
 
+  HIVE_GROUPING_SETS_THRESHOLD_NOT_ALLOWED_WITH_SKEW(10225,
+    "An additional MR job is introduced since the number of rows created per input row " +
+    "due to grouping sets is more than hive.new.job.grouping.set.cardinality. There is no need " +
+    "to handle skew separately. set hive.groupby.skewindata to false."),
+  HIVE_GROUPING_SETS_THRESHOLD_NOT_ALLOWED_WITH_DISTINCTS(10226,
+    "An additional MR job is introduced since the cardinality of grouping sets " +
+    "is more than hive.new.job.grouping.set.cardinality. This functionality is not supported " +
+    "with distincts. Either set hive.new.job.grouping.set.cardinality to a high number " +
+    "(higher than the number of rows per input row due to grouping sets in the query), or " +
+    "rewrite the query to not use distincts."),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),

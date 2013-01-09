@@ -526,6 +526,22 @@
 </property>
 
 <property>
+  <name>hive.new.job.grouping.set.cardinality</name>
+  <value>30</value>
+  <description>
+    Whether a new map-reduce job should be launched for grouping sets/rollups/cubes.
+    For a query like: select a, b, c, count(1) from T group by a, b, c with rollup;
+    4 rows are created per row: (a, b, c), (a, b, null), (a, null, null), (null, null, null).
+    This can lead to explosion across map-reduce boundary if the cardinality of T is very high,
+    and map-side aggregation does not do a very good job. 
+
+    This parameter decides if hive should add an additional map-reduce job. If the grouping set
+    cardinality (4 in the example above), is more than this value, a new MR job is added under the
+    assumption that the orginal group by will reduce the data size.
+  </description>
+</property>
+
+<property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
   <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>
