@@ -449,7 +449,7 @@
                    </object> 
                   </void> 
                   <void property="listGroupingSets"> 
-                   <object class="java.util.ArrayList"/> 
+                   <object id="ArrayList1" class="java.util.ArrayList"/> 
                   </void> 
                   <void property="memoryThreshold"> 
                    <float>0.9</float> 
@@ -1196,6 +1196,9 @@
            <object idref="ExprNodeColumnDesc2"/> 
           </void> 
          </object> 
+        </void> 
+        <void property="listGroupingSets"> 
+         <object idref="ArrayList1"/> 
         </void> 
         <void property="memoryThreshold"> 
          <float>0.9</float> 
