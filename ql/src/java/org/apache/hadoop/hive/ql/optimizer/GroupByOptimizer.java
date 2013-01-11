@@ -333,7 +333,9 @@ public class GroupByOptimizer implements Transform {
           throw new SemanticException(e.getMessage(), e);
         }
 
-        GroupByOptimizerSortMatch currentMatch = GroupByOptimizerSortMatch.COMPLETE_MATCH;
+        GroupByOptimizerSortMatch currentMatch =
+            partsList.getNotDeniedPartns().isEmpty() ? GroupByOptimizerSortMatch.NO_MATCH :
+                GroupByOptimizerSortMatch.COMPLETE_MATCH;
         for (Partition part : partsList.getNotDeniedPartns()) {
           List<String> sortCols = part.getSortColNames();
           List<String> bucketCols = part.getBucketCols();
