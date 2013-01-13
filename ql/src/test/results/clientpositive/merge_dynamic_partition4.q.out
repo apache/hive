@@ -88,12 +88,14 @@ POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: query: insert overwrite table srcpart_merge_dp_rc partition (ds = '2008-04-08', hr) 
 select key, value, hr from srcpart_merge_dp where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp
 PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: Output: default@srcpart_merge_dp_rc@ds=2008-04-08
 POSTHOOK: query: insert overwrite table srcpart_merge_dp_rc partition (ds = '2008-04-08', hr) 
 select key, value, hr from srcpart_merge_dp where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp
 POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=11
@@ -193,12 +195,14 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 2 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp_rc
 PREHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=12
 PREHOOK: Output: default@merge_dynamic_part@ds=2008-04-08
 POSTHOOK: query: insert overwrite table merge_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 2 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp_rc
 POSTHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=a1
@@ -227,11 +231,13 @@ ds=2008-04-08/hr=a1
 ds=2008-04-08/hr=b1
 PREHOOK: query: select count(*) from merge_dynamic_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_dynamic_part
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=a1
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from merge_dynamic_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=a1
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####

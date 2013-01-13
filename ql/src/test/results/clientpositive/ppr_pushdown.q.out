@@ -161,10 +161,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 PREHOOK: query: select * from ppr_test where ds = '1234' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1234
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1234' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1234
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -179,10 +181,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	1234
 PREHOOK: query: select * from ppr_test where ds = '1224' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1224
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1224' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1224
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -197,10 +201,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	1224
 PREHOOK: query: select * from ppr_test where ds = '1214' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1214
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1214' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1214
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -215,10 +221,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	1214
 PREHOOK: query: select * from ppr_test where ds = '12.4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12.4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12.4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12.4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -233,10 +241,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	12.4
 PREHOOK: query: select * from ppr_test where ds = '12+4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12+4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12+4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12+4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -251,10 +261,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	12+4
 PREHOOK: query: select * from ppr_test where ds = '12:4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%3A4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12:4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%3A4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -269,10 +281,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	12:4
 PREHOOK: query: select * from ppr_test where ds = '12%4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%254
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12%4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%254
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -287,10 +301,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	12%4
 PREHOOK: query: select * from ppr_test where ds = '12*4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%2A4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12*4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%2A4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -305,9 +321,11 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 abcd	12*4
 PREHOOK: query: select * from ppr_test where ds = '12.*4' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12.*4' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
@@ -319,10 +337,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 PREHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1234
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1234
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -336,10 +356,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 1234	1234
 PREHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1224
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1224
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -353,10 +375,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 1224	1224
 PREHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=1214
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=1214
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -370,10 +394,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 1214	1214
 PREHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12.4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12.4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -387,10 +413,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 12.4	12.4
 PREHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12+4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12+4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -404,10 +432,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 12+4	12+4
 PREHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%3A4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%3A4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -421,10 +451,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 12:4	12:4
 PREHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%254
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%254
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
@@ -438,10 +470,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
 12%4	12%4
 PREHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=12%2A4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=12%2A4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []

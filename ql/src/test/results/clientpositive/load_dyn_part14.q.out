@@ -310,12 +310,14 @@ value=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part14
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####

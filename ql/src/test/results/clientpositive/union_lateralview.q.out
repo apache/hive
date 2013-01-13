@@ -293,6 +293,7 @@ LEFT OUTER JOIN src b
 ON d.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@test_union_lateral_view
 POSTHOOK: query: INSERT OVERWRITE TABLE test_union_lateral_view
@@ -314,6 +315,7 @@ LEFT OUTER JOIN src b
 ON d.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@test_union_lateral_view
 POSTHOOK: Lineage: test_union_lateral_view.arr_ele EXPRESSION []

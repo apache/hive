@@ -166,11 +166,13 @@ ds                  	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: analyze table src_rc_merge_test_part_stat partition(ds='2011') compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 PREHOOK: Input: default@src_rc_merge_test_part_stat@ds=2011
 PREHOOK: Output: default@src_rc_merge_test_part_stat
 PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
 POSTHOOK: query: analyze table src_rc_merge_test_part_stat partition(ds='2011') compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: Input: default@src_rc_merge_test_part_stat@ds=2011
 POSTHOOK: Output: default@src_rc_merge_test_part_stat
 POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011

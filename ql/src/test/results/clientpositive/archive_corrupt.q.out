@@ -35,11 +35,13 @@ POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
 select key, value from srcpart where ds='2008-04-08' and hr='12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
 select key, value from srcpart where ds='2008-04-08' and hr='12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -47,11 +49,13 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcp
 PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='11')
 select key, value from srcpart where ds='2008-04-09' and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=11
 POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='11')
 select key, value from srcpart where ds='2008-04-09' and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=11
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -61,11 +65,13 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcp
 PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12')
 select key, value from srcpart where ds='2008-04-09' and hr='12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=12
 POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12')
 select key, value from srcpart where ds='2008-04-09' and hr='12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=12
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

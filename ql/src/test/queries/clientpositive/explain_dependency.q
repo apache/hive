@@ -27,3 +27,8 @@ EXPLAIN DEPENDENCY SELECT * FROM V1;
 EXPLAIN DEPENDENCY SELECT * FROM V2;
 EXPLAIN DEPENDENCY SELECT * FROM V3;
 EXPLAIN DEPENDENCY SELECT * FROM V4;
+
+-- The table should show up in the explain dependency even if none
+-- of the partitions are selected.
+CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10';
+EXPLAIN DEPENDENCY SELECT * FROM V5;

@@ -189,6 +189,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge2a
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge2a
 PREHOOK: Input: default@rcfile_merge2a@one=1/two=0/three=2
 PREHOOK: Input: default@rcfile_merge2a@one=1/two=0/three=8
 PREHOOK: Input: default@rcfile_merge2a@one=1/two=1/three=3
@@ -215,6 +216,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge2a
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge2a
 POSTHOOK: Input: default@rcfile_merge2a@one=1/two=0/three=2
 POSTHOOK: Input: default@rcfile_merge2a@one=1/two=0/three=8
 POSTHOOK: Input: default@rcfile_merge2a@one=1/two=1/three=3

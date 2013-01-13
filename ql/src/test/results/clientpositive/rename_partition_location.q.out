@@ -47,6 +47,7 @@ POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).key SIMPLE [(src)src
 POSTHOOK: Lineage: rename_partition_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT count(*) FROM rename_partition_table where part = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rename_partition_table
 PREHOOK: Input: default@rename_partition_table@part=2
 #### A masked pattern was here ####
 500

@@ -319,12 +319,14 @@ PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON rand()) s
 WHERE s.ds='2008-04-08' and s.hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@dest1
 POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON rand()) s
 WHERE s.ds='2008-04-08' and s.hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.dt SIMPLE [(srcpart)s.FieldSchema(name:ds, type:string, comment:null), ]

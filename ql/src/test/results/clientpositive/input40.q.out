@@ -532,11 +532,13 @@ POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
 PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_insert_test_p
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_insert_test_p
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
 #### A masked pattern was here ####
 0	val_0	2009-08-01
@@ -1048,11 +1050,13 @@ POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
 PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_insert_test_p
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_insert_test_p
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
 #### A masked pattern was here ####
 0	val_0	2009-08-01

@@ -284,13 +284,17 @@ STAGE PLANS:
 
 PREHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big
 PREHOOK: Input: default@bucket_big@ds=2008-04-08
+PREHOOK: Input: default@bucket_small
 PREHOOK: Input: default@bucket_small@ds=2008-04-08
 PREHOOK: Input: default@bucket_small@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big
 POSTHOOK: Input: default@bucket_big@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 POSTHOOK: Input: default@bucket_small@ds=2008-04-09
 #### A masked pattern was here ####
@@ -475,13 +479,17 @@ STAGE PLANS:
 
 PREHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big
 PREHOOK: Input: default@bucket_big@ds=2008-04-08
+PREHOOK: Input: default@bucket_small
 PREHOOK: Input: default@bucket_small@ds=2008-04-08
 PREHOOK: Input: default@bucket_small@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big
 POSTHOOK: Input: default@bucket_big@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 POSTHOOK: Input: default@bucket_small@ds=2008-04-09
 #### A masked pattern was here ####

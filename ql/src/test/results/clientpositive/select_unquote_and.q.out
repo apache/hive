@@ -31,11 +31,13 @@ POSTHOOK: Lineage: npe_test PARTITION(ds=2012-12-12).key SIMPLE [(src)src.FieldS
 POSTHOOK: Lineage: npe_test PARTITION(ds=2012-12-12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT count(*) FROM npe_test
 PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test
 PREHOOK: Input: default@npe_test@ds=2012-12-11
 PREHOOK: Input: default@npe_test@ds=2012-12-12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*) FROM npe_test
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test
 POSTHOOK: Input: default@npe_test@ds=2012-12-11
 POSTHOOK: Input: default@npe_test@ds=2012-12-12
 #### A masked pattern was here ####
@@ -93,11 +95,13 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT count(*) FROM npe_test WHERE ds > 2012-11-31 AND ds < 2012-12-15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test
 PREHOOK: Input: default@npe_test@ds=2012-12-11
 PREHOOK: Input: default@npe_test@ds=2012-12-12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*) FROM npe_test WHERE ds > 2012-11-31 AND ds < 2012-12-15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test
 POSTHOOK: Input: default@npe_test@ds=2012-12-11
 POSTHOOK: Input: default@npe_test@ds=2012-12-12
 #### A masked pattern was here ####

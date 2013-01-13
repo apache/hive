@@ -33,22 +33,26 @@ POSTHOOK: Output: default@tbl_protectmode5@p=p2
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5
 PREHOOK: Input: default@tbl_protectmode5@p=p1
 PREHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Input: default@tbl_protectmode5@p=p1
 POSTHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5
 PREHOOK: Input: default@tbl_protectmode5@p=p2
 PREHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Input: default@tbl_protectmode5@p=p2
 POSTHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
@@ -67,11 +71,13 @@ POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectm
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5
 PREHOOK: Input: default@tbl_protectmode5@p=p2
 PREHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Input: default@tbl_protectmode5@p=p2
 POSTHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]

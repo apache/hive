@@ -164,6 +164,7 @@ PREHOOK: query: select * from (
   select * from tst x where x.d='2009-02-02' limit 10
 ) subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tst
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
 #### A masked pattern was here ####
@@ -173,6 +174,7 @@ POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-02-02' limit 10
 ) subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
 #### A masked pattern was here ####

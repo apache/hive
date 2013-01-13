@@ -48,6 +48,7 @@ PREHOOK: query: select count(1) from
  union all
 select key, value from partition_test_partitioned where dt=101 and key < 20)s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from
@@ -55,6 +56,7 @@ POSTHOOK: query: select count(1) from
  union all
 select key, value from partition_test_partitioned where dt=101 and key < 20)s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -67,6 +69,7 @@ PREHOOK: query: select count(1) from
  union all
 select key, value from partition_test_partitioned where dt=102 and key < 20)s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
@@ -75,6 +78,7 @@ POSTHOOK: query: select count(1) from
  union all
 select key, value from partition_test_partitioned where dt=102 and key < 20)s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####

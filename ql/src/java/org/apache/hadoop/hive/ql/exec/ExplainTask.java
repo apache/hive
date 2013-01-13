@@ -78,34 +78,34 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     JSONObject outJSONObject = new JSONObject();
     List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
-    Set<String> inputPartitions = new HashSet<String>();
-    Set<String> inputTables = new HashSet<String>();
-    Table table = null;
+    List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
     for (ReadEntity input: work.getInputs()) {
       switch (input.getType()) {
         case TABLE:
-          table = input.getTable();
+          Table table = input.getTable();
+          Map<String, String> tableInfo = new HashMap<String, String>();
+          tableInfo.put("tablename", table.getCompleteName());
+          tableInfo.put("tabletype", table.getTableType().toString());
+          if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
+            tableInfo.put("tableParents", input.getParents().toString());
+          }
+          inputTableInfo.add(tableInfo);
           break;
         case PARTITION:
-          inputPartitions.add(input.getPartition().getCompleteName());
-          table = input.getPartition().getTable();
+          Map<String, String> partitionInfo = new HashMap<String, String>();
+          partitionInfo.put("partitionName", input.getPartition().getCompleteName());
+          if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
+            partitionInfo.put("partitionParents", input.getParents().toString());
+          }
+          inputPartitionInfo.add(partitionInfo);
           break;
         default:
-          table = null;
           break;
-      }
-
-      if (table != null && !inputTables.contains(table.getCompleteName())) {
-        Map<String, String> tableInfo = new HashMap<String, String>();
-        tableInfo.put("tablename", table.getCompleteName());
-        tableInfo.put("tabletype", table.getTableType().toString());
-        inputTableInfo.add(tableInfo);
-        inputTables.add(table.getCompleteName());
       }
     }
 
     outJSONObject.put("input_tables", inputTableInfo);
-    outJSONObject.put("input_partitions", inputPartitions);
+    outJSONObject.put("input_partitions", inputPartitionInfo);
     return outJSONObject;
   }
 

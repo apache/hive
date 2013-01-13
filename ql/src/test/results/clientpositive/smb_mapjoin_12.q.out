@@ -236,14 +236,18 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
 PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table2
 PREHOOK: Input: default@test_table2@ds=1
 PREHOOK: Input: default@test_table2@ds=2
 PREHOOK: Input: default@test_table2@ds=3
 PREHOOK: Output: default@test_table3@ds=1
 POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 POSTHOOK: Input: default@test_table2@ds=2
 POSTHOOK: Input: default@test_table2@ds=3
@@ -261,13 +265,17 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value SIMPLE [(test_table2)b.Fiel
 PREHOOK: query: -- Join data from a sampled bucket to verify the data is bucketed
 SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
 PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table3
 PREHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- Join data from a sampled bucket to verify the data is bucketed
 SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -475,13 +483,17 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
 PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table3
 PREHOOK: Input: default@test_table3@ds=1
 PREHOOK: Output: default@test_table3@ds=2
 POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 POSTHOOK: Output: default@test_table3@ds=2
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -498,10 +510,12 @@ POSTHOOK: Lineage: test_table3 PARTITION(ds=2).key SIMPLE [(test_table3)a.FieldS
 POSTHOOK: Lineage: test_table3 PARTITION(ds=2).value EXPRESSION [(test_table3)a.FieldSchema(name:value, type:string, comment:null), (test_table1)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
 PREHOOK: Input: default@test_table3@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

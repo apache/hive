@@ -31,11 +31,13 @@ POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
 select key, value from srcpart where ds='2008-04-08' and hr='12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
 select key, value from srcpart where ds='2008-04-08' and hr='12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

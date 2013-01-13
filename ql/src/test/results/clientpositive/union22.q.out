@@ -522,7 +522,9 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dst_union22
 PREHOOK: Input: default@dst_union22@ds=1
+PREHOOK: Input: default@dst_union22_delta
 PREHOOK: Input: default@dst_union22_delta@ds=1
 PREHOOK: Output: default@dst_union22@ds=2
 POSTHOOK: query: insert overwrite table dst_union22 partition (ds='2')
@@ -537,7 +539,9 @@ where a.k1 > 20
 )
 subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dst_union22
 POSTHOOK: Input: default@dst_union22@ds=1
+POSTHOOK: Input: default@dst_union22_delta
 POSTHOOK: Input: default@dst_union22_delta@ds=1
 POSTHOOK: Output: default@dst_union22@ds=2
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -556,10 +560,12 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dst_union22
 PREHOOK: Input: default@dst_union22@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dst_union22
 POSTHOOK: Input: default@dst_union22@ds=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

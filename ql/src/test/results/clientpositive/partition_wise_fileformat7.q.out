@@ -24,11 +24,13 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 PREHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -37,11 +39,13 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 PREHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101' and a.key < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101' and a.key < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

@@ -11,6 +11,7 @@ select * from
   )x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 PREHOOK: Output: default@dest_sp
 POSTHOOK: query: insert overwrite table dest_sp
 select * from 
@@ -20,6 +21,7 @@ select * from
   )x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@dest_sp
 POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 PREHOOK: query: select * from dest_sp x order by x.cnt limit 2

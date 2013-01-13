@@ -21,6 +21,7 @@ PREHOOK: Input: default@citl_table
 PREHOOK: Output: default@citl_table@part=1
 PREHOOK: query: SELECT count(*) FROM citl_table where part = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@citl_table
 PREHOOK: Input: default@citl_table@part=1
 #### A masked pattern was here ####
 500

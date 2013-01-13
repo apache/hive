@@ -123,21 +123,25 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable
 PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable
 POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from destinTable order by one desc, two desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@destintable
 PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select one,two from destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@destintable
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
@@ -172,10 +176,12 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourc
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from destinTable order by one desc, two desc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@destintable
 PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select one,two from destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@destintable
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
@@ -299,10 +305,12 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable
 PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable
 POSTHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable
 POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable
 POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]

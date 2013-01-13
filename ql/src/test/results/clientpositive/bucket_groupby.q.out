@@ -117,10 +117,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=100
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=100
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -249,10 +251,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -353,10 +357,12 @@ STAGE PLANS:
 
 PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -448,10 +454,12 @@ STAGE PLANS:
 
 PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -553,10 +561,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -662,10 +672,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -763,11 +775,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=100
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=100
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
@@ -1326,10 +1340,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1432,10 +1448,12 @@ STAGE PLANS:
 
 PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1548,10 +1566,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1735,10 +1755,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1855,10 +1877,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

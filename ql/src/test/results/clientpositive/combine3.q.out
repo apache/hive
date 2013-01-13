@@ -85,11 +85,13 @@ hr                  	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
 PREHOOK: type: QUERY
+PREHOOK: Input: default@combine_3_srcpart_seq_rc
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
 #### A masked pattern was here ####
@@ -194,11 +196,13 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSIO
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
 PREHOOK: type: QUERY
+PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
 #### A masked pattern was here ####
 POSTHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
 #### A masked pattern was here ####

@@ -98,6 +98,7 @@ STAGE PLANS:
 
 PREHOOK: query: insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select key, value, hr from srcpart where ds is not null and hr is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -105,6 +106,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@nzhang_part_bucket@ds=2010-03-23
 POSTHOOK: query: insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select key, value, hr from srcpart where ds is not null and hr is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -127,10 +129,12 @@ ds=2010-03-23/hr=11
 ds=2010-03-23/hr=12
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1139,10 +1143,12 @@ POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPL
 98	val_98	2010-03-23	11
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part_bucket
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part_bucket
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
