@@ -1060,12 +1060,14 @@ PREHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@srcpart
 PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@srcpart
 POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]

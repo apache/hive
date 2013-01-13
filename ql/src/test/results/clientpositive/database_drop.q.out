@@ -164,10 +164,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab
 PREHOOK: Input: db5@part_tab@ds=2008-04-09
 PREHOOK: Output: db5@db5__part_tab_idx3__@ds=2008-04-09
 POSTHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2008-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab
 POSTHOOK: Input: db5@part_tab@ds=2008-04-09
 POSTHOOK: Output: db5@db5__part_tab_idx3__@ds=2008-04-09
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -181,10 +183,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab
 PREHOOK: Input: db5@part_tab@ds=2009-04-09
 PREHOOK: Output: db5@db5__part_tab_idx3__@ds=2009-04-09
 POSTHOOK: query: ALTER INDEX idx3 ON part_tab PARTITION (ds='2009-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab
 POSTHOOK: Input: db5@part_tab@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab_idx3__@ds=2009-04-09
 POSTHOOK: Lineage: db5__part_tab_idx3__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab)part_tab.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -279,10 +283,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab2
 PREHOOK: Input: db5@part_tab2@ds=2008-04-09
 PREHOOK: Output: db5@db5__part_tab2_idx4__@ds=2008-04-09
 POSTHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2008-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab2
 POSTHOOK: Input: db5@part_tab2@ds=2008-04-09
 POSTHOOK: Output: db5@db5__part_tab2_idx4__@ds=2008-04-09
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -302,10 +308,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab2
 PREHOOK: Input: db5@part_tab2@ds=2009-04-09
 PREHOOK: Output: db5@db5__part_tab2_idx4__@ds=2009-04-09
 POSTHOOK: query: ALTER INDEX idx4 ON part_tab2 PARTITION (ds='2009-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab2
 POSTHOOK: Input: db5@part_tab2@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab2_idx4__@ds=2009-04-09
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -455,10 +463,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2008-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab3
 PREHOOK: Input: db5@part_tab3@ds=2008-04-09
 PREHOOK: Output: db5@db5__part_tab3_idx5__@ds=2008-04-09
 POSTHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2008-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab3
 POSTHOOK: Input: db5@part_tab3@ds=2008-04-09
 POSTHOOK: Output: db5@db5__part_tab3_idx5__@ds=2008-04-09
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -484,10 +494,12 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__._offsets EXPRESSION [(temp_tbl)temp_tbl.
 POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2009-04-09') REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: db5@part_tab3
 PREHOOK: Input: db5@part_tab3@ds=2009-04-09
 PREHOOK: Output: db5@db5__part_tab3_idx5__@ds=2009-04-09
 POSTHOOK: query: ALTER INDEX idx5 ON part_tab3 PARTITION (ds='2009-04-09') REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: db5@part_tab3
 POSTHOOK: Input: db5@part_tab3@ds=2009-04-09
 POSTHOOK: Output: db5@db5__part_tab3_idx5__@ds=2009-04-09
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]

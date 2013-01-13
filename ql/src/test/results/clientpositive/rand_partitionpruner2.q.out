@@ -355,12 +355,14 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table tmptable
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@tmptable
 POSTHOOK: query: insert overwrite table tmptable
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable

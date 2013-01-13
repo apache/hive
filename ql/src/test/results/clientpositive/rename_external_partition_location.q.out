@@ -30,10 +30,12 @@ POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSc
 part=part1
 PREHOOK: query: SELECT * from ex_table where part='part1' ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ex_table
 PREHOOK: Input: default@ex_table@part=part1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * from ex_table where part='part1' ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ex_table
 POSTHOOK: Input: default@ex_table@part=part1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -81,10 +83,12 @@ POSTHOOK: Lineage: ex_table PARTITION(part=part1).value SIMPLE [(src)src.FieldSc
 part=part2
 PREHOOK: query: SELECT * from ex_table where part='part2' ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ex_table
 PREHOOK: Input: default@ex_table@part=part2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * from ex_table where part='part2' ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ex_table
 POSTHOOK: Input: default@ex_table@part=part2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ex_table PARTITION(part=part1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

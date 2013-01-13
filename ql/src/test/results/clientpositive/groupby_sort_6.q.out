@@ -145,10 +145,12 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
@@ -320,10 +322,12 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
@@ -540,11 +544,13 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@ds=2
 PREHOOK: Output: default@outputtbl1
 POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=2
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]

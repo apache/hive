@@ -128,12 +128,14 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge3a
 PREHOOK: Input: default@rcfile_merge3a@ds=1
 PREHOOK: Input: default@rcfile_merge3a@ds=2
 PREHOOK: Output: default@rcfile_merge3b
 POSTHOOK: query: INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge3a
 POSTHOOK: Input: default@rcfile_merge3a@ds=1
 POSTHOOK: Input: default@rcfile_merge3a@ds=2
 POSTHOOK: Output: default@rcfile_merge3b
@@ -148,6 +150,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge3a
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge3a
 PREHOOK: Input: default@rcfile_merge3a@ds=1
 PREHOOK: Input: default@rcfile_merge3a@ds=2
 #### A masked pattern was here ####
@@ -156,6 +159,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge3a
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge3a
 POSTHOOK: Input: default@rcfile_merge3a@ds=1
 POSTHOOK: Input: default@rcfile_merge3a@ds=2
 #### A masked pattern was here ####

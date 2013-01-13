@@ -256,6 +256,7 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@dest1
@@ -265,6 +266,7 @@ SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(s
 WHERE src.ds = '2008-04-08'
 GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@dest1

@@ -25,10 +25,12 @@ POSTHOOK: Lineage: src_part_serde PARTITION(ds=2011).key EXPRESSION [(src)src.Fi
 POSTHOOK: Lineage: src_part_serde PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, value from src_part_serde where ds='2011' order by key, value limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_part_serde
 PREHOOK: Input: default@src_part_serde@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from src_part_serde where ds='2011' order by key, value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_part_serde
 POSTHOOK: Input: default@src_part_serde@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: Lineage: src_part_serde PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

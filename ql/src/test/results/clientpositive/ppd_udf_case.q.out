@@ -192,6 +192,7 @@ WHERE a.ds = '2008-04-08' AND
        END
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -207,6 +208,7 @@ WHERE a.ds = '2008-04-08' AND
        END
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -404,6 +406,7 @@ WHERE a.ds = '2008-04-08' AND
        END
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -419,6 +422,7 @@ WHERE a.ds = '2008-04-08' AND
        END
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####

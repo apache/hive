@@ -9,6 +9,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpartbucket
 PREHOOK: query: insert overwrite table srcpartbucket partition(ds, hr) select * from srcpart where ds is not null and key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -16,6 +17,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@srcpartbucket
 POSTHOOK: query: insert overwrite table srcpartbucket partition(ds, hr) select * from srcpart where ds is not null and key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -395,6 +397,7 @@ STAGE PLANS:
 
 PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
@@ -402,6 +405,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
@@ -419,6 +423,7 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(s
 2008-04-09	10
 PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
@@ -426,6 +431,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
@@ -443,6 +449,7 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(s
 2008-04-09	12
 PREHOOK: query: select * from srcpartbucket where ds is not null ORDER BY key ASC, value ASC, ds ASC, hr ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
@@ -450,6 +457,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from srcpartbucket where ds is not null ORDER BY key ASC, value ASC, ds ASC, hr ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11

@@ -1250,6 +1250,7 @@ SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge1 WHERE ds='1'
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge1
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=0
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=1
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=10
@@ -1356,6 +1357,7 @@ SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge1 WHERE ds='1'
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge1
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=0
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=1
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=10
@@ -1858,6 +1860,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge1b WHERE ds='1'
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge1b
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=0
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=1
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=10
@@ -1963,6 +1966,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_merge1b WHERE ds='1'
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge1b
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=0
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=1
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=10

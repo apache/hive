@@ -31,10 +31,12 @@ hr                  	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table nzhang_part7 partition (ds='2010-03-03', hr='12') select key, value from srcpart where ds = '2008-04-08' and hr = '12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@nzhang_part7@ds=2010-03-03/hr=12
 POSTHOOK: query: insert overwrite table nzhang_part7 partition (ds='2010-03-03', hr='12') select key, value from srcpart where ds = '2008-04-08' and hr = '12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part7@ds=2010-03-03/hr=12
 POSTHOOK: Lineage: nzhang_part7 PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

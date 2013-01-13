@@ -85,10 +85,12 @@ minFileSize:888
 
 PREHOOK: query: select key from partition_test_partitioned where dt=102
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=102
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -159,10 +161,12 @@ minFileSize:888
 
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

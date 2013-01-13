@@ -41,10 +41,12 @@ POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@default__foobar_srcpart_auth_index__
 PREHOOK: query: ALTER INDEX srcpart_auth_index ON foobar PARTITION (ds='2008-04-08',hr='12')  REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@foobar
 PREHOOK: Input: default@foobar@ds=2008-04-08/hr=12
 PREHOOK: Output: default@default__foobar_srcpart_auth_index__@ds=2008-04-08/hr=12
 POSTHOOK: query: ALTER INDEX srcpart_auth_index ON foobar PARTITION (ds='2008-04-08',hr='12')  REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@foobar
 POSTHOOK: Input: default@foobar@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@default__foobar_srcpart_auth_index__@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bitmaps EXPRESSION [(foobar)foobar.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]

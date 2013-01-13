@@ -45,11 +45,13 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
 POSTHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
@@ -75,12 +77,14 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=103).key SIMPLE [(src
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=103).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 PREHOOK: Input: default@partition_test_partitioned@dt=103
 #### A masked pattern was here ####
 POSTHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 POSTHOOK: Input: default@partition_test_partitioned@dt=103

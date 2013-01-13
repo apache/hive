@@ -85,6 +85,7 @@ public class ParseContext {
   // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
+  private Map<String, ReadEntity> viewAliasToInput;
 
   /**
    * The lineage information.
@@ -169,7 +170,8 @@ public class ParseContext {
       GlobalLimitCtx globalLimitCtx,
       HashMap<String, SplitSample> nameToSplitSample,
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
-      Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner) {
+      Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner,
+      Map<String, ReadEntity> viewAliasToInput) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -196,6 +198,7 @@ public class ParseContext {
     this.semanticInputs = semanticInputs;
     this.rootTasks = rootTasks;
     this.opToPartToSkewedPruner = opToPartToSkewedPruner;
+    this.viewAliasToInput = viewAliasToInput;
   }
 
   /**
@@ -578,4 +581,7 @@ public class ParseContext {
     this.opToPartToSkewedPruner = opToPartToSkewedPruner;
   }
 
+  public Map<String, ReadEntity> getViewAliasToInput() {
+    return viewAliasToInput;
+  }
 }

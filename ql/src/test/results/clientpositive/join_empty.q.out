@@ -11,10 +11,12 @@ POSTHOOK: Output: default@src2_empty
 PREHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart_empty
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart_empty
 #### A masked pattern was here ####
 PREHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from src2_empty a join src b on a.key=b.key
 PREHOOK: type: QUERY
@@ -29,10 +31,12 @@ POSTHOOK: Input: default@src2_empty
 PREHOOK: query: select a.key, b.value from srcpart_empty a join src b on a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart_empty
 #### A masked pattern was here ####
 POSTHOOK: query: select a.key, b.value from srcpart_empty a join src b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart_empty
 #### A masked pattern was here ####
 PREHOOK: query: select a.key, b.value from src2_empty a join src b on a.key=b.key
 PREHOOK: type: QUERY

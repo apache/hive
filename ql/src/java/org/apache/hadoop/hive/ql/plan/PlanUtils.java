@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -758,4 +760,37 @@ public final class PlanUtils {
     // prevent instantiation
   }
 
+  // Add the input 'newInput' to the set of inputs for the query.
+  // The input may or may not be already present.
+  // The ReadEntity also contains the parents from it is derived (only populated
+  // in case of views). The equals method for ReadEntity does not compare the parents
+  // so that the same input with different parents cannot be added twice. If the input
+  // is already present, make sure the parents are added.
+  // Consider the query:
+  // select * from (select * from V2 union all select * from V3) subq;
+  // where both V2 and V3 depend on V1
+  // addInput would be called twice for V1 (one with parent V2 and the other with parent V3).
+  // When addInput is called for the first time for V1, V1 (parent V2) is added to inputs.
+  // When addInput is called for the second time for V1, the input V1 from inputs is picked up,
+  // and it's parents are enhanced to include V2 and V3
+  // The inputs will contain: (V2, no parent), (V3, no parent), (v1, parents(V2, v3))
+  public static ReadEntity addInput(Set<ReadEntity> inputs, ReadEntity newInput) {
+    // If the input is already present, make sure the new parent is added to the input.
+    if (inputs.contains(newInput)) {
+      for (ReadEntity input : inputs) {
+        if (input.equals(newInput)) {
+          if ((newInput.getParents() != null) && (!newInput.getParents().isEmpty())) {
+            input.getParents().addAll(newInput.getParents());
+          }
+          return input;
+        }
+      }
+      assert false;
+    } else {
+      inputs.add(newInput);
+      return newInput;
+    }
+    // make compile happy
+    return null;
+  }
 }

@@ -63,11 +63,13 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table ss_src2 as select key, value from ss_i_part
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ss_i_part
 PREHOOK: Input: default@ss_i_part@p=1
 PREHOOK: Input: default@ss_i_part@p=2
 PREHOOK: Input: default@ss_i_part@p=3
 POSTHOOK: query: create table ss_src2 as select key, value from ss_i_part
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ss_i_part
 POSTHOOK: Input: default@ss_i_part@p=1
 POSTHOOK: Input: default@ss_i_part@p=2
 POSTHOOK: Input: default@ss_i_part@p=3
@@ -239,11 +241,13 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table ss_src3 as select key, value from ss_i_part
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ss_i_part
 PREHOOK: Input: default@ss_i_part@p=1
 PREHOOK: Input: default@ss_i_part@p=2
 PREHOOK: Input: default@ss_i_part@p=3
 POSTHOOK: query: create table ss_src3 as select key, value from ss_i_part
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ss_i_part
 POSTHOOK: Input: default@ss_i_part@p=1
 POSTHOOK: Input: default@ss_i_part@p=2
 POSTHOOK: Input: default@ss_i_part@p=3

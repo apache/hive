@@ -77,9 +77,11 @@ STAGE PLANS:
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 #### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: alter table TEST1 add partition (ds='1')
@@ -204,10 +206,12 @@ STAGE PLANS:
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 1
@@ -332,10 +336,12 @@ STAGE PLANS:
 
 PREHOOK: query: select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(distinct ds) from TEST1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 1
@@ -454,10 +460,12 @@ STAGE PLANS:
 
 PREHOOK: query: select count(ds) from TEST1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(ds) from TEST1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
 0
@@ -838,11 +846,13 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@ds=1
 PREHOOK: Input: default@test1@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 POSTHOOK: Input: default@test1@ds=2
 #### A masked pattern was here ####
@@ -1087,12 +1097,14 @@ STAGE PLANS:
 
 PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
 PREHOOK: Input: default@test2@ds=1/hr=1
 PREHOOK: Input: default@test2@ds=1/hr=2
 PREHOOK: Input: default@test2@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
@@ -1306,12 +1318,14 @@ STAGE PLANS:
 
 PREHOOK: query: select ds, count(hr) from TEST2 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
 PREHOOK: Input: default@test2@ds=1/hr=1
 PREHOOK: Input: default@test2@ds=1/hr=2
 PREHOOK: Input: default@test2@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
@@ -1469,17 +1483,20 @@ STAGE PLANS:
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
 PREHOOK: Input: default@test1@ds=1
 PREHOOK: Input: default@test1@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 POSTHOOK: Input: default@test1@ds=2
 #### A masked pattern was here ####
 2
 PREHOOK: query: select distinct ds from srcpart
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -1487,6 +1504,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct ds from srcpart
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -1496,6 +1514,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2008-04-09
 PREHOOK: query: select min(ds),max(ds) from srcpart
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -1503,6 +1522,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select min(ds),max(ds) from srcpart
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -1817,6 +1837,7 @@ STAGE PLANS:
 
 PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
 PREHOOK: Input: default@test2@ds=01%3A10%3A10/hr=01
 PREHOOK: Input: default@test2@ds=01%3A10%3A20/hr=02
 PREHOOK: Input: default@test2@ds=1/hr=1
@@ -1825,6 +1846,7 @@ PREHOOK: Input: default@test2@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test2@ds=01%3A10%3A10/hr=01
 POSTHOOK: Input: default@test2@ds=01%3A10%3A20/hr=02
 POSTHOOK: Input: default@test2@ds=1/hr=1

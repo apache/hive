@@ -15,9 +15,11 @@ POSTHOOK: Output: default@v
 #### A masked pattern was here ####
 PREHOOK: query: alter view v add partition (ds='1',hr='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@v
 POSTHOOK: query: alter view v add partition (ds='1',hr='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v@ds=1/hr=2
 FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has paritions

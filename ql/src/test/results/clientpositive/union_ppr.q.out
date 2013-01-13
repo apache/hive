@@ -267,6 +267,7 @@ PREHOOK: query: SELECT * FROM (
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds, A.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -278,6 +279,7 @@ POSTHOOK: query: SELECT * FROM (
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds, A.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####

@@ -59,6 +59,7 @@ STAGE PLANS:
 
 PREHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -66,6 +67,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@analyze_t1
 POSTHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -158,6 +160,7 @@ STAGE PLANS:
 
 PREHOOK: query: analyze table analyze_t1 partition (ds, hr) compute statistics
 PREHOOK: type: QUERY
+PREHOOK: Input: default@analyze_t1
 PREHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=12
 PREHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=11
@@ -169,6 +172,7 @@ PREHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=11
 PREHOOK: Output: default@analyze_t1@ds=2008-04-09/hr=12
 POSTHOOK: query: analyze table analyze_t1 partition (ds, hr) compute statistics
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@analyze_t1
 POSTHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@analyze_t1@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@analyze_t1@ds=2008-04-09/hr=11

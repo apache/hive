@@ -349,12 +349,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5b
 PREHOOK: Input: default@insert_into5b@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5b
 POSTHOOK: Input: default@insert_into5b@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
@@ -472,11 +474,13 @@ STAGE PLANS:
 PREHOOK: query: INSERT INTO TABLE insert_into5b PARTITION (ds='1') 
   SELECT key, value FROM insert_into5b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5b
 PREHOOK: Input: default@insert_into5b@ds=1
 PREHOOK: Output: default@insert_into5b@ds=1
 POSTHOOK: query: INSERT INTO TABLE insert_into5b PARTITION (ds='1') 
   SELECT key, value FROM insert_into5b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5b
 POSTHOOK: Input: default@insert_into5b@ds=1
 POSTHOOK: Output: default@insert_into5b@ds=1
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
@@ -491,12 +495,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_into5b
 PREHOOK: Input: default@insert_into5b@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_into5b
 POSTHOOK: Input: default@insert_into5b@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []

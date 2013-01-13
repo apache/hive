@@ -1,6 +1,7 @@
 PREHOOK: query: create table merge_src as 
 select key, value from srcpart where ds is not null
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -8,6 +9,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: query: create table merge_src as 
 select key, value from srcpart where ds is not null
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -20,6 +22,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@merge_src_part
 PREHOOK: query: insert overwrite table merge_src_part partition(ds) select key, value, ds from srcpart where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -27,6 +30,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@merge_src_part
 POSTHOOK: query: insert overwrite table merge_src_part partition(ds) select key, value, ds from srcpart where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -2706,6 +2710,7 @@ PREHOOK: query: insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_src_part
 PREHOOK: Input: default@merge_src_part@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part@ds=2008-04-09
 PREHOOK: Output: default@merge_src_part2
@@ -2713,6 +2718,7 @@ POSTHOOK: query: insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
@@ -2741,11 +2747,13 @@ ds=2008-04-08
 ds=2008-04-09
 PREHOOK: query: select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_src_part2
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_src_part2
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
 #### A masked pattern was here ####
@@ -5170,6 +5178,7 @@ PREHOOK: query: from (select * from merge_src_part where ds is not null distribu
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_src_part
 PREHOOK: Input: default@merge_src_part@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part@ds=2008-04-09
 PREHOOK: Output: default@merge_src_part2
@@ -5177,6 +5186,7 @@ POSTHOOK: query: from (select * from merge_src_part where ds is not null distrib
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_src_part
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part@ds=2008-04-09
 POSTHOOK: Output: default@merge_src_part2@ds=2008-04-08
@@ -5213,11 +5223,13 @@ ds=2008-04-08
 ds=2008-04-09
 PREHOOK: query: select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_src_part2
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_src_part2
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
 #### A masked pattern was here ####

@@ -7,6 +7,7 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__srcpart_src_part_index__
 PREHOOK: query: ALTER INDEX src_part_index ON srcpart REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -17,6 +18,7 @@ PREHOOK: Output: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 PREHOOK: Output: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER INDEX src_part_index ON srcpart REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -181,15 +183,19 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_src_part_index__
 PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_src_part_index__
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####

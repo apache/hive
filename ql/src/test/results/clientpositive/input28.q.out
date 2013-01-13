@@ -14,12 +14,14 @@ PREHOOK: query: insert overwrite table tst partition(d='2009-01-01')
 select tst.a, src.value from tst join src ON (tst.a = src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@tst
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Output: default@tst@d=2009-01-01
 POSTHOOK: query: insert overwrite table tst partition(d='2009-01-01')
 select tst.a, src.value from tst join src ON (tst.a = src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tst
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Output: default@tst@d=2009-01-01
 POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:a, type:string, comment:null), ]

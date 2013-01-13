@@ -413,7 +413,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
@@ -421,7 +423,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.key SIMPLE [(srcbucket_mapjoin_part)a.FieldSchema(name:key, type:int, comment:null), ]
@@ -460,7 +464,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
@@ -468,7 +474,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
@@ -951,7 +959,9 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
@@ -959,7 +969,9 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
@@ -1034,7 +1046,9 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
@@ -1042,7 +1056,9 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and b.ds="2008-04-08"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
@@ -1648,7 +1664,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
 PREHOOK: Output: default@bucketmapjoin_tmp_result
@@ -1657,7 +1675,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
 POSTHOOK: Output: default@bucketmapjoin_tmp_result
@@ -1769,7 +1789,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
 PREHOOK: Output: default@bucketmapjoin_tmp_result
@@ -1778,7 +1800,9 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-09
 POSTHOOK: Output: default@bucketmapjoin_tmp_result

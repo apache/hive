@@ -162,19 +162,23 @@ minFileSize:206
 
 PREHOOK: query: select count(1) from src_rc_concatenate_test_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_concatenate_test_part
 PREHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_concatenate_test_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_concatenate_test_part
 POSTHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_concatenate_test_part
 PREHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_concatenate_test_part
 POSTHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 214	-7678496319
@@ -215,19 +219,23 @@ minFileSize:239
 
 PREHOOK: query: select count(1) from src_rc_concatenate_test_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_concatenate_test_part
 PREHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_concatenate_test_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_concatenate_test_part
 POSTHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_concatenate_test_part
 PREHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_concatenate_test_part
 POSTHOOK: Input: default@src_rc_concatenate_test_part@ds=2011
 #### A masked pattern was here ####
 214	-7678496319

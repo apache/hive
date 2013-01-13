@@ -33,8 +33,10 @@ POSTHOOK: Input: default@part_test
 POSTHOOK: Output: default@part_test@ds=2
 PREHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_test
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_test
 #### A masked pattern was here ####
 0

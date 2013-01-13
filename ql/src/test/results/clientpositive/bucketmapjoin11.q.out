@@ -376,8 +376,10 @@ PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@part=2
 #### A masked pattern was here ####
@@ -385,8 +387,10 @@ POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=2
 #### A masked pattern was here ####
@@ -657,8 +661,10 @@ PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_1@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 PREHOOK: Input: default@srcbucket_mapjoin_part_2@part=2
 #### A masked pattern was here ####
@@ -666,8 +672,10 @@ POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=2
 #### A masked pattern was here ####

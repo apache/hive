@@ -43,10 +43,12 @@ ds                  	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM view2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@invites
 PREHOOK: Input: default@view2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@invites
 POSTHOOK: Input: default@view2
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE invites

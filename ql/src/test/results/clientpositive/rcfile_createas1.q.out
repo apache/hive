@@ -141,6 +141,7 @@ PREHOOK: query: CREATE TABLE rcfile_createas1b
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
 POSTHOOK: query: CREATE TABLE rcfile_createas1b
@@ -148,6 +149,7 @@ POSTHOOK: query: CREATE TABLE rcfile_createas1b
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
 POSTHOOK: Output: default@rcfile_createas1b
@@ -160,6 +162,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_createas1a
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
 #### A masked pattern was here ####
@@ -168,6 +171,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_createas1a
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
 #### A masked pattern was here ####

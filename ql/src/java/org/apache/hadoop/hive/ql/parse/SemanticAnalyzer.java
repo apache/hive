@@ -221,6 +221,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final String autogenColAliasPrfxLbl;
   private final boolean autogenColAliasPrfxIncludeFuncName;
 
+  // Keep track of view alias to read entity corresponding to the view
+  // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
+  // keeps track of aliases for V3, V3:V2, V3:V2:V1.
+  // This is used when T is added as an input for the query, the parents of T is
+  // derived from the alias V3:V2:V1:T
+  private final Map<String, ReadEntity> viewAliasToInput = new HashMap<String, ReadEntity>();
+
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
@@ -303,7 +310,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
-        opToPartToSkewedPruner);
+        opToPartToSkewedPruner, viewAliasToInput);
   }
 
   @SuppressWarnings("nls")
@@ -948,16 +955,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void getMetaData(QBExpr qbexpr) throws SemanticException {
+    getMetaData(qbexpr, null);
+  }
+
+  private void getMetaData(QBExpr qbexpr, ReadEntity parentInput)
+      throws SemanticException {
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-      getMetaData(qbexpr.getQB());
+      getMetaData(qbexpr.getQB(), parentInput);
     } else {
-      getMetaData(qbexpr.getQBExpr1());
-      getMetaData(qbexpr.getQBExpr2());
+      getMetaData(qbexpr.getQBExpr1(), parentInput);
+      getMetaData(qbexpr.getQBExpr2(), parentInput);
     }
   }
 
-  @SuppressWarnings("nls")
   public void getMetaData(QB qb) throws SemanticException {
+    getMetaData(qb, null);
+  }
+
+  @SuppressWarnings("nls")
+  public void getMetaData(QB qb, ReadEntity parentInput) throws SemanticException {
     try {
 
       LOG.info("Get metadata for source tables");
@@ -966,7 +982,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // We have to materialize the table alias list since we might
       // modify it in the middle for view rewrite.
       List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
-      Map<String, String> aliasToViewName = new HashMap<String, String>();
+
+      // Keep track of view alias to view name and read entity
+      // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
+      // keeps track of full view name and read entity corresponding to alias V3, V3:V2, V3:V2:V1.
+      // This is needed for tracking the dependencies for inputs, along with their parents.
+      Map<String, ObjectPair<String, ReadEntity>> aliasToViewInfo =
+          new HashMap<String, ObjectPair<String, ReadEntity>>();
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
         Table tab = null;
@@ -1008,10 +1030,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 " -> " + fullViewName + ").");
           }
           replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
-          aliasToViewName.put(alias, fullViewName);
           // This is the last time we'll see the Table objects for views, so add it to the inputs
           // now
-          inputs.add(new ReadEntity(tab));
+          ReadEntity viewInput = new ReadEntity(tab, parentInput);
+          viewInput = PlanUtils.addInput(inputs, viewInput);
+          aliasToViewInfo.put(alias, new ObjectPair<String, ReadEntity>(fullViewName, viewInput));
+          viewAliasToInput.put(getAliasId(alias, qb), viewInput);
           continue;
         }
 
@@ -1041,12 +1065,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Get metadata for subqueries");
       // Go over the subqueries and getMetaData for these
       for (String alias : qb.getSubqAliases()) {
-        boolean wasView = aliasToViewName.containsKey(alias);
+        boolean wasView = aliasToViewInfo.containsKey(alias);
+        ReadEntity newParentInput = null;
         if (wasView) {
-          viewsExpanded.add(aliasToViewName.get(alias));
+          viewsExpanded.add(aliasToViewInfo.get(alias).getFirst());
+          newParentInput = aliasToViewInfo.get(alias).getSecond();
         }
         QBExpr qbexpr = qb.getSubqForAlias(alias);
-        getMetaData(qbexpr);
+        getMetaData(qbexpr, newParentInput);
         if (wasView) {
           viewsExpanded.remove(viewsExpanded.size() - 1);
         }
@@ -6961,7 +6987,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // (There are no aggregations in a representative query for the group and
           // There is no group by in that representative query) or
           // The data is skewed or
-          // The conf variable used to control combining group bys into a signle reducer is false
+          // The conf variable used to control combining group bys into a single reducer is false
           if (commonGroupByDestGroup.size() == 1 ||
               (qbp.getAggregationExprsForClause(firstDest).size() == 0 &&
               getGroupByForClause(qbp, firstDest).size() == 0) ||
@@ -8453,7 +8479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
-        opToPartToSkewedPruner);
+        opToPartToSkewedPruner, viewAliasToInput);
 
     // Generate table access stats if required
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {
