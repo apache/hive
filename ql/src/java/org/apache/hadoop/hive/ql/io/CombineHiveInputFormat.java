@@ -226,22 +226,27 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   private static class CombinePathInputFormat {
     private final List<Operator<? extends OperatorDesc>> opList;
     private final String inputFormatClassName;
+    private final String deserializerClassName;
 
     public CombinePathInputFormat(List<Operator<? extends OperatorDesc>> opList,
-                                  String inputFormatClassName) {
+                                  String inputFormatClassName,
+                                  String deserializerClassName) {
       this.opList = opList;
       this.inputFormatClassName = inputFormatClassName;
+      this.deserializerClassName = deserializerClassName;
     }
 
     @Override
     public boolean equals(Object o) {
       if (o instanceof CombinePathInputFormat) {
-        CombinePathInputFormat mObj = (CombinePathInputFormat)o;
+        CombinePathInputFormat mObj = (CombinePathInputFormat) o;
         if (mObj == null) {
           return false;
         }
-        return opList.equals(mObj.opList) &&
-          inputFormatClassName.equals(mObj.inputFormatClassName);
+        return (opList.equals(mObj.opList)) &&
+            (inputFormatClassName.equals(mObj.inputFormatClassName)) &&
+            (deserializerClassName == null ? (mObj.deserializerClassName == null) :
+                deserializerClassName.equals(mObj.deserializerClassName));
       }
       return false;
     }
@@ -296,6 +301,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Class inputFormatClass = part.getInputFileFormatClass();
       String inputFormatClassName = inputFormatClass.getName();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+      String deserializerClassName = part.getDeserializerClass() == null ? null
+          : part.getDeserializerClass().getName();
 
       // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
       // we use a configuration variable for the same
@@ -342,12 +349,24 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       // Does a pool exist for this path already
       CombineFilter f = null;
       List<Operator<? extends OperatorDesc>> opList = null;
-      boolean done = false;
 
       if (!mrwork.isMapperCannotSpanPartns()) {
         opList = HiveFileFormatUtils.doGetWorksFromPath(
                    pathToAliases, aliasToWork, filterPath);
-        f = poolMap.get(new CombinePathInputFormat(opList, inputFormatClassName));
+        CombinePathInputFormat combinePathInputFormat =
+            new CombinePathInputFormat(opList, inputFormatClassName, deserializerClassName);
+        f = poolMap.get(combinePathInputFormat);
+        if (f == null) {
+          f = new CombineFilter(filterPath);
+          LOG.info("CombineHiveInputSplit creating pool for " + path +
+                   "; using filter path " + filterPath);
+          combine.createPool(job, f);
+          poolMap.put(combinePathInputFormat, f);
+        } else {
+          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
+                   "; using filter path " + filterPath);
+          f.addPath(filterPath);
+        }
       } else {
         // In the case of tablesample, the input paths are pointing to files rather than directories.
         // We need to get the parent directory as the filtering path so that all files in the same
@@ -360,23 +379,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           poolSet.add(filterPath);
         } else {
           inpDirs.add(path);
-        }
-        done = true;
-      }
-
-      if (!done) {
-        if (f == null) {
-          f = new CombineFilter(filterPath);
-          LOG.info("CombineHiveInputSplit creating pool for " + path +
-                   "; using filter path " + filterPath);
-          combine.createPool(job, f);
-          if (!mrwork.isMapperCannotSpanPartns()) {
-            poolMap.put(new CombinePathInputFormat(opList, inputFormatClassName), f);
-          }
-        } else {
-          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
-                   "; using filter path " + filterPath);
-          f.addPath(filterPath);
         }
       }
     }
