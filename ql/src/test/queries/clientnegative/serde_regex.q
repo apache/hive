@@ -1,15 +1,16 @@
 USE default;
---  This should fail because Regex SerDe supports only columns of type string
+--  This should fail because Regex SerDe doesn't support TIMESTAMP, STRUCT
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   user STRING,
-  time STRING,
+  time TIMESTAMP,
   request STRING,
   status INT,
   size INT,
   referer STRING,
-  agent STRING)
+  agent STRING,
+  strct STRUCT<a:INT, b:STRING>)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
   "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?")
