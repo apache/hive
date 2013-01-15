@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
@@ -34,6 +35,10 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   private ASTNodeOrigin origin;
 
   public ASTNode() {
+  }
+
+  public ASTNode(ASTNode copy){
+    super(copy);
   }
 
   /**
@@ -51,6 +56,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    *
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
+  @Override
   public ArrayList<Node> getChildren() {
     if (super.getChildCount() == 0) {
       return null;
@@ -87,6 +93,12 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    */
   public void setOrigin(ASTNodeOrigin origin) {
     this.origin = origin;
+  }
+
+  @Override
+  public Tree dupNode() {
+
+    return new ASTNode(this);
   }
 
   public String dump() {

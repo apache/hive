@@ -1610,7 +1610,7 @@ insertClause
    :
      KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
    | KW_INSERT KW_INTO KW_TABLE tableOrPartition
-       -> ^(TOK_INSERT_INTO ^(tableOrPartition))
+       -> ^(TOK_INSERT_INTO tableOrPartition)
    ;
 
 destination
@@ -1619,7 +1619,7 @@ destination
    :
      KW_LOCAL KW_DIRECTORY StringLiteral -> ^(TOK_LOCAL_DIR StringLiteral)
    | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
-   | KW_TABLE tableOrPartition -> ^(tableOrPartition)
+   | KW_TABLE tableOrPartition -> tableOrPartition
    ;
 
 limitClause

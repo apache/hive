@@ -23,5 +23,5 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: ParseException line 3:48 mismatched input ')' expecting Identifier near '(' in archive statement
+FAILED: ParseException line 3:48 missing Identifier at ')' near '<EOF>'
 
