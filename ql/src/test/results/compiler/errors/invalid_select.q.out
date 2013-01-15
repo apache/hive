@@ -1,1 +1,2 @@
-Parse Error: line 3:6 mismatched input '(' expecting FROM near 'trim' in from clause
+Parse Error: line 3:6 missing FROM at '(' near '(' in subquery source
+line 3:7 cannot recognize input near 'b' ')' 'FROM' in subquery source

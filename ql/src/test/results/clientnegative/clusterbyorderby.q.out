@@ -1,2 +1,2 @@
-FAILED: ParseException line 5:0 mismatched input 'ORDER' expecting EOF near 'tkey'
+FAILED: ParseException line 5:0 missing EOF at 'ORDER' near 'tkey'
 

@@ -33,6 +33,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.TokenStream;
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
 import org.apache.commons.logging.Log;
@@ -310,14 +311,7 @@ public class ParseDriver {
     }
 
     @Override
-    protected void mismatch(IntStream input, int ttype, BitSet follow)
-        throws RecognitionException {
-
-      throw new MismatchedTokenException(ttype, input);
-    }
-
-    @Override
-    public void recoverFromMismatchedSet(IntStream input,
+    public Object recoverFromMismatchedSet(IntStream input,
         RecognitionException re, BitSet follow) throws RecognitionException {
       throw re;
     }
@@ -404,6 +398,17 @@ public class ParseDriver {
     public Object create(Token payload) {
       return new ASTNode(payload);
     }
+
+    @Override
+    public Object dupNode(Object t) {
+
+      return create(((CommonTree)t).token);
+    };
+
+    @Override
+    public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
+      return new ASTErrorNode(input, start, stop, e);
+    };
   };
 
   public ASTNode parse(String command) throws ParseException {

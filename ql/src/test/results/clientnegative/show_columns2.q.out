@@ -1,2 +1,2 @@
-FAILED: ParseException line 1:29 mismatched input 'foo' expecting EOF near 'shcol_test'
+FAILED: ParseException line 1:29 extraneous input 'foo' expecting EOF near '<EOF>'
 
