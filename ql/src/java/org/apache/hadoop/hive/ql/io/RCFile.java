@@ -317,6 +317,14 @@ public class RCFile {
       throw new RuntimeException("compareTo not supported in class "
           + this.getClass().getName());
     }
+
+    public int[] getEachColumnUncompressedValueLen() {
+      return eachColumnUncompressedValueLen;
+    }
+
+    public int[] getEachColumnValueLen() {
+      return eachColumnValueLen;
+    }
   }
 
   /**
