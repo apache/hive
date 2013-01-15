@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.RCFile.Reader;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -78,6 +79,10 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
         conf);
   }
 
+  public boolean nextBlock() throws IOException {
+    return in.nextBlock();
+  }
+
   @Override
   public boolean next(LongWritable key, BytesRefArrayWritable value)
       throws IOException {
@@ -123,6 +128,10 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
 
   public long getPos() throws IOException {
     return in.getPosition();
+  }
+
+  public KeyBuffer getKeyBuffer() {
+    return in.getCurrentKeyBufferObj();
   }
 
   protected void seek(long pos) throws IOException {
