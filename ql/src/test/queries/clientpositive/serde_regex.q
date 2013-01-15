@@ -6,7 +6,7 @@ CREATE TABLE serde_regex(
   time STRING,
   request STRING,
   status STRING,
-  size STRING,
+  size INT,
   referer STRING,
   agent STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
@@ -22,7 +22,7 @@ CREATE TABLE serde_regex(
   time STRING,
   request STRING,
   status STRING,
-  size STRING,
+  size INT,
   referer STRING,
   agent STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
