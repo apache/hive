@@ -103,34 +103,29 @@ public class JoinUtil {
     return result;
 
   }
+
+  public static int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
+      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) {
+    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
+  }
+
   public static int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
       int posBigTableAlias) {
-
     int total = 0;
-
-    Iterator<Map.Entry<Byte, List<ExprNodeDesc>>> entryIter = inputMap
-        .entrySet().iterator();
-    while (entryIter.hasNext()) {
-      Map.Entry<Byte, List<ExprNodeDesc>> e = entryIter.next();
-      Byte key = order[e.getKey()];
-
+    for (Entry<Byte, List<ExprNodeDesc>> e : inputMap.entrySet()) {
+      Byte key = order == null ? e.getKey() : order[e.getKey()];
       List<ExprNodeEvaluator> valueFields = new ArrayList<ExprNodeEvaluator>();
-
-      List<ExprNodeDesc> expr = e.getValue();
-      int sz = expr.size();
-      total += sz;
-
-      for (int j = 0; j < sz; j++) {
-        if(key == (byte) posBigTableAlias){
+      for (ExprNodeDesc expr : e.getValue()) {
+        if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
-        }else{
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr.get(j)));
+        } else {
+          valueFields.add(ExprNodeEvaluatorFactory.get(expr));
         }
       }
-
       outMap.put(key, valueFields);
+      total += valueFields.size();
     }
 
     return total;

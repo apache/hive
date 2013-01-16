@@ -302,7 +302,7 @@ public class MapJoinProcessor implements Transform {
       newParentOps.add(grandParentOp);
     }
 
-    int pos = 0;
+    byte pos = 0;
     // Remove parent reduce-sink operators
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
@@ -322,13 +322,12 @@ public class MapJoinProcessor implements Transform {
     for (pos = 0; pos < newParentOps.size(); pos++) {
       ReduceSinkOperator oldPar = (ReduceSinkOperator) oldReduceSinkParentOps.get(pos);
       ReduceSinkDesc rsconf = oldPar.getConf();
-      Byte tag = (byte) rsconf.getTag();
       List<ExprNodeDesc> keys = rsconf.getKeyCols();
-      keyExprMap.put(tag, keys);
+      keyExprMap.put(pos, keys);
 
       // set column transfer
       HashMap<String, ExprNodeDesc> map = (HashMap<String, ExprNodeDesc>) oldPar.getColumnExprMap();
-      columnTransfer.put(tag, map);
+      columnTransfer.put(pos, map);
     }
 
     // create the map-join operator
