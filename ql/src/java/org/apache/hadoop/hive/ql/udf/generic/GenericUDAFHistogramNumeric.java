@@ -45,7 +45,7 @@ import org.apache.hadoop.util.StringUtils;
 
 /**
  * Computes an approximate histogram of a numerical column using a user-specified number of bins.
- * 
+ *
  * The output is an array of (x,y) pairs as Hive struct objects that represents the histogram's
  * bin centers and heights.
  */
@@ -72,7 +72,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Please specify exactly two arguments.");
     }
-    
+
     // validate the first parameter, which is the expression to compute over
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
@@ -87,6 +87,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
     case FLOAT:
     case DOUBLE:
     case TIMESTAMP:
+    case DECIMAL:
       break;
     case STRING:
     case BOOLEAN:
@@ -170,7 +171,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      // Return a single ArrayList where the first element is the number of histogram bins, 
+      // Return a single ArrayList where the first element is the number of histogram bins,
       // and subsequent elements represent histogram (x,y) pairs.
       StdAgg myagg = (StdAgg) agg;
       return myagg.histogram.serialize();
@@ -233,7 +234,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
     }
 
 
-    // Aggregation buffer definition and manipulation methods 
+    // Aggregation buffer definition and manipulation methods
     static class StdAgg implements AggregationBuffer {
       NumericHistogram histogram; // the histogram object
     };

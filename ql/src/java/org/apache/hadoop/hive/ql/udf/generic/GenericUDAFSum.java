@@ -17,12 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.math.BigDecimal;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -66,12 +69,97 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     case DOUBLE:
     case STRING:
       return new GenericUDAFSumDouble();
+    case DECIMAL:
+      return new GenericUDAFSumBigDecimal();
     case BOOLEAN:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
           + parameters[0].getTypeName() + " is passed.");
     }
+  }
+
+  /**
+   * GenericUDAFSumBigDecimal.
+   *
+   */
+  public static class GenericUDAFSumBigDecimal extends GenericUDAFEvaluator {
+    private PrimitiveObjectInspector inputOI;
+    private BigDecimalWritable result;
+
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      assert (parameters.length == 1);
+      super.init(m, parameters);
+      result = new BigDecimalWritable(BigDecimal.ZERO);
+      inputOI = (PrimitiveObjectInspector) parameters[0];
+      return PrimitiveObjectInspectorFactory.writableBigDecimalObjectInspector;
+    }
+
+    /** class for storing decimal sum value. */
+    static class SumBigDecimalAgg implements AggregationBuffer {
+      boolean empty;
+      BigDecimal sum;
+    }
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      SumBigDecimalAgg agg = new SumBigDecimalAgg();
+      reset(agg);
+      return agg;
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      SumBigDecimalAgg bdAgg = (SumBigDecimalAgg) agg;
+      bdAgg.empty = true;
+      bdAgg.sum = BigDecimal.ZERO;
+    }
+
+    boolean warned = false;
+
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      assert (parameters.length == 1);
+      try {
+        merge(agg, parameters[0]);
+      } catch (NumberFormatException e) {
+        if (!warned) {
+          warned = true;
+          LOG.warn(getClass().getSimpleName() + " "
+              + StringUtils.stringifyException(e));
+          LOG
+              .warn(getClass().getSimpleName()
+              + " ignoring similar exceptions.");
+        }
+      }
+    }
+
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      return terminate(agg);
+    }
+
+    @Override
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+      if (partial != null) {
+        SumBigDecimalAgg myagg = (SumBigDecimalAgg) agg;
+        myagg.empty = false;
+        myagg.sum = myagg.sum.add(
+            PrimitiveObjectInspectorUtils.getBigDecimal(partial, inputOI));
+      }
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      SumBigDecimalAgg myagg = (SumBigDecimalAgg) agg;
+      if (myagg.empty) {
+        return null;
+      }
+      result.set(myagg.sum);
+      return result;
+    }
+
   }
 
   /**

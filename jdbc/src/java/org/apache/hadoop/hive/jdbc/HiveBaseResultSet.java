@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.jdbc;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
@@ -102,19 +103,29 @@ public abstract class HiveBaseResultSet implements ResultSet{
   }
 
   public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-    throw new SQLException("Method not supported");
+    Object obj = getObject(columnIndex);
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof BigDecimal) {
+      return ((BigDecimal) obj);
+    }
+    throw new SQLException("Cannot convert column " + columnIndex 
+                           + " to BigDecimal. Found data of type: " 
+                           + obj.getClass()+", value: " + obj.toString());
   }
 
   public BigDecimal getBigDecimal(String columnName) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getBigDecimal(findColumn(columnName));
   }
 
   public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-    throw new SQLException("Method not supported");
+    MathContext mc = new MathContext(scale);
+    return getBigDecimal(columnIndex).round(mc);
   }
 
   public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getBigDecimal(findColumn(columnName), scale);
   }
 
   public InputStream getBinaryStream(int columnIndex) throws SQLException {

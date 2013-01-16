@@ -203,6 +203,14 @@ public final class LazyBinaryUtils {
           recordInfo.elementSize += (byte) WritableUtils.decodeVIntSize(bytes[offset+4]);
         }
         break;
+      case DECIMAL:
+        // using vint instead of 4 bytes
+        LazyBinaryUtils.readVInt(bytes, offset, vInt);
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = vInt.length;
+        LazyBinaryUtils.readVInt(bytes, offset + vInt.length, vInt);
+        recordInfo.elementSize += vInt.length + vInt.value;
+        break;
       default: {
         throw new RuntimeException("Unrecognized primitive type: "
             + primitiveCategory);

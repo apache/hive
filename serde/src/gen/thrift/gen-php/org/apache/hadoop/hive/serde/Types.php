@@ -68,6 +68,8 @@ $GLOBALS['serde_CONSTANTS']['DATETIME_TYPE_NAME'] = "datetime";
 
 $GLOBALS['serde_CONSTANTS']['TIMESTAMP_TYPE_NAME'] = "timestamp";
 
+$GLOBALS['serde_CONSTANTS']['DECIMAL_TYPE_NAME'] = "decimal";
+
 $GLOBALS['serde_CONSTANTS']['BINARY_TYPE_NAME'] = "binary";
 
 $GLOBALS['serde_CONSTANTS']['LIST_TYPE_NAME'] = "array";
@@ -95,6 +97,7 @@ $GLOBALS['serde_CONSTANTS']['PrimitiveTypes'] = array(
   "date" => true,
   "datetime" => true,
   "timestamp" => true,
+  "decimal" => true,
   "binary" => true,
 );
 

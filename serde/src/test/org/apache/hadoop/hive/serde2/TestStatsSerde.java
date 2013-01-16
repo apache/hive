@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -103,7 +105,7 @@ public class TestStatsSerde extends TestCase {
       Random r = new Random(1234);
       MyTestClass rows[] = new MyTestClass[num];
       for (int i = 0; i < num; i++) {
-        int randField = r.nextInt(10);
+        int randField = r.nextInt(12);
         Byte b = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
         Short s = randField > 1 ? null : Short.valueOf((short) r.nextInt());
         Integer n = randField > 2 ? null : Integer.valueOf(r.nextInt());
@@ -112,12 +114,13 @@ public class TestStatsSerde extends TestCase {
         Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
         String st = randField > 6 ? null : TestBinarySortableSerDe
             .getRandString(r);
-        MyTestInnerStruct is = randField > 7 ? null : new MyTestInnerStruct(r
+	BigDecimal bd = randField > 8 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+        MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
             .nextInt(5) - 2, r.nextInt(5) - 2);
-        List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
+        List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
             .getRandIntegerArray(r);
         byte[] ba = TestBinarySortableSerDe.getRandBA(r, i);
-        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, is, li,ba);
+        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, bd, is, li,ba);
         rows[i] = t;
       }
 

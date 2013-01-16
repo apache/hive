@@ -451,6 +451,17 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     return doubleToTimestamp((double) f);
   }
 
+  public static Timestamp decimalToTimestamp(BigDecimal d) {
+    BigDecimal seconds = new BigDecimal(d.longValue());
+    long millis = d.multiply(new BigDecimal(1000)).longValue();
+    int nanos = d.subtract(seconds).multiply(new BigDecimal(1000000000)).intValue();
+
+    Timestamp t = new Timestamp(millis);
+    t.setNanos(nanos);
+
+    return t;
+  }
+
   public static Timestamp doubleToTimestamp(double f) {
     long seconds = (long) f;
 

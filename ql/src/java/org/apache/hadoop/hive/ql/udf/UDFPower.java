@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 
 /**
  * UDFPower.
@@ -31,7 +33,8 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     extended = "Example:\n"
     + "  > SELECT _FUNC_(2, 3) FROM src LIMIT 1;\n" + "  8")
 public class UDFPower extends UDF {
-  private DoubleWritable result = new DoubleWritable();
+  private final DoubleWritable resultDouble = new DoubleWritable();
+  private final BigDecimalWritable resultBigDecimal = new BigDecimalWritable();
 
   public UDFPower() {
   }
@@ -43,8 +46,32 @@ public class UDFPower extends UDF {
     if (a == null || b == null) {
       return null;
     } else {
-      result.set(Math.pow(a.get(), b.get()));
-      return result;
+      resultDouble.set(Math.pow(a.get(), b.get()));
+      return resultDouble;
+    }
+  }
+  
+  /**
+   * Raise a to the power of b.
+   */
+  public DoubleWritable evaluate(DoubleWritable a, IntWritable b) {
+    if (a == null || b == null) {
+      return null;
+    } else {
+      resultDouble.set(Math.pow(a.get(), b.get()));
+      return resultDouble;
+    }
+  }
+  
+  /**
+   * Raise a to the power of b
+   */
+  public BigDecimalWritable evaluate(BigDecimalWritable a, IntWritable b) {
+    if (a == null || b == null) {
+      return null;
+    } else {
+      resultBigDecimal.set(a.getBigDecimal().pow(b.get()));
+      return resultBigDecimal;
     }
   }
 

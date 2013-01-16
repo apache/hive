@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import junit.framework.TestCase;
 
+import java.math.BigDecimal;
+
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -126,6 +128,11 @@ public class TestObjectInspectorConverters extends TestCase {
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("hive"), textConverter
 	  .convert(new String("hive")));
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaBigDecimalObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("100.001"), textConverter
+	  .convert(new BigDecimal("100.001")));
 
       // Binary
       Converter baConverter = ObjectInspectorConverters.getConverter(

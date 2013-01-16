@@ -18,8 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
@@ -34,7 +39,8 @@ import org.apache.hadoop.io.LongWritable;
     + "  0\n"
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
 public class UDFCeil extends UDF {
-  private LongWritable longWritable = new LongWritable();
+  private final LongWritable longWritable = new LongWritable();
+  private final BigDecimalWritable bigDecimalWritable = new BigDecimalWritable();
 
   public UDFCeil() {
   }
@@ -48,4 +54,14 @@ public class UDFCeil extends UDF {
     }
   }
 
+  public BigDecimalWritable evaluate(BigDecimalWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      BigDecimal bd = i.getBigDecimal();
+      int origScale = bd.scale();
+      bigDecimalWritable.set(bd.setScale(0, BigDecimal.ROUND_CEILING).setScale(origScale));
+      return bigDecimalWritable;
+    }
+  }
 }

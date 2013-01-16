@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.serde2.binarysortable;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -45,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -106,6 +111,9 @@ public class BinarySortableSerDe implements SerDe {
   StructObjectInspector rowObjectInspector;
 
   boolean[] columnSortOrderIsDesc;
+  
+  private static byte[] decimalBuffer = null;
+  private static Charset decimalCharSet = Charset.forName("US-ASCII");
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -178,7 +186,7 @@ public class BinarySortableSerDe implements SerDe {
 
   static Object deserialize(InputByteBuffer buffer, TypeInfo type,
       boolean invert, Object reuse) throws IOException {
-
+      
     // Is this field a null?
     byte isNull = buffer.read(invert);
     if (isNull == 0) {
@@ -370,6 +378,64 @@ public class BinarySortableSerDe implements SerDe {
         }
         t.setBinarySortable(bytes, 0);
         return t;
+        
+      case DECIMAL: {
+        // See serialization of decimal for explanation (below)
+
+        BigDecimalWritable bdw = (reuse == null ? new BigDecimalWritable() :
+          (BigDecimalWritable) reuse);
+        
+        int b = buffer.read(invert) - 1;
+        assert (b == 1 || b == -1 || b == 0);
+        boolean positive = b != -1;
+        
+        int factor = buffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          factor = (factor << 8) + (buffer.read(invert) & 0xff);
+        }
+        
+        if (!positive) {
+          factor = -factor;
+        }
+        
+        int start = buffer.tell();
+        int length = 0;
+        
+        do {
+          b = buffer.read(positive ? invert : !invert);
+          assert(b != 1);
+          
+          if (b == 0) {
+            // end of digits
+            break;
+          }
+
+          length++;
+        } while (true);
+        
+        if(decimalBuffer == null || decimalBuffer.length < length) {
+          decimalBuffer = new byte[length];
+        }
+
+        buffer.seek(start);
+        for (int i = 0; i < length; ++i) {
+          decimalBuffer[i] = buffer.read(positive ? invert : !invert);
+        }
+
+        // read the null byte again
+        buffer.read(positive ? invert : !invert);
+
+        String digits = new String(decimalBuffer, 0, length, decimalCharSet);
+        BigInteger bi = new BigInteger(digits);
+        BigDecimal bd = new BigDecimal(bi).scaleByPowerOfTen(factor-length);
+        
+        if (!positive) {
+          bd = bd.negate();
+        }
+        
+        bdw.set(bd);
+        return bdw;
+      }
 
       default: {
         throw new RuntimeException("Unrecognized type: "
@@ -377,6 +443,7 @@ public class BinarySortableSerDe implements SerDe {
       }
       }
     }
+    
     case LIST: {
       ListTypeInfo ltype = (ListTypeInfo) type;
       TypeInfo etype = ltype.getListElementTypeInfo();
@@ -608,6 +675,47 @@ public class BinarySortableSerDe implements SerDe {
         }
         return;
       }
+      case DECIMAL: {
+        // decimals are encoded in three pieces:
+        // sign: 1, 2 or 3 for smaller, equal or larger than 0 respectively
+        // factor: Number that indicates the amount of digits you have to move
+        // the decimal point left or right until the resulting number is smaller
+        // than zero but has something other than 0 as the first digit.
+        // digits: which is a string of all the digits in the decimal. If the number
+        // is negative the binary string will be inverted to get the correct ordering.
+        // Example: 0.00123
+        // Sign is 3 (bigger than 0)
+        // Factor is -2 (move decimal point 2 positions right)
+        // Digits are: 123
+
+        BigDecimalObjectInspector boi = (BigDecimalObjectInspector) poi;
+        BigDecimal dec = boi.getPrimitiveJavaObject(o).stripTrailingZeros();
+        
+        // get the sign of the big decimal
+        int sign = dec.compareTo(BigDecimal.ZERO);
+        
+        // we'll encode the absolute value (sign is separate)
+        dec = dec.abs();
+        
+        // get the scale factor to turn big decimal into a decimal < 1
+        int factor = dec.precision() - dec.scale();
+        factor = sign == 1 ? factor : -factor;
+        
+        // convert the absolute big decimal to string
+        dec.scaleByPowerOfTen(Math.abs(dec.scale()));
+        String digits = dec.unscaledValue().toString();
+        
+        // finally write out the pieces (sign, scale, digits)
+        buffer.write((byte) ( sign + 1), invert);
+        buffer.write((byte) ((factor >> 24) ^ 0x80), invert);
+        buffer.write((byte) ( factor >> 16), invert);
+        buffer.write((byte) ( factor >> 8), invert);
+        buffer.write((byte)   factor, invert);
+        serializeBytes(buffer, digits.getBytes(decimalCharSet), 
+            digits.length(), sign == -1 ? !invert : invert);
+        return;
+      }
+        
       default: {
         throw new RuntimeException("Unrecognized type: "
             + poi.getPrimitiveCategory());

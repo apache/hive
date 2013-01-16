@@ -501,6 +501,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
           serdeConstants.TIMESTAMP_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_DECIMAL,
+          serdeConstants.DECIMAL_TYPE_NAME);
     }
 
     public static boolean isRedundantConversionFunction(ASTNode expr,

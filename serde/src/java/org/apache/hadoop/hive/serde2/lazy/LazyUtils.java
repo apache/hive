@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -233,6 +235,12 @@ public final class LazyUtils {
     case TIMESTAMP: {
       LazyTimestamp.writeUTF8(out,
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
+      break;
+    }
+    case DECIMAL: {
+      BigDecimal bd = ((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      ByteBuffer b = Text.encode(bd.toString());
+      out.write(b.array(), 0, b.limit());
       break;
     }
     default: {

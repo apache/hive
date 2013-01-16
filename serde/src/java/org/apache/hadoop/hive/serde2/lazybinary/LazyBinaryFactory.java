@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
@@ -75,6 +76,8 @@ public final class LazyBinaryFactory {
       return new LazyBinaryTimestamp((WritableTimestampObjectInspector) oi);
     case BINARY:
       return new LazyBinaryBinary((WritableBinaryObjectInspector) oi);
+    case DECIMAL:
+      return new LazyBinaryBigDecimal((WritableBigDecimalObjectInspector) oi);
     default:
       throw new RuntimeException("Internal error: no LazyBinaryObject for " + p);
     }

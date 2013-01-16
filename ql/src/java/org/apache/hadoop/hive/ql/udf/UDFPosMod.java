@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.math.BigDecimal;
+
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -107,5 +110,22 @@ public class UDFPosMod extends UDFBaseNumericOp {
 
     doubleWritable.set(((a.get() % b.get()) + b.get()) % b.get());
     return doubleWritable;
+  }
+
+  @Override
+  public BigDecimalWritable evaluate(BigDecimalWritable a, BigDecimalWritable b) {
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+
+    BigDecimal av = a.getBigDecimal();
+    BigDecimal bv = b.getBigDecimal();
+
+    if (bv.compareTo(BigDecimal.ZERO) == 0) {
+      return null;
+    }
+
+    bigDecimalWritable.set(av.remainder(bv).add(bv).remainder(bv));
+    return bigDecimalWritable;
   }
 }
