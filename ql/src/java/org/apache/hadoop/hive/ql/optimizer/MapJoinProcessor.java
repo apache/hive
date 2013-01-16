@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -660,8 +661,8 @@ public class MapJoinProcessor implements Transform {
       // support this by randomly
       // leaving some table from the list of tables to be cached
       if (mapJoinPos == -1) {
-        throw new SemanticException(ErrorMsg.INVALID_MAPJOIN_HINT.getMsg(pGraphContext.getQB()
-            .getParseInfo().getHints()));
+        throw new SemanticException(ErrorMsg.INVALID_MAPJOIN_HINT.getMsg(
+            Arrays.toString(joinTree.getBaseSrc())));
       }
     }
 

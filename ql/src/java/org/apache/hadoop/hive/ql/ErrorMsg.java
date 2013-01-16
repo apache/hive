@@ -113,7 +113,7 @@ public enum ErrorMsg {
   NO_VALID_PARTN(10056, "The query does not reference any valid partition. "
       + "To run this query, set hive.mapred.mode=nonstrict"),
   NO_OUTER_MAPJOIN(10057, "MAPJOIN cannot be performed with OUTER JOIN"),
-  INVALID_MAPJOIN_HINT(10058, "Neither table specified as map-table"),
+  INVALID_MAPJOIN_HINT(10058, "All tables are specified as map-table for join"),
   INVALID_MAPJOIN_TABLE(10059, "Result of a union cannot be a map table"),
   NON_BUCKETED_TABLE(10060, "Sampling expression needed for non-bucketed table"),
   BUCKETED_NUMERATOR_BIGGER_DENOMINATOR(10061, "Numerator should not be bigger than "
