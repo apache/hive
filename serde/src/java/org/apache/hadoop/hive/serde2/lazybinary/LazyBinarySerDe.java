@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -382,6 +384,14 @@ public class LazyBinarySerDe implements SerDe {
         t.writeToByteStream(byteStream);
         return warnedOnceNullMapKey;
       }
+
+      case DECIMAL: {
+        BigDecimalObjectInspector bdoi = (BigDecimalObjectInspector) poi;
+        BigDecimalWritable t = bdoi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return warnedOnceNullMapKey;
+      }
+
       default: {
         throw new RuntimeException("Unrecognized type: "
             + poi.getPrimitiveCategory());

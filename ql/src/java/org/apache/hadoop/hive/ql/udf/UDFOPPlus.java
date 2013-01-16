@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -111,6 +112,16 @@ public class UDFOPPlus extends UDFBaseNumericOp {
 
     doubleWritable.set(a.get() + b.get());
     return doubleWritable;
+  }
+
+  @Override
+  public BigDecimalWritable evaluate(BigDecimalWritable a, BigDecimalWritable b) {
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+
+    bigDecimalWritable.set(a.getBigDecimal().add(b.getBigDecimal()));
+    return bigDecimalWritable;
   }
 
 }

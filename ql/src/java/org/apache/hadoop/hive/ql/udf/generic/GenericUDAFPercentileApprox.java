@@ -46,7 +46,7 @@ import org.apache.hadoop.util.StringUtils;
 /**
  * Computes an approximate percentile (quantile) from an approximate histogram, for very
  * large numbers of rows where the regular percentile() UDAF might run out of memory.
- * 
+ *
  * The input is a single double value or an array of double values representing the quantiles
  * requested. The output, corresponding to the input, is either an single double value or an
  * array of doubles that are the quantile values.
@@ -59,7 +59,7 @@ import org.apache.hadoop.util.StringUtils;
     extended = "'expr' can be any numeric column, including doubles and floats, and 'pc' is " +
                "either a single double/float with a requested percentile, or an array of double/" +
                "float with multiple percentiles. If 'nb' is not specified, the default " +
-               "approximation is done with 10,000 histogram bins, which means that if there are " + 
+               "approximation is done with 10,000 histogram bins, which means that if there are " +
                "10,000 or fewer unique values in 'expr', you can expect an exact result. The " +
                "percentile() function always computes an exact percentile and can run out of " +
                "memory if there are too many unique values in a column, which necessitates " +
@@ -77,7 +77,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Please specify either two or three arguments.");
     }
-    
+
     // Validate the first parameter, which is the expression to compute over. This should be a
     // numeric primitive type.
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
@@ -93,6 +93,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     case FLOAT:
     case DOUBLE:
     case TIMESTAMP:
+    case DECIMAL:
       break;
     default:
       throw new UDFArgumentTypeException(0,
@@ -147,7 +148,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     // Also make sure it is a constant.
     if (!ObjectInspectorUtils.isConstantObjectInspector(parameters[1])) {
       throw new UDFArgumentTypeException(1,
-        "The second argument must be a constant, but " + parameters[1].getTypeName() + 
+        "The second argument must be a constant, but " + parameters[1].getTypeName() +
         " was passed instead.");
     }
 
@@ -172,7 +173,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       // Also make sure it is a constant.
       if (!ObjectInspectorUtils.isConstantObjectInspector(parameters[2])) {
         throw new UDFArgumentTypeException(2,
-          "The third argument must be a constant, but " + parameters[2].getTypeName() + 
+          "The third argument must be a constant, but " + parameters[2].getTypeName() +
           " was passed instead.");
       }
     }
@@ -184,7 +185,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       return new GenericUDAFSinglePercentileApproxEvaluator();
     }
   }
-  
+
   public static class GenericUDAFSinglePercentileApproxEvaluator extends
     GenericUDAFPercentileApproxEvaluator {
 
@@ -234,7 +235,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     }
   }
 
-  
+
   public static class GenericUDAFMultiplePercentileApproxEvaluator extends
     GenericUDAFPercentileApproxEvaluator {
 
@@ -299,7 +300,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
 
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-      if(partial == null) { 
+      if(partial == null) {
         return;
       }
       PercentileAggBuf myagg = (PercentileAggBuf) agg;
@@ -316,7 +317,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       }
 
       // merge histograms
-      myagg.histogram.merge(partialHistogram);           
+      myagg.histogram.merge(partialHistogram);
     }
 
     @Override
@@ -382,7 +383,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       } else {
         result = new double[1];
         result[0] = PrimitiveObjectInspectorUtils.getDouble(
-              quantileObj, 
+              quantileObj,
               (PrimitiveObjectInspector)quantileOI);
       }
       for(int ii = 0; ii < result.length; ++ii) {

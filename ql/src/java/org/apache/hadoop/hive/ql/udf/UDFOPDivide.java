@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
@@ -29,12 +33,15 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 @Description(name = "/", value = "a _FUNC_ b - Divide a by b", extended = "Example:\n"
     + "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" + "  1.5")
 /**
- * Note that in SQL, the return type of divide is not necessarily the same 
+ * Note that in SQL, the return type of divide is not necessarily the same
  * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
  * return a double for divide.
  */
 public class UDFOPDivide extends UDF {
-  private DoubleWritable doubleWritable = new DoubleWritable();
+  private final DoubleWritable doubleWritable = new DoubleWritable();
+  private final BigDecimalWritable bigDecimalWritable = new BigDecimalWritable();
+
+  private final int MAX_SCALE = 65; // max compatible with MySQL
 
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
@@ -45,5 +52,19 @@ public class UDFOPDivide extends UDF {
 
     doubleWritable.set(a.get() / b.get());
     return doubleWritable;
+  }
+
+  public BigDecimalWritable evaluate(BigDecimalWritable a, BigDecimalWritable b) {
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+    if (b.getBigDecimal().compareTo(BigDecimal.ZERO) == 0) {
+      return null;
+    } else {
+        bigDecimalWritable.set(a.getBigDecimal().divide(
+          b.getBigDecimal(), MAX_SCALE, RoundingMode.HALF_UP));
+    }
+
+    return bigDecimalWritable;
   }
 }

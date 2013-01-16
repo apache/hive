@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -257,6 +258,30 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class BigDecimalConverter implements Converter {
+
+    PrimitiveObjectInspector inputOI;
+    SettableBigDecimalObjectInspector outputOI;
+    Object r;
+
+    public BigDecimalConverter(PrimitiveObjectInspector inputOI,
+        SettableBigDecimalObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      this.r = outputOI.create(BigDecimal.ZERO);
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getBigDecimal(input,
+          inputOI));
+    }
+
+  }
+
   public static class BinaryConverter implements Converter{
 
     PrimitiveObjectInspector inputOI;
@@ -333,11 +358,11 @@ public class PrimitiveObjectInspectorConverter {
         t.set(String.valueOf(((DoubleObjectInspector) inputOI).get(input)));
         return t;
       case STRING:
-	if (inputOI.preferWritable()) {
-	  t.set(((StringObjectInspector) inputOI).getPrimitiveWritableObject(input));
-	} else {
-	  t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
-	}
+        if (inputOI.preferWritable()) {
+          t.set(((StringObjectInspector) inputOI).getPrimitiveWritableObject(input));
+        } else {
+          t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+        }
         return t;
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
@@ -345,6 +370,9 @@ public class PrimitiveObjectInspectorConverter {
         return t;
       case BINARY:
         t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
+        return t;
+      case DECIMAL:
+        t.set(((BigDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());

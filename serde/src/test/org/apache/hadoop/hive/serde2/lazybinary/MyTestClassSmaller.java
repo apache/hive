@@ -17,30 +17,33 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.math.BigDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 
 public class MyTestClassSmaller {
-  Byte myByte;
-  Short myShort;
-  Integer myInt;
-  Long myLong;
-  Float myFloat;
-  Double myDouble;
-  String myString;
-  MyTestInnerStruct myStruct;
+    Byte myByte;
+    Short myShort;
+    Integer myInt;
+    Long myLong;
+    Float myFloat;
+    Double myDouble;
+    String myString;
+    BigDecimal myDecimal;
+    MyTestInnerStruct myStruct;
 
-  public MyTestClassSmaller() {
-  }
-
-  public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, Float f,
-      Double d, String st, MyTestInnerStruct is) {
-    myByte = b;
-    myShort = s;
-    myInt = i;
-    myLong = l;
-    myFloat = f;
-    myDouble = d;
-    myString = st;
-    myStruct = is;
-  }
+    public MyTestClassSmaller() {
+    }
+    
+    public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, Float f,
+			      Double d, String st, BigDecimal bd, MyTestInnerStruct is) {
+	myByte = b;
+	myShort = s;
+	myInt = i;
+	myLong = l;
+	myFloat = f;
+	myDouble = d;
+	myString = st;
+	myDecimal = bd;
+	myStruct = is;
+    }
 }

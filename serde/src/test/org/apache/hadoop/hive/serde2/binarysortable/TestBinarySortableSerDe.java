@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,8 @@ import org.apache.hadoop.io.BytesWritable;
  *
  */
 public class TestBinarySortableSerDe extends TestCase {
+
+  private static final String DECIMAL_CHARS = "0123456789";
 
   public static HashMap<String, String> makeHashMap(String... params) {
     HashMap<String, String> r = new HashMap<String, String>();
@@ -132,11 +135,36 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
+  public static BigDecimal getRandBigDecimal(Random r) {
+    StringBuilder sb = new StringBuilder();
+    int l1 = 1+r.nextInt(500), l2 = r.nextInt(500);
+
+    if (r.nextBoolean()) {
+      sb.append("-");
+    }
+
+    sb.append(getRandString(r, DECIMAL_CHARS, l1));
+    if (l2 != 0) {
+      sb.append(".");
+      sb.append(getRandString(r, DECIMAL_CHARS, l2));
+    }
+
+    BigDecimal bd = new BigDecimal(sb.toString());
+    return bd;
+  }
+
   public static String getRandString(Random r) {
-    int length = r.nextInt(10);
+    return getRandString(r, null, r.nextInt(10));
+  }
+
+  public static String getRandString(Random r, String characters, int length) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < length; i++) {
-      sb.append((char) (r.nextInt(128)));
+      if (characters == null) {
+        sb.append((char) (r.nextInt(128)));
+      } else {
+        sb.append(characters.charAt(r.nextInt(characters.length())));
+      }
     }
     return sb.toString();
   }
@@ -179,9 +207,10 @@ public class TestBinarySortableSerDe extends TestCase {
         t.myDouble = randField > 5 ? null : Double
             .valueOf(r.nextDouble() * 10 - 5);
         t.myString = randField > 6 ? null : getRandString(r);
-        t.myStruct = randField > 7 ? null : new MyTestInnerStruct(
+        t.myDecimal = randField > 7 ? null : getRandBigDecimal(r);
+        t.myStruct = randField > 8 ? null : new MyTestInnerStruct(
             r.nextInt(5) - 2, r.nextInt(5) - 2);
-        t.myList = randField > 8 ? null : getRandIntegerArray(r);
+        t.myList = randField > 9 ? null : getRandIntegerArray(r);
         t.myBA = getRandBA(r, i);
         rows[i] = t;
       }
@@ -195,9 +224,9 @@ public class TestBinarySortableSerDe extends TestCase {
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
 
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "++++++++++"), true);
+          "+++++++++++"), true);
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "----------"), false);
+          "-----------"), false);
 
       System.out.println("Test testTBinarySortableProtocol passed!");
     } catch (Throwable e) {

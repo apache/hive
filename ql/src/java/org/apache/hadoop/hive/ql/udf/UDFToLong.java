@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -36,7 +37,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 public class UDFToLong extends UDF {
-  private LongWritable longWritable = new LongWritable();
+  private final LongWritable longWritable = new LongWritable();
 
   public UDFToLong() {
   }
@@ -188,6 +189,15 @@ public class UDFToLong extends UDF {
       return null;
     } else {
       longWritable.set(i.getSeconds());
+      return longWritable;
+    }
+  }
+
+  public LongWritable evaluate(BigDecimalWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      longWritable.set(i.getBigDecimal().longValue());
       return longWritable;
     }
   }
