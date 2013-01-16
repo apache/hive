@@ -225,9 +225,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         firstRow = false;
       }
 
-      // get alias
-      alias = order[tag];
-      // alias = (byte)tag;
+      alias = (byte)tag;
 
       if ((lastAlias == null) || (!lastAlias.equals(alias))) {
         nextSz = joinEmitInterval;
@@ -242,10 +240,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
 
       // Add the value to the ArrayList
-      storage.get((byte) tag).add(value);
+      storage.get(alias).add(value);
 
       for (Byte pos : order) {
-        if (pos.intValue() != tag) {
+        if (pos.intValue() != alias) {
 
           MapJoinObjectValue o = mapJoinTables.get(pos).get(key);
           MapJoinRowContainer<ArrayList<Object>> rowContainer = rowContainerMap.get(pos);

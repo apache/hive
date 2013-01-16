@@ -86,7 +86,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
     joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
 
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(),order,NOTSKIPBIGTABLE);
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), NOTSKIPBIGTABLE);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
         inputObjInspectors,NOTSKIPBIGTABLE);
     joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(

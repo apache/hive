@@ -71,7 +71,6 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    */
   protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
 
-  protected transient int posBigTableTag = -1; // one of the tables that is not in memory
   protected transient int posBigTableAlias = -1; // one of the tables that is not in memory
   transient int mapJoinRowsKey; // rows for a given key
 
@@ -186,11 +185,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     firstRow = true;
 
     // for small tables only; so get the big table position first
-    posBigTableTag = conf.getPosBigTable();
+    posBigTableAlias = conf.getPosBigTable();
 
     order = conf.getTagOrder();
-
-    posBigTableAlias = order[posBigTableTag];
 
     // initialize some variables, which used to be initialized in CommonJoinOperator
     numAliases = conf.getExprs().size();
@@ -202,7 +199,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // process join keys
     joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), order, posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
         inputObjInspectors, posBigTableAlias);
     joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
@@ -210,7 +207,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // process join values
     joinValues = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), order, posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias);
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
         inputObjInspectors, posBigTableAlias);
     joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
@@ -218,7 +215,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // process join filters
     joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), order, posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias);
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
         inputObjInspectors, posBigTableAlias);
 
@@ -259,7 +256,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // initialize the hash tables for other tables
     for (Byte pos : order) {
-      if (pos == posBigTableTag) {
+      if (pos == posBigTableAlias) {
         continue;
       }
 
@@ -313,8 +310,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         setKeyMetaData();
         firstRow = false;
       }
-      alias = order[tag];
-      // alias = (byte)tag;
+      alias = (byte)tag;
 
       // compute keys and values as StandardObjects
       AbstractMapJoinKey keyMap = JoinUtil.computeMapJoinKeys(row, joinKeys.get(alias),
@@ -325,8 +321,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
               .get(alias), filterMap == null ? null : filterMap[alias]);
 
 
-      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables
-          .get((byte) tag);
+      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables.get(alias);
 
       MapJoinObjectValue o = hashTable.get(keyMap);
       MapJoinRowContainer<Object[]> res = null;

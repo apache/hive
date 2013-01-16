@@ -132,8 +132,6 @@ public final class LocalMapJoinProcFactory {
 
       // get the last operator for processing big tables
       int bigTable = mapJoinOp.getConf().getPosBigTable();
-      Byte[] order = mapJoinOp.getConf().getTagOrder();
-      int bigTableAlias = (int) order[bigTable];
 
       // the parent ops for hashTableSinkOp
       List<Operator<? extends OperatorDesc>> smallTablesParentOp =
@@ -143,7 +141,7 @@ public final class LocalMapJoinProcFactory {
       // get all parents
       List<Operator<? extends OperatorDesc>> parentsOp = mapJoinOp.getParentOperators();
       for (int i = 0; i < parentsOp.size(); i++) {
-        if (i == bigTableAlias) {
+        if (i == bigTable) {
           smallTablesParentOp.add(null);
           continue;
         }
