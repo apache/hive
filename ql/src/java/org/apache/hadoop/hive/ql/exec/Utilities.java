@@ -2168,12 +2168,22 @@ public final class Utilities {
       if (!supportedJDOFuncs(func)) {
         return "Expression " + expr.getExprString() + " cannot be evaluated";
       }
+      boolean allChildrenConstant = true;
       List<ExprNodeDesc> children = funcDesc.getChildExprs();
       for (ExprNodeDesc child: children) {
+        if (!(child instanceof ExprNodeConstantDesc)) {
+          allChildrenConstant = false;
+        }
         String message = checkJDOPushDown(tab, child);
         if (message != null) {
           return message;
         }
+      }
+
+      // If all the children of the expression are constants then JDO cannot parse the expression
+      // see Filter.g
+      if (allChildrenConstant) {
+        return "Expression " + expr.getExprString() + " has only constants as children.";
       }
       return null;
     }
