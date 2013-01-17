@@ -6,7 +6,8 @@ set mapred.reduce.tasks = 10;
 -- and uses a post-hook to confirm that 10 tasks were created
 
 CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS;
-set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyNumReducersForBucketsHook;
+set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyNumReducersHook;
+set VerifyNumReducersHook.num.reducers=10;
 
 insert overwrite table bucket_nr
 select * from src;
