@@ -6711,8 +6711,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> outputColumnNames = new ArrayList<String>();
     for (ASTNode distn : distExprs) {
       ExprNodeDesc distExpr = genExprNodeDesc(distn, inputRR);
-      reduceKeys.add(distExpr);
       if (reduceSinkOutputRowResolver.getExpression(distn) == null) {
+        reduceKeys.add(distExpr);
         outputColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
         String field = Utilities.ReduceField.KEY.toString() + "."
             + getColumnInternalName(reduceKeys.size() - 1);
