@@ -26,20 +26,25 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  *
- * VerifyNumReducersForBucketsHook.
+ * VerifyNumReducersHook.
  *
- * This hook is meant to be used with bucket_num_reducers.q . It checks whether the
- * number of reducers has been correctly set.
+ * Provided a query involves exactly 1 map reduce job, this hook can be used to verify that the
+ * number of reducers matches what is expected.
+ *
+ * Use the config VerifyNumReducersHook.num.reducers to specify the expected number of reducers.
  */
-public class VerifyNumReducersForBucketsHook implements ExecuteWithHookContext {
+public class VerifyNumReducersHook implements ExecuteWithHookContext {
+
+  public static final String BUCKET_CONFIG = "VerifyNumReducersHook.num.reducers";
 
   public void run(HookContext hookContext) {
     SessionState ss = SessionState.get();
     Assert.assertNotNull("SessionState returned null");
 
+    int expectedReducers = hookContext.getConf().getInt(BUCKET_CONFIG, 0);
     List<MapRedStats> stats = ss.getLastMapRedStatsList();
     Assert.assertEquals("Number of MapReduce jobs is incorrect", 1, stats.size());
 
-    Assert.assertEquals("NumReducers is incorrect", 10, stats.get(0).getNumReduce());
+    Assert.assertEquals("NumReducers is incorrect", expectedReducers, stats.get(0).getNumReduce());
   }
 }

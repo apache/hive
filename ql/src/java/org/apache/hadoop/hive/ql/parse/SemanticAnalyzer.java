@@ -4544,7 +4544,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private int getReducersBucketing(int totalFiles, int maxReducers) {
-    int numFiles = totalFiles / maxReducers;
+    int numFiles = (int)Math.ceil((double)totalFiles / (double)maxReducers);
     while (true) {
       if (totalFiles % numFiles == 0) {
         return totalFiles / numFiles;
