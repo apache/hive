@@ -497,7 +497,7 @@
     The merge is triggered if either of hive.merge.mapfiles or hive.merge.mapredfiles is set to true.
     If the user has set hive.merge.mapfiles to true and hive.merge.mapredfiles to false, the idea was the
     number of reducers are few, so the number of files anyway are small. However, with this optimization,
-    we are increasing the number of files possibly by a big margin. So, we merge aggresively.
+    we are increasing the number of files possibly by a big margin. So, we merge aggresively.</description>
 </property>
 
 <property>
@@ -505,7 +505,7 @@
   <value>false</value>
   <description>Whether the version of hadoop which is running supports sub-directories for tables/partitions.
     Many hive optimizations can be applied if the hadoop version supports sub-directories for
-    tables/partitions. It was added by MAPREDUCE-1501
+    tables/partitions. It was added by MAPREDUCE-1501</description>
 </property>
 
 <property>
@@ -1130,7 +1130,7 @@
   <value>200</value>
   <description>
     Determines if when the prefix of the key used for intermediate stats collection
-    exceeds a certain length, a hash of the key is used instead.  If the value < 0 then hashing
+    exceeds a certain length, a hash of the key is used instead.  If the value &lt; 0 then hashing
     is never used, if the value >= 0 then hashing is used only when the key prefixes length
     exceeds that value.  The key prefix is defined as everything preceding the task ID in the key.
   </description>
