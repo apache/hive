@@ -246,13 +246,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     nullsafes = conf.getNullSafes();
     noOuterJoin = conf.isNoOuterJoin();
 
-    Byte[] reorder = getExecContext() == null ? order : null;
     totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),
-        reorder,NOTSKIPBIGTABLE);
+        order,NOTSKIPBIGTABLE);
 
     //process join filters
     joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),reorder,NOTSKIPBIGTABLE);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE);
 
 
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,

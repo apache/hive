@@ -54,7 +54,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
    */
   protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
 
-  protected transient int posBigTable = -1; // one of the tables that is not in memory
+  protected transient byte posBigTable = -1; // one of the tables that is not in memory
   transient int mapJoinRowsKey; // rows for a given key
 
   protected transient RowContainer<ArrayList<Object>> emptyList = null;
@@ -93,15 +93,15 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
         joinKeysObjectInspectors,NOTSKIPBIGTABLE);
 
     // all other tables are small, and are cached in the hash table
-    posBigTable = conf.getPosBigTable();
+    posBigTable = (byte) conf.getPosBigTable();
 
     emptyList = new RowContainer<ArrayList<Object>>(1, hconf, reporter);
 
     RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
-        rowContainerStandardObjectInspectors.get((byte) posBigTable),
-        order[posBigTable], joinCacheSize,spillTableDesc, conf,
+        rowContainerStandardObjectInspectors.get(posBigTable),
+        posBigTable, joinCacheSize,spillTableDesc, conf,
         !hasFilter(posBigTable), reporter);
-    storage.put((byte) posBigTable, bigPosRC);
+    storage.put(posBigTable, bigPosRC);
 
     mapJoinRowsKey = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
