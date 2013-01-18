@@ -177,7 +177,8 @@ public class GenMRUnion1 implements NodeProcessor {
     currTask.addDependentTask(uTask);
     if (ctx.getRootTasks().contains(uTask)) {
       ctx.getRootTasks().remove(uTask);
-      if (!ctx.getRootTasks().contains(currTask)) {
+      if (!ctx.getRootTasks().contains(currTask) &&
+          shouldBeRootTask(currTask)) {
         ctx.getRootTasks().add(currTask);
       }
     }
@@ -290,7 +291,7 @@ public class GenMRUnion1 implements NodeProcessor {
     // If it a map-reduce job, create a temporary file
     else {
       // is the current task a root task
-      if (shouldBeRootTask(currTask, parseCtx)
+      if (shouldBeRootTask(currTask)
           && (!ctx.getRootTasks().contains(currTask))) {
         ctx.getRootTasks().add(currTask);
       }
@@ -315,7 +316,7 @@ public class GenMRUnion1 implements NodeProcessor {
   }
 
   private boolean shouldBeRootTask(
-      Task<? extends Serializable> currTask, ParseContext parseContext) {
+      Task<? extends Serializable> currTask) {
     return currTask.getParentTasks() == null
         || (currTask.getParentTasks().size() == 0);
   }

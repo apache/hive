@@ -1108,6 +1108,9 @@ public class Driver implements CommandProcessor {
 
       // Add root Tasks to runnable
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
+        // This should never happen, if it does, it's a bug with the potential to produce
+        // incorrect results.
+        assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
         driverCxt.addToRunnable(tsk);
       }
 
