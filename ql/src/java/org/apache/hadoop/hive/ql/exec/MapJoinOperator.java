@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
@@ -65,7 +64,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
   transient boolean hashTblInitedOnce;
-  private int bigTableAlias;
 
   public MapJoinOperator() {
   }
@@ -85,7 +83,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
 
     metadataKeyTag = -1;
-    bigTableAlias = order[posBigTable];
 
     mapJoinTables = new HashMap<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>>();
     rowContainerMap = new HashMap<Byte, MapJoinRowContainer<ArrayList<Object>>>();
@@ -122,26 +119,21 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
             ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, hconf));
 
-    // index for values is just alias
-    for (int tag = 0; tag < order.length; tag++) {
-      int alias = (int) order[tag];
-
-      if (alias == this.bigTableAlias) {
+    for (int pos = 0; pos < order.length; pos++) {
+      if (pos == posBigTable) {
         continue;
       }
-
-
       TableDesc valueTableDesc;
       if (conf.getNoOuterJoin()) {
-        valueTableDesc = conf.getValueTblDescs().get(tag);
+        valueTableDesc = conf.getValueTblDescs().get(pos);
       } else {
-        valueTableDesc = conf.getValueFilteredTblDescs().get(tag);
+        valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
       }
       SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
           null);
       valueSerDe.initialize(null, valueTableDesc.getProperties());
 
-      MapJoinMetaData.put(Integer.valueOf(alias), new HashTableSinkObjectCtx(ObjectInspectorUtils
+      MapJoinMetaData.put(Integer.valueOf(pos), new HashTableSinkObjectCtx(ObjectInspectorUtils
           .getStandardObjectInspector(valueSerDe.getObjectInspector(),
               ObjectInspectorCopyOption.WRITABLE), valueSerDe, valueTableDesc, hconf));
     }
@@ -242,8 +234,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       // Add the value to the ArrayList
       storage.get(alias).add(value);
 
-      for (Byte pos : order) {
-        if (pos.intValue() != alias) {
+      for (byte pos = 0; pos < order.length; pos++) {
+        if (pos != alias) {
 
           MapJoinObjectValue o = mapJoinTables.get(pos).get(key);
           MapJoinRowContainer<ArrayList<Object>> rowContainer = rowContainerMap.get(pos);
@@ -253,7 +245,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
             if (noOuterJoin) {
               storage.put(pos, emptyList);
             } else {
-              storage.put(pos, dummyObjVectors[pos.intValue()]);
+              storage.put(pos, dummyObjVectors[pos]);
             }
           } else {
             rowContainer.reset(o.getObj());
@@ -268,8 +260,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       // done with the row
       storage.get((byte) tag).clear();
 
-      for (Byte pos : order) {
-        if (pos.intValue() != tag) {
+      for (byte pos = 0; pos < order.length; pos++) {
+        if (pos != tag) {
           storage.put(pos, null);
         }
       }

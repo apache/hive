@@ -8,11 +8,11 @@ LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3;
 
 set hive.auto.convert.join=true;
 
-explain select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
-select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
 
-explain select /*+ STREAMTABLE(b) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
-select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
 
-explain select /*+ STREAMTABLE(c) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
-select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;
+select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3;

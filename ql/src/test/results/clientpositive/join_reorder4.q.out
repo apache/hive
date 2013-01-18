@@ -31,12 +31,12 @@ PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
-PREHOOK: query: explain select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME b))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME c))))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
@@ -397,25 +397,25 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 2	12	2	22	2	12
-PREHOOK: query: explain select /*+ STREAMTABLE(b) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST b))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME b))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME c))))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
@@ -776,25 +776,25 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 2	12	2	22	2	12
-PREHOOK: query: explain select /*+ STREAMTABLE(c) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST c))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL b) key2))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL a) key1) (. (TOK_TABLE_OR_COL c) key3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST c))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME b))) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME c))))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-10, Stage-1
@@ -1155,13 +1155,13 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(a) */ * from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

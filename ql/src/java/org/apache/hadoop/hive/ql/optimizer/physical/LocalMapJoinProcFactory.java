@@ -115,6 +115,9 @@ public final class LocalMapJoinProcFactory {
         e.printStackTrace();
       }
 
+      // mapjoin should not affected by join reordering
+      mapJoinOp.getConf().resetOrder();
+
       HashTableSinkDesc hashTableSinkDesc = new HashTableSinkDesc(mapJoinOp.getConf());
       HashTableSinkOperator hashTableSinkOp = (HashTableSinkOperator) OperatorFactory
           .get(hashTableSinkDesc);
