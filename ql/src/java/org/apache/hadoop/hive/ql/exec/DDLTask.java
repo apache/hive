@@ -205,7 +205,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       formatter = new JsonMetaDataFormatter();
     } else {
-      formatter = new TextMetaDataFormatter();
+      formatter = new TextMetaDataFormatter(
+                      conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS));
     }
 
     INTERMEDIATE_ARCHIVED_DIR_SUFFIX =
@@ -2853,7 +2854,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       formatter.describeTable(outStream, colPath, tableName, tbl, part, cols,
-                              descTbl.isFormatted(), descTbl.isExt());
+                              descTbl.isFormatted(), descTbl.isExt(), descTbl.isPretty());
 
       LOG.info("DDLTask: written data for " + tbl.getTableName());
       ((FSDataOutputStream) outStream).close();

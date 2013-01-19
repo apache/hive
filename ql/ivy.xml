@@ -79,6 +79,8 @@
                 transitive="false"/>
     <dependency org="javolution" name="javolution" rev="${javolution.version}"/>
 
+    <dependency org="jline" name="jline" rev="${jline.version}" transitive="false"/>
+
     <!-- Hack to get jobclient tests dependency in. -->
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-jobclient" rev="${hadoop-0.23.version}"
                 conf="hadoop23.test->default" transitive="false">

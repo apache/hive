@@ -71,6 +71,14 @@
 </property>
 
 <property>
+  <name>hive.cli.pretty.output.num.cols</name>
+  <value>-1</value>
+  <description>The number of columns to use when formatting output generated
+        by the DESCRIBE PRETTY table_name command.  If the value of this property
+        is -1, then hive will use the auto-detected terminal width.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>
