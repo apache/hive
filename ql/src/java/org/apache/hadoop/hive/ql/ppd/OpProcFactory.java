@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -54,14 +53,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -585,16 +582,22 @@ public final class OpProcFactory {
         ExprWalkerInfo ewi, Set<String> aliases, boolean ignoreAliases)
         throws SemanticException {
       boolean hasUnpushedPredicates = false;
-      if (nd.getChildren() == null || nd.getChildren().size() > 1) {
+      Operator<?> current = (Operator<?>) nd;
+      List<Operator<?>> children = current.getChildOperators();
+      if (children == null || children.isEmpty()) {
+        return hasUnpushedPredicates;
+      }
+      if (children.size() > 1) {
         // ppd for multi-insert query is not yet implemented
         // no-op for leafs
+        for (Operator<?> child : children) {
+          removeCandidates(child, owi); // remove candidated filters on this branch
+        }
         return hasUnpushedPredicates;
       }
       Operator<? extends OperatorDesc> op =
         (Operator<? extends OperatorDesc>) nd;
-      ExprWalkerInfo childPreds = owi
-          .getPrunedPreds((Operator<? extends OperatorDesc>) nd.getChildren()
-          .get(0));
+      ExprWalkerInfo childPreds = owi.getPrunedPreds(children.get(0));
       if (childPreds == null) {
         return hasUnpushedPredicates;
       }
@@ -620,6 +623,17 @@ public final class OpProcFactory {
       }
       owi.putPrunedPreds((Operator<? extends OperatorDesc>) nd, ewi);
       return hasUnpushedPredicates;
+    }
+
+    private void removeCandidates(Operator<?> operator, OpWalkerInfo owi) {
+      if (operator instanceof FilterOperator) {
+        owi.getCandidateFilterOps().remove(operator);
+      }
+      if (operator.getChildOperators() != null) {
+        for (Operator<?> child : operator.getChildOperators()) {
+          removeCandidates(child, owi);
+        }
+      }
     }
 
     protected ExprWalkerInfo mergeChildrenPred(Node nd, OpWalkerInfo owi,

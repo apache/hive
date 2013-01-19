@@ -62,73 +62,81 @@ STAGE PLANS:
                         type: string
       Reduce Operator Tree:
         Forward
-          Group By Operator
-            aggregations:
-                  expr: count(DISTINCT KEY._col1:0._col0)
-            bucketGroup: false
-            keys:
-                  expr: KEY._col0
-                  type: string
-            mode: complete
-            outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
+          Filter Operator
+            predicate:
+                expr: (KEY._col0 >= 5.0)
+                type: boolean
+            Group By Operator
+              aggregations:
+                    expr: count(DISTINCT KEY._col1:0._col0)
+              bucketGroup: false
+              keys:
+                    expr: KEY._col0
                     type: string
-                    expr: _col1
-                    type: bigint
+              mode: complete
               outputColumnNames: _col0, _col1
               Select Operator
                 expressions:
                       expr: _col0
                       type: string
-                      expr: UDFToInteger(_col1)
-                      type: int
+                      expr: _col1
+                      type: bigint
                 outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest_g2
-          Group By Operator
-            aggregations:
-                  expr: count(DISTINCT KEY._col1:0._col0)
-                  expr: count(VALUE._col0)
-            bucketGroup: false
-            keys:
-                  expr: KEY._col0
-                  type: string
-            mode: complete
-            outputColumnNames: _col0, _col1, _col2
-            Select Operator
-              expressions:
-                    expr: _col0
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: UDFToInteger(_col1)
+                        type: int
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest_g2
+          Filter Operator
+            predicate:
+                expr: (KEY._col0 < 5.0)
+                type: boolean
+            Group By Operator
+              aggregations:
+                    expr: count(DISTINCT KEY._col1:0._col0)
+                    expr: count(VALUE._col0)
+              bucketGroup: false
+              keys:
+                    expr: KEY._col0
                     type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: bigint
+              mode: complete
               outputColumnNames: _col0, _col1, _col2
               Select Operator
                 expressions:
                       expr: _col0
                       type: string
-                      expr: UDFToInteger(_col1)
-                      type: int
-                      expr: UDFToInteger(_col2)
-                      type: int
+                      expr: _col1
+                      type: bigint
+                      expr: _col2
+                      type: bigint
                 outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 2
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest_g3
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: UDFToInteger(_col1)
+                        type: int
+                        expr: UDFToInteger(_col2)
+                        type: int
+                  outputColumnNames: _col0, _col1, _col2
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 2
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest_g3
 
   Stage: Stage-0
     Move Operator
@@ -189,11 +197,6 @@ POSTHOOK: Lineage: dest_g2.key SIMPLE [(src)src.FieldSchema(name:value, type:str
 POSTHOOK: Lineage: dest_g3.c1 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest_g3.c2 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest_g3.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-0	1
-1	71
-2	69
-3	62
-4	74
 5	6
 6	5
 7	6
@@ -217,11 +220,6 @@ POSTHOOK: Lineage: dest_g3.key SIMPLE [(src)src.FieldSchema(name:value, type:str
 2	69	111
 3	62	99
 4	74	124
-5	6	10
-6	5	6
-7	6	10
-8	8	10
-9	7	12
 PREHOOK: query: DROP TABLE dest_g2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g2
