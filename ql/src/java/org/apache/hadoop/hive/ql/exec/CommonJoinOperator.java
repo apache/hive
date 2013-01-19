@@ -828,6 +828,7 @@ transient boolean newGroupStarted = false;
             mayHasMoreThanOne = true;
             if (!hasEmpty) {
               for (ArrayList<Object> row = alw.first(); row != null; row = alw.next()) {
+                reportProgress();
                 if (hasAnyFiltered(alias, row)) {
                   hasEmpty = true;
                   break;
