@@ -1737,6 +1737,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       int descOptions = ast.getChild(1).getType();
       descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
       descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
+      descTblDesc.setPretty(descOptions == HiveParser.KW_PRETTY);
     }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         descTblDesc), conf));

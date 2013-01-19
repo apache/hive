@@ -145,7 +145,8 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     public void describeTable(DataOutputStream out,
                               String colPath, String tableName,
                               Table tbl, Partition part, List<FieldSchema> cols,
-                              boolean isFormatted, boolean isExt)
+                              boolean isFormatted, boolean isExt,
+                              boolean isPretty)
         throws HiveException
     {
         MapBuilder builder = MapBuilder.create();

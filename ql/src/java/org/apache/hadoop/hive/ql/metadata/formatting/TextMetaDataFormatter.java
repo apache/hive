@@ -54,6 +54,15 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     private static final int separator = Utilities.tabCode;
     private static final int terminator = Utilities.newLineCode;
 
+    /** The number of columns to be used in pretty formatting metadata output.
+     * If -1, then the current terminal width is auto-detected and used.
+     */
+    private final int prettyOutputNumCols;
+
+    public TextMetaDataFormatter(int prettyOutputNumCols) {
+      this.prettyOutputNumCols = prettyOutputNumCols;
+    }
+
     /**
      * Write an error message.
      */
@@ -124,13 +133,18 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     public void describeTable(DataOutputStream outStream,
                               String colPath, String tableName,
                               Table tbl, Partition part, List<FieldSchema> cols,
-                              boolean isFormatted, boolean isExt)
+                              boolean isFormatted, boolean isExt, boolean isPretty)
          throws HiveException {
         try {
           if (colPath.equals(tableName)) {
+            List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
             outStream.writeBytes(
-              MetaDataFormatUtils.getAllColumnsInformation(
-                cols, tbl.isPartitioned() ? tbl.getPartCols() : null));
+              isPretty ?
+                  MetaDataPrettyFormatUtils.getAllColumnsInformation(
+                      cols, partCols, prettyOutputNumCols)
+                :
+                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols)
+              );
           } else {
             outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
           }

@@ -42,6 +42,12 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   String colPath;
   boolean isExt;
   boolean isFormatted;
+
+  /** Show pretty output?  This has more human-readable formatting than
+   * isFormatted mode.
+   */
+  private boolean isPretty;
+
   /**
    * table name for the result of describe table.
    */
@@ -63,6 +69,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
       Map<String, String> partSpec, String colPath) {
     this.isExt = false;
     this.isFormatted = false;
+    this.isPretty = false;
     this.partSpec = partSpec;
     this.resFile = resFile.toString();
     this.tableName = tableName;
@@ -92,7 +99,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
     this.isExt = isExt;
   }
 
-    /**
+  /**
    * @return the isFormatted
    */
   public boolean isFormatted() {
@@ -105,6 +112,14 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    */
   public void setFormatted(boolean isFormat) {
     this.isFormatted = isFormat;
+  }
+
+  public boolean isPretty() {
+    return this.isPretty;
+  }
+
+  public void setPretty(boolean isPretty) {
+    this.isPretty = isPretty;
   }
 
   /**

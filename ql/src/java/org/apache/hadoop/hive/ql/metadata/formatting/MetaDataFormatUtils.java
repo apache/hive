@@ -50,7 +50,7 @@ public final class MetaDataFormatUtils {
   public static final String FIELD_DELIM = "\t";
   public static final String LINE_DELIM = "\n";
 
-  private static final int DEFAULT_STRINGBUILDER_SIZE = 2048;
+  static final int DEFAULT_STRINGBUILDER_SIZE = 2048;
   private static final int ALIGNMENT = 20;
 
   private MetaDataFormatUtils() {
@@ -86,10 +86,9 @@ public final class MetaDataFormatUtils {
 
   private static void formatAllFields(StringBuilder tableInfo, List<FieldSchema> cols) {
     for (FieldSchema col : cols) {
-      formatFieldSchemas(tableInfo, col);
+      formatOutput(col.getName(), col.getType(), getComment(col), tableInfo);
     }
   }
-
 
   public static String getAllColumnsInformation(Index index) {
     StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
@@ -263,9 +262,8 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  private static void formatFieldSchemas(StringBuilder tableInfo, FieldSchema col) {
-    String comment = col.getComment() != null ? col.getComment() : "None";
-    formatOutput(col.getName(), col.getType(), comment, tableInfo);
+  static String getComment(FieldSchema col) {
+    return col.getComment() != null ? col.getComment() : "None";
   }
 
   private static String formatDate(long timeInSeconds) {
