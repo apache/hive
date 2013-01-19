@@ -4846,18 +4846,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         loadTableWork.add(ltd);
       }
 
+      WriteEntity output = null;
+
       // Here only register the whole table for post-exec hook if no DP present
       // in the case of DP, we will register WriteEntity in MoveTask when the
       // list of dynamically created partitions are known.
-      if ((dpCtx == null || dpCtx.getNumDPCols() == 0) &&
-          !outputs.add(new WriteEntity(dest_tab))) {
-        throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(dest_tab.getTableName()));
+      if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
+        output = new WriteEntity(dest_tab);
+        if (!outputs.add(output)) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+              .getMsg(dest_tab.getTableName()));
+        }
       }
       if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
         // No static partition specified
         if (dpCtx.getNumSPCols() == 0) {
-          outputs.add(new WriteEntity(dest_tab, false));
+          output = new WriteEntity(dest_tab, false);
+          outputs.add(output);
         }
         // part of the partition specified
         // Create a DummyPartition in this case. Since, the metastore does not store partial
@@ -4870,13 +4875,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 new DummyPartition(dest_tab, dest_tab.getDbName()
                     + "@" + dest_tab.getTableName() + "@" + ppath,
                     partSpec);
-            outputs.add(new WriteEntity(p, false));
+            output = new WriteEntity(p, false);
+            outputs.add(output);
           } catch (HiveException e) {
             throw new SemanticException(e.getMessage(), e);
           }
         }
       }
 
+      ctx.getLoadTableOutputMap().put(ltd, output);
       break;
     }
     case QBMetaData.DEST_PARTITION: {

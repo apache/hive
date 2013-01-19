@@ -41,6 +41,7 @@ public class ZooKeeperHiveLock extends HiveLock {
     this.path = path;
   }
 
+  @Override
   public HiveLockObject getHiveLockObject() {
     return obj;
   }
@@ -49,11 +50,25 @@ public class ZooKeeperHiveLock extends HiveLock {
     this.obj = obj;
   }
 
+  @Override
   public HiveLockMode getHiveLockMode() {
     return mode;
   }
 
   public void setHiveLockMode(HiveLockMode mode) {
     this.mode = mode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ZooKeeperHiveLock)) {
+      return false;
+    }
+
+    ZooKeeperHiveLock zLock = (ZooKeeperHiveLock)o;
+
+    return path.equals(zLock.getPath()) &&
+      obj.equals(zLock.getHiveLockObject()) &&
+      mode == zLock.getHiveLockMode();
   }
 }

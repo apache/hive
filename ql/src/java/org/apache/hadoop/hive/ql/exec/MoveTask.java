@@ -40,6 +40,9 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -145,6 +148,41 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
     return deletePath;
   }
+
+  // Release all the locks acquired for this object
+  // This becomes important for multi-table inserts when one branch may take much more
+  // time than the others. It is better to release the lock for this particular insert.
+  // The other option is to wait for all the branches to finish, or set
+  // hive.multi.insert.move.tasks.share.dependencies to true, which will mean that the
+  // first multi-insert results will be available when all of the branches of multi-table
+  // inserts are done.
+  private void releaseLocks(LoadTableDesc ltd) throws HiveException {
+    // nothing needs to be done
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      return;
+    }
+
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
+    List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
+    if (lockObjects == null) {
+      return;
+    }
+
+    for (HiveLockObj lockObj : lockObjects) {
+      List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
+      for (HiveLock lock : locks) {
+        if (lock.getHiveLockMode() == lockObj.getMode()) {
+          LOG.info("about to release lock for output: " + output.toString() +
+              " lock: " + lock.getHiveLockObject().getName());
+          lockMgr.unlock(lock);
+          ctx.getHiveLocks().remove(lock);
+        }
+      }
+    }
+  }
+
 
   @Override
   public int execute(DriverContext driverContext) {
@@ -317,6 +355,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           SessionState.get().getLineageState().setLineage(tbd.getSourceDir(), dc,
               table.getCols());
         }
+        releaseLocks(tbd);
       }
 
       return 0;
