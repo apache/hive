@@ -785,15 +785,21 @@ public class Driver implements CommandProcessor {
       }
 
       for (WriteEntity output : plan.getOutputs()) {
+        List<HiveLockObj> lockObj = null;
         if (output.getTyp() == WriteEntity.Type.TABLE) {
-          lockObjects.addAll(getLockObjects(output.getTable(), null,
-              output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED));
+          lockObj = getLockObjects(output.getTable(), null,
+              output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED);
         } else if (output.getTyp() == WriteEntity.Type.PARTITION) {
-          lockObjects.addAll(getLockObjects(null, output.getPartition(), HiveLockMode.EXCLUSIVE));
+          lockObj = getLockObjects(null, output.getPartition(), HiveLockMode.EXCLUSIVE);
         }
         // In case of dynamic queries, it is possible to have incomplete dummy partitions
         else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
-          lockObjects.addAll(getLockObjects(null, output.getPartition(), HiveLockMode.SHARED));
+          lockObj = getLockObjects(null, output.getPartition(), HiveLockMode.SHARED);
+        }
+
+        if(lockObj != null) {
+          lockObjects.addAll(lockObj);
+          ctx.getOutputLockObjects().put(output, lockObj);
         }
       }
 

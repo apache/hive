@@ -438,10 +438,12 @@ public class EmbeddedLockManager implements HiveLockManager {
       this.lockMode = lockMode;
     }
 
+    @Override
     public HiveLockObject getHiveLockObject() {
       return lockObj;
     }
 
+    @Override
     public HiveLockMode getHiveLockMode() {
       return lockMode;
     }
@@ -449,6 +451,17 @@ public class EmbeddedLockManager implements HiveLockManager {
     @Override
     public String toString() {
       return lockMode + "=" + lockObj.getDisplayName() + "(" + lockObj.getData() + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof SimpleHiveLock)) {
+        return false;
+      }
+
+      SimpleHiveLock simpleLock = (SimpleHiveLock) o;
+      return lockObj.equals(simpleLock.getHiveLockObject()) &&
+          lockMode == simpleLock.getHiveLockMode();
     }
   }
 }
