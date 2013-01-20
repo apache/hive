@@ -400,7 +400,7 @@ public final class PlanUtils {
       }
       unionTypes.add(TypeInfoFactory.getStructTypeInfo(names, types));
     }
-    if (cols.size() - length > 0) {
+    if (outputColumnNames.size() - length > 0) {
       schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(
           fieldPrefix + outputColumnNames.get(length),
           TypeInfoFactory.getUnionTypeInfo(unionTypes)));
@@ -547,9 +547,12 @@ public final class PlanUtils {
     ArrayList<String> outputKeyCols = new ArrayList<String>();
     ArrayList<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
-      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnListWithLength(
-          keyCols, distinctColIndices, outputKeyColumnNames, numKeys, ""),
-          order);
+      List<FieldSchema> keySchema = getFieldSchemasFromColumnListWithLength(
+          keyCols, distinctColIndices, outputKeyColumnNames, numKeys, "");
+      if (order.length() < outputKeyColumnNames.size()) {
+        order = order + "+";
+      }
+      keyTable = getReduceKeyTableDesc(keySchema, order);
       outputKeyCols.addAll(outputKeyColumnNames);
     } else {
       keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(
