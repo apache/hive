@@ -862,7 +862,7 @@ public class GenMRFileSink1 implements NodeProcessor {
           if (currUnionOp != null) {
             opTaskMap.put(null, currTask);
             ctx.setCurrTopOp(null);
-            GenMapRedUtils.initUnionPlan(ctx, currTask, false);
+            GenMapRedUtils.initUnionPlan(ctx, currUnionOp, currTask, false);
             return dest;
           }
         }
@@ -880,7 +880,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     if (currUnionOp != null) {
       opTaskMap.put(null, currTask);
-      GenMapRedUtils.initUnionPlan(ctx, currTask, false);
+      GenMapRedUtils.initUnionPlan(ctx, currUnionOp, currTask, false);
       return dest;
     }
 

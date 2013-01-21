@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
@@ -100,12 +101,12 @@ public final class MapJoinFactory {
       // If the plan for this reducer does not exist, initialize the plan
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, false, false, false, pos);
+        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, false, null, false, pos);
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
         GenMapRedUtils.joinPlan(mapJoin, null, opMapTask, ctx, pos, false,
-            false, false);
+            false, null);
         currTask = opMapTask;
         ctx.setCurrTask(currTask);
       }
@@ -155,7 +156,7 @@ public final class MapJoinFactory {
         // The current plan can be thrown away after being merged with the
         // original plan
         GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, opProcCtx, pos,
-            false, false, false);
+            false, false, null);
         currTask = opMapTask;
         opProcCtx.setCurrTask(currTask);
       }
@@ -302,12 +303,12 @@ public final class MapJoinFactory {
       // If the plan for this reducer does not exist, initialize the plan
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, false, false, pos);
+        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, null, false, pos);
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
         GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, ctx, pos, false,
-            true, false);
+            true, null);
         currTask = opMapTask;
         ctx.setCurrTask(currTask);
       }
@@ -336,7 +337,7 @@ public final class MapJoinFactory {
             .process(nd, stack, procCtx, nodeOutputs);
       }
 
-      UnionOperator currUnion = ctx.getCurrUnionOp();
+      UnionOperator currUnion = Utils.findNode(stack, UnionOperator.class);
       assert currUnion != null;
       ctx.getUnionTask(currUnion);
       AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
@@ -356,8 +357,7 @@ public final class MapJoinFactory {
       Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
       // union result cannot be a map table
-      boolean local = (pos == (mapJoin.getConf()).getPosBigTable()) ? false
-          : true;
+      boolean local = (pos != mapJoin.getConf().getPosBigTable());
       if (local) {
         throw new SemanticException(ErrorMsg.INVALID_MAPJOIN_TABLE.getMsg());
       }
@@ -366,19 +366,18 @@ public final class MapJoinFactory {
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
         ctx.setCurrMapJoinOp(mapJoin);
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, true, false, pos);
+        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, currUnion, false, pos);
         ctx.setCurrUnionOp(null);
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
-        Task<? extends Serializable> uTask = ctx.getUnionTask(
-            ctx.getCurrUnionOp()).getUTask();
+        Task<? extends Serializable> uTask = ctx.getUnionTask(currUnion).getUTask();
         if (uTask.getId().equals(opMapTask.getId())) {
           GenMapRedUtils.joinPlan(mapJoin, null, opMapTask, ctx, pos, false,
-              false, true);
+              false, currUnion);
         } else {
           GenMapRedUtils.joinPlan(mapJoin, uTask, opMapTask, ctx, pos, false,
-              false, true);
+              false, currUnion);
         }
         currTask = opMapTask;
         ctx.setCurrTask(currTask);

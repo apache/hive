@@ -139,9 +139,9 @@ public final class GenMapRedUtils {
 
   public static void initMapJoinPlan(
     Operator<? extends OperatorDesc> op, GenMRProcContext ctx,
-    boolean readInputMapJoin, boolean readInputUnion, boolean setReducer, int pos)
+    boolean readInputMapJoin, UnionOperator currUnionOp, boolean setReducer, int pos)
     throws SemanticException {
-    initMapJoinPlan(op, ctx, readInputMapJoin, readInputUnion, setReducer, pos, false);
+    initMapJoinPlan(op, ctx, readInputMapJoin, currUnionOp, setReducer, pos, false);
   }
 
   /**
@@ -156,7 +156,7 @@ public final class GenMapRedUtils {
    */
   public static void initMapJoinPlan(Operator<? extends OperatorDesc> op,
       GenMRProcContext opProcCtx, boolean readInputMapJoin,
-      boolean readInputUnion, boolean setReducer, int pos, boolean createLocalPlan)
+      UnionOperator currUnionOp, boolean setReducer, int pos, boolean createLocalPlan)
       throws SemanticException {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx =
       opProcCtx.getMapCurrCtx();
@@ -191,7 +191,7 @@ public final class GenMapRedUtils {
         opTaskMap.put(op, currTask);
       }
 
-      if (!readInputUnion) {
+      if (currUnionOp == null) {
         GenMRMapJoinCtx mjCtx = opProcCtx.getMapJoinCtx(currMapJoinOp);
         String taskTmpDir;
         TableDesc tt_desc;
@@ -212,7 +212,7 @@ public final class GenMapRedUtils {
         setTaskPlan(taskTmpDir, taskTmpDir, rootOp, plan, local, tt_desc);
         setupBucketMapJoinInfo(plan, currMapJoinOp, createLocalPlan);
       } else {
-        initUnionPlan(opProcCtx, currTask, false);
+        initUnionPlan(opProcCtx, currUnionOp, currTask, false);
       }
 
       opProcCtx.setCurrMapJoinOp(null);
@@ -305,7 +305,7 @@ public final class GenMapRedUtils {
    * @param opProcCtx
    *          processing context
    */
-  public static void initUnionPlan(ReduceSinkOperator op,
+  public static void initUnionPlan(ReduceSinkOperator op, UnionOperator currUnionOp,
       GenMRProcContext opProcCtx,
       Task<? extends Serializable> unionTask) throws SemanticException {
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
@@ -324,7 +324,7 @@ public final class GenMapRedUtils {
       plan.setNeedsTagging(true);
     }
 
-    initUnionPlan(opProcCtx, unionTask, false);
+    initUnionPlan(opProcCtx, currUnionOp, unionTask, false);
   }
 
   private static void setUnionPlan(GenMRProcContext opProcCtx,
@@ -373,11 +373,10 @@ public final class GenMapRedUtils {
    * It is a idempotent function to add various intermediate files as the source
    * for the union. The plan has already been created.
    */
-  public static void initUnionPlan(GenMRProcContext opProcCtx,
+  public static void initUnionPlan(GenMRProcContext opProcCtx, UnionOperator currUnionOp,
       Task<? extends Serializable> currTask, boolean local)
       throws SemanticException {
     MapredWork plan = (MapredWork) currTask.getWork();
-    UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
     // In case of lateral views followed by a join, the same tree
     // can be traversed more than one
     if (currUnionOp != null) {
@@ -391,11 +390,11 @@ public final class GenMapRedUtils {
    * join current union task to old task
    */
   public static void joinUnionPlan(GenMRProcContext opProcCtx,
+      UnionOperator currUnionOp,
       Task<? extends Serializable> currentUnionTask,
       Task<? extends Serializable> existingTask, boolean local)
       throws SemanticException {
     MapredWork plan = (MapredWork) existingTask.getWork();
-    UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
     assert currUnionOp != null;
     GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
     assert uCtx != null;
@@ -437,8 +436,8 @@ public final class GenMapRedUtils {
   public static void joinPlan(Operator<? extends OperatorDesc> op,
       Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
       GenMRProcContext opProcCtx, int pos, boolean split,
-      boolean readMapJoinData, boolean readUnionData) throws SemanticException {
-    joinPlan(op, oldTask, task, opProcCtx, pos, split, readMapJoinData, readUnionData, false);
+      boolean readMapJoinData, UnionOperator currUnionOp) throws SemanticException {
+    joinPlan(op, oldTask, task, opProcCtx, pos, split, readMapJoinData, currUnionOp, false);
   }
 
   /**
@@ -458,7 +457,7 @@ public final class GenMapRedUtils {
   public static void joinPlan(Operator<? extends OperatorDesc> op,
       Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
       GenMRProcContext opProcCtx, int pos, boolean split,
-      boolean readMapJoinData, boolean readUnionData, boolean createLocalWork)
+      boolean readMapJoinData, UnionOperator currUnionOp, boolean createLocalWork)
       throws SemanticException {
     Task<? extends Serializable> currTask = task;
     MapredWork plan = (MapredWork) currTask.getWork();
@@ -502,8 +501,8 @@ public final class GenMapRedUtils {
       opProcCtx.setCurrTopOp(currTopOp);
     } else if (opProcCtx.getCurrMapJoinOp() != null) {
       AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = opProcCtx.getCurrMapJoinOp();
-      if (readUnionData) {
-        initUnionPlan(opProcCtx, currTask, false);
+      if (currUnionOp != null) {
+        initUnionPlan(opProcCtx, currUnionOp, currTask, false);
       } else {
         GenMRMapJoinCtx mjCtx = opProcCtx.getMapJoinCtx(mjOp);
 

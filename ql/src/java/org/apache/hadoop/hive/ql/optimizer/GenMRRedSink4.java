@@ -75,7 +75,7 @@ public class GenMRRedSink4 implements NodeProcessor {
     if (opMapTask == null) {
       // When the reducer is encountered for the first time
       if (plan.getReducer() == null) {
-        GenMapRedUtils.initMapJoinPlan(op, ctx, true, false, true, -1);
+        GenMapRedUtils.initMapJoinPlan(op, ctx, true, null, true, -1);
         // When mapjoin is followed by a multi-table insert
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
@@ -85,8 +85,7 @@ public class GenMRRedSink4 implements NodeProcessor {
       // been initialized.
       // Initialize the current branch, and join with the original plan.
       assert plan.getReducer() != reducer;
-      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, false, true,
-          false);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, false, true, null);
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
