@@ -1,12 +1,32 @@
-PREHOOK: query: create table t1 (int1 int, int2 int, str1 string, str2 string)
+PREHOOK: query: -- This test covers HIVE-2322
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table t1 (int1 int, int2 int, str1 string, str2 string)
+POSTHOOK: query: -- This test covers HIVE-2322
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
+PREHOOK: query: insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL int1))))) Q1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL Q1) int1)) (TOK_SELEXPR (TOK_FUNCTIONDI sum (. (TOK_TABLE_OR_COL Q1) int1)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL Q1) int1))))
 
@@ -120,6 +140,10 @@ PREHOOK: query: explain select int1, sum(distinct int1) from t1 group by int1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select int1, sum(distinct int1) from t1 group by int1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL int1)) (TOK_SELEXPR (TOK_FUNCTIONDI sum (TOK_TABLE_OR_COL int1)))) (TOK_GROUPBY (TOK_TABLE_OR_COL int1))))
 
@@ -197,6 +221,14 @@ POSTHOOK: query: select Q1.int1, sum(distinct Q1.int1) from (select * from t1 or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+2	2
+4	4
+5	5
 PREHOOK: query: select int1, sum(distinct int1) from t1 group by int1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -205,6 +237,14 @@ POSTHOOK: query: select int1, sum(distinct int1) from t1 group by int1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+2	2
+4	4
+5	5
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
@@ -213,3 +253,7 @@ POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
