@@ -121,17 +121,17 @@ public class RCFileCat implements Tool{
 
     if (columnSizes) {
       // Print out the un/compressed sizes of each column
-      int[] compressedColumnSizes = null;
-      int[] uncompressedColumnSizes = null;
+      long[] compressedColumnSizes = null;
+      long[] uncompressedColumnSizes = null;
       // Skip from block to block since we only need the header
       while (recordReader.nextBlock()) {
         // Get the sizes from the key buffer and aggregate
         KeyBuffer keyBuffer = recordReader.getKeyBuffer();
         if (uncompressedColumnSizes == null) {
-          uncompressedColumnSizes = new int[keyBuffer.getColumnNumber()];
+          uncompressedColumnSizes = new long[keyBuffer.getColumnNumber()];
         }
         if (compressedColumnSizes == null) {
-          compressedColumnSizes = new int[keyBuffer.getColumnNumber()];
+          compressedColumnSizes = new long[keyBuffer.getColumnNumber()];
         }
         for (int i = 0; i < keyBuffer.getColumnNumber(); i++) {
           uncompressedColumnSizes[i] += keyBuffer.getEachColumnUncompressedValueLen()[i];
