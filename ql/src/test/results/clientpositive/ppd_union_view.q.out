@@ -260,7 +260,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.t1_mapping
               numFiles 1
-              numPartitions 2
               numRows 1
               partition_columns ds
               rawDataSize 12
@@ -306,7 +305,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.t1_old
               numFiles 1
-              numPartitions 2
               numRows 1
               partition_columns ds
               rawDataSize 14
@@ -803,7 +801,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.t1_new
               numFiles 1
-              numPartitions 2
               numRows 1
               partition_columns ds
               rawDataSize 11

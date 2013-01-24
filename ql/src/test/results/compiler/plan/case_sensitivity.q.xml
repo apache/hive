@@ -554,10 +554,6 @@
           <string>default.src_thrift</string> 
          </void> 
          <void method="put"> 
-          <string>numFiles</string> 
-          <string>1</string> 
-         </void> 
-         <void method="put"> 
           <string>columns.types</string> 
           <string></string> 
          </void> 
@@ -572,18 +568,6 @@
          <void method="put"> 
           <string>serialization.format</string> 
           <string>org.apache.thrift.protocol.TBinaryProtocol</string> 
-         </void> 
-         <void method="put"> 
-          <string>rawDataSize</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numRows</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numPartitions</string> 
-          <string>0</string> 
          </void> 
          <void method="put"> 
           <string>serialization.class</string> 
@@ -602,19 +586,11 @@
           <string>org.apache.hadoop.mapred.SequenceFileInputFormat</string> 
          </void> 
          <void method="put"> 
-          <string>totalSize</string> 
-          <string>1606</string> 
-         </void> 
-         <void method="put"> 
           <string>file.outputformat</string> 
           <string>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</string> 
          </void> 
          <void method="put"> 
           <string>location</string> 
-          #### A masked pattern was here #### 
-         </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
           #### A masked pattern was here #### 
          </void> 
         </object> 

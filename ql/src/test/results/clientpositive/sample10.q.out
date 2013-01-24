@@ -115,7 +115,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
-              numPartitions 4
               numRows 10
               partition_columns ds/hr
               rawDataSize 60
@@ -164,7 +163,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
-              numPartitions 4
               numRows 10
               partition_columns ds/hr
               rawDataSize 60
@@ -213,7 +211,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
-              numPartitions 4
               numRows 10
               partition_columns ds/hr
               rawDataSize 60
@@ -262,7 +259,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
-              numPartitions 4
               numRows 10
               partition_columns ds/hr
               rawDataSize 60

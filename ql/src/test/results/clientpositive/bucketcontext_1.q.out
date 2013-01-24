@@ -162,7 +162,6 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -170,7 +169,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 4
-              numPartitions 2
               numRows 0
               partition_columns ds
               rawDataSize 0
@@ -212,7 +210,6 @@ STAGE PLANS:
             partition values:
               ds 2008-04-09
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -220,7 +217,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 4
-              numPartitions 2
               numRows 0
               partition_columns ds
               rawDataSize 0
@@ -408,7 +404,6 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -416,7 +411,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 4
-              numPartitions 2
               numRows 0
               partition_columns ds
               rawDataSize 0
@@ -458,7 +452,6 @@ STAGE PLANS:
             partition values:
               ds 2008-04-09
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -466,7 +459,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 4
-              numPartitions 2
               numRows 0
               partition_columns ds
               rawDataSize 0

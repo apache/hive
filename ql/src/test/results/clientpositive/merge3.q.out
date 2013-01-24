@@ -2441,7 +2441,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
-              numPartitions 2
               numRows 1000
               partition_columns ds
               rawDataSize 10624
@@ -2487,7 +2486,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
-              numPartitions 2
               numRows 1000
               partition_columns ds
               rawDataSize 10624
@@ -4873,7 +4871,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
-              numPartitions 2
               numRows 1000
               partition_columns ds
               rawDataSize 10624
@@ -4919,7 +4916,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
-              numPartitions 2
               numRows 1000
               partition_columns ds
               rawDataSize 10624

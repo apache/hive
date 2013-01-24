@@ -101,7 +101,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
-              numPartitions 1
               numRows 25
               partition_columns ds
               rawDataSize 211
@@ -231,7 +230,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
-              numPartitions 1
               numRows 25
               partition_columns ds
               rawDataSize 211

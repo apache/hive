@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.util;
+package org.apache.hadoop.hive.common;
 
 public class ObjectPair<F, S> {
   private F first;

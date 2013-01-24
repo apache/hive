@@ -157,7 +157,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 16
               bucket_field_name key
               columns key,value
@@ -165,7 +164,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_table1
               numFiles 16
-              numPartitions 1
               numRows 500
               partition_columns ds
               rawDataSize 5312
@@ -398,7 +396,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 16
               bucket_field_name key
               columns key,value
@@ -406,7 +403,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_table3
               numFiles 16
-              numPartitions 1
               numRows 3084
               partition_columns ds
               rawDataSize 32904

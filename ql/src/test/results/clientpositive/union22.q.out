@@ -194,7 +194,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dst_union22
               numFiles 1
-              numPartitions 1
               numRows 500
               partition_columns ds
               rawDataSize 11124
@@ -439,7 +438,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dst_union22_delta
               numFiles 1
-              numPartitions 1
               numRows 500
               partition_columns ds
               rawDataSize 16936

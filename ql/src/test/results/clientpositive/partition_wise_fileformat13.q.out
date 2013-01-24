@@ -1,0 +1,128 @@
+PREHOOK: query: -- This tests that the schema can be changed for partitioned tables for binary serde data for joins
+create table T1(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This tests that the schema can be changed for partitioned tables for binary serde data for joins
+create table T1(key string, value string) partitioned by (dt string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: alter table T1 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table T1 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert overwrite table T1 partition (dt='1') select * from src where key = 238 or key = 97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@dt=1
+POSTHOOK: query: insert overwrite table T1 partition (dt='1') select * from src where key = 238 or key = 97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@dt=1
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table T1 change key key int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table T1 change key key int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table T1 partition (dt='2') select * from src where key = 238 or key = 97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@dt=2
+POSTHOOK: query: insert overwrite table T1 partition (dt='2') select * from src where key = 238 or key = 97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@dt=2
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table T1 change key key string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table T1 change key key string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table T2(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table T2(key string, value string) partitioned by (dt string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T2
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table T2 partition (dt='1') select * from src where key = 238 or key = 97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t2@dt=1
+POSTHOOK: query: insert overwrite table T2 partition (dt='1') select * from src where key = 238 or key = 97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t2@dt=1
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=1
+PREHOOK: Input: default@t1@dt=2
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select /* + MAPJOIN(a) */ count(*) FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=1
+POSTHOOK: Input: default@t1@dt=2
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+16
+PREHOOK: query: select count(*) FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=1
+PREHOOK: Input: default@t1@dt=2
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=1
+POSTHOOK: Input: default@t1@dt=2
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1 PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+16

@@ -24,9 +24,9 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObject
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 
 /**
  * ObjectInspectorConverters.
@@ -60,6 +60,64 @@ public final class ObjectInspectorConverters {
     }
   }
 
+  private static Converter getConverter(PrimitiveObjectInspector inputOI,
+      PrimitiveObjectInspector outputOI) {
+    switch (outputOI.getPrimitiveCategory()) {
+    case BOOLEAN:
+      return new PrimitiveObjectInspectorConverter.BooleanConverter(
+          inputOI,
+          (SettableBooleanObjectInspector) outputOI);
+    case BYTE:
+      return new PrimitiveObjectInspectorConverter.ByteConverter(
+          inputOI,
+          (SettableByteObjectInspector) outputOI);
+    case SHORT:
+      return new PrimitiveObjectInspectorConverter.ShortConverter(
+          inputOI,
+          (SettableShortObjectInspector) outputOI);
+    case INT:
+      return new PrimitiveObjectInspectorConverter.IntConverter(
+          inputOI,
+          (SettableIntObjectInspector) outputOI);
+    case LONG:
+      return new PrimitiveObjectInspectorConverter.LongConverter(
+          inputOI,
+          (SettableLongObjectInspector) outputOI);
+    case FLOAT:
+      return new PrimitiveObjectInspectorConverter.FloatConverter(
+          inputOI,
+          (SettableFloatObjectInspector) outputOI);
+    case DOUBLE:
+      return new PrimitiveObjectInspectorConverter.DoubleConverter(
+          inputOI,
+          (SettableDoubleObjectInspector) outputOI);
+    case STRING:
+      if (outputOI instanceof WritableStringObjectInspector) {
+        return new PrimitiveObjectInspectorConverter.TextConverter(
+            inputOI);
+      } else if (outputOI instanceof JavaStringObjectInspector) {
+        return new PrimitiveObjectInspectorConverter.StringConverter(
+            inputOI);
+      }
+    case TIMESTAMP:
+      return new PrimitiveObjectInspectorConverter.TimestampConverter(
+          inputOI,
+          (SettableTimestampObjectInspector) outputOI);
+    case BINARY:
+      return new PrimitiveObjectInspectorConverter.BinaryConverter(
+          inputOI,
+          (SettableBinaryObjectInspector)outputOI);
+    case DECIMAL:
+      return new PrimitiveObjectInspectorConverter.BigDecimalConverter(
+          (PrimitiveObjectInspector) inputOI,
+          (SettableBigDecimalObjectInspector) outputOI);
+    default:
+      throw new RuntimeException("Hive internal error: conversion of "
+          + inputOI.getTypeName() + " to " + outputOI.getTypeName()
+          + " not supported yet.");
+    }
+  }
+
   /**
    * Returns a converter that converts objects from one OI to another OI. The
    * returned (converted) object belongs to this converter, so that it can be
@@ -69,66 +127,12 @@ public final class ObjectInspectorConverters {
       ObjectInspector outputOI) {
     // If the inputOI is the same as the outputOI, just return an
     // IdentityConverter.
-    if (inputOI == outputOI) {
+    if (inputOI.equals(outputOI)) {
       return new IdentityConverter();
     }
     switch (outputOI.getCategory()) {
     case PRIMITIVE:
-      switch (((PrimitiveObjectInspector) outputOI).getPrimitiveCategory()) {
-      case BOOLEAN:
-        return new PrimitiveObjectInspectorConverter.BooleanConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableBooleanObjectInspector) outputOI);
-      case BYTE:
-        return new PrimitiveObjectInspectorConverter.ByteConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableByteObjectInspector) outputOI);
-      case SHORT:
-        return new PrimitiveObjectInspectorConverter.ShortConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableShortObjectInspector) outputOI);
-      case INT:
-        return new PrimitiveObjectInspectorConverter.IntConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableIntObjectInspector) outputOI);
-      case LONG:
-        return new PrimitiveObjectInspectorConverter.LongConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableLongObjectInspector) outputOI);
-      case FLOAT:
-        return new PrimitiveObjectInspectorConverter.FloatConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableFloatObjectInspector) outputOI);
-      case DOUBLE:
-        return new PrimitiveObjectInspectorConverter.DoubleConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableDoubleObjectInspector) outputOI);
-      case STRING:
-        if (outputOI instanceof WritableStringObjectInspector) {
-          return new PrimitiveObjectInspectorConverter.TextConverter(
-              (PrimitiveObjectInspector) inputOI);
-        } else if (outputOI instanceof JavaStringObjectInspector) {
-          return new PrimitiveObjectInspectorConverter.StringConverter(
-              (PrimitiveObjectInspector) inputOI);
-        }
-      case TIMESTAMP:
-        return new PrimitiveObjectInspectorConverter.TimestampConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableTimestampObjectInspector) outputOI);
-      case BINARY:
-        return new PrimitiveObjectInspectorConverter.BinaryConverter(
-            (PrimitiveObjectInspector)inputOI,
-            (SettableBinaryObjectInspector)outputOI);
-      case DECIMAL:
-        return new PrimitiveObjectInspectorConverter.BigDecimalConverter(
-            (PrimitiveObjectInspector) inputOI,
-            (SettableBigDecimalObjectInspector) outputOI);
-
-      default:
-        throw new RuntimeException("Hive internal error: conversion of "
-            + inputOI.getTypeName() + " to " + outputOI.getTypeName()
-            + " not supported yet.");
-      }
+      return getConverter((PrimitiveObjectInspector) inputOI, (PrimitiveObjectInspector) outputOI);
     case STRUCT:
       return new StructConverter(inputOI,
           (SettableStructObjectInspector) outputOI);
@@ -138,6 +142,50 @@ public final class ObjectInspectorConverters {
     case MAP:
       return new MapConverter(inputOI,
           (SettableMapObjectInspector) outputOI);
+    default:
+      throw new RuntimeException("Hive internal error: conversion of "
+          + inputOI.getTypeName() + " to " + outputOI.getTypeName()
+          + " not supported yet.");
+    }
+  }
+
+  public static ObjectInspector getConvertedOI(
+      ObjectInspector inputOI,
+      ObjectInspector outputOI) {
+    // If the inputOI is the same as the outputOI, just return it
+    if (inputOI.equals(outputOI)) {
+      return outputOI;
+    }
+    switch (outputOI.getCategory()) {
+    case PRIMITIVE:
+      return outputOI;
+    case STRUCT:
+      StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
+      if (structOutputOI.isSettable()) {
+        return outputOI;
+      }
+      else {
+        // create a standard settable struct object inspector
+        List<? extends StructField> listFields = structOutputOI.getAllStructFieldRefs();
+        List<String> structFieldNames = new ArrayList<String>(listFields.size());
+        List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
+            listFields.size());
+
+        for (StructField listField : listFields) {
+          structFieldNames.add(listField.getFieldName());
+          structFieldObjectInspectors.add(listField.getFieldObjectInspector());
+        }
+
+        StandardStructObjectInspector structStandardOutputOI = ObjectInspectorFactory
+            .getStandardStructObjectInspector(
+                structFieldNames,
+                structFieldObjectInspectors);
+        return structStandardOutputOI;
+      }
+    case LIST:
+      return outputOI;
+    case MAP:
+      return outputOI;
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -226,10 +274,11 @@ public final class ObjectInspectorConverters {
         this.outputOI = outputOI;
         inputFields = this.inputOI.getAllStructFieldRefs();
         outputFields = outputOI.getAllStructFieldRefs();
-        assert (inputFields.size() == outputFields.size());
 
-        fieldConverters = new ArrayList<Converter>(inputFields.size());
-        for (int f = 0; f < inputFields.size(); f++) {
+        // If the output has some extra fields, set them to NULL.
+        int minFields = Math.min(inputFields.size(), outputFields.size());
+        fieldConverters = new ArrayList<Converter>(minFields);
+        for (int f = 0; f < minFields; f++) {
           fieldConverters.add(getConverter(inputFields.get(f)
               .getFieldObjectInspector(), outputFields.get(f)
               .getFieldObjectInspector()));
@@ -248,15 +297,19 @@ public final class ObjectInspectorConverters {
         return null;
       }
 
+      int minFields = Math.min(inputFields.size(), outputFields.size());
       // Convert the fields
-      for (int f = 0; f < inputFields.size(); f++) {
-        Object inputFieldValue = inputOI.getStructFieldData(input, inputFields
-            .get(f));
-        Object outputFieldValue = fieldConverters.get(f).convert(
-            inputFieldValue);
-        outputOI.setStructFieldData(output, outputFields.get(f),
-            outputFieldValue);
+      for (int f = 0; f < minFields; f++) {
+        Object inputFieldValue = inputOI.getStructFieldData(input, inputFields.get(f));
+        Object outputFieldValue = fieldConverters.get(f).convert(inputFieldValue);
+        outputOI.setStructFieldData(output, outputFields.get(f), outputFieldValue);
       }
+
+      // set the extra fields to null
+      for (int f = minFields; f < outputFields.size(); f++) {
+        outputOI.setStructFieldData(output, outputFields.get(f), null);
+      }
+
       return output;
     }
   }
