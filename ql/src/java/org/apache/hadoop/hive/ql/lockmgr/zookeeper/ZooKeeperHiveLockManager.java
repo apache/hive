@@ -119,6 +119,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper.create("/" +  parent, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       } catch (KeeperException e) {
         // ignore if the parent already exists
+        if (e.code() != KeeperException.Code.NODEEXISTS) {
+          LOG.warn("Unexpected ZK exception when creating parent node /" + parent, e);
+        }
       }
 
     } catch (Exception e) {
@@ -254,6 +257,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
           unlock(hiveLock);
         } catch (LockException e) {
           // The lock may have been released. Ignore and continue
+          LOG.warn("Error when releasing lock", e);
         }
       }
     }
@@ -301,6 +305,10 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       try {
         if (tryNum > 1) {
           Thread.sleep(sleepTime);
+          if (zooKeeper.getState() == ZooKeeper.States.CLOSED) {
+            // Reconnect if the connection is closed.
+            zooKeeper = null;
+          }
           prepareRetry();
         }
         ret = lockPrimitive(key, mode, keepAlive, parentCreated);
@@ -572,7 +580,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
             data = new HiveLockObjectData(new String(zkpClient.getData(curChild, new DummyWatcher(), null)));
             data.setClientIp(clientIp);
           } catch (Exception e) {
-            LOG.error("Error in getting data for " + curChild + " " + e);
+            LOG.error("Error in getting data for " + curChild, e);
             // ignore error
           }
         }
@@ -593,7 +601,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper = null;
       }
     } catch (Exception e) {
-      // ignore all errors
+      LOG.warn("Exception while removing all redundant nodes", e);
     }
   }
 
@@ -615,7 +623,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper.delete(node, -1);
       }
     } catch (Exception e) {
-      // ignore all errors
+      LOG.warn("Error in checkRedundantNode for node " + node, e);
     }
   }
 
