@@ -109,8 +109,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         dummyOp.setExecContext(execContext);
         dummyOp.initialize(jc,null);
       }
-
-
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {

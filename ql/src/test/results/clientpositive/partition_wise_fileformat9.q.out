@@ -75,3 +75,39 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src
 104	val_104	1
 104	val_104	2
 104	val_104	2
+PREHOOK: query: select key+key as key, value, dt from partition_test_partitioned where dt is not null order by key, value, dt limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key as key, value, dt from partition_test_partitioned where dt is not null order by key, value, dt limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0.0	val_0	1
+0.0	val_0	1
+0.0	val_0	1
+0.0	val_0	2
+0.0	val_0	2
+0.0	val_0	2
+4.0	val_2	1
+4.0	val_2	2
+8.0	val_4	1
+8.0	val_4	2
+10.0	val_5	1
+10.0	val_5	1
+10.0	val_5	1
+10.0	val_5	2
+10.0	val_5	2
+10.0	val_5	2
+16.0	val_8	1
+16.0	val_8	2
+18.0	val_9	1
+18.0	val_9	2

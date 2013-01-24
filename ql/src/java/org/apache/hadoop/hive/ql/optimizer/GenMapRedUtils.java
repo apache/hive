@@ -825,7 +825,12 @@ public final class GenMapRedUtils {
 
         partDir.add(p);
         try {
-          partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part));
+          if (part.getTable().isPartitioned()) {
+            partDesc.add(Utilities.getPartitionDesc(part));
+          }
+          else {
+            partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part));
+          }
         } catch (HiveException e) {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);

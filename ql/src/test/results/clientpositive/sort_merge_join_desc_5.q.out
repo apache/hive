@@ -120,7 +120,6 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
-              SORTBUCKETCOLSPREFIX TRUE
               bucket_count 1
               bucket_field_name key
               columns key,value
@@ -128,7 +127,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
               numFiles 1
-              numPartitions 1
               numRows 500
               partition_columns part
               rawDataSize 5312

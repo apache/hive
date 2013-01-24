@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -45,6 +46,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -78,7 +81,9 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
   private transient Writable[] vcValues;
   private transient List<VirtualColumn> vcs;
   private transient Object[] rowWithPartAndVC;
-  private transient StructObjectInspector rowObjectInspector;
+  private transient StructObjectInspector tblRowObjectInspector;
+  // convert from partition to table schema
+  private transient Converter partTblObjectInspectorConverter;
   private transient boolean isPartitioned;
   private transient boolean hasVC;
   private Map<MapInputPath, MapOpCtx> opCtxMap;
@@ -112,9 +117,6 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     public boolean equals(Object o) {
       if (o instanceof MapInputPath) {
         MapInputPath mObj = (MapInputPath) o;
-        if (mObj == null) {
-          return false;
-        }
         return path.equals(mObj.path) && alias.equals(mObj.alias)
             && op.equals(mObj.op);
       }
@@ -141,15 +143,16 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
   }
 
   private static class MapOpCtx {
-    boolean isPartitioned;
-    StructObjectInspector rawRowObjectInspector; // without partition
-    StructObjectInspector partObjectInspector; // partition
-    StructObjectInspector rowObjectInspector;
-    Object[] rowWithPart;
-    Object[] rowWithPartAndVC;
-    Deserializer deserializer;
-    public String tableName;
-    public String partName;
+    private final boolean isPartitioned;
+    private final StructObjectInspector tblRawRowObjectInspector; // without partition
+    private final StructObjectInspector partObjectInspector; // partition
+    private StructObjectInspector rowObjectInspector;
+    private final Converter partTblObjectInspectorConverter;
+    private final Object[] rowWithPart;
+    private Object[] rowWithPartAndVC;
+    private final Deserializer deserializer;
+    private String tableName;
+    private String partName;
 
     /**
      * @param isPartitioned
@@ -158,18 +161,20 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
      */
     public MapOpCtx(boolean isPartitioned,
         StructObjectInspector rowObjectInspector,
-        StructObjectInspector rawRowObjectInspector,
+        StructObjectInspector tblRawRowObjectInspector,
         StructObjectInspector partObjectInspector,
         Object[] rowWithPart,
         Object[] rowWithPartAndVC,
-        Deserializer deserializer) {
+        Deserializer deserializer,
+        Converter partTblObjectInspectorConverter) {
       this.isPartitioned = isPartitioned;
       this.rowObjectInspector = rowObjectInspector;
-      this.rawRowObjectInspector = rawRowObjectInspector;
+      this.tblRawRowObjectInspector = tblRawRowObjectInspector;
       this.partObjectInspector = partObjectInspector;
       this.rowWithPart = rowWithPart;
       this.rowWithPartAndVC = rowWithPartAndVC;
       this.deserializer = deserializer;
+      this.partTblObjectInspectorConverter = partTblObjectInspectorConverter;
     }
 
     /**
@@ -184,6 +189,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
      */
     public StructObjectInspector getRowObjectInspector() {
       return rowObjectInspector;
+    }
+
+    public StructObjectInspector getTblRawRowObjectInspector() {
+      return tblRawRowObjectInspector;
     }
 
     /**
@@ -206,6 +215,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     public Deserializer getDeserializer() {
       return deserializer;
     }
+
+    public Converter getPartTblObjectInspectorConverter() {
+      return partTblObjectInspectorConverter;
+    }
   }
 
   /**
@@ -225,38 +238,46 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
   }
 
   private MapOpCtx initObjectInspector(MapredWork conf,
-      Configuration hconf, String onefile) throws HiveException,
+      Configuration hconf, String onefile, Map<TableDesc, StructObjectInspector> convertedOI)
+          throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,
       SerDeException {
-    PartitionDesc td = conf.getPathToPartitionInfo().get(onefile);
-    LinkedHashMap<String, String> partSpec = td.getPartSpec();
-    Properties tblProps = td.getProperties();
+    PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
+    LinkedHashMap<String, String> partSpec = pd.getPartSpec();
+    // Use tblProps in case of unpartitioned tables
+    Properties partProps =
+        (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
+            pd.getTableDesc().getProperties() : pd.getProperties();
 
-    Class sdclass = td.getDeserializerClass();
-    if (sdclass == null) {
-      String className = td.getSerdeClassName();
-      if ((className == "") || (className == null)) {
+    Class serdeclass = pd.getDeserializerClass();
+    if (serdeclass == null) {
+      String className = pd.getSerdeClassName();
+      if ((className == null) || (className.isEmpty())) {
         throw new HiveException(
             "SerDe class or the SerDe class name is not set for table: "
-                + td.getProperties().getProperty("name"));
+                + pd.getProperties().getProperty("name"));
       }
-      sdclass = hconf.getClassByName(className);
+      serdeclass = hconf.getClassByName(className);
     }
 
-    String tableName = String.valueOf(tblProps.getProperty("name"));
+    String tableName = String.valueOf(partProps.getProperty("name"));
     String partName = String.valueOf(partSpec);
-    // HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, tableName);
-    // HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, partName);
-    Deserializer deserializer = (Deserializer) sdclass.newInstance();
-    deserializer.initialize(hconf, tblProps);
-    StructObjectInspector rawRowObjectInspector = (StructObjectInspector) deserializer
+    Deserializer partDeserializer = (Deserializer) serdeclass.newInstance();
+    partDeserializer.initialize(hconf, partProps);
+    StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
         .getObjectInspector();
+
+    StructObjectInspector tblRawRowObjectInspector = convertedOI.get(pd.getTableDesc());
+
+    partTblObjectInspectorConverter =
+    ObjectInspectorConverters.getConverter(partRawRowObjectInspector,
+        tblRawRowObjectInspector);
 
     MapOpCtx opCtx = null;
     // Next check if this table has partitions and if so
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
-    String pcols = tblProps
+    String pcols = partProps
         .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     // Log LOG = LogFactory.getLog(MapOperator.class.getName());
     if (pcols != null && pcols.length() > 0) {
@@ -285,16 +306,16 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
       rowWithPart[1] = partValues;
       StructObjectInspector rowObjectInspector = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-              .asList(new StructObjectInspector[] {rawRowObjectInspector, partObjectInspector}));
+              .asList(new StructObjectInspector[] {tblRawRowObjectInspector, partObjectInspector}));
       // LOG.info("dump " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
-      opCtx = new MapOpCtx(true, rowObjectInspector, rawRowObjectInspector, partObjectInspector,
-                           rowWithPart, null, deserializer);
+      opCtx = new MapOpCtx(true, rowObjectInspector, tblRawRowObjectInspector, partObjectInspector,
+                           rowWithPart, null, partDeserializer, partTblObjectInspectorConverter);
     } else {
       // LOG.info("dump2 " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
-      opCtx = new MapOpCtx(false, rawRowObjectInspector, rawRowObjectInspector, null, null,
-                           null, deserializer);
+      opCtx = new MapOpCtx(false, tblRawRowObjectInspector, tblRawRowObjectInspector, null, null,
+                           null, partDeserializer, partTblObjectInspectorConverter);
     }
     opCtx.tableName = tableName;
     opCtx.partName = partName;
@@ -312,15 +333,20 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     isPartitioned = opCtxMap.get(inp).isPartitioned();
     rowWithPart = opCtxMap.get(inp).getRowWithPart();
     rowWithPartAndVC = opCtxMap.get(inp).getRowWithPartAndVC();
-    rowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
+    tblRowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
+    partTblObjectInspectorConverter = opCtxMap.get(inp).getPartTblObjectInspectorConverter();
     if (listInputPaths.contains(inp)) {
       return;
     }
 
     listInputPaths.add(inp);
 
+    // The op may not be a TableScan for mapjoins
+    // Consider the query: select /*+MAPJOIN(a)*/ count(*) FROM T1 a JOIN T2 b ON a.key = b.key;
+    // In that case, it will be a Select, but the rowOI need not be ammended
     if (op instanceof TableScanOperator) {
-      StructObjectInspector rawRowObjectInspector = opCtxMap.get(inp).rawRowObjectInspector;
+      StructObjectInspector tblRawRowObjectInspector =
+          opCtxMap.get(inp).getTblRawRowObjectInspector();
       StructObjectInspector partObjectInspector = opCtxMap.get(inp).partObjectInspector;
       TableScanOperator tsOp = (TableScanOperator) op;
       TableScanDesc tsDesc = tsOp.getConf();
@@ -348,20 +374,98 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
             this.rowWithPartAndVC = new Object[2];
           }
           if (partObjectInspector == null) {
-            this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
+            this.tblRowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                                         .asList(new StructObjectInspector[] {
-                                            rowObjectInspector, vcStructObjectInspector}));
+                                            tblRowObjectInspector, vcStructObjectInspector}));
           } else {
-            this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
+            this.tblRowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                                         .asList(new StructObjectInspector[] {
-                                            rawRowObjectInspector, partObjectInspector,
+                                            tblRawRowObjectInspector, partObjectInspector,
                                             vcStructObjectInspector}));
           }
-          opCtxMap.get(inp).rowObjectInspector = this.rowObjectInspector;
+          opCtxMap.get(inp).rowObjectInspector = this.tblRowObjectInspector;
           opCtxMap.get(inp).rowWithPartAndVC = this.rowWithPartAndVC;
         }
       }
     }
+  }
+
+  // Return the mapping for table descriptor to the expected table OI
+  /**
+   * Traverse all the partitions for a table, and get the OI for the table.
+   * Note that a conversion is required if any of the partition OI is different
+   * from the table OI. For eg. if the query references table T (partitions P1, P2),
+   * and P1's schema is same as T, whereas P2's scheme is different from T, conversion
+   * might be needed for both P1 and P2, since SettableOI might be needed for T
+   */
+  private Map<TableDesc, StructObjectInspector> getConvertedOI(Configuration hconf)
+      throws HiveException {
+    Map<TableDesc, StructObjectInspector> tableDescOI =
+        new HashMap<TableDesc, StructObjectInspector>();
+    Set<TableDesc> identityConverterTableDesc = new HashSet<TableDesc>();
+    try
+    {
+      for (String onefile : conf.getPathToAliases().keySet()) {
+        PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
+        TableDesc tableDesc = pd.getTableDesc();
+        Properties tblProps = tableDesc.getProperties();
+        // If the partition does not exist, use table properties
+        Properties partProps =
+            (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
+                tblProps : pd.getProperties();
+
+        Class sdclass = pd.getDeserializerClass();
+        if (sdclass == null) {
+          String className = pd.getSerdeClassName();
+          if ((className == null) || (className.isEmpty())) {
+            throw new HiveException(
+                "SerDe class or the SerDe class name is not set for table: "
+                    + pd.getProperties().getProperty("name"));
+          }
+          sdclass = hconf.getClassByName(className);
+        }
+
+        Deserializer partDeserializer = (Deserializer) sdclass.newInstance();
+        partDeserializer.initialize(hconf, partProps);
+        StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
+            .getObjectInspector();
+
+        StructObjectInspector tblRawRowObjectInspector = tableDescOI.get(tableDesc);
+        if ((tblRawRowObjectInspector == null) ||
+            (identityConverterTableDesc.contains(tableDesc))) {
+          sdclass = tableDesc.getDeserializerClass();
+          if (sdclass == null) {
+            String className = tableDesc.getSerdeClassName();
+            if ((className == null) || (className.isEmpty())) {
+              throw new HiveException(
+                  "SerDe class or the SerDe class name is not set for table: "
+                      + tableDesc.getProperties().getProperty("name"));
+            }
+            sdclass = hconf.getClassByName(className);
+          }
+          Deserializer tblDeserializer = (Deserializer) sdclass.newInstance();
+          tblDeserializer.initialize(hconf, tblProps);
+          tblRawRowObjectInspector =
+              (StructObjectInspector) ObjectInspectorConverters.getConvertedOI(
+                  partRawRowObjectInspector,
+                  (StructObjectInspector) tblDeserializer.getObjectInspector());
+
+          if (identityConverterTableDesc.contains(tableDesc)) {
+            if (!partRawRowObjectInspector.equals(tblRawRowObjectInspector)) {
+              identityConverterTableDesc.remove(tableDesc);
+            }
+          }
+          else if (partRawRowObjectInspector.equals(tblRawRowObjectInspector)) {
+            identityConverterTableDesc.add(tableDesc);
+          }
+
+          tableDescOI.put(tableDesc, tblRawRowObjectInspector);
+        }
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return tableDescOI;
   }
 
   public void setChildren(Configuration hconf) throws HiveException {
@@ -375,10 +479,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     operatorToPaths = new HashMap<Operator<? extends OperatorDesc>, ArrayList<String>>();
 
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
-
+    Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(hconf);
     try {
       for (String onefile : conf.getPathToAliases().keySet()) {
-        MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile);
+        MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile, convertedOI);
         Path onepath = new Path(new Path(onefile).toUri().getPath());
         List<String> aliases = conf.getPathToAliases().get(onefile);
 
@@ -514,16 +618,18 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     Object row = null;
     try {
       if (this.hasVC) {
-        this.rowWithPartAndVC[0] = deserializer.deserialize(value);
+        this.rowWithPartAndVC[0] =
+            partTblObjectInspectorConverter.convert(deserializer.deserialize(value));
         int vcPos = isPartitioned ? 2 : 1;
         if (context != null) {
           populateVirtualColumnValues(context, vcs, vcValues, deserializer);
         }
         this.rowWithPartAndVC[vcPos] = this.vcValues;
       } else if (!isPartitioned) {
-        row = deserializer.deserialize((Writable) value);
+        row = partTblObjectInspectorConverter.convert(deserializer.deserialize((Writable) value));
       } else {
-        rowWithPart[0] = deserializer.deserialize((Writable) value);
+        rowWithPart[0] =
+            partTblObjectInspectorConverter.convert(deserializer.deserialize((Writable) value));
       }
     } catch (Exception e) {
       // Serialize the row and output.
@@ -540,24 +646,26 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
       throw new HiveException("Hive Runtime Error while processing writable " + rawRowString, e);
     }
 
+    // The row has been converted to comply with table schema, irrespective of partition schema.
+    // So, use tblOI (and not partOI) for forwarding
     try {
       if (this.hasVC) {
-        forward(this.rowWithPartAndVC, this.rowObjectInspector);
+        forward(this.rowWithPartAndVC, this.tblRowObjectInspector);
       } else if (!isPartitioned) {
-        forward(row, rowObjectInspector);
+        forward(row, tblRowObjectInspector);
       } else {
-        forward(rowWithPart, rowObjectInspector);
+        forward(rowWithPart, tblRowObjectInspector);
       }
     } catch (Exception e) {
       // Serialize the row and output the error message.
       String rowString;
       try {
         if (this.hasVC) {
-          rowString = SerDeUtils.getJSONString(rowWithPartAndVC, rowObjectInspector);
+          rowString = SerDeUtils.getJSONString(rowWithPartAndVC, tblRowObjectInspector);
         } else if (!isPartitioned) {
-          rowString = SerDeUtils.getJSONString(row, rowObjectInspector);
+          rowString = SerDeUtils.getJSONString(row, tblRowObjectInspector);
         } else {
-          rowString = SerDeUtils.getJSONString(rowWithPart, rowObjectInspector);
+          rowString = SerDeUtils.getJSONString(rowWithPart, tblRowObjectInspector);
         }
       } catch (Exception e2) {
         rowString = "[Error getting row data with exception " +

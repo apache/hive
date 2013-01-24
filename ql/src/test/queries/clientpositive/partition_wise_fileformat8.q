@@ -10,3 +10,4 @@ alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.
 insert overwrite table partition_test_partitioned partition(dt='3') select * from src;
 
 select * from partition_test_partitioned where dt is not null order by key, value, dt limit 20;
+select key+key as key, value, dt from partition_test_partitioned where dt is not null order by key, value, dt limit 20;

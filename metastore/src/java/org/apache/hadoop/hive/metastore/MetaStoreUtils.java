@@ -157,7 +157,9 @@ public class MetaStoreUtils {
    *          hadoop config
    * @param schema
    *          the properties to use to instantiate the deserializer
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in passed
+   *   in properties. Also, initializes the deserializer with schema stored in passed in properties.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -189,7 +191,10 @@ public class MetaStoreUtils {
    *          - hadoop config
    * @param table
    *          the table
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in
+   *   storage descriptor of passed in table. Also, initializes the deserializer with schema
+   *   of table.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -204,7 +209,7 @@ public class MetaStoreUtils {
     }
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
-      deserializer.initialize(conf, MetaStoreUtils.getSchema(table));
+      deserializer.initialize(conf, MetaStoreUtils.getTableMetadata(table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -226,7 +231,10 @@ public class MetaStoreUtils {
    * @param part
    *          the partition
    * @param table the table
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in
+   *   storage descriptor of passed in partition. Also, initializes the deserializer with
+   *   schema of partition.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -237,7 +245,7 @@ public class MetaStoreUtils {
     String lib = part.getSd().getSerdeInfo().getSerializationLib();
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
-      deserializer.initialize(conf, MetaStoreUtils.getSchema(part, table));
+      deserializer.initialize(conf, MetaStoreUtils.getPartitionMetadata(part, table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -493,10 +501,19 @@ public class MetaStoreUtils {
     return ddl.toString();
   }
 
-  public static Properties getSchema(
+  public static Properties getTableMetadata(
       org.apache.hadoop.hive.metastore.api.Table table) {
     return MetaStoreUtils.getSchema(table.getSd(), table.getSd(), table
         .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
+  }
+
+  public static Properties getPartitionMetadata(
+      org.apache.hadoop.hive.metastore.api.Partition partition,
+      org.apache.hadoop.hive.metastore.api.Table table) {
+    return MetaStoreUtils
+        .getSchema(partition.getSd(), partition.getSd(), partition
+            .getParameters(), table.getDbName(), table.getTableName(),
+            table.getPartitionKeys());
   }
 
   public static Properties getSchema(

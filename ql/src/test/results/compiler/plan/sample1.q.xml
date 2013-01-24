@@ -39,7 +39,7 @@
          </void> 
          <void method="put"> 
           <string>numFiles</string> 
-          <string>4</string> 
+          <string>1</string> 
          </void> 
          <void method="put"> 
           <string>columns.types</string> 
@@ -66,10 +66,6 @@
           <string>0</string> 
          </void> 
          <void method="put"> 
-          <string>numPartitions</string> 
-          <string>4</string> 
-         </void> 
-         <void method="put"> 
           <string>partition_columns</string> 
           <string>ds/hr</string> 
          </void> 
@@ -87,7 +83,7 @@
          </void> 
          <void method="put"> 
           <string>totalSize</string> 
-          <string>23248</string> 
+          <string>5812</string> 
          </void> 
          <void method="put"> 
           <string>file.outputformat</string> 
@@ -984,10 +980,6 @@
           <void method="put"> 
            <string>numRows</string> 
            <string>0</string> 
-          </void> 
-          <void method="put"> 
-           <string>numPartitions</string> 
-           <string>4</string> 
           </void> 
           <void method="put"> 
            <string>partition_columns</string> 

@@ -215,7 +215,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
               numFiles 2
-              numPartitions 2
               numRows 500
               partition_columns part
               rawDataSize 5312
@@ -263,7 +262,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
               numFiles 2
-              numPartitions 2
               numRows 500
               partition_columns part
               rawDataSize 5312

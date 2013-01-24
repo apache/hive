@@ -123,7 +123,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -169,7 +168,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -323,7 +321,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -369,7 +366,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -415,7 +411,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -613,7 +608,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -659,7 +653,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -821,7 +814,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -867,7 +859,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1031,7 +1022,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1077,7 +1067,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1123,7 +1112,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1298,7 +1286,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1344,7 +1331,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1390,7 +1376,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1569,7 +1554,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1615,7 +1599,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1756,7 +1739,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1802,7 +1784,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1983,7 +1964,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2029,7 +2009,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2075,7 +2054,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2290,7 +2268,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2336,7 +2313,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2495,7 +2471,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2773,7 +2748,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2819,7 +2793,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3112,7 +3085,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3158,7 +3130,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3204,7 +3175,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3250,7 +3220,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3454,7 +3423,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3500,7 +3468,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3546,7 +3513,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3822,7 +3788,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -4382,7 +4347,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -4938,7 +4902,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -5111,7 +5074,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -5158,7 +5120,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -5337,7 +5298,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -5384,7 +5344,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0

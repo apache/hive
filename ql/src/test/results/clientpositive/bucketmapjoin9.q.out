@@ -151,7 +151,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
               numFiles 2
-              numPartitions 1
               numRows 0
               partition_columns part
               rawDataSize 0
@@ -417,7 +416,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin_part_1
               numFiles 2
-              numPartitions 1
               numRows 0
               partition_columns part
               rawDataSize 0

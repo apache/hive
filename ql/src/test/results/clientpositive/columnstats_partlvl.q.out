@@ -145,7 +145,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.employee_part
               numFiles 1
-              numPartitions 2
               numRows 0
               partition_columns employeesalary
               rawDataSize 0
@@ -352,7 +351,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.employee_part
               numFiles 1
-              numPartitions 2
               numRows 0
               partition_columns employeesalary
               rawDataSize 0

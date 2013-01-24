@@ -421,7 +421,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.t1
               numFiles 1
-              numPartitions 1
               numRows 0
               partition_columns ds
               rawDataSize 0

@@ -29,10 +29,6 @@
           <string>default.src</string> 
          </void> 
          <void method="put"> 
-          <string>numFiles</string> 
-          <string>1</string> 
-         </void> 
-         <void method="put"> 
           <string>columns.types</string> 
           <string>string:string</string> 
          </void> 
@@ -49,18 +45,6 @@
           <string>key,value</string> 
          </void> 
          <void method="put"> 
-          <string>rawDataSize</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numRows</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numPartitions</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
           <string>bucket_count</string> 
           <string>-1</string> 
          </void> 
@@ -73,19 +57,11 @@
           <string>org.apache.hadoop.mapred.TextInputFormat</string> 
          </void> 
          <void method="put"> 
-          <string>totalSize</string> 
-          <string>5812</string> 
-         </void> 
-         <void method="put"> 
           <string>file.outputformat</string> 
           <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
          </void> 
          <void method="put"> 
           <string>location</string> 
-          #### A masked pattern was here #### 
-         </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
           #### A masked pattern was here #### 
          </void> 
         </object> 
@@ -201,10 +177,6 @@
           <string>default.src</string> 
          </void> 
          <void method="put"> 
-          <string>numFiles</string> 
-          <string>1</string> 
-         </void> 
-         <void method="put"> 
           <string>columns.types</string> 
           <string>string:string</string> 
          </void> 
@@ -221,18 +193,6 @@
           <string>key,value</string> 
          </void> 
          <void method="put"> 
-          <string>rawDataSize</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numRows</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
-          <string>numPartitions</string> 
-          <string>0</string> 
-         </void> 
-         <void method="put"> 
           <string>bucket_count</string> 
           <string>-1</string> 
          </void> 
@@ -245,19 +205,11 @@
           <string>org.apache.hadoop.mapred.TextInputFormat</string> 
          </void> 
          <void method="put"> 
-          <string>totalSize</string> 
-          <string>5812</string> 
-         </void> 
-         <void method="put"> 
           <string>file.outputformat</string> 
           <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
          </void> 
          <void method="put"> 
           <string>location</string> 
-          #### A masked pattern was here #### 
-         </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
           #### A masked pattern was here #### 
          </void> 
         </object> 

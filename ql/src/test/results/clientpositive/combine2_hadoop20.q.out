@@ -250,7 +250,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 2
@@ -296,7 +295,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 3
               partition_columns value
               rawDataSize 3
@@ -342,7 +340,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -388,7 +385,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -434,7 +430,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 3
               partition_columns value
               rawDataSize 3
@@ -480,7 +475,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -526,7 +520,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -572,7 +565,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 2

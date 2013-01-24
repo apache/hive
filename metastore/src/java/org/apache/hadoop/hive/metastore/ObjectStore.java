@@ -1286,7 +1286,7 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     return new Partition(mpart.getValues(), dbName, tblName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), true),
+        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false),
         mpart.getParameters());
   }
 
