@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -30,13 +31,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -124,7 +125,7 @@ public class TestAvroSerializer {
 
   @Test
   public void canSerializeMaps() throws SerDeException, IOException {
-    Map<String, Boolean> m = new Hashtable<String, Boolean>();
+    Map<String, Boolean> m = new HashMap<String, Boolean>();
     m.put("yes", true);
     m.put("no", false);
     String field = "{ \"name\":\"map1\", \"type\":{\"type\":\"map\", \"values\":\"boolean\"} }";
@@ -187,10 +188,13 @@ public class TestAvroSerializer {
   private enum enum1 {BLUE, RED , GREEN};
   @Test
   public void canSerializeEnums() throws SerDeException, IOException {
+    String type = "{\"type\": \"enum\", \"name\": \"enum1_values\", " +
+            "\"symbols\":[\"BLUE\",\"RED\",\"GREEN\"]}";
+    Schema schema = Schema.parse(type);
+    String field = "{ \"name\":\"enum1\", \"type\": " + schema + " }";
     for(enum1 e : enum1.values()) {
-      String field = "{ \"name\":\"enum1\", \"type\":{\"type\":\"enum\", " +
-              "\"name\":\"enum1_values\", \"symbols\":[\"BLUE\",\"RED\", \"GREEN\"]} }";
-      GenericRecord r = serializeAndDeserialize(field, "enum1", e);
+      GenericEnumSymbol symbol = new GenericData.EnumSymbol(schema, e.toString());
+      GenericRecord r = serializeAndDeserialize(field, "enum1", symbol);
 
       assertEquals(e, enum1.valueOf(r.get("enum1").toString()));
     }
@@ -198,7 +202,22 @@ public class TestAvroSerializer {
   }
 
   @Test
-  public void canSerializeNullableTypes() throws SerDeException, IOException {
+  public void canSerializeNullableEnums() throws SerDeException, IOException {
+    String type = "{\"type\": \"enum\", \"name\": \"enum1_values\",\n" +
+            "  \"namespace\": \"org.apache.hadoop.hive\",\n" +
+            "  \"symbols\":[\"BLUE\",\"RED\",\"GREEN\"]}";
+    Schema schema = Schema.parse(type);
+    String field = "{ \"name\":\"nullableenum\", \"type\": [\"null\", " + schema + "] }";
+    GenericEnumSymbol symbol = new GenericData.EnumSymbol(schema, enum1.BLUE.toString());
+    GenericRecord r = serializeAndDeserialize(field, "nullableenum", symbol);
+    assertEquals(enum1.BLUE, enum1.valueOf(r.get("nullableenum").toString()));
+
+    r = serializeAndDeserialize(field, "nullableenum", null);
+    assertNull(r.get("nullableenum"));
+  }
+
+  @Test
+  public void canSerializeNullablePrimitiveTypes() throws SerDeException, IOException {
     String field = "{ \"name\":\"nullableint\", \"type\":[\"int\", \"null\"] }";
     GenericRecord r = serializeAndDeserialize(field, "nullableint", 42);
     assertEquals(42, r.get("nullableint"));
@@ -219,6 +238,175 @@ public class TestAvroSerializer {
     GenericRecord r = serializeAndDeserialize(field, "mapWithNulls", m);
 
     Object result = r.get("mapWithNulls");
+    assertEquals(m, result);
+  }
+
+  @Test
+  public void canSerializeNullableRecords() throws SerDeException, IOException {
+    String field = "{ \"name\":\"nullableStruct\", \"type\": [\"null\", {\"type\":\"record\", " +
+            "\"name\":\"struct1_name\", \"fields\": [\n" +
+              "{ \"name\":\"sInt\", \"type\":\"int\" }, " +
+              "{ \"name\":\"sBoolean\", \"type\":\"boolean\" }, " +
+              "{ \"name\":\"sString\", \"type\":\"string\" } ] }] }";
+
+    Schema s = buildSchema(field);
+    Schema nullable = s.getField("nullableStruct").schema();
+    assertTrue(AvroSerdeUtils.isNullableType(nullable));
+    GenericData.Record innerRecord =
+            new GenericData.Record(AvroSerdeUtils.getOtherTypeFromNullableType(nullable));
+
+    innerRecord.put("sInt", 77);
+    innerRecord.put("sBoolean", false);
+    innerRecord.put("sString", "tedious");
+
+    GenericRecord r = serializeAndDeserialize(field, "nullableStruct", innerRecord);
+    Object result = r.get("nullableStruct");
+    assertNotSame(innerRecord, result);
+    assertEquals(innerRecord, result);
+
+    r = serializeAndDeserialize(field, "nullableStruct", null);
+    assertNull(r.get("nullableStruct"));
+  }
+
+  @Test
+  public void canSerializeNullableLists() throws SerDeException, IOException {
+    List<Integer> intList = new ArrayList<Integer>();
+    Collections.addAll(intList, 1,2, 3);
+    String field = "{ \"name\":\"nullableList\", \"type\": [\"null\", " +
+            "{\"type\":\"array\", \"items\":\"int\"}] }";
+    GenericRecord r = serializeAndDeserialize(field, "nullableList", intList);
+    Object result = r.get("nullableList");
+    assertNotSame(intList, result);
+    assertEquals(intList, result);
+
+    r = serializeAndDeserialize(field, "nullableList", null);
+    assertNull(r.get("nullableList"));
+  }
+
+  @Test
+  public void canSerializeNullableMaps() throws SerDeException, IOException {
+    String field = "{ \"name\":\"nullableMap\", \"type\": [\"null\", " +
+            "{\"type\":\"map\", \"values\":\"boolean\"}] }";
+
+    Map<String, Boolean> m = new HashMap<String, Boolean>();
+    m.put("yes", true);
+    m.put("no", false);
+    GenericRecord r = serializeAndDeserialize(field, "nullableMap", m);
+
+    Object result = r.get("nullableMap");
+    assertNotSame(m, result);
+    assertEquals(m, result);
+
+    r = serializeAndDeserialize(field, "nullableMap", null);
+    assertNull(r.get("nullableMap"));
+  }
+
+  @Test
+  public void canSerializeNullableFixed() throws SerDeException, IOException {
+    String field = "{ \"name\":\"nullableFixed\", \"type\": [\"null\", " +
+            "{\"type\":\"fixed\", \"name\":\"threebytes\", \"size\":3}] }";
+    Schema s = buildSchema(field);
+    Schema nullable = s.getField("nullableFixed").schema();
+    assertTrue(AvroSerdeUtils.isNullableType(nullable));
+
+    GenericData.Fixed fixed = new GenericData.Fixed(
+            AvroSerdeUtils.getOtherTypeFromNullableType(nullable), "k9@".getBytes());
+    GenericRecord r = serializeAndDeserialize(field, "nullableFixed", fixed);
+
+    GenericData.Fixed result = (GenericData.Fixed) r.get("nullableFixed");
+    assertNotSame(fixed, result);
+    assertArrayEquals(fixed.bytes(), result.bytes());
+
+    r = serializeAndDeserialize(field, "nullableFixed", null);
+    assertNull(r.get("nullableFixed"));
+  }
+
+  @Test
+  public void canSerializeNullableBytes() throws SerDeException, IOException {
+    String field = "{ \"name\":\"nullableBytes\", \"type\":[\"null\", \"bytes\"] }";
+    ByteBuffer bb = ByteBuffer.wrap("easy as one two three".getBytes());
+    bb.rewind();
+    GenericRecord r = serializeAndDeserialize(field, "nullableBytes", bb);
+
+    Object result = r.get("nullableBytes");
+    assertNotSame(bb, result);
+    assertEquals(bb, result);
+
+    r = serializeAndDeserialize(field, "nullableBytes", null);
+    assertNull(r.get("nullableBytes"));
+  }
+
+  @Test
+  public void canSerializeArraysWithNullablePrimitiveElements() throws SerDeException, IOException {
+    final String field = "{ \"name\":\"listWithNulls\", \"type\": " +
+            "{\"type\":\"array\", \"items\": [\"null\", \"int\"]} }";
+    List<Integer> intList = new ArrayList<Integer>();
+    Collections.addAll(intList, 1,2, null, 3);
+    GenericRecord r = serializeAndDeserialize(field, "listWithNulls", intList);
+    Object result = r.get("listWithNulls");
+    assertNotSame(intList, result);
+    assertEquals(intList, result);
+  }
+
+  @Test
+  public void canSerializeArraysWithNullableComplexElements() throws SerDeException, IOException {
+    final String field = "{ \"name\":\"listOfNullableLists\", \"type\": " +
+            "{\"type\":\"array\", \"items\": [\"null\", " +
+              "{\"type\": \"array\", \"items\": \"int\"}]} }";
+    List<List<Integer>> intListList = new ArrayList<List<Integer>>();
+    List<Integer>  intList = new ArrayList<Integer>();
+    Collections.addAll(intList, 1,2,3);
+    Collections.addAll(intListList, intList, null);
+    GenericRecord r = serializeAndDeserialize(field, "listOfNullableLists", intListList);
+    Object result = r.get("listOfNullableLists");
+    assertNotSame(intListList, result);
+    assertEquals(intListList, result);
+  }
+
+  @Test
+  public void canSerializeRecordsWithNullableComplexElements() throws SerDeException, IOException {
+    String field = "{ \"name\":\"struct1\", \"type\":{\"type\":\"record\", " +
+            "\"name\":\"struct1_name\", \"fields\": [\n" +
+                   "{ \"name\":\"sInt\", \"type\":\"int\" }, { \"name\"" +
+            ":\"sBoolean\", \"type\":\"boolean\" }, { \"name\":\"nullableList\", \"type\":[\"null\", " +
+            "{ \"type\":\"array\", \"items\":\"int\"}] } ] } }";
+
+    Schema s = buildSchema(field);
+    GenericData.Record innerRecord = new GenericData.Record(s.getField("struct1").schema());
+
+    innerRecord.put("sInt", 77);
+    innerRecord.put("sBoolean", false);
+    List<Integer> intList = new ArrayList<Integer>();
+    Collections.addAll(intList, 1,2,3);
+    innerRecord.put("nullableList", intList);
+
+    GenericRecord r = serializeAndDeserialize(field, "struct1", innerRecord);
+    Object result = r.get("struct1");
+    assertNotSame(innerRecord, result);
+    assertEquals(innerRecord, result);
+
+    innerRecord.put("nullableList", null);
+    r = serializeAndDeserialize(field, "struct1", innerRecord);
+    result = r.get("struct1");
+    assertNotSame(innerRecord, result);
+    assertEquals(innerRecord, result);
+  }
+
+  @Test
+  public void canSerializeMapsWithNullableComplexValues() throws SerDeException, IOException {
+    String field = "{ \"name\":\"mapWithNullableLists\", \"type\": " +
+            "{\"type\":\"map\", \"values\": [\"null\", " +
+              "{\"type\": \"array\", \"items\": \"int\"}]} }";
+
+    Map<String, List<Integer>> m = new HashMap<String, List<Integer>>();
+    List<Integer> intList = new ArrayList<Integer>();
+    Collections.addAll(intList, 1,2,3);
+    m.put("list", intList);
+    m.put("null", null);
+    GenericRecord r = serializeAndDeserialize(field, "mapWithNullableLists", m);
+
+    Object result = r.get("mapWithNullableLists");
+    assertNotSame(m, result);
     assertEquals(m, result);
   }
 

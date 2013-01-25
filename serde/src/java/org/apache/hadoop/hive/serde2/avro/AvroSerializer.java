@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericEnumSymbol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -49,6 +50,12 @@ import static org.apache.avro.Schema.Type.FIXED;
 class AvroSerializer {
   private static final Log LOG = LogFactory.getLog(AvroSerializer.class);
 
+  /**
+   * The Schema to use when serializing Map keys.
+   * Since we're sharing this across Serializer instances, it must be immutable;
+   * any properties need to be added in a static initializer.
+   */
+  private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   AvroGenericRecordWritable cache = new AvroGenericRecordWritable();
 
   // Hive is pretty simple (read: stupid) in writing out values via the serializer.
@@ -90,6 +97,17 @@ class AvroSerializer {
   }
 
   private Object serialize(TypeInfo typeInfo, ObjectInspector fieldOI, Object structFieldData, Schema schema) throws AvroSerdeException {
+    if(null == structFieldData) {
+      return null;
+    }
+    if(AvroSerdeUtils.isNullableType(schema)) {
+      schema = AvroSerdeUtils.getOtherTypeFromNullableType(schema);
+    }
+    /* Because we use Hive's 'string' type when Avro calls for enum, we have to expressly check for enum-ness */
+    if(Schema.Type.ENUM.equals(schema.getType())) {
+      assert fieldOI instanceof PrimitiveObjectInspector;
+      return serializeEnum(typeInfo, (PrimitiveObjectInspector) fieldOI, structFieldData, schema);
+    }
     switch(typeInfo.getCategory()) {
       case PRIMITIVE:
         assert fieldOI instanceof PrimitiveObjectInspector;
@@ -113,6 +131,29 @@ class AvroSerializer {
       default:
         throw new AvroSerdeException("Ran out of TypeInfo Categories: " + typeInfo.getCategory());
     }
+  }
+
+  /** private cache to avoid lots of EnumSymbol creation while serializing.
+   *  Two levels because the enum symbol is specific to a schema.
+   *  Object because we want to avoid the overhead of repeated toString calls while maintaining compatability.
+   *  Provided there are few enum types per record, and few symbols per enum, memory use should be moderate.
+   *  eg 20 types with 50 symbols each as length-10 Strings should be on the order of 100KB per AvroSerializer.
+   */
+  final InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>> enums
+      = new InstanceCache<Schema, InstanceCache<Object, GenericEnumSymbol>>() {
+          @Override
+          protected InstanceCache<Object, GenericEnumSymbol> makeInstance(final Schema schema) {
+            return new InstanceCache<Object, GenericEnumSymbol>() {
+              @Override
+              protected GenericEnumSymbol makeInstance(Object seed) {
+                return new GenericData.EnumSymbol(schema, seed.toString());
+              }
+            };
+          }
+        };
+
+  private Object serializeEnum(TypeInfo typeInfo, PrimitiveObjectInspector fieldOI, Object structFieldData, Schema schema) throws AvroSerdeException {
+    return enums.retrieve(schema).retrieve(serializePrimitive(typeInfo, fieldOI, structFieldData));
   }
 
   private Object serializeStruct(StructTypeInfo typeInfo, StructObjectInspector ssoi, Object o, Schema schema) throws AvroSerdeException {
@@ -232,7 +273,7 @@ class AvroSerializer {
     Map<Object, Object> deserialized = new HashMap<Object, Object>(fieldOI.getMapSize(structFieldData));
 
     for (Map.Entry<?, ?> entry : map.entrySet()) {
-      deserialized.put(serialize(mapKeyTypeInfo, mapKeyObjectInspector, entry.getKey(), null), // This works, but is a bit fragile.  Construct a single String schema?
+      deserialized.put(serialize(mapKeyTypeInfo, mapKeyObjectInspector, entry.getKey(), STRING_SCHEMA),
                        serialize(mapValueTypeInfo, mapValueObjectInspector, entry.getValue(), valueType));
     }
 

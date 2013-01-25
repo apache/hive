@@ -297,7 +297,7 @@ public class TestAvroDeserializer {
     Schema s = Schema.parse(TestAvroObjectInspectorGenerator.ENUM_SCHEMA);
     GenericData.Record record = new GenericData.Record(s);
 
-    record.put("baddies", "DALEKS");
+    record.put("baddies", new GenericData.EnumSymbol(s.getField("baddies").schema(),"DALEKS"));
     assertTrue(GENERIC_DATA.validate(s, record));
 
     AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
@@ -398,12 +398,25 @@ public class TestAvroDeserializer {
     GenericData.Record record = new GenericData.Record(s);
     record.put("nullableString", "this is a string");
 
-    verifyNullableType(record, s, "this is a string");
+    verifyNullableType(record, s, "nullableString", "this is a string");
 
     record = new GenericData.Record(s);
     record.put("nullableString", null);
-    verifyNullableType(record, s, null);
+    verifyNullableType(record, s, "nullableString", null);
   }
+
+   @Test
+   public void canDeserializeNullableEnums() throws IOException, SerDeException {
+     Schema s = Schema.parse(TestAvroObjectInspectorGenerator.NULLABLE_ENUM_SCHEMA);
+     GenericData.Record record = new GenericData.Record(s);
+     record.put("nullableEnum", new GenericData.EnumSymbol(AvroSerdeUtils.getOtherTypeFromNullableType(s.getField("nullableEnum").schema()), "CYBERMEN"));
+
+     verifyNullableType(record, s, "nullableEnum", "CYBERMEN");
+
+     record = new GenericData.Record(s);
+     record.put("nullableEnum", null);
+     verifyNullableType(record, s, "nullableEnum", null);
+   }
 
   @Test
   public void canDeserializeMapWithNullablePrimitiveValues() throws SerDeException, IOException {
@@ -456,7 +469,7 @@ public class TestAvroDeserializer {
     assertEquals(null, theMap2.get("mu"));
   }
 
-  private void verifyNullableType(GenericData.Record record, Schema s,
+  private void verifyNullableType(GenericData.Record record, Schema s, String fieldName,
                                   String expected) throws SerDeException, IOException {
     assertTrue(GENERIC_DATA.validate(s, record));
 
@@ -472,13 +485,13 @@ public class TestAvroDeserializer {
     StandardStructObjectInspector oi = (StandardStructObjectInspector)aoig.getObjectInspector();
     List<Object> fieldsDataAsList = oi.getStructFieldsDataAsList(row);
     assertEquals(1, fieldsDataAsList.size());
-    StructField fieldRef = oi.getStructFieldRef("nullablestring");
+    StructField fieldRef = oi.getStructFieldRef(fieldName);
     ObjectInspector fieldObjectInspector = fieldRef.getFieldObjectInspector();
     StringObjectInspector soi = (StringObjectInspector)fieldObjectInspector;
 
     if(expected == null)
       assertNull(soi.getPrimitiveJavaObject(rowElement));
     else
-      assertEquals("this is a string", soi.getPrimitiveJavaObject(rowElement));
+      assertEquals(expected, soi.getPrimitiveJavaObject(rowElement));
   }
 }

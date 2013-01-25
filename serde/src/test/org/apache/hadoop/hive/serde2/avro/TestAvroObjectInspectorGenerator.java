@@ -154,6 +154,20 @@ public class TestAvroObjectInspectorGenerator {
       "\t}\n" +
       "  ]\n" +
       "}";
+  public static final String NULLABLE_ENUM_SCHEMA = "{\n" +
+      "  \"namespace\": \"clever.namespace.name.in.space\",\n" +
+      "  \"name\": \"nullableUnionTest\",\n" +
+      "  \"type\": \"record\",\n" +
+      "  \"fields\": [\n" +
+      "   {\n" +
+      "      \"name\":\"nullableEnum\",\n" +
+      "      \"type\": [\"null\", {\"type\":\"enum\",\"name\":\"villians\", \"symbols\": " +
+          "[\"DALEKS\", \"CYBERMEN\", \"SLITHEEN\", \"JAGRAFESS\"]}]\n" +
+      "      \n" +
+      "      \n" +
+      "    }\n" +
+      "  ]\n" +
+      "}";
   public static final String BYTES_SCHEMA = "{\n" +
       "  \"type\": \"record\", \n" +
       "  \"name\": \"bytesTest\",\n" +
@@ -509,6 +523,23 @@ public class TestAvroObjectInspectorGenerator {
     Schema s = Schema.parse(MAP_WITH_NULLABLE_PRIMITIVE_VALUE_TYPE_SCHEMA);
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     verifyMap(aoig, "aMap");
+  }
+
+  @Test // That Union[T, NULL] is converted to just T.
+  public void convertsNullableEnum() throws SerDeException {
+    Schema s = Schema.parse(NULLABLE_ENUM_SCHEMA);
+
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
+    assertEquals(1, aoig.getColumnNames().size());
+    assertEquals("nullableEnum", aoig.getColumnNames().get(0));
+
+    // Column types
+    assertEquals(1, aoig.getColumnTypes().size());
+    TypeInfo typeInfo = aoig.getColumnTypes().get(0);
+    assertTrue(typeInfo instanceof PrimitiveTypeInfo);
+    PrimitiveTypeInfo pti = (PrimitiveTypeInfo) typeInfo;
+    // Verify the union has been hidden and just the main type has been returned.
+    assertEquals(PrimitiveObjectInspector.PrimitiveCategory.STRING, pti.getPrimitiveCategory());
   }
 
   @Test
