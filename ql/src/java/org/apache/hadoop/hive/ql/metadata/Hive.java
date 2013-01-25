@@ -1282,7 +1282,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
   if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
-    skewedColValueLocationMaps.put(skewedValue, lbDirName);
+    skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
   }
 }
 
