@@ -531,6 +531,7 @@ public class HadoopJobExecHelper {
     jobInfo(rj);
     MapRedStats mapRedStats = progress(th);
 
+    this.task.taskHandle = th;
     // Not always there is a SessionState. Sometimes ExeDriver is directly invoked
     // for special modes. In that case, SessionState.get() is empty.
     if (SessionState.get() != null) {
