@@ -23,7 +23,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +33,8 @@ import java.util.regex.Pattern;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.Project;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.Template;
@@ -47,9 +46,28 @@ import org.apache.velocity.runtime.RuntimeConstants;
 
 public class QTestGenTask extends Task {
 
-  public class QFileFilter implements FileFilter {
-  
+  public class IncludeFilter implements FileFilter {
+
+    Set<String> includeOnly;
+    public IncludeFilter(Set<String> includeOnly) {
+      this.includeOnly = includeOnly;
+    }
+
     public boolean accept(File fpath) {
+      return includeOnly == null || includeOnly.contains(fpath.getName());
+    }
+  }
+
+  public class QFileFilter extends IncludeFilter {
+
+    public QFileFilter(Set<String> includeOnly) {
+      super(includeOnly);
+    }
+
+    public boolean accept(File fpath) {
+      if (!super.accept(fpath)) {
+        return false;
+      }
       if (fpath.isDirectory() ||
           !fpath.getName().endsWith(".q")) {
         return false;
@@ -59,8 +77,15 @@ public class QTestGenTask extends Task {
     
   }
   
-  public class DisabledQFileFilter implements FileFilter { 
+  public class DisabledQFileFilter extends IncludeFilter {
+    public DisabledQFileFilter(Set<String> includeOnly) {
+      super(includeOnly);
+    }
+
     public boolean accept(File fpath) {
+      if (!super.accept(fpath)) {
+        return false;
+      }
       return !fpath.isDirectory() && fpath.getName().endsWith(".q.disabled");
     }  
   }
@@ -68,7 +93,8 @@ public class QTestGenTask extends Task {
   public class QFileRegexFilter extends QFileFilter {
     Pattern filterPattern;
     
-    public QFileRegexFilter(String filter) {
+    public QFileRegexFilter(String filter, Set<String> includeOnly) {
+      super(includeOnly);
       filterPattern = Pattern.compile(filter);
     }
     
@@ -88,6 +114,8 @@ public class QTestGenTask extends Task {
   private String queryDirectory;
  
   private String queryFile;
+
+  private String includeQueryFile;
 
   private String excludeQueryFile;
   
@@ -213,6 +241,14 @@ public class QTestGenTask extends Task {
     return queryFile;
   }
 
+  public String getIncludeQueryFile() {
+    return includeQueryFile;
+  }
+
+  public void setIncludeQueryFile(String includeQueryFile) {
+    this.includeQueryFile = includeQueryFile;
+  }
+
   public void setExcludeQueryFile(String excludeQueryFile) {
     this.excludeQueryFile = excludeQueryFile;
   }
@@ -259,6 +295,11 @@ public class QTestGenTask extends Task {
       throw new BuildException("No className specified");
     }
 
+    Set<String> includeOnly = null;
+    if (includeQueryFile != null && !includeQueryFile.isEmpty()) {
+      includeOnly = new HashSet<String>(Arrays.asList(includeQueryFile.split(",")));
+    }
+
     List<File> qFiles = new ArrayList<File>();
     HashMap<String, String> qFilesMap = new HashMap<String, String>();
     File outDir = null;
@@ -274,6 +315,9 @@ public class QTestGenTask extends Task {
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma seperated
         for (String qFile : queryFile.split(",")) {
+          if (includeOnly != null && !includeOnly.contains(qFile)) {
+            continue;
+          }
           if (null != inpDir) {
             qFiles.add(new File(inpDir, qFile));
           } else {
@@ -281,11 +325,12 @@ public class QTestGenTask extends Task {
           }
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(
+            new QFileRegexFilter(queryFileRegex, includeOnly))));
       } else if (runDisabled != null && runDisabled.equals("true")) {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter())));
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter(includeOnly))));
       } else {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter(includeOnly))));
       }
 
       if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
