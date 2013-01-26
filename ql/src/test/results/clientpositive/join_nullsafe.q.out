@@ -1680,11 +1680,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####

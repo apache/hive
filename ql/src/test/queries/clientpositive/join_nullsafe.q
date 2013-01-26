@@ -58,4 +58,4 @@ SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.v
 
 --HIVE-3315 join predicate transitive
 explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
-select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
+select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL order by a.value ASC, b.key ASC;
