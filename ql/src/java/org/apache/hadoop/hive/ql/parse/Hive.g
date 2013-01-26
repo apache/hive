@@ -485,6 +485,7 @@ createTableStatement
     : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableLocation?
+         tablePropertiesPrefixed?
        | (LPAREN columnNameTypeList RPAREN)?
          tableComment?
          tablePartition?
