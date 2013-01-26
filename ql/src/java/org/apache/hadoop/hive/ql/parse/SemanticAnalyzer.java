@@ -9101,9 +9101,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
+      tblProps = addDefaultProperties(tblProps);
+
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName, isExt,
           storageFormat.inputFormat, storageFormat.outputFormat, location,
-          shared.serde, shared.serdeProps, ifNotExists, likeTableName);
+          shared.serde, shared.serdeProps, tblProps, ifNotExists, likeTableName);
       SessionState.get().setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblLikeDesc), conf));
