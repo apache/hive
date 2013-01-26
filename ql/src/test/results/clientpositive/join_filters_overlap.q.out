@@ -204,11 +204,11 @@ POSTHOOK: Input: default@a
 100	40	NULL	NULL	NULL	NULL
 100	50	100	50	NULL	NULL
 100	60	NULL	NULL	100	60
-PREHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) order by a.key ASC, a.value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(b,c)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) order by a.key ASC, a.value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 #### A masked pattern was here ####
@@ -410,11 +410,11 @@ POSTHOOK: Input: default@a
 NULL	NULL	100	40	NULL	NULL
 100	50	100	50	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) order by b.key ASC, b.value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) order by b.key ASC, b.value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 #### A masked pattern was here ####
@@ -616,11 +616,11 @@ POSTHOOK: Input: default@a
 NULL	NULL	100	40	NULL	NULL
 100	50	100	50	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60) order by b.key ASC, b.value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+POSTHOOK: query: select /*+ MAPJOIN(a,c)*/ * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60) order by b.key ASC, b.value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 #### A masked pattern was here ####
@@ -1085,11 +1085,11 @@ POSTHOOK: Input: default@a
 100	40	NULL	NULL	NULL	NULL	100	40
 100	50	100	50	NULL	NULL	NULL	NULL
 100	60	NULL	NULL	100	60	NULL	NULL
-PREHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40) order by a.key ASC, a.value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: select /*+ MAPJOIN(b,c, d)*/ * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40) order by a.key ASC, a.value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 #### A masked pattern was here ####
