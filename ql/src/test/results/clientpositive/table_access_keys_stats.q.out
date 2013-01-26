@@ -181,10 +181,11 @@ Keys:key
 7	1	7	1
 8	2	8	2
 PREHOOK: query: SELECT * FROM
-(SELECT key, count(1) FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq1
 JOIN
-(SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
+(SELECT key, val, count(1) as c FROM T1 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
+ORDER BY subq1.key ASC, subq1.c ASC, subq2.key ASC, subq2.val ASC, subq2.c ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -263,6 +264,7 @@ PREHOOK: query: -- simple joins
 SELECT *
 FROM T1 JOIN T2
 ON T1.key = t2.key
+ORDER BY T1.key ASC, T1.val ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2

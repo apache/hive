@@ -44,10 +44,11 @@ JOIN
 ON subq1.key = subq2.key;
 
 SELECT * FROM
-(SELECT key, count(1) FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq1
 JOIN
-(SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
-ON subq1.key = subq2.key;
+(SELECT key, val, count(1) as c FROM T1 GROUP BY key, val) subq2
+ON subq1.key = subq2.key
+ORDER BY subq1.key ASC, subq1.c ASC, subq2.key ASC, subq2.val ASC, subq2.c ASC;
 
 -- constants from sub-queries should work fine
 SELECT key, constant, val, count(1) from
@@ -74,7 +75,8 @@ INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key;
 -- simple joins
 SELECT *
 FROM T1 JOIN T2
-ON T1.key = t2.key;
+ON T1.key = t2.key
+ORDER BY T1.key ASC, T1.val ASC;
 
 SELECT *
 FROM T1 JOIN T2
