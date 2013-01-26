@@ -53,7 +53,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // Bean methods
 
   private static final long serialVersionUID = 1L;
+  List<OperatorHook> operatorHooks;
 
+  private Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -129,6 +131,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     this.childOperators = childOperators;
   }
 
+  public Configuration getConfiguration() {
+    return configuration;
+  }
   public List<Operator<? extends OperatorDesc>> getChildOperators() {
     return childOperators;
   }
@@ -226,6 +231,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return id;
   }
 
+  public void setOperatorHooks(List<OperatorHook> opHooks){
+    operatorHooks = opHooks;
+    if (childOperators == null) {
+      return;
+    }
+
+    for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setOperatorHooks(opHooks);
+    }
+  }
+
   public void setReporter(Reporter rep) {
     reporter = rep;
 
@@ -313,6 +329,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
+    this.configuration = hconf;
     this.out = null;
     if (!areAllParentsInitialized()) {
       return;
@@ -409,6 +426,34 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
+  private void enterOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
+    if (this.operatorHooks == null) {
+      return;
+    }
+    for(OperatorHook opHook : this.operatorHooks) {
+      opHook.enter(opHookContext);
+    }
+  }
+
+  private void exitOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
+    if (this.operatorHooks == null) {
+      return;
+    }
+    for(OperatorHook opHook : this.operatorHooks) {
+      opHook.exit(opHookContext);
+    }
+  }
+
+  private void closeOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
+    if (this.operatorHooks == null) {
+      return;
+    }
+    for(OperatorHook opHook : this.operatorHooks) {
+      opHook.close(opHookContext);
+    }
+  }
+
+
   /**
    * Collects all the parent's output object inspectors and calls actual
    * initialization method.
@@ -470,8 +515,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (fatalError) {
       return;
     }
+    OperatorHookContext opHookContext = new OperatorHookContext(this, row);
     preProcessCounter();
+    enterOperatorHooks(opHookContext);
     processOp(row, tag);
+    exitOperatorHooks(opHookContext);
     postProcessCounter();
   }
 
@@ -554,6 +602,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
+    closeOperatorHooks(new OperatorHookContext(this, null));
     // call the operator specific close routine
     closeOp(abort);
 

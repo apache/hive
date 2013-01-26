@@ -178,6 +178,7 @@ public class HiveConf extends Configuration {
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
     ONFAILUREHOOKS("hive.exec.failure.hooks", ""),
+    OPERATORHOOKS("hive.exec.operator.hooks", ""),
     CLIENTSTATSPUBLISHERS("hive.client.stats.publishers", ""),
     EXECPARALLEL("hive.exec.parallel", false), // parallel query launching
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),

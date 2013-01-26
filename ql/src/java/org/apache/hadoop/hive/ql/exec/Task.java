@@ -83,7 +83,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
-
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
   };
@@ -100,6 +99,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     queued = false;
     this.taskCounters = new HashMap<String, Long>();
     taskTag = Task.NO_TAG;
+  }
+
+  public TaskHandle getTaskHandle() {
+    return taskHandle;
   }
 
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
