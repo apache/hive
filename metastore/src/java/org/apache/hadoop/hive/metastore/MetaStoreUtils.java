@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -1048,9 +1049,12 @@ public class MetaStoreUtils {
             listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
                 Configuration.class).newInstance(conf);
         listeners.add(listener);
+      } catch (InvocationTargetException ie) {
+        throw new MetaException("Failed to instantiate listener named: "+
+            listenerImpl + ", reason: " + ie.getCause());
       } catch (Exception e) {
         throw new MetaException("Failed to instantiate listener named: "+
-            listenerImpl + e.toString());
+            listenerImpl + ", reason: " + e);
       }
     }
 
