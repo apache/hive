@@ -318,14 +318,14 @@ public class QTestUtil {
   public void shutdown() throws Exception {
     cleanUp();
     setup.tearDown();
-    if (dfs != null) {
-      dfs.shutdown();
-      dfs = null;
-    }
-
     if (mr != null) {
       mr.shutdown();
       mr = null;
+    }
+    FileSystem.closeAll();
+    if (dfs != null) {
+      dfs.shutdown();
+      dfs = null;
     }
   }
 
