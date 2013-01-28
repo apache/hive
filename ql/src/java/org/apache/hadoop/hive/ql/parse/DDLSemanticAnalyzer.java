@@ -218,6 +218,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableSkewedLocation(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_TABLEBUCKETS) {
         analyzeAlterTableBucketNum(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
+        analyzeAlterTableClusterSort(ast, tableName, partSpec);
       }
       break;
     }
@@ -333,9 +335,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.TOK_DROPTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false, true);
-      break;
-    case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
-      analyzeAlterTableClusterSort(ast);
       break;
     case HiveParser.TOK_ALTERINDEX_REBUILD:
       analyzeAlterIndexRebuild(ast);
@@ -1388,24 +1387,23 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeAlterTableClusterSort(ASTNode ast)
-      throws SemanticException {
-    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
-    Table tab = getTable(tableName, true);
+  private void analyzeAlterTableClusterSort(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec) throws SemanticException {
+    addInputsOutputsAlterTable(tableName, partSpec);
 
-    inputs.add(new ReadEntity(tab));
-    outputs.add(new WriteEntity(tab));
-
-    validateAlterTableType(tab, AlterTableTypes.ADDCLUSTERSORTCOLUMN);
-
-    if (ast.getChildCount() == 1) {
-      // This means that we want to turn off bucketing
-      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, -1,
-          new ArrayList<String>(), new ArrayList<Order>());
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          alterTblDesc), conf));
-    } else {
-      ASTNode buckets = (ASTNode) ast.getChild(1);
+    AlterTableDesc alterTblDesc;
+    switch (ast.getChild(0).getType()) {
+    case HiveParser.TOK_NOT_CLUSTERED:
+      alterTblDesc = new AlterTableDesc(tableName, -1, new ArrayList<String>(),
+          new ArrayList<Order>(), partSpec);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+      break;
+    case HiveParser.TOK_NOT_SORTED:
+      alterTblDesc = new AlterTableDesc(tableName, true, partSpec);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+      break;
+    case HiveParser.TOK_TABLEBUCKETS:
+      ASTNode buckets = (ASTNode) ast.getChild(0);
       List<String> bucketCols = getColumnNames((ASTNode) buckets.getChild(0));
       List<Order> sortCols = new ArrayList<Order>();
       int numBuckets = -1;
@@ -1419,10 +1417,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
       }
 
-      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, numBuckets,
-          bucketCols, sortCols);
+      alterTblDesc = new AlterTableDesc(tableName, numBuckets,
+          bucketCols, sortCols, partSpec);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           alterTblDesc), conf));
+      break;
     }
   }
 

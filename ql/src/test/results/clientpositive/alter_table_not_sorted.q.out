@@ -1,0 +1,81 @@
+PREHOOK: query: create table alter_table_not_sorted (a int, b int) clustered by (a) sorted by (a) into 4 buckets
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter_table_not_sorted (a int, b int) clustered by (a) sorted by (a) into 4 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter_table_not_sorted
+PREHOOK: query: desc formatted alter_table_not_sorted
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted alter_table_not_sorted
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	SORTBUCKETCOLSPREFIX	TRUE                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[Order(col:a, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_table_not_sorted not sorted
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@alter_table_not_sorted
+PREHOOK: Output: default@alter_table_not_sorted
+POSTHOOK: query: alter table alter_table_not_sorted not sorted
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: Output: default@alter_table_not_sorted
+PREHOOK: query: desc formatted alter_table_not_sorted
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted alter_table_not_sorted
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	SORTBUCKETCOLSPREFIX	TRUE                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table alter_table_not_sorted
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_table_not_sorted
+PREHOOK: Output: default@alter_table_not_sorted
+POSTHOOK: query: drop table alter_table_not_sorted
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: Output: default@alter_table_not_sorted

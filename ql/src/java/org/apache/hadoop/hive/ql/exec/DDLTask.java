@@ -3155,29 +3155,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
           .getCols());
-      Utilities.validateColumnNames(columns, alterTbl.getBucketColumns());
+      if (!alterTbl.isTurnOffSorting()) {
+        Utilities.validateColumnNames(columns, alterTbl.getBucketColumns());
+      }
       if (alterTbl.getSortColumns() != null) {
         Utilities.validateColumnNames(columns, Utilities
             .getColumnNamesFromSortCols(alterTbl.getSortColumns()));
       }
 
-      int numBuckets = -1;
-      ArrayList<String> bucketCols = null;
-      ArrayList<Order> sortCols = null;
+      StorageDescriptor sd = part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd();
 
-      // -1 buckets means to turn off bucketing
-      if (alterTbl.getNumberBuckets() == -1) {
-        bucketCols = new ArrayList<String>();
-        sortCols = new ArrayList<Order>();
-        numBuckets = -1;
+      if (alterTbl.isTurnOffSorting()) {
+        sd.setSortCols(new ArrayList<Order>());
+      } else if (alterTbl.getNumberBuckets() == -1) {
+        // -1 buckets means to turn off bucketing
+        sd.setBucketCols(new ArrayList<String>());
+        sd.setNumBuckets(-1);
+        sd.setSortCols(new ArrayList<Order>());
       } else {
-        bucketCols = alterTbl.getBucketColumns();
-        sortCols = alterTbl.getSortColumns();
-        numBuckets = alterTbl.getNumberBuckets();
+        sd.setBucketCols(alterTbl.getBucketColumns());
+        sd.setNumBuckets(alterTbl.getNumberBuckets());
+        sd.setSortCols(alterTbl.getSortColumns());
       }
-      tbl.getTTable().getSd().setBucketCols(bucketCols);
-      tbl.getTTable().getSd().setNumBuckets(numBuckets);
-      tbl.getTTable().getSd().setSortCols(sortCols);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
       String newLocation = alterTbl.getNewLocation();
       try {
