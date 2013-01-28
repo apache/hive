@@ -184,6 +184,8 @@ TOK_READONLY;
 TOK_NO_DROP;
 TOK_STORAGEHANDLER;
 TOK_ALTERTABLE_CLUSTER_SORT;
+TOK_NOT_CLUSTERED;
+TOK_NOT_SORTED;
 TOK_TABCOLNAME;
 TOK_TABLELOCATION;
 TOK_PARTITIONLOCATION;
@@ -625,7 +627,6 @@ alterTableStatementSuffix
     | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
     | alterTblPartitionStatement
-    | alterStatementSuffixClusterbySortby
     | alterStatementSuffixSkewedby
     ;
 
@@ -794,6 +795,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixRenamePart
   | alterStatementSuffixBucketNum
   | alterTblPartitionStatementSuffixSkewedLocation
+  | alterStatementSuffixClusterbySortby
   ;
 
 alterStatementSuffixFileFormat
@@ -802,6 +804,14 @@ alterStatementSuffixFileFormat
 	: KW_SET KW_FILEFORMAT fileFormat
 	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
 	;
+
+alterStatementSuffixClusterbySortby
+@init {msgs.push("alter partition cluster by sort by statement");}
+@after {msgs.pop();}
+  : KW_NOT KW_CLUSTERED -> ^(TOK_ALTERTABLE_CLUSTER_SORT TOK_NOT_CLUSTERED)
+  | KW_NOT KW_SORTED -> ^(TOK_ALTERTABLE_CLUSTER_SORT TOK_NOT_SORTED)
+  | tableBuckets -> ^(TOK_ALTERTABLE_CLUSTER_SORT tableBuckets)
+  ;
 
 alterTblPartitionStatementSuffixSkewedLocation
 @init {msgs.push("alter partition skewed location");}
@@ -894,16 +904,6 @@ alterStatementSuffixBucketNum
     : KW_INTO num=Number KW_BUCKETS
     -> ^(TOK_TABLEBUCKETS $num)
     ;
-
-alterStatementSuffixClusterbySortby
-@init {msgs.push("alter cluster by sort by statement");}
-@after{msgs.pop();}
-	:name=Identifier tableBuckets
-	->^(TOK_ALTERTABLE_CLUSTER_SORT $name tableBuckets)
-	|
-	name=Identifier KW_NOT KW_CLUSTERED
-	->^(TOK_ALTERTABLE_CLUSTER_SORT $name)
-	;
 
 fileFormat
 @init { msgs.push("file format specification"); }

@@ -58,7 +58,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, HiveOperation.ALTERTABLE_UNARCHIVE);
     commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, HiveOperation.ALTERTABLE_PROPERTIES);
     commandType.put(HiveParser.TOK_DROPTABLE_PROPERTIES, HiveOperation.ALTERTABLE_PROPERTIES);
-    commandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT, HiveOperation.ALTERTABLE_CLUSTER_SORT);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
     commandType.put(HiveParser.TOK_SHOWCOLUMNS, HiveOperation.SHOWCOLUMNS);
@@ -126,6 +125,9 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_TABLEBUCKETS,
         new HiveOperation[] {HiveOperation.ALTERTABLE_BUCKETNUM,
             HiveOperation.ALTERPARTITION_BUCKETNUM});
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_CLUSTER_SORT,
+            HiveOperation.ALTERTABLE_CLUSTER_SORT});
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)

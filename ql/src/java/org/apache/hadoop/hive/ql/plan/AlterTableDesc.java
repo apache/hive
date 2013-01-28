@@ -87,6 +87,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   List<List<String>> skewedColValues;
   Table table;
   boolean isDropIfExists = false;
+  boolean isTurnOffSorting = false;
 
   public AlterTableDesc() {
   }
@@ -180,12 +181,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   }
 
   public AlterTableDesc(String tableName, int numBuckets,
-      List<String> bucketCols, List<Order> sortCols) {
+      List<String> bucketCols, List<Order> sortCols, HashMap<String, String> partSpec) {
     oldName = tableName;
     op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
     numberBuckets = numBuckets;
     bucketColumns = new ArrayList<String>(bucketCols);
     sortColumns = new ArrayList<Order>(sortCols);
+    this.partSpec = partSpec;
+  }
+
+  public AlterTableDesc(String tableName, boolean sortingOff, HashMap<String, String> partSpec) {
+    oldName = tableName;
+    op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
+    isTurnOffSorting = sortingOff;
+    this.partSpec = partSpec;
   }
 
   public AlterTableDesc(String tableName, String newLocation,
@@ -586,6 +595,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public void setSkewedLocations(Map<List<String>, String> skewedLocations) {
     this.skewedLocations = skewedLocations;
+  }
+
+  /**
+   * @return isTurnOffSorting
+   */
+  public boolean isTurnOffSorting() {
+    return isTurnOffSorting;
   }
 
   /**
