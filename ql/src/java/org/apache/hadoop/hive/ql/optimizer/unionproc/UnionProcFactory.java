@@ -107,30 +107,6 @@ public final class UnionProcFactory {
   }
 
   /**
-   * Map-join subquery followed by Union.
-   */
-  public static class MapJoinUnion implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      UnionOperator union = (UnionOperator) nd;
-      UnionProcContext ctx = (UnionProcContext) procCtx;
-
-      // find the branch on which this processor was invoked
-      int pos = getPositionParent(union, stack);
-      UnionParseContext uCtx = ctx.getUnionParseContext(union);
-      if (uCtx == null) {
-        uCtx = new UnionParseContext(union.getConf().getNumInputs());
-      }
-
-      uCtx.setMapJoinSubq(pos, true);
-      ctx.setUnionParseContext(union, uCtx);
-      return null;
-    }
-  }
-
-  /**
    * Union subquery followed by Union.
    */
   public static class UnknownUnion implements NodeProcessor {
@@ -328,10 +304,6 @@ public final class UnionProcFactory {
 
   public static NodeProcessor getMapUnion() {
     return new MapUnion();
-  }
-
-  public static NodeProcessor getMapJoinUnion() {
-    return new MapJoinUnion();
   }
 
   public static NodeProcessor getUnknownUnion() {

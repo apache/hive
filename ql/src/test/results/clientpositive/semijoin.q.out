@@ -1137,13 +1137,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce Local Work
       Alias -> Map Local Tables:
         b 
@@ -1193,38 +1192,27 @@ STAGE PLANS:
                 1 [Column[_col0]]
               outputColumnNames: _col0
               Position of Big Table: 0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: int
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: int
+                    sort order: +
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: int
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: int
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: int
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1712,13 +1700,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b c))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-1 depends on stages: Stage-5
-  Stage-2 depends on stages: Stage-1
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
         b 
@@ -1802,38 +1789,27 @@ STAGE PLANS:
                 2 [Column[_col0]]
               outputColumnNames: _col0
               Position of Big Table: 0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: int
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: int
+                    sort order: +
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: int
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: int
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: int
       Reduce Operator Tree:
         Extract
           File Output Operator

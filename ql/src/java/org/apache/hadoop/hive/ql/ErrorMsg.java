@@ -324,6 +324,9 @@ public enum ErrorMsg {
     "(higher than the number of rows per input row due to grouping sets in the query), or " +
     "rewrite the query to not use distincts."),
 
+  OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
+    "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),

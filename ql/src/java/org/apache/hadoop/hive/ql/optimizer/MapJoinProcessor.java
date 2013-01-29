@@ -227,7 +227,7 @@ public class MapJoinProcessor implements Transform {
       QBJoinTree newJoinTree = newWork.getJoinTree();
       // generate the map join operator; already checked the map join
       MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
-          newJoinTree, mapJoinPos, true);
+          newJoinTree, mapJoinPos, true, false);
       // generate the local work and return the big table alias
       String bigTableAlias = MapJoinProcessor
           .genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
@@ -241,7 +241,41 @@ public class MapJoinProcessor implements Transform {
       e.printStackTrace();
       throw new SemanticException("Generate New MapJoin Opertor Exeception " + e.getMessage());
     }
+  }
 
+  private static void checkParentOperatorType(Operator<? extends OperatorDesc> op)
+      throws SemanticException {
+    if (!op.opAllowedBeforeMapJoin()) {
+      throw new SemanticException(ErrorMsg.OPERATOR_NOT_ALLOWED_WITH_MAPJOIN.getMsg());
+    }
+    if (op.getParentOperators() != null) {
+      for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
+        checkParentOperatorType(parentOp);
+      }
+    }
+  }
+
+  private static void checkChildOperatorType(Operator<? extends OperatorDesc> op)
+      throws SemanticException {
+    if (!op.opAllowedAfterMapJoin()) {
+      throw new SemanticException(ErrorMsg.OPERATOR_NOT_ALLOWED_WITH_MAPJOIN.getMsg());
+    }
+    if (op.getChildOperators() != null) {
+      for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+        checkChildOperatorType(childOp);
+      }
+    }
+  }
+
+  private static void validateMapJoinTypes(Operator<? extends OperatorDesc> op)
+      throws SemanticException {
+    for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
+      checkParentOperatorType(parentOp);
+    }
+
+    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+      checkChildOperatorType(childOp);
+    }
   }
 
   /**
@@ -259,8 +293,10 @@ public class MapJoinProcessor implements Transform {
    */
   public static MapJoinOperator convertMapJoin(
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-    JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
+    JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
+    boolean validateMapJoinTree)
     throws SemanticException {
+
     // outer join cannot be performed on a table which is being cached
     JoinDesc desc = op.getConf();
     JoinCondDesc[] condns = desc.getConds();
@@ -477,6 +513,11 @@ public class MapJoinProcessor implements Transform {
     op.setChildOperators(null);
     op.setParentOperators(null);
 
+    // make sure only map-joins can be performed.
+    if (validateMapJoinTree) {
+      validateMapJoinTypes(mapJoinOp);
+    }
+
     return mapJoinOp;
   }
 
@@ -487,11 +528,10 @@ public class MapJoinProcessor implements Transform {
         HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN);
 
-
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap = pctx
         .getOpParseCtx();
     MapJoinOperator mapJoinOp = convertMapJoin(opParseCtxMap, op, joinTree, mapJoinPos,
-        noCheckOuterJoin);
+        noCheckOuterJoin, true);
     // create a dummy select to select all columns
     genSelectPlan(pctx, mapJoinOp);
     return mapJoinOp;

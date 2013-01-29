@@ -934,4 +934,13 @@ transient boolean newGroupStarted = false;
     this.posToAliasMap = posToAliasMap;
   }
 
+  @Override
+  public boolean opAllowedBeforeMapJoin() {
+    return false;
+  }
+
+  @Override
+  public boolean opAllowedAfterMapJoin() {
+    return false;
+  }
 }

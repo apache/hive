@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -107,7 +106,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
-import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink4;
 import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
@@ -2441,7 +2439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean subQuery = qb.getParseInfo().getIsSubQ();
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
-            : getUnescapedName((ASTNode)expr.getChild(0)).toLowerCase(),
+            : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
             expr, col_list, inputRR, pos, out_rwsch, qb.getAliases(), subQuery);
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
@@ -2455,7 +2453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
-          .getChild(0).getText().toLowerCase())) && !hasAsClause
+              .getChild(0).getText().toLowerCase())) && !hasAsClause
           && !inputRR.getIsExprResolver()
           && isRegex(unescapeIdentifier(expr.getChild(1).getText()))) {
         // In case the expression is TABLE.COL (col can be regex).
@@ -2463,7 +2461,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
             unescapeIdentifier(expr.getChild(0).getChild(0).getText()
-            .toLowerCase()), expr, col_list, inputRR, pos, out_rwsch,
+                .toLowerCase()), expr, col_list, inputRR, pos, out_rwsch,
             qb.getAliases(), subQuery);
       } else {
         // Case when this is an expression
@@ -5113,7 +5111,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // set the stats publishing/aggregating key prefix
     // the same as directory name. The directory name
-    // can be changed in the optimizer  but the key should not be changed
+    // can be changed in the optimizer but the key should not be changed
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName());
 
@@ -8087,24 +8085,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opRules.put(new RuleRegExp(new String("R6"),
         UnionOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
         new GenMRRedSink3());
-    opRules.put(new RuleRegExp(new String("R6"),
-        MapJoinOperator.getOperatorName() + "%.*" + ReduceSinkOperator.getOperatorName() + "%"),
-        new GenMRRedSink4());
     opRules.put(new RuleRegExp(new String("R7"),
-        TableScanOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
+        MapJoinOperator.getOperatorName() + "%"),
         MapJoinFactory.getTableScanMapJoin());
-    opRules.put(new RuleRegExp(new String("R8"),
-        ReduceSinkOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
-        MapJoinFactory.getReduceSinkMapJoin());
-    opRules.put(new RuleRegExp(new String("R9"),
-        UnionOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
-        MapJoinFactory.getUnionMapJoin());
-    opRules.put(new RuleRegExp(new String("R10"),
-        MapJoinOperator.getOperatorName() + "%.*" + MapJoinOperator.getOperatorName() + "%"),
-        MapJoinFactory.getMapJoinMapJoin());
-    opRules.put(new RuleRegExp(new String("R11"),
-        MapJoinOperator.getOperatorName() + "%" + SelectOperator.getOperatorName() + "%"),
-        MapJoinFactory.getMapJoin());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

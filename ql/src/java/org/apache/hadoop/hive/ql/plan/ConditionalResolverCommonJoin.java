@@ -19,15 +19,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,7 +47,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     HashMap<String, ArrayList<String>> pathToAliases;
     HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
-    
+
     private String localTmpDir;
     private String hdfsTmpDir;
 
@@ -155,7 +151,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       return (int)(size - o.size);
     }
   }
-  
+
   private String resolveMapJoinTask(
       HashMap<String, ArrayList<String>> pathToAliases,
       HashMap<String, Task<? extends Serializable>> aliasToTask,
@@ -164,14 +160,14 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
 
     String bigTableFileAlias = null;
     long smallTablesFileSizeSum = 0;
-    
+
     Map<String, AliasFileSizePair> aliasToFileSizeMap = new HashMap<String, AliasFileSizePair>();
     for (Map.Entry<String, Long> entry : aliasToKnownSize.entrySet()) {
       String alias = entry.getKey();
       AliasFileSizePair pair = new AliasFileSizePair(alias, entry.getValue());
       aliasToFileSizeMap.put(alias, pair);
     }
-    
+
     try {
       // need to compute the input size at runtime, and select the biggest as
       // the big table.
@@ -199,7 +195,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       }
       // generate file size to alias mapping; but not set file size as key,
       // because different file may have the same file size.
-      
+
       List<AliasFileSizePair> aliasFileSizeList = new ArrayList<AliasFileSizePair>(
           aliasToFileSizeMap.values());
 

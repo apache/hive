@@ -25,7 +25,6 @@ import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -79,9 +78,6 @@ public class UnionProcessor implements Transform {
     opRules.put(new RuleRegExp("R3",
       TableScanOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
       UnionProcFactory.getMapUnion());
-    opRules.put(new RuleRegExp("R4",
-      MapJoinOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
-      UnionProcFactory.getMapJoinUnion());
 
     // The dispatcher fires the processor for the matching rule and passes the
     // context along

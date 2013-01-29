@@ -1478,4 +1478,22 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public boolean supportUnionRemoveOptimization() {
     return false;
   }
+
+  /*
+   * This operator is allowed before mapjoin. Eventually, mapjoin hint should be done away with.
+   * But, since bucketized mapjoin and sortmerge join depend on it completely. it is needed.
+   * Check the operators which are allowed before mapjoin.
+   */
+  public boolean opAllowedBeforeMapJoin() {
+    return true;
+  }
+
+  /*
+   * This operator is allowed after mapjoin. Eventually, mapjoin hint should be done away with.
+   * But, since bucketized mapjoin and sortmerge join depend on it completely. it is needed.
+   * Check the operators which are allowed after mapjoin.
+   */
+  public boolean opAllowedAfterMapJoin() {
+    return true;
+  }
 }
