@@ -321,4 +321,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   public OperatorType getType() {
     return OperatorType.REDUCESINK;
   }
+
+  @Override
+  public boolean opAllowedBeforeMapJoin() {
+    return false;
+  }
 }

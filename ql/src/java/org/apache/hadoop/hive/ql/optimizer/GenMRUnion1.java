@@ -26,7 +26,6 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
@@ -44,10 +42,8 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -84,16 +80,10 @@ public class GenMRUnion1 implements NodeProcessor {
     }
 
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
-    if ((uPrsCtx != null) && (uPrsCtx.getMapJoinQuery())) {
-      GenMapRedUtils.mergeMapJoinUnion(union, ctx,
-          UnionProcFactory.getPositionParent(union, stack));
-    }
-    else {
-      ctx.getMapCurrCtx().put(
-          (Operator<? extends OperatorDesc>) union,
-          new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
-              ctx.getCurrAliasId()));
-    }
+    ctx.getMapCurrCtx().put(
+        (Operator<? extends OperatorDesc>) union,
+        new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+            ctx.getCurrAliasId()));
 
     // if the union is the first time seen, set current task to GenMRUnionCtx
     uCtxTask = ctx.getUnionTask(union);
@@ -103,7 +93,7 @@ public class GenMRUnion1 implements NodeProcessor {
       ctx.setUnionTask(union, uCtxTask);
     }
 
-    Task<? extends Serializable> uTask=ctx.getCurrTask();
+    Task<? extends Serializable> uTask = ctx.getCurrTask();
     if (uTask.getParentTasks() == null
         || uTask.getParentTasks().isEmpty()) {
       if (!ctx.getRootTasks().contains(uTask)) {
@@ -134,8 +124,9 @@ public class GenMRUnion1 implements NodeProcessor {
       GenMRUnionCtx uCtxTask) {
     ParseContext parseCtx = ctx.getParseCtx();
 
-    TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils.getFieldSchemasFromRowSchema(
-        parent.getSchema(), "temporarycol"));
+    TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
+        .getFieldSchemasFromRowSchema(
+            parent.getSchema(), "temporarycol"));
 
     // generate the temporary file
     Context baseCtx = parseCtx.getContext();
@@ -150,7 +141,7 @@ public class GenMRUnion1 implements NodeProcessor {
     parent.getChildOperators().set(0, fs_op);
 
     List<Operator<? extends OperatorDesc>> parentOpList =
-      new ArrayList<Operator<? extends OperatorDesc>>();
+        new ArrayList<Operator<? extends OperatorDesc>>();
     parentOpList.add(parent);
     fs_op.setParentOperators(parentOpList);
 
@@ -158,7 +149,7 @@ public class GenMRUnion1 implements NodeProcessor {
     Operator<? extends OperatorDesc> ts_op = OperatorFactory.get(
         new TableScanDesc(), parent.getSchema());
     List<Operator<? extends OperatorDesc>> childOpList =
-      new ArrayList<Operator<? extends OperatorDesc>>();
+        new ArrayList<Operator<? extends OperatorDesc>>();
     childOpList.add(child);
     ts_op.setChildOperators(childOpList);
     child.replaceParent(parent, ts_op);
@@ -212,27 +203,9 @@ public class GenMRUnion1 implements NodeProcessor {
     }
   }
 
-  private void processSubQueryUnionMapJoin(GenMRProcContext ctx) {
-    AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = ctx.getCurrMapJoinOp();
-    assert mjOp != null;
-    GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
-    assert mjCtx != null;
-    MapredWork plan = (MapredWork) ctx.getCurrTask().getWork();
-
-    String taskTmpDir = mjCtx.getTaskTmpDir();
-    TableDesc tt_desc = mjCtx.getTTDesc();
-    assert plan.getPathToAliases().get(taskTmpDir) == null;
-    plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-    plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
-    plan.getPathToPartitionInfo().put(taskTmpDir,
-        new PartitionDesc(tt_desc, null));
-    plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
-  }
-
   /**
    * Union Operator encountered . Currently, the algorithm is pretty simple: If
-   * all the sub-queries are map-only, don't do anything. However, if there is a
-   * mapjoin followed by the union, merge at the union Otherwise, insert a
+   * all the sub-queries are map-only, don't do anything. Otherwise, insert a
    * FileSink on top of all the sub-queries.
    *
    * This can be optimized later on.
@@ -284,8 +257,7 @@ public class GenMRUnion1 implements NodeProcessor {
     }
 
     // Copy into the current union task plan if
-    if (uPrsCtx.getMapOnlySubq(pos)
-        && !uPrsCtx.getMapJoinSubq(pos) && uPrsCtx.getRootTask(pos)) {
+    if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)) {
       processSubQueryUnionMerge(ctx, uCtxTask, union, stack);
     }
     // If it a map-reduce job, create a temporary file
@@ -295,13 +267,10 @@ public class GenMRUnion1 implements NodeProcessor {
           && (!ctx.getRootTasks().contains(currTask))) {
         ctx.getRootTasks().add(currTask);
       }
-      // If there is a mapjoin at position 'pos'
-      if (uPrsCtx.getMapJoinSubq(pos)) {
-        processSubQueryUnionMapJoin(ctx);
-      }
 
-      processSubQueryUnionCreateIntermediate(union.getParentOperators().get(pos), union, uTask, ctx, uCtxTask);
-      //the currAliasId and CurrTopOp is not valid any more
+      processSubQueryUnionCreateIntermediate(union.getParentOperators().get(pos), union, uTask,
+          ctx, uCtxTask);
+      // the currAliasId and CurrTopOp is not valid any more
       ctx.setCurrAliasId(null);
       ctx.setCurrTopOp(null);
       ctx.getOpTaskMap().put(null, uTask);

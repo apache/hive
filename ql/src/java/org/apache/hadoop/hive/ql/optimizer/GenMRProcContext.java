@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -40,7 +39,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -155,90 +153,10 @@ public class GenMRProcContext implements NodeProcessorCtx {
     }
   }
 
-  /**
-   * GenMRMapJoinCtx.
-   *
-   */
-  public static class GenMRMapJoinCtx {
-    String taskTmpDir;
-    TableDesc tt_desc;
-    Operator<? extends OperatorDesc> rootMapJoinOp;
-    AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin;
-
-    public GenMRMapJoinCtx() {
-      taskTmpDir = null;
-      tt_desc = null;
-      rootMapJoinOp = null;
-      oldMapJoin = null;
-    }
-
-    /**
-     * @param taskTmpDir
-     * @param tt_desc
-     * @param rootMapJoinOp
-     * @param oldMapJoin
-     */
-    public GenMRMapJoinCtx(String taskTmpDir, TableDesc tt_desc,
-        Operator<? extends OperatorDesc> rootMapJoinOp,
-        AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin) {
-      this.taskTmpDir = taskTmpDir;
-      this.tt_desc = tt_desc;
-      this.rootMapJoinOp = rootMapJoinOp;
-      this.oldMapJoin = oldMapJoin;
-    }
-
-    public void setTaskTmpDir(String taskTmpDir) {
-      this.taskTmpDir = taskTmpDir;
-    }
-
-    public String getTaskTmpDir() {
-      return taskTmpDir;
-    }
-
-    public void setTTDesc(TableDesc tt_desc) {
-      this.tt_desc = tt_desc;
-    }
-
-    public TableDesc getTTDesc() {
-      return tt_desc;
-    }
-
-    /**
-     * @return the childSelect
-     */
-    public Operator<? extends OperatorDesc> getRootMapJoinOp() {
-      return rootMapJoinOp;
-    }
-
-    /**
-     * @param rootMapJoinOp
-     *          the rootMapJoinOp to set
-     */
-    public void setRootMapJoinOp(Operator<? extends OperatorDesc> rootMapJoinOp) {
-      this.rootMapJoinOp = rootMapJoinOp;
-    }
-
-    /**
-     * @return the oldMapJoin
-     */
-    public AbstractMapJoinOperator<? extends MapJoinDesc> getOldMapJoin() {
-      return oldMapJoin;
-    }
-
-    /**
-     * @param oldMapJoin
-     *          the oldMapJoin to set
-     */
-    public void setOldMapJoin(AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin) {
-      this.oldMapJoin = oldMapJoin;
-    }
-  }
-
   private HiveConf conf;
   private
     HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap;
   private HashMap<UnionOperator, GenMRUnionCtx> unionTaskMap;
-  private HashMap<AbstractMapJoinOperator<? extends MapJoinDesc>, GenMRMapJoinCtx> mapJoinTaskMap;
   private List<Operator<? extends OperatorDesc>> seenOps;
   private List<FileSinkOperator> seenFileSinkOps;
 
@@ -250,7 +168,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
   private Task<? extends Serializable> currTask;
   private Operator<? extends OperatorDesc> currTopOp;
   private UnionOperator currUnionOp;
-  private AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp;
   private String currAliasId;
   private List<Operator<? extends OperatorDesc>> rootOps;
   private DependencyCollectionTask dependencyTaskForMultiInsert;
@@ -313,12 +230,10 @@ public class GenMRProcContext implements NodeProcessorCtx {
     currTask = null;
     currTopOp = null;
     currUnionOp = null;
-    currMapJoinOp = null;
     currAliasId = null;
     rootOps = new ArrayList<Operator<? extends OperatorDesc>>();
     rootOps.addAll(parseCtx.getTopOps().values());
     unionTaskMap = new HashMap<UnionOperator, GenMRUnionCtx>();
-    mapJoinTaskMap = new HashMap<AbstractMapJoinOperator<? extends MapJoinDesc>, GenMRMapJoinCtx>();
     dependencyTaskForMultiInsert = null;
     linkedFileDescTasks = null;
   }
@@ -488,18 +403,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
     this.currUnionOp = currUnionOp;
   }
 
-  public AbstractMapJoinOperator<? extends MapJoinDesc> getCurrMapJoinOp() {
-    return currMapJoinOp;
-  }
-
-  /**
-   * @param currMapJoinOp
-   *          current map join operator
-   */
-  public void setCurrMapJoinOp(AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
-    this.currMapJoinOp = currMapJoinOp;
-  }
-
   /**
    * @return current top alias
    */
@@ -521,14 +424,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
 
   public void setUnionTask(UnionOperator op, GenMRUnionCtx uTask) {
     unionTaskMap.put(op, uTask);
-  }
-
-  public GenMRMapJoinCtx getMapJoinCtx(AbstractMapJoinOperator<? extends MapJoinDesc> op) {
-    return mapJoinTaskMap.get(op);
-  }
-
-  public void setMapJoinCtx(AbstractMapJoinOperator<? extends MapJoinDesc> op, GenMRMapJoinCtx mjCtx) {
-    mapJoinTaskMap.put(op, mjCtx);
   }
 
   /**

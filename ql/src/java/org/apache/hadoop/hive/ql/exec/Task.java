@@ -75,8 +75,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public static final int CONVERTED_MAPJOIN = 2;
   public static final int CONVERTED_LOCAL_MAPJOIN = 3;
   public static final int BACKUP_COMMON_JOIN = 4;
-  public static final int LOCAL_MAPJOIN=5;
-
+  public static final int LOCAL_MAPJOIN = 5;
+  // The join task is converted to a mapjoin task. This can only happen if
+  // hive.auto.convert.join.noconditionaltask is set to true. No conditional task was
+  // created in case the mapjoin failed.
+  public static final int MAPJOIN_ONLY_NOBACKUP = 6;
 
   // Descendants tasks who subscribe feeds from this task
   protected transient List<Task<? extends Serializable>> feedSubscribers;

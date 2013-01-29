@@ -62,43 +62,6 @@ select count(*) from
   group by key
 ) subq2;
 
--- A join is being performed across different sub-queries, where a mapjoin is being performed in each of them.
--- Each sub-query should be converted to a sort-merge join.
-explain
-select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
-
-select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1;
-
 -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
 -- be converted to a sort-merge join.
 explain

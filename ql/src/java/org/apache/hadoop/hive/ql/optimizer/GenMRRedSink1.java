@@ -43,7 +43,11 @@ public class GenMRRedSink1 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered.
+   * Reduce Sink encountered.
+   * a) If we are seeing this RS for first time, we initialize plan corresponding to this RS.
+   * b) If we are seeing this RS for second or later time then either query had a join in which
+   *    case we will merge this plan with earlier plan involving this RS or plan for this RS
+   *    needs to be split in two branches.
    *
    * @param nd
    *          the reduce sink operator encountered
@@ -81,7 +85,7 @@ public class GenMRRedSink1 implements NodeProcessor {
     } else {
       // This will happen in case of joins. The current plan can be thrown away
       // after being merged with the original plan
-      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false, false, null);
+      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }

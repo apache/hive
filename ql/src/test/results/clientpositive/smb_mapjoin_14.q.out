@@ -55,7 +55,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -76,32 +75,21 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
               Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                Select Operator
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -175,7 +163,6 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -197,53 +184,42 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
               Select Operator
                 expressions:
                       expr: _col0
                       type: int
                 outputColumnNames: _col0
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  keys:
+                Select Operator
+                  expressions:
                         expr: _col0
                         type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
                           expr: _col0
                           type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      keys:
+                            expr: _col0
+                            type: int
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: int
+                        sort order: +
+                        Map-reduce partition columns:
+                              expr: _col0
+                              type: int
+                        tag: -1
+                        value expressions:
+                              expr: _col1
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -268,7 +244,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -359,7 +335,6 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -381,53 +356,42 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
               Select Operator
                 expressions:
                       expr: _col0
                       type: int
                 outputColumnNames: _col0
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  keys:
+                Select Operator
+                  expressions:
                         expr: _col0
                         type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
                           expr: _col0
                           type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      keys:
+                            expr: _col0
+                            type: int
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: int
+                        sort order: +
+                        Map-reduce partition columns:
+                              expr: _col0
+                              type: int
+                        tag: -1
+                        value expressions:
+                              expr: _col1
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -453,7 +417,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -516,382 +480,6 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6
-PREHOOK: query: -- A join is being performed across different sub-queries, where a mapjoin is being performed in each of them.
--- Each sub-query should be converted to a sort-merge join.
-explain
-select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
-POSTHOOK: query: -- A join is being performed across different sub-queries, where a mapjoin is being performed in each of them.
--- Each sub-query should be converted to a sort-merge join.
-explain
-select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value) val1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) val2)))) subq1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt1)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value) val1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) val2)))) subq2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt1)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)))) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) cnt1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) cnt1))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) cnt1)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) cnt1)))))
-
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2, Stage-7
-  Stage-4 depends on stages: Stage-3
-  Stage-6 is a root stage
-  Stage-7 depends on stages: Stage-6
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1:subq1:b 
-          TableScan
-            alias: b
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              outputColumnNames: _col0
-              Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                outputColumnNames: _col0
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  keys:
-                        expr: _col0
-                        type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: int
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-                  expr: _col1
-                  type: bigint
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        $INTNAME 
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: int
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: int
-              tag: 0
-              value expressions:
-                    expr: _col0
-                    type: int
-                    expr: _col1
-                    type: bigint
-        $INTNAME1 
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: int
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: int
-              tag: 1
-              value expressions:
-                    expr: _col1
-                    type: bigint
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col1}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col3
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-                  expr: _col1
-                  type: bigint
-                  expr: _col3
-                  type: bigint
-            outputColumnNames: _col0, _col1, _col2
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: int
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: bigint
-              sort order: +++
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: int
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: bigint
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src2:subq2:b 
-          TableScan
-            alias: b
-            Sorted Merge Bucket Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {key}
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-              outputColumnNames: _col0
-              Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-7
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                outputColumnNames: _col0
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  keys:
-                        expr: _col0
-                        type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          bucketGroup: false
-          keys:
-                expr: KEY._col0
-                type: int
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: int
-                  expr: _col1
-                  type: bigint
-            outputColumnNames: _col0, _col1
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-
-
-PREHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-#### A masked pattern was here ####
-POSTHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq1 group by key
-) src1
-join
-(
-  select key, count(*) as cnt1 from 
-  (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
-  ) subq2 group by key
-) src2
-on src1.key = src2.key
-order by src1.key, src1.cnt1, src2.cnt1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-#### A masked pattern was here ####
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-0	9	9
-2	1	1
-4	1	1
-5	9	9
-8	1	1
-9	1	1
 PREHOOK: query: -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
 -- be converted to a sort-merge join.
 explain
@@ -919,7 +507,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -949,31 +536,20 @@ STAGE PLANS:
                     0 [Column[_col0]]
                     1 [Column[_col0]]
                   Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          tag: -1
+                          value expressions:
+                                expr: _col0
+                                type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1058,7 +634,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1079,31 +654,20 @@ STAGE PLANS:
                 0 [Column[_col0]]
                 1 [Column[key]]
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+              Select Operator
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count()
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1212,7 +776,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1247,31 +810,20 @@ STAGE PLANS:
                       0 [Column[_col0]]
                       1 [Column[_col0]]
                     Position of Big Table: 1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                    Select Operator
+                      Select Operator
+                        Group By Operator
+                          aggregations:
+                                expr: count()
+                          bucketGroup: false
+                          mode: hash
+                          outputColumnNames: _col0
+                          Reduce Output Operator
+                            sort order: 
+                            tag: -1
+                            value expressions:
+                                  expr: _col0
+                                  type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1370,7 +922,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1400,31 +951,20 @@ STAGE PLANS:
                     0 [Column[_col0]]
                     1 [Column[_col0]]
                   Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          tag: -1
+                          value expressions:
+                                expr: _col0
+                                type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1498,13 +1038,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tbl1) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (. (TOK_TABLE_OR_COL a) key) 1) key) (TOK_SELEXPR (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL a) value)) value)))) subq1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tbl2) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (. (TOK_TABLE_OR_COL a) key) 1) key) (TOK_SELEXPR (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL a) value)) value)))) subq2) (= (. (TOK_TABLE_OR_COL subq1) key) (. (TOK_TABLE_OR_COL subq2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST subq1))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-4 is a root stage
-  Stage-1 depends on stages: Stage-4
-  Stage-2 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce Local Work
       Alias -> Map Local Tables:
         subq1:a 
@@ -1551,33 +1090,22 @@ STAGE PLANS:
                   0 [Column[_col0]]
                   1 [Column[_col0]]
                 Position of Big Table: 1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Select Operator
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1648,7 +1176,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1669,31 +1196,20 @@ STAGE PLANS:
                 0 [Column[_col0]]
                 1 [Column[key]]
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+              Select Operator
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count()
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1760,7 +1276,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1790,31 +1305,20 @@ STAGE PLANS:
                     0 [Column[_col0]]
                     1 [Column[key]]
                   Position of Big Table: 0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          tag: -1
+                          value expressions:
+                                expr: _col0
+                                type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1891,7 +1395,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1924,31 +1427,20 @@ STAGE PLANS:
                     1 [Column[_col0]]
                     2 [Column[_col0]]
                   Position of Big Table: 2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count()
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+                  Select Operator
+                    Select Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        Reduce Output Operator
+                          sort order: 
+                          tag: -1
+                          value expressions:
+                                expr: _col0
+                                type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2041,7 +1533,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -2062,32 +1553,21 @@ STAGE PLANS:
                 0 [Column[_col0]]
                 1 [Column[key]]
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Select Operator
-            Select Operator
               Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count()
-                  bucketGroup: false
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+                Select Operator
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

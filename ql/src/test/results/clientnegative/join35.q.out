@@ -1,0 +1,6 @@
+PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+FAILED: SemanticException [Error 10227]: Not all clauses are supported with mapjoin hint. Please remove mapjoin hint.

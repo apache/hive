@@ -1,0 +1,45 @@
+PREHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dst_union22
+PREHOOK: query: create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dst_union22_delta
+PREHOOK: query: insert overwrite table dst_union22 partition (ds='1')
+select key, value, key , value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dst_union22@ds=1
+POSTHOOK: query: insert overwrite table dst_union22 partition (ds='1')
+select key, value, key , value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dst_union22@ds=1
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table dst_union22_delta partition (ds='1')
+select key, key, value, key, value, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dst_union22_delta@ds=1
+POSTHOOK: query: insert overwrite table dst_union22_delta partition (ds='1')
+select key, key, value, key, value, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dst_union22_delta@ds=1
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10227]: Not all clauses are supported with mapjoin hint. Please remove mapjoin hint.

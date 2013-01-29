@@ -32,12 +32,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -52,7 +50,6 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -67,7 +64,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -166,10 +162,10 @@ public class GenMRFileSink1 implements NodeProcessor {
       }
     }
 
-    String finalName = processFS(nd, stack, opProcCtx, chDir);
+    String finalName = processFS(fsOp, stack, opProcCtx, chDir);
 
     // need to merge the files in the destination table/partitions
-    if (chDir && (finalName != null)) {
+    if (chDir) {
       createMergeJob((FileSinkOperator) nd, ctx, finalName);
     }
 
@@ -760,7 +756,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   /**
    * Process the FileSink operator to generate a MoveTask if necessary.
    *
-   * @param nd
+   * @param fsOp
    *          current FileSink operator
    * @param stack
    *          parent operators
@@ -771,15 +767,8 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @return the final file name to which the FileSinkOperator should store.
    * @throws SemanticException
    */
-  private String processFS(Node nd, Stack<Node> stack,
+  private String processFS(FileSinkOperator fsOp, Stack<Node> stack,
       NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
-
-    // Is it the dummy file sink after the mapjoin
-    FileSinkOperator fsOp = (FileSinkOperator) nd;
-    if ((fsOp.getParentOperators().size() == 1)
-        && (fsOp.getParentOperators().get(0) instanceof MapJoinOperator)) {
-      return null;
-    }
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     List<FileSinkOperator> seenFSOps = ctx.getSeenFileSinkOps();
@@ -881,24 +870,6 @@ public class GenMRFileSink1 implements NodeProcessor {
     if (currUnionOp != null) {
       opTaskMap.put(null, currTask);
       GenMapRedUtils.initUnionPlan(ctx, currUnionOp, currTask, false);
-      return dest;
-    }
-
-    AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp = ctx.getCurrMapJoinOp();
-
-    if (currMapJoinOp != null) {
-      opTaskMap.put(null, currTask);
-      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(currMapJoinOp);
-      MapredWork plan = (MapredWork) currTask.getWork();
-
-      String taskTmpDir = mjCtx.getTaskTmpDir();
-      TableDesc tt_desc = mjCtx.getTTDesc();
-      assert plan.getPathToAliases().get(taskTmpDir) == null;
-      plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-      plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
-      plan.getPathToPartitionInfo().put(taskTmpDir,
-          new PartitionDesc(tt_desc, null));
-      plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
       return dest;
     }
 

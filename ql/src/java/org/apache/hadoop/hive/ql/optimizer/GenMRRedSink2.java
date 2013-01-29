@@ -71,7 +71,7 @@ public class GenMRRedSink2 implements NodeProcessor {
     if (opMapTask == null) {
       GenMapRedUtils.splitPlan(op, ctx);
     } else {
-      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, true, false, null);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, true);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }
