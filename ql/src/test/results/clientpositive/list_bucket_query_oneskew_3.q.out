@@ -310,7 +310,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
@@ -348,7 +347,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
@@ -386,7 +384,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
@@ -429,11 +426,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT x,y,z FROM fact_daily WHERE ds='1' and not (x = 86)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT x,y,z FROM fact_daily WHERE ds='1' and not (x = 86)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

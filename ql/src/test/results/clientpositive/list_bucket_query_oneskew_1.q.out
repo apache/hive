@@ -226,7 +226,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x
               columns.types int
@@ -267,11 +266,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -341,7 +342,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x
               columns.types int
@@ -382,11 +382,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=495
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=495
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -452,7 +454,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x
               columns.types int
@@ -492,10 +493,12 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

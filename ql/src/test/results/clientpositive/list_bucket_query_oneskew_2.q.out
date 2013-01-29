@@ -251,7 +251,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y
               columns.types int:string
@@ -292,11 +291,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 select x from (select * from fact_daily where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 select x from (select * from fact_daily where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -379,7 +380,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y
               columns.types int:string
@@ -420,11 +420,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -502,7 +504,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y
               columns.types int:string
@@ -577,11 +578,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -659,7 +662,6 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
-              EXTERNAL TRUE
               bucket_count -1
               columns x,y
               columns.types int:string
@@ -741,11 +743,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

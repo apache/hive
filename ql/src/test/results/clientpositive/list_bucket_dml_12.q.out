@@ -344,7 +344,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_mul_col
               numFiles 4
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 6312
@@ -387,11 +386,13 @@ STAGE PLANS:
 PREHOOK: query: select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_mul_col
 PREHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_mul_col
 POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col1 EXPRESSION []
@@ -488,7 +489,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_mul_col
               numFiles 4
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 6312
@@ -531,11 +531,13 @@ STAGE PLANS:
 PREHOOK: query: select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_mul_col
 PREHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_mul_col
 POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col1 EXPRESSION []
