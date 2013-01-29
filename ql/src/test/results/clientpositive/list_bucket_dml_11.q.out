@@ -302,7 +302,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_static_part
               numFiles 4
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 4812
@@ -344,10 +343,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and value = "val_466"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and value = "val_466"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -97,10 +97,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -177,7 +179,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -220,11 +221,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -303,7 +306,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -346,11 +348,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -428,7 +432,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -471,11 +474,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -553,7 +558,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
-              numPartitions 1
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -596,11 +600,13 @@ STAGE PLANS:
 PREHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '369'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
 SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '369'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

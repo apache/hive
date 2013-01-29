@@ -325,7 +325,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 1
-              numPartitions 3
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -367,10 +366,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from fact_daily where ds = '1' and  hr='1' and key='145'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from fact_daily where ds = '1' and  hr='1' and key='145'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -439,7 +440,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 1
-              numPartitions 3
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -510,10 +510,12 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -604,7 +606,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 3
-              numPartitions 3
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -646,10 +647,12 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -740,7 +743,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.fact_daily
               numFiles 2
-              numPartitions 3
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -782,10 +784,12 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

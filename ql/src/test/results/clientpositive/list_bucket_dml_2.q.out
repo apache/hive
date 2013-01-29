@@ -117,7 +117,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -164,7 +163,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -234,12 +232,14 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
@@ -302,11 +302,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -315,10 +317,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 1000
 PREHOOK: query: select count(*) from list_bucketing_static_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from list_bucketing_static_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -399,7 +403,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_static_part
               numFiles 6
-              numPartitions 1
               numRows 1000
               partition_columns ds/hr
               rawDataSize 9624
@@ -441,10 +444,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -453,11 +458,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 484	val_484	2008-04-08	11
 PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -469,6 +476,7 @@ PREHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 s
 -- but query should succeed for 51 or 51 and val_14
 select * from srcpart where ds = '2008-04-08' and key = '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -476,6 +484,7 @@ POSTHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 
 -- but query should succeed for 51 or 51 and val_14
 select * from srcpart where ds = '2008-04-08' and key = '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -487,10 +496,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 51	val_51	2008-04-08	12
 PREHOOK: query: select * from list_bucketing_static_part where key = '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from list_bucketing_static_part where key = '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -501,11 +512,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 51	val_51	2008-04-08	11
 PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -513,10 +526,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -524,12 +539,14 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 PREHOOK: query: -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
 select count(1) from srcpart where ds = '2008-04-08' and key < '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
 select count(1) from srcpart where ds = '2008-04-08' and key < '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -538,10 +555,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 910
 PREHOOK: query: select count(1) from list_bucketing_static_part where key < '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from list_bucketing_static_part where key < '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -549,11 +568,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 910
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key <= '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key <= '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -562,10 +583,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 914
 PREHOOK: query: select count(1) from list_bucketing_static_part where key <= '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from list_bucketing_static_part where key <= '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -573,11 +596,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 914
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key > '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key > '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -586,10 +611,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 86
 PREHOOK: query: select count(1) from list_bucketing_static_part where key > '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from list_bucketing_static_part where key > '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -597,11 +624,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 86
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key >= '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key >= '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -610,10 +639,12 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 90
 PREHOOK: query: select count(1) from list_bucketing_static_part where key >= '51'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from list_bucketing_static_part where key >= '51'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
