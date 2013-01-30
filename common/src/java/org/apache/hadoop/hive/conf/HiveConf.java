@@ -673,6 +673,17 @@ public class HiveConf extends Configuration {
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
         "hive.multi.insert.move.tasks.share.dependencies", false),
 
+    // If this is set, when writing partitions, the metadata will include the bucketing/sorting
+    // properties with which the data was written if any (this will not overwrite the metadata
+    // inherited from the table if the table is bucketed/sorted)
+    HIVE_INFER_BUCKET_SORT("hive.exec.infer.bucket.sort", false),
+    // If this is set, when setting the number of reducers for the map reduce task which writes the
+    // final output files, it will choose a number which is a power of two.  The number of reducers
+    // may be set to a power of two, only to be followed by a merge task meaning preventing
+    // anything from being inferred.
+    HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO(
+        "hive.exec.infer.bucket.sort.num.buckets.power.two", false),
+
     /* The following section contains all configurations used for list bucketing feature.*/
     /* This is not for clients. but only for block merge task. */
     /* This is used by BlockMergeTask to send out flag to RCFileMergeMapper */

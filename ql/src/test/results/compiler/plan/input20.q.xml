@@ -854,6 +854,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="keyDesc"> 
      <object idref="TableDesc0"/> 
     </void> 
@@ -1490,21 +1493,21 @@
       <void property="counterNames"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <string>CNTR_NAME_OP_4_NUM_INPUT_ROWS</string> 
+         <string>CNTR_NAME_EX_4_NUM_INPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_OP_4_NUM_OUTPUT_ROWS</string> 
+         <string>CNTR_NAME_EX_4_NUM_OUTPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_OP_4_TIME_TAKEN</string> 
+         <string>CNTR_NAME_EX_4_TIME_TAKEN</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_OP_4_FATAL_ERROR</string> 
+         <string>CNTR_NAME_EX_4_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 
       <void property="operatorId"> 
-       <string>OP_4</string> 
+       <string>EX_4</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 

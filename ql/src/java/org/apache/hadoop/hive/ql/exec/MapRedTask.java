@@ -422,6 +422,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
    * Estimate the number of reducers needed for this job, based on job input,
    * and configuration parameters.
    *
+   * The output of this method should only be used if the output of this
+   * MapRedTask is not being used to populate a bucketed table and the user
+   * has not specified the number of reducers to use.
+   *
    * @return the number of reducers.
    */
   private int estimateNumberOfReducers() throws IOException {
@@ -447,6 +451,30 @@ public class MapRedTask extends ExecDriver implements Serializable {
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
+
+    // If this map reduce job writes final data to a table and bucketing is being inferred,
+    // and the user has configured Hive to do this, make sure the number of reducers is a
+    // power of two
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
+        work.isFinalMapRed() && !work.getBucketedColsByDirectory().isEmpty()) {
+
+      int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
+      int reducersPowerTwo = (int)Math.pow(2, reducersLog);
+
+      // If the original number of reducers was a power of two, use that
+      if (reducersPowerTwo / 2 == reducers) {
+        return reducers;
+      } else if (reducersPowerTwo > maxReducers) {
+        // If the next power of two greater than the original number of reducers is greater
+        // than the max number of reducers, use the preceding power of two, which is strictly
+        // less than the original number of reducers and hence the max
+        reducers = reducersPowerTwo / 2;
+      } else {
+        // Otherwise use the smallest power of two greater than the original number of reducers
+        reducers = reducersPowerTwo;
+      }
+    }
+
     return reducers;
   }
 

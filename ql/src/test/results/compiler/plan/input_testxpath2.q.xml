@@ -851,6 +851,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="nameToSplitSample"> 
      <object class="java.util.HashMap"/> 
     </void> 

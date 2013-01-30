@@ -827,6 +827,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Path -> Sorted Columns:
+#### A masked pattern was here ####
       Truncated Path -> Alias:
         /src [src]
 
@@ -891,6 +893,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
+      Path -> Sorted Columns:
+#### A masked pattern was here ####
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 

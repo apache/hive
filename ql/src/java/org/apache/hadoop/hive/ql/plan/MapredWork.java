@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
+import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
@@ -92,6 +94,18 @@ public class MapredWork extends AbstractOperatorDesc {
   private boolean inputFormatSorted = false;
 
   private transient boolean useBucketizedHiveInputFormat;
+
+  // if this is true, this means that this is the map reduce task which writes the final data,
+  // ignoring the optional merge task
+  private boolean finalMapRed = false;
+
+  // If this map reduce task has a FileSinkOperator, and bucketing/sorting metadata can be
+  // inferred about the data being written by that operator, these are mappings from the directory
+  // that operator writes into to the bucket/sort columns for that data.
+  private final Map<String, List<BucketCol>> bucketedColsByDirectory =
+      new HashMap<String, List<BucketCol>>();
+  private final Map<String, List<SortCol>> sortedColsByDirectory =
+      new HashMap<String, List<SortCol>>();
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -277,6 +291,16 @@ public class MapredWork extends AbstractOperatorDesc {
 
   public void setNumReduceTasks(final Integer numReduceTasks) {
     this.numReduceTasks = numReduceTasks;
+  }
+
+  @Explain(displayName = "Path -> Bucketed Columns", normalExplain = false)
+  public Map<String, List<BucketCol>> getBucketedColsByDirectory() {
+    return bucketedColsByDirectory;
+  }
+
+  @Explain(displayName = "Path -> Sorted Columns", normalExplain = false)
+  public Map<String, List<SortCol>> getSortedColsByDirectory() {
+    return sortedColsByDirectory;
   }
 
   @SuppressWarnings("nls")
@@ -524,5 +548,13 @@ public class MapredWork extends AbstractOperatorDesc {
 
   public void setUseBucketizedHiveInputFormat(boolean useBucketizedHiveInputFormat) {
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
+  }
+
+  public boolean isFinalMapRed() {
+    return finalMapRed;
+  }
+
+  public void setFinalMapRed(boolean finalMapRed) {
+    this.finalMapRed = finalMapRed;
   }
 }

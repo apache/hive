@@ -1467,6 +1467,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="keyDesc"> 
      <object idref="TableDesc1"/> 
     </void> 
