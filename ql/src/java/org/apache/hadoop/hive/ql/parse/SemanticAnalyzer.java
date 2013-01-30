@@ -8473,6 +8473,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     optm.initialize(conf);
     pCtx = optm.optimize();
 
+    // Generate column access stats if required - wait until column pruning takes place
+    // during optimization
+    if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS) == true) {
+      ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
+      setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess());
+    }
+
     // At this point we have the complete operator tree
     // from which we want to find the reduce operator
     genMapRedTasks(pCtx);
