@@ -548,6 +548,18 @@ public final class ColumnPrunerProcFactory {
         .getValueCols();
     ArrayList<String> newOutputColNames = new ArrayList<String>();
     java.util.ArrayList<ExprNodeDesc> newValueEval = new ArrayList<ExprNodeDesc>();
+    // ReduceSinkOperators that precede GroupByOperators have the keys in the schema in addition
+    // to the values.  These are not pruned.
+    List<ColumnInfo> oldSchema = oldRR.getRowSchema().getSignature();
+    for (ColumnInfo colInfo : oldSchema) {
+      if (colInfo.getInternalName().startsWith(Utilities.ReduceField.KEY.toString() + ".")) {
+        String[] nm = oldRR.reverseLookup(colInfo.getInternalName());
+        newRR.put(nm[0], nm[1], colInfo);
+        sig.add(colInfo);
+      } else {
+        break;
+      }
+    }
     for (int i = 0; i < retainFlags.length; i++) {
       if (retainFlags[i]) {
         newValueEval.add(originalValueEval.get(i));

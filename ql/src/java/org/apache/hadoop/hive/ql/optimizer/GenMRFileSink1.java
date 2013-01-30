@@ -97,6 +97,9 @@ public class GenMRFileSink1 implements NodeProcessor {
         parseCtx.getQB().getParseInfo().isInsertToTable();
     HiveConf hconf = parseCtx.getConf();
 
+    // Mark this task as a final map reduce task (ignoring the optional merge task)
+    ((MapredWork)currTask.getWork()).setFinalMapRed(true);
+
     // If this file sink desc has been processed due to a linked file sink desc,
     // use that task
     Map<FileSinkDesc, Task<? extends Serializable>> fileSinkDescs = ctx.getLinkedFileDescTasks();

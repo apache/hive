@@ -35,21 +35,28 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
+import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -276,6 +283,48 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
+
+          // Check if the bucketing and/or sorting columns were inferred
+          List<BucketCol> bucketCols = null;
+          List<SortCol> sortCols = null;
+          int numBuckets = -1;
+          Task task = this;
+          String path = tbd.getSourceDir();
+          // Find the first ancestor of this MoveTask which is some form of map reduce task
+          // (Either standard, local, or a merge)
+          while (task.getParentTasks() != null && task.getParentTasks().size() == 1) {
+            task = (Task)task.getParentTasks().get(0);
+            // If it was a merge task or a local map reduce task, nothing can be inferred
+            if (task instanceof BlockMergeTask || task instanceof MapredLocalTask) {
+              break;
+            }
+
+            // If it's a standard map reduce task, check what, if anything, it inferred about
+            // the directory this move task is moving
+            if (task instanceof MapRedTask) {
+              MapredWork work = (MapredWork)task.getWork();
+              bucketCols = work.getBucketedColsByDirectory().get(path);
+              sortCols = work.getSortedColsByDirectory().get(path);
+              numBuckets = work.getNumReduceTasks();
+              if (bucketCols != null || sortCols != null) {
+                // This must be a final map reduce task (the task containing the file sink
+                // operator that writes the final output)
+                assert work.isFinalMapRed();
+              }
+              break;
+            }
+
+            // If it's a move task, get the path the files were moved from, this is what any
+            // preceding map reduce task inferred information about, and moving does not invalidate
+            // those assumptions
+            // This can happen when a conditional merge is added before the final MoveTask, but the
+            // condition for merging is not met, see GenMRFileSink1.
+            if (task instanceof MoveTask) {
+              if (((MoveTask)task).getWork().getLoadFileWork() != null) {
+                path = ((MoveTask)task).getWork().getLoadFileWork().getSourceDir();
+              }
+            }
+          }
           // deal with dynamic partitions
           DynamicPartitionCtx dpCtx = tbd.getDPCtx();
           if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
@@ -314,6 +363,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             for (LinkedHashMap<String, String> partSpec: dp) {
               Partition partn = db.getPartition(table, partSpec, false);
 
+              if (bucketCols != null || sortCols != null) {
+                updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
+              }
+
               WriteEntity enty = new WriteEntity(partn, true);
               if (work.getOutputs() != null) {
                 work.getOutputs().add(enty);
@@ -344,6 +397,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd));
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
+
+          	if (bucketCols != null || sortCols != null) {
+          	  updatePartitionBucketSortColumns(table, partn, bucketCols, numBuckets, sortCols);
+            }
+
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
           	if (work.getOutputs() != null) {
@@ -369,6 +427,80 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
     return (tbd.getLbCtx() == null) ? false : tbd.getLbCtx()
         .isSkewedStoredAsDir();
+  }
+
+  /**
+   * Alters the bucketing and/or sorting columns of the partition provided they meet some
+   * validation criteria, e.g. the number of buckets match the number of files, and the
+   * columns are not partition columns
+   * @param table
+   * @param partn
+   * @param bucketCols
+   * @param numBuckets
+   * @param sortCols
+   * @throws IOException
+   * @throws InvalidOperationException
+   * @throws HiveException
+   */
+  private void updatePartitionBucketSortColumns(Table table, Partition partn,
+      List<BucketCol> bucketCols, int numBuckets, List<SortCol> sortCols)
+          throws IOException, InvalidOperationException, HiveException {
+
+    boolean updateBucketCols = false;
+    if (bucketCols != null) {
+      FileSystem fileSys = partn.getPartitionPath().getFileSystem(conf);
+      FileStatus[] fileStatus = Utilities.getFileStatusRecurse(
+          partn.getPartitionPath(), 1, fileSys);
+      // Verify the number of buckets equals the number of files
+      // This will not hold for dynamic partitions where not every reducer produced a file for
+      // those partitions.  In this case the table is not bucketed as Hive requires a files for
+      // each bucket.
+      if (fileStatus.length == numBuckets) {
+        List<String> newBucketCols = new ArrayList<String>();
+        updateBucketCols = true;
+        for (BucketCol bucketCol : bucketCols) {
+          if (bucketCol.getIndexes().get(0) < partn.getCols().size()) {
+            newBucketCols.add(partn.getCols().get(
+                bucketCol.getIndexes().get(0)).getName());
+          } else {
+            // If the table is bucketed on a partition column, not valid for bucketing
+            updateBucketCols = false;
+            break;
+          }
+        }
+        if (updateBucketCols) {
+          partn.getBucketCols().clear();
+          partn.getBucketCols().addAll(newBucketCols);
+          partn.getTPartition().getSd().setNumBuckets(numBuckets);
+        }
+      }
+    }
+
+    boolean updateSortCols = false;
+    if (sortCols != null) {
+      List<Order> newSortCols = new ArrayList<Order>();
+      updateSortCols = true;
+      for (SortCol sortCol : sortCols) {
+        if (sortCol.getIndexes().get(0) < partn.getCols().size()) {
+          newSortCols.add(new Order(
+            partn.getCols().get(sortCol.getIndexes().get(0)).getName(),
+            sortCol.getSortOrder() == '+' ? BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC :
+              BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC));
+        } else {
+          // If the table is sorted on a partition column, not valid for sorting
+          updateSortCols = false;
+          break;
+        }
+      }
+      if (updateSortCols) {
+        partn.getSortCols().clear();
+        partn.getSortCols().addAll(newSortCols);
+      }
+    }
+
+    if (updateBucketCols || updateSortCols) {
+      db.alterPartition(table.getDbName(), table.getTableName(), partn);
+    }
   }
 
   /*

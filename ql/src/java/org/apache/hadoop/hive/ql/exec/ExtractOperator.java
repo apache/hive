@@ -49,4 +49,16 @@ public class ExtractOperator extends Operator<ExtractDesc> implements
   public OperatorType getType() {
     return OperatorType.EXTRACT;
   }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "EX";
+  }
 }

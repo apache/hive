@@ -1663,6 +1663,39 @@
 </property>
 
 <property>
+  <name>hive.exec.infer.bucket.sort</name>
+  <value>false</value>
+  <description>
+    If this is set, when writing partitions, the metadata will include the bucketing/sorting
+    properties with which the data was written if any (this will not overwrite the metadata
+    inherited from the table if the table is bucketed/sorted)
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.infer.bucket.sort.num.buckets.power.two</name>
+  <value>false</value>
+  <description>
+    If this is set, when setting the number of reducers for the map reduce task which writes the
+    final output files, it will choose a number which is a power of two, unless the user specifies
+    the number of reducers to use using mapred.reduce.tasks.  The number of reducers
+    may be set to a power of two, only to be followed by a merge task meaning preventing
+    anything from being inferred.
+    With hive.exec.infer.bucket.sort set to true:
+    Advantages:  If this is not set, the number of buckets for partitions will seem arbitrary,
+                 which means that the number of mappers used for optimized joins, for example, will
+                 be very low.  With this set, since the number of buckets used for any partition is
+                 a power of two, the number of mappers used for optimized joins will be the least
+                 number of buckets used by any partition being joined.
+    Disadvantages: This may mean a much larger or much smaller number of reducers being used in the
+                   final map reduce job, e.g. if a job was originally going to take 257 reducers,
+                   it will now take 512 reducers, similarly if the max number of reducers is 511,
+                   and a job was going to use this many, it will now use 256 reducers.
+                 
+  </description>
+</property>
+
+<property>
   <name>hive.groupby.orderby.position.alias</name>
   <value>false</value>
   <description>Whether to enable using Column Position Alias in Group By or Order By</description>

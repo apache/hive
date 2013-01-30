@@ -91,6 +91,12 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
         //recursively remove this task from its children's parent task
         tsk.removeFromChildrenTasks();
       } else {
+        if (getParentTasks() != null) {
+          // This makes it so that we can go back up the tree later
+          for (Task<? extends Serializable> task : getParentTasks()) {
+            task.addDependentTask(tsk);
+          }
+        }
         // resolved task
         if (!driverContext.getRunnable().contains(tsk)) {
           console.printInfo(tsk.getId() + " is selected by condition resolver.");

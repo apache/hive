@@ -409,7 +409,7 @@ public class Hive {
   }
 
   /**
-   * Updates the existing table metadata with the new metadata.
+   * Updates the existing partition metadata with the new metadata.
    *
    * @param tblName
    *          name of the existing table
@@ -422,13 +422,30 @@ public class Hive {
   public void alterPartition(String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
     Table t = newTable(tblName);
+    alterPartition(t.getDbName(), t.getTableName(), newPart);
+  }
+
+  /**
+   * Updates the existing partition metadata with the new metadata.
+   *
+   * @param dbName
+   *          name of the exiting table's database
+   * @param tblName
+   *          name of the existing table
+   * @param newPart
+   *          new partition
+   * @throws InvalidOperationException
+   *           if the changes in metadata is not acceptable
+   * @throws TException
+   */
+  public void alterPartition(String dbName, String tblName, Partition newPart)
+      throws InvalidOperationException, HiveException {
     try {
       // Remove the DDL time so that it gets refreshed
       if (newPart.getParameters() != null) {
         newPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
       }
-      getMSC().alter_partition(t.getDbName(), t.getTableName(),
-          newPart.getTPartition());
+      getMSC().alter_partition(dbName, tblName, newPart.getTPartition());
 
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition.", e);

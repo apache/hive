@@ -40,4 +40,16 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
   public OperatorType getType() {
     return OperatorType.FORWARD;
   }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "FOR";
+  }
 }

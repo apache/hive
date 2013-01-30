@@ -1193,6 +1193,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="gatheringStats"> 
      <boolean>true</boolean> 
     </void> 
