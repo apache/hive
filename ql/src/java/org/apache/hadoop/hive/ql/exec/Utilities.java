@@ -1913,10 +1913,6 @@ public final class Utilities {
     }
   }
 
-  public static boolean supportCombineFileInputFormat() {
-    return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
-  }
-
   /**
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.

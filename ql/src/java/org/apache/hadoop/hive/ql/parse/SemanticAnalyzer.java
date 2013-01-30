@@ -4778,15 +4778,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-          if (dpCtx.getNumDPCols() > 0 &&
-              (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES) ||
-              HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES)) &&
-              Utilities.supportCombineFileInputFormat() == false) {
-            // Do not support merge for Hadoop versions (pre-0.20) that do not
-            // support CombineHiveInputFormat
-            HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
-            HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
-          }
           // turn on hive.task.progress to update # of partitions created to the JT
           HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS, true);
 

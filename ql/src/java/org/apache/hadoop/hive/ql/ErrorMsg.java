@@ -167,9 +167,6 @@ public enum ErrorMsg {
       + "hive.exec.dynamic.partition=true or specify partition column values"),
   DYNAMIC_PARTITION_STRICT_MODE(10096, "Dynamic partition strict mode requires at least one "
       + "static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict"),
-  DYNAMIC_PARTITION_MERGE(10097, "Dynamic partition does not support merging using "
-      + "non-CombineHiveInputFormat. Please check your hive.input.format setting and "
-      + "make sure your Hadoop version support CombineFileInputFormat"),
   NONEXISTPARTCOL(10098, "Non-Partition column appears in the partition specification: "),
   UNSUPPORTED_TYPE(10099, "DATE and DATETIME types aren't supported yet. Please use "
       + "TIMESTAMP instead"),
