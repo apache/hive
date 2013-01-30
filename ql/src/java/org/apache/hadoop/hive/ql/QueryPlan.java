@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
@@ -84,6 +85,7 @@ public class QueryPlan implements Serializable {
    */
   protected LineageInfo linfo;
   private TableAccessInfo tableAccessInfo;
+  private ColumnAccessInfo columnAccessInfo;
 
   private HashMap<String, String> idToTableNameMap;
 
@@ -113,6 +115,7 @@ public class QueryPlan implements Serializable {
     outputs = sem.getOutputs();
     linfo = sem.getLineageInfo();
     tableAccessInfo = sem.getTableAccessInfo();
+    columnAccessInfo = sem.getColumnAccessInfo();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
 
     queryId = makeQueryId();
@@ -775,6 +778,25 @@ public class QueryPlan implements Serializable {
    */
   public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
     this.tableAccessInfo = tableAccessInfo;
+  }
+
+  /**
+   * Gets the column access information.
+   *
+   * @return ColumnAccessInfo associated with the query.
+   */
+  public ColumnAccessInfo getColumnAccessInfo() {
+    return columnAccessInfo;
+  }
+
+  /**
+   * Sets the column access information.
+   *
+   * @param columnAccessInfo The ColumnAccessInfo structure that is set immediately after
+   * the optimization phase.
+   */
+  public void setColumnAccessInfo(ColumnAccessInfo columnAccessInfo) {
+    this.columnAccessInfo = columnAccessInfo;
   }
 
   public QueryProperties getQueryProperties() {

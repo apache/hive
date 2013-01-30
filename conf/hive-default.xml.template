@@ -1138,6 +1138,14 @@
 </property>
 
 <property>
+  <name>hive.stats.collect.scancols</name>
+  <value>false</value>
+  <description>Whether column accesses are tracked in the QueryPlan.
+    This is useful to identify how tables are accessed and to determine if there are wasted columns that can be trimmed.
+  </description>
+</property>
+
+<property>
   <name>hive.stats.ndv.error</name>
   <value>20.0</value>
   <description>Standard error expressed in percentage. Provides a tradeoff between accuracy and compute cost.A lower value for error indicates higher accuracy and a higher compute cost.

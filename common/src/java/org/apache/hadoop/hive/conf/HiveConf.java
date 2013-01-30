@@ -566,6 +566,8 @@ public class HiveConf extends Configuration {
     HIVE_STATS_RELIABLE("hive.stats.reliable", false),
     // Collect table access keys information for operators that can benefit from bucketing
     HIVE_STATS_COLLECT_TABLEKEYS("hive.stats.collect.tablekeys", false),
+    // Collect column access information
+    HIVE_STATS_COLLECT_SCANCOLS("hive.stats.collect.scancols", false),
     // standard error allowed for ndv estimates. A lower value indicates higher accuracy and a
     // higher compute cost.
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
