@@ -401,7 +401,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
           // Try the output as a primitive object
           if (isPrintable(val)) {
-            if (out != null) {
+            if (out != null && shouldPrint(xpl_note, val)) {
               out.printf("%s ", header);
               out.println(val);
             }
@@ -471,6 +471,23 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return json;
     }
     return null;
+  }
+
+  /**
+   * use case: we want to print the object in explain only if it is true
+   * how to do : print it unless the following 3 are all true:
+   * 1. displayOnlyOnTrue tag is on
+   * 2. object is boolean
+   * 3. object is false
+   * @param exp
+   * @param val
+   * @return
+   */
+  private static boolean shouldPrint(Explain exp, Object val) {
+    if (exp.displayOnlyOnTrue() && (val instanceof Boolean) & !((Boolean)val)) {
+      return false;
+    }
+    return true;
   }
 
   private static JSONObject outputPlan(Task<? extends Serializable> task,

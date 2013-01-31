@@ -175,6 +175,7 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+              BucketMapJoin: true
               Select Operator
                 Select Operator
                   Group By Operator
@@ -415,6 +416,7 @@ STAGE PLANS:
                 0 [Column[key], Column[part]]
                 1 [Column[key], Column[part]]
               Position of Big Table: 0
+              BucketMapJoin: true
               Select Operator
                 Select Operator
                   Group By Operator
