@@ -237,6 +237,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.bigTablePartSpecToFileMapping = partToFileMapping;
   }
 
+  @Explain(displayName = "BucketMapJoin", normalExplain = false, displayOnlyOnTrue = true)
   public boolean isBucketMapJoin() {
     return isBucketMapJoin;
   }

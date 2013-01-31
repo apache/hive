@@ -30,4 +30,6 @@ public @interface Explain {
   String displayName() default "";
 
   boolean normalExplain() default true;
+
+  boolean displayOnlyOnTrue() default false;
 }

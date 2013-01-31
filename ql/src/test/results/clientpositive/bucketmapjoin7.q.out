@@ -108,6 +108,7 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0, _col7
               Position of Big Table: 0
+              BucketMapJoin: true
               Select Operator
                 expressions:
                       expr: _col0
