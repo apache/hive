@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
+import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
@@ -280,6 +282,17 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       if (!this.getWork().getNoStatsAggregator()) {
         String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
         StatsFactory.setImplementation(statsImplementationClass, conf);
+        if (work.isNoScanAnalyzeCommand()){
+          // initialize stats publishing table for noscan which has only stats task
+          // the rest of MR task following stats task initializes it in ExecDriver.java
+          StatsPublisher statsPublisher = StatsFactory.getStatsPublisher();
+          if (!statsPublisher.init(conf)) { // creating stats table if not exists
+            if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
+              throw
+                new HiveException(ErrorMsg.STATSPUBLISHER_INITIALIZATION_ERROR.getErrorCodedMsg());
+            }
+          }
+        }
         statsAggregator = StatsFactory.getStatsAggregator();
         // manufacture a StatsAggregator
         if (!statsAggregator.connect(conf)) {

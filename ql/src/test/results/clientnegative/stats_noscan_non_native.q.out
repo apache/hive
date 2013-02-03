@@ -1,0 +1,8 @@
+PREHOOK: query: CREATE TABLE non_native1(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE non_native1(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@non_native1
+FAILED: SemanticException [Error 10228]: ANALYZE TABLE NOSCAN cannot be used for a non-native table non_native1
