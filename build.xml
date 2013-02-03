@@ -59,11 +59,6 @@
   <property name="rat.build.dir" location="${build.dir.hive}/rat"/>
   <property name="md5sum.format" value="{0}  {1}"/>
 
-  <!-- Ignore Postgres upgrade scripts unless 'include.postgres' is true -->
-  <condition property="metastore.excludes"
-             value="${vcs.excludes}" else="${vcs.excludes},**/postgres/**">
-    <istrue value="${include.postgres}"/>
-  </condition>
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
@@ -421,9 +416,8 @@
     <mkdir dir="${target.lib.dir}/php"/>
     <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/metatool" todir="${target.bin.dir}"/>
-    <echo message="metastore.excludes = ${metastore.excludes}"/>
     <copy todir="${target.scripts.dir}/metastore/upgrade">
-      <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${metastore.excludes}"/>
+      <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.scripts.dir}/pdk">
       <fileset dir="${hive.root}/pdk/scripts" excludes="${vcs.excludes},README"/>
