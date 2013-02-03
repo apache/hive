@@ -66,6 +66,7 @@ public class QBParseInfo {
   private String partName;  // used for column statistics
   private boolean isTblLvl; // used for column statistics
 
+
   /**
    * ClusterBy is a short name for both DistributeBy and SortBy.
    */
@@ -96,6 +97,10 @@ public class QBParseInfo {
   private final LinkedHashMap<String, LinkedHashMap<String, ASTNode>> destToAggregationExprs;
   private final HashMap<String, List<ASTNode>> destToDistinctFuncExprs;
 
+  // used by Windowing
+  private final LinkedHashMap<String, LinkedHashMap<String, ASTNode>> destToWindowingExprs;
+
+
   @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(QBParseInfo.class.getName());
 
@@ -119,6 +124,7 @@ public class QBParseInfo {
     destGroupingSets = new HashSet<String>();
 
     destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
+    destToWindowingExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
     destToDistinctFuncExprs = new HashMap<String, List<ASTNode>>();
 
     this.alias = alias;
@@ -129,6 +135,14 @@ public class QBParseInfo {
 
     tableSpecs = new HashMap<String, BaseSemanticAnalyzer.tableSpec>();
 
+  }
+
+  /*
+   * If a QB is such that the aggregation expressions need to be handled by
+   * the Windowing PTF; we invoke this function to clear the AggExprs on the dest.
+   */
+  public void clearAggregationExprsForClause(String clause) {
+    destToAggregationExprs.get(clause).clear();
   }
 
   public void setAggregationExprsForClause(String clause,
@@ -156,6 +170,26 @@ public class QBParseInfo {
 
   public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {
     return destToAggregationExprs.get(clause);
+  }
+
+  public void addWindowingExprsForClause(String clause,
+      LinkedHashMap<String, ASTNode> windowingTrees) {
+    if (destToWindowingExprs.containsKey(clause)) {
+      destToWindowingExprs.get(clause).putAll(windowingTrees);
+    } else {
+      destToWindowingExprs.put(clause, windowingTrees);
+    }
+  }
+
+  public HashMap<String, ASTNode> getWindowingExprsForClause(String clause) {
+    return destToWindowingExprs.get(clause);
+  }
+
+  public void clearDistinctFuncExprsForClause(String clause) {
+    List<ASTNode> l = destToDistinctFuncExprs.get(clause);
+    if ( l != null ) {
+      l.clear();
+    }
   }
 
   public void setDistinctFuncExprsForClause(String clause, List<ASTNode> ast) {
@@ -578,3 +612,5 @@ public class QBParseInfo {
     this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
   }
 }
+
+

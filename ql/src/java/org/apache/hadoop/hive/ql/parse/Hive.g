@@ -284,6 +284,12 @@ TOK_SKEWED_LOCATIONS;
 TOK_SKEWED_LOCATION_LIST;
 TOK_SKEWED_LOCATION_MAP;
 TOK_STOREDASDIRS;
+TOK_PARTITIONINGSPEC;
+TOK_PTBLFUNCTION;
+TOK_WINDOWDEF;
+TOK_WINDOWSPEC;
+TOK_WINDOWVALUES;
+TOK_WINDOWRANGE;
 TOK_IGNOREPROTECTION;
 }
 
@@ -1555,9 +1561,10 @@ regular_body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?))
+                     distributeByClause? sortByClause? window_clause? limitClause?))
    |
    selectStatement
    ;
@@ -1573,9 +1580,10 @@ selectStatement
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?))
+                     distributeByClause? sortByClause? window_clause? limitClause?))
    ;
 
 
@@ -1590,9 +1598,10 @@ body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_INSERT insertClause?
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? limitClause?)
    |
    selectClause
    whereClause?
@@ -1602,9 +1611,10 @@ body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? limitClause?)
    ;
 
 insertClause
@@ -1714,7 +1724,10 @@ selectItem
 @init { msgs.push("selection target"); }
 @after { msgs.pop(); }
     :
-    ( selectExpression  ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?) -> ^(TOK_SELEXPR selectExpression Identifier*)
+    ( selectExpression  
+      ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?
+      (KW_OVER LPAREN ws=window_specification RPAREN )?
+    ) -> ^(TOK_SELEXPR selectExpression Identifier* $ws?)
     ;
 
 trfmClause
@@ -1841,7 +1854,7 @@ fromSource
 @init { msgs.push("from source"); }
 @after { msgs.pop(); }
     :
-    (tableSource | subQuerySource) (lateralView^)*
+    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource ) (lateralView^)*
     ;
 
 tableBucketSample
@@ -1903,6 +1916,95 @@ subQuerySource
     :
     LPAREN queryStatementExpression RPAREN Identifier -> ^(TOK_SUBQUERY queryStatementExpression Identifier)
     ;
+    
+//---------------------- Rules for parsing PTF clauses -----------------------------
+partitioningSpec
+@init { msgs.push("partitioningSpec clause"); }
+@after { msgs.pop(); } 
+   :
+   clusterByClause -> ^(TOK_PARTITIONINGSPEC clusterByClause) |
+   distributeByClause sortByClause? -> ^(TOK_PARTITIONINGSPEC distributeByClause sortByClause?)
+   ;
+
+partitionTableFunctionSource
+@init { msgs.push("partitionTableFunctionSource clause"); }
+@after { msgs.pop(); } 
+   :
+   subQuerySource |
+   tableSource |
+   partitionedTableFunction
+   ;
+
+partitionedTableFunction
+@init { msgs.push("ptf clause"); }
+@after { msgs.pop(); } 
+   :
+   name=Identifier 
+   LPAREN
+     ((expression COMMA)=> expression (COMMA expression)* KW_ON)?
+     ptfsrc=partitionTableFunctionSource partitioningSpec?
+   RPAREN alias=Identifier?
+   ->   ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
+   ;   
+   
+//---------------------- Rules for windowing clauses -------------------------------
+window_clause 
+@init { msgs.push("window_clause"); }
+@after { msgs.pop(); } 
+:
+  KW_WINDOW window_defn (COMMA window_defn)* -> ^(KW_WINDOW window_defn+)
+;  
+
+window_defn 
+@init { msgs.push("window_defn"); }
+@after { msgs.pop(); } 
+:
+  Identifier KW_AS window_specification -> ^(TOK_WINDOWDEF Identifier window_specification)
+;  
+
+window_specification 
+@init { msgs.push("window_specification"); }
+@after { msgs.pop(); } 
+:
+  Identifier? partitioningSpec? window_frame? -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
+;
+
+window_frame :
+ window_range_expression |
+ window_value_expression
+;
+
+window_range_expression 
+@init { msgs.push("window_range_expression"); }
+@after { msgs.pop(); } 
+:
+ KW_ROWS KW_BETWEEN s=rowsboundary KW_AND end=rowsboundary -> ^(TOK_WINDOWRANGE $s $end)
+;
+
+rowsboundary 
+@init { msgs.push("rowsboundary"); }
+@after { msgs.pop(); } 
+:
+  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
+  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
+  Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
+;
+
+window_value_expression 
+@init { msgs.push("window_value_expression"); }
+@after { msgs.pop(); } 
+:
+ KW_RANGE KW_BETWEEN s=valuesboundary KW_AND end=valuesboundary -> ^(TOK_WINDOWVALUES $s $end)
+;
+
+valuesboundary 
+@init { msgs.push("valuesboundary"); }
+@after { msgs.pop(); } 
+:
+  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
+  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
+  rowExp=expression rngExp=Number (d=KW_LESS | d=KW_MORE ) -> ^($d $rowExp $rngExp)
+;   
 
 //----------------------- Rules for parsing whereClause -----------------------------
 // where a=b and ...
@@ -2001,7 +2103,7 @@ clusterByClause
     |
     KW_CLUSTER KW_BY
     expression
-    ( COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
+    ( (COMMA)=> COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
     ;
 
 distributeByClause
@@ -2012,7 +2114,7 @@ distributeByClause
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
     |
     KW_DISTRIBUTE KW_BY
-    expression (COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
+    expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
 sortByClause
@@ -2025,7 +2127,7 @@ sortByClause
     |
     KW_SORT KW_BY
     columnRefOrder
-    ( COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
+    (  (COMMA)=> COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
     ;
 
 // fun(par1, par2, par3)
@@ -2038,8 +2140,9 @@ function
       (
         (star=STAR)
         | (dist=KW_DISTINCT)? (expression (COMMA expression)*)?
-      )
-    RPAREN -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName)
+      ) 
+    RPAREN
+           -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName)
            -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
                             -> ^(TOK_FUNCTIONDI functionName (expression+)?)
     ;
@@ -2604,6 +2707,14 @@ KW_ROLLUP: 'ROLLUP';
 KW_CUBE: 'CUBE';
 KW_DIRECTORIES: 'DIRECTORIES';
 KW_FOR: 'FOR';
+KW_WINDOW: 'WINDOW';
+KW_UNBOUNDED: 'UNBOUNDED';
+KW_PRECEDING: 'PRECEDING';
+KW_FOLLOWING: 'FOLLOWING';
+KW_CURRENT: 'CURRENT';
+KW_LESS: 'LESS';
+KW_MORE: 'MORE';
+KW_OVER: 'OVER';
 KW_GROUPING: 'GROUPING';
 KW_SETS: 'SETS';
 KW_TRUNCATE: 'TRUNCATE';

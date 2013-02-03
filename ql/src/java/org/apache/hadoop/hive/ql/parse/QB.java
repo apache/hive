@@ -52,6 +52,16 @@ public class QB {
   private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
 
+  // used by PTFs
+  /*
+   * This map maintains the PTFSpec for each PTF chain invocation in this QB.
+   */
+  private HashMap<ASTNode, PTFSpec> ptfNodeToSpec;
+  /*
+   * the PTFSpec used for windowing clauses in this QB.
+   */
+  private HashMap<String, PTFSpec> destToWindowingPTFSpec;
+
   // results
 
   public void print(String msg) {
@@ -76,6 +86,8 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
+    ptfNodeToSpec = new HashMap<ASTNode, PTFSpec>();
+    destToWindowingPTFSpec = new HashMap<String, PTFSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
   }
 
@@ -246,4 +258,35 @@ public class QB {
   public void setAnalyzeRewrite(boolean isAnalyzeRewrite) {
     this.isAnalyzeRewrite = isAnalyzeRewrite;
   }
+
+  public PTFSpec getPtfSpec(ASTNode node) {
+    return ptfNodeToSpec == null ? null : ptfNodeToSpec.get(node);
+  }
+
+  public void addPTFNodeToSpec(ASTNode node, PTFSpec spec) {
+    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFSpec>() : ptfNodeToSpec;
+    ptfNodeToSpec.put(node, spec);
+  }
+
+  public HashMap<ASTNode, PTFSpec> getPTFNodeToSpec() {
+    return ptfNodeToSpec;
+  }
+
+  public PTFSpec getWindowingPTFSpec(String dest) {
+    return destToWindowingPTFSpec.get(dest);
+  }
+
+  public void addDestToWindowingPTFSpec(String dest, PTFSpec windowingPTFSpec) {
+    destToWindowingPTFSpec.put(dest, windowingPTFSpec);
+  }
+
+  public boolean hasWindowingPTFSpec(String dest) {
+    return destToWindowingPTFSpec.get(dest) != null;
+  }
+
+  public HashMap<String, PTFSpec> getAllWindowingPTFSpecs() {
+    return destToWindowingPTFSpec;
+  }
+
+
 }

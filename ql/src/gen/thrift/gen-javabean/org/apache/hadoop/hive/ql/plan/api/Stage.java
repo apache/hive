@@ -911,7 +911,7 @@ public class Stage implements org.apache.thrift.TBase<Stage, Stage._Fields>, jav
                 for (int _i73 = 0; _i73 < _map72.size; ++_i73)
                 {
                   String _key74; // required
-                  String _val75; // optional
+                  String _val75; // required
                   _key74 = iprot.readString();
                   _val75 = iprot.readString();
                   struct.stageAttributes.put(_key74, _val75);
@@ -931,7 +931,7 @@ public class Stage implements org.apache.thrift.TBase<Stage, Stage._Fields>, jav
                 for (int _i77 = 0; _i77 < _map76.size; ++_i77)
                 {
                   String _key78; // required
-                  long _val79; // optional
+                  long _val79; // required
                   _key78 = iprot.readString();
                   _val79 = iprot.readI64();
                   struct.stageCounters.put(_key78, _val79);
@@ -1147,7 +1147,7 @@ public class Stage implements org.apache.thrift.TBase<Stage, Stage._Fields>, jav
           for (int _i90 = 0; _i90 < _map89.size; ++_i90)
           {
             String _key91; // required
-            String _val92; // optional
+            String _val92; // required
             _key91 = iprot.readString();
             _val92 = iprot.readString();
             struct.stageAttributes.put(_key91, _val92);
@@ -1162,7 +1162,7 @@ public class Stage implements org.apache.thrift.TBase<Stage, Stage._Fields>, jav
           for (int _i94 = 0; _i94 < _map93.size; ++_i94)
           {
             String _key95; // required
-            long _val96; // optional
+            long _val96; // required
             _key95 = iprot.readString();
             _val96 = iprot.readI64();
             struct.stageCounters.put(_key95, _val96);

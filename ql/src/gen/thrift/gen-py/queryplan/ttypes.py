@@ -63,6 +63,7 @@ class OperatorType:
   LATERALVIEWFORWARD = 15
   HASHTABLESINK = 16
   HASHTABLEDUMMY = 17
+  PTF = 18
 
   _VALUES_TO_NAMES = {
     0: "JOIN",
@@ -83,6 +84,7 @@ class OperatorType:
     15: "LATERALVIEWFORWARD",
     16: "HASHTABLESINK",
     17: "HASHTABLEDUMMY",
+    18: "PTF",
   }
 
   _NAMES_TO_VALUES = {
@@ -104,6 +106,7 @@ class OperatorType:
     "LATERALVIEWFORWARD": 15,
     "HASHTABLESINK": 16,
     "HASHTABLEDUMMY": 17,
+    "PTF": 18,
   }
 
 class TaskType:

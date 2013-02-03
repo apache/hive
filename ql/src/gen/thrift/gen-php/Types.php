@@ -53,6 +53,7 @@ final class OperatorType {
   const LATERALVIEWFORWARD = 15;
   const HASHTABLESINK = 16;
   const HASHTABLEDUMMY = 17;
+  const PTF = 18;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -72,6 +73,7 @@ final class OperatorType {
     15 => 'LATERALVIEWFORWARD',
     16 => 'HASHTABLESINK',
     17 => 'HASHTABLEDUMMY',
+    18 => 'PTF',
   );
 }
 

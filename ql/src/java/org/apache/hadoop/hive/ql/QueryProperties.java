@@ -37,6 +37,7 @@ public class QueryProperties {
   boolean hasOrderBy = false;
   boolean hasSortBy = false;
   boolean hasJoinFollowedByGroupBy = false;
+  boolean hasPTF = false;
 
   // does the query have a using clause
   boolean usesScript = false;
@@ -106,5 +107,13 @@ public class QueryProperties {
 
   public void setHasClusterBy(boolean hasClusterBy) {
     this.hasClusterBy = hasClusterBy;
+  }
+
+  public boolean hasPTF() {
+    return hasPTF;
+  }
+
+  public void setHasPTF(boolean hasPTF) {
+    this.hasPTF = hasPTF;
   }
 }
