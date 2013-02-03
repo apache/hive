@@ -56,6 +56,7 @@ public class QBParseInfo {
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isInsertToTable;  // used for insert overwrite command (statistics)
+  private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
 
   private final HashMap<String, tableSpec> tableSpecs; // used for statistics
 
@@ -561,5 +562,19 @@ public class QBParseInfo {
 
   public void setColType(List<String> colType) {
     this.colType = colType;
+  }
+
+  /**
+   * @return the isNoScanAnalyzeCommand
+   */
+  public boolean isNoScanAnalyzeCommand() {
+    return isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isNoScanAnalyzeCommand the isNoScanAnalyzeCommand to set
+   */
+  public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
+    this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
   }
 }

@@ -95,6 +95,16 @@ public class GenMRTableScan1 implements NodeProcessor {
           if (!ctx.getRootTasks().contains(currTask)) {
             ctx.getRootTasks().add(currTask);
           }
+
+          //        ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+          // The plan consists of a StatsTask only.
+          if (parseInfo.isNoScanAnalyzeCommand()) {
+            statsTask.setParentTasks(null);
+            statsWork.setNoScanAnalyzeCommand(true);
+            ctx.getRootTasks().remove(currTask);
+            ctx.getRootTasks().add(statsTask);
+          }
+
           currWork.setGatheringStats(true);
           // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
           // and pass it to setTaskPlan as the last parameter
@@ -102,7 +112,13 @@ public class GenMRTableScan1 implements NodeProcessor {
           tableSpec tblSpec = parseInfo.getTableSpec();
           if (tblSpec.specType == tableSpec.SpecType.STATIC_PARTITION) {
             // static partition
-            confirmedPartns.add(tblSpec.partHandle);
+            if (tblSpec.partHandle != null) {
+              confirmedPartns.add(tblSpec.partHandle);
+            } else {
+              // partial partition spec has null partHandle
+              assert parseInfo.isNoScanAnalyzeCommand();
+              confirmedPartns.addAll(tblSpec.partitions);
+            }
           } else if (tblSpec.specType == tableSpec.SpecType.DYNAMIC_PARTITION) {
             // dynamic partition
             confirmedPartns.addAll(tblSpec.partitions);

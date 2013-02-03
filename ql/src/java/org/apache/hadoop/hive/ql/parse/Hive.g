@@ -953,7 +953,7 @@ descStatement
 analyzeStatement
 @init { msgs.push("analyze statement"); }
 @after { msgs.pop(); }
-    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS (KW_FOR KW_COLUMNS statsColumnName=columnNameList)? -> ^(TOK_ANALYZE $parttype $statsColumnName?)
+    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (KW_FOR KW_COLUMNS statsColumnName=columnNameList))? -> ^(TOK_ANALYZE $parttype $noscan? $statsColumnName?)
     ;
 
 showStatement
@@ -2607,6 +2607,7 @@ KW_FOR: 'FOR';
 KW_GROUPING: 'GROUPING';
 KW_SETS: 'SETS';
 KW_TRUNCATE: 'TRUNCATE';
+KW_NOSCAN: 'NOSCAN';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

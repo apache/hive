@@ -229,6 +229,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
+  // flag to skip scan during analyze ... compute statistics
+  protected boolean noscan = false;
+
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -876,6 +879,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
+        qb.getParseInfo().setNoScanAnalyzeCommand(this.noscan);
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
@@ -1046,7 +1050,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getMetaData().setSrcForAlias(alias, tab);
 
         if (qb.getParseInfo().isAnalyzeCommand()) {
-          tableSpec ts = new tableSpec(db, conf, (ASTNode) ast.getChild(0));
+          // allow partial partition specification for nonscan since noscan is fast.
+          tableSpec ts = new tableSpec(db, conf, (ASTNode) ast.getChild(0), true, this.noscan);
           if (ts.specType == SpecType.DYNAMIC_PARTITION) { // dynamic partitions
             try {
               ts.partitions = db.getPartitionsByNames(ts.tableHandle, ts.partSpec);
@@ -9436,6 +9441,66 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       processPositionAlias((ASTNode) ast.getChild(child_pos));
     }
     return;
+  }
+
+  /**
+   * process analyze ... noscan command
+   * @param tree
+   * @throws SemanticException
+   */
+  protected void processNoScanCommand (ASTNode tree) throws SemanticException {
+    // check if it is noscan command
+    checkNoScan(tree);
+
+    //validate noscan
+    if (this.noscan) {
+      validateAnalyzeNoscan(tree);
+    }
+  }
+
+  /**
+   * Validate noscan command
+   *
+   * @param tree
+   * @throws SemanticException
+   */
+  private void validateAnalyzeNoscan(ASTNode tree) throws SemanticException {
+    // since it is noscan, it is true table name in command
+    String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
+    Table tbl;
+    try {
+      tbl = db.getTable(tableName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    /* noscan uses hdfs apis to retrieve such information from Namenode.      */
+    /* But that will be specific to hdfs. Through storagehandler mechanism,   */
+    /* storage of table could be on any storage system: hbase, cassandra etc. */
+    /* A nice error message should be given to user. */
+    if (tbl.isNonNative()) {
+      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_NOSCAN_NON_NATIVE.getMsg(tbl
+          .getTableName()));
+    }
+  }
+
+  /**
+   * It will check if this is analyze ... compute statistics noscan
+   * @param tree
+   */
+  private void checkNoScan(ASTNode tree) {
+    if (tree.getChildCount() > 1) {
+      ASTNode child0 = (ASTNode) tree.getChild(0);
+      ASTNode child1;
+      if (child0.getToken().getType() == HiveParser.TOK_TAB) {
+        child0 = (ASTNode) child0.getChild(0);
+        if (child0.getToken().getType() == HiveParser.TOK_TABNAME) {
+          child1 = (ASTNode) tree.getChild(1);
+          if (child1.getToken().getType() == HiveParser.KW_NOSCAN) {
+            this.noscan = true;
+          }
+        }
+      }
+    }
   }
 
 

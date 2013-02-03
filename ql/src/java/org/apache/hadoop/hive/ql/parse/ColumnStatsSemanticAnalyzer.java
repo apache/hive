@@ -504,6 +504,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
   public ColumnStatsSemanticAnalyzer(HiveConf conf, ASTNode tree) throws SemanticException {
     super(conf);
+    // check if it is no scan. grammar prevents coexit noscan/columns
+    super.processNoScanCommand(tree);
     /* Rewrite only analyze table <> column <> compute statistics; Don't rewrite analyze table
      * command - table stats are collected by the table scan operator and is not rewritten to
      * an aggregation.

@@ -45,6 +45,8 @@ public class StatsWork implements Serializable {
 
   private boolean noStatsAggregator = false;
 
+  private boolean isNoScanAnalyzeCommand = false;
+
   public StatsWork() {
   }
 
@@ -107,5 +109,19 @@ public class StatsWork implements Serializable {
 
   public void setClearAggregatorStats(boolean clearAggregatorStats) {
     this.clearAggregatorStats = clearAggregatorStats;
+  }
+
+  /**
+   * @return the isNoScanAnalyzeCommand
+   */
+  public boolean isNoScanAnalyzeCommand() {
+    return isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isNoScanAnalyzeCommand the isNoScanAnalyzeCommand to set
+   */
+  public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
+    this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
   }
 }
