@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -34,9 +37,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 public class TestMetaStoreAuthorization extends TestCase {
   protected HiveConf conf = new HiveConf();
 
-  private final int port = 10000;
+  private int port;
 
   public void setup() throws Exception {
+    port = findFreePort();
     System.setProperty(HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS.varname,
         "true");
     conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
@@ -110,5 +114,12 @@ public class TestMetaStoreAuthorization extends TestCase {
         fs.delete(p, true);
       }
     }
+  }
+
+  private int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
   }
 }
