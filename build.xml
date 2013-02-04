@@ -97,59 +97,24 @@
     </sequential>
   </macrodef>
 
-  <macrodef name="iterate-cpp">
-    <attribute name="target"/>
-    <sequential>
-      <subant target="@{target}">
-	<property name="thrift.home" value="${thrift.home}"/>
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <!-- TODO filelist dir="." files="metastore/build.xml,serde/build.xml,service/build.xml,odbc/build.xml"/-->
-        <filelist dir="." files="odbc/build.xml"/>
-      </subant>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="iterate-test">
-    <attribute name="target"/>
-    <sequential>
-      <subant target="@{target}">
-	<property name="thrift.home" value="${thrift.home}"/>
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <filelist dir="." files="ql/build.xml,contrib/build.xml,hbase-handler/build.xml,hwi/build.xml,jdbc/build.xml,metastore/build.xml,odbc/build.xml,serde/build.xml,service/build.xml"/>
-      </subant>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="iterate-thriftif">
-    <attribute name="target"/>
-    <sequential>
-      <subant target="@{target}">
-	<property name="thrift.home" value="${thrift.home}"/>
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <filelist dir="." files="ql/build.xml,service/build.xml,metastore/build.xml,serde/build.xml"/>
-      </subant>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="iterate-all">
-    <attribute name="target"/>
-    <sequential>
-      <subant target="@{target}">
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,contrib/build.xml,service/build.xml,cli/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml,ant/build.xml,pdk/build.xml,builtins/build.xml"/>
-      </subant>
-    </sequential>
-  </macrodef>
-
   <macrodef name="iterate">
     <attribute name="target"/>
+    <attribute name="iterate"/>
     <sequential>
-      <subant target="@{target}">
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,contrib/build.xml,service/build.xml,cli/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml,pdk/build.xml,builtins/build.xml"/>
-      </subant>
+      <if>
+        <isset property="module"/>
+        <then> <var name="target.module" value="${module}"/>  </then>
+        <else> <var name="target.module" value="@{iterate}"/> </else>
+      </if>
+      <for list="${target.module}" param="module">
+        <sequential>
+          <subant buildpath="@{module}/build.xml" target="@{target}">
+            <property name="is-offline" value="${is-offline}"/>
+            <property name="thrift.home" value="${thrift.home}"/>
+            <property name="build.dir.hive" location="${build.dir.hive}"/>
+          </subant>
+        </sequential>
+      </for>
     </sequential>
   </macrodef>
 
@@ -238,12 +203,12 @@
 
   <target name="init" depends="ivy-init-antlib,deploy-ant-tasks">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-all target="init"/>
+    <iterate target="init" iterate="${iterate.hive.all}"/>
   </target>
 
   <target name="test-init">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-all target="test-init"/>
+    <iterate target="test-init" iterate="${iterate.hive.all}"/>
   </target>
 
   <!-- target to deploy anttasks -->
@@ -272,53 +237,58 @@
       You must set thrift.home to the absolute path of your
       local Thrift installation.
     </fail>
-    <iterate-cpp target="compile-cpp"/>
+    <iterate target="compile-cpp" iterate="${iterate.hive.cpp}"/>
   </target>
 
   <target name="compile-cpp-clean"
           description="Clean CPP artifacts">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-cpp target="clean"/>
+    <iterate target="clean" iterate="${iterate.hive.cpp}"/>
   </target>
 
   <target name="compile" depends="compile-cpp">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate target="compile"/>
+    <iterate target="compile" iterate="${iterate.hive.modules}"/>
   </target>
 
   <target name="thriftif">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-thriftif target="thriftif"/>
+    <iterate target="thriftif" iterate="${iterate.hive.thrift}"/>
   </target>
 
   <target name="jar"
           depends="init"
           description="Build JAR artifacts">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate target="jar"/>
+    <iterate target="jar" iterate="${iterate.hive.modules}"/>
   </target>
 
   <target name="gen-test" depends="jar" description="Generate tests">
-    <iterate-test target="gen-test"/>
+    <iterate target="gen-test" iterate="${iterate.hive.tests}"/>
   </target>
   
   <target name="jar-test" depends="gen-test"
           description="Build Java test artifacts">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-test target="compile-test"/>
+    <iterate target="compile-test" iterate="${iterate.hive.tests}"/>
   </target>
   
   <target name="test" depends="clean-test,jar-test" description="Run tests">
     <echo message="Project: ${ant.project.name}"/>
-    <antcall target="test-shims">
-      <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
-    </antcall>
-    <for keepgoing="${test.continue.on.failure}" param="file">
-      <path>
-        <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*,shims/*"/>
-      </path>
+    <if>
+      <isset property="module"/>
+      <else>
+        <antcall target="test-shims">
+          <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
+        </antcall>
+      </else>
+    </if>
+    <condition property="target.module" value="${module}" else="${iterate.hive.test}">
+      <isset property="module"/>
+    </condition>
+    <for list="${target.module}" param="module">
       <sequential>
-        <ant antfile="@{file}" target="test" inheritAll="false" inheritRefs="true">
+        <ant antfile="@{module}/build.xml" target="test" inheritAll="false" inheritRefs="true">
           <property name="build.dir.hive" location="${build.dir.hive}"/>
           <property name="is-offline" value="${is-offline}"/>
         </ant>
@@ -351,7 +321,7 @@
   <target name="clean-test"
           description="Clean test results">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate target="clean-test"/>
+    <iterate target="clean-test" iterate="${iterate.hive.modules}"/>
     <delete dir="${build.dir.hive}/test"/>
     <delete dir="${hive.root}/ql/TempStatsStore"/>
   </target>
@@ -359,8 +329,8 @@
   <target name="clean"
           description="Clean build artifacts">
     <echo message="Project: ${ant.project.name}"/>
-    <iterate-all target="clean"/>
-    <iterate-cpp target="clean"/>
+    <iterate target="clean" iterate="${iterate.hive.all}"/>
+    <iterate target="clean" iterate="${iterate.hive.cpp}"/>
     <delete dir="${target.dir}"/>
     <antcall target="clean-online"/>
     <antcall target="clean-offline"/>
@@ -1058,7 +1028,7 @@
     <mkdir dir="${mvn.license.dir}" />
 
     <!-- call make pom on all projects that have ivy.xml -->
-    <iterate-all target="make-pom" />
+    <iterate target="make-pom" iterate="${iterate.hive.all}"/>
 
     <!-- copy the jars  -->
     <copy file="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar"
