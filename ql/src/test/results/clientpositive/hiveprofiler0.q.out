@@ -1,0 +1,12 @@
+PREHOOK: query: select count(1) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+TS_0 ==> SEL_1: 500
+main() ==> RS_3: 1
+SEL_1 ==> GBY_2: 500
+main() ==> SEL_5: 1
+main() ==> GBY_4: 1
+main() ==> TS_0: 500
+SEL_5 ==> FS_6: 1
+500
