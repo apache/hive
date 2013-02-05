@@ -170,14 +170,13 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.ColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.OrderColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFComponentQueryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFTableOrSubQueryInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFComponentQueryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFTableOrSubQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -10597,13 +10596,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return vbs;
   }
 
-//--------------------------- PTF handling: Qspec to QDef -----------------------------------
+//--------------------------- PTF handling: Qspec to PtfDesc -----------------------------------
 
-  private PTFDef translateSpecToDef(PTFSpec qSpec, RowResolver inputRR) throws SemanticException{
-    PTFDef qDef = null;
+  private PTFDesc translateSpecToDef(PTFSpec qSpec, RowResolver inputRR) throws SemanticException{
+    PTFDesc ptfDesc = null;
     PTFTranslator translator = new PTFTranslator();
-    qDef = translator.translate(qSpec, conf, inputRR, unparseTranslator);
-    return qDef;
+    ptfDesc = translator.translate(qSpec, conf, inputRR, unparseTranslator);
+    return ptfDesc;
   }
 
 
@@ -10717,10 +10716,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Operator genPTFPlanForComponentQuery(PTFSpec ptfQSpec, Operator input) throws SemanticException {
     /*
-     * 1. Create the QDef from the Qspec attached to this QB.
+     * 1. Create the PTFDesc from the Qspec attached to this QB.
      */
     RowResolver rr = opParseCtx.get(input).getRowResolver();
-    PTFDef qdef = translateSpecToDef(ptfQSpec, rr);
+    PTFDesc ptfDesc = translateSpecToDef(ptfQSpec, rr);
     /*
      * Build an RR for the Extract Op from the ResuceSink Op's RR.
      * Why?
@@ -10747,24 +10746,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     {
       rr = opParseCtx.get(input).getRowResolver();
-      TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(qdef);
+      TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(ptfDesc);
 
       /*
        * a. add Map-side PTF Operator if needed
        */
-      if (PTFTranslator.addPTFMapOperator(qdef))
+      if (PTFTranslator.addPTFMapOperator(ptfDesc))
       {
-        RowResolver ptfMapRR = qdef.getTranslationInfo().getInputInfo(tabDef).getRowResolver();
+        RowResolver ptfMapRR = ptfDesc.getTranslationInfo().getInputInfo(tabDef).getRowResolver();
 
-        input = putOpInsertMap(OperatorFactory.getAndMakeChild(new PTFDesc(
-            PTFUtils.serializeQueryDef(qdef)),
+        input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
             new RowSchema(ptfMapRR.getColumnInfos()),
             input), ptfMapRR);
         rr = opParseCtx.get(input).getRowResolver();
       }
 
       /*
-       * b. Build Reduce Sink Details (keyCols, valueCols, outColNames etc.) for this QDef.
+       * b. Build Reduce Sink Details (keyCols, valueCols, outColNames etc.) for this ptfDesc.
        */
 
       ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
@@ -10818,19 +10816,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
        * - so that the ExprNodeDescriptors in the QueryDef are based on the Extract Operator's RowResolver
        */
       rr = opParseCtx.get(input).getRowResolver();
-      qdef = translateSpecToDef(ptfQSpec, rr);
+      ptfDesc = translateSpecToDef(ptfQSpec, rr);
 
       /*
        * d. Construct PTF Operator.
        */
-      RowResolver ptfOpRR = qdef.getSelectList().getRowResolver();
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(new PTFDesc(
-          PTFUtils.serializeQueryDef(qdef)),
+      RowResolver ptfOpRR = ptfDesc.getSelectList().getRowResolver();
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
           new RowSchema(ptfOpRR.getColumnInfos()),
           input), ptfOpRR);
 
 
-      dumpOperatorChain(input, qdef);
+      dumpOperatorChain(input, ptfDesc);
     }
 
     return input;
@@ -11022,7 +11019,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // debug methods
-  void dumpOperatorChain(Operator sinkOp, PTFDef qdef) {
+  void dumpOperatorChain(Operator sinkOp, PTFDesc ptfDesc) {
     Stack<Operator> stack = new Stack<Operator>();
     Operator op = sinkOp;
     while(op != null ) {
@@ -11045,12 +11042,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       buf.append(" :\n");
       RowResolver rr = opParseCtx.get(op).getRowResolver();
       dumpRowResolver(buf, rr);
-      if ( op instanceof PTFOperator && qdef != null ) {
+      if ( op instanceof PTFOperator && ptfDesc != null ) {
         /*
          * 1/21 hb: this is no longer correct; in a chain containing multiple PTFOps, every PTFOp dump prints the info from the
          * last PTFDef
          */
-        dump(buf, qdef);
+        dump(buf, ptfDesc);
       }
       opNum++;
     }
@@ -11108,8 +11105,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     buf.append("\n\t]\n");
   }
 
-  private static void dump(StringBuilder buf, PTFDef qDef) {
-    Iterator<PTFInputDef> iDefs = PTFTranslator.iterateInputDefs(qDef, true);
+  private static void dump(StringBuilder buf, PTFDesc ptfDesc) {
+    Iterator<PTFInputDef> iDefs = PTFTranslator.iterateInputDefs(ptfDesc, true);
     while(iDefs.hasNext() ) {
       PTFInputDef iDef = iDefs.next();
       if ( iDef instanceof PTFTableOrSubQueryInputDef ) {
@@ -11121,7 +11118,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    StructObjectInspector OI = (StructObjectInspector) qDef.getSelectList().getOI();
+    StructObjectInspector OI = (StructObjectInspector) ptfDesc.getSelectList().getOI();
     buf.append("\nSelectList:");
     dump(buf, OI);
   }

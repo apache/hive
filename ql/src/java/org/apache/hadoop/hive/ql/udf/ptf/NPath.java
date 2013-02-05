@@ -21,10 +21,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.ArgDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ArgDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -98,7 +98,7 @@ public class NPath extends TableFunctionEvaluator
   {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDef qDef, TableFuncDef tDef)
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, TableFuncDef tDef)
     {
 
       return new NPath();

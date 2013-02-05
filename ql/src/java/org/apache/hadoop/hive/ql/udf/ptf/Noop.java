@@ -6,8 +6,8 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class Noop extends TableFunctionEvaluator
@@ -29,7 +29,7 @@ public class Noop extends TableFunctionEvaluator
   {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDef qDef, TableFuncDef tDef)
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, TableFuncDef tDef)
     {
       return new Noop();
     }

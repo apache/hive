@@ -15,15 +15,15 @@ import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.Direction;
 import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.ArgDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.SelectDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.CurrentRowDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.RangeBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ArgDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.SelectDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.CurrentRowDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.RangeBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -117,7 +117,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
   {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDef qDef, TableFuncDef tDef)
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, TableFuncDef tDef)
     {
 
       return new WindowingTableFunction();
@@ -127,9 +127,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     public void setupOutputOI() throws SemanticException
     {
       ArrayList<WindowFunctionDef> wFnDefs = new ArrayList<WindowFunctionDef>();
-      PTFDef qDef = getQueryDef();
-      SelectDef select = qDef.getSelectList();
-      ArrayList<WindowFunctionSpec> wFnSpecs = qDef.getSpec().getSelectList().getWindowFuncs();
+      PTFDesc ptfDesc = getPtfDesc();
+      SelectDef select = ptfDesc.getSelectList();
+      ArrayList<WindowFunctionSpec> wFnSpecs = ptfDesc.getSpec().getSelectList().getWindowFuncs();
       ArrayList<String> aliases = new ArrayList<String>();
       ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
 
@@ -144,7 +144,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
 
       for(WindowFunctionSpec wFnS : wFnSpecs)
       {
-          WindowFunctionDef wFnDef = PTFTranslator.translate(qDef, getEvaluator().getTableDef(), wFnS);
+          WindowFunctionDef wFnDef = PTFTranslator.translate(ptfDesc, getEvaluator().getTableDef(), wFnS);
           WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFnS.getName());
           wFnDefs.add(wFnDef);
           aliases.add(wFnS.getAlias());
@@ -159,7 +159,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
           }
       }
 
-      PTFTranslator.addInputColumnsToList(qDef, getEvaluator().getTableDef(), aliases, fieldOIs);
+      PTFTranslator.addInputColumnsToList(ptfDesc, getEvaluator().getTableDef(), aliases, fieldOIs);
 
       select.setWindowFuncs(wFnDefs);
       WindowingTableFunction wTFn = (WindowingTableFunction) getEvaluator();
@@ -177,10 +177,10 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     @Override
     public void initializeOutputOI() throws HiveException
     {
-      PTFDef qDef = getQueryDef();
+      PTFDesc ptfDesc = getPtfDesc();
       TableFuncDef tblFuncDef = evaluator.getTableDef();
       WindowingTableFunction wTFn = (WindowingTableFunction) tblFuncDef.getFunction();
-      ArrayList<WindowFunctionDef> wFnDefs = qDef.getSelectList().getWindowFuncs();
+      ArrayList<WindowFunctionDef> wFnDefs = ptfDesc.getSelectList().getWindowFuncs();
       ArrayList<String> aliases = new ArrayList<String>();
       ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
 
@@ -208,7 +208,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
         }
 
       }
-      PTFTranslator.addInputColumnsToList(qDef, getEvaluator().getTableDef(), aliases, fieldOIs);
+      PTFTranslator.addInputColumnsToList(ptfDesc, getEvaluator().getTableDef(), aliases, fieldOIs);
 
       wTFn.wFnDefs = wFnDefs;
       StructObjectInspector OI = ObjectInspectorFactory.getStandardStructObjectInspector(aliases, fieldOIs);
@@ -244,7 +244,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
 
   }
 
-  static ArrayList<Object> executeFnwithWindow(PTFDef qDef, WindowFunctionDef wFnDef, PTFPartition iPart)
+  static ArrayList<Object> executeFnwithWindow(PTFDesc ptfDesc, WindowFunctionDef wFnDef, PTFPartition iPart)
     throws HiveException
   {
     ArrayList<Object> vals = new ArrayList<Object>();
@@ -256,7 +256,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
       Range rng = getRange(wFnDef, i, iPart);
       PTFPartitionIterator<Object> rItr = rng.iterator();
-      PTFOperator.connectLeadLagFunctionsToPartition(qDef, rItr);
+      PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
       while(rItr.hasNext())
       {
         Object row = rItr.next();

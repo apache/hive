@@ -48,25 +48,25 @@ import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.ArgDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.ColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.OrderColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.OrderDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFComponentQueryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PTFTableOrSubQueryInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.PartitionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.SelectDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WhereDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.CurrentRowDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.RangeBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFrameDef.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ArgDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFComponentQueryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFTableOrSubQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.SelectDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WhereDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.CurrentRowDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.RangeBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
@@ -93,9 +93,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class PTFTranslator
 {
-  public PTFDef translate(PTFSpec qSpec, HiveConf qCfg, RowResolver rr, UnparseTranslator unparseT) throws SemanticException
+  public PTFDesc translate(PTFSpec qSpec, HiveConf qCfg, RowResolver rr, UnparseTranslator unparseT) throws SemanticException
   {
-    PTFDef qry = new PTFDef();
+    PTFDesc qry = new PTFDesc();
     qry.setSpec(qSpec);
 
     PTFTranslationInfo transInfo = new PTFTranslationInfo();
@@ -113,9 +113,9 @@ public class PTFTranslator
   /*
    * Input translation methods
    */
-  private static void translateInput(PTFDef qDef, RowResolver rr) throws SemanticException
+  private static void translateInput(PTFDesc ptfDesc, RowResolver rr) throws SemanticException
   {
-    PTFSpec spec = qDef.getSpec();
+    PTFSpec spec = ptfDesc.getSpec();
 
     /*
      * validate that input chain ends in a Hive Query or TAble.
@@ -125,8 +125,8 @@ public class PTFTranslator
       throw new SemanticException("Translation not supported for HdfsLocation based queries");
     }
 
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
-    PTFSpec qSpec = qDef.getSpec();
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
+    PTFSpec qSpec = ptfDesc.getSpec();
     Iterator<PTFInputSpec> it = PTFTranslator.iterateInputSpecs(qSpec, true);
     PTFInputDef currentIDef = null;
     int inputNum = 0;
@@ -135,25 +135,25 @@ public class PTFTranslator
       PTFInputSpec nextSpec = it.next();
       if (nextSpec instanceof PTFTableOrSubQueryInputSpec)
       {
-        currentIDef = PTFTranslator.translate(qDef, (PTFTableOrSubQueryInputSpec) nextSpec,
+        currentIDef = PTFTranslator.translate(ptfDesc, (PTFTableOrSubQueryInputSpec) nextSpec,
             (PTFTableOrSubQueryInputDef) null, rr);
       }
       else if (nextSpec instanceof PTFComponentQuerySpec)
       {
-        currentIDef = PTFTranslator.translate(qDef, (PTFComponentQuerySpec) nextSpec,
+        currentIDef = PTFTranslator.translate(ptfDesc, (PTFComponentQuerySpec) nextSpec,
             (PTFComponentQueryDef) null, rr);
       }
       else
       {
-        currentIDef = translate(qDef, (TableFuncSpec) nextSpec, currentIDef);
+        currentIDef = translate(ptfDesc, (TableFuncSpec) nextSpec, currentIDef);
       }
-      String alias = getTableAlias(qDef, inputNum, currentIDef);
+      String alias = getTableAlias(ptfDesc, inputNum, currentIDef);
       currentIDef.setAlias(alias);
       tInfo.addInput(currentIDef, inputNum == 0 ? rr : null);
       inputNum++;
     }
 
-    qDef.setInput(currentIDef);
+    ptfDesc.setInput(currentIDef);
   }
 
 
@@ -161,7 +161,7 @@ public class PTFTranslator
    * todo: revisit computing the alias. For a HiveTableDef it probably only needs to be the
    * tablename.
    */
-  private static String getTableAlias(PTFDef qDef, int inputNum, PTFInputDef inputDef)
+  private static String getTableAlias(PTFDesc ptfDesc, int inputNum, PTFInputDef inputDef)
       throws SemanticException
   {
     if (inputDef instanceof PTFTableOrSubQueryInputDef)
@@ -186,7 +186,7 @@ public class PTFTranslator
         inputDef.getSpec()));
   }
 
-   private static PTFComponentQueryDef translate(PTFDef qDef,
+   private static PTFComponentQueryDef translate(PTFDesc qDef,
            PTFComponentQuerySpec spec,
            PTFComponentQueryDef def, RowResolver rr) throws SemanticException
        {
@@ -212,7 +212,7 @@ public class PTFTranslator
         }
 
 
-  private static PTFTableOrSubQueryInputDef translate(PTFDef qDef,
+  private static PTFTableOrSubQueryInputDef translate(PTFDesc qDef,
       PTFTableOrSubQueryInputSpec spec,
       PTFTableOrSubQueryInputDef def, RowResolver rr) throws SemanticException
   {
@@ -256,7 +256,7 @@ public class PTFTranslator
    * <li> setup a Serde for the Output partition based on the OutputOI.
    * </ol>
    */
-  private static TableFuncDef translate(PTFDef qDef, TableFuncSpec tSpec, PTFInputDef inputDef)
+  private static TableFuncDef translate(PTFDesc qDef, TableFuncSpec tSpec, PTFInputDef inputDef)
       throws SemanticException
   {
     PTFTranslationInfo tInfo = qDef.getTranslationInfo();
@@ -310,10 +310,10 @@ public class PTFTranslator
     return tDef;
   }
 
-  private static ArgDef translateTableFunctionArg(PTFDef qDef, TableFuncDef tDef,
+  private static ArgDef translateTableFunctionArg(PTFDesc ptfDesc, TableFuncDef tDef,
       PTFInputInfo iInfo, ASTNode arg) throws HiveException
   {
-    return PTFTranslator.buildArgDef(qDef, iInfo, arg);
+    return PTFTranslator.buildArgDef(ptfDesc, iInfo, arg);
   }
 
 
@@ -321,10 +321,10 @@ public class PTFTranslator
    * Where Clause translation.
    */
 
-  public static void translateWhere(PTFDef qDef) throws SemanticException
+  public static void translateWhere(PTFDesc ptfDesc) throws SemanticException
   {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
-    PTFSpec spec = qDef.getSpec();
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
+    PTFSpec spec = ptfDesc.getSpec();
 
     ASTNode wExpr = (ASTNode) spec.getWhereExpr();
 
@@ -337,7 +337,7 @@ public class PTFTranslator
     WhereDef whDef = new WhereDef();
     whDef.setExpression(wExpr);
 
-    PTFInputDef iDef = qDef.getInput();
+    PTFInputDef iDef = ptfDesc.getInput();
     PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
 
     ExprNodeDesc exprNode = PTFTranslator.buildExprNode(wExpr, iInfo.getTypeCheckCtx());
@@ -345,7 +345,7 @@ public class PTFTranslator
     ObjectInspector oi = null;
     try {
       exprEval = WindowingExprNodeEvaluatorFactory.get(tInfo, exprNode);
-      oi = PTFTranslator.initExprNodeEvaluator(qDef, exprNode, exprEval, iInfo);
+      oi = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
     }
     catch(HiveException he) {
       throw new SemanticException(he);
@@ -363,31 +363,31 @@ public class PTFTranslator
     whDef.setExprEvaluator(exprEval);
     whDef.setOI(oi);
 
-    qDef.setWhere(whDef);
+    ptfDesc.setWhere(whDef);
   }
 
   /*
    * Output Translation methods.
    */
 
-  private static void translateOutput(PTFDef qDef) throws SemanticException
+  private static void translateOutput(PTFDesc ptfDesc) throws SemanticException
   {
-    translateSelectExprs(qDef);
-    setupSelectRRAndOI(qDef);
+    translateSelectExprs(ptfDesc);
+    setupSelectRRAndOI(ptfDesc);
   }
 
-  private static void translateSelectExprs(PTFDef qDef) throws SemanticException
+  private static void translateSelectExprs(PTFDesc ptfDesc) throws SemanticException
   {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
-    PTFInputDef iDef = qDef.getInput();
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
+    PTFInputDef iDef = ptfDesc.getInput();
     PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
-    SelectSpec selectSpec = qDef.getSpec().getSelectList();
+    SelectSpec selectSpec = ptfDesc.getSpec().getSelectList();
 
     if (selectSpec == null) {
       return;
     }
 
-    SelectDef selectDef = qDef.getSelectList();
+    SelectDef selectDef = ptfDesc.getSelectList();
     Iterator<Object> selectExprsAndAliases = selectSpec.getColumnListAndAlias();
     int i = 0;
     ColumnDef cDef = null;
@@ -400,14 +400,14 @@ public class PTFTranslator
 
       if (!isWnFn)
       {
-        cDef = translateSelectExpr(qDef, iInfo, i++, (String) o[1], (ASTNode) o[2]);
+        cDef = translateSelectExpr(ptfDesc, iInfo, i++, (String) o[1], (ASTNode) o[2]);
         selectDef.addColumn(cDef);
       }
     }
   }
 
 
-  private static ColumnDef translateSelectExpr(PTFDef qDef, PTFInputInfo iInfo, int colIdx,
+  private static ColumnDef translateSelectExpr(PTFDesc ptfDesc, PTFInputInfo iInfo, int colIdx,
       String alias, ASTNode expr)
       throws SemanticException
   {
@@ -416,8 +416,8 @@ public class PTFTranslator
     ExprNodeEvaluator exprEval = null;
     ObjectInspector oi = null;
     try {
-      exprEval = WindowingExprNodeEvaluatorFactory.get(qDef.getTranslationInfo(), exprNode);
-      oi = PTFTranslator.initExprNodeEvaluator(qDef, exprNode, exprEval, iInfo);
+      exprEval = WindowingExprNodeEvaluatorFactory.get(ptfDesc.getTranslationInfo(), exprNode);
+      oi = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
     }
     catch(HiveException he) {
       throw new SemanticException(he);
@@ -455,22 +455,22 @@ public class PTFTranslator
    * windowing clauses
    * add the mapping from ASTNode to ColumnInfo so that the SelectOp doesn't try to evaluate these.
    */
-  static void setupSelectRRAndOI(PTFDef qDef) throws SemanticException {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
-    PTFInputDef iDef = qDef.getInput();
+  static void setupSelectRRAndOI(PTFDesc ptfDesc) throws SemanticException {
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
+    PTFInputDef iDef = ptfDesc.getInput();
     PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
-    SelectDef selectDef = qDef.getSelectList();
+    SelectDef selectDef = ptfDesc.getSelectList();
     RowResolver inputRR = iInfo.getRowResolver();
-    SelectSpec selectSpec = qDef.getSpec().getSelectList();
+    SelectSpec selectSpec = ptfDesc.getSpec().getSelectList();
     LinkedHashMap<String, ASTNode> aliasToAST = selectSpec == null ? null : selectSpec
         .getAliasToAST();
-    boolean isWindowPTF = ((TableFuncDef) qDef.getInput()).getName() == FunctionRegistry.WINDOWING_TABLE_FUNCTION;
+    boolean isWindowPTF = ((TableFuncDef) ptfDesc.getInput()).getName() == FunctionRegistry.WINDOWING_TABLE_FUNCTION;
     RowResolver rr = new RowResolver();
 
     // should I just set it to the iDef.getAlias()?
     // if the ptf invocation didn't have an alias, the alias would be set to an internally generated
     // alias.
-    String outAlias = ((TableFuncDef) qDef.getInput()).getTableFuncSpec().getAlias();
+    String outAlias = ((TableFuncDef) ptfDesc.getInput()).getTableFuncSpec().getAlias();
 
     /*
      * Give the Columns internalNames based on position.
@@ -531,7 +531,7 @@ public class PTFTranslator
   /*
    * Window Function Translation methods
    */
-  public static WindowFunctionDef translate(PTFDef qDef, TableFuncDef windowTableFnDef,
+  public static WindowFunctionDef translate(PTFDesc qDef, TableFuncDef windowTableFnDef,
       WindowFunctionSpec wFnSpec) throws SemanticException
   {
     PTFTranslationInfo tInfo = qDef.getTranslationInfo();
@@ -603,7 +603,7 @@ public class PTFTranslator
     wFnDef.setOI(OI);
   }
 
-  private static ArgDef translateWindowFunctionArg(PTFDef qDef, TableFuncDef tDef,
+  private static ArgDef translateWindowFunctionArg(PTFDesc qDef, TableFuncDef tDef,
       PTFInputInfo iInfo, ASTNode arg) throws HiveException
   {
     return PTFTranslator.buildArgDef(qDef, iInfo, arg);
@@ -631,7 +631,7 @@ public class PTFTranslator
     RANKING_FUNCS.add("cumedist");
   };
 
-  private static void setupRankingArgs(PTFDef qDef, TableFuncDef windowTableFnDef,
+  private static void setupRankingArgs(PTFDesc ptfDesc, TableFuncDef windowTableFnDef,
       WindowFunctionDef wFnDef, WindowFunctionSpec wSpec) throws SemanticException
   {
     if (wSpec.getArgs().size() > 0)
@@ -640,13 +640,13 @@ public class PTFTranslator
     }
 
     PTFInputDef inpDef = windowTableFnDef.getInput();
-    PTFInputInfo inpInfo = qDef.getTranslationInfo().getInputInfo(inpDef);
+    PTFInputInfo inpInfo = ptfDesc.getTranslationInfo().getInputInfo(inpDef);
     OrderDef oDef = getTableFuncOrderDef(windowTableFnDef);
     ArrayList<OrderColumnDef> oCols = oDef.getColumns();
     for (OrderColumnDef oCol : oCols)
     {
       try {
-        wFnDef.addArg(PTFTranslator.buildArgDef(qDef, inpInfo, oCol.getExpression()));
+        wFnDef.addArg(PTFTranslator.buildArgDef(ptfDesc, inpInfo, oCol.getExpression()));
       }
       catch(HiveException he) {
         throw new SemanticException(he);
@@ -668,7 +668,7 @@ public class PTFTranslator
     throw new SemanticException("No Order by specification on Function: " + tblFnDef.getSpec());
   }
 
-  private static WindowDef translateWindowSpec(PTFDef qDef, PTFInputInfo iInfo,
+  private static WindowDef translateWindowSpec(PTFDesc ptfDesc, PTFInputInfo iInfo,
       WindowFunctionSpec wFnSpec) throws SemanticException
   {
     WindowSpec wSpec = wFnSpec.getWindowSpec();
@@ -684,7 +684,7 @@ public class PTFTranslator
     {
       throw new SemanticException(sprintf("Function %s doesn't support windowing", desc));
     }
-    return PTFTranslator.translateWindowSpecOnInput(qDef, wSpec, iInfo, desc);
+    return PTFTranslator.translateWindowSpecOnInput(ptfDesc, wSpec, iInfo, desc);
   }
 
   private static void validateWindowDefForWFn(TableFuncDef tFnDef, WindowFunctionDef wFnDef)
@@ -712,10 +712,10 @@ public class PTFTranslator
     }
   }
 
-  public static void addInputColumnsToList(PTFDef qDef, TableFuncDef windowTableFnDef,
+  public static void addInputColumnsToList(PTFDesc ptfDesc, TableFuncDef windowTableFnDef,
       ArrayList<String> fieldNames, ArrayList<ObjectInspector> fieldOIs)
   {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
     PTFInputInfo iInfo = tInfo.getInputInfo(windowTableFnDef.getInput());
 
     StructObjectInspector OI = (StructObjectInspector) iInfo.getOI();
@@ -736,9 +736,9 @@ public class PTFTranslator
    * If TableFunc is the FunctionRegistry.WINDOWING_TABLE_FUNCTION:
    * -
    */
-  static WindowDef translateWindow(PTFDef qDef, TableFuncDef tFnDef) throws SemanticException
+  static WindowDef translateWindow(PTFDesc ptfDesc, TableFuncDef tFnDef) throws SemanticException
   {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
+    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
     TableFuncSpec tFnSpec = tFnDef.getTableFuncSpec();
 
     /*
@@ -756,7 +756,7 @@ public class PTFTranslator
       return null;
     }
 
-    String desc = getInputDescription(qDef, tFnDef);
+    String desc = getInputDescription(ptfDesc, tFnDef);
     TableFunctionEvaluator tFn = tFnDef.getFunction();
     PTFInputInfo iInfo = null;
     if (tFn.isTransformsRawInput())
@@ -768,7 +768,7 @@ public class PTFTranslator
       iInfo = tInfo.getInputInfo(iDef);
     }
 
-    return translateWindowSpecOnInput(qDef, wSpec, iInfo, desc);
+    return translateWindowSpecOnInput(ptfDesc, wSpec, iInfo, desc);
   }
 
   /*
@@ -784,10 +784,10 @@ public class PTFTranslator
    * <li> If name is non-null add this def to TranslationInfo::nameToWdwDef map.
    * </ol>
    */
-  static WindowDef translateWindowSpecOnInput(PTFDef qDef, WindowSpec wSpec, PTFInputInfo iInfo,
+  static WindowDef translateWindowSpecOnInput(PTFDesc ptfDesc, WindowSpec wSpec, PTFInputInfo iInfo,
       String inputDesc) throws SemanticException
   {
-    PTFSpec qSpec = qDef.getSpec();
+    PTFSpec qSpec = ptfDesc.getSpec();
     WindowDef wDef;
 
     fillInWindowSpec(qSpec, wSpec.getSourceId(), wSpec);
@@ -796,9 +796,9 @@ public class PTFTranslator
     PartitionSpec pSpec = wSpec.getPartition();
     OrderSpec oSpec = wSpec.getOrder();
     WindowFrameSpec wFrameSpec = wSpec.getWindow();
-    PartitionDef pDef = translatePartition(qDef, iInfo, pSpec);
-    OrderDef oDef = translateOrder(qDef, inputDesc, iInfo, oSpec, pDef);
-    WindowFrameDef wdwDef = translateWindowFrame(qDef, wFrameSpec, iInfo);
+    PartitionDef pDef = translatePartition(ptfDesc, iInfo, pSpec);
+    OrderDef oDef = translateOrder(ptfDesc, inputDesc, iInfo, oSpec, pDef);
+    WindowFrameDef wdwDef = translateWindowFrame(ptfDesc, wFrameSpec, iInfo);
 
     wDef.setPartDef(pDef);
     wDef.setOrderDef(oDef);
@@ -838,7 +838,7 @@ public class PTFTranslator
     }
   }
 
-  private static PartitionDef translatePartition(PTFDef qDef, PTFInputInfo iInfo, PartitionSpec spec)
+  private static PartitionDef translatePartition(PTFDesc qDef, PTFInputInfo iInfo, PartitionSpec spec)
       throws SemanticException
   {
     if (spec == null || spec.getColumns() == null || spec.getColumns().size() == 0) {
@@ -854,7 +854,7 @@ public class PTFTranslator
     return pDef;
   }
 
-  private static OrderDef translateOrder(PTFDef qDef, String inputDesc, PTFInputInfo iInfo,
+  private static OrderDef translateOrder(PTFDesc qDef, String inputDesc, PTFInputInfo iInfo,
       OrderSpec spec, PartitionDef pDef) throws SemanticException
   {
 
@@ -922,7 +922,7 @@ public class PTFTranslator
     return oDef;
   }
 
-  private static OrderColumnDef translateOrderColumn(PTFDef qDef, PTFInputInfo iInfo,
+  private static OrderColumnDef translateOrderColumn(PTFDesc qDef, PTFInputInfo iInfo,
       OrderColumnSpec oSpec) throws SemanticException
   {
     OrderColumnDef ocDef = new OrderColumnDef(oSpec);
@@ -933,7 +933,7 @@ public class PTFTranslator
   }
 
 
-  private static ColumnDef translatePartitionColumn(PTFDef qDef, PTFInputInfo iInfo,
+  private static ColumnDef translatePartitionColumn(PTFDesc qDef, PTFInputInfo iInfo,
       ColumnSpec cSpec) throws SemanticException
   {
     ColumnDef cDef = new ColumnDef(cSpec);
@@ -943,7 +943,7 @@ public class PTFTranslator
     return cDef;
   }
 
-  private static void translateColumn(PTFDef qDef, ColumnDef cDef, PTFInputInfo iInfo,
+  private static void translateColumn(PTFDesc qDef, ColumnDef cDef, PTFInputInfo iInfo,
       ColumnSpec cSpec) throws SemanticException
   {
     String colTabName = cSpec.getTableName();
@@ -973,7 +973,7 @@ public class PTFTranslator
   }
 
 
-  private static WindowFrameDef translateWindowFrame(PTFDef qDef, WindowFrameSpec wfSpec,
+  private static WindowFrameDef translateWindowFrame(PTFDesc qDef, WindowFrameSpec wfSpec,
       PTFInputInfo iInfo) throws SemanticException
   {
     if (wfSpec == null)
@@ -997,7 +997,7 @@ public class PTFTranslator
     return wfDef;
   }
 
-  private static BoundaryDef translateBoundary(PTFDef qDef, BoundarySpec bndSpec, PTFInputInfo iInfo)
+  private static BoundaryDef translateBoundary(PTFDesc ptfDesc, BoundarySpec bndSpec, PTFInputInfo iInfo)
       throws SemanticException
   {
     if (bndSpec instanceof ValueBoundarySpec)
@@ -1011,8 +1011,8 @@ public class PTFTranslator
       ExprNodeEvaluator exprEval = null;
       ObjectInspector OI = null;
       try {
-        exprEval = WindowingExprNodeEvaluatorFactory.get(qDef.getTranslationInfo(), exprNode);
-        OI = PTFTranslator.initExprNodeEvaluator(qDef, exprNode, exprEval, iInfo);
+        exprEval = WindowingExprNodeEvaluatorFactory.get(ptfDesc.getTranslationInfo(), exprNode);
+        OI = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
       }
       catch(HiveException he) {
         throw new SemanticException(he);
@@ -1037,7 +1037,7 @@ public class PTFTranslator
     throw new SemanticException("Unknown Boundary: " + bndSpec);
   }
 
-  private static String getInputDescription(PTFDef qDef, TableFuncDef tDef)
+  private static String getInputDescription(PTFDesc qDef, TableFuncDef tDef)
   {
     if (qDef.getInput() == tDef &&
         (tDef.getName().equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
@@ -1516,13 +1516,13 @@ public class PTFTranslator
 
   public static class QueryInputDefIterator implements Iterator<PTFInputDef>
   {
-    PTFDef qDef;
+    PTFDesc ptfDesc;
     PTFInputDef nextInput;
 
-    public QueryInputDefIterator(PTFDef qDef)
+    public QueryInputDefIterator(PTFDesc ptfDesc)
     {
-      this.qDef = qDef;
-      nextInput = qDef.getInput();
+      this.ptfDesc = ptfDesc;
+      nextInput = ptfDesc.getInput();
     }
 
     @Override
@@ -1556,9 +1556,9 @@ public class PTFTranslator
 
   public static class ReverseQueryInputDefIterator extends ReverseIterator<PTFInputDef>
   {
-    ReverseQueryInputDefIterator(PTFDef qDef)
+    ReverseQueryInputDefIterator(PTFDesc ptfDesc)
     {
-      super(new QueryInputDefIterator(qDef));
+      super(new QueryInputDefIterator(ptfDesc));
     }
   }
 
@@ -1576,11 +1576,11 @@ public class PTFTranslator
         : new TableFunctionSpecIterator(qSpec);
   }
 
-  public static Iterator<PTFInputDef> iterateInputDefs(PTFDef qDef,
+  public static Iterator<PTFInputDef> iterateInputDefs(PTFDesc ptfDesc,
       boolean reverse)
   {
-    return reverse ? new ReverseQueryInputDefIterator(qDef)
-        : new QueryInputDefIterator(qDef);
+    return reverse ? new ReverseQueryInputDefIterator(ptfDesc)
+        : new QueryInputDefIterator(ptfDesc);
   }
 
   public static PTFTableOrSubQueryInputSpec getHiveTableSpec(PTFSpec qSpec) {
@@ -1607,7 +1607,7 @@ public class PTFTranslator
     return desc;
   }
 
-  public static ObjectInspector initExprNodeEvaluator(PTFDef qDef,
+  public static ObjectInspector initExprNodeEvaluator(PTFDesc ptfDesc,
       ExprNodeDesc exprNode, ExprNodeEvaluator exprEval, PTFInputInfo iInfo)
       throws HiveException
   {
@@ -1620,7 +1620,7 @@ public class PTFTranslator
      * using the InputInfo provided for this Expr tree - set the duplicate
      * evaluator on the LLUDF instance.
      */
-    LeadLagInfo llInfo = qDef.getTranslationInfo().getLLInfo();
+    LeadLagInfo llInfo = ptfDesc.getTranslationInfo().getLLInfo();
     List<ExprNodeGenericFuncDesc> llFuncExprs = llInfo
         .getLLFuncExprsInTopExpr(exprNode);
     if (llFuncExprs != null)
@@ -1629,7 +1629,7 @@ public class PTFTranslator
       {
         ExprNodeDesc firstArg = llFuncExpr.getChildren().get(0);
         ExprNodeEvaluator dupExprEval = WindowingExprNodeEvaluatorFactory
-            .get(qDef.getTranslationInfo(), firstArg);
+            .get(ptfDesc.getTranslationInfo(), firstArg);
         dupExprEval.initialize(iInfo.getOI());
         GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFuncExpr
             .getGenericUDF();
@@ -1640,7 +1640,7 @@ public class PTFTranslator
     return OI;
   }
 
-  public static ArgDef buildArgDef(PTFDef qDef, PTFInputInfo iInfo, ASTNode arg)
+  public static ArgDef buildArgDef(PTFDesc ptfDesc, PTFInputInfo iInfo, ASTNode arg)
       throws HiveException
   {
     ArgDef argDef = new ArgDef();
@@ -1648,8 +1648,8 @@ public class PTFTranslator
     ExprNodeDesc exprNode = PTFTranslator.buildExprNode(arg,
         iInfo.getTypeCheckCtx());
     ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-        qDef.getTranslationInfo(), exprNode);
-    ObjectInspector oi = initExprNodeEvaluator(qDef, exprNode, exprEval,
+        ptfDesc.getTranslationInfo(), exprNode);
+    ObjectInspector oi = initExprNodeEvaluator(ptfDesc, exprNode, exprEval,
         iInfo);
 
     argDef.setExpression(arg);
@@ -1923,7 +1923,7 @@ public class PTFTranslator
    * @return
    * @throws SemanticException
    */
-  public static boolean addPTFMapOperator(PTFDef qdef) throws SemanticException {
+  public static boolean addPTFMapOperator(PTFDesc qdef) throws SemanticException {
     boolean hasMap = false;
     TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(qdef);
     TableFunctionEvaluator tEval = tabDef.getFunction();
@@ -2102,12 +2102,12 @@ public class PTFTranslator
    * Return the first table function definition in the chain.
    * This table function is the first one to be executed on the
    * input hive table.
-   * @param qDef
+   * @param ptfDesc
    * @return
    */
-  public static TableFuncDef getFirstTableFunction(PTFDef qDef){
+  public static TableFuncDef getFirstTableFunction(PTFDesc ptfDesc){
     TableFuncDef tabDef = null;
-    Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(qDef, true);
+    Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(ptfDesc, true);
     while(it.hasNext()){
       PTFInputDef qIn = it.next();
       if(qIn instanceof TableFuncDef){
@@ -2259,20 +2259,20 @@ public class PTFTranslator
      * Use the visitor implementation to walk and reconstruct
      * the table functions, where and select constructs and
      * the query output definition.
-     * @param qDef
+     * @param ptfDesc
      * @throws HiveException
      */
-    public void walk(PTFDef qDef) throws HiveException
+    public void walk(PTFDesc ptfDesc) throws HiveException
     {
-      visitor.initialize(qDef);
-      walkInputChain(qDef);
+      visitor.initialize(ptfDesc);
+      walkInputChain(ptfDesc);
 
-      if ( qDef.getWhere() != null )
+      if ( ptfDesc.getWhere() != null )
       {
-        visitor.visit(qDef.getWhere());
+        visitor.visit(ptfDesc.getWhere());
       }
 
-      walk(qDef.getSelectList());
+      walk(ptfDesc.getSelectList());
       //visitor.visit(qDef.getOutput());
 
       visitor.finish();
@@ -2283,12 +2283,12 @@ public class PTFTranslator
      * to reconstruct the definitions
      * in reverse order or the order of invocations.
      * HiveTableDef->PTF1->PTF2->WINDOWF
-     * @param qDef
+     * @param ptfDesc
      * @throws HiveException
      */
-    protected void walkInputChain(PTFDef qDef) throws HiveException
+    protected void walkInputChain(PTFDesc ptfDesc) throws HiveException
     {
-      Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(qDef, true);
+      Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(ptfDesc, true);
       while(it.hasNext())
       {
         PTFInputDef nextDef = it.next();
@@ -2302,7 +2302,7 @@ public class PTFTranslator
         }
         else
         {
-          walk(qDef, (TableFuncDef) nextDef);
+          walk(ptfDesc, (TableFuncDef) nextDef);
         }
       }
     }
@@ -2316,11 +2316,11 @@ public class PTFTranslator
      * 4. walk the functions on the select list to
      *    setup the OI and GenericUDAFEvaluators
      *
-     * @param qDef
+     * @param ptfDesc
      * @param tblFunc
      * @throws HiveException
      */
-    protected void walk(PTFDef qDef, TableFuncDef tblFunc) throws HiveException
+    protected void walk(PTFDesc ptfDesc, TableFuncDef tblFunc) throws HiveException
     {
       // 1. visit the Args; these are resolved based on the shape of the Input to the function.
       walk(tblFunc.getArgs());
@@ -2335,7 +2335,7 @@ public class PTFTranslator
       String fName = tblFunc.getName();
       if ( fName.equals(FunctionRegistry.WINDOWING_TABLE_FUNCTION))
       {
-        SelectDef select = qDef.getSelectList();
+        SelectDef select = ptfDesc.getSelectList();
         ArrayList<WindowFunctionDef> wFns = select.getWindowFuncs();
         for(WindowFunctionDef wFn : wFns)
         {
@@ -2459,7 +2459,7 @@ public class PTFTranslator
   public static class PTFDefDeserializer
   {
     HiveConf hConf;
-    PTFDef qDef;
+    PTFDesc ptfDesc;
     PTFInputDef qInDef;
     PTFInputInfo inputInfo;
     PTFTranslationInfo tInfo;
@@ -2487,12 +2487,12 @@ public class PTFTranslator
      * Create new instance for the translation info and set the hiveConf on it
      */
 
-    public void initialize(PTFDef queryDef)
+    public void initialize(PTFDesc queryDef)
     {
-      qDef = queryDef;
+      ptfDesc = queryDef;
       tInfo = new PTFTranslationInfo();
       tInfo.setHiveCfg(hConf);
-      qDef.setTranslationInfo(tInfo);
+      ptfDesc.setTranslationInfo(tInfo);
 
     }
 
@@ -2566,15 +2566,15 @@ public class PTFTranslator
     {
       TableFunctionEvaluator tEval = tblFuncDef.getFunction();
       currentTFnResolver = FunctionRegistry.getTableFunctionResolver(tEval.getTableDef().getName());
-      currentTFnResolver.initialize(qDef, tblFuncDef, tEval);
+      currentTFnResolver.initialize(ptfDesc, tblFuncDef, tEval);
       if (tEval.isTransformsRawInput())
       {
         currentTFnResolver.initializeRawInputOI();
-        inputInfo = qDef.getTranslationInfo().getMapInputInfo(tblFuncDef);
+        inputInfo = ptfDesc.getTranslationInfo().getMapInputInfo(tblFuncDef);
       }
       else
       {
-        inputInfo = qDef.getTranslationInfo().getInputInfo(qInDef);
+        inputInfo = ptfDesc.getTranslationInfo().getInputInfo(qInDef);
       }
     }
 
@@ -2597,7 +2597,7 @@ public class PTFTranslator
         throw new SemanticException(se);
       }
       tInfo.addInput(tblFuncDef, null);
-      inputInfo = qDef.getTranslationInfo().getInputInfo(tblFuncDef);
+      inputInfo = ptfDesc.getTranslationInfo().getInputInfo(tblFuncDef);
     }
 
     /*
@@ -2610,7 +2610,7 @@ public class PTFTranslator
       ExprNodeDesc exprNodeDesc = arg.getExprNode();
       ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
           tInfo, exprNodeDesc);
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(qDef,
+      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
           exprNodeDesc, exprEval, inputInfo);
 
       arg.setExprEvaluator(exprEval);
@@ -2626,7 +2626,7 @@ public class PTFTranslator
     {
       ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
           tInfo, column.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(qDef,
+      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
           column.getExprNode(), exprEval, inputInfo);
       column.setExprEvaluator(exprEval);
       column.setOI(oi);
@@ -2649,7 +2649,7 @@ public class PTFTranslator
     {
       ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
           tInfo, boundary.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(qDef,
+      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
           boundary.getExprNode(), exprEval, inputInfo);
       boundary.setExprEvaluator(exprEval);
       boundary.setOI(oi);
@@ -2673,7 +2673,7 @@ public class PTFTranslator
     {
       ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
           tInfo, where.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(qDef,
+      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
           where.getExprNode(), exprEval, inputInfo);
       where.setExprEvaluator(exprEval);
       where.setOI(oi);
@@ -2684,7 +2684,7 @@ public class PTFTranslator
      */
     public void visit(SelectDef select) throws HiveException
     {
-      PTFTranslator.setupSelectRRAndOI(qDef);
+      PTFTranslator.setupSelectRRAndOI(ptfDesc);
     }
 
     public void finish() throws HiveException

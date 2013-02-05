@@ -9,8 +9,8 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * The Resolver for a function is obtained from the {@link FunctionRegistry}. The Resolver is initialized
  * by the following 4 step process:
  * <ol>
- * <li> The initialize method is called; which is passed the {@link PTFDef} and the {@link TableFunctionDef}.
+ * <li> The initialize method is called; which is passed the {@link PTFDesc} and the {@link TableFunctionDef}.
  * <li> The resolver is then asked to setup the Raw ObjectInspector. This is only required if the Function reshapes
  * the raw input.
  * <li> Once the Resolver has had a chance to compute the shape of the Raw Input that is fed to the partitioning
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public abstract class TableFunctionResolver
 {
   TableFunctionEvaluator evaluator;
-  PTFDef qDef;
+  PTFDesc ptfDesc;
 
   /*
    * - called during translation.
@@ -47,18 +47,18 @@ public abstract class TableFunctionResolver
    * - sets up the evaluator with references to the TableDef, PartitionClass, PartitonMemsize and
    *   the transformsRawInput boolean.
    */
-  public void initialize(PTFDef qDef, TableFuncDef tDef)
+  public void initialize(PTFDesc ptfDesc, TableFuncDef tDef)
       throws SemanticException
   {
-    this.qDef = qDef;
-    HiveConf cfg = qDef.getTranslationInfo().getHiveCfg();
+    this.ptfDesc = ptfDesc;
+    HiveConf cfg = ptfDesc.getTranslationInfo().getHiveCfg();
     String partitionClass = HiveConf.getVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENCE_CLASS);
     int partitionMemSize = HiveConf.getIntVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENT_SIZE);
 
-    evaluator = createEvaluator(qDef, tDef);
+    evaluator = createEvaluator(ptfDesc, tDef);
     evaluator.setTransformsRawInput(transformsRawInput());
     evaluator.setTableDef(tDef);
-    evaluator.setQueryDef(qDef);
+    evaluator.setQueryDef(ptfDesc);
     evaluator.setPartitionClass(partitionClass);
     evaluator.setPartitionMemSize(partitionMemSize);
 
@@ -67,13 +67,13 @@ public abstract class TableFunctionResolver
   /*
    * called during deserialization of a QueryDef during runtime.
    */
-  public void initialize(PTFDef qDef, TableFuncDef tDef, TableFunctionEvaluator evaluator)
+  public void initialize(PTFDesc ptfDesc, TableFuncDef tDef, TableFunctionEvaluator evaluator)
       throws HiveException
   {
     this.evaluator = evaluator;
-    this.qDef = qDef;
+    this.ptfDesc = ptfDesc;
     evaluator.setTableDef(tDef);
-    evaluator.setQueryDef(qDef);
+    evaluator.setQueryDef(ptfDesc);
   }
 
   public TableFunctionEvaluator getEvaluator()
@@ -104,7 +104,7 @@ public abstract class TableFunctionResolver
    * the TableFunction to construct the {@link ExprNodeEvaluator evaluators} and setup the OI.
    *
    * @param tblFuncDef
-   * @param qDef
+   * @param ptfDesc
    * @throws HiveException
    */
   public abstract void initializeOutputOI() throws HiveException;
@@ -168,9 +168,9 @@ public abstract class TableFunctionResolver
     evaluator.setOutputOI(outputOI);
   }
 
-  public PTFDef getQueryDef()
+  public PTFDesc getPtfDesc()
   {
-    return qDef;
+    return ptfDesc;
   }
 
   /*
@@ -193,6 +193,6 @@ public abstract class TableFunctionResolver
   /*
    * a subclass must provide the {@link TableFunctionEvaluator} instance.
    */
-  protected abstract TableFunctionEvaluator createEvaluator(PTFDef qDef,
+  protected abstract TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc,
       TableFuncDef tDef);
 }

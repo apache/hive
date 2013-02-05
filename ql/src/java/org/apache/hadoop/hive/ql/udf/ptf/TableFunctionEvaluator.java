@@ -7,8 +7,8 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
-import org.apache.hadoop.hive.ql.plan.PTFDef.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -35,7 +35,7 @@ public abstract class TableFunctionEvaluator
   transient protected StructObjectInspector OI;
   transient protected StructObjectInspector rawInputOI;
   protected TableFuncDef tDef;
-  protected PTFDef qDef;
+  protected PTFDesc ptfDesc;
   String partitionClass;
   int partitionMemSize;
   boolean transformsRawInput;
@@ -66,14 +66,14 @@ public abstract class TableFunctionEvaluator
     this.tDef = tDef;
   }
 
-  protected PTFDef getQueryDef()
+  protected PTFDesc getQueryDef()
   {
-    return qDef;
+    return ptfDesc;
   }
 
-  protected void setQueryDef(PTFDef qDef)
+  protected void setQueryDef(PTFDesc ptfDesc)
   {
-    this.qDef = qDef;
+    this.ptfDesc = ptfDesc;
   }
 
   public String getPartitionClass()
@@ -118,7 +118,7 @@ public abstract class TableFunctionEvaluator
       throws HiveException
   {
     PTFPartitionIterator<Object> pItr = iPart.iterator();
-    PTFOperator.connectLeadLagFunctionsToPartition(qDef, pItr);
+    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
     PTFPartition outP = new PTFPartition(getPartitionClass(),
         getPartitionMemSize(), tDef.getSerde(), OI);
     execute(pItr, outP);

@@ -26,7 +26,6 @@ import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.hive.ql.exec.Utilities.EnumDelegate;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.Direction;
-import org.apache.hadoop.hive.ql.plan.PTFDef;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -251,15 +250,6 @@ public class PTFUtils {
       e.printStackTrace();
       throw new RuntimeException("Cannot serialize the query plan", e);
     }
-  }
-
-  public static String serializeQueryDef(PTFDef qdef)
-  {
-    String queryDef = null;
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    PTFUtils.serialize(out, qdef);
-    queryDef = out.toString();
-    return queryDef;
   }
 
   public static void makeTransient(Class<?> beanClass, String pdName)
