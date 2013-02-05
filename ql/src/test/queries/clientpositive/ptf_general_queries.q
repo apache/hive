@@ -1,6 +1,4 @@
 DROP TABLE part;
-DROP TABLE part_rc;
-DROP TABLE part_seq;
 DROP TABLE flights_tiny;
 
 -- data setup
@@ -17,34 +15,6 @@ CREATE TABLE part(
 );
 
 LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
-
-CREATE TABLE part_rc( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-)  STORED AS RCFILE ;
-
-LOAD DATA LOCAL INPATH '../data/files/part.rc' overwrite into table part_rc;
-
-CREATE TABLE part_seq( 
-    p_partkey INT,
-    p_name STRING,
-    p_mfgr STRING,
-    p_brand STRING,
-    p_type STRING,
-    p_size INT,
-    p_container STRING,
-    p_retailprice DOUBLE,
-    p_comment STRING
-) STORED AS SEQUENCEFILE ;
-
-LOAD DATA LOCAL INPATH '../data/files/part.seq' overwrite into table part_seq;
 
 create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
@@ -531,28 +501,10 @@ distribute by p_mfgr
 sort by p_name 
 window w1 as rows between 2 preceding and current row;        
         
--- 48. testWindowingPTFWithPartRC
-select p_mfgr, p_name, p_size, 
-rank() as r, 
-denserank() as dr, 
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row) 
-from noop(part_rc 
-distribute by p_mfgr 
-sort by p_name);
-        
--- 49. testWindowingPTFWithPartSeqFile
-select p_mfgr, p_name, p_size, 
-rank() as r, 
-denserank() as dr, 
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row) 
-from noop(part_seq 
-distribute by p_mfgr 
-sort by p_name);                              
-
--- 50. testConstExprInSelect
+-- 48. testConstExprInSelect
 select 'tst1' as key, count(1) as value from part;
 
--- 51. testMultipleInserts3SWQs
+-- 49. testMultipleInserts3SWQs
 CREATE TABLE part_1( 
 p_mfgr STRING, 
 p_name STRING, 
@@ -615,7 +567,7 @@ select * from part_2;
 
 select * from part_3;
 	 
--- 52. testGroupByHavingWithSWQAndAlias
+-- 50. testGroupByHavingWithSWQAndAlias
 select p_mfgr, p_name, p_size, min(p_retailprice) as mi,
 rank() as r,
 denserank() as dr,
@@ -626,7 +578,7 @@ having p_size > 0
 distribute by p_mfgr
 sort by p_name;
 
--- 53. testMultipleRangeWindows
+-- 51. testMultipleRangeWindows
 select  p_mfgr,p_name, p_size, 
 sum(p_size) as s2 over (range between p_size 10 less and current row), 
 sum(p_size) as s1 over (range between current row and p_size 10 more ) 
@@ -635,7 +587,7 @@ distribute by p_mfgr
 sort by p_mfgr, p_size 
 window w1 as rows between 2 preceding and 2 following;
 
--- 54. testMultipleInserts2SWQsWithPTF
+-- 52. testMultipleInserts2SWQsWithPTF
 CREATE TABLE part_4( 
 p_mfgr STRING, 
 p_name STRING, 
@@ -680,18 +632,18 @@ select * from part_4;
 
 select * from part_5;
 
--- 55. testPartOrderInUDAFInvoke
+-- 53. testPartOrderInUDAFInvoke
 select p_mfgr, p_name, p_size,
 sum(p_size) as s over (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following)
 from part;
 
--- 56. testPartOrderInWdwDef
+-- 54. testPartOrderInWdwDef
 select p_mfgr, p_name, p_size,
 sum(p_size) as s over (w1)
 from part
 window w1 as distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following;
 
--- 57. testDefaultPartitioningSpecRules
+-- 55. testDefaultPartitioningSpecRules
 select p_mfgr, p_name, p_size,
 sum(p_size) as s over (w1),
  sum(p_size) as s2 over(w2)
@@ -700,7 +652,7 @@ sort by p_name
 window w1 as distribute by p_mfgr rows between 2 preceding and 2 following,
        w2 as distribute by p_mfgr sort by p_name;
        
--- 58. testWindowCrossReference
+-- 56. testWindowCrossReference
 select p_mfgr, p_name, p_size, 
 sum(p_size) as s1 over (w1), 
 sum(p_size) as s2 over (w2)
@@ -709,7 +661,7 @@ window w1 as distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 
        w2 as w1;
        
                
--- 59. testWindowInheritance
+-- 57. testWindowInheritance
 select p_mfgr, p_name, p_size, 
 sum(p_size) as s1 over (w1), 
 sum(p_size) as s2 over (w2) 
@@ -718,7 +670,7 @@ window w1 as distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 
        w2 as w1 rows between unbounded preceding and current row; 
 
         
--- 60. testWindowForwardReference
+-- 58. testWindowForwardReference
 select p_mfgr, p_name, p_size, 
 sum(p_size) as s1 over (w1), 
 sum(p_size) as s2 over (w2),
@@ -731,7 +683,7 @@ window w1 as rows between 2 preceding and 2 following,
        w3 as rows between unbounded preceding and current row; 
 
 
--- 61. testWindowDefinitionPropagation
+-- 59. testWindowDefinitionPropagation
 select p_mfgr, p_name, p_size, 
 sum(p_size) as s1 over (w1), 
 sum(p_size) as s2 over (w2),
@@ -743,7 +695,7 @@ window w1 as rows between 2 preceding and 2 following,
        w2 as w3,
        w3 as rows between unbounded preceding and current row; 
 
--- 62. testDistinctWithWindowing
+-- 60. testDistinctWithWindowing
 select DISTINCT p_mfgr, p_name, p_size,
 sum(p_size) as s over (w1)
 from part
@@ -751,7 +703,7 @@ distribute by p_mfgr
 sort by p_name
 window w1 as rows between 2 preceding and 2 following;
 
--- 63. testMulti2OperatorsFunctionChainWithMap
+-- 61. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -768,7 +720,7 @@ from noop(
         distribute by p_mfgr,p_name  
         sort by p_mfgr,p_name) ;
 
--- 64. testMulti3OperatorsFunctionChain
+-- 62. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -785,7 +737,7 @@ from noop(
         distribute by p_mfgr  
         sort by p_mfgr ) ;
         
--- 65. testMultiOperatorChainWithNoWindowing
+-- 63. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -801,7 +753,7 @@ from noop(
           sort by p_mfgr)); 
 
 
--- 66. testMultiOperatorChainEndsWithNoopMap
+-- 64. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -818,7 +770,7 @@ from noopwithmap(
           distribute by p_mfgr,p_name 
           sort by p_mfgr,p_name); 
 
---67. testMultiOperatorChainWithDiffPartitionForWindow1
+--65. testMultiOperatorChainWithDiffPartitionForWindow1
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -834,7 +786,7 @@ from noop(
           sort by p_mfgr
           )); 
 
---68. testMultiOperatorChainWithDiffPartitionForWindow2
+--66. testMultiOperatorChainWithDiffPartitionForWindow2
 select p_mfgr, p_name,  
 rank() as r, 
 denserank() as dr, 
@@ -848,7 +800,7 @@ from noopwithmap(
               sort by p_mfgr, p_name) 
           ));
 
--- 69. basic Npath test
+-- 67. basic Npath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath( 
       'LATE.LATE+', 
@@ -860,7 +812,7 @@ from npath(
       sort by year, month, day_of_month  
    );       
    
--- 70. testRankWithPartitioning
+-- 68. testRankWithPartitioning
 select p_mfgr, p_name, p_size, 
 rank() as r over (distribute by p_mfgr sort by p_name ) 
 from part;    
