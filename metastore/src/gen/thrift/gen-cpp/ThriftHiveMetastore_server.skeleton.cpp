@@ -97,6 +97,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table\n");
   }
 
+  void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_table_with_environment_context\n");
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
@@ -152,9 +157,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition\n");
   }
 
+  void append_partition_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("append_partition_with_environment_context\n");
+  }
+
   void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
     // Your implementation goes here
     printf("append_partition_by_name\n");
+  }
+
+  void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("append_partition_by_name_with_environment_context\n");
   }
 
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) {
@@ -162,9 +177,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_partition\n");
   }
 
+  bool drop_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_partition_with_environment_context\n");
+  }
+
   bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_partition_by_name\n");
+  }
+
+  bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_partition_by_name_with_environment_context\n");
   }
 
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {

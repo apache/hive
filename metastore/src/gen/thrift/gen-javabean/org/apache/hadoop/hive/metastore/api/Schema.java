@@ -476,7 +476,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
                 for (int _i232 = 0; _i232 < _map231.size; ++_i232)
                 {
                   String _key233; // required
-                  String _val234; // optional
+                  String _val234; // required
                   _key233 = iprot.readString();
                   _val234 = iprot.readString();
                   struct.properties.put(_key233, _val234);
@@ -597,7 +597,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
           for (int _i243 = 0; _i243 < _map242.size; ++_i243)
           {
             String _key244; // required
-            String _val245; // optional
+            String _val245; // required
             _key244 = iprot.readString();
             _val245 = iprot.readString();
             struct.properties.put(_key244, _val245);
