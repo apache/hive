@@ -1080,19 +1080,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void create_table(final Table tbl) throws AlreadyExistsException,
         MetaException, InvalidObjectException {
-      create_table(tbl, null);
+      create_table_with_environment_context(tbl, null);
     }
 
     @Override
-    public void create_table_with_environment_context(final Table table,
+    public void create_table_with_environment_context(final Table tbl,
         final EnvironmentContext envContext)
         throws AlreadyExistsException, MetaException, InvalidObjectException {
-      create_table(table, envContext);
-    }
-
-    private void create_table(final Table tbl,
-        final EnvironmentContext envContext) throws AlreadyExistsException,
-        MetaException, InvalidObjectException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
@@ -1126,8 +1120,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void drop_table_core(final RawStore ms, final String dbname, final String name,
-      final boolean deleteData) throws NoSuchObjectException, MetaException, IOException,
-      InvalidObjectException, InvalidInputException {
+        final boolean deleteData, final EnvironmentContext envContext)
+        throws NoSuchObjectException, MetaException, IOException,
+        InvalidObjectException, InvalidInputException {
       boolean success = false;
       boolean isExternal = false;
       Path tblPath = null;
@@ -1196,7 +1191,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // ok even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
-          listener.onDropTable(new DropTableEvent(tbl, success, this));
+          DropTableEvent dropTableEvent = new DropTableEvent(tbl, success, this);
+          dropTableEvent.setEnvironmentContext(envContext);
+          listener.onDropTable(dropTableEvent);
         }
       }
     }
@@ -1300,14 +1297,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return partPaths;
     }
 
+    @Override
     public void drop_table(final String dbname, final String name, final boolean deleteData)
+        throws NoSuchObjectException, MetaException {
+      drop_table_with_environment_context(dbname, name, deleteData, null);
+    }
+
+    @Override
+    public void drop_table_with_environment_context(final String dbname, final String name,
+        final boolean deleteData, final EnvironmentContext envContext)
         throws NoSuchObjectException, MetaException {
       startTableFunction("drop_table", dbname, name);
 
       boolean success = false;
       Exception ex = null;
       try {
-        drop_table_core(getMS(), dbname, name, deleteData);
+        drop_table_core(getMS(), dbname, name, deleteData, envContext);
         success = true;
       } catch (IOException e) {
         ex = e;
@@ -1464,8 +1469,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private Partition append_partition_common(RawStore ms, String dbName, String tableName,
-        List<String> part_vals) throws InvalidObjectException, AlreadyExistsException,
-        MetaException {
+        List<String> part_vals, EnvironmentContext envContext) throws InvalidObjectException,
+        AlreadyExistsException, MetaException {
 
       Partition part = new Partition();
       boolean success = false, madeDir = false;
@@ -1535,6 +1540,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         for (MetaStoreEventListener listener : listeners) {
           AddPartitionEvent addPartitionEvent =
               new AddPartitionEvent(tbl, part, success, this);
+          addPartitionEvent.setEnvironmentContext(envContext);
           listener.onAddPartition(addPartitionEvent);
         }
       }
@@ -1553,9 +1559,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public Partition append_partition(final String dbName, final String tableName,
         final List<String> part_vals) throws InvalidObjectException,
         AlreadyExistsException, MetaException {
+      return append_partition_with_environment_context(dbName, tableName, part_vals, null);
+    }
+
+    @Override
+    public Partition append_partition_with_environment_context(final String dbName,
+        final String tableName, final List<String> part_vals, final EnvironmentContext envContext)
+        throws InvalidObjectException, AlreadyExistsException, MetaException {
       startPartitionFunction("append_partition", dbName, tableName, part_vals);
       if (LOG.isDebugEnabled()) {
         for (String part : part_vals) {
@@ -1566,7 +1580,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Partition ret = null;
       Exception ex = null;
       try {
-        ret = append_partition_common(getMS(), dbName, tableName, part_vals);
+        ret = append_partition_common(getMS(), dbName, tableName, part_vals, envContext);
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1793,7 +1807,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Partition add_partition(final Partition part)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
-      return add_partition(part, null);
+      return add_partition_with_environment_context(part, null);
     }
 
     @Override
@@ -1801,12 +1815,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Partition part, EnvironmentContext envContext)
         throws InvalidObjectException, AlreadyExistsException,
         MetaException {
-      return add_partition(part, envContext);
-    }
-
-    private Partition add_partition(final Partition part,
-        final EnvironmentContext envContext) throws InvalidObjectException,
-        AlreadyExistsException, MetaException {
       startTableFunction("add_partition",
           part.getDbName(), part.getTableName());
       Partition ret = null;
@@ -1833,7 +1841,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
-      List<String> part_vals, final boolean deleteData)
+      List<String> part_vals, final boolean deleteData, final EnvironmentContext envContext)
       throws MetaException, NoSuchObjectException, IOException, InvalidObjectException,
       InvalidInputException {
       boolean success = false;
@@ -1894,14 +1902,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         for (MetaStoreEventListener listener : listeners) {
-          listener.onDropPartition(new DropPartitionEvent(tbl, part, success, this));
+          DropPartitionEvent dropPartitionEvent = new DropPartitionEvent(tbl, part, success, this);
+          dropPartitionEvent.setEnvironmentContext(envContext);
+          listener.onDropPartition(dropPartitionEvent);
         }
       }
       return true;
     }
 
+    @Override
     public boolean drop_partition(final String db_name, final String tbl_name,
         final List<String> part_vals, final boolean deleteData)
+        throws NoSuchObjectException, MetaException, TException {
+      return drop_partition_with_environment_context(db_name, tbl_name, part_vals, deleteData,
+          null);
+    }
+
+    @Override
+    public boolean drop_partition_with_environment_context(final String db_name,
+        final String tbl_name, final List<String> part_vals, final boolean deleteData,
+        final EnvironmentContext envContext)
         throws NoSuchObjectException, MetaException, TException {
       startPartitionFunction("drop_partition", db_name, tbl_name, part_vals);
       LOG.info("Partition values:" + part_vals);
@@ -1909,7 +1929,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean ret = false;
       Exception ex = null;
       try {
-        ret = drop_partition_common(getMS(), db_name, tbl_name, part_vals, deleteData);
+        ret = drop_partition_common(getMS(), db_name, tbl_name, part_vals, deleteData, envContext);
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
@@ -2274,19 +2294,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Table newTable)
         throws InvalidOperationException, MetaException {
       // Do not set an environment context.
-      alter_table(dbname, name, newTable, null);
+      alter_table_with_environment_context(dbname, name, newTable, null);
     }
 
     @Override
     public void alter_table_with_environment_context(final String dbname,
         final String name, final Table newTable,
         final EnvironmentContext envContext)
-        throws InvalidOperationException, MetaException {
-      alter_table(dbname, name, newTable, envContext);
-    }
-
-    private void alter_table(final String dbname, final String name,
-        final Table newTable, final EnvironmentContext envContext)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": db=" + dbname + " tbl=" + name
           + " newtbl=" + newTable.getTableName());
@@ -2609,9 +2623,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
     public Partition append_partition_by_name(final String db_name, final String tbl_name,
         final String part_name) throws InvalidObjectException,
         AlreadyExistsException, MetaException, TException {
+      return append_partition_by_name_with_environment_context(db_name, tbl_name, part_name, null);
+    }
+
+    @Override
+    public Partition append_partition_by_name_with_environment_context(final String db_name,
+        final String tbl_name, final String part_name, final EnvironmentContext env_context)
+        throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
       startFunction("append_partition_by_name", ": db=" + db_name + " tbl="
           + tbl_name + " part=" + part_name);
 
@@ -2620,7 +2642,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         RawStore ms = getMS();
         List<String> partVals = getPartValsFromName(ms, db_name, tbl_name, part_name);
-        ret = append_partition_common(ms, db_name, tbl_name, partVals);
+        ret = append_partition_common(ms, db_name, tbl_name, partVals, env_context);
       } catch (Exception e) {
         ex = e;
         if (e instanceof InvalidObjectException) {
@@ -2642,10 +2664,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-    private boolean drop_partition_by_name_core(final RawStore ms,
-        final String db_name, final String tbl_name, final String part_name,
-        final boolean deleteData) throws NoSuchObjectException,
-        MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
+    private boolean drop_partition_by_name_core(final RawStore ms, final String db_name,
+        final String tbl_name, final String part_name, final boolean deleteData,
+        final EnvironmentContext envContext) throws NoSuchObjectException, MetaException,
+        TException, IOException, InvalidObjectException, InvalidInputException {
 
       List<String> partVals = null;
       try {
@@ -2654,12 +2676,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new NoSuchObjectException(e.getMessage());
       }
 
-      return drop_partition_common(ms, db_name, tbl_name, partVals, deleteData);
+      return drop_partition_common(ms, db_name, tbl_name, partVals, deleteData, envContext);
     }
 
     @Override
     public boolean drop_partition_by_name(final String db_name, final String tbl_name,
         final String part_name, final boolean deleteData) throws NoSuchObjectException,
+        MetaException, TException {
+      return drop_partition_by_name_with_environment_context(db_name, tbl_name, part_name,
+          deleteData, null);
+    }
+
+    @Override
+    public boolean drop_partition_by_name_with_environment_context(final String db_name,
+        final String tbl_name, final String part_name, final boolean deleteData,
+        final EnvironmentContext envContext) throws NoSuchObjectException,
         MetaException, TException {
       startFunction("drop_partition_by_name", ": db=" + db_name + " tbl="
           + tbl_name + " part=" + part_name);
@@ -2668,7 +2699,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         ret = drop_partition_by_name_core(getMS(), db_name, tbl_name,
-            part_name, deleteData);
+            part_name, deleteData, envContext);
       } catch (IOException e) {
         ex = e;
         throw new MetaException(e.getMessage());
