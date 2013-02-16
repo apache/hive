@@ -19,7 +19,7 @@ import org.apache.hadoop.io.IntWritable;
 @WindowFunctionDescription
 (
 		description = @Description(
-								name = "rowNumber",
+								name = "row_number",
 								value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting from 1, as defined by ORDER BY) to each row within the partition."
 								),
 		supportsWindow = false,
@@ -74,7 +74,7 @@ public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver
 			super.init(m, parameters);
 			if (m != Mode.COMPLETE)
 			{
-				throw new HiveException("Only COMPLETE mode supported for RowNumber function");
+				throw new HiveException("Only COMPLETE mode supported for row_number function");
 			}
 
 			return ObjectInspectorFactory.getStandardListObjectInspector(

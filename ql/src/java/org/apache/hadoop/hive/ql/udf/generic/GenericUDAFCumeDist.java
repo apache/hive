@@ -16,7 +16,7 @@ import org.apache.hadoop.io.IntWritable;
 @WindowFunctionDescription
 (
 		description = @Description(
-								name = "cumedist",
+								name = "cume_dist",
 								value = "_FUNC_(x) - The CUME_DIST function (defined as the inverse of percentile in some " +
 									"statistical books) computes the position of a specified value relative to a set of values. " +
 									"To compute the CUME_DIST of a value x in a set S of size N, you use the formula: " +

@@ -210,8 +210,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion;
@@ -520,18 +520,18 @@ public final class FunctionRegistry {
     registerGenericUDF(true, LAG_FUNC_NAME, GenericUDFLag.class);
 
     registerHiveUDAFsAsWindowFunctions();
-    registerWindowFunction("rownumber", new GenericUDAFRowNumber());
+    registerWindowFunction("row_number", new GenericUDAFRowNumber());
     registerWindowFunction("rank", new GenericUDAFRank());
-    registerWindowFunction("denserank", new GenericUDAFDenseRank());
-    registerWindowFunction("percentrank", new GenericUDAFPercentRank());
-    registerWindowFunction("cumedist", new GenericUDAFCumeDist());
+    registerWindowFunction("dense_rank", new GenericUDAFDenseRank());
+    registerWindowFunction("percent_rank", new GenericUDAFPercentRank());
+    registerWindowFunction("cume_dist", new GenericUDAFCumeDist());
     registerWindowFunction("ntile", new GenericUDAFNTile());
     registerWindowFunction("first_value", new GenericUDAFFirstValue());
     registerWindowFunction("last_value", new GenericUDAFLastValue());
 
     RANKING_FUNCTIONS.add("rank");
-    RANKING_FUNCTIONS.add("denserank");
-    RANKING_FUNCTIONS.add("percentrank");
+    RANKING_FUNCTIONS.add("dense_rank");
+    RANKING_FUNCTIONS.add("percent_rank");
 
     NAVIGATION_FUNCTIONS.add(LEAD_FUNC_NAME);
     NAVIGATION_FUNCTIONS.add(LAG_FUNC_NAME);
@@ -1093,36 +1093,36 @@ public final class FunctionRegistry {
     }
     if (udfMethods.size() > 1) {
 
-      // if the only difference is numeric types, pick the method 
+      // if the only difference is numeric types, pick the method
       // with the smallest overall numeric type.
       int lowestNumericType = Integer.MAX_VALUE;
       boolean multiple = true;
       Method candidate = null;
       List<TypeInfo> referenceArguments = null;
-      
+
       for (Method m: udfMethods) {
         int maxNumericType = 0;
-        
+
         List<TypeInfo> argumentsAccepted = TypeInfoUtils.getParameterTypeInfos(m, argumentsPassed.size());
-        
+
         if (referenceArguments == null) {
-          // keep the arguments for reference - we want all the non-numeric 
+          // keep the arguments for reference - we want all the non-numeric
           // arguments to be the same
           referenceArguments = argumentsAccepted;
         }
-        
+
         Iterator<TypeInfo> referenceIterator = referenceArguments.iterator();
-        
+
         for (TypeInfo accepted: argumentsAccepted) {
           TypeInfo reference = referenceIterator.next();
-          
+
           if (numericTypes.containsKey(accepted)) {
             // We're looking for the udf with the smallest maximum numeric type.
             int typeValue = numericTypes.get(accepted);
             maxNumericType = typeValue > maxNumericType ? typeValue : maxNumericType;
           } else if (!accepted.equals(reference)) {
             // There are non-numeric arguments that don't match from one UDF to
-            // another. We give up at this point. 
+            // another. We give up at this point.
             throw new AmbiguousMethodException(udfClass, argumentsPassed, mlist);
           }
         }

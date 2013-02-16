@@ -626,9 +626,9 @@ public class PTFTranslator
   static
   {
     RANKING_FUNCS.add("rank");
-    RANKING_FUNCS.add("denserank");
-    RANKING_FUNCS.add("percentrank");
-    RANKING_FUNCS.add("cumedist");
+    RANKING_FUNCS.add("dense_rank");
+    RANKING_FUNCS.add("percent_rank");
+    RANKING_FUNCS.add("cume_dist");
   };
 
   private static void setupRankingArgs(PTFDesc ptfDesc, TableFuncDef windowTableFnDef,

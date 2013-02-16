@@ -16,7 +16,7 @@ import org.apache.hadoop.io.IntWritable;
 @WindowFunctionDescription
 (
 		description = @Description(
-								name = "percentrank",
+								name = "percent_rank",
 								value = "_FUNC_(x) PERCENT_RANK is similar to CUME_DIST, but it uses rank values rather " +
 									"than row counts in its numerator. PERCENT_RANK of a row is calculated as: " +
 									"(rank of row in its partition - 1) / (number of rows in the partition - 1)"

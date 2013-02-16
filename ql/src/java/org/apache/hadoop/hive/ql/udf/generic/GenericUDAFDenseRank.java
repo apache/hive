@@ -8,7 +8,7 @@ import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 @WindowFunctionDescription
 (
 		description = @Description(
-								name = "denserank",
+								name = "dense_rank",
 								value = "_FUNC_(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no " +
 										"gaps in ranking sequence when there are ties. That is, if you were " +
 										"ranking a competition using DENSE_RANK and had three people tie for " +

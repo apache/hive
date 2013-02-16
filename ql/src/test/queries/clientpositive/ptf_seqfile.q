@@ -17,7 +17,7 @@ LOAD DATA LOCAL INPATH '../data/files/part.seq' overwrite into table part_seq;
 -- testWindowingPTFWithPartSeqFile
 select p_mfgr, p_name, p_size, 
 rank() as r, 
-denserank() as dr, 
+dense_rank() as dr, 
 sum(p_retailprice) as s1 over (rows between unbounded preceding and current row) 
 from noop(part_seq 
 distribute by p_mfgr 
