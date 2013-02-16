@@ -363,6 +363,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
+  void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
+      4:EnvironmentContext environment_context)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o3)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
@@ -427,12 +430,24 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition append_partition_with_environment_context(1:string db_name, 2:string tbl_name,
+      3:list<string> part_vals, 4:EnvironmentContext environment_context)
+                       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name)
+                       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition append_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
+      3:string part_name, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  bool drop_partition_with_environment_context(1:string db_name, 2:string tbl_name,
+      3:list<string> part_vals, 4:bool deleteData, 5:EnvironmentContext environment_context)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2) 
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  bool drop_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
+      3:string part_name, 4:bool deleteData, 5:EnvironmentContext environment_context)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

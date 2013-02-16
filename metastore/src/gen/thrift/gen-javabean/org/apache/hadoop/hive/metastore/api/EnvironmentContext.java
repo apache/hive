@@ -356,7 +356,7 @@ public class EnvironmentContext implements org.apache.thrift.TBase<EnvironmentCo
                 for (int _i247 = 0; _i247 < _map246.size; ++_i247)
                 {
                   String _key248; // required
-                  String _val249; // optional
+                  String _val249; // required
                   _key248 = iprot.readString();
                   _val249 = iprot.readString();
                   struct.properties.put(_key248, _val249);
@@ -439,7 +439,7 @@ public class EnvironmentContext implements org.apache.thrift.TBase<EnvironmentCo
           for (int _i253 = 0; _i253 < _map252.size; ++_i253)
           {
             String _key254; // required
-            String _val255; // optional
+            String _val255; // required
             _key254 = iprot.readString();
             _val255 = iprot.readString();
             struct.properties.put(_key254, _val255);
