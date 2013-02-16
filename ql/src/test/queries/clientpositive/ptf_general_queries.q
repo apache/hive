@@ -266,48 +266,48 @@ having r < 4;
 -- 26. testFirstLast   
 select  p_mfgr,p_name, p_size, 
 sum(p_size) as s2 over (rows between current row and current row), 
-first_value(p_size) as f over (w1) , 
-last_value(p_size, false) as l over (w1)  
+first_value(p_size) as f over w1 , 
+last_value(p_size, false) as l over w1  
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 27. testFirstLastWithWhere
 select  p_mfgr,p_name, p_size, 
 rank() as r, 
 sum(p_size) as s2 over (rows between current row and current row), 
-first_value(p_size) as f over (w1),  
-last_value(p_size, false) as l over (w1) 
+first_value(p_size) as f over w1,  
+last_value(p_size, false) as l over w1 
 from part 
 where p_mfgr = 'Manufacturer#3' 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 28. testSumDelta
 select  p_mfgr,p_name, p_size,   
-sum(p_size - lag(p_size,1)) as deltaSum over (w1)
+sum(p_size - lag(p_size,1)) as deltaSum over w1
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following ;
+window w1 as (rows between 2 preceding and 2 following) ;
 
 -- 29. testSumWindow
 select  p_mfgr,p_name, p_size,  
-sum(p_size) as s1 over (w1), 
+sum(p_size) as s1 over w1, 
 sum(p_size) as s2 over (rows between current row and current row) 
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 30. testNoSortClause
 select  p_mfgr,p_name, p_size, 
 rank() as r, denserank() as dr 
 from part 
 distribute by p_mfgr 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 31. testExpressions
 select  p_mfgr,p_name, p_size,  
@@ -321,12 +321,12 @@ avg(p_size) as avg,
 stddev(p_size) as st, 
 first_value(p_size % 5) as fv, 
 last_value(p_size) as lv, 
-first_value(p_size, true) as fvW1 over (w1) 
+first_value(p_size, true) as fvW1 over w1 
 from part 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 32. testMultipleWindows
 select  p_mfgr,p_name, p_size,  
@@ -334,12 +334,12 @@ select  p_mfgr,p_name, p_size,
 cumedist() as cud, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
 sum(p_size) as s2 over (range between p_size 5 less and current row), 
-first_value(p_size, true) as fv1 over (w1) 
+first_value(p_size, true) as fv1 over w1 
 from part 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 33. testFunctionChain
 select p_mfgr, p_name, p_size, 
@@ -357,23 +357,23 @@ sub1.cd, sub1.s1
 from (select p_mfgr, p_name, 
 count(p_size) as cd, 
 p_retailprice, 
-sum(p_retailprice) as s1 over (w1) 
+sum(p_retailprice) as s1 over w1 
 from noop(part 
 distribute by p_mfgr 
 sort by p_name) 
-window w1 as rows between 2 preceding and 2 following 
+window w1 as (rows between 2 preceding and 2 following) 
 ) sub1 ;
 
 -- 35. testCountStar
 select  p_mfgr,p_name, p_size,
 count(*) as c, 
 count(p_size) as ca, 
-first_value(p_size, true) as fvW1 over (w1) 
+first_value(p_size, true) as fvW1 over w1 
 from part 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 36. testJoinWithWindowingWithCount
 select abc.p_mfgr, abc.p_name, 
@@ -395,53 +395,53 @@ sum(p_size - lag(p_size,1)) as deltaSum
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following ;
+window w1 as (rows between 2 preceding and 2 following) ;
 
 -- 38. testUDAFs
 select  p_mfgr,p_name, p_size, 
-sum(p_retailprice) as s over (w1), 
-min(p_retailprice) as mi over (w1),
-max(p_retailprice) as ma over (w1),
-avg(p_retailprice) as ag over (w1)
+sum(p_retailprice) as s over w1, 
+min(p_retailprice) as mi over w1,
+max(p_retailprice) as ma over w1,
+avg(p_retailprice) as ag over w1
 from part
 distribute by p_mfgr
 sort by p_mfgr, p_name
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 39. testUDAFsWithPTFWithGBY
 select  p_mfgr,p_name, p_size, p_retailprice, 
-sum(p_retailprice) as s over (w1), 
+sum(p_retailprice) as s over w1, 
 min(p_retailprice) as mi ,
 max(p_retailprice) as ma ,
-avg(p_retailprice) as ag over (w1)
+avg(p_retailprice) as ag over w1
 from part
 group by p_mfgr,p_name, p_size, p_retailprice
 distribute by p_mfgr
 sort by p_mfgr, p_name
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 40. testSTATs
 select  p_mfgr,p_name, p_size, 
-stddev(p_retailprice) as sdev over (w1), 
-stddev_pop(p_retailprice) as sdev_pop over (w1), 
-collect_set(p_size) as uniq_size over (w1), 
-variance(p_retailprice) as var over (w1),
-corr(p_size, p_retailprice) as cor over (w1),
-covar_pop(p_size, p_retailprice) as covarp over (w1)
+stddev(p_retailprice) as sdev over w1, 
+stddev_pop(p_retailprice) as sdev_pop over w1, 
+collect_set(p_size) as uniq_size over w1, 
+variance(p_retailprice) as var over w1,
+corr(p_size, p_retailprice) as cor over w1,
+covar_pop(p_size, p_retailprice) as covarp over w1
 from part
 distribute by p_mfgr
 sort by p_mfgr, p_name
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 41. testDISTs
 select  p_mfgr,p_name, p_size, 
-histogram_numeric(p_retailprice, 5) as hist over (w1), 
-percentile(p_partkey, 0.5) as per over (w1),
+histogram_numeric(p_retailprice, 5) as hist over w1, 
+percentile(p_partkey, 0.5) as per over w1,
 rownumber() as rn
 from part
 distribute by p_mfgr
 sort by p_mfgr, p_name
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 42. testDistinctInSelectWithPTF
 select DISTINCT p_mfgr, p_name, p_size 
@@ -467,39 +467,39 @@ from part
 group by p_mfgr, p_brand;
         
 select p_mfgr, p_brand, s, 
-sum(s) as s1 over (w1) 
+sum(s) as s1 over w1 
 from mfgr_price_view 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and current row;
+window w1 as (rows between 2 preceding and current row);
 
 -- 45. testViewAsTableInputToPTF
 select p_mfgr, p_brand, s, 
-sum(s) as s1 over (w1) 
+sum(s) as s1 over w1 
 from noop(mfgr_price_view 
 distribute by p_mfgr 
 sort by p_mfgr)  
-window w1 as rows between 2 preceding and current row;
+window w1 as (rows between 2 preceding and current row);
 
 -- 46. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
-sum(p_retailprice) as s over (w1) 
+sum(p_retailprice) as s over w1 
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and current row;
+window w1 as (rows between 2 preceding and current row);
         
 select * from mfgr_brand_price_view;        
         
 -- 47. testLateralViews
 select p_mfgr, p_name, 
-lv_col, p_size, sum(p_size) as s over (w1)  
+lv_col, p_size, sum(p_size) as s over w1  
 from (select p_mfgr, p_name, p_size, array(1,2,3) arr from part) p 
 lateral view explode(arr) part_lv as lv_col
 distribute by p_mfgr 
 sort by p_name 
-window w1 as rows between 2 preceding and current row;        
+window w1 as (rows between 2 preceding and current row);        
         
 -- 48. testConstExprInSelect
 select 'tst1' as key, count(1) as value from part;
@@ -546,20 +546,20 @@ rank() as r, denserank() as dr,
 cumedist() as cud, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
 sum(p_size) as s2 over (range between p_size 5 less and current row), 
-first_value(p_size, true) as fv1 over (w1) 
+first_value(p_size, true) as fv1 over w1 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following 
+window w1 as (rows between 2 preceding and 2 following) 
 INSERT OVERWRITE TABLE part_3 
 select  p_mfgr,p_name, p_size,  
 count(*) as c, 
 count(p_size) as ca, 
-first_value(p_size, true) as fv over (w1) 
+first_value(p_size, true) as fv over w1 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 select * from part_1;
 
@@ -585,7 +585,7 @@ sum(p_size) as s1 over (range between current row and p_size 10 more )
 from part 
 distribute by p_mfgr 
 sort by p_mfgr, p_size 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 52. testMultipleInserts2SWQsWithPTF
 CREATE TABLE part_4( 
@@ -622,11 +622,11 @@ sum(p_size) as s2 over (range between p_size 5 less and current row),
 rank() as r, 
 denserank() as dr, 
 cumedist() as cud, 
-first_value(p_size, true) as fv1 over (w1) 
+first_value(p_size, true) as fv1 over w1 
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 select * from part_4;
 
@@ -639,69 +639,69 @@ from part;
 
 -- 54. testPartOrderInWdwDef
 select p_mfgr, p_name, p_size,
-sum(p_size) as s over (w1)
+sum(p_size) as s over w1
 from part
-window w1 as distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following;
+window w1 as (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following);
 
 -- 55. testDefaultPartitioningSpecRules
 select p_mfgr, p_name, p_size,
-sum(p_size) as s over (w1),
- sum(p_size) as s2 over(w2)
+sum(p_size) as s over w1,
+ sum(p_size) as s2 over w2
 from part
 sort by p_name
-window w1 as distribute by p_mfgr rows between 2 preceding and 2 following,
-       w2 as distribute by p_mfgr sort by p_name;
+window w1 as (distribute by p_mfgr rows between 2 preceding and 2 following),
+       w2 as (distribute by p_mfgr sort by p_name);
        
 -- 56. testWindowCrossReference
 select p_mfgr, p_name, p_size, 
-sum(p_size) as s1 over (w1), 
-sum(p_size) as s2 over (w2)
+sum(p_size) as s1 over w1, 
+sum(p_size) as s2 over w2
 from part 
-window w1 as distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following, 
+window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
        w2 as w1;
        
                
 -- 57. testWindowInheritance
 select p_mfgr, p_name, p_size, 
-sum(p_size) as s1 over (w1), 
-sum(p_size) as s2 over (w2) 
+sum(p_size) as s1 over w1, 
+sum(p_size) as s2 over w2 
 from part 
-window w1 as distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following, 
-       w2 as w1 rows between unbounded preceding and current row; 
+window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+       w2 as (w1 rows between unbounded preceding and current row); 
 
         
 -- 58. testWindowForwardReference
 select p_mfgr, p_name, p_size, 
-sum(p_size) as s1 over (w1), 
-sum(p_size) as s2 over (w2),
-sum(p_size) as s3 over (w3) 
+sum(p_size) as s1 over w1, 
+sum(p_size) as s2 over w2,
+sum(p_size) as s3 over w3 
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following, 
+window w1 as (rows between 2 preceding and 2 following), 
        w2 as w3,
-       w3 as rows between unbounded preceding and current row; 
+       w3 as (rows between unbounded preceding and current row); 
 
 
 -- 59. testWindowDefinitionPropagation
 select p_mfgr, p_name, p_size, 
-sum(p_size) as s1 over (w1), 
-sum(p_size) as s2 over (w2),
+sum(p_size) as s1 over w1, 
+sum(p_size) as s2 over w2,
 sum(p_size) as s3 over (w3 rows between 2 preceding and 2 following) 
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following, 
+window w1 as (rows between 2 preceding and 2 following), 
        w2 as w3,
-       w3 as rows between unbounded preceding and current row; 
+       w3 as (rows between unbounded preceding and current row); 
 
 -- 60. testDistinctWithWindowing
 select DISTINCT p_mfgr, p_name, p_size,
-sum(p_size) as s over (w1)
+sum(p_size) as s over w1
 from part
 distribute by p_mfgr
 sort by p_name
-window w1 as rows between 2 preceding and 2 following;
+window w1 as (rows between 2 preceding and 2 following);
 
 -- 61. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  

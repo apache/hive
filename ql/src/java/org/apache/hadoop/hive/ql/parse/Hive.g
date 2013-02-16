@@ -1726,7 +1726,7 @@ selectItem
     :
     ( selectExpression  
       ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?
-      (KW_OVER LPAREN ws=window_specification RPAREN )?
+      (KW_OVER ws=window_specification )?
     ) -> ^(TOK_SELEXPR selectExpression Identifier* $ws?)
     ;
 
@@ -1966,7 +1966,7 @@ window_specification
 @init { msgs.push("window_specification"); }
 @after { msgs.pop(); } 
 :
-  Identifier? partitioningSpec? window_frame? -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
+  (Identifier | ( LPAREN Identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
 ;
 
 window_frame :
