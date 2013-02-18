@@ -36,7 +36,7 @@ public class HiveProfilePublisher {
 
   public boolean closeConnection() {
 
-    if (info.getConnection() == null) {
+    if (info == null || info.getConnection() == null) {
       return true;
     }
     try {
@@ -82,7 +82,7 @@ public class HiveProfilePublisher {
 
   public boolean publishStat(String queryId, Map<String, String> stats,
     Configuration conf) {
-    if (info.getConnection() == null) {
+    if (info == null || info.getConnection() == null) {
       if(!initialize(conf)) {
         return false;
       }
