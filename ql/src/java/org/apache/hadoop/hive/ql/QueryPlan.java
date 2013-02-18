@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,9 +93,12 @@ public class QueryPlan implements Serializable {
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
-  private HashMap<String, HashMap<String, Long>> counters;
-  private HashSet<String> done;
-  private HashSet<String> started;
+  private final Map<String, Map<String, Long>> counters =
+      new ConcurrentHashMap<String, Map<String, Long>>();
+  private final Set<String> done = Collections.newSetFromMap(new
+      ConcurrentHashMap<String, Boolean>());
+  private final Set<String> started = Collections.newSetFromMap(new
+      ConcurrentHashMap<String, Boolean>());
 
   private QueryProperties queryProperties;
 
@@ -122,9 +127,6 @@ public class QueryPlan implements Serializable {
     query = new org.apache.hadoop.hive.ql.plan.api.Query();
     query.setQueryId(queryId);
     query.putToQueryAttributes("queryString", this.queryString);
-    counters = new HashMap<String, HashMap<String, Long>>();
-    done = new HashSet<String>();
-    started = new HashSet<String>();
     queryProperties = sem.getQueryProperties();
     queryStartTime = startTime;
   }
@@ -309,6 +311,9 @@ public class QueryPlan implements Serializable {
     if (query.getStageList() != null) {
       for (org.apache.hadoop.hive.ql.plan.api.Stage stage : query
           .getStageList()) {
+        if (stage.getStageId() == null) {
+          continue;
+        }
         stage.setStarted(started.contains(stage.getStageId()));
         stage.setStageCounters(counters.get(stage.getStageId()));
         stage.setDone(done.contains(stage.getStageId()));
@@ -358,7 +363,9 @@ public class QueryPlan implements Serializable {
           }
         }
       }
-
+      if (task.getId() == null) {
+        continue;
+      }
       if (started.contains(task.getId()) && done.contains(task.getId())) {
         continue;
       }
@@ -416,7 +423,10 @@ public class QueryPlan implements Serializable {
     while (opsToVisit.size() != 0) {
       Operator<? extends OperatorDesc> op = opsToVisit.remove();
       opsVisited.add(op);
-      counters.put(op.getOperatorId(), op.getCounters());
+      Map<String,Long> ctrs = op.getCounters();
+      if (ctrs != null) {
+        counters.put(op.getOperatorId(), op.getCounters());
+      }
       if (op.getDone()) {
         done.add(op.getOperatorId());
       }
@@ -656,11 +666,11 @@ public class QueryPlan implements Serializable {
     done.add(queryId);
   }
 
-  public HashSet<String> getStarted() {
+  public Set<String> getStarted() {
     return started;
   }
 
-  public HashSet<String> getDone() {
+  public Set<String> getDone() {
     return done;
   }
 
@@ -724,24 +734,12 @@ public class QueryPlan implements Serializable {
     this.query = query;
   }
 
-  public HashMap<String, HashMap<String, Long>> getCounters() {
+  public Map<String, Map<String, Long>> getCounters() {
     return counters;
-  }
-
-  public void setCounters(HashMap<String, HashMap<String, Long>> counters) {
-    this.counters = counters;
   }
 
   public void setQueryId(String queryId) {
     this.queryId = queryId;
-  }
-
-  public void setDone(HashSet<String> done) {
-    this.done = done;
-  }
-
-  public void setStarted(HashSet<String> started) {
-    this.started = started;
   }
 
   /**
