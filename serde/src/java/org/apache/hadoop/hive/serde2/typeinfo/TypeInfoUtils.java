@@ -22,6 +22,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -400,8 +401,8 @@ public final class TypeInfoUtils {
 
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
-      new HashMap<TypeInfo, ObjectInspector>();
+  static Map<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
+      new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an
@@ -477,8 +478,8 @@ public final class TypeInfoUtils {
     return result;
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
-      new HashMap<TypeInfo, ObjectInspector>();
+  static Map<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
+      new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an
