@@ -75,6 +75,12 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   transient boolean firstFetchHappened = false;
   private transient boolean inputFileChanged = false;
   transient boolean localWorkInited = false;
+  transient boolean initDone = false;
+
+  // This join has been converted to a SMB join by the hive optimizer. The user did not
+  // give a mapjoin hint in the query. The hive optimizer figured out that the join can be
+  // performed as a smb join, based on all the tables/partitions being joined.
+  private transient boolean convertedAutomaticallySMBJoin = false;
 
   public SMBMapJoinOperator() {
   }
@@ -85,6 +91,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
+
+    // If there is a sort-merge join followed by a regular join, the SMBJoinOperator may not
+    // get initialized at all. Consider the following query:
+    // A SMB B JOIN C
+    // For the mapper processing C, The SMJ is not initialized, no need to close it either.
+    initDone = true;
+
     super.initializeOp(hconf);
 
     firstRow = true;
@@ -558,6 +571,15 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
     closeCalled = true;
 
+    // If there is a sort-merge join followed by a regular join, the SMBJoinOperator may not
+    // get initialized at all. Consider the following query:
+    // A SMB B JOIN C
+    // For the mapper processing C, The SMJ is not initialized, no need to close it either.
+    if (!initDone) {
+      return;
+    }
+
+
     if (inputFileChanged || !firstFetchHappened) {
       //set up the fetch operator for the new input file.
       for (Map.Entry<String, MergeQueue> entry : aliasToMergeQueue.entrySet()) {
@@ -618,6 +640,14 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   @Override
   public OperatorType getType() {
     return OperatorType.MAPJOIN;
+  }
+
+  public boolean isConvertedAutomaticallySMBJoin() {
+    return convertedAutomaticallySMBJoin;
+  }
+
+  public void setConvertedAutomaticallySMBJoin(boolean convertedAutomaticallySMBJoin) {
+    this.convertedAutomaticallySMBJoin = convertedAutomaticallySMBJoin;
   }
 
   // returns rows from possibly multiple bucket files of small table in ascending order
@@ -777,5 +807,10 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       keys[current] = null;
       return false;
     }
+  }
+
+  @Override
+  public boolean opAllowedConvertMapJoin() {
+    return false;
   }
 }

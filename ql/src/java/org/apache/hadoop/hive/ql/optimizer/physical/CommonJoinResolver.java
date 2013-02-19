@@ -50,8 +50,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
-import
-  org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -554,12 +553,42 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       return null;
     }
 
+    /*
+     * If any operator which does not allow map-side conversion is present in the mapper, dont
+     * convert it into a conditional task.
+     */
+    private boolean checkOperatorOKMapJoinConversion(Operator<? extends OperatorDesc> op) {
+      if (!op.opAllowedConvertMapJoin()) {
+        return false;
+      }
+
+      if (op.getChildOperators() == null) {
+        return true;
+      }
+
+      for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+        if (!checkOperatorOKMapJoinConversion(childOp)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
     private JoinOperator getJoinOp(MapRedTask task) throws SemanticException {
-      if (task.getWork() == null) {
+      MapredWork work = task.getWork();
+      if (work == null) {
         return null;
       }
-      Operator<? extends OperatorDesc> reducerOp = task.getWork().getReducer();
+      Operator<? extends OperatorDesc> reducerOp = work.getReducer();
       if (reducerOp instanceof JoinOperator) {
+        /* Is any operator present, which prevents the conversion */
+        Map<String, Operator<? extends OperatorDesc>> aliasToWork = work.getAliasToWork();
+        for (Operator<? extends OperatorDesc> op : aliasToWork.values()) {
+          if (!checkOperatorOKMapJoinConversion(op)) {
+            return null;
+          }
+        }
         return (JoinOperator) reducerOp;
       } else {
         return null;

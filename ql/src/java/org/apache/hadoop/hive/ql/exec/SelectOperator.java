@@ -112,6 +112,11 @@ public class SelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
+
+  @Override
   public boolean supportUnionRemoveOptimization() {
     return true;
   }
