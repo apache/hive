@@ -114,10 +114,12 @@ public class RetryingHMSHandler implements InvocationHandler {
             caughtException = e.getCause();
           }
           else {
+            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
             throw e.getCause();
           }
         }
         else {
+          LOG.error(ExceptionUtils.getStackTrace(e));
           throw e;
         }
       } catch (InvocationTargetException e) {
@@ -127,11 +129,13 @@ public class RetryingHMSHandler implements InvocationHandler {
           caughtException = e.getCause();
         }
         else {
+          LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           throw e.getCause();
         }
       }
 
       if (retryCount >= retryLimit) {
+        LOG.error(ExceptionUtils.getStackTrace(caughtException));
         // Since returning exceptions with a nested "cause" can be a problem in
         // Thrift, we are stuffing the stack trace into the message itself.
         throw new MetaException(ExceptionUtils.getStackTrace(caughtException));
