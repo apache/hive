@@ -295,4 +295,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   public boolean supportSkewJoinOptimization() {
     return true;
   }
+
+  @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
 }

@@ -31,7 +31,7 @@ public class SMBJoinDesc extends MapJoinDesc implements Serializable {
 
   private MapredLocalWork localWork;
 
-  //keep a mapping from tag to the fetch operator alias
+  // keep a mapping from tag to the fetch operator alias
   private HashMap<Byte, String> tagToAlias;
   private Map<String, DummyStoreOperator> aliasToSink;
 

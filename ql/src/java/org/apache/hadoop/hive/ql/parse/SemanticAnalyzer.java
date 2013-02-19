@@ -72,6 +72,8 @@ import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -193,6 +195,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private Map<JoinOperator, QBJoinTree> joinContext;
+  private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
   private QB qb;
   private ASTNode ast;
@@ -250,6 +253,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadFileWork = new ArrayList<LoadFileDesc>();
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
+    smbMapJoinContext = new HashMap<SMBMapJoinOperator, QBJoinTree>();
     topToTable = new HashMap<TableScanOperator, Table>();
     destTableId = 1;
     uCtx = null;
@@ -278,6 +282,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ast = null;
     uCtx = null;
     joinContext.clear();
+    smbMapJoinContext.clear();
     opParseCtx.clear();
     groupOpToInputTables.clear();
     prunedPartitions.clear();
@@ -293,6 +298,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
     joinContext = pctx.getJoinContext();
+    smbMapJoinContext = pctx.getSmbMapJoinContext();
     ctx = pctx.getContext();
     destTableId = pctx.getDestTableId();
     idToTableNameMap = pctx.getIdToTableNameMap();
@@ -307,7 +313,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
-        topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
+        topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
@@ -8461,7 +8467,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
-        opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
+        opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
+        topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,

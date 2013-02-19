@@ -74,12 +74,22 @@ public class Optimizer {
     }
     transformations.add(new SamplePruner());
     transformations.add(new MapJoinProcessor());
+    boolean bucketMapJoinOptimizer = false;
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN)) {
       transformations.add(new BucketMapJoinOptimizer());
-      if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
-        transformations.add(new SortedMergeBucketMapJoinOptimizer());
-      }
+      bucketMapJoinOptimizer = true;
     }
+
+    // If optimize hive.optimize.bucketmapjoin.sortedmerge is set, add both
+    // BucketMapJoinOptimizer and SortedMergeBucketMapJoinOptimizer
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
+      if (!bucketMapJoinOptimizer) {
+        // No need to add BucketMapJoinOptimizer twice
+        transformations.add(new BucketMapJoinOptimizer());
+      }
+      transformations.add(new SortedMergeBucketMapJoinOptimizer());
+    }
+
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
