@@ -854,8 +854,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   public void testDatabaseLocationWithPermissionProblems() throws Exception {
 
-    // Note: The following test will fail if you are running this test as root. Setting 
-    // permission to '0' on the database folder will not preclude root from being able 
+    // Note: The following test will fail if you are running this test as root. Setting
+    // permission to '0' on the database folder will not preclude root from being able
     // to create the necessary files.
 
     if (System.getProperty("user.name").equals("root")) {
@@ -1482,6 +1482,24 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertTrue("Able to create table with invalid name: " + invTblName,
             false);
       }
+
+      // create an invalid table which has wrong column type
+      ArrayList<FieldSchema> invColsInvType = new ArrayList<FieldSchema>(2);
+      invColsInvType.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      invColsInvType.add(new FieldSchema("income", "xyz", ""));
+      tbl.setTableName(tblName);
+      tbl.getSd().setCols(invColsInvType);
+      boolean failChecker = false;
+      try {
+        client.createTable(tbl);
+      } catch (InvalidObjectException ex) {
+        failChecker = true;
+      }
+      if (!failChecker) {
+        assertTrue("Able to create table with invalid column type: " + invTblName,
+            false);
+      }
+
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
       cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
@@ -1561,6 +1579,17 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertEquals("alter table didn't move data correct location", tbl3
             .getSd().getLocation(), tbl2.getSd().getLocation());
       }
+
+      // alter table with invalid column type
+      tbl_pk.getSd().setCols(invColsInvType);
+      failed = false;
+      try {
+        client.alter_table(dbName, tbl2.getTableName(), tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertTrue("Should not have succeeded in altering column", failed);
+
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
@@ -1757,7 +1786,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     } catch (TException e) {
       e.printStackTrace();
       assert (false);
-    } 
+    }
     assert (threwException);
   }
 
@@ -2106,7 +2135,7 @@ public abstract class TestHiveMetaStore extends TestCase {
    * at least works correctly.
    */
   public void testSynchronized() throws Exception {
-    int currentNumberOfDbs = client.getAllDatabases().size(); 
+    int currentNumberOfDbs = client.getAllDatabases().size();
 
     IMetaStoreClient synchronizedClient =
       HiveMetaStoreClient.newSynchronizedClient(client);
