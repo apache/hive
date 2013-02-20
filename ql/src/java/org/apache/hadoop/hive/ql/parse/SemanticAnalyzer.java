@@ -121,21 +121,24 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.ColumnSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.OrderColumnSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.OrderSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PTFInputSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PTFTableOrSubQueryInputSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PartitionSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.SelectSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.TableFuncSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.Direction;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.ValueBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFunctionSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFInputSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputType;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -171,12 +174,11 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFComponentQueryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFTableOrSubQueryInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -292,7 +294,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME);
     queryProperties = new QueryProperties();
     opToPartToSkewedPruner = new HashMap<TableScanOperator, Map<String, ExprNodeDesc>>();
-    destinationNodeToPTFChainNode = new HashMap<ASTNode, ASTNode>();
   }
 
   @Override
@@ -354,10 +355,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QB qb = new QB(id, alias, true);
       Phase1Ctx ctx_1 = initPhase1Ctx();
       doPhase1(ast, qb, ctx_1);
-      ensurePTFSpecOnQB(qb, ctx_1.dest);
-      ensurePTFChainHasPartitioning(qb.getWindowingPTFSpec(ctx_1.dest),
-          generateErrorMessage(ast,
-          "No partition specification associated with start of PTF chain "));
+      ensureWindowingSpecOnQB(qb, ctx_1.dest);
+      ensureWindowingSourceHasPartitioning(qb.getWindowingSpec(ctx_1.dest), ast);
 
       qbexpr.setOpcode(QBExpr.Opcode.NULLOP);
       qbexpr.setQB(qb);
@@ -385,14 +384,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private LinkedHashMap<String, ASTNode> doPhase1GetAggregationsFromSelect(
       ASTNode selExpr, QB qb, String dest) {
+
+    ArrayList<ASTNode> wdwingexprNodes = null;
+    if ( queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ) {
+      WindowingSpec wdwSpec = qb.getWindowingSpec(dest);
+      HashMap<String, WindowExpressionSpec> aliasToWdwExprs = wdwSpec.getAliasToWdwExpr();
+      wdwingexprNodes = new ArrayList<ASTNode>();
+      for (WindowExpressionSpec exprSpec : aliasToWdwExprs.values()) {
+        wdwingexprNodes.add(exprSpec.getExpression());
+      }
+    }
+
     // Iterate over the selects search for aggregation Trees.
     // Use String as keys to eliminate duplicate trees.
     LinkedHashMap<String, ASTNode> aggregationTrees = new LinkedHashMap<String, ASTNode>();
     for (int i = 0; i < selExpr.getChildCount(); ++i) {
       ASTNode sel = (ASTNode) selExpr.getChild(i);
-      if(queryProperties.hasPTF() && qb.getWindowingPTFSpec(dest) != null ){
-        PTFSpec qSpec = qb.getWindowingPTFSpec(dest);
-        if(qSpec.getSelectList().getAliasToAST().values().contains(sel.getChild(0))){
+      if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ){
+        if(wdwingexprNodes.contains(sel.getChild(0))){
           continue;
         }
       }
@@ -685,8 +694,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (child.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
         queryProperties.setHasPTF(true);
         processPTF(qb, child);
-        PTFSpec ptfSpec = qb.getPtfSpec(child);
-        String inputAlias = ptfSpec == null ? null : ((TableFuncSpec)ptfSpec.getInput()).getAlias();;
+        PTFInvocationSpec ptfInvocationSpec = qb.getPTFInvocationSpec(child);
+        String inputAlias = ptfInvocationSpec == null ? null :
+          ((PartitionedTableFunctionSpec)ptfInvocationSpec.getFunction()).getAlias();;
         if ( inputAlias == null ) {
           throw new SemanticException(generateErrorMessage(child,
               "PTF invocation in a Join must have an alias"));
@@ -783,13 +793,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qbp.setHints((ASTNode) ast.getChild(0));
         }
 
-        handleWindowingExprsInSelectList(qb, ctx_1, ast);
+        handleWindowingExprsInSelectList(qb, ctx_1.dest, ast);
 
-        LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest);
+        LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast,
+            qb, ctx_1.dest);
         doPhase1GetColumnAliasesFromSelect(ast, qbp);
         qbp.setAggregationExprsForClause(ctx_1.dest, aggregations);
         qbp.setDistinctFuncExprsForClause(ctx_1.dest,
-            doPhase1GetDistinctFuncExprs(aggregations));
+        doPhase1GetDistinctFuncExprs(aggregations));
         break;
 
       case HiveParser.TOK_WHERE:
@@ -814,20 +825,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 .getMsg(ast));
           }
         }
-
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
-
-        /*
-         * If this node has an associated ptf;
-         * then set the QuerySpec of the QB to the QSpec of the ptf.
-         */
-        ASTNode ptfNode = getAssociatedPTFNode(ast);
-        if ( ptfNode != null )
-        {
-          PTFSpec qSpec = qb.getPtfSpec(ptfNode);
-          qb.addDestToWindowingPTFSpec(ctx_1.dest, qSpec);
-        }
-
         break;
 
       case HiveParser.TOK_FROM:
@@ -861,12 +859,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //  - move them to qb.windowingQSpec.
         if ( qbp.getAggregationExprsForClause(ctx_1.dest) != null &&
             !queryProperties.hasGroupBy()) {
-          moveaggregationExprsToPTFSpec(qb, ctx_1.dest);
+          moveaggregationExprsToWindowingSpec(qb, ctx_1.dest);
         }
 
         // if QB has WindowingClauses
         // - associate DistributeBy with qb.windowingQSpec
-        if (qb.hasWindowingPTFSpec(ctx_1.dest) )
+        if (qb.hasWindowingSpec(ctx_1.dest) )
         {
           handleClusterOrDistributeByForWindowing(qb, ctx_1, ast);
         }
@@ -888,16 +886,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
         }
 
-        // if there is no GroupBy Clause, but there are still Agg Exprs remaining in the select list
+        // if there is no GroupBy Clause, but there are still Agg Exprs remaining
+        // in the select list
         //  - move them to qb.windowingQSpec.
         if ( qbp.getAggregationExprsForClause(ctx_1.dest) != null &&
             !queryProperties.hasGroupBy()) {
-          moveaggregationExprsToPTFSpec(qb, ctx_1.dest);
+          moveaggregationExprsToWindowingSpec(qb, ctx_1.dest);
         }
 
         // if QB has WindowingClauses
         // - associate DistributeBy with qb.windowingQSpec
-        if (qb.hasWindowingPTFSpec(ctx_1.dest) )
+        if (qb.hasWindowingSpec(ctx_1.dest) )
         {
           handleClusterOrDistributeByForWindowing(qb, ctx_1, ast);
         }
@@ -923,7 +922,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // if QB has WindowingClauses
         // - associate SortBy with qb.windowingSpec.
-        if (qb.hasWindowingPTFSpec(ctx_1.dest) )
+        if (qb.hasWindowingSpec(ctx_1.dest) )
         {
           handleSortByForWindowing(qb, ctx_1, ast);
         }
@@ -977,16 +976,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_HAVING:
         boolean hasLLArgs = false;
         TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-        CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs();
+        CheckLeadLagInSelectExprs checkLLFunctions =
+            new CheckLeadLagInSelectExprs(qb, ctx_1.dest);
         tw.visit(ast, HiveParser.TOK_FUNCTION, checkLLFunctions);
         if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(ast, checkLLFunctions.getErrString()));
+          throw new SemanticException(generateErrorMessage(ast,
+              checkLLFunctions.getErrString()));
         }
         hasLLArgs = checkLLFunctions.isHasWindowingExprs();
 
         // if QB has WindowingClauses and no GroupBy clause
         // - associate Having with qb.windowingSpec.
-        if (qb.hasWindowingPTFSpec(ctx_1.dest) && qbp.getGroupByForClause(ctx_1.dest) == null)
+        if (qb.hasWindowingSpec(ctx_1.dest) && qbp.getGroupByForClause(ctx_1.dest) == null)
         {
           handleWindowingHavingClause(qb, ctx_1, ast);
         } else if(hasLLArgs){
@@ -995,12 +996,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               "Unsupported place for having"));
         } else{
           qbp.setHavingExprForClause(ctx_1.dest, ast);
-          qbp.addAggregationExprsForClause(ctx_1.dest, doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
+          qbp.addAggregationExprsForClause(ctx_1.dest,
+              doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
         }
         break;
 
       case HiveParser.KW_WINDOW:
-        if (!qb.hasWindowingPTFSpec(ctx_1.dest) ) {
+        if (!qb.hasWindowingSpec(ctx_1.dest) ) {
           throw new SemanticException(generateErrorMessage(ast,
               "Query has no Cluster/Distribute By; but has a Window definition"));
         }
@@ -2345,7 +2347,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     //for queries with a windowing expressions, the selexpr may have a third child
     if (selExpr.getChildCount() == 2 ||
-        (selExpr.getChildCount() == 3 && selExpr.getChild(2).getType() == HiveParser.TOK_WINDOWSPEC)) {
+        (selExpr.getChildCount() == 3 &&
+        selExpr.getChild(2).getType() == HiveParser.TOK_WINDOWSPEC)) {
       // return zz for "xx + yy AS zz"
       colAlias = unescapeIdentifier(selExpr.getChild(1).getText());
       colRef[0] = tabAlias;
@@ -7224,9 +7227,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
 
-    if(queryProperties.hasPTF() && qb.getWindowingPTFSpec(dest) != null) {
-      //TODO: create a select * operator here
-      curr = genPTFPlan(qb.getWindowingPTFSpec(dest), curr);
+    if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null) {
+      curr = genWindowingPlan(qb.getWindowingSpec(dest), curr);
     }
 
     curr = genSelectPlan(dest, qb, curr);
@@ -7921,24 +7923,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       //After processing subqueries and source tables, process
       // partitioned table functions
 
-      HashMap<ASTNode, PTFSpec> ptfNodeToSpec = qb.getPTFNodeToSpec();
+      HashMap<ASTNode, PTFInvocationSpec> ptfNodeToSpec = qb.getPTFNodeToSpec();
       if ( ptfNodeToSpec != null ) {
-        for(Map.Entry<ASTNode, PTFSpec> entry : ptfNodeToSpec.entrySet()) {
+        for(Entry<ASTNode, PTFInvocationSpec> entry : ptfNodeToSpec.entrySet()) {
           ASTNode ast = entry.getKey();
-          PTFSpec spec = entry.getValue();
-          if ( qb.getAllWindowingPTFSpecs().containsValue(spec) ) {
-            // this ptf invocation will be handled when we get to Windowing Clauses handling
-            // in the genPostGroupByBodyPlan
-            continue;
-          }
-          String inputAlias = PTFTranslator.getHiveTableSpec(spec).getTableName();
+          PTFInvocationSpec spec = entry.getValue();
+          String inputAlias = spec.getQueryInputName();
           Operator inOp = aliasToOpInfo.get(inputAlias);
           if ( inOp == null ) {
             throw new SemanticException(generateErrorMessage(ast,
                 "Cannot resolve input Operator for PTF invocation"));
           }
           lastPTFOp = genPTFPlan(spec, inOp);
-          String ptfAlias = ((TableFuncSpec)spec.getInput()).getAlias();
+          String ptfAlias = ((PartitionedTableFunctionSpec)spec.getFunction()).getAlias();
           if ( ptfAlias != null ) {
             aliasToOpInfo.put(ptfAlias, lastPTFOp);
           }
@@ -7973,7 +7970,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Now if there are more than 1 sources then we have a join case
       // later we can extend this to the union all case as well
       srcOpInfo = aliasToOpInfo.values().iterator().next();
-      // with ptfs, there maybe more (note for PTFChains: 1 ptf invocation may entail multiple PTF operators)
+      // with ptfs, there maybe more (note for PTFChains:
+      // 1 ptf invocation may entail multiple PTF operators)
       srcOpInfo = lastPTFOp != null ? lastPTFOp : srcOpInfo;
     }
 
@@ -8633,16 +8631,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // continue analyzing from the child ASTNode.
-    associateInsertNodesToPTFChains(child);
     Phase1Ctx ctx_1 = initPhase1Ctx();
     if (!doPhase1(child, qb, ctx_1)) {
       // if phase1Result false return
       return;
     }
-    ensurePTFSpecOnQB(qb, ctx_1.dest);
-    ensurePTFChainHasPartitioning(qb.getWindowingPTFSpec(ctx_1.dest),
-          generateErrorMessage(ast,
-          "No partition specification associated with start of PTF chain "));
+    ensureWindowingSpecOnQB(qb, ctx_1.dest);
+    ensureWindowingSourceHasPartitioning(qb.getWindowingSpec(ctx_1.dest), ast);
 
     LOG.info("Completed phase 1 of Semantic Analysis");
 
@@ -9731,101 +9726,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 //--------------------------- PTF handling -----------------------------------
 
   /*
-   * If the from Clause:
-   * - contains only a PTF invocation
-   * - there is no GBy or where clause
-   * - and there is only 1 insert clause
-   * then:
-   * - we can process any Window Expressions in the SelectList as part of the same
-   *   PTF chain as the chain in the from clause.
-   * Any Windowing specifications on the Select list will be handled as an invocation
-   * on the internal WindowingTableFunction PTF added to the end of the PTF chain.
-   */
-  private final HashMap<ASTNode, ASTNode> destinationNodeToPTFChainNode;
-
-  private HashMap<ASTNode, ASTNode> getDestinationNodeToPTFChainNodeMap() {
-    return destinationNodeToPTFChainNode;
-  }
-
-  private ASTNode getAssociatedPTFNode(ASTNode destinationNode) {
-    return destinationNodeToPTFChainNode.get(destinationNode);
-  }
-
-  private void associateDestinationNodeToPTFNode(ASTNode iNode, ASTNode pNode) {
-    destinationNodeToPTFChainNode.put(iNode, pNode);
-  }
-
-  /*
-   * - called before starting Phase1.
-   * - association maintained by SemanticAnalyzer.
-   * - @revisit: what about views?
-   */
-  private void associateInsertNodesToPTFChains(ASTNode node) {
-    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-    tw.visit(node, HiveParser.TOK_QUERY,  new AssociateInsertAndPTFNodes());
-  }
-
-  /*
-   * If the from Clause:
-   * - contains only a PTF invocation
-   * - there is no GBy or where clause
-   * - and there is only 1 insert clause
-   * then:
-   * - we can process any Window Expressions in the SelectList as part of the same
-   *   PTF chain as the chain in the from clause.
-   * Any Windowing specifications on the Select list will be handled as an invocation
-   * on the internal WindowingTableFunction PTF added to the end of the PTF chain.
-   *
-   * AST pattern we are looking for is:
-   *   ^(TOK_QUERY ^(TOK_FROM ^(TOK_PTBLFUNCTION...)) ^(TOK_INSERT {a single destination}))
-   * AST structure for an INSERT tree is:
-   * ^(TOK_INSERT insertClause
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
-   */
-  public class AssociateInsertAndPTFNodes implements ContextVisitor {
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public void visit(Object t, Object parent, int childIndex, Map labels) {
-      ASTNode queryNode = (ASTNode) t;
-
-      ASTNode fromClause = (ASTNode) queryNode.getChild(0);
-      ASTNode insertClause = (ASTNode) queryNode.getChild(1);
-      int numInserts = queryNode.getChildCount() - 1;
-
-      ASTNode fromSource = (ASTNode) fromClause.getChild(0);
-
-      if ( numInserts > 1 ) {
-        return;
-      }
-
-      if ( fromSource.getType() != HiveParser.TOK_PTBLFUNCTION) {
-        return;
-      }
-
-      int insertChildCount = insertClause.getChildCount();
-      boolean hasGBy = false, hasWhere = false;
-      for(int i=1; i<insertChildCount; i++ ) {
-        if ( insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY ) {
-          hasGBy = true;
-        }
-        else if ( insertClause.getChild(i).getType() == HiveParser.TOK_WHERE ) {
-          hasWhere = true;
-        }
-      }
-
-      if (!hasGBy && !hasWhere ) {
-        associateDestinationNodeToPTFNode((ASTNode) insertClause.getChild(0), fromSource);
-      }
-    }
-
-  }
-
-  /*
-   * - a partitionTableFunctionSource can be a tableReference, a SubQuery or another PTF invocation.
-   * - For a TABLEREF: set the tableName to the alias returned by processTable
-   * - For a SubQuery: set the tableName to the alias returned by processSubQuery
+   * - a partitionTableFunctionSource can be a tableReference, a SubQuery or another
+   *   PTF invocation.
+   * - For a TABLEREF: set the source to the alias returned by processTable
+   * - For a SubQuery: set the source to the alias returned by processSubQuery
    * - For a PTF invocation: recursively call processPTFChain.
    */
   private PTFInputSpec processPTFSource(QB qb, ASTNode inputNode) throws SemanticException{
@@ -9837,13 +9741,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     {
     case HiveParser.TOK_TABREF:
       alias = processTable(qb, inputNode);
-      qInSpec = new PTFTableOrSubQueryInputSpec();
-      ((PTFTableOrSubQueryInputSpec)qInSpec).setTableName(alias);
+      qInSpec = new PTFQueryInputSpec();
+      ((PTFQueryInputSpec)qInSpec).setType(PTFQueryInputType.TABLE);
+      ((PTFQueryInputSpec)qInSpec).setSource(alias);
       break;
     case HiveParser.TOK_SUBQUERY:
       alias = processSubQuery(qb, inputNode);
-      qInSpec = new PTFTableOrSubQueryInputSpec();
-      ((PTFTableOrSubQueryInputSpec)qInSpec).setTableName(alias);
+      qInSpec = new PTFQueryInputSpec();
+      ((PTFQueryInputSpec)qInSpec).setType(PTFQueryInputType.SUBQUERY);
+      ((PTFQueryInputSpec)qInSpec).setSource(alias);
       break;
     case HiveParser.TOK_PTBLFUNCTION:
       qInSpec = processPTFChain(qb, inputNode);
@@ -9859,17 +9765,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /*
-   * - tree form is ^(TOK_PTBLFUNCTION name alias? partitionTableFunctionSource partitioningSpec? arguments*)
-   * - a partitionTableFunctionSource can be a tableReference, a SubQuery or another PTF invocation.
+   * - tree form is
+   *   ^(TOK_PTBLFUNCTION name alias? partitionTableFunctionSource partitioningSpec? arguments*)
+   * - a partitionTableFunctionSource can be a tableReference, a SubQuery or another
+   *   PTF invocation.
    */
-  private TableFuncSpec processPTFChain(QB qb, ASTNode ptf) throws SemanticException{
+  private PartitionedTableFunctionSpec processPTFChain(QB qb, ASTNode ptf)
+      throws SemanticException{
     int child_count = ptf.getChildCount();
     if (child_count < 2) {
       throw new SemanticException(generateErrorMessage(ptf,
                   "Not enough Children " + child_count));
     }
 
-    TableFuncSpec ptfSpec = new TableFuncSpec();
+    PartitionedTableFunctionSpec ptfSpec = new PartitionedTableFunctionSpec();
+    ptfSpec.setAstNode(ptf);
 
     /*
      * name
@@ -9900,13 +9810,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      * partitioning Spec
      */
     int pSpecIdx = inputIdx + 1;
-    ASTNode pSpecNode = ptf.getChildCount() > inputIdx ? (ASTNode) ptf.getChild(pSpecIdx) : null;
+    ASTNode pSpecNode = ptf.getChildCount() > inputIdx ?
+        (ASTNode) ptf.getChild(pSpecIdx) : null;
     if (pSpecNode != null && pSpecNode.getType() == HiveParser.TOK_PARTITIONINGSPEC)
     {
-      WindowSpec wSpec = new WindowSpec();
-      processPTFPartitionSpec(pSpecNode, wSpec);
-      ptfSpec.setPartition(wSpec.getPartition());
-      ptfSpec.setOrder(wSpec.getOrder());
+      PartitioningSpec partitioning = processPTFPartitionSpec(pSpecNode);
+      ptfSpec.setPartitioning(partitioning);
       argStartIdx++;
     }
 
@@ -9917,158 +9826,68 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     {
       ptfSpec.addArg((ASTNode) ptf.getChild(i));
     }
-
     return ptfSpec;
   }
 
   /*
    * - invoked during FROM AST tree processing, on encountering a PTF invocation.
-   * - tree form is ^(TOK_PTBLFUNCTION name partitionTableFunctionSource partitioningSpec? arguments*)
-   * - setup a QuerySpec for this top level PTF invocation.
-   * - if the Query needs Windowing handling, then when encountering the associated DESTINATION AST node,
-   * this QuerySpec will be associated with the QB.
+   * - tree form is
+   *   ^(TOK_PTBLFUNCTION name partitionTableFunctionSource partitioningSpec? arguments*)
+   * - setup a PTFInvocationSpec for this top level PTF invocation.
    */
   private void processPTF(QB qb, ASTNode ptf) throws SemanticException{
 
-    TableFuncSpec ptfSpec = processPTFChain(qb, ptf);
+    PartitionedTableFunctionSpec ptfSpec = processPTFChain(qb, ptf);
 
     if ( ptfSpec.getAlias() != null ) {
       qb.addAlias(ptfSpec.getAlias());
     }
 
-    PTFSpec spec = new PTFSpec();
-    spec.setInput(ptfSpec);
-    ensurePTFChainHasPartitioning(spec, generateErrorMessage(ptf,
-        "No partition specification associated with start of PTF chain "));
+    PTFInvocationSpec spec = new PTFInvocationSpec();
+    spec.setFunction(ptfSpec);
+    ensurePTFChainHasPartitioning(spec, ptf);
     qb.addPTFNodeToSpec(ptf, spec);
   }
 
   /*
    * ensure that the PTF chain has a partitioning specification associated. This method
-   * should be called when:
-   * - a PTF chain is encountered as a fromSource. (from the processPTF method)
-   * - at the end of Phase1 (or before constructing the PTF QueryDef) to check that the WindowingTableFunction
-   * is driven from a partitioning specification (specified in the distribute by or cluster by clauses).
+   * should be called when a PTF chain is encountered as a fromSource.
+   * (from the processPTF method)
    */
-  private void ensurePTFChainHasPartitioning(PTFSpec qSpec, String errString) throws SemanticException {
+  private void ensurePTFChainHasPartitioning(PTFInvocationSpec qSpec, ASTNode node)
+      throws SemanticException {
     if(qSpec == null){
       return;
     }
-    Iterator<TableFuncSpec> it = PTFTranslator.iterateTableFuncSpecs(qSpec, true);
-    PTFInputSpec iSpec = it.next();
-    PartitionSpec pSpec = iSpec.getPartition();
+    PartitionedTableFunctionSpec ptfSpec = qSpec.getStartOfChain();
+    PartitionSpec pSpec = ptfSpec.getPartition();
     if ( pSpec == null ) {
-      throw new SemanticException(errString);
+      throw new SemanticException(generateErrorMessage(node,
+                  "No partition specification associated with start of PTF chain "));
     }
-  }
+   }
+
+//--------------------------- Windowing handling -----------------------------------
+
 
   /*
-   * - Select tree form is: ^(TOK_SELECT ^(TOK_SELECTEXPR...) ^(TOK_SELECTEXPR...) ...)
-   * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
-   *
-   * We need to extract from the SelectList any SelectItems that must be handled during Windowing processing. These are:
-   * - SelectItems that have a window_specification
-   * - SelectItems that invoke row navigation functions: Lead/Lag.
-
+   * ensure that the PTF chain has a partitioning specification associated.
+   * This method should be called at the end of Phase1
+   * to check that the WindowingTableFunction
+   * is driven from a partitioning specification
+   * (specified in the distribute by or cluster by clauses).
    */
-  private void findWindowingExpressions(ASTNode selectNode,
-      ArrayList<ASTNode> windowingFunctionExprs,
-      ArrayList<String> windowingFunctionAliases,
-      ArrayList<ASTNode> windowingFunctionWSpecs,
-      ArrayList<ASTNode> windowingSelectExprs,
-      ArrayList<String> windowingSelectExprAliases)
+  private void ensureWindowingSourceHasPartitioning(WindowingSpec qSpec, ASTNode node)
       throws SemanticException {
-    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-    CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs();
-
-
-    for(int i=0; i < selectNode.getChildCount(); i++)
-    {
-      ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
-      if ( selectExpr.getType() != HiveParser.TOK_SELEXPR )
-      {
-        continue;
-      }
-      boolean hasWindowingExprs = checkAndExtractIsWindowingFunctionInvocation(selectExpr,
-          windowingFunctionExprs,
-          windowingFunctionAliases,
-          windowingFunctionWSpecs);
-
-      if ( !hasWindowingExprs ) {
-        tw.visit(selectExpr, HiveParser.TOK_FUNCTION, checkLLFunctions);
-
-        if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(selectExpr, checkLLFunctions.getErrString()));
-        }
-
-        hasWindowingExprs = checkLLFunctions.isHasWindowingExprs();
-
-        if ( hasWindowingExprs )
-        {
-          ASTNode expr = (ASTNode)selectExpr.getChild(0);
-          windowingSelectExprs.add(expr);
-          String alias;
-          int childCount = selectExpr.getChildCount();
-          /*
-            * @revisit what if there are multiple Identifiers(lateral view)
-           */
-          if ( childCount < 2 ) {
-            /*
-             * generate an alias using the function AST tree.
-             * - calling getColAlias with a null InputResolver and null defaultName.
-             * - so includeFunctionName should be true.
-             */
-            String[] colAlias = getColAlias(expr, null, null, true, -1);
-            alias = colAlias[1];
-          }
-          else {
-            alias = selectExpr.getChild(1).getText();
-          }
-          windowingSelectExprAliases.add(alias);
-        }
-      }
+    if(qSpec == null){
+      return;
     }
-  }
-
-  private static class CheckLeadLagInSelectExprs implements ContextVisitor
-  {
-    boolean hasWindowingExprs = false;
-    boolean error = false;
-    String errString;
-
-    public void visit(Object t, Object parent, int childIndex, Map labels)
-    {
-      error = false; errString = null;
-
-      ASTNode function = (ASTNode) t;
-      String fnName = function.getChild(0).getText().toLowerCase();
-      if (fnName.equals(FunctionRegistry.LEAD_FUNC_NAME)
-          || fnName.equals(FunctionRegistry.LAG_FUNC_NAME))
-      {
-        hasWindowingExprs = true;
-      }
-      else if ( FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName)) {
-        error = true;
-        errString = "Currently you cannot use a Navigation Functions: first_value, last_value in expressions";
-      }
-      else if ( FunctionRegistry.RANKING_FUNCTIONS.contains(fnName)) {
-        error = true;
-        errString = "Currently you cannot use a Ranking Functions: in expressions";
-      }
+    PartitionSpec pSpec = qSpec.getQueryPartitionSpec();
+    if ( pSpec == null ) {
+      throw new SemanticException(generateErrorMessage(node,
+                  "No partition specification associated with Windowing "));
     }
-
-    public boolean isHasWindowingExprs() {
-      return hasWindowingExprs;
-    }
-
-    protected boolean isError() {
-      return error;
-    }
-
-    protected String getErrString() {
-      return errString;
-    }
-  }
+   }
 
   /*
    * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
@@ -10077,17 +9896,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * - It must be a UDAF function invocation
    * - It must have a Windowing Spec
    * 2.
-   * - It must be a Ranking or Navigation Function invocation which is also a UDAF function (so no lead/lag)
+   * - It must be a Ranking or Navigation Function invocation which is also a UDAF function
+   *   (so no lead/lag)
    * 3.
    * - It must be a UDAF function invocation
    * - must have an argument which invokes Lead/Lag
    * Error Expressions are:
    * - a Window Spec without a UDAF invocation: we don't support expressions i Windowing.
    */
-  private boolean checkAndExtractIsWindowingFunctionInvocation(ASTNode selectExpr,
-      ArrayList<ASTNode> windowingFunctionExprs,
-      ArrayList<String> windowingFunctionAliases,
-      ArrayList<ASTNode> windowingFunctionWSpecs) throws SemanticException {
+  private boolean checkAndExtractWindowFunctionsInSelect(QB qb, ASTNode selectExpr, String dest)
+      throws SemanticException {
 
     int childCount = selectExpr.getChildCount();
     ASTNode windowSpec = (ASTNode) selectExpr.getChild(childCount - 1);
@@ -10113,18 +9931,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     /*
-     * If this is a Windowing Function and it has LeadLag expression in its args, then it will be handled
-     * by WindowingTabFunc.
+     * If this is a Windowing Function and it has LeadLag expression in its args,
+     * then it will be handled by WindowingTabFunc.
      */
     if ( isWindowFunction && !isRankingOrNavFunction ) {
 
       TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-      CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs();
+      CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs(qb, dest);
       for(int i=1; !hasLLArgs && i < function.getChildCount(); i++) {
         ASTNode child = (ASTNode) function.getChild(i);
         tw.visit(child, HiveParser.TOK_FUNCTION, checkLLFunctions);
         if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(selectExpr, checkLLFunctions.getErrString()));
+          throw new SemanticException(generateErrorMessage(selectExpr,
+              checkLLFunctions.getErrString()));
         }
         hasLLArgs = checkLLFunctions.isHasWindowingExprs();
       }
@@ -10132,7 +9951,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ( hasWindowSpec && !isWindowFunction ) {
       throw new SemanticException(generateErrorMessage(selectExpr,
-          "Currently windowing Specification can only be associated with a UDAF invocation or navigation functions"));
+          "Currently windowing Specification can only be associated with a UDAF " +
+          "invocation or navigation functions"));
     }
 
     if (
@@ -10141,7 +9961,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (isWindowFunction && hasLLArgs)
         ) {
       /*
-       * @revisit: what should I do if there are more than 3 children; i.e. more than one Identifier.
+       * @revisit: what should I do if there are more than 3 children;
+       * i.e. more than one Identifier.
        */
 
       String alias = null;
@@ -10159,234 +9980,239 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           alias = colAlias[1];
          }
 
-
-      windowingFunctionExprs.add(function);
-      windowingFunctionAliases.add(alias);
-      windowingFunctionWSpecs.add(hasWindowSpec ? windowSpec : null);
+      WindowingSpec spec = qb.getWindowingSpec(dest);
+      if(spec == null) {
+        queryProperties.setHasWindowing(true);
+        spec = new WindowingSpec();
+        qb.addDestToWindowingSpec(dest, spec);
+      }
+      WindowFunctionSpec wFnSpec = processWindowFunction(spec, function,
+          hasWindowSpec ? windowSpec : null);
+      wFnSpec.setAlias(alias);
+      spec.addWindowFunction(wFnSpec);
+      qb.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
       return true;
+    }
+    return false;
+  }
 
+
+  private static class CheckLeadLagInSelectExprs implements ContextVisitor
+  {
+    QB qb;
+    String dest;
+    boolean hasWindowingExprs = false;
+    boolean error = false;
+    String errString;
+
+    private CheckLeadLagInSelectExprs(QB qb, String dest) {
+      this.qb = qb;
+      this.dest = dest;
     }
 
-    return false;
+    public void visit(Object t, Object parent, int childIndex, Map labels)
+    {
+      error = false; errString = null;
+      ASTNode function = (ASTNode) t;
+      WindowingSpec wSpec = qb.getWindowingSpec(dest);
 
+      HashMap<String, ASTNode> windowingExprs =
+          qb.getParseInfo().getWindowingExprsForClause(dest);
+
+      /*
+       * reference to a Windowing Fns is allowed in Windowing Exprs.
+       */
+      if ( windowingExprs != null && windowingExprs.containsKey(function.toStringTree())) {
+        return;
+      }
+
+      String fnName = function.getChild(0).getText().toLowerCase();
+      if (fnName.equals(FunctionRegistry.LEAD_FUNC_NAME)
+          || fnName.equals(FunctionRegistry.LAG_FUNC_NAME))
+      {
+        hasWindowingExprs = true;
+      }
+      else if ( FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName)) {
+        error = true;
+        errString = "Currently you cannot use a Navigation Functions: " +
+        		"first_value, last_value in expressions";
+      }
+      else if ( FunctionRegistry.RANKING_FUNCTIONS.contains(fnName)) {
+        error = true;
+        errString = "Currently you cannot use a Ranking Functions: in expressions";
+      }
+    }
+
+    public boolean isHasWindowingExprs() {
+      return hasWindowingExprs;
+    }
+
+    protected boolean isError() {
+      return error;
+    }
+
+    protected String getErrString() {
+      return errString;
+    }
   }
+
 
   /*
    * - Invoked during Phase1 when a TOK_SELECT is encountered.
    * - Select tree form is: ^(TOK_SELECT ^(TOK_SELECTEXPR...) ^(TOK_SELECTEXPR...) ...)
    * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
    *
-   * We need to extract the SelectList any SelectItems that must be handled during Windowing processing. These are:
+   * We need to extract the SelectList any SelectItems that must be handled during
+   * Windowing processing. These are:
    * - SelectItems that have a window_specification
    * - SelectItems that invoke row navigation functions: Lead/Lag.
    *
    * Do we need to change the SelectList in any way?
-   * - initially we thought of replacing the selectExpressions handled by Windowing with a ASTNode that is of type Identfier and
+   * - initially we thought of replacing the selectExpressions handled by Windowing
+   * with a ASTNode that is of type Identfier and
    * references the alias to the orginal expression. Why?
-   *   - the output of processing the PTF Operator that handles windowing will contain the values of the Windowing expressions.
-   *   - the final Select Op that is a child of the above PTF Op can get these values from its input by referring to the computed
+   *   - the output of processing the PTF Operator that handles windowing will
+   *   contain the values of the Windowing expressions.
+   *   - the final Select Op that is a child of the above PTF Op can get these values
+   *     from its input by referring to the computed
    *     windowing expression via its alias.
    * - but this is not needed. Why?
-   *   - When transforming a AST tree to an ExprNodeDesc the TypeCheckFactory checks if there is a mapping from an AST tree to an output
+   *   - When transforming a AST tree to an ExprNodeDesc the TypeCheckFactory checks
+   *     if there is a mapping from an AST tree to an output
    *     column in the InputResolver; if there is it uses the alias for the Output column
    *   - This is how values get handed from a GBy Op to the next Select Op;
    *   - we need the same thing to happen.
    */
-  private void handleWindowingExprsInSelectList(QB qb, Phase1Ctx ctx_1, ASTNode ast) throws SemanticException {
-    ArrayList<ASTNode> windowingSelectExprs = new ArrayList<ASTNode>();
-    ArrayList<String> windowingSelectExprAliases = new ArrayList<String>();
-    ArrayList<ASTNode> windowingFunctionExprs = new ArrayList<ASTNode>();
-    ArrayList<String> windowingFunctionAliases = new ArrayList<String>();
-    ArrayList<ASTNode> windowingFunctionWSpecs = new ArrayList<ASTNode>();
+  private void handleWindowingExprsInSelectList(QB qb, String dest, ASTNode selectNode)
+      throws SemanticException {
+    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
+    CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs(qb, dest);
 
-    findWindowingExpressions(ast,
-        windowingFunctionExprs,
-        windowingFunctionAliases,
-        windowingFunctionWSpecs,
-        windowingSelectExprs,
-        windowingSelectExprAliases);
-
-    addWindowingFuncsToPTFSpec(qb, ctx_1.dest,
-        windowingFunctionExprs,
-        windowingFunctionAliases,
-        windowingFunctionWSpecs,
-        windowingSelectExprs,
-        windowingSelectExprAliases);
-  }
-
-  private void addWindowingFuncsToPTFSpec(QB currQB, String dest,
-      ArrayList<ASTNode> windowingFunctionExprs,
-      ArrayList<String> windowingFunctionAliases,
-      ArrayList<ASTNode> windowingFunctionWSpecs,
-      ArrayList<ASTNode> windowingSelectExprs,
-      ArrayList<String> windowingSelectExprAliases) throws SemanticException {
-
-    if ( (windowingSelectExprs != null && windowingSelectExprs.size() > 0) ||
-         (windowingFunctionExprs != null && windowingFunctionExprs.size() > 0)){
-
-      queryProperties.setHasPTF(true);
-      /*
-       * Either use the PTF QuerySpec already associated with this QB or create a new one.
-       */
-      PTFSpec spec = currQB.getWindowingPTFSpec(dest);
-      SelectSpec ss;
-      PTFInputSpec qInSpec;
-      if ( spec == null ) {
-        spec = new PTFSpec();
-        currQB.addDestToWindowingPTFSpec(dest, spec);
-        /*
-         * set the Input TableSpec to the destination.
-         * Use this to find the input Operator during plan generation.
-         */
-        qInSpec = new PTFTableOrSubQueryInputSpec();
-        ((PTFTableOrSubQueryInputSpec)qInSpec).setTableName(dest);
+    for(int i=0; i < selectNode.getChildCount(); i++)
+    {
+      ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
+      if ( selectExpr.getType() != HiveParser.TOK_SELEXPR )
+      {
+        continue;
       }
-      else {
-        /*
-         * since there is already a PTF QSpec assocaited with this QB just add the WindowTblFunc to the chain.
-         */
-        qInSpec = spec.getInput();
-      }
-      ss = spec.getSelectList() == null? new SelectSpec() : spec.getSelectList();
-      spec.setSelectList(ss);
+      boolean hasWindowingExprs = checkAndExtractWindowFunctionsInSelect(qb, selectExpr, dest);
 
-      /*
-       * If query has no table function, then add one:
-       *  - if query has window functions add the WindowingTableFunc; else add the Noop table function.
-       */
-      boolean addTabFunction = false;
-      if(!windowingFunctionExprs.isEmpty() || !(qInSpec instanceof TableFuncSpec) ){
-        addTabFunction = true;
-      }
+      if ( !hasWindowingExprs ) {
+        tw.visit(selectExpr, HiveParser.TOK_FUNCTION, checkLLFunctions);
 
-      String tabFuncName = null;
-      TableFuncSpec tabSpec = null;
-      if(qInSpec instanceof TableFuncSpec){
-        tabSpec = (TableFuncSpec) qInSpec;
-        tabFuncName = tabSpec.getName();
-      }
+        if ( checkLLFunctions.isError() ) {
+          throw new SemanticException(generateErrorMessage(selectExpr,
+              checkLLFunctions.getErrString()));
+        }
 
-      if ( addTabFunction ) {
-        boolean addWindowFunction = !windowingFunctionExprs.isEmpty();
-        String fnName = addWindowFunction ?
-            FunctionRegistry.WINDOWING_TABLE_FUNCTION :
-              FunctionRegistry.NOOP_TABLE_FUNCTION;
-        //Need this check to avoid adding WINDOWING_TABLE_FUNCTION again when we
-        // invoke moveAggregationExprsToPTFSpec
-        if(!(tabFuncName != null && tabFuncName.equals(fnName))){
-          tabSpec = new TableFuncSpec();
-          tabSpec.setName(fnName);
-          tabSpec.setInput(qInSpec);
-          spec.setInput(tabSpec);
+        hasWindowingExprs = checkLLFunctions.isHasWindowingExprs();
+
+        if ( hasWindowingExprs )
+        {
+          ASTNode expr = (ASTNode)selectExpr.getChild(0);
+          WindowingSpec spec = qb.getWindowingSpec(dest);
+          if(spec == null) {
+            queryProperties.setHasWindowing(true);
+            spec = new WindowingSpec();
+            qb.addDestToWindowingSpec(dest, spec);
+          }
+
+          String alias;
+          int childCount = selectExpr.getChildCount();
+          /*
+            * @revisit what if there are multiple Identifiers(lateral view)
+           */
+          if ( childCount < 2 ) {
+            /*
+             * generate an alias using the function AST tree.
+             * - calling getColAlias with a null InputResolver and null defaultName.
+             * - so includeFunctionName should be true.
+             */
+            String[] colAlias = getColAlias(expr, null, null, true, -1);
+            alias = colAlias[1];
+          }
+          else {
+            alias = selectExpr.getChild(1).getText();
+          }
+          spec.addExpression(expr, alias);
+          qb.getParseInfo().addWindowingExprToClause(dest, expr);
         }
       }
-
-      LinkedHashMap<String, ASTNode> windowingExprsMap = new LinkedHashMap<String, ASTNode>();
-
-      for(int i=0; i < windowingFunctionExprs.size(); i++) {
-        String alias = windowingFunctionAliases.get(i);
-        WindowFunctionSpec wFn = processWindowFunction(windowingFunctionExprs.get(i),
-            windowingFunctionWSpecs == null? null: windowingFunctionWSpecs.get(i));
-        tabSpec.inferDefaultWindowingSpec(wFn);
-        ss.addWindowFunc(wFn, alias);
-        windowingExprsMap.put(wFn.getExpression().toStringTree(), wFn.getExpression());
-      }
-
-      for(int i=0; windowingSelectExprs!= null && i < windowingSelectExprs.size(); i++) {
-        String alias = windowingSelectExprAliases.get(i);
-        ss.addExpression(windowingSelectExprs.get(i), alias);
-        windowingExprsMap.put(windowingSelectExprs.get(i).toStringTree(), windowingSelectExprs.get(i));
-      }
-
-      qb.getParseInfo().addWindowingExprsForClause(dest, windowingExprsMap);
-
-    }else {
-      /*
-       * if we asscoiated the QB with a PTF QSpec, then we can remove this association.
-       * Since there are no Windowing Expressions to be handled in this Query; we don't
-       * need to defer processing of the PTF QSpec until after the GBy Op.
-       */
-      currQB.addDestToWindowingPTFSpec(dest, null);
     }
   }
 
   /*
-   * this method is called in the case when the Query has Windowing Clauses and a Distribute/Cluster By.
-   * - the Distribute/Cluster By is associated with the WindowingTableFunc
-   * - If the Query has no Group by, but there are qb.destToAggExprs then move these to the Windowing QSpec.
+   * this method is called in the case when the Query has Windowing Clauses and a
+   * Distribute/Cluster By.
+   * - the Distribute/Cluster By is associated with the WindowingSpec
+   * - If the Query has no Group by, but there are qb.destToAggExprs then
+   * move these to the Windowing Spec.
    */
-  private void handleClusterOrDistributeByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast) throws SemanticException {
+  private void handleClusterOrDistributeByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast)
+      throws SemanticException {
     QBParseInfo qbp = qb.getParseInfo();
     PartitionSpec pSpec = processPartitionSpec(ast);
-    PTFSpec spec = qb.getWindowingPTFSpec(ctx_1.dest);
-    SelectSpec ss = spec.getSelectList();
-    if ( ss == null ) {
-      ss = new SelectSpec();
-      spec.setSelectList(ss);
-    }
-    TableFuncSpec tFn = (TableFuncSpec) spec.getInput();
-    tFn.setPartition(pSpec);
-    tFn.setDefaultWindowSpec(null);
+    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
+    spec.setQueryPartitonSpec(pSpec);
   }
 
-  private void handleSortByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast) throws SemanticException {
+  private void handleSortByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast)
+      throws SemanticException {
     OrderSpec oSpec = processOrderSpec(ast);
-    PTFSpec spec = qb.getWindowingPTFSpec(ctx_1.dest);
-    TableFuncSpec tFn = (TableFuncSpec) spec.getInput();
-    tFn.setOrder(oSpec);
-    tFn.inferDefaultOrderSpec(oSpec);
+    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
+    spec.setQueryOrderSpec(oSpec);
   }
 
-  private void handleQueryWindowClauses(QB qb, Phase1Ctx ctx_1, ASTNode node) throws SemanticException {
-    PTFSpec spec = qb.getWindowingPTFSpec(ctx_1.dest);
+  private void handleQueryWindowClauses(QB qb, Phase1Ctx ctx_1, ASTNode node)
+      throws SemanticException {
+    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
     for(int i=0; i < node.getChildCount(); i++) {
       processQueryWindowClause(spec, (ASTNode) node.getChild(i));
     }
   }
 
   private void handleWindowingHavingClause(QB qb, Phase1Ctx ctx_1, ASTNode node) {
-    PTFSpec spec = qb.getWindowingPTFSpec(ctx_1.dest);
-    spec.setWhereExpr(node);
+    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
+    spec.setFilterExpr((ASTNode)node.getChild(0));
   }
 
-  PartitionSpec processPartitionSpec(ASTNode node) {
+  private PartitionSpec processPartitionSpec(ASTNode node) {
     PartitionSpec pSpec = new PartitionSpec();
     int exprCnt = node.getChildCount();
     for(int i=0; i < exprCnt; i++) {
-      ColumnSpec exprSpec = new ColumnSpec();
+      PartitionExpression exprSpec = new PartitionExpression();
       exprSpec.setExpression((ASTNode) node.getChild(i));
-      //exprSpec.setColumnName(node.getChild(i).getChild(0).getText());
-      pSpec.addColumn(exprSpec);
+      pSpec.addExpression(exprSpec);
     }
     return pSpec;
   }
 
-  OrderSpec processOrderSpec(ASTNode sortNode) {
+  private OrderSpec processOrderSpec(ASTNode sortNode) {
     OrderSpec oSpec = new OrderSpec();
     int exprCnt = sortNode.getChildCount();
     for(int i=0; i < exprCnt; i++) {
-      OrderColumnSpec exprSpec = new OrderColumnSpec();
+      OrderExpression exprSpec = new OrderExpression();
       exprSpec.setExpression((ASTNode) sortNode.getChild(i).getChild(0));
-      //exprSpec.setColumnName(sortNode.getChild(i).getChild(0).getChild(0).getText());
       if ( sortNode.getChild(i).getType() == HiveParser.TOK_TABSORTCOLNAMEASC ) {
-        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFSpec.Order.ASC);
+        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC);
       }
       else {
-        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFSpec.Order.DESC);
+        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC);
       }
-      oSpec.addColumn(exprSpec);
+      oSpec.addExpression(exprSpec);
     }
     return oSpec;
   }
 
-  private void processPTFPartitionSpec(ASTNode pSpecNode, WindowSpec wSpec)
+  private PartitioningSpec processPTFPartitionSpec(ASTNode pSpecNode)
   {
+    PartitioningSpec partitioning = new PartitioningSpec();
     ASTNode firstChild = (ASTNode) pSpecNode.getChild(0);
     int type = firstChild.getType();
     int exprCnt;
 
     PartitionSpec pSpec = processPartitionSpec(firstChild);
-    wSpec.setPartition(pSpec);
+    partitioning.setPartSpec(pSpec);
 
     if ( type == HiveParser.TOK_DISTRIBUTEBY )
     {
@@ -10394,12 +10220,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ( sortNode != null )
       {
         OrderSpec oSpec = processOrderSpec(sortNode);
-        wSpec.setOrder(oSpec);
+        partitioning.setOrderSpec(oSpec);
       }
     }
+    return partitioning;
   }
 
-  private WindowFunctionSpec processWindowFunction(ASTNode node, ASTNode wsNode) throws SemanticException {
+  private WindowFunctionSpec processWindowFunction(WindowingSpec spec,
+      ASTNode node,
+      ASTNode wsNode) throws SemanticException {
     WindowFunctionSpec wfSpec = new WindowFunctionSpec();
 
     switch(node.getType()) {
@@ -10443,24 +10272,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return wfSpec;
   }
 
-  private void processQueryWindowClause(PTFSpec qSpec, ASTNode node) throws SemanticException {
+  private void processQueryWindowClause(WindowingSpec spec, ASTNode node)
+      throws SemanticException {
     ASTNode nameNode = (ASTNode) node.getChild(0);
     ASTNode wsNode = (ASTNode) node.getChild(1);
-    if(qSpec.getWindowSpecs().containsKey(nameNode.getText())){
+    if(spec.getWindowSpecs() != null && spec.getWindowSpecs().containsKey(nameNode.getText())){
       throw new SemanticException(generateErrorMessage(nameNode,
           "Duplicate definition of window " + nameNode.getText() +
           " is not allowed"));
     }
     WindowSpec ws = processWindowSpec(wsNode);
-    PTFInputSpec inpSpec = qSpec.getInput();
-    /*
-     * If no Partitioning spec has been encountered so far, set this as the default Partitioning.
-     */
-    if ( inpSpec instanceof TableFuncSpec ) {
-      TableFuncSpec tblFnSpec = (TableFuncSpec) inpSpec;
-      tblFnSpec.inferDefaultWindowingSpec(ws);
-    }
-    qSpec.addWindowSpec(nameNode.getText(), ws);
+    spec.addWindowSpec(nameNode.getText(), ws);
   }
 
   private WindowSpec processWindowSpec(ASTNode node) {
@@ -10499,14 +10321,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (hasPartSpec) {
       ASTNode partNode = (ASTNode) node.getChild(partIdx);
-      processPTFPartitionSpec(partNode, ws);
+      PartitioningSpec partitioning = processPTFPartitionSpec(partNode);
+      ws.setPartitioning(partitioning);
     }
 
     if ( hasWF)
     {
       ASTNode wfNode = (ASTNode) node.getChild(wfIdx);
       WindowFrameSpec wfSpec = processWindowFrame(wfNode);
-      ws.setWindow(wfSpec);
+      ws.setWindowFrame(wfSpec);
     }
 
     return ws;
@@ -10546,7 +10369,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rbs.setDirection(Direction.FOLLOWING);
       break;
     case HiveParser.KW_CURRENT:
-      bs = new WindowFrameSpec.CurrentRowSpec();
+      bs = new CurrentRowSpec();
       hasAmt = false;
       break;
     }
@@ -10580,7 +10403,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       vbs = new ValueBoundarySpec(Direction.FOLLOWING, null, BoundarySpec.UNBOUNDED_AMOUNT);
       break;
     case HiveParser.KW_CURRENT:
-      vbs = new WindowFrameSpec.CurrentRowSpec();
+      vbs = new CurrentRowSpec();
       break;
     case HiveParser.KW_LESS:
       vbs = new ValueBoundarySpec(Direction.PRECEDING,
@@ -10595,245 +10418,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return vbs;
   }
-
-//--------------------------- PTF handling: Qspec to PtfDesc -----------------------------------
-
-  private PTFDesc translateSpecToDef(PTFSpec qSpec, RowResolver inputRR) throws SemanticException{
-    PTFDesc ptfDesc = null;
-    PTFTranslator translator = new PTFTranslator();
-    ptfDesc = translator.translate(qSpec, conf, inputRR, unparseTranslator);
-    return ptfDesc;
-  }
-
-
-  Operator genPTFPlan(PTFSpec ptfQSpec, Operator input) throws SemanticException {
-    ArrayList<PTFSpec> componentQueries = PTFTranslator.componentize(ptfQSpec);
-    for (PTFSpec ptfSpec : componentQueries) {
-      input = genPTFPlanForComponentQuery(ptfSpec, input);
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created PTF Plan ");
-    }
-    return input;
-  }
-
-
-  /**
-   * Construct the data structures containing ExprNodeDesc for partition
-   * columns and order columns. Use the input definition to construct the list
-   * of output columns for the ReduceSinkOperator
-   *
-   * @throws SemanticException
-   */
-  void buildPTFReduceSinkDetails(TableFuncDef tabDef,
-      RowResolver inputRR,
-      ArrayList<ExprNodeDesc> partCols,
-      ArrayList<ExprNodeDesc> valueCols,
-      ArrayList<ExprNodeDesc> orderCols,
-      Map<String, ExprNodeDesc> colExprMap,
-      List<String> outputColumnNames,
-      StringBuilder orderString,
-      RowResolver extractRR) throws SemanticException {
-
-    ArrayList<ColumnDef> partColList = tabDef.getWindow().getPartDef().getColumns();
-
-    for (ColumnDef colDef : partColList) {
-      partCols.add(colDef.getExprNode());
-    }
-
-    /*
-     * Order columns are used as key columns for constructing
-     * the ReduceSinkOperator
-     * Since we do not explicitly add these to outputColumnNames,
-     * we need to set includeKeyCols = false while creating the
-     * ReduceSinkDesc
-     */
-    ArrayList<OrderColumnDef> orderColList = tabDef.getWindow().getOrderDef().getColumns();
-    for (int i = 0; i < orderColList.size(); i++) {
-      OrderColumnDef colDef = orderColList.get(i);
-      org.apache.hadoop.hive.ql.parse.PTFSpec.Order order = colDef.getOrder();
-      if (order.name().equals("ASC")) {
-        orderString.append('+');
-      } else {
-        orderString.append('-');
-      }
-      orderCols.add(colDef.getExprNode());
-    }
-
-    /*
-     * We add the column to value columns or output column names
-     * only if it is not a virtual column
-     */
-    ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
-    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving = new LinkedHashMap<String[], ColumnInfo>();
-    int pos = 0;
-    for (ColumnInfo colInfo : colInfoList) {
-      if (!colInfo.isHiddenVirtualCol()) {
-        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
-            .getInternalName(), colInfo.getTabAlias(), colInfo
-            .getIsVirtualCol());
-        valueCols.add(valueColExpr);
-        colExprMap.put(colInfo.getInternalName(), valueColExpr);
-        String outColName = SemanticAnalyzer.getColumnInternalName(pos++);
-        outputColumnNames.add(outColName);
-
-        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-        /*
-         * if we have already encountered this colInfo internalName.
-         * We encounter it again because it must be put for the Having clause.
-         * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
-         */
-        if ( colsAddedByHaving.containsKey(alias)) {
-          continue;
-        }
-        ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
-        ColumnInfo eColInfo = new ColumnInfo(
-            outColName, colInfo.getType(), alias[0],
-            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-
-        if ( astNode == null ) {
-          extractRR.put(alias[0], alias[1], eColInfo);
-        }
-        else {
-          /*
-           * in case having clause refers to this column may have been added twice; once with the ASTNode.toStringTree as the alias
-           * and then with the real alias.
-           */
-          extractRR.putExpression(astNode, eColInfo);
-          if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
-            colsAddedByHaving.put(alias, eColInfo);
-          }
-        }
-      }
-    }
-
-    for(Map.Entry<String[], ColumnInfo> columnAddedByHaving : colsAddedByHaving.entrySet() ) {
-      String[] alias = columnAddedByHaving.getKey();
-      ColumnInfo eColInfo = columnAddedByHaving.getValue();
-      extractRR.put(alias[0], alias[1], eColInfo);
-    }
-  }
-
-  private Operator genPTFPlanForComponentQuery(PTFSpec ptfQSpec, Operator input) throws SemanticException {
-    /*
-     * 1. Create the PTFDesc from the Qspec attached to this QB.
-     */
-    RowResolver rr = opParseCtx.get(input).getRowResolver();
-    PTFDesc ptfDesc = translateSpecToDef(ptfQSpec, rr);
-    /*
-     * Build an RR for the Extract Op from the ResuceSink Op's RR.
-     * Why?
-     * We need to remove the Virtual Columns present in the RS's RR. The OI
-     * that gets passed to Extract at runtime doesn't contain the Virtual Columns.
-     * So internal names get changed. Consider testCase testJoinWithLeadLag, which is a self join on part
-     * and also has a Windowing expression. The RR of the RS op at transaltion time looks something like this:
-     * (_co1,_col2,..,_col7, _col8(vc=true),_col9(vc=true),_col10,_col11,.._col15(vc=true),_col16(vc=true),..)
-     * At runtime the Virtual columns are removed and all the columns after _col7 are shifted 1 or 2 positions.
-     * So in child Operators ColumnExprNodeDesc's are no longer referring to the right columns.
-     *
-     * So we build a new RR for the Extract Op, with the Virtual Columns removed. We hand this to the PTFTranslator as the
-     * starting RR to use to translate a PTF Chain.
-     */
-    RowResolver extractOpRR = new RowResolver();
-
-    /*
-     * 2. build Map-side Op Graph. Graph template is either:
-     * Input -> PTF_map -> ReduceSink
-     * or
-     * Input -> ReduceSink
-     *
-     * Here the ExprNodeDescriptors in the QueryDef are based on the Input Operator's RR.
-     */
-    {
-      rr = opParseCtx.get(input).getRowResolver();
-      TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(ptfDesc);
-
-      /*
-       * a. add Map-side PTF Operator if needed
-       */
-      if (PTFTranslator.addPTFMapOperator(ptfDesc))
-      {
-        RowResolver ptfMapRR = ptfDesc.getTranslationInfo().getInputInfo(tabDef).getRowResolver();
-
-        input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
-            new RowSchema(ptfMapRR.getColumnInfos()),
-            input), ptfMapRR);
-        rr = opParseCtx.get(input).getRowResolver();
-      }
-
-      /*
-       * b. Build Reduce Sink Details (keyCols, valueCols, outColNames etc.) for this ptfDesc.
-       */
-
-      ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
-      ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
-      ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
-      Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-      List<String> outputColumnNames = new ArrayList<String>();
-      StringBuilder orderString = new StringBuilder();
-
-      /*
-       * Use the input RR of TableScanOperator in case there is no map-side
-       * reshape of input.
-       * If the parent of ReduceSinkOperator is PTFOperator, use it's
-       * output RR.
-       */
-      buildPTFReduceSinkDetails(tabDef,
-          rr,
-          partCols,
-          valueCols,
-          orderCols,
-          colExprMap,
-          outputColumnNames,
-          orderString,
-          extractOpRR);
-
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
-          .getReduceSinkDesc(orderCols,
-              valueCols, outputColumnNames, false,
-              -1, partCols, orderString.toString(), -1),
-          new RowSchema(rr.getColumnInfos()), input), rr);
-      input.setColumnExprMap(colExprMap);
-    }
-
-    /*
-     * 3. build Reduce-side Op Graph
-     */
-    {
-      /*
-       * b. Construct Extract Operator.
-       */
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(
-          new ExtractDesc(
-              PTFTranslator.getStringColumn(Utilities.ReduceField.VALUE
-                      .toString())),
-          new RowSchema(extractOpRR.getColumnInfos()),
-          input), extractOpRR);
-
-      /*
-       * c. Rebuilt the QueryDef.
-       * Why?
-       * - so that the ExprNodeDescriptors in the QueryDef are based on the Extract Operator's RowResolver
-       */
-      rr = opParseCtx.get(input).getRowResolver();
-      ptfDesc = translateSpecToDef(ptfQSpec, rr);
-
-      /*
-       * d. Construct PTF Operator.
-       */
-      RowResolver ptfOpRR = ptfDesc.getSelectList().getRowResolver();
-      input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
-          new RowSchema(ptfOpRR.getColumnInfos()),
-          input), ptfOpRR);
-
-
-      dumpOperatorChain(input, ptfDesc);
-    }
-
-    return input;
-
-  }
-
 
   /*
    * check if a Select Expr is a constant.
@@ -10894,14 +10478,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * then this method is invoked.
    * Constructs the function expr and alias list and invokes addWindowingFuncsToPTFSpec
    */
-  private void moveaggregationExprsToPTFSpec(QB currQB, String clause) throws SemanticException {
-      HashMap<String, ASTNode> aggregationTree = currQB.getParseInfo().getAggregationExprsForClause(clause);
+  private void moveaggregationExprsToWindowingSpec(QB currQB, String dest)
+      throws SemanticException {
+      HashMap<String, ASTNode> aggregationTree =
+          currQB.getParseInfo().getAggregationExprsForClause(dest);
       if((aggregationTree != null) && !(aggregationTree.isEmpty()) ){
+        WindowingSpec spec = currQB.getWindowingSpec(dest);
+        if(spec == null){
+          queryProperties.setHasWindowing(true);
+          spec = new WindowingSpec();
+          currQB.addDestToWindowingSpec(dest, spec);
+        }
         Collection<ASTNode> aggrExprs = aggregationTree.values();
-        ArrayList<ASTNode> windowingFunctionExprs = new ArrayList<ASTNode>();
-        ArrayList<String> windowingFunctionAliases = new ArrayList<String>();
         for (ASTNode expr : aggrExprs) {
-          windowingFunctionExprs.add(expr);
           String alias = currQB.getParseInfo().getExprToColumnAlias(expr);
           if ( alias == null ) {
             /*
@@ -10912,12 +10501,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             String[] colAlias = getColAlias(expr, null, null, true, -1);
             alias = colAlias[1];
           }
-          windowingFunctionAliases.add(alias);
+          WindowFunctionSpec wFn = processWindowFunction(spec, expr, null);
+          wFn.setAlias(alias);
+          spec.addWindowFunction(wFn);
           currQB.getParseInfo().getAllExprToColumnAlias().remove(expr);
         }
-        currQB.getParseInfo().clearAggregationExprsForClause(clause);
-        addWindowingFuncsToPTFSpec(currQB, clause, windowingFunctionExprs,
-            windowingFunctionAliases, null, null, null);
+        currQB.getParseInfo().clearAggregationExprsForClause(dest);
       }
   }
 
@@ -10968,17 +10557,415 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *  There is one caveat: if the select list has only aggregations, then
    *  this is not handled by windowing.
    */
-  private void ensurePTFSpecOnQB(QB currQB, String clause) throws SemanticException{
+  private void ensureWindowingSpecOnQB(QB currQB, String clause) throws SemanticException{
     if( currQB.getParseInfo().getAggregationExprsForClause(clause) != null
         && !queryProperties.hasGroupBy()){
       boolean isValid = isValidGroupBySelectList(currQB, clause);
       if(!isValid) {
-        moveaggregationExprsToPTFSpec(currQB, clause);
+        moveaggregationExprsToWindowingSpec(currQB, clause);
       }
     }
   }
 
-  public static SelectSpec parseSelect(String selectExprStr) throws SemanticException
+
+//--------------------------- PTF handling: PTFInvocationSpec to PTFDesc --------------------------
+
+  private PTFDesc translatePTFInvocationSpec(PTFInvocationSpec ptfQSpec, RowResolver inputRR)
+      throws SemanticException{
+    PTFDesc ptfDesc = null;
+    PTFTranslator translator = new PTFTranslator();
+    ptfDesc = translator.translate(ptfQSpec, this, conf, inputRR, unparseTranslator);
+    return ptfDesc;
+  }
+
+  Operator genPTFPlan(PTFInvocationSpec ptfQSpec, Operator input) throws SemanticException {
+    ArrayList<PTFInvocationSpec> componentQueries = PTFTranslator.componentize(ptfQSpec);
+    for (PTFInvocationSpec ptfSpec : componentQueries) {
+      input = genPTFPlanForComponentQuery(ptfSpec, input);
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Created PTF Plan ");
+    }
+    return input;
+  }
+
+
+  /**
+   * Construct the data structures containing ExprNodeDesc for partition
+   * columns and order columns. Use the input definition to construct the list
+   * of output columns for the ReduceSinkOperator
+   *
+   * @throws SemanticException
+   */
+  void buildPTFReduceSinkDetails(PartitionedTableFunctionDef tabDef,
+      RowResolver inputRR,
+      ArrayList<ExprNodeDesc> partCols,
+      ArrayList<ExprNodeDesc> valueCols,
+      ArrayList<ExprNodeDesc> orderCols,
+      Map<String, ExprNodeDesc> colExprMap,
+      List<String> outputColumnNames,
+      StringBuilder orderString,
+      RowResolver extractRR) throws SemanticException {
+
+    ArrayList<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
+
+    for (PTFExpressionDef colDef : partColList) {
+      partCols.add(colDef.getExprNode());
+    }
+
+    /*
+     * Order columns are used as key columns for constructing
+     * the ReduceSinkOperator
+     * Since we do not explicitly add these to outputColumnNames,
+     * we need to set includeKeyCols = false while creating the
+     * ReduceSinkDesc
+     */
+    ArrayList<OrderExpressionDef> orderColList = tabDef.getOrder().getExpressions();
+    for (int i = 0; i < orderColList.size(); i++) {
+      OrderExpressionDef colDef = orderColList.get(i);
+      org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = colDef.getOrder();
+      if (order.name().equals("ASC")) {
+        orderString.append('+');
+      } else {
+        orderString.append('-');
+      }
+      orderCols.add(colDef.getExprNode());
+    }
+
+    /*
+     * We add the column to value columns or output column names
+     * only if it is not a virtual column
+     */
+    ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
+    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
+        new LinkedHashMap<String[], ColumnInfo>();
+    int pos = 0;
+    for (ColumnInfo colInfo : colInfoList) {
+      if (!colInfo.isHiddenVirtualCol()) {
+        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
+            .getInternalName(), colInfo.getTabAlias(), colInfo
+            .getIsVirtualCol());
+        valueCols.add(valueColExpr);
+        colExprMap.put(colInfo.getInternalName(), valueColExpr);
+        String outColName = SemanticAnalyzer.getColumnInternalName(pos++);
+        outputColumnNames.add(outColName);
+
+        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+        /*
+         * if we have already encountered this colInfo internalName.
+         * We encounter it again because it must be put for the Having clause.
+         * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
+         */
+        if ( colsAddedByHaving.containsKey(alias)) {
+          continue;
+        }
+        ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
+        ColumnInfo eColInfo = new ColumnInfo(
+            outColName, colInfo.getType(), alias[0],
+            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+
+        if ( astNode == null ) {
+          extractRR.put(alias[0], alias[1], eColInfo);
+        }
+        else {
+          /*
+           * in case having clause refers to this column may have been added twice;
+           * once with the ASTNode.toStringTree as the alias
+           * and then with the real alias.
+           */
+          extractRR.putExpression(astNode, eColInfo);
+          if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
+            colsAddedByHaving.put(alias, eColInfo);
+          }
+        }
+      }
+    }
+
+    for(Map.Entry<String[], ColumnInfo> columnAddedByHaving : colsAddedByHaving.entrySet() ) {
+      String[] alias = columnAddedByHaving.getKey();
+      ColumnInfo eColInfo = columnAddedByHaving.getValue();
+      extractRR.put(alias[0], alias[1], eColInfo);
+    }
+  }
+
+  private Operator genPTFPlanForComponentQuery(PTFInvocationSpec ptfQSpec, Operator input)
+      throws SemanticException {
+    /*
+     * 1. Create the PTFDesc from the Qspec attached to this QB.
+     */
+    RowResolver rr = opParseCtx.get(input).getRowResolver();
+    PTFDesc ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
+    /*
+     * Build an RR for the Extract Op from the ResuceSink Op's RR.
+     * Why?
+     * We need to remove the Virtual Columns present in the RS's RR. The OI
+     * that gets passed to Extract at runtime doesn't contain the Virtual Columns.
+     * So internal names get changed. Consider testCase testJoinWithLeadLag,
+     * which is a self join on part and also has a Windowing expression.
+     * The RR of the RS op at transaltion time looks something like this:
+     * (_co1,_col2,..,_col7, _col8(vc=true),_col9(vc=true),
+     * _col10,_col11,.._col15(vc=true),_col16(vc=true),..)
+     * At runtime the Virtual columns are removed and all the columns after _col7
+     * are shifted 1 or 2 positions.
+     * So in child Operators ColumnExprNodeDesc's are no longer referring to the right columns.
+     *
+     * So we build a new RR for the Extract Op, with the Virtual Columns removed.
+     * We hand this to the PTFTranslator as the
+     * starting RR to use to translate a PTF Chain.
+     */
+    RowResolver extractOpRR = new RowResolver();
+
+    /*
+     * 2. build Map-side Op Graph. Graph template is either:
+     * Input -> PTF_map -> ReduceSink
+     * or
+     * Input -> ReduceSink
+     *
+     * Here the ExprNodeDescriptors in the QueryDef are based on the Input Operator's RR.
+     */
+    {
+      PartitionedTableFunctionDef tabDef = ptfDesc.getStartOfChain();
+
+      /*
+       * a. add Map-side PTF Operator if needed
+       */
+      if (tabDef.isTransformsRawInput() )
+      {
+        RowResolver ptfMapRR = tabDef.getRawInputShape().getRr();
+
+        input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
+            new RowSchema(ptfMapRR.getColumnInfos()),
+            input), ptfMapRR);
+        rr = opParseCtx.get(input).getRowResolver();
+      }
+
+      /*
+       * b. Build Reduce Sink Details (keyCols, valueCols, outColNames etc.) for this ptfDesc.
+       */
+
+      ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
+      Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+      List<String> outputColumnNames = new ArrayList<String>();
+      StringBuilder orderString = new StringBuilder();
+
+      /*
+       * Use the input RR of TableScanOperator in case there is no map-side
+       * reshape of input.
+       * If the parent of ReduceSinkOperator is PTFOperator, use it's
+       * output RR.
+       */
+      buildPTFReduceSinkDetails(tabDef,
+          rr,
+          partCols,
+          valueCols,
+          orderCols,
+          colExprMap,
+          outputColumnNames,
+          orderString,
+          extractOpRR);
+
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
+          .getReduceSinkDesc(orderCols,
+              valueCols, outputColumnNames, false,
+              -1, partCols, orderString.toString(), -1),
+          new RowSchema(rr.getColumnInfos()), input), rr);
+      input.setColumnExprMap(colExprMap);
+    }
+
+    /*
+     * 3. build Reduce-side Op Graph
+     */
+    {
+      /*
+       * b. Construct Extract Operator.
+       */
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(
+          new ExtractDesc(
+              new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+                  Utilities.ReduceField.VALUE
+                  .toString(), "", false)),
+          new RowSchema(extractOpRR.getColumnInfos()),
+          input), extractOpRR);
+
+      /*
+       * c. Rebuilt the QueryDef.
+       * Why?
+       * - so that the ExprNodeDescriptors in the QueryDef are based on the
+       *   Extract Operator's RowResolver
+       */
+      rr = opParseCtx.get(input).getRowResolver();
+      ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
+
+      /*
+       * d. Construct PTF Operator.
+       */
+      RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
+          new RowSchema(ptfOpRR.getColumnInfos()),
+          input), ptfOpRR);
+
+    }
+
+    return input;
+
+  }
+
+//--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
+
+  private PTFDesc translateWindowingSpec(WindowingSpec wSpec, RowResolver inputRR)
+      throws SemanticException{
+    PTFDesc ptfDesc = null;
+    PTFTranslator translator = new PTFTranslator();
+    ptfDesc = translator.translate(wSpec, this, conf, inputRR, unparseTranslator);
+    return ptfDesc;
+  }
+
+  Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
+
+    RowResolver rr = opParseCtx.get(input).getRowResolver();
+    input = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new SelectDesc(true), new RowSchema(rr.getColumnInfos()),
+        input), rr);
+
+    rr = opParseCtx.get(input).getRowResolver();
+    input = genReduceSinkPlanForWindowing(wSpec, rr, input);
+
+    rr = opParseCtx.get(input).getRowResolver();
+    PTFDesc ptfDesc = translateWindowingSpec(wSpec, rr);
+
+    /*
+     * d. Construct PTF Operator.
+     */
+    RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
+    input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
+        new RowSchema(ptfOpRR.getColumnInfos()),
+        input), ptfOpRR);
+
+    dumpOperatorChain(input, null);
+
+    return input;
+  }
+
+  private Operator genReduceSinkPlanForWindowing(WindowingSpec spec,
+      RowResolver inputRR,
+      Operator input) throws SemanticException{
+    ArrayList<ExprNodeDesc> partCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> orderCols = new ArrayList<ExprNodeDesc>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    List<String> outputColumnNames = new ArrayList<String>();
+    StringBuilder orderString = new StringBuilder();
+
+    ArrayList<PartitionExpression> partColList = spec.getQueryPartitionSpec().getExpressions();
+    for (PartitionExpression partCol : partColList) {
+      ExprNodeDesc partExpr = genExprNodeDesc(partCol.getExpression(), inputRR);
+      partCols.add(partExpr);
+    }
+
+    ArrayList<OrderExpression> orderColList = spec.getQueryOrderSpec() == null ?
+        new ArrayList<PTFInvocationSpec.OrderExpression>() :
+          spec.getQueryOrderSpec().getExpressions();
+    ArrayList<OrderExpression> combinedOrderList =
+        PTFTranslator.addPartitionExpressionsToOrderList(partColList, orderColList);
+    for (int i = 0; i < combinedOrderList.size(); i++) {
+      OrderExpression orderCol = combinedOrderList.get(i);
+      org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = orderCol.getOrder();
+      if (order.name().equals("ASC")) {
+        orderString.append('+');
+      } else {
+        orderString.append('-');
+      }
+      ExprNodeDesc orderExpr = genExprNodeDesc(orderCol.getExpression(), inputRR);
+      orderCols.add(orderExpr);
+    }
+
+    /*
+     * We add the column to value columns or output column names
+     * only if it is not a virtual column
+     */
+    ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
+    int pos = 0;
+    for (ColumnInfo colInfo : colInfoList) {
+        ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
+            .getInternalName(), colInfo.getTabAlias(), colInfo
+            .getIsVirtualCol());
+        valueCols.add(valueColExpr);
+        colExprMap.put(colInfo.getInternalName(), valueColExpr);
+        String outColName = SemanticAnalyzer.getColumnInternalName(pos++);
+        outputColumnNames.add(outColName);
+    }
+
+    input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
+        .getReduceSinkDesc(orderCols,
+            valueCols, outputColumnNames, false,
+            -1, partCols, orderString.toString(), -1),
+        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+    input.setColumnExprMap(colExprMap);
+
+
+ // Construct the RR for extract operator
+    RowResolver extractRR = new RowResolver();
+    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
+        new LinkedHashMap<String[], ColumnInfo>();
+    pos = 0;
+
+    for (ColumnInfo colInfo : colInfoList) {
+      String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+      /*
+       * if we have already encountered this colInfo internalName.
+       * We encounter it again because it must be put for the Having clause.
+       * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
+       */
+      if ( colsAddedByHaving.containsKey(alias)) {
+        continue;
+      }
+      ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
+      ColumnInfo eColInfo = new ColumnInfo(
+          SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
+          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+
+      if ( astNode == null ) {
+        extractRR.put(alias[0], alias[1], eColInfo);
+      }
+      else {
+        /*
+         * in case having clause refers to this column may have been added twice;
+         * once with the ASTNode.toStringTree as the alias
+         * and then with the real alias.
+         */
+        extractRR.putExpression(astNode, eColInfo);
+        if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
+          colsAddedByHaving.put(alias, eColInfo);
+        }
+      }
+    }
+
+    for(Map.Entry<String[], ColumnInfo> columnAddedByHaving : colsAddedByHaving.entrySet() ) {
+      String[] alias = columnAddedByHaving.getKey();
+      ColumnInfo eColInfo = columnAddedByHaving.getValue();
+      extractRR.put(alias[0], alias[1], eColInfo);
+    }
+
+    /*
+     * b. Construct Extract Operator.
+     */
+    input = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new ExtractDesc(
+            new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+                Utilities.ReduceField.VALUE
+                .toString(), "", false)),
+        new RowSchema(inputRR.getColumnInfos()),
+        input), extractRR);
+
+
+    return input;
+  }
+
+
+  public static ArrayList<WindowExpressionSpec> parseSelect(String selectExprStr)
+      throws SemanticException
   {
     ASTNode selNode = null;
     try {
@@ -10988,7 +10975,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(pe);
     }
 
-    SelectSpec selSpec = new SelectSpec();
+    ArrayList<WindowExpressionSpec> selSpec = new ArrayList<WindowExpressionSpec>();
     int childCount = selNode.getChildCount();
     for (int i = 0; i < childCount; i++) {
       ASTNode selExpr = (ASTNode) selNode.getChild(i);
@@ -10998,7 +10985,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       ASTNode expr = (ASTNode) selExpr.getChild(0);
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-        throw new SemanticException(PTFUtils.sprintf("'*' column not allowed in dynamic select list",
+        throw new SemanticException(
+            PTFUtils.sprintf("'*' column not allowed in dynamic select list",
             selectExprStr));
       }
       ASTNode aliasNode = selExpr.getChildCount() > 1
@@ -11012,7 +11000,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String[] tabColAlias = getColAlias(selExpr, null, null, true, -1);
         alias = tabColAlias[1];
       }
-      selSpec.addExpression(expr, alias);
+      WindowExpressionSpec exprSpec = new WindowExpressionSpec();
+      exprSpec.setAlias(alias);
+      exprSpec.setExpression(expr);
+      selSpec.add(exprSpec);
     }
 
     return selSpec;
@@ -11044,7 +11035,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dumpRowResolver(buf, rr);
       if ( op instanceof PTFOperator && ptfDesc != null ) {
         /*
-         * 1/21 hb: this is no longer correct; in a chain containing multiple PTFOps, every PTFOp dump prints the info from the
+         * 1/21 hb: this is no longer correct; in a chain containing multiple PTFOps,
+         * every PTFOp dump prints the info from the
          * last PTFDef
          */
         dump(buf, ptfDesc);
@@ -11106,27 +11098,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static void dump(StringBuilder buf, PTFDesc ptfDesc) {
-    Iterator<PTFInputDef> iDefs = PTFTranslator.iterateInputDefs(ptfDesc, true);
-    while(iDefs.hasNext() ) {
-      PTFInputDef iDef = iDefs.next();
-      if ( iDef instanceof PTFTableOrSubQueryInputDef ) {
-        dump(buf, (PTFTableOrSubQueryInputDef) iDef);
-      }else if ( iDef instanceof PTFComponentQueryDef ) {
-        dump(buf, (PTFComponentQueryDef) iDef);
+    Stack<PTFInputDef> ptfChain = new Stack<PTFInputDef>();
+    PTFInputDef currentDef = ptfDesc.getFuncDef();
+    while(currentDef != null ) {
+      ptfChain.push(currentDef);
+      currentDef = currentDef.getInput();
+    }
+
+    while(!ptfChain.isEmpty() ) {
+      PTFInputDef iDef = ptfChain.pop();
+      if ( iDef instanceof PTFQueryInputDef ) {
+        dump(buf, (PTFQueryInputDef) iDef);
       }else {
-        dump(buf, (TableFuncDef) iDef);
+        dump(buf, (PartitionedTableFunctionDef) iDef);
       }
     }
 
-    StructObjectInspector OI = (StructObjectInspector) ptfDesc.getSelectList().getOI();
-    buf.append("\nSelectList:");
-    dump(buf, OI);
   }
 
-  private static void dump(StringBuilder buf, TableFuncDef tFnDef) {
+  private static void dump(StringBuilder buf, PartitionedTableFunctionDef tFnDef) {
     buf.append("\n").append(tFnDef.getName()).append(":");
     dump(buf, (PTFInputDef)tFnDef);
-    TableFunctionEvaluator tFn = tFnDef.getFunction();
+    TableFunctionEvaluator tFn = tFnDef.getTFunction();
 
     if ( tFn.isTransformsRawInput() ) {
       buf.append("\nEvaluator RawInput ObjectInspector:[");
@@ -11139,16 +11132,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     buf.append("]");
 
   }
-  private static void dump(StringBuilder buf, PTFTableOrSubQueryInputDef htblDef) {
-    buf.append("\n").append(htblDef.getHiveInputSpec().getTableName()).append(":");
+  private static void dump(StringBuilder buf, PTFQueryInputDef htblDef) {
+    buf.append("\n").append(htblDef.getDestination()).append(":");
     dump(buf, (PTFInputDef)htblDef);
   }
 
   private static void dump(StringBuilder buf, PTFInputDef qInDef) {
-    StructObjectInspector OI = (StructObjectInspector) qInDef.getOI();
+    StructObjectInspector OI = (StructObjectInspector) qInDef.getOutputShape().getOI();
     buf.append("\nDef ObjectInspector:[");
     dump(buf, OI);
-    buf.append("]\nSerDe:").append(qInDef.getSerde().getClass().getName());
+    buf.append("]\nSerDe:").append(qInDef.getOutputShape().getSerde().getClass().getName());
   }
 
   private static void dump(StringBuilder buf, StructObjectInspector OI) {

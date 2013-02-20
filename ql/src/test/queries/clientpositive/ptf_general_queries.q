@@ -32,7 +32,7 @@ LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE fli
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
 from noop(part 
   distribute by p_mfgr
   sort by p_name
@@ -51,7 +51,7 @@ sort by p_name;
 select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
-p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row),
+p_retailprice, sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),
 p_size, p_size - lag(p_size,1) as deltaSz
 from noop(part
 distribute by p_mfgr
@@ -74,19 +74,14 @@ from part
 distribute by p_mfgr
 sort by p_name ;
 
--- 6. testJoinWithLeadLag
-select p1.p_mfgr, p1.p_name,
-p1.p_size, p1.p_size - lag(p1.p_size,1) as deltaSz
-from part p1 join part p2 on p1.p_partkey = p2.p_partkey
-distribute by p1.p_mfgr
-sort by p1.p_name ;
-        
 -- 7. testJoinWithNoop
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1) as deltaSz
 from noop ( (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
-sort by j.p_name);    
+sort by j.p_name)
+distribute by p_mfgr
+sort by p_name;    
         
 -- 8. testGroupByWithSWQ
 select p_mfgr, p_name, p_size, min(p_retailprice),
@@ -119,7 +114,7 @@ sort by p_name);
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
 from noop(part 
   distribute by p_mfgr
   sort by p_name
@@ -156,9 +151,9 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 count(p_size) as cd 
-from noop(part 
+from part 
 distribute by p_mfgr 
-sort by p_name);
+sort by p_name;
 
 -- 15. testCountWithWindowing
 select p_mfgr, p_name, 
@@ -167,9 +162,9 @@ dense_rank() as dr,
 count(p_size) as cd, 
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 p_size, p_size - lag(p_size,1) as deltaSz 
-from noop(part 
+from part 
 distribute by p_mfgr 
-sort by p_name);
+sort by p_name;
 
 
 -- 16. testCountInSubQ
@@ -180,9 +175,9 @@ dense_rank() as dr,
 count(p_size) as cd, 
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 p_size, p_size - lag(p_size,1) as deltaSz 
-from noop(part 
+from part 
 distribute by p_mfgr 
-sort by p_name)
+sort by p_name
 ) sub1;
 
 -- 17. testJoin
@@ -214,12 +209,13 @@ sort by abc.p_name ;
 
 -- 20. testMixedCaseAlias
 select p_mfgr, p_name, p_size, rank() as R
-from noop(part 
+from part 
 distribute by p_mfgr 
-sort by p_name, p_size desc);
+sort by p_name, p_size desc;
 
 -- 21. testNoopWithMap
-select p_mfgr, p_name, p_size, rank() as r
+select p_mfgr, p_name, p_size, 
+rank() as r over (distribute by p_mfgr sort by p_name, p_size desc)
 from noopwithmap(part
 distribute by p_mfgr
 sort by p_name, p_size desc);
@@ -228,7 +224,7 @@ sort by p_name, p_size desc);
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
 from noopwithmap(part 
   distribute by p_mfgr
   sort by p_name);
@@ -242,14 +238,14 @@ from part
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_name; 
-    		
+
 -- 24. testHavingWithWindowingCondRankNoGBY
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
 sum(p_retailprice) as s1 over (rows between unbounded preceding and current row) 
 from part 
-having r < 4 
+having rank() < 4 
 distribute by p_mfgr 
 sort by p_name;
 
@@ -257,12 +253,12 @@ sort by p_name;
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
 from noop(part
 distribute by p_mfgr
 sort by p_name)
-having r < 4;
-
+having rank() < 4;
+    		
 -- 26. testFirstLast   
 select  p_mfgr,p_name, p_size, 
 sum(p_size) as s2 over (rows between current row and current row), 
@@ -345,7 +341,7 @@ window w1 as (rows between 2 preceding and 2 following);
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row) 
+sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
 from noop(noopwithmap(noop(part 
 distribute by p_mfgr 
 sort by p_mfgr, p_name
@@ -361,7 +357,7 @@ sum(p_retailprice) as s1 over w1
 from noop(part 
 distribute by p_mfgr 
 sort by p_name) 
-window w1 as (rows between 2 preceding and 2 following) 
+window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following) 
 ) sub1 ;
 
 -- 35. testCountStar
@@ -479,7 +475,7 @@ sum(s) as s1 over w1
 from noop(mfgr_price_view 
 distribute by p_mfgr 
 sort by p_mfgr)  
-window w1 as (rows between 2 preceding and current row);
+window w1 as ( distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
 
 -- 46. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
@@ -566,7 +562,7 @@ select * from part_1;
 select * from part_2;
 
 select * from part_3;
-	 
+
 -- 50. testGroupByHavingWithSWQAndAlias
 select p_mfgr, p_name, p_size, min(p_retailprice) as mi,
 rank() as r,
@@ -577,7 +573,7 @@ group by p_mfgr, p_name, p_size
 having p_size > 0
 distribute by p_mfgr
 sort by p_name;
-
+	 
 -- 51. testMultipleRangeWindows
 select  p_mfgr,p_name, p_size, 
 sum(p_size) as s2 over (range between p_size 10 less and current row), 
@@ -707,7 +703,7 @@ window w1 as (rows between 2 preceding and 2 following);
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row) 
 from noop(
         noopwithmap(
           noop(
@@ -724,7 +720,7 @@ from noop(
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
 from noop(
         noop(
           noop(
@@ -739,7 +735,7 @@ from noop(
         
 -- 63. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
-rank() as r, 
+rank() as r over (distribute by p_mfgr sort by p_name), 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 
 from noop(
@@ -757,7 +753,7 @@ from noop(
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (rows between unbounded preceding and current row)  
+p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row)  
 from noopwithmap(
         noop(
           noop(

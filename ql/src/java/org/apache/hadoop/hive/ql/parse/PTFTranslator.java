@@ -22,16 +22,12 @@ import static org.apache.hadoop.hive.ql.exec.PTFUtils.sprintf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Stack;
 
-import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTreeAdaptor;
-import org.antlr.runtime.tree.Tree;
-import org.antlr.runtime.tree.TreeAdaptor;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.logging.Log;
@@ -42,605 +38,860 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.PTFUtils.Predicate;
-import org.apache.hadoop.hive.ql.exec.PTFUtils.ReverseIterator;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.ColumnSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.OrderColumnSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.OrderSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PTFComponentQuerySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PTFInputSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PTFTableOrSubQueryInputSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.PartitionSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.SelectSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.TableFuncSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.CurrentRowSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFrameSpec.ValueBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowFunctionSpec;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.WindowSpec;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFInputSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFQueryInputType;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ArgDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ColumnDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.CurrentRowDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFComponentQueryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFTableOrSubQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.SelectDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WhereDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.RangeBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.CurrentRowDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.RangeBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
+import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-public class PTFTranslator
-{
-  public PTFDesc translate(PTFSpec qSpec, HiveConf qCfg, RowResolver rr, UnparseTranslator unparseT) throws SemanticException
-  {
-    PTFDesc qry = new PTFDesc();
-    qry.setSpec(qSpec);
+public class PTFTranslator {
 
-    PTFTranslationInfo transInfo = new PTFTranslationInfo();
-    transInfo.setHiveCfg(qCfg);
-    transInfo.unparseT = unparseT;
-    qry.setTranslationInfo(transInfo);
+  private static final Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.parse");
 
-    PTFTranslator.translateInput(qry, rr);
-    PTFTranslator.translateWhere(qry);
-    PTFTranslator.translateOutput(qry);
+  HiveConf hCfg;
+  LeadLagInfo llInfo;
+  SemanticAnalyzer semAly;
+  UnparseTranslator unparseT;
+  RowResolver inputRR;
+  PTFDesc ptfDesc;
+  PTFInvocationSpec ptfInvocation;
+  WindowingSpec windowingSpec;
 
-    return qry;
-  }
-
-  /*
-   * Input translation methods
-   */
-  private static void translateInput(PTFDesc ptfDesc, RowResolver rr) throws SemanticException
-  {
-    PTFSpec spec = ptfDesc.getSpec();
-
-    /*
-     * validate that input chain ends in a Hive Query or TAble.
-     */
-    if (!spec.getInput().sourcedFromHive())
-    {
-      throw new SemanticException("Translation not supported for HdfsLocation based queries");
-    }
-
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    PTFSpec qSpec = ptfDesc.getSpec();
-    Iterator<PTFInputSpec> it = PTFTranslator.iterateInputSpecs(qSpec, true);
-    PTFInputDef currentIDef = null;
-    int inputNum = 0;
-    while (it.hasNext())
-    {
-      PTFInputSpec nextSpec = it.next();
-      if (nextSpec instanceof PTFTableOrSubQueryInputSpec)
-      {
-        currentIDef = PTFTranslator.translate(ptfDesc, (PTFTableOrSubQueryInputSpec) nextSpec,
-            (PTFTableOrSubQueryInputDef) null, rr);
-      }
-      else if (nextSpec instanceof PTFComponentQuerySpec)
-      {
-        currentIDef = PTFTranslator.translate(ptfDesc, (PTFComponentQuerySpec) nextSpec,
-            (PTFComponentQueryDef) null, rr);
-      }
-      else
-      {
-        currentIDef = translate(ptfDesc, (TableFuncSpec) nextSpec, currentIDef);
-      }
-      String alias = getTableAlias(ptfDesc, inputNum, currentIDef);
-      currentIDef.setAlias(alias);
-      tInfo.addInput(currentIDef, inputNum == 0 ? rr : null);
-      inputNum++;
-    }
-
-    ptfDesc.setInput(currentIDef);
-  }
-
-
-  /*
-   * todo: revisit computing the alias. For a HiveTableDef it probably only needs to be the
-   * tablename.
-   */
-  private static String getTableAlias(PTFDesc ptfDesc, int inputNum, PTFInputDef inputDef)
-      throws SemanticException
-  {
-    if (inputDef instanceof PTFTableOrSubQueryInputDef)
-    {
-      PTFTableOrSubQueryInputDef hTbldef = (PTFTableOrSubQueryInputDef) inputDef;
-      String db = ((PTFTableOrSubQueryInputSpec) hTbldef.getSpec()).getDbName();
-      String tableName = ((PTFTableOrSubQueryInputSpec) hTbldef.getSpec()).getTableName();
-      return db + "." + tableName;
-    }
-    else if (inputDef instanceof PTFComponentQueryDef)
-    {
-      String alias = "ptf_" + inputNum ;
-      return alias;
-    }
-    else if (inputDef instanceof TableFuncDef)
-    {
-      String alias = ((TableFuncDef) inputDef).getTableFuncSpec().getAlias();
-      alias = alias == null ? "ptf_" + inputNum : alias;
-      return alias;
-    }
-    throw new SemanticException(sprintf("Internal Error: attempt to translate %s",
-        inputDef.getSpec()));
-  }
-
-   private static PTFComponentQueryDef translate(PTFDesc qDef,
-           PTFComponentQuerySpec spec,
-           PTFComponentQueryDef def, RowResolver rr) throws SemanticException
-       {
-         def = def == null ? new PTFComponentQueryDef() : def;
-         def.setSpec(spec);
-         ObjectInspector oi = PTFTranslator.getInputOI(rr);
-         Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
-         SerDe serde = null;
-
-         try {
-           serde = PTFTranslator.createLazyBinarySerDe(
-             qDef.getTranslationInfo().getHiveCfg(),
-             (StructObjectInspector) oi, serdePropsMap);
-         }
-         catch(SerDeException se) {
-           throw new SemanticException(se);
-          }
-          def.setSerde(serde);
-          def.setCompSerdeClassName(serde.getClass().getName());
-          def.setOI((StructObjectInspector) oi);
-          return def;
-
-        }
-
-
-  private static PTFTableOrSubQueryInputDef translate(PTFDesc qDef,
-      PTFTableOrSubQueryInputSpec spec,
-      PTFTableOrSubQueryInputDef def, RowResolver rr) throws SemanticException
-  {
-    def = def == null ? new PTFTableOrSubQueryInputDef() : def;
-    def.setSpec(spec);
-    ObjectInspector oi = PTFTranslator.getInputOI(rr);
-    Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
-    SerDe serde = null;
-
-    try {
-      serde = PTFTranslator.createLazyBinarySerDe(
-        qDef.getTranslationInfo().getHiveCfg(),
-        (StructObjectInspector) oi, serdePropsMap);
-    }
-    catch(SerDeException se) {
-      throw new SemanticException(se);
-    }
-    def.setSerde(serde);
-    def.setTableSerdeProps(serdePropsMap);
-    def.setTableSerdeClassName(serde.getClass().getName());
-    def.setOI((StructObjectInspector) oi);
-    return def;
+  private void init(SemanticAnalyzer semAly,
+      HiveConf hCfg,
+      RowResolver inputRR,
+      UnparseTranslator unparseT) {
+    this.semAly = semAly;
+    this.hCfg = hCfg;
+    this.inputRR = inputRR;
+    this.unparseT = unparseT;
+    llInfo = new LeadLagInfo();
 
   }
 
-  /*
-   * <ol>
-   * <li> Get the <code>TableFunctionResolver</code> for this Function from the FunctionRegistry.
-   * <li> Create the TableFuncDef object.
-   * <li> Get the InputInfo for the input to this function.
-   * <li> Translate the Arguments to this Function in the Context of the InputInfo.
-   * <li> ask the TableFunctionResolver to create a TableFunctionEvaluator based on the Args passed
-   * in.
-   * <li> ask the TableFunctionEvaluator to setup the Map-side ObjectInspector. Gives a chance to
-   * functions that
-   * reshape the Input before it is partitioned to define the Shape after raw data is transformed.
-   * <li> Setup the Window Definition for this Function. The Window Definition is resolved wrt to
-   * the InputDef's
-   * Shape or the MapOI, for Functions that reshape the raw input.
-   * <li> ask the TableFunctionEvaluator to setup the Output ObjectInspector for this Function.
-   * <li> setup a Serde for the Output partition based on the OutputOI.
-   * </ol>
-   */
-  private static TableFuncDef translate(PTFDesc qDef, TableFuncSpec tSpec, PTFInputDef inputDef)
-      throws SemanticException
-  {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
+  public PTFDesc translate(PTFInvocationSpec qSpec,
+      SemanticAnalyzer semAly,
+      HiveConf hCfg,
+      RowResolver inputRR,
+      UnparseTranslator unparseT)
+      throws SemanticException {
+    init(semAly, hCfg, inputRR, unparseT);
+    this.ptfInvocation = qSpec;
+    ptfDesc = new PTFDesc();
+    ptfDesc.setLlInfo(llInfo);
+    translatePTFChain();
+    return ptfDesc;
+  }
 
-    TableFunctionResolver tFn = FunctionRegistry.getTableFunctionResolver(tSpec.getName());
-    if (tFn == null)
-    {
-      throw new SemanticException(sprintf("Unknown Table Function %s", tSpec.getName()));
+  public PTFDesc translate(WindowingSpec wdwSpec, SemanticAnalyzer semAly, HiveConf hCfg, RowResolver inputRR,
+      UnparseTranslator unparseT)
+      throws SemanticException {
+    init(semAly, hCfg, inputRR, unparseT);
+    this.windowingSpec = wdwSpec;
+    ptfDesc = new PTFDesc();
+    ptfDesc.setLlInfo(llInfo);
+    WindowTableFunctionDef wdwTFnDef = new WindowTableFunctionDef();
+    ptfDesc.setFuncDef(wdwTFnDef);
+
+    PTFQueryInputSpec inpSpec = new PTFQueryInputSpec();
+    inpSpec.setType(PTFQueryInputType.WINDOWING);
+    wdwTFnDef.setInput(translate(inpSpec, 0));
+    ShapeDetails inpShape = wdwTFnDef.getInput().getOutputShape();
+
+    WindowingTableFunctionResolver tFn = (WindowingTableFunctionResolver)
+        FunctionRegistry.getTableFunctionResolver(FunctionRegistry.WINDOWING_TABLE_FUNCTION);
+    if (tFn == null) {
+      throw new SemanticException(sprintf("INternal Error: Unknown Table Function %s",
+          FunctionRegistry.WINDOWING_TABLE_FUNCTION));
     }
-
-    TableFuncDef tDef = new TableFuncDef();
-    tDef.setSpec(tSpec);
-    tDef.setInput(inputDef);
-    PTFInputInfo iInfo = tInfo.getInputInfo(inputDef);
-
-    /*
-     * translate args
-     */
-    ArrayList<ASTNode> args = tSpec.getArgs();
-    if (args != null)
-    {
-      for (ASTNode expr : args)
-      {
-        ArgDef argDef = null;
-        try {
-          argDef = translateTableFunctionArg(qDef, tDef, iInfo, expr);
-        }
-        catch(HiveException he) {
-          throw new SemanticException(he);
-        }
-        tDef.addArg(argDef);
-      }
-    }
-
-    tFn.initialize(qDef, tDef);
+    wdwTFnDef.setName(FunctionRegistry.WINDOWING_TABLE_FUNCTION);
+    wdwTFnDef.setResolverClassName(tFn.getClass().getName());
+    wdwTFnDef.setAlias("ptf_" + 1 );
+    wdwTFnDef.setExpressionTreeString(null);
+    wdwTFnDef.setTransformsRawInput(false);
+    tFn.initialize(hCfg, ptfDesc, wdwTFnDef);
     TableFunctionEvaluator tEval = tFn.getEvaluator();
-    tDef.setFunction(tEval);
-    tDef.setCarryForwardNames(tFn.carryForwardNames());
-    tFn.setupRawInputOI();
-    tDef.setRawInputColumnNames(tFn.getRawInputColumnNames());
-    tDef.setWindow(PTFTranslator.translateWindow(qDef, tDef));
-    tFn.setupOutputOI();
-    tDef.setOutputColumnNames(tFn.getOutputColumnNames());
-    try {
-      PTFTranslator.setupSerdeAndOI(tDef, inputDef, tInfo, tEval, true);
+    wdwTFnDef.setTFunction(tEval);
+    wdwTFnDef.setCarryForwardNames(tFn.carryForwardNames());
+    wdwTFnDef.setRawInputShape(inpShape);
+
+    PartitioningSpec partiSpec = wdwSpec.getQueryPartitioningSpec();
+    if ( partiSpec == null ) {
+      throw new SemanticException(
+          "Invalid use of Windowing: there is no Partitioning associated with Windowing");
     }
-    catch(SerDeException se) {
-      throw new SemanticException(se);
-    }
+    PartitionDef partDef = translate(inpShape, wdwSpec.getQueryPartitionSpec());
+    OrderDef ordDef = translate(inpShape, wdwSpec.getQueryOrderSpec(), partDef);
 
-    return tDef;
-  }
-
-  private static ArgDef translateTableFunctionArg(PTFDesc ptfDesc, TableFuncDef tDef,
-      PTFInputInfo iInfo, ASTNode arg) throws HiveException
-  {
-    return PTFTranslator.buildArgDef(ptfDesc, iInfo, arg);
-  }
-
-
-  /*
-   * Where Clause translation.
-   */
-
-  public static void translateWhere(PTFDesc ptfDesc) throws SemanticException
-  {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    PTFSpec spec = ptfDesc.getSpec();
-
-    ASTNode wExpr = (ASTNode) spec.getWhereExpr();
-
-    if (wExpr == null) {
-      return;
-    }
-
-    wExpr = (ASTNode) wExpr.getChild(0);
-
-    WhereDef whDef = new WhereDef();
-    whDef.setExpression(wExpr);
-
-    PTFInputDef iDef = ptfDesc.getInput();
-    PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
-
-    ExprNodeDesc exprNode = PTFTranslator.buildExprNode(wExpr, iInfo.getTypeCheckCtx());
-    ExprNodeEvaluator exprEval = null;
-    ObjectInspector oi = null;
-    try {
-      exprEval = WindowingExprNodeEvaluatorFactory.get(tInfo, exprNode);
-      oi = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
-    }
-    catch(HiveException he) {
-      throw new SemanticException(he);
-    }
-    try
-    {
-      ObjectInspectorConverters.getConverter(oi,
-          PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
-    } catch (Throwable t)
-    {
-      throw new SemanticException("Where Expr must be convertible to a boolean value", t);
-    }
-
-    whDef.setExprNode(exprNode);
-    whDef.setExprEvaluator(exprEval);
-    whDef.setOI(oi);
-
-    ptfDesc.setWhere(whDef);
-  }
-
-  /*
-   * Output Translation methods.
-   */
-
-  private static void translateOutput(PTFDesc ptfDesc) throws SemanticException
-  {
-    translateSelectExprs(ptfDesc);
-    setupSelectRRAndOI(ptfDesc);
-  }
-
-  private static void translateSelectExprs(PTFDesc ptfDesc) throws SemanticException
-  {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    PTFInputDef iDef = ptfDesc.getInput();
-    PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
-    SelectSpec selectSpec = ptfDesc.getSpec().getSelectList();
-
-    if (selectSpec == null) {
-      return;
-    }
-
-    SelectDef selectDef = ptfDesc.getSelectList();
-    Iterator<Object> selectExprsAndAliases = selectSpec.getColumnListAndAlias();
-    int i = 0;
-    ColumnDef cDef = null;
-
-
-    while (selectExprsAndAliases.hasNext())
-    {
-      Object[] o = (Object[]) selectExprsAndAliases.next();
-      boolean isWnFn = ((Boolean) o[0]).booleanValue();
-
-      if (!isWnFn)
-      {
-        cDef = translateSelectExpr(ptfDesc, iInfo, i++, (String) o[1], (ASTNode) o[2]);
-        selectDef.addColumn(cDef);
-      }
-    }
-  }
-
-
-  private static ColumnDef translateSelectExpr(PTFDesc ptfDesc, PTFInputInfo iInfo, int colIdx,
-      String alias, ASTNode expr)
-      throws SemanticException
-  {
-    ColumnDef cDef = new ColumnDef((ColumnSpec) null);
-    ExprNodeDesc exprNode = PTFTranslator.buildExprNode(expr, iInfo.getTypeCheckCtx());
-    ExprNodeEvaluator exprEval = null;
-    ObjectInspector oi = null;
-    try {
-      exprEval = WindowingExprNodeEvaluatorFactory.get(ptfDesc.getTranslationInfo(), exprNode);
-      oi = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
-    }
-    catch(HiveException he) {
-      throw new SemanticException(he);
-    }
-
-    cDef.setExpression(expr);
-    cDef.setExprNode(exprNode);
-    cDef.setExprEvaluator(exprEval);
-    cDef.setOI(oi);
-
-    cDef.setAlias(getAlias(alias, expr, colIdx));
-
-    return cDef;
-  }
-
-  private static String getAlias(String alias, ASTNode expr, int columnIdx)
-  {
-    if (alias != null) {
-      return alias;
-    }
-
-    if (expr.getToken().getType() == HiveParser.TOK_TABLE_OR_COL)
-    {
-      Tree child = expr.getChild(0);
-      return child.getText();
-    }
-
-    return sprintf("col_%i", columnIdx);
-  }
-
-  /*
-   * Setup based on the OI of the final PTF + expressions in the SelectList that are handled by the
-   * Partition mechanism.
-   * For expressions that are handled by the PTFOp : navigation expressions in SelectList or
-   * windowing clauses
-   * add the mapping from ASTNode to ColumnInfo so that the SelectOp doesn't try to evaluate these.
-   */
-  static void setupSelectRRAndOI(PTFDesc ptfDesc) throws SemanticException {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    PTFInputDef iDef = ptfDesc.getInput();
-    PTFInputInfo iInfo = tInfo.getInputInfo(iDef);
-    SelectDef selectDef = ptfDesc.getSelectList();
-    RowResolver inputRR = iInfo.getRowResolver();
-    SelectSpec selectSpec = ptfDesc.getSpec().getSelectList();
-    LinkedHashMap<String, ASTNode> aliasToAST = selectSpec == null ? null : selectSpec
-        .getAliasToAST();
-    boolean isWindowPTF = ((TableFuncDef) ptfDesc.getInput()).getName() == FunctionRegistry.WINDOWING_TABLE_FUNCTION;
-    RowResolver rr = new RowResolver();
-
-    // should I just set it to the iDef.getAlias()?
-    // if the ptf invocation didn't have an alias, the alias would be set to an internally generated
-    // alias.
-    String outAlias = ((TableFuncDef) ptfDesc.getInput()).getTableFuncSpec().getAlias();
+    wdwTFnDef.setPartition(partDef);
+    wdwTFnDef.setOrder(ordDef);
 
     /*
-     * Give the Columns internalNames based on position.
-     * The Columns are added in the following order:
-     * - the columns in the SelectList processed by the PTF (ie the Select Exprs that have navigation expressions)
-     * - the columns from the final PTF.
-     * Why?
-     * - during translation the input contains Virtual columns that are not present during runtime
-     * - this messes with the Column Numbers (and hence internal Names) if we add the columns in a different order.
+     * process Wdw functions
      */
+    ArrayList<WindowFunctionDef> windowFunctions = new ArrayList<WindowFunctionDef>();
+    if ( wdwSpec.getWindowExpressions() != null ) {
+      for(WindowExpressionSpec expr : wdwSpec.getWindowExpressions()) {
+        if ( expr instanceof WindowFunctionSpec) {
+          WindowFunctionDef wFnDef = translate(wdwTFnDef, (WindowFunctionSpec)expr);
+          windowFunctions.add(wFnDef);
+        }
+      }
+      wdwTFnDef.setWindowFunctions(windowFunctions);
+    }
 
-    int pos = 0;
+    /*
+     * set outputFromWdwFnProcessing
+     */
+    if ( windowFunctions.size() > 0 ) {
+      ArrayList<String> aliases = new ArrayList<String>();
+      ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
+      for(WindowFunctionDef wFnDef : windowFunctions) {
+        aliases.add(wFnDef.getAlias());
+        if ( wFnDef.isPivotResult() ) {
+          fieldOIs.add(((ListObjectInspector)wFnDef.getOI()).getListElementObjectInspector());
+        } else {
+          fieldOIs.add(wFnDef.getOI());
+        }
+      }
+      PTFTranslator.addInputColumnsToList(inpShape, aliases, fieldOIs);
+      StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+          aliases, fieldOIs);
+      tFn.setWdwProcessingOutputOI(wdwOutOI);
+      RowResolver wdwOutRR = buildRowResolverForWindowing(wdwTFnDef, false);
+      ShapeDetails wdwOutShape = setupShape(wdwOutOI, null, wdwOutRR);
+      wdwTFnDef.setOutputFromWdwFnProcessing(wdwOutShape);
+    }
+    else {
+      wdwTFnDef.setOutputFromWdwFnProcessing(inpShape);
+    }
 
-    if (selectDef.getColumns() != null) {
-      for (ColumnDef cDef : selectDef.getColumns()) {
-        String internalName = HiveConf.getColumnInternalName(pos++);
-        ColumnInfo cInfo = new ColumnInfo(internalName,
-            TypeInfoUtils.getTypeInfoFromObjectInspector(cDef.getOI()),
-            outAlias,
-            false);
-        rr.putExpression(cDef.getExpression(), cInfo);
+    /*
+     * process Wdw expressions
+     */
+    ShapeDetails wdwOutShape = wdwTFnDef.getOutputFromWdwFnProcessing();
+    ArrayList<WindowExpressionDef> windowExpressions = new ArrayList<WindowExpressionDef>();
+    if ( wdwSpec.getWindowExpressions() != null ) {
+      for(WindowExpressionSpec expr : wdwSpec.getWindowExpressions()) {
+        if ( !(expr instanceof WindowFunctionSpec) ) {
+          try {
+            PTFExpressionDef eDef = buildExpressionDef(wdwOutShape, expr.getExpression());
+            WindowExpressionDef wdwEDef = new WindowExpressionDef(eDef);
+            wdwEDef.setAlias(expr.getAlias());
+            windowExpressions.add(wdwEDef);
+          }
+          catch(HiveException he) {
+            throw new SemanticException(he);
+          }
+        }
+      }
+      wdwTFnDef.setWindowExpressions(windowExpressions);
+    }
+
+    /*
+     * set outputOI
+     */
+    if ( windowExpressions.size() > 0 ) {
+      ArrayList<String> aliases = new ArrayList<String>();
+      ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
+      for(WindowExpressionDef wEDef : windowExpressions) {
+        aliases.add(wEDef.getAlias());
+        fieldOIs.add(wEDef.getOI());
+      }
+      PTFTranslator.addInputColumnsToList(wdwOutShape, aliases, fieldOIs);
+      StructObjectInspector outOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+          aliases, fieldOIs);
+      RowResolver outRR = buildRowResolverForWindowing(wdwTFnDef, true);
+      ShapeDetails outShape = setupShape(outOI, null, outRR);
+      wdwTFnDef.setOutputShape(outShape);
+    }
+    else {
+      wdwTFnDef.setOutputShape(copyShape(wdwOutShape));
+    }
+
+    /*
+     * translate having
+     */
+    if ( wdwSpec.getFilterExpr() != null ) {
+      PTFExpressionDef hvEDef;
+      try {
+        hvEDef = buildExpressionDef(wdwOutShape, wdwSpec.getFilterExpr());
+        wdwTFnDef.setHavingExpression(hvEDef);
+      }
+      catch(HiveException he) {
+        throw new SemanticException(he);
       }
     }
 
-    for (ColumnInfo inpCInfo : inputRR.getColumnInfos()) {
-      String internalName = HiveConf.getColumnInternalName(pos++);
-      ColumnInfo cInfo = new ColumnInfo(inpCInfo);
-      cInfo.setInternalName(internalName);
-      String colAlias = cInfo.getAlias();
+    tFn.setupOutputOI();
 
-      if (outAlias != null) {
-        cInfo.setTabAlias(outAlias);
-      }
+    /*
+     * If we have windowExpressions or having then we convert to Std. Object to process;
+     * we just stream these rows; no need to put in an output Partition.
+     */
+    if ( windowExpressions.size() > 0 || wdwSpec.getFilterExpr() != null ) {
+      StructObjectInspector oi = (StructObjectInspector)
+          ObjectInspectorUtils.getStandardObjectInspector(wdwTFnDef.getOutputShape().getOI());
+      wdwTFnDef.getOutputShape().setOI(oi);
+    }
 
-      String[] tabColAlias = inputRR.reverseLookup(inpCInfo.getInternalName());
-      if (tabColAlias != null) {
-        colAlias = tabColAlias[1];
-      }
-      if (isWindowPTF && aliasToAST.keySet().contains(colAlias)) {
-        rr.putExpression(aliasToAST.get(colAlias), cInfo);
+    return ptfDesc;
+  }
+
+  private void translatePTFChain() throws SemanticException {
+
+    Stack<PTFInputSpec> ptfChain = new Stack<PTFInvocationSpec.PTFInputSpec>();
+    PTFInputSpec currentSpec = ptfInvocation.getFunction();
+    while (currentSpec != null ) {
+      ptfChain.push(currentSpec);
+      currentSpec = currentSpec.getInput();
+    }
+
+    int inputNum = 0;
+    PTFInputDef currentDef = null;
+    while ( !ptfChain.isEmpty() ) {
+      currentSpec = ptfChain.pop();
+
+      if ( currentSpec instanceof PTFQueryInputSpec) {
+        currentDef = translate((PTFQueryInputSpec) currentSpec, inputNum);
       }
       else {
-        ASTNode inExpr = null;
-        inExpr = PTFTranslator.getASTNode(inpCInfo, inputRR);
-        if ( inExpr != null ) {
-          rr.putExpression(inExpr, cInfo);
-        }
-        else {
-          rr.put(cInfo.getTabAlias(), colAlias, cInfo);
-        }
+        currentDef = translate((PartitionedTableFunctionSpec) currentSpec,
+            currentDef,
+            inputNum);
       }
+      inputNum++;
     }
-
-    selectDef.setRowResolver(rr);
-    selectDef.setOI((StructObjectInspector) PTFTranslator.getInputOI(rr));
+    ptfDesc.setFuncDef((PartitionedTableFunctionDef)currentDef);
   }
 
-  /*
-   * Window Function Translation methods
-   */
-  public static WindowFunctionDef translate(PTFDesc qDef, TableFuncDef windowTableFnDef,
-      WindowFunctionSpec wFnSpec) throws SemanticException
+  private PTFQueryInputDef translate(PTFQueryInputSpec spec,
+      int inpNum) throws SemanticException
   {
-    PTFTranslationInfo tInfo = qDef.getTranslationInfo();
-    PTFInputInfo iInfo = tInfo.getInputInfo(windowTableFnDef.getInput());
+    PTFQueryInputDef def = new PTFQueryInputDef();
+    StructObjectInspector oi = PTFTranslator.getStandardStructOI(inputRR);
+    ShapeDetails shp = setupShape(oi, null, inputRR);
+    def.setOutputShape(shp);
+    def.setType(spec.getType());
+    def.setAlias(spec.getSource() == null ? "ptf_" + inpNum : spec.getSource());
+    return def;
+  }
 
-    WindowFunctionDef wFnDef = new WindowFunctionDef();
-    wFnDef.setSpec(wFnSpec);
-
+  private PartitionedTableFunctionDef translate(PartitionedTableFunctionSpec spec,
+      PTFInputDef inpDef,
+      int inpNum)
+      throws SemanticException {
+    TableFunctionResolver tFn = FunctionRegistry.getTableFunctionResolver(spec.getName());
+    if (tFn == null) {
+      throw new SemanticException(sprintf("Unknown Table Function %s",
+          spec.getName()));
+    }
+    PartitionedTableFunctionDef def = new PartitionedTableFunctionDef();
+    def.setInput(inpDef);
+    def.setName(spec.getName());
+    def.setResolverClassName(tFn.getClass().getName());
+    def.setAlias(spec.getAlias() == null ? "ptf_" + inpNum : spec.getAlias());
+    def.setExpressionTreeString(spec.getAstNode().toStringTree());
+    def.setTransformsRawInput(tFn.transformsRawInput());
     /*
      * translate args
      */
-    ArrayList<ASTNode> args = wFnSpec.getArgs();
+    ArrayList<ASTNode> args = spec.getArgs();
     if (args != null)
     {
       for (ASTNode expr : args)
       {
-        ArgDef argDef = null;
+        PTFExpressionDef argDef = null;
         try {
-          argDef = translateWindowFunctionArg(qDef, windowTableFnDef, iInfo, expr);
+          argDef = buildExpressionDef(inpDef.getOutputShape(), expr);
         }
         catch(HiveException he) {
           throw new SemanticException(he);
         }
-        wFnDef.addArg(argDef);
+        def.addArg(argDef);
       }
     }
 
-    if (RANKING_FUNCS.contains(wFnSpec.getName()))
-    {
-      setupRankingArgs(qDef, windowTableFnDef, wFnDef, wFnSpec);
+    tFn.initialize(hCfg, ptfDesc, def);
+    TableFunctionEvaluator tEval = tFn.getEvaluator();
+    def.setTFunction(tEval);
+    def.setCarryForwardNames(tFn.carryForwardNames());
+    tFn.setupRawInputOI();
+
+    if ( tFn.transformsRawInput() ) {
+      StructObjectInspector rawInOutOI = tEval.getRawInputOI();
+      ArrayList<String> rawInOutColNames = tFn.getRawInputColumnNames();
+      RowResolver rawInRR = buildRowResolverForPTF(def.getName(),
+          spec.getAlias(),
+          rawInOutOI,
+          rawInOutColNames,
+          inpDef.getOutputShape().getRr());
+      ShapeDetails rawInpShape = setupTableFnShape(def.getName(),
+          inpDef.getOutputShape(),
+          rawInOutOI,
+          rawInOutColNames,
+          rawInRR);
+      def.setRawInputShape(rawInpShape);
+    }
+    else {
+      def.setRawInputShape(inpDef.getOutputShape());
     }
 
-    WindowDef wDef = translateWindowSpec(qDef, iInfo, wFnSpec);
-    wFnDef.setWindow(wDef);
-    validateWindowDefForWFn(windowTableFnDef, wFnDef);
+    translatePartitioning(def, spec);
+    tFn.setupOutputOI();
+
+    StructObjectInspector outputOI = tEval.getOutputOI();
+    ArrayList<String> outColNames = tFn.getOutputColumnNames();
+    RowResolver outRR = buildRowResolverForPTF(def.getName(),
+        spec.getAlias(),
+        outputOI,
+        outColNames,
+        def.getRawInputShape().getRr());
+    ShapeDetails outputShape = setupTableFnShape(def.getName(),
+        inpDef.getOutputShape(),
+        outputOI,
+        outColNames,
+        outRR);
+    def.setOutputShape(outputShape);
+
+    return def;
+  }
+
+  private WindowFunctionDef translate(WindowTableFunctionDef wdwTFnDef,
+      WindowFunctionSpec spec) throws SemanticException {
+    WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(spec.getName());
+    WindowFunctionDef def = new WindowFunctionDef();
+    def.setName(spec.getName());
+    def.setAlias(spec.getAlias());
+    def.setDistinct(spec.isDistinct());
+    def.setExpressionTreeString(spec.getExpression().toStringTree());
+    def.setStar(spec.isStar());
+    def.setPivotResult(wFnInfo.isPivotResult());
+    ShapeDetails inpShape = wdwTFnDef.getRawInputShape();
+
+    /*
+     * translate args
+     */
+    ArrayList<ASTNode> args = spec.getArgs();
+    if (args != null)
+    {
+      for (ASTNode expr : args)
+      {
+        PTFExpressionDef argDef = null;
+        try {
+          argDef = buildExpressionDef(inpShape, expr);
+        }
+        catch(HiveException he) {
+          throw new SemanticException(he);
+        }
+        def.addArg(argDef);
+      }
+    }
+
+    if (RANKING_FUNCS.contains(spec.getName()))
+    {
+      setupRankingArgs(wdwTFnDef, def, spec);
+    }
+
+    WindowSpec wdwSpec = spec.getWindowSpec();
+    if ( wdwSpec != null ) {
+      String desc = spec.toString();
+
+      WindowFrameDef wdwFrame = translate(spec.getName(), inpShape, wdwSpec);
+      if (!wFnInfo.isSupportsWindow() && wdwFrame != null)
+      {
+        throw new SemanticException(sprintf("Function %s doesn't support windowing",
+            desc));
+      }
+      def.setWindowFrame(wdwFrame);
+    }
 
     try {
-      setupEvaluator(wFnDef);
+      setupWdwFnEvaluator(def);
     }
     catch(HiveException he) {
       throw new SemanticException(he);
     }
 
-    return wFnDef;
+    return def;
   }
 
-  static void setupEvaluator(WindowFunctionDef wFnDef) throws HiveException
+  private void translatePartitioning(PartitionedTableFunctionDef def,
+      PartitionedTableFunctionSpec spec)
+      throws SemanticException {
+
+    if ( spec.getPartition() == null ) {
+      return;
+    }
+    PartitionDef partDef = translate(def.getRawInputShape(), spec.getPartition());
+    OrderDef orderDef = translate(def.getRawInputShape(), spec.getOrder(), partDef);
+    def.setPartition(partDef);
+    def.setOrder(orderDef);
+  }
+
+  private PartitionDef translate(ShapeDetails inpShape, PartitionSpec spec)
+      throws SemanticException
   {
-    WindowFunctionSpec wSpec = wFnDef.getSpec();
-    ArrayList<ArgDef> args = wFnDef.getArgs();
-    ArrayList<ObjectInspector> argOIs = getWritableObjectInspector(args);
-    GenericUDAFEvaluator wFnEval = org.apache.hadoop.hive.ql.exec.FunctionRegistry
-        .getGenericUDAFEvaluator(wSpec.getName(), argOIs, wSpec.isDistinct(), wSpec.isStar());
+    if (spec == null || spec.getExpressions() == null || spec.getExpressions().size() == 0) {
+      return null;
+    }
+
+    PartitionDef pDef = new PartitionDef();
+    for (PartitionExpression pExpr : spec.getExpressions())
+    {
+      PTFExpressionDef expDef = translate(inpShape, pExpr);
+      pDef.addExpression(expDef);
+    }
+    return pDef;
+  }
+
+  private PTFExpressionDef translate(ShapeDetails inpShape,
+      PartitionExpression pExpr) throws SemanticException
+  {
+    PTFExpressionDef expDef = null;
+    try {
+      expDef = buildExpressionDef(inpShape, pExpr.getExpression());
+    }
+    catch(HiveException he) {
+      throw new SemanticException(he);
+    }
+    PTFTranslator.validateComparable(expDef.getOI(),
+        sprintf("Partition Expression %s is not a comparable expression", pExpr.getExpression().toStringTree()));
+    return expDef;
+  }
+
+  private OrderDef translate(ShapeDetails inpShape,
+      OrderSpec spec,
+      PartitionDef partitionDef) throws SemanticException {
+
+    if (spec == null || spec.getExpressions() == null || spec.getExpressions().size() == 0)
+    {
+      if (partitionDef == null) {
+        return null;
+      }
+      return new OrderDef(partitionDef);
+    }
+
+    if (partitionDef == null) {
+      throw new SemanticException(sprintf(
+          "Cannot have an Order spec w/o a Partition spec", spec));
+    }
+
+    OrderDef def = new OrderDef();
+    for (OrderExpression oExpr : spec.getExpressions())
+    {
+      OrderExpressionDef oexpDef = translate(inpShape, oExpr);
+      def.addExpression(oexpDef);
+    }
+
+    /*
+     * either all partition expressions must be in Order list or none must be specified.
+     * If none are specified then add them all.
+     */
+    int numOfPartColumns = 0;
+    List<OrderExpressionDef> orderExprs = def.getExpressions();
+    List<PTFExpressionDef> partExprs = partitionDef.getExpressions();
+    int chkSize = partExprs.size();
+    chkSize = chkSize > orderExprs.size() ? orderExprs.size() : chkSize;
+    for (int i = 0; i < chkSize; i++)
+    {
+      if (orderExprs.get(i).getExpressionTreeString()
+          .equals(partExprs.get(i).getExpressionTreeString()))
+      {
+        numOfPartColumns++;
+      } else {
+        break;
+      }
+    }
+
+    if (numOfPartColumns != 0 && numOfPartColumns != partExprs.size())
+    {
+      throw new SemanticException(
+          sprintf(
+                  "all partition columns must be in order clause(%s) or none should be specified",
+                  spec));
+    }
+
+    if (numOfPartColumns == 0)
+    {
+      ArrayList<OrderExpressionDef> combinedOrderCols = new ArrayList<OrderExpressionDef>();
+      for (PTFExpressionDef eDef : partExprs)
+      {
+        OrderExpressionDef oeDef = new OrderExpressionDef(eDef);
+        combinedOrderCols.add(oeDef);
+      }
+      combinedOrderCols.addAll(orderExprs);
+      def.setExpressions(combinedOrderCols);
+    }
+
+    return def;
+  }
+
+  private OrderExpressionDef translate(ShapeDetails inpShape,
+      OrderExpression oExpr)
+          throws SemanticException
+  {
+    OrderExpressionDef oexpDef = new OrderExpressionDef();
+    oexpDef.setOrder(oExpr.getOrder());
+    try {
+      PTFExpressionDef expDef = buildExpressionDef(inpShape, oExpr.getExpression());
+      oexpDef.setExpressionTreeString(expDef.getExpressionTreeString());
+      oexpDef.setExprEvaluator(expDef.getExprEvaluator());
+      oexpDef.setExprNode(expDef.getExprNode());
+      oexpDef.setOI(expDef.getOI());
+    }
+    catch(HiveException he) {
+      throw new SemanticException(he);
+    }
+    PTFTranslator.validateComparable(oexpDef.getOI(),
+        sprintf("Partition Expression %s is not a comparable expression",
+            oExpr.getExpression().toStringTree()));
+    return oexpDef;
+  }
+
+  private WindowFrameDef translate(String wFnName, ShapeDetails inpShape, WindowSpec spec) throws SemanticException {
+    ArrayList<String> sources = new ArrayList<String>();
+    fillInWindowSpec(spec.getSourceId(), spec, sources);
+    PartitionSpec pSpec = spec.getPartition();
+    OrderSpec oSpec = spec.getOrder();
+    PartitionDef pDef = translate(inpShape, pSpec);
+    OrderDef oDef = translate(inpShape, oSpec, pDef);
+    validatePartitioningForWdwFn(wFnName, pDef, oDef);
+    return translate(inpShape, spec.getWindowFrame());
+  }
+
+  private WindowFrameDef translate(ShapeDetails inpShape,
+      WindowFrameSpec spec)
+      throws SemanticException {
+    if (spec == null)
+    {
+      return null;
+    }
+
+    BoundarySpec s = spec.getStart();
+    BoundarySpec e = spec.getEnd();
+    int cmp = s.compareTo(e);
+    if (cmp > 0)
+    {
+      throw new SemanticException(sprintf(
+          "Window range invalid, start boundary is greater than end boundary: %s", spec));
+    }
+
+    WindowFrameDef wfDef = new WindowFrameDef();
+    wfDef.setStart(translate(inpShape, s));
+    wfDef.setEnd(translate(inpShape, e));
+    return wfDef;
+  }
+
+  private BoundaryDef translate(ShapeDetails inpShape, BoundarySpec bndSpec)
+      throws SemanticException {
+    if (bndSpec instanceof ValueBoundarySpec)
+    {
+      ValueBoundarySpec vBndSpec = (ValueBoundarySpec) bndSpec;
+      ValueBoundaryDef vbDef = new ValueBoundaryDef();
+      vbDef.setAmt(vBndSpec.getAmt());
+      vbDef.setDirection(vBndSpec.getDirection());
+      PTFTranslator.validateNoLeadLagInValueBoundarySpec(vBndSpec.getExpression());
+      PTFExpressionDef exprDef = null;
+      try {
+        exprDef = buildExpressionDef(inpShape, vBndSpec.getExpression());
+      }
+      catch(HiveException he) {
+        throw new SemanticException(he);
+      }
+      PTFTranslator.validateValueBoundaryExprType(exprDef.getOI());
+      vbDef.setExpressionDef(exprDef);
+      return vbDef;
+    }
+    else if (bndSpec instanceof RangeBoundarySpec)
+    {
+      RangeBoundarySpec rBndSpec = (RangeBoundarySpec) bndSpec;
+      RangeBoundaryDef rbDef = new RangeBoundaryDef();
+      rbDef.setAmt(rBndSpec.getAmt());
+      rbDef.setDirection(rBndSpec.getDirection());
+      return rbDef;
+    }
+    else if (bndSpec instanceof CurrentRowSpec)
+    {
+      CurrentRowDef cbDef = new CurrentRowDef();
+      return cbDef;
+    }
+    throw new SemanticException("Unknown Boundary: " + bndSpec);
+  }
+
+  static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException
+  {
+    ArrayList<PTFExpressionDef> args = def.getArgs();
+    ArrayList<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
     ObjectInspector[] funcArgOIs = null;
 
-    if (args != null)
-    {
+    if (args != null) {
+      for (PTFExpressionDef arg : args) {
+        argOIs.add(arg.getOI());
+      }
       funcArgOIs = new ObjectInspector[args.size()];
-      int i = 0;
-      for (ArgDef arg : args)
-      {
-        funcArgOIs[i++] = arg.getOI();
-      }
+      funcArgOIs = argOIs.toArray(funcArgOIs);
     }
 
+    GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericUDAFEvaluator(def.getName(), argOIs,
+        def.isDistinct(), def.isStar());
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
-
-    wFnDef.setEvaluator(wFnEval);
-    wFnDef.setOI(OI);
+    def.setwFnEval(wFnEval);
+    def.setOI(OI);
   }
 
-  private static ArgDef translateWindowFunctionArg(PTFDesc qDef, TableFuncDef tDef,
-      PTFInputInfo iInfo, ASTNode arg) throws HiveException
+  private void fillInWindowSpec(String sourceId, WindowSpec dest, ArrayList<String> visited)
+      throws SemanticException
   {
-    return PTFTranslator.buildArgDef(qDef, iInfo, arg);
-  }
-
-  private static ArrayList<ObjectInspector> getWritableObjectInspector(ArrayList<ArgDef> args)
-  {
-    ArrayList<ObjectInspector> result = new ArrayList<ObjectInspector>();
-    if (args != null)
+    if (sourceId != null)
     {
-      for (ArgDef arg : args)
+      if ( visited.contains(sourceId)) {
+        visited.add(sourceId);
+        throw new SemanticException(sprintf("Cycle in Window references %s", visited));
+      }
+      WindowSpec source = windowingSpec.getWindowSpecs().get(sourceId);
+      if (source == null || source.equals(dest))
       {
-        result.add(arg.getOI());
+        throw new SemanticException(sprintf("Window Spec %s refers to an unknown source " ,
+            dest));
+      }
+
+      if (dest.getPartition() == null)
+      {
+        dest.setPartition(source.getPartition());
+      }
+
+      if (dest.getOrder() == null)
+      {
+        dest.setOrder(source.getOrder());
+      }
+
+      if (dest.getWindowFrame() == null)
+      {
+        dest.setWindowFrame(source.getWindowFrame());
+      }
+
+      visited.add(sourceId);
+
+      fillInWindowSpec(source.getSourceId(), dest, visited);
+    }
+  }
+
+  private static void validateValueBoundaryExprType(ObjectInspector OI)
+      throws SemanticException
+  {
+    if (!OI.getCategory().equals(Category.PRIMITIVE))
+    {
+      throw new SemanticException(
+          "Value Boundary expression must be of primitve type");
+    }
+
+    PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) OI;
+    PrimitiveCategory pC = pOI.getPrimitiveCategory();
+
+    switch (pC)
+    {
+    case BYTE:
+    case DOUBLE:
+    case FLOAT:
+    case INT:
+    case LONG:
+    case SHORT:
+    case DECIMAL:
+    case TIMESTAMP:
+      break;
+    default:
+      throw new SemanticException(
+          sprintf("Primitve type %s not supported in Value Boundary expression",
+              pC));
+    }
+
+  }
+
+  private void validatePartitioningForWdwFn(String wFnName, PartitionDef fPart, OrderDef fOrder)
+      throws SemanticException
+  {
+    PartitionDef tPart = ptfDesc.getFuncDef().getPartition();
+
+    if (!PTFTranslator.isCompatible(tPart, fPart))
+    {
+      throw new SemanticException(
+          sprintf("Window Function '%s' has an incompatible partition clause", wFnName));
+    }
+
+    OrderDef tOrder = ptfDesc.getFuncDef().getOrder();
+    if (!PTFTranslator.isCompatible(tOrder, fOrder))
+    {
+      throw new SemanticException(
+          sprintf("Window Function '%s' has an incompatible order clause", wFnName));
+    }
+  }
+
+  private ShapeDetails setupTableFnShape(String fnName, ShapeDetails inpShape, StructObjectInspector OI, ArrayList<String> columnNames, RowResolver rr)
+      throws SemanticException {
+    if (fnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION)
+        || fnName.equals(
+            FunctionRegistry.NOOP_MAP_TABLE_FUNCTION))
+    {
+      return setupShapeForNoop(inpShape, OI, columnNames, rr);
+    }
+    return setupShape(OI, columnNames, rr);
+  }
+
+  private ShapeDetails setupShape(StructObjectInspector OI,
+      ArrayList<String> columnNames,
+      RowResolver rr) throws SemanticException {
+    Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
+    SerDe serde = null;
+    ShapeDetails shp = new ShapeDetails();
+
+    try {
+      serde = PTFTranslator.createLazyBinarySerDe(hCfg, OI, serdePropsMap);
+      shp.setOI((StructObjectInspector)serde.getObjectInspector());
+    }
+    catch(SerDeException se) {
+      throw new SemanticException(se);
+    }
+
+    shp.setRr(rr);
+    shp.setSerde(serde);
+    shp.setSerdeClassName(serde.getClass().getName());
+    shp.setSerdeProps(serdePropsMap);
+    shp.setColumnNames(columnNames);
+
+    TypeCheckCtx tCtx = new TypeCheckCtx(rr);
+    tCtx.setUnparseTranslator(unparseT);
+    shp.setTypeCheckCtx(tCtx);
+
+    return shp;
+  }
+
+  private ShapeDetails copyShape(ShapeDetails src) {
+    ShapeDetails dest = new ShapeDetails();
+    dest.setSerdeClassName(src.getSerdeClassName());
+    dest.setSerdeProps(src.getSerdeProps());
+    dest.setColumnNames(src.getColumnNames());
+    dest.setOI(src.getOI());
+    dest.setSerde(src.getSerde());
+    dest.setRr(src.getRr());
+    dest.setTypeCheckCtx(src.getTypeCheckCtx());
+
+    return dest;
+  }
+
+  private ShapeDetails setupShapeForNoop(ShapeDetails inpShape,
+      StructObjectInspector OI,
+      ArrayList<String> columnNames,
+      RowResolver rr) throws SemanticException {
+    ShapeDetails shp = new ShapeDetails();
+
+    shp.setRr(rr);
+    shp.setOI(inpShape.getOI());
+    shp.setSerde(inpShape.getSerde());
+    shp.setSerdeClassName(inpShape.getSerde().getClass().getName());
+    shp.setSerdeProps(inpShape.getSerdeProps());
+    shp.setColumnNames(columnNames);
+
+    TypeCheckCtx tCtx = new TypeCheckCtx(rr);
+    tCtx.setUnparseTranslator(unparseT);
+    shp.setTypeCheckCtx(tCtx);
+
+    return shp;
+  }
+
+  protected static ArrayList<OrderExpression> addPartitionExpressionsToOrderList(
+      ArrayList<PartitionExpression> partCols,
+      ArrayList<OrderExpression> orderCols) throws SemanticException {
+    int numOfPartColumns = 0;
+    int chkSize = partCols.size();
+
+    chkSize = chkSize > orderCols.size() ? orderCols.size() : chkSize;
+    for (int i = 0; i < chkSize; i++) {
+      if (orderCols.get(i).getExpression().toStringTree()
+          .equals(partCols.get(i).getExpression().toStringTree())) {
+        numOfPartColumns++;
+      } else {
+        break;
       }
     }
-    return result;
+
+    if (numOfPartColumns != 0 && numOfPartColumns != partCols.size()) {
+      throw new SemanticException(
+          sprintf(
+                  "all partition columns must be in order clause(%s) or none should be specified"));
+    }
+    ArrayList<OrderExpression> combinedOrdExprs = new ArrayList<OrderExpression>();
+    if (numOfPartColumns == 0)
+    {
+      for (PartitionExpression partCol : partCols)
+      {
+        OrderExpression orderCol = new OrderExpression(partCol);
+        combinedOrdExprs.add(orderCol);
+      }
+    }
+    combinedOrdExprs.addAll(orderCols);
+    return combinedOrdExprs;
   }
 
-  public static final ArrayList<String> RANKING_FUNCS = new ArrayList<String>();
+
+  /*
+   * Ranking Functions helpers
+   */
+
+  protected static final ArrayList<String> RANKING_FUNCS = new ArrayList<String>();
   static
   {
     RANKING_FUNCS.add("rank");
@@ -649,94 +900,249 @@ public class PTFTranslator
     RANKING_FUNCS.add("cume_dist");
   };
 
-  private static void setupRankingArgs(PTFDesc ptfDesc, TableFuncDef windowTableFnDef,
-      WindowFunctionDef wFnDef, WindowFunctionSpec wSpec) throws SemanticException
+  private void setupRankingArgs(WindowTableFunctionDef wdwTFnDef,
+      WindowFunctionDef wFnDef,
+      WindowFunctionSpec wSpec)
+      throws SemanticException
   {
     if (wSpec.getArgs().size() > 0)
     {
       throw new SemanticException("Ranking Functions can take no arguments");
     }
 
-    PTFInputDef inpDef = windowTableFnDef.getInput();
-    PTFInputInfo inpInfo = ptfDesc.getTranslationInfo().getInputInfo(inpDef);
-    OrderDef oDef = getTableFuncOrderDef(windowTableFnDef);
-    ArrayList<OrderColumnDef> oCols = oDef.getColumns();
-    for (OrderColumnDef oCol : oCols)
+    OrderDef oDef = wdwTFnDef.getOrder();
+    ArrayList<OrderExpressionDef> oExprs = oDef.getExpressions();
+    for (OrderExpressionDef oExpr : oExprs)
     {
-      try {
-        wFnDef.addArg(PTFTranslator.buildArgDef(ptfDesc, inpInfo, oCol.getExpression()));
-      }
-      catch(HiveException he) {
-        throw new SemanticException(he);
-      }
+      wFnDef.addArg(oExpr);
     }
   }
 
-  private static OrderDef getTableFuncOrderDef(TableFuncDef tblFnDef) throws SemanticException
+  /*
+   * Expr translation helper methods
+   */
+  public PTFExpressionDef buildExpressionDef(ShapeDetails inpShape, ASTNode arg)
+      throws HiveException
   {
-    if (tblFnDef.getWindow() != null)
-    {
-      return tblFnDef.getWindow().getOrderDef();
-    }
-    PTFInputDef iDef = tblFnDef.getInput();
-    if (iDef instanceof TableFuncDef)
-    {
-      return getTableFuncOrderDef((TableFuncDef) iDef);
-    }
-    throw new SemanticException("No Order by specification on Function: " + tblFnDef.getSpec());
+    PTFExpressionDef argDef = new PTFExpressionDef();
+
+    ExprNodeDesc exprNode = semAly.genExprNodeDesc(arg, inpShape.getRr(),
+        inpShape.getTypeCheckCtx());
+    ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(llInfo, exprNode);
+    ObjectInspector oi = initExprNodeEvaluator(exprEval, exprNode, inpShape);
+
+    argDef.setExpressionTreeString(arg.toStringTree());
+    argDef.setExprNode(exprNode);
+    argDef.setExprEvaluator(exprEval);
+    argDef.setOI(oi);
+    return argDef;
   }
 
-  private static WindowDef translateWindowSpec(PTFDesc ptfDesc, PTFInputInfo iInfo,
-      WindowFunctionSpec wFnSpec) throws SemanticException
+  private ObjectInspector initExprNodeEvaluator(ExprNodeEvaluator exprEval,
+      ExprNodeDesc exprNode,
+      ShapeDetails inpShape)
+      throws HiveException
   {
-    WindowSpec wSpec = wFnSpec.getWindowSpec();
+    ObjectInspector outOI;
+    outOI = exprEval.initialize(inpShape.getOI());
 
-    if (wSpec == null) {
-      return null;
-    }
-
-    WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFnSpec.getName());
-    String desc = wFnSpec.toString();
-
-    if (wSpec != null && !wFnInfo.isSupportsWindow() && wSpec.getWindow() != null)
+    /*
+     * if there are any LeadLag functions in this Expression Tree: - setup a
+     * duplicate Evaluator for the 1st arg of the LLFuncDesc - initialize it
+     * using the InputInfo provided for this Expr tree - set the duplicate
+     * evaluator on the LLUDF instance.
+     */
+    List<ExprNodeGenericFuncDesc> llFuncExprs = llInfo.getLLFuncExprsInTopExpr(exprNode);
+    if (llFuncExprs != null)
     {
-      throw new SemanticException(sprintf("Function %s doesn't support windowing", desc));
+      for (ExprNodeGenericFuncDesc llFuncExpr : llFuncExprs)
+      {
+        ExprNodeDesc firstArg = llFuncExpr.getChildren().get(0);
+        ExprNodeEvaluator dupExprEval = WindowingExprNodeEvaluatorFactory.get(llInfo, firstArg);
+        dupExprEval.initialize(inpShape.getOI());
+        GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFuncExpr.getGenericUDF();
+        llFn.setExprEvaluator(dupExprEval);
+      }
     }
-    return PTFTranslator.translateWindowSpecOnInput(ptfDesc, wSpec, iInfo, desc);
+
+    return outOI;
   }
 
-  private static void validateWindowDefForWFn(TableFuncDef tFnDef, WindowFunctionDef wFnDef)
+  /*
+   * Partition & Order expression compatibility methods
+   */
+
+  protected static boolean isCompatible(PartitionDef p1, PartitionDef p2) {
+    if (p1 == null && p2 == null) {
+      return true;
+    }
+    if (p1 == null && p2 != null) {
+      return false;
+    }
+    if (p1 != null && p2 == null) {
+      return true;
+    }
+
+    ArrayList<PTFExpressionDef> p1Exprs = p1.getExpressions();
+    ArrayList<PTFExpressionDef> p2Exprs = p2.getExpressions();
+    if (p1Exprs.size() != p2Exprs.size()) {
+      return false;
+    }
+    for (int i = 0; i < p1Exprs.size(); i++)
+    {
+      boolean e = isEqual(p1Exprs.get(i), p2Exprs.get(i));
+      if (!e) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected static boolean isEqual(PTFExpressionDef e1, PTFExpressionDef e2) {
+    if (e1 == null && e2 == null) {
+      return false;
+    }
+    if (e1 == null && e2 != null) {
+      return false;
+    }
+    if (e1 != null && e2 == null) {
+      return false;
+    }
+
+    return e1.getExpressionTreeString().equals(e2.getExpressionTreeString());
+  }
+
+  protected static boolean isCompatible(OrderDef o1, OrderDef o2) {
+    if (o1 == null && o2 == null) {
+      return true;
+    }
+    if (o1 == null && o2 != null) {
+      return false;
+    }
+    if (o1 != null && o2 == null) {
+      return true;
+    }
+
+    ArrayList<OrderExpressionDef> o1Exprs = o1.getExpressions();
+    ArrayList<OrderExpressionDef> o2Exprs = o2.getExpressions();
+    if (o1Exprs.size() != o2Exprs.size()) {
+      return false;
+    }
+    for (int i = 0; i < o1Exprs.size(); i++)
+    {
+      boolean e = isEqual(o1Exprs.get(i), o2Exprs.get(i));
+      if (!e) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected static boolean isEqual(OrderExpressionDef e1, OrderExpressionDef e2) {
+    boolean e = isEqual((PTFExpressionDef)e1, (PTFExpressionDef)e2);
+    if (!e) {
+      return false;
+    }
+    return e1.getOrder().equals(e2.getOrder());
+  }
+
+  /*
+   * OI & Serde helper methods
+   */
+
+  protected static SerDe createLazyBinarySerDe(Configuration cfg,
+      StructObjectInspector oi, Map<String,String> serdePropsMap) throws SerDeException {
+    serdePropsMap = serdePropsMap == null ? new LinkedHashMap<String, String>() : serdePropsMap;
+
+    addOIPropertiestoSerDePropsMap(oi, serdePropsMap);
+
+    SerDe serDe = new LazyBinarySerDe();
+    Properties p = new Properties();
+    p.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
+        serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS));
+    p.setProperty(
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
+        serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
+    serDe.initialize(cfg, p);
+    return serDe;
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI,
+      Map<String,String> serdePropsMap) {
+
+    if ( serdePropsMap == null ) {
+      return;
+    }
+
+    ArrayList<? extends Object>[] tInfo = getTypeMap(OI);
+
+    ArrayList<String> columnNames = (ArrayList<String>) tInfo[0];
+    ArrayList<TypeInfo> fields = (ArrayList<TypeInfo>) tInfo[1];
+    StringBuilder cNames = new StringBuilder();
+    StringBuilder cTypes = new StringBuilder();
+
+    for (int i = 0; i < fields.size(); i++)
+    {
+      cNames.append(i > 0 ? "," : "");
+      cTypes.append(i > 0 ? "," : "");
+      cNames.append(columnNames.get(i));
+      cTypes.append(fields.get(i).getTypeName());
+    }
+
+    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
+        cNames.toString());
+    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
+        cTypes.toString());
+  }
+
+  private static ArrayList<? extends Object>[] getTypeMap(
+      StructObjectInspector oi) {
+    StructTypeInfo t = (StructTypeInfo) TypeInfoUtils
+        .getTypeInfoFromObjectInspector(oi);
+    ArrayList<String> fnames = t.getAllStructFieldNames();
+    ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
+    return new ArrayList<?>[]
+    { fnames, fields };
+  }
+
+  /**
+   * For each column on the input RR, construct a StructField for it
+   * OI is constructed using the list of input column names and
+   * their corresponding OIs.
+   * @param rr
+   * @return
+   */
+  public static StructObjectInspector getStandardStructOI(RowResolver rr) {
+    StructObjectInspector oi;
+    ArrayList<ColumnInfo> colLists = rr.getColumnInfos();
+    ArrayList<String> structFieldNames = new ArrayList<String>();
+    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
+    for (ColumnInfo columnInfo : colLists) {
+      String colName = columnInfo.getInternalName();
+      ObjectInspector colOI = columnInfo.getObjectInspector();
+      structFieldNames.add(colName);
+      structFieldObjectInspectors.add(colOI);
+    }
+    oi = ObjectInspectorFactory.getStandardStructObjectInspector(structFieldNames,
+        structFieldObjectInspectors);
+    return oi;
+
+  }
+
+  protected static void validateComparable(ObjectInspector OI, String errMsg)
       throws SemanticException
   {
-    WindowDef tWindow = tFnDef.getWindow();
-    WindowDef fWindow = wFnDef.getWindow();
-
-    PartitionDef tPart = tWindow == null ? null : tWindow.getPartDef();
-    PartitionDef fPart = fWindow == null ? null : fWindow.getPartDef();
-
-    if (!PTFTranslator.isCompatible(tPart, fPart))
+    if (!ObjectInspectorUtils.compareSupported(OI))
     {
-      throw new SemanticException(
-          sprintf("Window Function '%s' has an incompatible partition clause",
-              wFnDef.getSpec()));
-    }
-
-    OrderDef tOrder = tWindow == null ? null : tWindow.getOrderDef();
-    OrderDef fOrder = fWindow == null ? null : fWindow.getOrderDef();
-    if (!PTFTranslator.isCompatible(tOrder, fOrder))
-    {
-      throw new SemanticException(
-          sprintf("Window Function '%s' has an incompatible order clause", wFnDef.getSpec()));
+      throw new SemanticException(errMsg);
     }
   }
 
-  public static void addInputColumnsToList(PTFDesc ptfDesc, TableFuncDef windowTableFnDef,
+  private static void addInputColumnsToList(ShapeDetails shape,
       ArrayList<String> fieldNames, ArrayList<ObjectInspector> fieldOIs)
   {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    PTFInputInfo iInfo = tInfo.getInputInfo(windowTableFnDef.getInput());
-
-    StructObjectInspector OI = (StructObjectInspector) iInfo.getOI();
+    StructObjectInspector OI = shape.getOI();
     for (StructField f : OI.getAllStructFieldRefs())
     {
       fieldNames.add(f.getFieldName());
@@ -745,326 +1151,151 @@ public class PTFTranslator
   }
 
   /*
-   * Partitioning spec (Partition, Order and Window ) translation methods
+   * RowResolver helper methods
    */
-  /*
-   * compute the Description to use for the Input.
-   * get the inputInfo for the input: if the function has a MapPhase use the Map Inputfo.
-   * invoke translateWindowSpecOnInput on WdwSpec of TblFunc
-   * If TableFunc is the FunctionRegistry.WINDOWING_TABLE_FUNCTION:
-   * -
-   */
-  static WindowDef translateWindow(PTFDesc ptfDesc, TableFuncDef tFnDef) throws SemanticException
-  {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    TableFuncSpec tFnSpec = tFnDef.getTableFuncSpec();
 
+  protected static RowResolver buildRowResolverForPTF(String tbFnName, String tabAlias,
+      StructObjectInspector rowObjectInspector,
+      ArrayList<String> outputColNames, RowResolver inputRR) throws SemanticException {
+
+    if ( tbFnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
+        tbFnName.equals(FunctionRegistry.NOOP_MAP_TABLE_FUNCTION) ) {
+      return buildRowResolverForNoop(tabAlias, rowObjectInspector, inputRR);
+    }
+
+    RowResolver rwsch = new RowResolver();
+    List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
+    for (int i = 0; i < fields.size(); i++)
+    {
+      ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
+          TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
+              .getFieldObjectInspector()),
+          tabAlias,
+          false);
+      rwsch.put(tabAlias, outputColNames.get(i), colInfo);
+    }
+    return rwsch;
+  }
+
+  protected RowResolver buildRowResolverForWindowing(WindowTableFunctionDef def,
+      boolean addWdwExprs)  throws SemanticException {
+    RowResolver rr = new RowResolver();
+    HashMap<String, WindowExpressionSpec> aliasToExprMap = windowingSpec.getAliasToWdwExpr();
     /*
-     * for now the Language only allows explicit specification of Partition & Order clauses.
-     * Easy to allow references to a Global Window Spec.
+     * add Window Expressions
      */
-    WindowSpec wSpec = new WindowSpec();
-
-    wSpec.setPartition(tFnSpec.getPartition());
-    wSpec.setOrder(tFnSpec.getOrder());
-    PTFInputDef iDef = tFnDef.getInput();
-
-    if (wSpec.getPartition() == null)
-    {
-      return null;
-    }
-
-    String desc = getInputDescription(ptfDesc, tFnDef);
-    TableFunctionEvaluator tFn = tFnDef.getFunction();
-    PTFInputInfo iInfo = null;
-    if (tFn.isTransformsRawInput())
-    {
-      iInfo = tInfo.getMapInputInfo(tFnDef);
-    }
-    else
-    {
-      iInfo = tInfo.getInputInfo(iDef);
-    }
-
-    return translateWindowSpecOnInput(ptfDesc, wSpec, iInfo, desc);
-  }
-
-  /*
-   * <ol>
-   * <li> If wSpec points to a source WindowSpec. Validate that it is valid. If it hasn't been
-   * already translated then translate it.
-   * <li> Start with an empty WdwDef or a cloned WdwDef from the source WdwDef.
-   * <li> translate the PartitionSpec if it exists. Replace the existing PDef with this; also remove
-   * the OrderDef.
-   * <li> translate the OrderSpec if it exists. Replace existing OrderDef with this.
-   * <li> add in Partition Columns if not in OrderDef already.
-   * <li> translate the WindowSpec if it exists. Replace existing WdwDef with it.
-   * <li> If name is non-null add this def to TranslationInfo::nameToWdwDef map.
-   * </ol>
-   */
-  static WindowDef translateWindowSpecOnInput(PTFDesc ptfDesc, WindowSpec wSpec, PTFInputInfo iInfo,
-      String inputDesc) throws SemanticException
-  {
-    PTFSpec qSpec = ptfDesc.getSpec();
-    WindowDef wDef;
-
-    fillInWindowSpec(qSpec, wSpec.getSourceId(), wSpec);
-    wDef = new WindowDef(wSpec);
-
-    PartitionSpec pSpec = wSpec.getPartition();
-    OrderSpec oSpec = wSpec.getOrder();
-    WindowFrameSpec wFrameSpec = wSpec.getWindow();
-    PartitionDef pDef = translatePartition(ptfDesc, iInfo, pSpec);
-    OrderDef oDef = translateOrder(ptfDesc, inputDesc, iInfo, oSpec, pDef);
-    WindowFrameDef wdwDef = translateWindowFrame(ptfDesc, wFrameSpec, iInfo);
-
-    wDef.setPartDef(pDef);
-    wDef.setOrderDef(oDef);
-    wDef.setWindow(wdwDef);
-
-    return wDef;
-  }
-
-  private static void fillInWindowSpec(PTFSpec qSpec, String sourceId, WindowSpec destWSpec)
-      throws SemanticException
-  {
-    if (sourceId != null)
-    {
-      WindowSpec sourceWSpec = qSpec.getWindowSpecs().get(sourceId);
-      if (sourceWSpec == null || sourceWSpec.equals(destWSpec))
-      {
-        throw new SemanticException(sprintf("Window Spec %s refers to an unknown source " ,
-            destWSpec));
+    if ( addWdwExprs ) {
+      for(WindowExpressionDef wEDef : def.getWindowExpressions() ) {
+        ASTNode ast = aliasToExprMap.get(wEDef.getAlias()).getExpression();
+        ColumnInfo cInfo = new ColumnInfo(wEDef.getAlias(),
+            TypeInfoUtils.getTypeInfoFromObjectInspector(wEDef.getOI()),
+            null,
+            false);
+        rr.putExpression(ast, cInfo);
       }
-
-      if (destWSpec.getPartition() == null)
-      {
-        destWSpec.setPartition(sourceWSpec.getPartition());
-      }
-
-      if (destWSpec.getOrder() == null)
-      {
-        destWSpec.setOrder(sourceWSpec.getOrder());
-      }
-
-      if (destWSpec.getWindow() == null)
-      {
-        destWSpec.setWindow(sourceWSpec.getWindow());
-      }
-
-      fillInWindowSpec(qSpec, sourceWSpec.getSourceId(), destWSpec);
-    }
-  }
-
-  private static PartitionDef translatePartition(PTFDesc qDef, PTFInputInfo iInfo, PartitionSpec spec)
-      throws SemanticException
-  {
-    if (spec == null || spec.getColumns() == null || spec.getColumns().size() == 0) {
-      return null;
-    }
-
-    PartitionDef pDef = new PartitionDef(spec);
-    for (ColumnSpec colSpec : spec.getColumns())
-    {
-      ColumnDef cDef = translatePartitionColumn(qDef, iInfo, colSpec);
-      pDef.addColumn(cDef);
-    }
-    return pDef;
-  }
-
-  private static OrderDef translateOrder(PTFDesc qDef, String inputDesc, PTFInputInfo iInfo,
-      OrderSpec spec, PartitionDef pDef) throws SemanticException
-  {
-
-    if (spec == null || spec.getColumns() == null || spec.getColumns().size() == 0)
-    {
-      if (pDef == null) {
-        return null;
-      }
-      return new OrderDef(pDef);
-    }
-
-    if (pDef == null)
-    {
-      throw new SemanticException(sprintf(
-          "Input %s cannot have an Order spec w/o a Partition spec", inputDesc));
-    }
-
-    OrderDef oDef = new OrderDef(spec);
-    for (OrderColumnSpec colSpec : spec.getColumns())
-    {
-      OrderColumnDef cDef = translateOrderColumn(qDef, iInfo, colSpec);
-      oDef.addColumn(cDef);
     }
 
     /*
-     * either all partition columns must be in Order list or none must be specified.
-     * If none are specified then add them all.
+     * add Window Functions
      */
-    int numOfPartColumns = 0;
-    List<OrderColumnDef> orderCols = oDef.getColumns();
-    List<ColumnDef> partCols = pDef.getColumns();
-    int chkSize = partCols.size();
-    chkSize = chkSize > orderCols.size() ? orderCols.size() : chkSize;
-    for (int i = 0; i < chkSize; i++)
-    {
-      if (orderCols.get(i).getSpec().getExpression().toStringTree()
-          .equals(partCols.get(i).getSpec().getExpression().toStringTree()))
-      {
-        numOfPartColumns++;
-      } else {
-        break;
+    for(WindowFunctionDef wFnDef : def.getWindowFunctions() ) {
+      ASTNode ast = aliasToExprMap.get(wFnDef.getAlias()).getExpression();
+      ObjectInspector wFnOI = null;
+      if ( wFnDef.isPivotResult() ) {
+        wFnOI = ((ListObjectInspector)wFnDef.getOI()).getListElementObjectInspector();
+      }
+      else {
+        wFnOI = wFnDef.getOI();
+      }
+      ColumnInfo cInfo = new ColumnInfo(wFnDef.getAlias(),
+          TypeInfoUtils.getTypeInfoFromObjectInspector(wFnOI),
+          null,
+          false);
+      rr.putExpression(ast, cInfo);
+    }
+
+    RowResolver inpRR = def.getRawInputShape().getRr();
+    /*
+     * add columns from inpRR
+     */
+    for (ColumnInfo inpCInfo : inputRR.getColumnInfos()) {
+      ColumnInfo cInfo = new ColumnInfo(inpCInfo);
+      String colAlias = cInfo.getAlias();
+
+      String[] tabColAlias = inputRR.reverseLookup(inpCInfo.getInternalName());
+      if (tabColAlias != null) {
+        colAlias = tabColAlias[1];
+      }
+      ASTNode inExpr = null;
+      inExpr = PTFTranslator.getASTNode(inpCInfo, inpRR);
+      if ( inExpr != null ) {
+        rr.putExpression(inExpr, cInfo);
+      }
+      else {
+        rr.put(cInfo.getTabAlias(), colAlias, cInfo);
       }
     }
 
-    if (numOfPartColumns != 0 && numOfPartColumns != partCols.size())
-    {
-      throw new SemanticException(
-          sprintf(
-                  "For Input %s:n all partition columns must be in order clause or none should be specified",
-                  inputDesc));
-    }
+    return rr;
+  }
 
-    ArrayList<OrderColumnDef> combinedOrderCols = new ArrayList<OrderColumnDef>();
-    if (numOfPartColumns == 0)
+  protected static RowResolver buildRowResolverForNoop(String tabAlias,
+      StructObjectInspector rowObjectInspector,
+      RowResolver inputRowResolver) throws SemanticException
+  {
+    LOG.info("QueryTranslationInfo::getRowResolver invoked on ObjectInspector");
+    RowResolver rwsch = new RowResolver();
+    List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
+    for (int i = 0; i < fields.size(); i++)
     {
-      for (ColumnDef cDef : partCols)
-      {
-        OrderColumnDef ocDef = new OrderColumnDef(cDef);
-        combinedOrderCols.add(ocDef);
+      StructField field = fields.get(i);
+      String internalName = field.getFieldName();
+      String[] tabColAlias = inputRowResolver == null ? null : inputRowResolver
+          .reverseLookup(internalName);
+      String colTabAlias = tabColAlias == null ? tabAlias : tabColAlias[0];
+      String colAlias = tabColAlias == null ? null : tabColAlias[1];
+      ColumnInfo inpColInfo;
+      ColumnInfo colInfo;
+
+      if (tabColAlias != null) {
+        inpColInfo = inputRowResolver.get(colTabAlias, colAlias);
       }
-      combinedOrderCols.addAll(orderCols);
-      oDef.setColumns(combinedOrderCols);
-    }
-
-    return oDef;
-  }
-
-  private static OrderColumnDef translateOrderColumn(PTFDesc qDef, PTFInputInfo iInfo,
-      OrderColumnSpec oSpec) throws SemanticException
-  {
-    OrderColumnDef ocDef = new OrderColumnDef(oSpec);
-    translateColumn(qDef, ocDef, iInfo, oSpec);
-    PTFTranslator.validateComparable(ocDef.getOI(),
-        sprintf("Partition Column %s is not comparable", oSpec));
-    return ocDef;
-  }
-
-
-  private static ColumnDef translatePartitionColumn(PTFDesc qDef, PTFInputInfo iInfo,
-      ColumnSpec cSpec) throws SemanticException
-  {
-    ColumnDef cDef = new ColumnDef(cSpec);
-    translateColumn(qDef, cDef, iInfo, cSpec);
-    PTFTranslator.validateComparable(cDef.getOI(),
-        sprintf("Partition Column %s is not comparable", cSpec));
-    return cDef;
-  }
-
-  private static void translateColumn(PTFDesc qDef, ColumnDef cDef, PTFInputInfo iInfo,
-      ColumnSpec cSpec) throws SemanticException
-  {
-    String colTabName = cSpec.getTableName();
-    if (colTabName != null && !colTabName.equals(iInfo.getAlias()))
-    {
-      throw new SemanticException(sprintf("Unknown Table Reference in column", cSpec));
-    }
-
-    ASTNode expr = cSpec.getExpression();
-    ExprNodeDesc exprNode = PTFTranslator.buildExprNode(expr, iInfo.getTypeCheckCtx());
-    ExprNodeEvaluator exprEval = null;
-    ObjectInspector oi = null;
-
-    try {
-      exprEval = WindowingExprNodeEvaluatorFactory.get(qDef.getTranslationInfo(), exprNode);
-      oi = PTFTranslator.initExprNodeEvaluator(qDef, exprNode, exprEval, iInfo);
-    }
-    catch(HiveException he) {
-      throw new SemanticException(he);
-    }
-
-    cDef.setExpression(expr);
-    cDef.setExprNode(exprNode);
-    cDef.setExprEvaluator(exprEval);
-    cDef.setOI(oi);
-    cDef.setAlias(cSpec.getColumnName());
-  }
-
-
-  private static WindowFrameDef translateWindowFrame(PTFDesc qDef, WindowFrameSpec wfSpec,
-      PTFInputInfo iInfo) throws SemanticException
-  {
-    if (wfSpec == null)
-    {
-      return null;
-    }
-
-    BoundarySpec s = wfSpec.getStart();
-    BoundarySpec e = wfSpec.getEnd();
-    WindowFrameDef wfDef = new WindowFrameDef(wfSpec);
-
-    wfDef.setStart(translateBoundary(qDef, s, iInfo));
-    wfDef.setEnd(translateBoundary(qDef, e, iInfo));
-
-    int cmp = s.compareTo(e);
-    if (cmp > 0)
-    {
-      throw new SemanticException(sprintf(
-          "Window range invalid, start boundary is greater than end boundary: %s", wfSpec));
-    }
-    return wfDef;
-  }
-
-  private static BoundaryDef translateBoundary(PTFDesc ptfDesc, BoundarySpec bndSpec, PTFInputInfo iInfo)
-      throws SemanticException
-  {
-    if (bndSpec instanceof ValueBoundarySpec)
-    {
-      ValueBoundarySpec vBndSpec = (ValueBoundarySpec) bndSpec;
-      ValueBoundaryDef vbDef = new ValueBoundaryDef(vBndSpec);
-      PTFTranslator.validateNoLeadLagInValueBoundarySpec(vBndSpec.getExpression());
-      ExprNodeDesc exprNode = PTFTranslator.buildExprNode(vBndSpec.getExpression(),
-          iInfo.getTypeCheckCtx());
-      vbDef.setExprNode(exprNode);
-      ExprNodeEvaluator exprEval = null;
-      ObjectInspector OI = null;
-      try {
-        exprEval = WindowingExprNodeEvaluatorFactory.get(ptfDesc.getTranslationInfo(), exprNode);
-        OI = PTFTranslator.initExprNodeEvaluator(ptfDesc, exprNode, exprEval, iInfo);
+      else {
+        /*
+         * for the Virtual columns:
+         * - the internalName is UPPER Case and the alias is lower case
+         * - since we put them in an OI, the fieldnames became lower cased.
+         * - so we look in the inputRR for the fieldName as an alias.
+         */
+        inpColInfo = inputRowResolver == null ? null : inputRowResolver
+            .get(tabAlias, internalName);
+        colAlias = inpColInfo != null ? inpColInfo.getInternalName() : colAlias;
       }
-      catch(HiveException he) {
-        throw new SemanticException(he);
+
+      if (inpColInfo != null) {
+        colInfo = new ColumnInfo(inpColInfo);
+        colInfo.setTabAlias(tabAlias);
       }
-      PTFTranslator.validateValueBoundaryExprType(OI);
-      vbDef.setExprEvaluator(exprEval);
-      vbDef.setOI(OI);
-      return vbDef;
-    }
-    else if (bndSpec instanceof RangeBoundarySpec)
-    {
-      RangeBoundarySpec rBndSpec = (RangeBoundarySpec) bndSpec;
-      RangeBoundaryDef rbDef = new RangeBoundaryDef(rBndSpec);
-      return rbDef;
-    }
-    else if (bndSpec instanceof CurrentRowSpec)
-    {
-      CurrentRowSpec cBndSpec = (CurrentRowSpec) bndSpec;
-      CurrentRowDef cbDef = new CurrentRowDef(cBndSpec);
-      return cbDef;
-    }
-    throw new SemanticException("Unknown Boundary: " + bndSpec);
-  }
+      else {
+        colInfo = new ColumnInfo(fields.get(i).getFieldName(),
+            TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
+                .getFieldObjectInspector()),
+            tabAlias,
+            false);
+        colAlias = colInfo.getInternalName();
+      }
 
-  private static String getInputDescription(PTFDesc qDef, TableFuncDef tDef)
-  {
-    if (qDef.getInput() == tDef &&
-        (tDef.getName().equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
-        tDef.getName().equals(FunctionRegistry.WINDOWING_TABLE_FUNCTION)))
-    {
-      return "Query";
-    }
-    return sprintf("TableFunction %s[alias:%s]", tDef.getName(), tDef.getAlias());
+      ASTNode expr = inputRowResolver == null ? null : PTFTranslator.getASTNode(inpColInfo,
+          inputRowResolver);
 
+      if (expr != null) {
+        rwsch.putExpression(expr, colInfo);
+      }
+      else {
+        rwsch.put(tabAlias, colAlias, colInfo);
+      }
+    }
+    return rwsch;
   }
 
   /*
@@ -1081,253 +1312,107 @@ public class PTFTranslator
   }
 
   /*
-   * The information captured during translation of a QuerySpec into a QueryDef
+   * Utility to visit all nodes in an AST tree.
    */
-  public static class PTFTranslationInfo
-  {
-    private static final Log LOG = LogFactory.getLog("com.sap.hadoop.windowing");
+  public static void visit(Object t, ContextVisitor visitor) {
+    _visit(t, null, 0, visitor);
+  }
 
-    HiveConf hCfg;
-
-    /*
-     * A map from a QueryInput to the WindowDefns defined on it.
-     * In the future this will enable (Partition, Order) specification for a QueryInput to refer to
-     * a Window definition.
-     * This will require that we accept window definitions on DataSets other then the input to the
-     * Windowing Table Function.
-     */
-    Map<String, Map<String, WindowDef>> windowDefMap;
-
-    /*
-     * A map from a QueryInput to its Shape.
-     */
-    Map<String, PTFInputInfo> inputInfoMap;
-
-    /*
-     * InputInfos for table functions that rehape the input map-side.
-     */
-    Map<String, PTFInputInfo> mapReshapeInfoMap;
-
-    LeadLagInfo llInfo;
-
-    UnparseTranslator unparseT;
-
-    public HiveConf getHiveCfg()
-    {
-      return hCfg;
+  /** Do the recursive work for visit */
+  private static void _visit(Object t, Object parent, int childIndex, ContextVisitor visitor) {
+    if ( t==null ) {
+      return;
     }
-
-    public void setHiveCfg(HiveConf hCfg)
-    {
-      this.hCfg = hCfg;
-    }
-
-    void addInput(PTFInputDef input, RowResolver rr) throws SemanticException
-    {
-      inputInfoMap = inputInfoMap == null ? new HashMap<String, PTFInputInfo>() : inputInfoMap;
-
-      RowResolver prevRR = null;
-      if (input instanceof TableFuncDef) {
-        PTFInputDef prevInpDef = ((TableFuncDef) input).getInput();
-        prevRR = inputInfoMap.get(prevInpDef.getAlias()).rr;
-      }
-
-      PTFInputInfo iInfo = new PTFInputInfo(this, input, null, rr, prevRR, unparseT);
-      input.setInputInfo(iInfo);
-      inputInfoMap.put(input.getAlias(), iInfo);
-    }
-
-    public PTFInputInfo getMapInputInfo(TableFuncDef tDef) throws SemanticException
-    {
-      TableFunctionEvaluator tFn = tDef.getFunction();
-      if (!tFn.isTransformsRawInput())
-      {
-        return null;
-      }
-      mapReshapeInfoMap = mapReshapeInfoMap == null ? new HashMap<String, PTFInputInfo>()
-          : mapReshapeInfoMap;
-      PTFInputInfo ii = mapReshapeInfoMap.get(tDef.getAlias());
-      if (ii == null)
-      {
-        PTFInputDef prevInpDef = tDef.getInput();
-        RowResolver prevRR = inputInfoMap.get(prevInpDef.getAlias()).rr;
-        ii = new PTFInputInfo(this, tDef, tFn.getRawInputOI(), null, prevRR, unparseT);
-        tDef.setRawInputInfo(ii);
-        mapReshapeInfoMap.put(tDef.getAlias(), ii);
-      }
-      return ii;
-    }
-
-    public PTFInputInfo getInputInfo(PTFInputDef input)
-    {
-      return inputInfoMap.get(input.getAlias());
-    }
-
-    public LeadLagInfo getLLInfo()
-    {
-      llInfo = llInfo == null ? new LeadLagInfo() : llInfo;
-      return llInfo;
-    }
-
-    public static RowResolver buildRowResolver(String tabAlias,
-        StructObjectInspector rowObjectInspector,
-        ArrayList<String> outputColNames,
-        RowResolver inputRowResolver) throws SemanticException {
-      if ( outputColNames != null ) {
-        return buildRowResolver(tabAlias, rowObjectInspector, outputColNames);
-      }
-      else {
-        return buildRowResolver(tabAlias, rowObjectInspector, inputRowResolver);
-      }
-    }
-
-    protected static RowResolver buildRowResolver(String tabAlias,
-        StructObjectInspector rowObjectInspector,
-        ArrayList<String> outputColNames) throws SemanticException {
-      RowResolver rwsch = new RowResolver();
-      List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
-      for (int i = 0; i < fields.size(); i++)
-      {
-        ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
-            TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
-                .getFieldObjectInspector()),
-            tabAlias,
-            false);
-        rwsch.put(tabAlias, outputColNames.get(i), colInfo);
-      }
-      return rwsch;
-    }
-
-    /*
-     * Construct a Row Resolver from a PTF OI.
-     * For WindowTablFunction and Noop functions the PTF's Input RowResolver is also passed in.
-     * This way for any columns that are in the Input Row Resolver we carry forward their
-     * internalname, alias and table Alias.
-     */
-    protected static RowResolver buildRowResolver(String tabAlias,
-        StructObjectInspector rowObjectInspector,
-        RowResolver inputRowResolver) throws SemanticException
-    {
-      LOG.info("QueryTranslationInfo::getRowResolver invoked on ObjectInspector");
-      RowResolver rwsch = new RowResolver();
-      List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
-      for (int i = 0; i < fields.size(); i++)
-      {
-        StructField field = fields.get(i);
-        String internalName = field.getFieldName();
-        String[] tabColAlias = inputRowResolver == null ? null : inputRowResolver
-            .reverseLookup(internalName);
-        String colTabAlias = tabColAlias == null ? tabAlias : tabColAlias[0];
-        String colAlias = tabColAlias == null ? null : tabColAlias[1];
-        ColumnInfo inpColInfo;
-        ColumnInfo colInfo;
-
-        if ( tabColAlias != null ) {
-          inpColInfo = inputRowResolver.get(colTabAlias, colAlias);
-        }
-        else {
-          /*
-           * for the Virtual columns:
-           * - the internalName is UPPER Case and the alias is lower case
-           * - since we put them in an OI, the fieldnames became lower cased.
-           * - so we look in the inputRR for the fieldName as an alias.
-           */
-          inpColInfo = inputRowResolver == null ? null : inputRowResolver
-              .get(tabAlias, internalName);
-          colAlias = inpColInfo != null ? inpColInfo.getInternalName() : colAlias;
-        }
-
-        if ( inpColInfo != null ) {
-          colInfo = new ColumnInfo(inpColInfo);
-        }
-        else {
-          colInfo = new ColumnInfo(fields.get(i).getFieldName(),
-              TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
-                  .getFieldObjectInspector()),
-              tabAlias,
-              false);
-          colAlias = colInfo.getInternalName();
-        }
-
-        ASTNode expr = inputRowResolver == null ? null :PTFTranslator.getASTNode(inpColInfo, inputRowResolver);
-
-        if ( expr != null ) {
-          rwsch.putExpression(expr, colInfo);
-        }
-        else {
-          rwsch.put(colTabAlias, colAlias, colInfo);
-        }
-      }
-      return rwsch;
+    visitor.visit(t, parent, childIndex, null);
+    int n = ParseDriver.adaptor.getChildCount(t);
+    for (int i=0; i<n; i++) {
+      Object child = ParseDriver.adaptor.getChild(t, i);
+      _visit(child, t, i, visitor);
     }
   }
 
-  public static class PTFInputInfo
-  {
-    private final boolean forMapPhase;
-    private final PTFInputDef inpDef;
-    private final StructObjectInspector OI;
-    private final RowResolver rr;
-    private final TypeCheckCtx tCtx;
+  public static ArrayList<PTFInvocationSpec> componentize(PTFInvocationSpec ptfInvocation) throws SemanticException {
 
-    PTFInputInfo(PTFTranslationInfo tInfo, PTFInputDef input,
-        StructObjectInspector mapOI, RowResolver inputRR,
-        RowResolver prevInputRR,
-        UnparseTranslator unparseT)
-        throws SemanticException
-    {
-      this.inpDef = input;
-      this.forMapPhase = mapOI != null;
-      OI = forMapPhase ? mapOI : inpDef.getOI();
+    ArrayList<PTFInvocationSpec> componentInvocations = new ArrayList<PTFInvocationSpec>();
 
-      if ( inputRR != null ) {
-        rr = inputRR;
+    Stack<PTFInputSpec> ptfChain = new Stack<PTFInvocationSpec.PTFInputSpec>();
+    PTFInputSpec spec = ptfInvocation.getFunction();
+    while (spec instanceof PartitionedTableFunctionSpec) {
+        ptfChain.push(spec);
+        spec = spec.getInput();
+    }
+
+    PartitionedTableFunctionSpec prevFn = (PartitionedTableFunctionSpec) ptfChain.pop();
+    PartitionSpec partSpec = prevFn.getPartition();
+    OrderSpec orderSpec = prevFn.getOrder();
+
+    if ( partSpec == null ) {
+      //oops this should have been caught before trying to componentize
+      throw new SemanticException(
+          "No Partitioning specification specified at start of a PTFChain");
+    }
+    if ( orderSpec == null ) {
+      orderSpec = new OrderSpec(partSpec);
+      prevFn.setOrder(orderSpec);
+    }
+
+    while (!ptfChain.isEmpty()) {
+      PartitionedTableFunctionSpec currentFn = (PartitionedTableFunctionSpec) ptfChain.pop();
+      String fnName = currentFn.getName();
+      if (!FunctionRegistry.isTableFunction(fnName)) {
+        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(fnName));
       }
-      else if ( input instanceof TableFuncDef ){
-        TableFuncDef tFnDef = (TableFuncDef) input;
-        boolean carryFwdNames = tFnDef.isCarryForwardNames();
-        ArrayList<String> outputColNames = forMapPhase ? tFnDef.getRawInputColumnNames() : tFnDef.getOutputColumnNames();
-        rr = PTFTranslationInfo.buildRowResolver(null, OI, outputColNames, carryFwdNames ? prevInputRR : null);
+      boolean transformsRawInput = FunctionRegistry.getTableFunctionResolver(fnName)
+          .transformsRawInput();
+
+      /*
+       * if the current table function has no partition info specified: inherit it from the PTF up
+       * the chain.
+       */
+      if (currentFn.getPartition() == null) {
+        currentFn.setPartition(prevFn.getPartition());
+        if (currentFn.getOrder() == null) {
+          currentFn.setOrder(prevFn.getOrder());
+        }
       }
-      else {
-        /*
-         * this is for the start of a Chain; so prevInputRR must be null.
-         */
-        rr = PTFTranslationInfo.buildRowResolver(null, OI, null, prevInputRR);
+      /*
+       * If the current table function has no order info specified;
+       */
+      if (currentFn.getOrder() == null) {
+        currentFn.setOrder(new OrderSpec(currentFn.getPartition()));
       }
-      tCtx = new TypeCheckCtx(rr);
-      tCtx.setUnparseTranslator(unparseT);
-    }
 
-    public RowResolver getRowResolver()
-    {
-      return rr;
-    }
+      if (!currentFn.getPartition().equals(partSpec) ||
+          !currentFn.getOrder().equals(orderSpec) ||
+          transformsRawInput) {
+        PTFInvocationSpec component = new PTFInvocationSpec();
+        component.setFunction(prevFn);
+        componentInvocations.add(component);
+        PTFQueryInputSpec cQInSpec = new PTFQueryInputSpec();
+        cQInSpec.setType(PTFQueryInputType.PTFCOMPONENT);
+        currentFn.setInput(cQInSpec);
+      }
 
-    public TypeCheckCtx getTypeCheckCtx()
-    {
-      return tCtx;
+      prevFn = currentFn;
+      partSpec = prevFn.getPartition();
+      orderSpec = prevFn.getOrder();
     }
-
-    public String getAlias()
-    {
-      return inpDef.getAlias();
-    }
-
-    public PTFInputDef getInputDef()
-    {
-      return inpDef;
-    }
-
-    public ObjectInspector getOI()
-    {
-      return OI;
-    }
+    componentInvocations.add(ptfInvocation);
+    return componentInvocations;
   }
 
-  public static class LeadLagInfo
-  {
+
+  /*
+   * Lead Lag functionality
+   */
+  public static class LeadLagInfo {
+    /*
+     * list of LL invocations in a Query.
+     */
     List<ExprNodeGenericFuncDesc> leadLagExprs;
+    /*
+     * map from the Select Expr Node to the LL Function invocations in it.
+     */
     Map<ExprNodeDesc, List<ExprNodeGenericFuncDesc>> mapTopExprToLLFunExprs;
 
     private void addLeadLagExpr(ExprNodeGenericFuncDesc llFunc)
@@ -1364,856 +1449,11 @@ public class PTFTranslator
     }
   }
 
-  public static ArrayList<PTFSpec> componentize(PTFSpec ptfSpec) throws SemanticException {
-    ArrayList<PTFSpec> componentPTFSpecs = new ArrayList<PTFSpec>();
-    Iterator<TableFuncSpec> it = PTFTranslator.iterateTableFuncSpecs(ptfSpec, true);
-    TableFuncSpec prevInSpec = it.next();
-
-    PartitionSpec partSpec = prevInSpec.getPartition();
-    OrderSpec orderSpec = prevInSpec.getOrder();
-
-    if ( partSpec == null ) {
-      //oops this should have been caught before trying to componentize
-      throw new SemanticException("No Partitioning specification specified at start of a PTFChain");
-    }
-    if ( orderSpec == null ) {
-      orderSpec = new OrderSpec(partSpec);
-      prevInSpec.setOrder(orderSpec);
-    }
-
-    while (it.hasNext()) {
-      TableFuncSpec currentSpec = it.next();
-
-      String fnName = currentSpec.getName();
-      if ( !FunctionRegistry.isTableFunction(fnName)) {
-        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(fnName));
-      }
-      boolean transformsRawInput = FunctionRegistry.getTableFunctionResolver(fnName).transformsRawInput();
-
-      /*
-       * if the current table function has no partition info specified: inherit it from the PTF up the chain.
-       */
-      if ( currentSpec.getPartition() == null ) {
-        currentSpec.setPartition(partSpec);
-        if ( currentSpec.getOrder() == null ) {
-          currentSpec.setOrder(orderSpec);
-        }
-      }
-      /*
-       * If the current table function has no order info specified;
-       */
-      if ( currentSpec.getOrder() == null ) {
-        currentSpec.setOrder(new OrderSpec(currentSpec.getPartition()));
-      }
-
-      if(!currentSpec.getPartition().equals(partSpec) ||
-          !currentSpec.getOrder().equals(orderSpec) ||
-          transformsRawInput ) {
-        PTFSpec cQSpec = new PTFSpec();
-        cQSpec.setInput(prevInSpec);
-        componentPTFSpecs.add(cQSpec);
-        PTFComponentQuerySpec cQInSpec= new PTFComponentQuerySpec();
-        currentSpec.setInput(cQInSpec);
-      }
-      prevInSpec = currentSpec;
-      partSpec = prevInSpec.getPartition();
-      orderSpec = prevInSpec.getOrder();
-    }
-
-    componentPTFSpecs.add(ptfSpec);
-
-    return componentPTFSpecs;
-
-  }
-
-  /*
-   * Utility classes and methods
-   */
-
-  // Function Chain Iterators
-  public static Predicate<PTFInputSpec> IsTableFunc = new Predicate<PTFInputSpec>() {
-    @Override
-    public boolean apply(PTFInputSpec obj) {
-      return obj != null && obj instanceof TableFuncSpec;
-    }
-  };
-
-  public static class QueryInputSpecIterator implements Iterator<PTFInputSpec>
-  {
-    PTFSpec qSpec;
-    PTFInputSpec nextInput;
-
-    public QueryInputSpecIterator(PTFSpec qSpec)
-    {
-      this.qSpec = qSpec;
-      nextInput = qSpec.getInput();
-    }
-
-    @Override
-    public boolean hasNext()
-    {
-      return nextInput != null;
-    }
-
-    @Override
-    public PTFInputSpec next()
-    {
-      PTFInputSpec curr = nextInput;
-      if (curr instanceof TableFuncSpec)
-      {
-        TableFuncSpec tFunc = (TableFuncSpec) curr;
-        nextInput = tFunc.getInput();
-      }
-      else
-      {
-        nextInput = null;
-      }
-      return curr;
-    }
-
-    @Override
-    public void remove()
-    {
-      throw new UnsupportedOperationException();
-    }
-  }
-
-  public static class ReverseQueryInputSpecIterator extends ReverseIterator<PTFInputSpec>
-  {
-    ReverseQueryInputSpecIterator(PTFSpec qSpec)
-    {
-      super(new QueryInputSpecIterator(qSpec));
-    }
-  }
-
-  public static class TableFunctionSpecIterator implements Iterator<TableFuncSpec>
-  {
-    QueryInputSpecIterator qSpecIt;
-    TableFuncSpec nextInput;
-
-    public TableFunctionSpecIterator(PTFSpec qSpec)
-    {
-      qSpecIt = new QueryInputSpecIterator(qSpec);
-    }
-
-    @Override
-    public boolean hasNext()
-    {
-      if (qSpecIt.hasNext())
-      {
-        PTFInputSpec iSpec = qSpecIt.next();
-        if (iSpec instanceof TableFuncSpec)
-        {
-          nextInput = (TableFuncSpec) iSpec;
-          return true;
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public TableFuncSpec next()
-    {
-      return nextInput;
-    }
-
-    @Override
-    public void remove()
-    {
-      throw new UnsupportedOperationException();
-    }
-  }
-
-  public static class ReverseTableFunctionSpecIterator extends ReverseIterator<TableFuncSpec>
-  {
-    ReverseTableFunctionSpecIterator(PTFSpec qSpec)
-    {
-      super(new TableFunctionSpecIterator(qSpec));
-    }
-  }
-
-  public static class QueryInputDefIterator implements Iterator<PTFInputDef>
-  {
-    PTFDesc ptfDesc;
-    PTFInputDef nextInput;
-
-    public QueryInputDefIterator(PTFDesc ptfDesc)
-    {
-      this.ptfDesc = ptfDesc;
-      nextInput = ptfDesc.getInput();
-    }
-
-    @Override
-    public boolean hasNext()
-    {
-      return nextInput != null;
-    }
-
-    @Override
-    public PTFInputDef next()
-    {
-      PTFInputDef curr = nextInput;
-      if (curr instanceof TableFuncDef)
-      {
-        TableFuncDef tFunc = (TableFuncDef) curr;
-        nextInput = tFunc.getInput();
-      }
-      else
-      {
-        nextInput = null;
-      }
-      return curr;
-    }
-
-    @Override
-    public void remove()
-    {
-      throw new UnsupportedOperationException();
-    }
-  }
-
-  public static class ReverseQueryInputDefIterator extends ReverseIterator<PTFInputDef>
-  {
-    ReverseQueryInputDefIterator(PTFDesc ptfDesc)
-    {
-      super(new QueryInputDefIterator(ptfDesc));
-    }
-  }
-
-  static Iterator<PTFInputSpec> iterateInputSpecs(PTFSpec qSpec,
-      boolean reverse)
-  {
-    return reverse ? new ReverseQueryInputSpecIterator(qSpec)
-        : new QueryInputSpecIterator(qSpec);
-  }
-
-  public static Iterator<TableFuncSpec> iterateTableFuncSpecs(
-      PTFSpec qSpec, boolean reverse)
-  {
-    return reverse ? new ReverseTableFunctionSpecIterator(qSpec)
-        : new TableFunctionSpecIterator(qSpec);
-  }
-
-  public static Iterator<PTFInputDef> iterateInputDefs(PTFDesc ptfDesc,
-      boolean reverse)
-  {
-    return reverse ? new ReverseQueryInputDefIterator(ptfDesc)
-        : new QueryInputDefIterator(ptfDesc);
-  }
-
-  public static PTFTableOrSubQueryInputSpec getHiveTableSpec(PTFSpec qSpec) {
-    Iterator<PTFInputSpec> it = PTFTranslator.iterateInputSpecs(qSpec, true);
-    PTFInputSpec qInSpec = it.next();
-    return (PTFTableOrSubQueryInputSpec) qInSpec;
-  }
-
-  public static ExprNodeDesc buildExprNode(ASTNode expr,
-      TypeCheckCtx typeCheckCtx) throws SemanticException
-  {
-    // todo: use SemanticAnalyzer::genExprNodeDesc
-    // currently SA not available to PTFTranslator.
-    HashMap<Node, Object> map = TypeCheckProcFactory
-        .genExprNode(expr, typeCheckCtx);
-    ExprNodeDesc desc = (ExprNodeDesc) map.get(expr);
-    if (desc == null) {
-      String errMsg = typeCheckCtx.getError();
-      if ( errMsg == null) {
-        errMsg = "Error in parsing ";
-      }
-      throw new SemanticException(errMsg);
-    }
-    return desc;
-  }
-
-  public static ObjectInspector initExprNodeEvaluator(PTFDesc ptfDesc,
-      ExprNodeDesc exprNode, ExprNodeEvaluator exprEval, PTFInputInfo iInfo)
-      throws HiveException
-  {
-    ObjectInspector OI;
-    OI = exprEval.initialize(iInfo.getOI());
-
-    /*
-     * if there are any LeadLag functions in this Expression Tree: - setup a
-     * duplicate Evaluator for the 1st arg of the LLFuncDesc - initialize it
-     * using the InputInfo provided for this Expr tree - set the duplicate
-     * evaluator on the LLUDF instance.
-     */
-    LeadLagInfo llInfo = ptfDesc.getTranslationInfo().getLLInfo();
-    List<ExprNodeGenericFuncDesc> llFuncExprs = llInfo
-        .getLLFuncExprsInTopExpr(exprNode);
-    if (llFuncExprs != null)
-    {
-      for (ExprNodeGenericFuncDesc llFuncExpr : llFuncExprs)
-      {
-        ExprNodeDesc firstArg = llFuncExpr.getChildren().get(0);
-        ExprNodeEvaluator dupExprEval = WindowingExprNodeEvaluatorFactory
-            .get(ptfDesc.getTranslationInfo(), firstArg);
-        dupExprEval.initialize(iInfo.getOI());
-        GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFuncExpr
-            .getGenericUDF();
-        llFn.setExprEvaluator(dupExprEval);
-      }
-    }
-
-    return OI;
-  }
-
-  public static ArgDef buildArgDef(PTFDesc ptfDesc, PTFInputInfo iInfo, ASTNode arg)
-      throws HiveException
-  {
-    ArgDef argDef = new ArgDef();
-
-    ExprNodeDesc exprNode = PTFTranslator.buildExprNode(arg,
-        iInfo.getTypeCheckCtx());
-    ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-        ptfDesc.getTranslationInfo(), exprNode);
-    ObjectInspector oi = initExprNodeEvaluator(ptfDesc, exprNode, exprEval,
-        iInfo);
-
-    argDef.setExpression(arg);
-    argDef.setExprNode(exprNode);
-    argDef.setExprEvaluator(exprEval);
-    argDef.setOI(oi);
-    return argDef;
-  }
-
-  public static ArrayList<? extends Object>[] getTypeMap(
-      StructObjectInspector oi)
-  {
-    StructTypeInfo t = (StructTypeInfo) TypeInfoUtils
-        .getTypeInfoFromObjectInspector(oi);
-    ArrayList<String> fnames = t.getAllStructFieldNames();
-    ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
-    return new ArrayList<?>[]
-    { fnames, fields };
-  }
-
-  public static SerDe createLazyBinarySerDe(Configuration cfg,
-      StructObjectInspector oi) throws SerDeException
-      {
-        return  createLazyBinarySerDe(cfg, oi, null);
-      }
-
-  public static SerDe createLazyBinarySerDe(Configuration cfg,
-      StructObjectInspector oi, Map<String,String> serdePropsMap) throws SerDeException
-  {
-    serdePropsMap = serdePropsMap == null ? new LinkedHashMap<String, String>() : serdePropsMap;
-
-    addOIPropertiestoSerDePropsMap(oi, serdePropsMap);
-
-    SerDe serDe = new LazyBinarySerDe();
-    Properties p = new Properties();
-    p.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
-        serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS));
-    p.setProperty(
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
-        serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
-    serDe.initialize(cfg, p);
-    return serDe;
-  }
-
-  @SuppressWarnings({"unchecked"})
-  private static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI, Map<String,String> serdePropsMap) {
-
-    if ( serdePropsMap == null ) {
-      return;
-    }
-
-    ArrayList<? extends Object>[] tInfo = getTypeMap(OI);
-
-    ArrayList<String> columnNames = (ArrayList<String>) tInfo[0];
-    ArrayList<TypeInfo> fields = (ArrayList<TypeInfo>) tInfo[1];
-    StringBuilder cNames = new StringBuilder();
-    StringBuilder cTypes = new StringBuilder();
-
-    for (int i = 0; i < fields.size(); i++)
-    {
-      cNames.append(i > 0 ? "," : "");
-      cTypes.append(i > 0 ? "," : "");
-      cNames.append(columnNames.get(i));
-      cTypes.append(fields.get(i).getTypeName());
-    }
-
-    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cNames.toString());
-    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, cTypes.toString());
-  }
-
-  /*
-   * @remove
-   * used for validating that OI columnNames are the same during runtime.
-   */
-  @SuppressWarnings("unused")
-  private static void checkSame(Map<String,String> transProps, Map<String,String> runtimeProps) throws SerDeException {
-    String transNames = transProps.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS);
-    String runtimeNames = runtimeProps.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS);
-
-    if ( !transNames.startsWith(runtimeNames) ) {
-      /*
-       * Why is this false?
-       * There is one case where the translation names don't match the runtime names.
-       * If a UDAF expression has an alias and is used in the having clause (see test 52.)
-       * it is added to the ReduceSink Operator's RowResolver twice with the same name.
-       * But at runtime each instance of this column is given a different internal Name.
-       * This doesn't seem to affect the child Operators of ReduceSink because their
-       * ColumnExprNodeDesc's can still get to the one instance of the column in the RowResolver.
-       */
-      if ( false ) {
-        throw new SerDeException("Runtime colNames changed: " + transNames + " -> " + runtimeNames );
-      }
-    }
-
-    String transTypes = transProps.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES);
-    String runtimeTypes = runtimeProps.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES);
-
-    /*
-     * Why is this false?
-     * - see above
-     * @revisit NPath tpath TypeInformation has alias names in Struct during translation; internalNames during runtime.
-     */
-    if ( !transTypes.startsWith(runtimeTypes)) {
-      if ( false ) {
-        throw new SerDeException("Runtime colTypes changed: " + transTypes + " -> " + runtimeTypes );
-      }
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Properties buildSerDePropertiesFromOI(StructObjectInspector OI) {
-    Properties p = new Properties();
-    ArrayList<? extends Object>[] tInfo = getTypeMap(OI);
-
-    ArrayList<String> columnNames = (ArrayList<String>) tInfo[0];
-    ArrayList<TypeInfo> fields = (ArrayList<TypeInfo>) tInfo[1];
-    StringBuilder cNames = new StringBuilder();
-    StringBuilder cTypes = new StringBuilder();
-    for (int i = 0; i < fields.size(); i++)
-    {
-      cNames.append(i > 0 ? "," : "");
-      cTypes.append(i > 0 ? "," : "");
-      cNames.append(columnNames.get(i));
-      cTypes.append(fields.get(i).getTypeName());
-    }
-    p.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
-        cNames.toString());
-    p.setProperty(
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
-        cTypes.toString());
-
-    return p;
-  }
-
-
-  public static ASTNode buildASTNode(String colName)
-  {
-    TreeWizard tw = new TreeWizard(adaptor, HiveParser.tokenNames);
-    Object o = tw.create(sprintf("(TOK_TABLE_OR_COL Identifier[%s])", colName));
-    return (ASTNode) o;
-  }
-
-  public static void validateComparable(ObjectInspector OI, String errMsg)
-      throws SemanticException
-  {
-    if (!ObjectInspectorUtils.compareSupported(OI))
-    {
-      throw new SemanticException(errMsg);
-    }
-  }
-
-  /*
-   * - equal if there columnName & tableName match - a null tableName is
-   * interpreted as matching the other tableName
-   */
-  public static boolean isEqual(ColumnSpec spec1, ColumnSpec spec2)
-  {
-    if (spec1 == null && spec2 == null) {
-      return false;
-    }
-    if (spec1 == null && spec2 != null) {
-      return false;
-    }
-    if (spec1 != null && spec2 == null) {
-      return false;
-    }
-
-    if (!spec1.getExpression().toStringTree().equals(spec2.getExpression().toStringTree())) {
-      return false;
-    }
-
-    String t1 = spec1.getTableName();
-    String t2 = spec2.getTableName();
-    if (t1 == null || t2 == null) {
-      return true;
-    }
-
-    return t1.equals(t2);
-  }
-
-  public static boolean isEqual(ColumnDef def1, ColumnDef def2)
-  {
-    if (def1 == null && def2 == null) {
-      return false;
-    }
-    if (def1 == null && def2 != null) {
-      return false;
-    }
-    if (def1 != null && def2 == null) {
-      return false;
-    }
-
-    return isEqual(def1.getSpec(), def2.getSpec());
-  }
-
-  /**
-   * For NOOP table functions, the serde is the same as that on the input
-   * hive table,; for other table functions it is the lazy binary serde.
-   * If the query has a map-phase, the map oi is set to be the oi on the
-   * lazy binary serde unless the table function is a NOOP_MAP_TABLE_FUNCTION
-   * (in which case it is set to the oi on the serde of the input hive
-   * table definition).
-   * @param tDef
-   * @param inputDef
-   * @param tInfo
-   * @param tEval
-   * @throws SerDeException
-   */
-  public static void setupSerdeAndOI(TableFuncDef tDef,
-      PTFInputDef inputDef, PTFTranslationInfo tInfo,
-      TableFunctionEvaluator tEval, boolean translationTime) throws SerDeException
-  {
-    /*
-     * setup the SerDe.
-     */
-    SerDe serde = null;
-    HashMap<String, String> serDePropsMap = new HashMap<String, String>();
-    // treat Noop Function special because it just hands the input Partition
-    // to the next function in the chain.
-    if (tDef.getName().equals(FunctionRegistry.NOOP_TABLE_FUNCTION)
-        || tDef.getName().equals(
-            FunctionRegistry.NOOP_MAP_TABLE_FUNCTION))
-    {
-      serde = inputDef.getSerde();
-      addOIPropertiestoSerDePropsMap((StructObjectInspector) serde.getObjectInspector(), serDePropsMap);
-    }
-    else
-    {
-      serde = PTFTranslator.createLazyBinarySerDe(tInfo.getHiveCfg(),
-          tEval.getOutputOI(), serDePropsMap);
-    }
-    tDef.setSerde(serde);
-    if ( translationTime ) {
-      tDef.setOutputSerdeProps(serDePropsMap);
-    }
-    else {
-      checkSame(tDef.getOutputSerdeProps(), serDePropsMap);
-    }
-    tDef.setOI((StructObjectInspector) serde.getObjectInspector());
-
-    if (tEval.isTransformsRawInput())
-    {
-      serDePropsMap.clear();
-      if (tDef.getName().equals(FunctionRegistry.NOOP_MAP_TABLE_FUNCTION))
-      {
-        serde = inputDef.getSerde();
-        addOIPropertiestoSerDePropsMap((StructObjectInspector) serde.getObjectInspector(), serDePropsMap);
-      }
-      else
-      {
-        serde = PTFTranslator.createLazyBinarySerDe(
-            tInfo.getHiveCfg(), tEval.getRawInputOI(), serDePropsMap);
-      }
-      tDef.setRawInputOI((StructObjectInspector) serde
-          .getObjectInspector());
-      if ( translationTime ) {
-        tDef.setRawInputSerdeProps(serDePropsMap);
-      }
-      else {
-        checkSame(tDef.getRawInputSerdeProps(), serDePropsMap);
-      }
-    }
-
-  }
-
-  /**
-   * Returns true if the query needs a map-side reshape. PTFOperator is added
-   * on the map-side before ReduceSinkOperator in this scenario.
-   *
-   * @param qdef
-   * @return
-   * @throws SemanticException
-   */
-  public static boolean addPTFMapOperator(PTFDesc qdef) throws SemanticException {
-    boolean hasMap = false;
-    TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(qdef);
-    TableFunctionEvaluator tEval = tabDef.getFunction();
-    if (tEval.isTransformsRawInput()) {
-      hasMap = true;
-    }
-    return hasMap;
-
-  }
-
-  /**
-   * For each column on the input RR, construct a StructField for it
-   * OI is constructed using the list of input column names and
-   * their corresponding OIs.
-   * @param rr
-   * @return
-   */
-  public static ObjectInspector getInputOI(RowResolver rr) {
-    StructObjectInspector oi;
-    ArrayList<ColumnInfo> colLists = rr.getColumnInfos();
-    ArrayList<String> structFieldNames = new ArrayList<String>();
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
-    for (ColumnInfo columnInfo : colLists) {
-      String colName = columnInfo.getInternalName();
-      ObjectInspector colOI = columnInfo.getObjectInspector();
-      structFieldNames.add(colName);
-      structFieldObjectInspectors.add(colOI);
-    }
-    oi = ObjectInspectorFactory.getStandardStructObjectInspector(structFieldNames,
-        structFieldObjectInspectors);
-    return oi;
-
-  }
-
-  public static ExprNodeColumnDesc getStringColumn(String columnName)
-  {
-    return new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-        columnName, "", false);
-  }
-
-  /*
-   * A Window Function's partition clause must exactly match that of the
-   * associated tableFn.
-   */
-  public static boolean isCompatible(PartitionDef tFnPartDef,
-      PartitionDef wFnPartDef)
-  {
-    if (tFnPartDef == null && wFnPartDef == null) {
-      return true;
-    }
-    if (tFnPartDef == null && wFnPartDef != null) {
-      return false;
-    }
-    if (tFnPartDef != null && wFnPartDef == null) {
-      return true;
-    }
-
-    ArrayList<ColumnDef> cols1 = tFnPartDef.getColumns();
-    ArrayList<ColumnDef> cols2 = wFnPartDef.getColumns();
-    if (cols1.size() != cols2.size()) {
-      return false;
-    }
-    for (int i = 0; i < cols1.size(); i++)
-    {
-      boolean e = isEqual(cols1.get(i), cols2.get(i));
-      if (!e) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public static boolean isEqual(OrderColumnSpec spec1, OrderColumnSpec spec2)
-  {
-    if (spec1 == null && spec2 == null) {
-      return false;
-    }
-    if (spec1 == null && spec2 != null) {
-      return false;
-    }
-    if (spec1 != null && spec2 == null) {
-      return false;
-    }
-
-    if (!spec1.getExpression().toStringTree().equals(spec2.getExpression().toStringTree())) {
-      return false;
-    }
-    if (!spec1.getOrder().equals(spec2.getOrder())) {
-      return false;
-    }
-
-    String t1 = spec1.getTableName();
-    String t2 = spec2.getTableName();
-    if (t1 == null || t2 == null) {
-      return true;
-    }
-
-    return t1.equals(t2);
-  }
-
-  public static boolean isEqual(OrderColumnDef def1, OrderColumnDef def2)
-  {
-    if (def1 == null && def2 == null) {
-      return false;
-    }
-    if (def1 == null && def2 != null) {
-      return false;
-    }
-    if (def1 != null && def2 == null) {
-      return false;
-    }
-
-    return isEqual((OrderColumnSpec) def1.getSpec(),
-        (OrderColumnSpec) def2.getSpec());
-  }
-
-  public static boolean isCompatible(OrderDef tFnOrderDef, OrderDef wFnOrderDef)
-  {
-    if (tFnOrderDef == null && wFnOrderDef == null) {
-      return true;
-    }
-    if (tFnOrderDef == null && wFnOrderDef != null) {
-      return false;
-    }
-    if (tFnOrderDef != null && wFnOrderDef == null) {
-      return true;
-    }
-
-    ArrayList<OrderColumnDef> cols1 = tFnOrderDef.getColumns();
-    ArrayList<OrderColumnDef> cols2 = wFnOrderDef.getColumns();
-    if (cols1.size() != cols2.size()) {
-      return false;
-    }
-    for (int i = 0; i < cols1.size(); i++)
-    {
-      boolean e = isEqual(cols1.get(i), cols2.get(i));
-      if (!e) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public static void validateValueBoundaryExprType(ObjectInspector OI)
-      throws SemanticException
-  {
-    if (!OI.getCategory().equals(Category.PRIMITIVE))
-    {
-      throw new SemanticException(
-          "Value Boundary expression must be of primitve type");
-    }
-
-    PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) OI;
-    PrimitiveCategory pC = pOI.getPrimitiveCategory();
-
-    switch (pC)
-    {
-    case BYTE:
-    case DOUBLE:
-    case FLOAT:
-    case INT:
-    case LONG:
-    case SHORT:
-    case TIMESTAMP:
-      break;
-    default:
-      throw new SemanticException(
-          sprintf("Primitve type %s not supported in Value Boundary expression",
-              pC));
-    }
-
-  }
-
-  /**
-   * Iterate the list of the query input definitions in reverse order
-   * Return the first table function definition in the chain.
-   * This table function is the first one to be executed on the
-   * input hive table.
-   * @param ptfDesc
-   * @return
-   */
-  public static TableFuncDef getFirstTableFunction(PTFDesc ptfDesc){
-    TableFuncDef tabDef = null;
-    Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(ptfDesc, true);
-    while(it.hasNext()){
-      PTFInputDef qIn = it.next();
-      if(qIn instanceof TableFuncDef){
-        tabDef = (TableFuncDef) qIn;
-        break;
-      }
-    }
-    return tabDef;
-
-  }
-
-  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
-      ObjectInspector[] oi2)
-  {
-    int c = 0;
-    for (int i = 0; i < oi1.length; i++)
-    {
-      c = ObjectInspectorUtils.compare(o1[i], oi1[i], o2[i], oi2[i]);
-      if (c != 0) {
-        return c;
-      }
-    }
-    return c;
-  }
-
-  public static Object[] copyToStandardObject(Object[] o,
-      ObjectInspector[] oi,
-      ObjectInspectorCopyOption objectInspectorOption)
-  {
-    Object[] out = new Object[o.length];
-    for (int i = 0; i < oi.length; i++)
-    {
-      out[i] = ObjectInspectorUtils.copyToStandardObject(o[i], oi[i],
-          objectInspectorOption);
-    }
-    return out;
-  }
-
-  /**
-   * Copied from Hive ParserDriver.
-   */
-  public static final TreeAdaptor adaptor = new CommonTreeAdaptor()
-  {
-    /**
-     * Creates an ASTNode for the given token. The ASTNode is a wrapper
-     * around antlr's CommonTree class that implements the Node interface.
-     *
-     * @param payload
-     *            The token.
-     * @return Object (which is actually an ASTNode) for the token.
-     */
-    @Override
-    public Object create(Token payload)
-    {
-      return new ASTNode(payload);
-    }
-  };
-
-  /*
-   * Utility to visit all nodes in an AST tree.
-   */
-  public static void visit(Object t, ContextVisitor visitor) {
-    _visit(t, null, 0, visitor);
-  }
-
-  /** Do the recursive work for visit */
-  private static void _visit(Object t, Object parent, int childIndex, ContextVisitor visitor) {
-    if ( t==null ) {
-      return;
-    }
-    visitor.visit(t, parent, childIndex, null);
-    int n = adaptor.getChildCount(t);
-    for (int i=0; i<n; i++) {
-      Object child = adaptor.getChild(t, i);
-      _visit(child, t, i, visitor);
-    }
-  }
-
   public static void validateNoLeadLagInValueBoundarySpec(ASTNode node)
       throws SemanticException
   {
-    validateNoLeadLagInValueBoundarySpec(node, "Lead/Lag not allowed in ValueBoundary Spec");
-  }
-
-  public static void validateNoLeadLagInValueBoundarySpec(ASTNode node, String errMsg)
-      throws SemanticException
-  {
-    TreeWizard tw = new TreeWizard(adaptor, HiveParser.tokenNames);
+    String errMsg = "Lead/Lag not allowed in ValueBoundary Spec";
+    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
     ValidateNoLeadLag visitor = new ValidateNoLeadLag(errMsg);
     tw.visit(node, HiveParser.TOK_FUNCTION, visitor);
     visitor.checkValid();
@@ -2254,487 +1494,4 @@ public class PTFTranslator
       }
     }
   }
-
-  /*
-   * Walker & PTFDef Deserializer
-   */
-  public static class PTFDefWalker
-  {
-    PTFDefDeserializer visitor;
-
-    public PTFDefWalker()
-    {
-      super();
-    }
-
-    public PTFDefWalker(PTFDefDeserializer visitor)
-    {
-      super();
-      this.visitor = visitor;
-    }
-
-    /**
-     * Use the visitor implementation to walk and reconstruct
-     * the table functions, where and select constructs and
-     * the query output definition.
-     * @param ptfDesc
-     * @throws HiveException
-     */
-    public void walk(PTFDesc ptfDesc) throws HiveException
-    {
-      visitor.initialize(ptfDesc);
-      walkInputChain(ptfDesc);
-
-      if ( ptfDesc.getWhere() != null )
-      {
-        visitor.visit(ptfDesc.getWhere());
-      }
-
-      walk(ptfDesc.getSelectList());
-      //visitor.visit(qDef.getOutput());
-
-      visitor.finish();
-    }
-
-    /**
-     * Iterate the table functions and hive table
-     * to reconstruct the definitions
-     * in reverse order or the order of invocations.
-     * HiveTableDef->PTF1->PTF2->WINDOWF
-     * @param ptfDesc
-     * @throws HiveException
-     */
-    protected void walkInputChain(PTFDesc ptfDesc) throws HiveException
-    {
-      Iterator<PTFInputDef> it = PTFTranslator.iterateInputDefs(ptfDesc, true);
-      while(it.hasNext())
-      {
-        PTFInputDef nextDef = it.next();
-        if (nextDef instanceof PTFTableOrSubQueryInputDef)
-        {
-          visitor.visit((PTFTableOrSubQueryInputDef) nextDef);
-        }
-        else if (nextDef instanceof PTFComponentQueryDef)
-        {
-          visitor.visit((PTFComponentQueryDef) nextDef);
-        }
-        else
-        {
-          walk(ptfDesc, (TableFuncDef) nextDef);
-        }
-      }
-    }
-
-    /**
-     * 1. Reconstruct the InputInfo during previsit
-     * 2. setup OIs and Evaluators on the ArgDefs
-     * 3. setup OIs and Evaluators on the columns in the
-     *    PartitionDef, OrderDef and WindowFrameDef in the
-     *    WindowFunction definitions
-     * 4. walk the functions on the select list to
-     *    setup the OI and GenericUDAFEvaluators
-     *
-     * @param ptfDesc
-     * @param tblFunc
-     * @throws HiveException
-     */
-    protected void walk(PTFDesc ptfDesc, TableFuncDef tblFunc) throws HiveException
-    {
-      // 1. visit the Args; these are resolved based on the shape of the Input to the function.
-      walk(tblFunc.getArgs());
-
-      // 2. allow visitor to establish input
-      visitor.preVisit(tblFunc);
-
-      //3. walk the window objects; this resolved based on the rawInputTransformation, if it has happened.
-      walk(tblFunc.getWindow());
-
-      //4. for WindowTable Func walk the Window Functions on the Select List
-      String fName = tblFunc.getName();
-      if ( fName.equals(FunctionRegistry.WINDOWING_TABLE_FUNCTION))
-      {
-        SelectDef select = ptfDesc.getSelectList();
-        ArrayList<WindowFunctionDef> wFns = select.getWindowFuncs();
-        for(WindowFunctionDef wFn : wFns)
-        {
-          walk(wFn.getWindow());
-          walk(wFn.getArgs());
-          visitor.visit(wFn);
-        }
-      }
-
-      //5. revisit tblFunc
-      visitor.visit(tblFunc);
-    }
-
-    /**
-     * Setup the OIs and evaluators on ArgDefs
-     * @param args
-     * @throws HiveException
-     */
-    protected void walk(ArrayList<ArgDef> args) throws HiveException
-    {
-      if ( args != null )
-      {
-        for(ArgDef arg :args)
-        {
-          visitor.visit(arg);
-        }
-      }
-    }
-
-    /**
-     * Visit the partition columns and order columns
-     * Visit the window frame definitions
-     * @param window
-     * @throws HiveException
-     */
-    protected void walk(WindowDef window) throws HiveException
-    {
-      if ( window == null ) {
-        return;
-      }
-
-      PartitionDef pDef = window.getPartDef();
-      if(pDef != null){
-        ArrayList<ColumnDef> cols = pDef.getColumns();
-        for(ColumnDef col : cols)
-        {
-          visitor.visit(col);
-        }
-        visitor.visit(pDef);
-      }
-
-
-      OrderDef oDef = window.getOrderDef();
-      if(oDef != null){
-        ArrayList<OrderColumnDef> ocols = oDef.getColumns();
-        for(OrderColumnDef ocol : ocols)
-        {
-          visitor.visit(ocol);
-        }
-        visitor.visit(oDef);
-      }
-
-      WindowFrameDef wFrmDef = window.getWindow();
-      if ( wFrmDef != null)
-      {
-        walk(wFrmDef.getStart());
-        walk(wFrmDef.getEnd());
-        visitor.visit(wFrmDef);
-      }
-      visitor.visit(window);
-    }
-
-    /**
-     * Visit all the implementations of
-     * BoundaryDef
-     * @param boundary
-     * @throws HiveException
-     */
-    protected void walk(BoundaryDef boundary) throws HiveException
-    {
-      if ( boundary instanceof ValueBoundaryDef )
-      {
-        visitor.visit((ValueBoundaryDef)boundary);
-      }
-      else if ( boundary instanceof RangeBoundaryDef)
-      {
-        visitor.visit((RangeBoundaryDef)boundary);
-      }
-      else if ( boundary instanceof CurrentRowDef)
-      {
-        visitor.visit((CurrentRowDef)boundary);
-      }
-    }
-
-    /**
-     * Visit all the columns in the select list
-     * to setup their OIs and evaluators
-     * @param select
-     * @throws HiveException
-     */
-    protected void walk(SelectDef select) throws HiveException
-    {
-      ArrayList<ColumnDef> cols = select.getColumns();
-      if ( cols != null )
-      {
-        for(ColumnDef col : cols)
-        {
-          visitor.visit(col);
-        }
-      }
-      visitor.visit(select);
-    }
-
-  }
-
-  /*
-   * An implementation of the {@link QueryDefVisitor} to reconstruct
-   * the OIs, serdes and evaluators on the QueryDef.
-   * This follows the same order used in the translation logic.
-   */
-  public static class PTFDefDeserializer
-  {
-    HiveConf hConf;
-    PTFDesc ptfDesc;
-    PTFInputDef qInDef;
-    PTFInputInfo inputInfo;
-    PTFTranslationInfo tInfo;
-    ObjectInspector inputOI;
-    TableFunctionResolver currentTFnResolver;
-
-    // TODO get rid of this dependency
-    static
-    {
-      FunctionRegistry.getWindowFunctionInfo("rank");
-    }
-
-    public PTFDefDeserializer(HiveConf hc, ObjectInspector inputOI)
-    {
-      this.hConf = hc;
-      this.inputOI = inputOI;
-    }
-
-    public PTFDefDeserializer(HiveConf hc)
-    {
-      this.hConf = hc;
-    }
-
-    /*
-     * Create new instance for the translation info and set the hiveConf on it
-     */
-
-    public void initialize(PTFDesc queryDef)
-    {
-      ptfDesc = queryDef;
-      tInfo = new PTFTranslationInfo();
-      tInfo.setHiveCfg(hConf);
-      ptfDesc.setTranslationInfo(tInfo);
-
-    }
-
-    public void visit(PTFComponentQueryDef compInputDef) throws HiveException
-    {
-      this.qInDef = compInputDef;
-      String serDeClassName = compInputDef.getCompSerdeClassName();
-
-      try
-      {
-        SerDe serDe = (SerDe) SerDeUtils.lookupDeserializer(serDeClassName);
-        serDe.initialize(hConf, PTFTranslator.buildSerDePropertiesFromOI((StructObjectInspector)inputOI));
-        compInputDef.setSerde(serDe);
-        compInputDef.setOI((StructObjectInspector)inputOI);
-      }
-      catch (SerDeException se)
-      {
-        throw new HiveException(se);
-      }
-
-      tInfo.addInput(compInputDef, null);
-      inputInfo = tInfo.getInputInfo(compInputDef);
-
-    }
-
-
-    /*
-     * 1. Use the passed in InputOI to setup the SerDe and OI for the HiveTableDef.
-     *    The runtime OI maybe different from the translation time oI (missing virtual columns).
-     * 2. We add the hive table definition to the input
-     *    map on the query translation info.
-     */
-    public void visit(PTFTableOrSubQueryInputDef hiveTable) throws HiveException
-    {
-      this.qInDef = hiveTable;
-
-      String serDeClassName = hiveTable.getTableSerdeClassName();
-      Properties serDeProps = new Properties();
-      Map<String, String> serdePropsMap = hiveTable.getTableSerdeProps();
-      for (String serdeName : serdePropsMap.keySet())
-      {
-        serDeProps.setProperty(serdeName, serdePropsMap.get(serdeName));
-      }
-
-      try
-      {
-        SerDe serDe = (SerDe) SerDeUtils.lookupDeserializer(serDeClassName);
-        //serDe.initialize(hConf, serDeProps);
-        serDe.initialize(hConf, PTFTranslator.buildSerDePropertiesFromOI((StructObjectInspector)inputOI));
-        hiveTable.setSerde(serDe);
-        //hiveTable.setOI((StructObjectInspector) serDe.getObjectInspector());
-        hiveTable.setOI((StructObjectInspector)inputOI);
-      }
-      catch (SerDeException se)
-      {
-        throw new HiveException(se);
-      }
-
-      tInfo.addInput(hiveTable, null);
-      inputInfo = tInfo.getInputInfo(hiveTable);
-    }
-
-    /*
-     * If the query has a map phase, the inputInfo is retrieved from the map
-     * output info of the table function definition. This is constructed using
-     * the map output oi of the table function definition. If the query does not
-     * have a map phase, the inputInfo is retrieved from the QueryInputDef
-     * (either HiveTableDef or HiveQueryDef) of the query.
-     */
-    public void preVisit(TableFuncDef tblFuncDef) throws HiveException
-    {
-      TableFunctionEvaluator tEval = tblFuncDef.getFunction();
-      currentTFnResolver = FunctionRegistry.getTableFunctionResolver(tEval.getTableDef().getName());
-      currentTFnResolver.initialize(ptfDesc, tblFuncDef, tEval);
-      if (tEval.isTransformsRawInput())
-      {
-        currentTFnResolver.initializeRawInputOI();
-        inputInfo = ptfDesc.getTranslationInfo().getMapInputInfo(tblFuncDef);
-      }
-      else
-      {
-        inputInfo = ptfDesc.getTranslationInfo().getInputInfo(qInDef);
-      }
-    }
-
-    /*
-     * 1. Invoke setupOI on the TableFunctionEvaluator
-     * 2. Setup serde and OI on the table function definition
-     * 3. Add the table function definition to input map
-     *    on the query translation info
-     * 4. Reset the inputInfo to the one associated
-     *    with this table function definition.
-     */
-    public void visit(TableFuncDef tblFuncDef) throws HiveException
-    {
-      TableFunctionEvaluator tEval = tblFuncDef.getFunction();
-      currentTFnResolver.initializeOutputOI();
-      try {
-        PTFTranslator.setupSerdeAndOI(tblFuncDef, qInDef, tInfo, tEval, false);
-      }
-      catch(SerDeException se) {
-        throw new SemanticException(se);
-      }
-      tInfo.addInput(tblFuncDef, null);
-      inputInfo = ptfDesc.getTranslationInfo().getInputInfo(tblFuncDef);
-    }
-
-    /*
-     * Recreate the ExprEvaluator, OI using the current inputInfo This is the
-     * inputInfo on the first InputDef in chain if the query does not have a map
-     * phase; else it is the mapInputInfo on the table function definition
-     */
-    public void visit(ArgDef arg) throws HiveException
-    {
-      ExprNodeDesc exprNodeDesc = arg.getExprNode();
-      ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-          tInfo, exprNodeDesc);
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
-          exprNodeDesc, exprEval, inputInfo);
-
-      arg.setExprEvaluator(exprEval);
-      arg.setOI(oi);
-
-    }
-
-    /*
-     * Recreate ExprNodeEvaluator, OI using InputInfo of first InputDef in
-     * chain.
-     */
-    public void visit(ColumnDef column) throws HiveException
-    {
-      ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-          tInfo, column.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
-          column.getExprNode(), exprEval, inputInfo);
-      column.setExprEvaluator(exprEval);
-      column.setOI(oi);
-    }
-
-    /*
-     * Same as visit on {@link ColumnDef}
-     */
-    public void visit(OrderColumnDef column) throws HiveException
-    {
-      visit((ColumnDef) column);
-    }
-
-    /*
-     * Recreate the ExprEvaluator, OI using the current inputInfo This is the
-     * inputInfo on the first InputDef in chain if the query does not have a map
-     * phase; else it is the mapInputInfo on the table function definition
-     */
-    public void visit(ValueBoundaryDef boundary) throws HiveException
-    {
-      ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-          tInfo, boundary.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
-          boundary.getExprNode(), exprEval, inputInfo);
-      boundary.setExprEvaluator(exprEval);
-      boundary.setOI(oi);
-    }
-
-    /*
-     * Setup the evaluators and OIs - Recreate the GenericUDAFEvaluator and use
-     * this and OIs on function arguments to reconstruct the OI on the window
-     * function definition
-     */
-    public void visit(WindowFunctionDef wFn) throws HiveException
-    {
-      PTFTranslator.setupEvaluator(wFn);
-    }
-
-    /*
-     * Recreate ExprNodeEvaluator, OI using InputInfo of first InputDef in
-     * chain.
-     */
-    public void visit(WhereDef where) throws HiveException
-    {
-      ExprNodeEvaluator exprEval = WindowingExprNodeEvaluatorFactory.get(
-          tInfo, where.getExprNode());
-      ObjectInspector oi = PTFTranslator.initExprNodeEvaluator(ptfDesc,
-          where.getExprNode(), exprEval, inputInfo);
-      where.setExprEvaluator(exprEval);
-      where.setOI(oi);
-    }
-
-    /*
-     * Recreate OI on select list.
-     */
-    public void visit(SelectDef select) throws HiveException
-    {
-      PTFTranslator.setupSelectRRAndOI(ptfDesc);
-    }
-
-    public void finish() throws HiveException
-    {
-    }
-
-    public void visit(WindowDef window) throws HiveException
-    {
-    }
-
-    public void visit(PartitionDef partition) throws HiveException
-    {
-    }
-
-    public void visit(OrderDef order) throws HiveException
-    {
-    }
-
-    public void visit(WindowFrameDef windowFrame) throws HiveException
-    {
-    }
-
-    public void visit(CurrentRowDef boundary) throws HiveException
-    {
-    }
-
-    public void visit(RangeBoundaryDef boundary) throws HiveException
-    {
-    }
-
-  }
-
-
 }
-

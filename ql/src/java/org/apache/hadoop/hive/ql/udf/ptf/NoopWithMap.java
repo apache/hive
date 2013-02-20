@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class NoopWithMap extends Noop
@@ -45,7 +45,7 @@ public class NoopWithMap extends Noop
   {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, TableFuncDef tDef)
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef)
     {
       return new NoopWithMap();
     }
@@ -53,7 +53,7 @@ public class NoopWithMap extends Noop
     @Override
     public void setupOutputOI() throws SemanticException
     {
-      StructObjectInspector OI = getEvaluator().getTableDef().getInput().getOI();
+      StructObjectInspector OI = getEvaluator().getTableDef().getInput().getOutputShape().getOI();
       setOutputOI(OI);
     }
 
@@ -80,7 +80,7 @@ public class NoopWithMap extends Noop
     @Override
     public void setupRawInputOI() throws SemanticException
     {
-      StructObjectInspector OI = getEvaluator().getTableDef().getInput().getOI();
+      StructObjectInspector OI = getEvaluator().getTableDef().getInput().getOutputShape().getOI();
       setRawInputOI(OI);
     }
 

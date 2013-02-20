@@ -34,7 +34,13 @@ public @interface WindowFunctionDescription
 {
 	Description description ();
 	/**
-	 * controls whether this function can be applied to a Window
+	 * controls whether this function can be applied to a Window.
+	 * <p>
+	 * Ranking function: Rank, Dense_Rank, Percent_Rank and Cume_Dist don't operate on Windows.
+	 * Why? a window specification implies a row specific range i.e. every row gets its own set of rows to process the UDAF on.
+	 * For ranking defining a set of rows for every row makes no sense.
+	 * <p>
+	 * All other UDAFs can be computed for a Window.
 	 */
 	boolean supportsWindow() default true;
 	/**
@@ -45,3 +51,4 @@ public @interface WindowFunctionDescription
 	 */
 	boolean pivotResult() default false;
 }
+

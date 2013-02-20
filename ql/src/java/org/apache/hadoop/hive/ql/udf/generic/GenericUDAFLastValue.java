@@ -161,3 +161,4 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver
 	}
 
 }
+

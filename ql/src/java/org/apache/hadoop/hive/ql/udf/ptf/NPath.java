@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -29,20 +28,22 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.PTFSpec.SelectSpec;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckCtx;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ArgDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -51,24 +52,30 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
- * return rows that meet a specified pattern. Use symbols to specify a list of expressions to match.
- * Pattern is used to specify a Path. The results list can contain expressions based on the input columns
- * and also the matched Path.
+ * return rows that meet a specified pattern. Use symbols to specify a list of expressions
+ * to match.
+ * Pattern is used to specify a Path. The results list can contain expressions based on
+ * the input columns and also the matched Path.
  * <ol>
  * <li><b>pattern:</b> pattern for the Path. Path is 'dot' separated list of symbols.
- * Each element is treated as a symbol. Elements that end in '*' or '+' are interpreted with the
- * usual meaning of zero or more, one or more respectively. For e.g. "LATE.EARLY*.ONTIMEOREARLY" implies a sequence of flights
- * where the first occurrence was LATE, followed by zero or more EARLY flights, followed by a ONTIME or EARLY flight.
+ * Each element is treated as a symbol. Elements that end in '*' or '+' are interpreted with
+ * the usual meaning of zero or more, one or more respectively. For e.g.
+ * "LATE.EARLY*.ONTIMEOREARLY" implies a sequence of flights
+ * where the first occurrence was LATE, followed by zero or more EARLY flights,
+ * followed by a ONTIME or EARLY flight.
  * <li><b>symbols</b> specify a list of name, expression pairs. For e.g.
  * 'LATE', arrival_delay > 0, 'EARLY', arrival_delay < 0 , 'ONTIME', arrival_delay == 0.
  * These symbols can be used in the Pattern defined above.
  * <li><b>resultSelectList</b> specified as a select list.
- * The expressions in the selectList are evaluated in the context where all the input columns are available, plus the attribute
+ * The expressions in the selectList are evaluated in the context where all the
+ * input columns are available, plus the attribute
  * "tpath" is available. Path is a collection of rows that represents the matching Path.
  * </ol>
  */
@@ -83,6 +90,7 @@ public class NPath extends TableFunctionEvaluator
    * the names of the Columns of the input to NPath. Used to setup the tpath Struct column.
    */
   private ArrayList<String> inputColumnNames;
+  private ArrayList<String> selectListNames;
 
   @Override
   public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException
@@ -95,7 +103,8 @@ public class NPath extends TableFunctionEvaluator
       if (syFnRes.matches )
       {
         int sz = syFnRes.nextRow - (pItr.getIndex() - 1);
-        Object selectListInput = NPath.getSelectListInput(iRow, tDef.getInput().getOI(), pItr, sz);
+        Object selectListInput = NPath.getSelectListInput(iRow,
+            tDef.getInput().getOutputShape().getOI(), pItr, sz);
         ArrayList<Object> oRow = new ArrayList<Object>();
         for(ExprNodeEvaluator resExprEval : resultExprInfo.resultExprEvals)
         {
@@ -109,14 +118,33 @@ public class NPath extends TableFunctionEvaluator
   static void throwErrorWithSignature(String message) throws SemanticException
   {
     throw new SemanticException(PTFUtils.sprintf(
-        "NPath signature is: SymbolPattern, one or more SymbolName, expression pairs, the result expression as a select list. Error %s",
+        "NPath signature is: SymbolPattern, one or more SymbolName, " +
+        "expression pairs, the result expression as a select list. Error %s",
         message));
   }
+
+  public ArrayList<String> getInputColumnNames() {
+    return inputColumnNames;
+  }
+
+  public void setInputColumnNames(ArrayList<String> inputColumnNames) {
+    this.inputColumnNames = inputColumnNames;
+  }
+
+  public ArrayList<String> getSelectListNames() {
+    return selectListNames;
+  }
+
+  public void setSelectListNames(ArrayList<String> selectListNames) {
+    this.selectListNames = selectListNames;
+  }
+
   public static class NPathResolver extends TableFunctionResolver
   {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, TableFuncDef tDef)
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc,
+        PartitionedTableFunctionDef tDef)
     {
 
       return new NPath();
@@ -127,12 +155,14 @@ public class NPath extends TableFunctionEvaluator
      * <li> check structure of Arguments:
      * <ol>
      * <li> First arg should be a String
-     * <li> then there should be an even number of Arguments: String, expression; expression should be Convertible to Boolean.
+     * <li> then there should be an even number of Arguments:
+     * String, expression; expression should be Convertible to Boolean.
      * <li> finally there should be a String.
      * </ol>
      * <li> convert pattern into a NNode chain.
      * <li> convert symbol args into a Symbol Map.
-     * <li> parse selectList into SelectList struct. The inputOI used to translate these expressions should be based on the
+     * <li> parse selectList into SelectList struct. The inputOI used to translate
+     * these expressions should be based on the
      * columns in the Input, the 'path.attr'
      * </ul>
      */
@@ -140,9 +170,9 @@ public class NPath extends TableFunctionEvaluator
     public void setupOutputOI() throws SemanticException
     {
       NPath evaluator = (NPath) getEvaluator();
-      TableFuncDef tDef = evaluator.getTableDef();
+      PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
-      ArrayList<ArgDef> args = tDef.getArgs();
+      ArrayList<PTFExpressionDef> args = tDef.getArgs();
       int argsNum = args == null ? 0 : args.size();
 
       if ( argsNum < 4 )
@@ -163,7 +193,8 @@ public class NPath extends TableFunctionEvaluator
       /*
        * parse ResultExpr Str and setup OI.
        */
-      ResultExpressionParser resultExprParser = new ResultExpressionParser(evaluator.resultExprStr, selectListInputRR);
+      ResultExpressionParser resultExprParser =
+          new ResultExpressionParser(evaluator.resultExprStr, selectListInputRR);
       try {
         resultExprParser.translate();
       }
@@ -172,55 +203,70 @@ public class NPath extends TableFunctionEvaluator
       }
       evaluator.resultExprInfo = resultExprParser.getResultExprInfo();
       StructObjectInspector OI = evaluator.resultExprInfo.resultOI;
+      evaluator.selectListNames = new ArrayList<String>();
+      extractOIColumnNames(resultExprParser.selectListInputOI, evaluator.selectListNames);
+
       setOutputOI(OI);
     }
     /*
      * validate and setup patternStr
      */
-    private void validateAndSetupPatternStr(NPath evaluator, ArrayList<ArgDef> args) throws SemanticException {
-      ArgDef symboPatternArg = args.get(0);
+    private void validateAndSetupPatternStr(NPath evaluator,
+        ArrayList<PTFExpressionDef> args) throws SemanticException {
+      PTFExpressionDef symboPatternArg = args.get(0);
       ObjectInspector symbolPatternArgOI = symboPatternArg.getOI();
 
       if ( !ObjectInspectorUtils.isConstantObjectInspector(symbolPatternArgOI) ||
           (symbolPatternArgOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-          ((PrimitiveObjectInspector)symbolPatternArgOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.STRING )
+          ((PrimitiveObjectInspector)symbolPatternArgOI).getPrimitiveCategory() !=
+          PrimitiveObjectInspector.PrimitiveCategory.STRING )
       {
         throwErrorWithSignature("Currently the symbol Pattern must be a Constant String.");
       }
 
-      evaluator.patternStr = ((ConstantObjectInspector)symbolPatternArgOI).getWritableConstantValue().toString();
+      evaluator.patternStr = ((ConstantObjectInspector)symbolPatternArgOI).
+          getWritableConstantValue().toString();
     }
 
     /*
      * validate and setup SymbolInfo
      */
-    private void validateAndSetupSymbolInfo(NPath evaluator, ArrayList<ArgDef> args, int argsNum) throws SemanticException {
+    private void validateAndSetupSymbolInfo(NPath evaluator,
+        ArrayList<PTFExpressionDef> args,
+        int argsNum) throws SemanticException {
       int symbolArgsSz = argsNum - 2;
       if ( symbolArgsSz % 2 != 0)
       {
-        throwErrorWithSignature("Symbol Name, Expression need to be specified in pairs: there are odd number of symbol args");
+        throwErrorWithSignature("Symbol Name, Expression need to be specified in pairs: " +
+        		"there are odd number of symbol args");
       }
 
       evaluator.symInfo = new SymbolsInfo(symbolArgsSz/2);
       for(int i=1; i <= symbolArgsSz; i += 2)
       {
-        ArgDef symbolNameArg = args.get(i);
+        PTFExpressionDef symbolNameArg = args.get(i);
         ObjectInspector symbolNameArgOI = symbolNameArg.getOI();
 
         if ( !ObjectInspectorUtils.isConstantObjectInspector(symbolNameArgOI) ||
             (symbolNameArgOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-            ((PrimitiveObjectInspector)symbolNameArgOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.STRING )
+            ((PrimitiveObjectInspector)symbolNameArgOI).getPrimitiveCategory() !=
+            PrimitiveObjectInspector.PrimitiveCategory.STRING )
         {
-          throwErrorWithSignature(PTFUtils.sprintf("Currently a Symbol Name(%s) must be a Constant String", symbolNameArg.getExpression().toStringTree()));
+          throwErrorWithSignature(
+              PTFUtils.sprintf("Currently a Symbol Name(%s) must be a Constant String",
+                  symbolNameArg.getExpressionTreeString()));
         }
-        String symbolName = ((ConstantObjectInspector)symbolNameArgOI).getWritableConstantValue().toString();
+        String symbolName = ((ConstantObjectInspector)symbolNameArgOI).
+            getWritableConstantValue().toString();
 
-        ArgDef symolExprArg = args.get(i+1);
+        PTFExpressionDef symolExprArg = args.get(i+1);
         ObjectInspector symolExprArgOI = symolExprArg.getOI();
         if ( (symolExprArgOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-              ((PrimitiveObjectInspector)symolExprArgOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN )
+              ((PrimitiveObjectInspector)symolExprArgOI).getPrimitiveCategory() !=
+              PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN )
         {
-          throwErrorWithSignature(PTFUtils.sprintf("Currently a Symbol Expression(%s) must be a boolean expression", symolExprArg.getExpression().toStringTree()));
+          throwErrorWithSignature(PTFUtils.sprintf("Currently a Symbol Expression(%s) " +
+          		"must be a boolean expression", symolExprArg.getExpressionTreeString()));
         }
         evaluator.symInfo.add(symbolName, symolExprArg);
       }
@@ -229,18 +275,22 @@ public class NPath extends TableFunctionEvaluator
     /*
      * validate and setup resultExprStr
      */
-    private void validateAndSetupResultExprStr(NPath evaluator, ArrayList<ArgDef> args, int argsNum) throws SemanticException {
-      ArgDef resultExprArg = args.get(argsNum - 1);
+    private void validateAndSetupResultExprStr(NPath evaluator,
+        ArrayList<PTFExpressionDef> args,
+        int argsNum) throws SemanticException {
+      PTFExpressionDef resultExprArg = args.get(argsNum - 1);
       ObjectInspector resultExprArgOI = resultExprArg.getOI();
 
       if ( !ObjectInspectorUtils.isConstantObjectInspector(resultExprArgOI) ||
             (resultExprArgOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-            ((PrimitiveObjectInspector)resultExprArgOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.STRING )
+            ((PrimitiveObjectInspector)resultExprArgOI).getPrimitiveCategory() !=
+            PrimitiveObjectInspector.PrimitiveCategory.STRING )
       {
         throwErrorWithSignature("Currently the result Expr parameter must be a Constant String.");
       }
 
-      evaluator.resultExprStr = ((ConstantObjectInspector)resultExprArgOI).getWritableConstantValue().toString();
+      evaluator.resultExprStr = ((ConstantObjectInspector)resultExprArgOI).
+          getWritableConstantValue().toString();
     }
 
     /*
@@ -264,9 +314,9 @@ public class NPath extends TableFunctionEvaluator
     public void initializeOutputOI() throws HiveException {
       try {
         NPath evaluator = (NPath) getEvaluator();
-        TableFuncDef tDef = evaluator.getTableDef();
+        PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
-        ArrayList<ArgDef> args = tDef.getArgs();
+        ArrayList<PTFExpressionDef> args = tDef.getArgs();
         int argsNum = args.size();
 
         validateAndSetupPatternStr(evaluator, args);
@@ -277,15 +327,16 @@ public class NPath extends TableFunctionEvaluator
         /*
          * setup OI for input to resultExpr select list
          */
-        RowResolver selectListInputRR = NPath.createSelectListRR(evaluator, tDef.getInput());
-        StructObjectInspector selectListInputOI = (StructObjectInspector) PTFTranslator.getInputOI(selectListInputRR);
+        StructObjectInspector selectListInputOI = NPath.createSelectListOI( evaluator,
+            tDef.getInput());
         ResultExprInfo resultExprInfo = evaluator.resultExprInfo;
         ArrayList<ObjectInspector> selectListExprOIs = new ArrayList<ObjectInspector>();
         resultExprInfo.resultExprEvals = new ArrayList<ExprNodeEvaluator>();
 
         for(int i=0 ; i < resultExprInfo.resultExprNodes.size(); i++) {
           ExprNodeDesc selectColumnExprNode =resultExprInfo.resultExprNodes.get(i);
-          ExprNodeEvaluator selectColumnExprEval = ExprNodeEvaluatorFactory.get(selectColumnExprNode);
+          ExprNodeEvaluator selectColumnExprEval =
+              ExprNodeEvaluatorFactory.get(selectColumnExprNode);
           ObjectInspector selectColumnOI = selectColumnExprEval.initialize(selectListInputOI);
           resultExprInfo.resultExprEvals.add(selectColumnExprEval);
           selectListExprOIs.add(selectColumnOI);
@@ -304,6 +355,15 @@ public class NPath extends TableFunctionEvaluator
     public ArrayList<String> getOutputColumnNames() {
       NPath evaluator = (NPath) getEvaluator();
       return evaluator.resultExprInfo.getResultExprNames();
+    }
+
+
+
+    private static void extractOIColumnNames(StructObjectInspector OI,
+        ArrayList<String> oiColumnNames) {
+      StructTypeInfo t = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(OI);
+      ArrayList<String> fnames = t.getAllStructFieldNames();
+      oiColumnNames.addAll(fnames);
     }
 
   }
@@ -330,7 +390,7 @@ public class NPath extends TableFunctionEvaluator
       symbolExprsNames = new ArrayList<String>(sz);
     }
 
-    void add(String name, ArgDef arg)
+    void add(String name, PTFExpressionDef arg)
     {
       symbolExprsNames.add(name);
       symbolExprsEvaluators.add(arg.getExprEvaluator());
@@ -584,7 +644,8 @@ public class NPath extends TableFunctionEvaluator
         String symbolName = symbolNames.get(i);
         ExprNodeEvaluator symbolExprEval = symbolExprEvals.get(i);
         ObjectInspector symbolExprOI = symbolExprOIs.get(i);
-        symbolExprEvalMap.put(symbolName.toLowerCase(), new Object[] {symbolExprEval, symbolExprOI});
+        symbolExprEvalMap.put(symbolName.toLowerCase(),
+            new Object[] {symbolExprEval, symbolExprOI});
       }
     }
 
@@ -633,7 +694,8 @@ public class NPath extends TableFunctionEvaluator
    * - the select keyword is optional. The parser checks if the expression doesn't start with
    * select; if not it prefixes it.
    * - Window Fn clauses are not permitted.
-   * - expressions can operate on the input columns plus the psuedo column 'path' which is array of
+   * - expressions can operate on the input columns plus the psuedo column 'path'
+   * which is array of
    * structs. The shape of the struct is
    * the same as the input.
    */
@@ -644,11 +706,12 @@ public class NPath extends TableFunctionEvaluator
     TypeCheckCtx selectListInputTypeCheckCtx;
     StructObjectInspector selectListInputOI;
 
-    SelectSpec selectSpec;
+    ArrayList<WindowExpressionSpec> selectSpec;
 
     ResultExprInfo resultExprInfo;
 
-    public ResultExpressionParser(String resultExprString, RowResolver selectListInputRowResolver)
+    public ResultExpressionParser(String resultExprString,
+        RowResolver selectListInputRowResolver)
     {
       this.resultExprString = resultExprString;
       this.selectListInputRowResolver = selectListInputRowResolver;
@@ -676,15 +739,15 @@ public class NPath extends TableFunctionEvaluator
       //result
       ArrayList<ObjectInspector> selectListExprOIs = new ArrayList<ObjectInspector>();
       int i = 0;
-      Iterator<Object> it = selectSpec.getColumnListAndAlias();
-      while (it.hasNext())
+      for(WindowExpressionSpec expr : selectSpec)
       {
-        Object[] selectColDetails = (Object[]) it.next();
-        String selectColName = (String) selectColDetails[1];
-        ASTNode selectColumnNode = (ASTNode) selectColDetails[2];
-        ExprNodeDesc selectColumnExprNode = PTFTranslator.buildExprNode(selectColumnNode,
+        String selectColName = expr.getAlias();
+        ASTNode selectColumnNode = expr.getExpression();
+        ExprNodeDesc selectColumnExprNode =
+            ResultExpressionParser.buildExprNode(selectColumnNode,
             selectListInputTypeCheckCtx);
-        ExprNodeEvaluator selectColumnExprEval = ExprNodeEvaluatorFactory.get(selectColumnExprNode);
+        ExprNodeEvaluator selectColumnExprEval =
+            ExprNodeEvaluatorFactory.get(selectColumnExprNode);
         ObjectInspector selectColumnOI = null;
         selectColumnOI = selectColumnExprEval.initialize(selectListInputOI);
 
@@ -708,7 +771,8 @@ public class NPath extends TableFunctionEvaluator
       /*
        * create SelectListOI
        */
-      selectListInputOI = (StructObjectInspector) PTFTranslator.getInputOI(selectListInputRowResolver);
+      selectListInputOI = (StructObjectInspector)
+          PTFTranslator.getStandardStructOI(selectListInputRowResolver);
     }
 
     private void fixResultExprString()
@@ -729,16 +793,9 @@ public class NPath extends TableFunctionEvaluator
 
     private void validateSelectExpr() throws SemanticException
     {
-      if (selectSpec.getWindowFuncs() != null)
+      for (WindowExpressionSpec expr : selectSpec)
       {
-        throw new SemanticException(
-            "NPath Result Expression cannot have Windowing Function expressions");
-      }
-
-      for (ASTNode node : selectSpec.getExpressions())
-      {
-        PTFTranslator.validateNoLeadLagInValueBoundarySpec(node,
-            "Lead/Lag not allowed in NPath Result Expression");
+        PTFTranslator.validateNoLeadLagInValueBoundarySpec(expr.getExpression());
       }
     }
 
@@ -755,6 +812,24 @@ public class NPath extends TableFunctionEvaluator
       }
       return "npath_col_" + colIdx;
     }
+
+    public static ExprNodeDesc buildExprNode(ASTNode expr,
+        TypeCheckCtx typeCheckCtx) throws SemanticException
+    {
+      // todo: use SemanticAnalyzer::genExprNodeDesc
+      // currently SA not available to PTFTranslator.
+      HashMap<Node, Object> map = TypeCheckProcFactory
+          .genExprNode(expr, typeCheckCtx);
+      ExprNodeDesc desc = (ExprNodeDesc) map.get(expr);
+      if (desc == null) {
+        String errMsg = typeCheckCtx.getError();
+        if ( errMsg == null) {
+          errMsg = "Error in parsing ";
+        }
+        throw new SemanticException(errMsg);
+      }
+      return desc;
+    }
   }
 
   public static final String PATHATTR_NAME = "tpath";
@@ -762,9 +837,10 @@ public class NPath extends TableFunctionEvaluator
   /*
    * add array<struct> to the list of columns
    */
-  protected static RowResolver createSelectListRR(NPath evaluator, PTFInputDef inpDef) throws SemanticException {
+  protected static RowResolver createSelectListRR(NPath evaluator,
+      PTFInputDef inpDef) throws SemanticException {
     RowResolver rr = new RowResolver();
-    RowResolver inputRR = inpDef.getInputInfo().getRowResolver();
+    RowResolver inputRR = inpDef.getOutputShape().getRr();
     boolean inputColNamesKnown = evaluator.inputColumnNames != null;
 
     if ( !inputColNamesKnown ) {
@@ -797,8 +873,10 @@ public class NPath extends TableFunctionEvaluator
       inpColOIs.add(cInfo.getObjectInspector());
     }
 
-    StandardListObjectInspector pathAttrOI = ObjectInspectorFactory.getStandardListObjectInspector(
-        ObjectInspectorFactory.getStandardStructObjectInspector(evaluator.inputColumnNames, inpColOIs));
+    StandardListObjectInspector pathAttrOI =
+        ObjectInspectorFactory.getStandardListObjectInspector(
+        ObjectInspectorFactory.getStandardStructObjectInspector(evaluator.inputColumnNames,
+            inpColOIs));
 
     ColumnInfo pathColumn = new ColumnInfo(PATHATTR_NAME,
         TypeInfoUtils.getTypeInfoFromObjectInspector(pathAttrOI),
@@ -807,6 +885,25 @@ public class NPath extends TableFunctionEvaluator
     rr.put(null, PATHATTR_NAME, pathColumn);
 
     return rr;
+  }
+
+  protected static StructObjectInspector createSelectListOI(NPath evaluator, PTFInputDef inpDef) {
+    StructObjectInspector inOI = inpDef.getOutputShape().getOI();
+    ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
+    for(StructField f : inOI.getAllStructFieldRefs()) {
+      fieldOIs.add(f.getFieldObjectInspector());
+    }
+
+    StandardListObjectInspector pathAttrOI =
+        ObjectInspectorFactory.getStandardListObjectInspector(
+        ObjectInspectorFactory.getStandardStructObjectInspector(evaluator.inputColumnNames,
+            fieldOIs));
+
+    ArrayList<ObjectInspector> selectFieldOIs = new ArrayList<ObjectInspector>();
+    selectFieldOIs.addAll(fieldOIs);
+    selectFieldOIs.add(pathAttrOI);
+    return ObjectInspectorFactory.getStandardStructObjectInspector(
+        evaluator.selectListNames, selectFieldOIs);
   }
 
   public static Object getSelectListInput(Object currRow, ObjectInspector rowOI,

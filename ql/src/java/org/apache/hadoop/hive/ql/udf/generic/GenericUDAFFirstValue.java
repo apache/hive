@@ -165,3 +165,4 @@ public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
 
 	}
 }
+

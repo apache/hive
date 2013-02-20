@@ -38,6 +38,7 @@ public class QueryProperties {
   boolean hasSortBy = false;
   boolean hasJoinFollowedByGroupBy = false;
   boolean hasPTF = false;
+  boolean hasWindowing = false;
 
   // does the query have a using clause
   boolean usesScript = false;
@@ -115,5 +116,13 @@ public class QueryProperties {
 
   public void setHasPTF(boolean hasPTF) {
     this.hasPTF = hasPTF;
+  }
+
+  public boolean hasWindowing() {
+    return hasWindowing;
+  }
+
+  public void setHasWindowing(boolean hasWindowing) {
+    this.hasWindowing = hasWindowing;
   }
 }

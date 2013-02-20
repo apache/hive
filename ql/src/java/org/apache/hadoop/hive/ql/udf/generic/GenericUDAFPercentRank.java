@@ -81,3 +81,4 @@ public class GenericUDAFPercentRank extends GenericUDAFRank
 		}
 	}
 }
+

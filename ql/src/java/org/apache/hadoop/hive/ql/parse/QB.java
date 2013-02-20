@@ -54,13 +54,13 @@ public class QB {
 
   // used by PTFs
   /*
-   * This map maintains the PTFSpec for each PTF chain invocation in this QB.
+   * This map maintains the PTFInvocationSpec for each PTF chain invocation in this QB.
    */
-  private HashMap<ASTNode, PTFSpec> ptfNodeToSpec;
+  private HashMap<ASTNode, PTFInvocationSpec> ptfNodeToSpec;
   /*
-   * the PTFSpec used for windowing clauses in this QB.
+   * the WindowingSpec used for windowing clauses in this QB.
    */
-  private HashMap<String, PTFSpec> destToWindowingPTFSpec;
+  private HashMap<String, WindowingSpec> destToWindowingSpec;
 
   // results
 
@@ -86,8 +86,8 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    ptfNodeToSpec = new HashMap<ASTNode, PTFSpec>();
-    destToWindowingPTFSpec = new HashMap<String, PTFSpec>();
+    ptfNodeToSpec = new HashMap<ASTNode, PTFInvocationSpec>();
+    destToWindowingSpec = new HashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
   }
 
@@ -259,33 +259,33 @@ public class QB {
     this.isAnalyzeRewrite = isAnalyzeRewrite;
   }
 
-  public PTFSpec getPtfSpec(ASTNode node) {
+  public PTFInvocationSpec getPTFInvocationSpec(ASTNode node) {
     return ptfNodeToSpec == null ? null : ptfNodeToSpec.get(node);
   }
 
-  public void addPTFNodeToSpec(ASTNode node, PTFSpec spec) {
-    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFSpec>() : ptfNodeToSpec;
+  public void addPTFNodeToSpec(ASTNode node, PTFInvocationSpec spec) {
+    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
     ptfNodeToSpec.put(node, spec);
   }
 
-  public HashMap<ASTNode, PTFSpec> getPTFNodeToSpec() {
+  public HashMap<ASTNode, PTFInvocationSpec> getPTFNodeToSpec() {
     return ptfNodeToSpec;
   }
 
-  public PTFSpec getWindowingPTFSpec(String dest) {
-    return destToWindowingPTFSpec.get(dest);
+  public WindowingSpec getWindowingSpec(String dest) {
+    return destToWindowingSpec.get(dest);
   }
 
-  public void addDestToWindowingPTFSpec(String dest, PTFSpec windowingPTFSpec) {
-    destToWindowingPTFSpec.put(dest, windowingPTFSpec);
+  public void addDestToWindowingSpec(String dest, WindowingSpec windowingSpec) {
+    destToWindowingSpec.put(dest, windowingSpec);
   }
 
-  public boolean hasWindowingPTFSpec(String dest) {
-    return destToWindowingPTFSpec.get(dest) != null;
+  public boolean hasWindowingSpec(String dest) {
+    return destToWindowingSpec.get(dest) != null;
   }
 
-  public HashMap<String, PTFSpec> getAllWindowingPTFSpecs() {
-    return destToWindowingPTFSpec;
+  public HashMap<String, WindowingSpec> getAllWindowingSpecs() {
+    return destToWindowingSpec;
   }
 
 

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -50,9 +50,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 public abstract class TableFunctionEvaluator
 {
+  /*
+   * how is this different from the OutpuShape set on the TableDef.
+   * This is the OI of the object coming out of the PTF.
+   * It is put in an output Partition whose Serde is usually LazyBinarySerde.
+   * So the next PTF (or Operator) in the chain gets a LazyBinaryStruct.
+   */
   transient protected StructObjectInspector OI;
+  /*
+   * same comment as OI applies here.
+   */
   transient protected StructObjectInspector rawInputOI;
-  protected TableFuncDef tDef;
+  protected PartitionedTableFunctionDef tDef;
   protected PTFDesc ptfDesc;
   String partitionClass;
   int partitionMemSize;
@@ -74,12 +83,12 @@ public abstract class TableFunctionEvaluator
     OI = outputOI;
   }
 
-  public TableFuncDef getTableDef()
+  public PartitionedTableFunctionDef getTableDef()
   {
     return tDef;
   }
 
-  public void setTableDef(TableFuncDef tDef)
+  public void setTableDef(PartitionedTableFunctionDef tDef)
   {
     this.tDef = tDef;
   }
@@ -138,7 +147,7 @@ public abstract class TableFunctionEvaluator
     PTFPartitionIterator<Object> pItr = iPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
     PTFPartition outP = new PTFPartition(getPartitionClass(),
-        getPartitionMemSize(), tDef.getSerde(), OI);
+        getPartitionMemSize(), tDef.getOutputShape().getSerde(), OI);
     execute(pItr, outP);
     return outP;
   }
@@ -159,3 +168,4 @@ public abstract class TableFunctionEvaluator
     return null;
   }
 }
+

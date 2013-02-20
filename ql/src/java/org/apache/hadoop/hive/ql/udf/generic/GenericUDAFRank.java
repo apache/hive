@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -144,12 +143,12 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 		public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException
 		{
 			RankBuffer rb = (RankBuffer) agg;
-			 int c = PTFTranslator.compare(rb.currVal, outputOI, parameters, inputOI);
+			 int c = GenericUDAFRank.compare(rb.currVal, outputOI, parameters, inputOI);
 			 rb.incrRowNum();
 			if ( rb.currentRowNum == 1 || c != 0 )
 			{
 				nextRank(rb);
-				rb.currVal = PTFTranslator.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA);
+				rb.currVal = GenericUDAFRank.copyToStandardObject(parameters, inputOI, ObjectInspectorCopyOption.JAVA);
 			}
 			rb.addRank();
 		}
@@ -182,5 +181,32 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver
 
 	}
 
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2,
+      ObjectInspector[] oi2)
+  {
+    int c = 0;
+    for (int i = 0; i < oi1.length; i++)
+    {
+      c = ObjectInspectorUtils.compare(o1[i], oi1[i], o2[i], oi2[i]);
+      if (c != 0) {
+        return c;
+      }
+    }
+    return c;
+  }
+
+  public static Object[] copyToStandardObject(Object[] o,
+      ObjectInspector[] oi,
+      ObjectInspectorCopyOption objectInspectorOption)
+  {
+    Object[] out = new Object[o.length];
+    for (int i = 0; i < oi.length; i++)
+    {
+      out[i] = ObjectInspectorUtils.copyToStandardObject(o[i], oi[i],
+          objectInspectorOption);
+    }
+    return out;
+  }
 
 }
+

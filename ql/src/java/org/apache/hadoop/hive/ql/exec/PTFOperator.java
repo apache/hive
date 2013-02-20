@@ -27,17 +27,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator.PTFDefDeserializer;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator.PTFTranslationInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ColumnDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WhereDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.Writable;
 
 public class PTFOperator extends Operator<PTFDesc> implements Serializable
 {
@@ -86,19 +84,17 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
 		}
 
 		reconstructQueryDef(hiveConf);
-    inputPart = PTFOperator.createFirstPartitionForChain(conf,
+    inputPart = createFirstPartitionForChain(
         inputObjInspectors[0], hiveConf, isMapOperator);
 
-		// OI for FileSinkOperator is taken from select-list (reduce-side)
-		// OI for ReduceSinkOperator is taken from TODO
 		if (isMapOperator)
 		{
-			TableFuncDef tDef = PTFTranslator.getFirstTableFunction(conf);
-			outputObjInspector = tDef.getRawInputOI();
+			PartitionedTableFunctionDef tDef = conf.getStartOfChain();
+			outputObjInspector = tDef.getRawInputShape().getOI();
 		}
 		else
 		{
-			outputObjInspector = conf.getSelectList().getOI();
+			outputObjInspector = conf.getFuncDef().getOutputShape().getOI();
 		}
 
 		setupKeysWrapper(inputObjInspectors[0]);
@@ -141,7 +137,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
       if (currentKeys != null && !keysAreEqual)
       {
         processInputPartition();
-        inputPart = PTFOperator.createFirstPartitionForChain(conf, inputObjInspectors[0], hiveConf, isMapOperator);
+        inputPart = createFirstPartitionForChain(inputObjInspectors[0], hiveConf, isMapOperator);
       }
 
       if (currentKeys == null || !keysAreEqual)
@@ -171,49 +167,59 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
 	protected void reconstructQueryDef(HiveConf hiveConf) throws HiveException
 	{
 
-	  PTFDefDeserializer qdd = new PTFDefDeserializer(hiveConf,
-				inputObjInspectors[0]);
-	  PTFTranslator.PTFDefWalker qdw = new PTFTranslator.PTFDefWalker(qdd);
-		qdw.walk(conf);
+	  PTFDeserializer dS =
+	      new PTFDeserializer(conf, (StructObjectInspector)inputObjInspectors[0], hiveConf);
+	  dS.initializePTFChain(conf.getFuncDef());
 	}
 
 	protected void setupKeysWrapper(ObjectInspector inputOI) throws HiveException
 	{
-		PartitionDef pDef = PTFTranslator.getFirstTableFunction(conf).getWindow().getPartDef();
-		ArrayList<ColumnDef> cols = pDef.getColumns();
-		int numCols = cols.size();
-		ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[numCols];
-		ObjectInspector[] keyOIs = new ObjectInspector[numCols];
-		ObjectInspector[] currentKeyOIs = new ObjectInspector[numCols];
+		PartitionDef pDef = conf.getStartOfChain().getPartition();
+		ArrayList<PTFExpressionDef> exprs = pDef.getExpressions();
+		int numExprs = exprs.size();
+		ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[numExprs];
+		ObjectInspector[] keyOIs = new ObjectInspector[numExprs];
+		ObjectInspector[] currentKeyOIs = new ObjectInspector[numExprs];
 
-		for(int i=0; i<numCols; i++)
+		for(int i=0; i<numExprs; i++)
 		{
-			ColumnDef cDef = cols.get(i);
+		  PTFExpressionDef exprDef = exprs.get(i);
 			/*
 			 * Why cannot we just use the ExprNodeEvaluator on the column?
 			 * - because on the reduce-side it is initialized based on the rowOI of the HiveTable
 			 *   and not the OI of the ExtractOp ( the parent of this Operator on the reduce-side)
 			 */
-			keyFields[i] = ExprNodeEvaluatorFactory.get(cDef.getExprNode());
+			keyFields[i] = ExprNodeEvaluatorFactory.get(exprDef.getExprNode());
 			keyOIs[i] = keyFields[i].initialize(inputOI);
-			currentKeyOIs[i] = ObjectInspectorUtils.getStandardObjectInspector(keyOIs[i], ObjectInspectorCopyOption.WRITABLE);
+			currentKeyOIs[i] =
+			    ObjectInspectorUtils.getStandardObjectInspector(keyOIs[i],
+			        ObjectInspectorCopyOption.WRITABLE);
 		}
 
 		keyWrapperFactory = new KeyWrapperFactory(keyFields, keyOIs, currentKeyOIs);
-
-	    newKeys = keyWrapperFactory.getKeyWrapper();
+	  newKeys = keyWrapperFactory.getKeyWrapper();
 	}
 
 	protected void processInputPartition() throws HiveException
 	{
-	  PTFPartition outPart = PTFOperator.executeChain(conf, inputPart);
-    PTFOperator.executeSelectList(conf, outPart, this);
+	  PTFPartition outPart = executeChain(inputPart);
+	  if ( conf.forWindowing() ) {
+	    executeWindowExprs(outPart);
+	  }
+	  else {
+	    PTFPartitionIterator<Object> pItr = outPart.iterator();
+	    while (pItr.hasNext())
+	    {
+	      Object oRow = pItr.next();
+	      forward(oRow, outputObjInspector);
+	    }
+	  }
 	}
 
 	protected void processMapFunction() throws HiveException
 	{
-	  TableFuncDef tDef = PTFTranslator.getFirstTableFunction(conf);
-    PTFPartition outPart = tDef.getFunction().transformRawInput(inputPart);
+	  PartitionedTableFunctionDef tDef = conf.getStartOfChain();
+    PTFPartition outPart = tDef.getTFunction().transformRawInput(inputPart);
     PTFPartitionIterator<Object> pItr = outPart.iterator();
     while (pItr.hasNext())
     {
@@ -247,22 +253,21 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
    * For each table function popped out of the stack,
    * execute the function on the input partition
    * and return an output partition.
-   * @param ptfDesc
    * @param part
    * @return
    * @throws HiveException
    */
-  private static PTFPartition executeChain(PTFDesc ptfDesc, PTFPartition part)
+  private PTFPartition executeChain(PTFPartition part)
       throws HiveException
   {
-    Stack<TableFuncDef> fnDefs = new Stack<TableFuncDef>();
-    PTFInputDef iDef = ptfDesc.getInput();
+    Stack<PartitionedTableFunctionDef> fnDefs = new Stack<PartitionedTableFunctionDef>();
+    PTFInputDef iDef = conf.getFuncDef();
     while (true)
     {
-      if (iDef instanceof TableFuncDef)
+      if (iDef instanceof PartitionedTableFunctionDef)
       {
-        fnDefs.push((TableFuncDef) iDef);
-        iDef = ((TableFuncDef) iDef).getInput();
+        fnDefs.push((PartitionedTableFunctionDef) iDef);
+        iDef = ((PartitionedTableFunctionDef) iDef).getInput();
       }
       else
       {
@@ -270,64 +275,96 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
       }
     }
 
-    TableFuncDef currFnDef;
+    PartitionedTableFunctionDef currFnDef;
     while (!fnDefs.isEmpty())
     {
       currFnDef = fnDefs.pop();
-      part = currFnDef.getFunction().execute(part);
+      part = currFnDef.getTFunction().execute(part);
     }
     return part;
   }
 
   /**
-   * For each row in the partition:
-   * 1. evaluate the where condition if applicable.
-   * 2. evaluate the value for each column retrieved
-   *    from the select list
-   * 3. Forward the writable value or object based on the
-   *    implementation of the ForwardSink
+   * If WindowingSpec contains any Windowing Expressions or has a
+   * Having condition then these are processed
+   * and forwarded on. Whereas when there is no having or WdwExprs
+   * just forward the rows in the output Partition.
+   *
+   * For e.g. Consider the following query:
+   * <pre>
+   * {@code
+   *  select rank(), lead(rank(),1),...
+   *  from xyz
+   *  ...
+   *  having rank() > 1
+   *  }
+   * </pre>
+   * rank() gets processed as a WdwFn; Its in the oPart(output partition)
+   * argument to executeWindowExprs. Here we first evaluate the having expression.
+   * So the first row of oPart gets filtered out.
+   * Next we evaluate lead(rank()) which is held as a WindowExpression and add it to the output.
+   *
    * @param ptfDesc
-   * @param oPart
-   * @param rS
+   * @param oPart output partition after Window Fns are processed.
+   * @param op
    * @throws HiveException
    */
-  @SuppressWarnings(
-  { "rawtypes", "unchecked" })
-  private static void executeSelectList(PTFDesc ptfDesc, PTFPartition oPart, PTFOperator op)
+  private void executeWindowExprs(PTFPartition oPart)
       throws HiveException
   {
-    StructObjectInspector selectOI = ptfDesc.getSelectList().getOI();
-    StructObjectInspector inputOI = ptfDesc.getInput().getOI();
-    int numCols = selectOI.getAllStructFieldRefs().size();
-    ArrayList<ColumnDef> cols = ptfDesc.getSelectList().getColumns();
-    int numSelCols = cols == null ? 0 : cols.size();
+    WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) conf.getFuncDef();
+    /*
+     * inputOI represents the row with WindowFn results present.
+     * So in the e.g. above it will have a column for 'rank()'
+     */
+    StructObjectInspector inputOI = wTFnDef.getOutputFromWdwFnProcessing().getOI();
+    /*
+     * outputOI represents the final row with the Windowing Expressions added.
+     * So in the e.g. above it will have a column for 'lead(rank())' in addition to
+     * all columns in inputOI.
+     */
+    StructObjectInspector outputOI = wTFnDef.getOutputShape().getOI();
+    int numCols = outputOI.getAllStructFieldRefs().size();
+    ArrayList<WindowExpressionDef> wdwExprs = wTFnDef.getWindowExpressions();
+    int numWdwExprs = wdwExprs == null ? 0 : wdwExprs.size();
     Object[] output = new Object[numCols];
 
-
-    WhereDef whDef = ptfDesc.getWhere();
-    boolean applyWhere = whDef != null;
-    Converter whConverter = !applyWhere ? null
+    PTFExpressionDef havingExpr = wTFnDef.getHavingExpression();
+    boolean applyHaving = havingExpr != null;
+    Converter hvgConverter = !applyHaving ? null
         : ObjectInspectorConverters
             .getConverter(
-                whDef.getOI(),
+                havingExpr.getOI(),
                 PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
-    ExprNodeEvaluator whCondEval = !applyWhere ? null : whDef
-        .getExprEvaluator();
+    ExprNodeEvaluator havingCondEval = !applyHaving ? null : havingExpr.getExprEvaluator();
+    /*
+     * If this Windowing invocation has no Window Expressions and doesn't need to be filtered,
+     * we can just forward the row in the oPart partition.
+     */
+    boolean forwardRowsUntouched = !applyHaving && (wdwExprs == null || wdwExprs.size() == 0 );
 
-    Writable value = null;
     PTFPartitionIterator<Object> pItr = oPart.iterator();
-    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
+    PTFOperator.connectLeadLagFunctionsToPartition(conf, pItr);
     while (pItr.hasNext())
     {
       int colCnt = 0;
       Object oRow = pItr.next();
 
-      if (applyWhere)
+      /*
+       * when there is no Windowing expressions or having;
+       * just forward the Object coming out of the Partition.
+       */
+      if ( forwardRowsUntouched ) {
+        forward(oRow, outputObjInspector);
+        continue;
+      }
+
+      if (applyHaving)
       {
-        Object whCond = null;
-        whCond = whCondEval.evaluate(oRow);
-        whCond = whConverter.convert(whCond);
-        if (whCond == null || !((Boolean) whCond).booleanValue())
+        Object hvgCond = null;
+        hvgCond = havingCondEval.evaluate(oRow);
+        hvgCond = hvgConverter.convert(hvgCond);
+        if (!((Boolean) hvgCond).booleanValue())
         {
           continue;
         }
@@ -335,50 +372,61 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
 
       /*
        * Setup the output row columns in the following order
-       * - the columns in the SelectList processed by the PTF (ie the Select Exprs that have navigation expressions)
+       * - the columns in the SelectList processed by the PTF
+       * (ie the Select Exprs that have navigation expressions)
        * - the columns from the final PTF.
        */
 
-      if ( cols != null ) {
-        for (ColumnDef cDef : cols)
+      if ( wdwExprs != null ) {
+        for (WindowExpressionDef wdwExpr : wdwExprs)
         {
-          Object newCol = cDef.getExprEvaluator().evaluate(oRow);
+          Object newCol = wdwExpr.getExprEvaluator().evaluate(oRow);
           output[colCnt++] = newCol;
         }
       }
 
       for(; colCnt < numCols; ) {
-        StructField field = inputOI.getAllStructFieldRefs().get(colCnt - numSelCols);
-        output[colCnt++] = ObjectInspectorUtils.copyToStandardObject(inputOI.getStructFieldData(oRow, field),
+        StructField field = inputOI.getAllStructFieldRefs().get(colCnt - numWdwExprs);
+        output[colCnt++] =
+            ObjectInspectorUtils.copyToStandardObject(inputOI.getStructFieldData(oRow, field),
             field.getFieldObjectInspector());
       }
 
-      op.forward(output, op.outputObjInspector);
+      forward(output, outputObjInspector);
     }
   }
 
   /**
-   * Create a new partition.
-   * The input OI is used to evaluate rows appended to the partition.
-   * The serde is determined based on whether the query has a map-phase
-   * or not. The OI on the serde is used by PTFs to evaluate output of the
-   * partition.
-   * @param ptfDesc
+   * Create a new Partition.
+   * A partition has 2 OIs: the OI for the rows being put in and the OI for the rows
+   * coming out. You specify the output OI by giving the Serde to use to Serialize.
+   * Typically these 2 OIs are the same; but not always. For the
+   * first PTF in a chain the OI of the incoming rows is dictated by the Parent Op
+   * to this PTFOp. The output OI from the Partition is typically LazyBinaryStruct, but
+   * not always. In the case of Noop/NoopMap we keep the Strcuture the same as
+   * what is given to us.
+   * <p>
+   * The Partition we want to create here is for feeding the First table function in the chain.
+   * So for map-side processing use the Serde from the output Shape its InputDef.
+   * For reduce-side processing use the Serde from its RawInputShape(the shape
+   * after map-side processing).
    * @param oi
    * @param hiveConf
+   * @param isMapSide
    * @return
    * @throws HiveException
    */
-  public static PTFPartition createFirstPartitionForChain(PTFDesc ptfDesc, ObjectInspector oi,
+  public PTFPartition createFirstPartitionForChain(ObjectInspector oi,
       HiveConf hiveConf, boolean isMapSide) throws HiveException
   {
-    TableFuncDef tabDef = PTFTranslator.getFirstTableFunction(ptfDesc);
-    TableFunctionEvaluator tEval = tabDef.getFunction();
+    PartitionedTableFunctionDef tabDef = conf.getStartOfChain();
+    TableFunctionEvaluator tEval = tabDef.getTFunction();
     String partClassName = tEval.getPartitionClass();
     int partMemSize = tEval.getPartitionMemSize();
 
     PTFPartition part = null;
-    SerDe serde = tabDef.getInput().getSerde();
+    SerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde() :
+      tabDef.getRawInputShape().getSerde();
     part = new PTFPartition(partClassName, partMemSize, serde,
         (StructObjectInspector) oi);
     return part;
@@ -388,9 +436,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
   public static void connectLeadLagFunctionsToPartition(PTFDesc ptfDesc,
       PTFPartitionIterator<Object> pItr) throws HiveException
   {
-    PTFTranslationInfo tInfo = ptfDesc.getTranslationInfo();
-    List<ExprNodeGenericFuncDesc> llFnDescs = tInfo.getLLInfo()
-        .getLeadLagExprs();
+    List<ExprNodeGenericFuncDesc> llFnDescs = ptfDesc.getLlInfo().getLeadLagExprs();
     if (llFnDescs == null) {
       return;
     }

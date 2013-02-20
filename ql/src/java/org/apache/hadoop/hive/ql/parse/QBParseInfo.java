@@ -172,13 +172,13 @@ public class QBParseInfo {
     return destToAggregationExprs.get(clause);
   }
 
-  public void addWindowingExprsForClause(String clause,
-      LinkedHashMap<String, ASTNode> windowingTrees) {
-    if (destToWindowingExprs.containsKey(clause)) {
-      destToWindowingExprs.get(clause).putAll(windowingTrees);
-    } else {
-      destToWindowingExprs.put(clause, windowingTrees);
+  public void addWindowingExprToClause(String clause, ASTNode windowingExprNode) {
+    LinkedHashMap<String, ASTNode> windowingExprs = destToWindowingExprs.get(clause);
+    if ( windowingExprs == null ) {
+      windowingExprs = new LinkedHashMap<String, ASTNode>();
+      destToWindowingExprs.put(clause, windowingExprs);
     }
+    windowingExprs.put(windowingExprNode.toStringTree(), windowingExprNode);
   }
 
   public HashMap<String, ASTNode> getWindowingExprsForClause(String clause) {

@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.TableFuncDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -65,11 +65,10 @@ public abstract class TableFunctionResolver
    * - sets up the evaluator with references to the TableDef, PartitionClass, PartitonMemsize and
    *   the transformsRawInput boolean.
    */
-  public void initialize(PTFDesc ptfDesc, TableFuncDef tDef)
+  public void initialize(HiveConf cfg, PTFDesc ptfDesc, PartitionedTableFunctionDef tDef)
       throws SemanticException
   {
     this.ptfDesc = ptfDesc;
-    HiveConf cfg = ptfDesc.getTranslationInfo().getHiveCfg();
     String partitionClass = HiveConf.getVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENCE_CLASS);
     int partitionMemSize = HiveConf.getIntVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENT_SIZE);
 
@@ -85,7 +84,7 @@ public abstract class TableFunctionResolver
   /*
    * called during deserialization of a QueryDef during runtime.
    */
-  public void initialize(PTFDesc ptfDesc, TableFuncDef tDef, TableFunctionEvaluator evaluator)
+  public void initialize(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef, TableFunctionEvaluator evaluator)
       throws HiveException
   {
     this.evaluator = evaluator;
@@ -211,6 +210,5 @@ public abstract class TableFunctionResolver
   /*
    * a subclass must provide the {@link TableFunctionEvaluator} instance.
    */
-  protected abstract TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc,
-      TableFuncDef tDef);
+  protected abstract TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef);
 }

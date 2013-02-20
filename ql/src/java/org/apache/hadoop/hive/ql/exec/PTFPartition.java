@@ -142,7 +142,7 @@ public class PTFPartition
   public PTFPartitionIterator<Object> range(int start, int end)
   {
     assert(start >= 0);
-    assert(end < size());
+    assert(end <= size());
     assert(start <= end);
     return new PItr(start, end);
   }
