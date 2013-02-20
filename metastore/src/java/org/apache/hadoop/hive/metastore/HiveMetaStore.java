@@ -1603,8 +1603,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private int add_partitions_core(final RawStore ms, final List<Partition> parts)
         throws MetaException, InvalidObjectException, AlreadyExistsException {
       String db = parts.get(0).getDbName();
-      String tbl = parts.get(0).getTableName();
-      logInfo("add_partitions : db=" + db + " tbl=" + tbl);
+      String tblName = parts.get(0).getTableName();
+      logInfo("add_partitions : db=" + db + " tbl=" + tblName);
 
       boolean success = false;
       Map<Partition, Boolean> addedPartitions = new HashMap<Partition, Boolean>();
@@ -1615,8 +1615,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           Entry<Partition, Boolean> e = add_partition_core_notxn(ms, part, null);
           addedPartitions.put(e.getKey(), e.getValue());
         }
-        success = true;
-        ms.commitTransaction();
+        success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
@@ -1626,6 +1625,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // we just created this directory - it's not a case of pre-creation, so we nuke
             }
           }
+        }
+        for (Partition part : parts) {
+          fireMetaStoreAddPartitionEvent(ms, part, null, success);
         }
       }
       return parts.size();
@@ -1773,12 +1775,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             wh.deleteDir(partLocation, true);
           }
         }
-        for (MetaStoreEventListener listener : listeners) {
-          AddPartitionEvent addPartitionEvent =
-              new AddPartitionEvent(tbl, part, success, this);
-          addPartitionEvent.setEnvironmentContext(envContext);
-          listener.onAddPartition(addPartitionEvent);
-        }
       }
       Map<Partition, Boolean> returnVal = new HashMap<Partition, Boolean>();
       returnVal.put(part, madeDir);
@@ -1800,8 +1796,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         }
+        fireMetaStoreAddPartitionEvent(ms, part, envContext, success);
       }
       return retPtn;
+    }
+
+    private void fireMetaStoreAddPartitionEvent(final RawStore ms,
+        final Partition part, final EnvironmentContext envContext, boolean success)
+          throws MetaException {
+      final Table tbl = ms.getTable(part.getDbName(), part.getTableName());
+      for (MetaStoreEventListener listener : listeners) {
+        AddPartitionEvent addPartitionEvent =
+            new AddPartitionEvent(tbl, part, success, this);
+        addPartitionEvent.setEnvironmentContext(envContext);
+        listener.onAddPartition(addPartitionEvent);
+      }
     }
 
     @Override
