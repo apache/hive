@@ -196,8 +196,10 @@ public class WindowingSpec {
   }
 
   private void inferDefaultWindowingSpec(WindowSpec wSpec) {
-    if ( wSpec == null || wSpec.getPartition() == null ||
-        getSourceOfQueryPartitoningSpec() != null ) {
+    if ( wSpec == null
+        || wSpec.getPartition() == null
+        || getSourceOfQueryPartitoningSpec() != null
+        || this.getQueryPartitionSpec() != null) {
       return;
     }
 

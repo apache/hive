@@ -22,7 +22,7 @@ sum(p_size) as s3 over (w3)
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as rows between 2 preceding and 2 following, 
-       w2 as rows between unbounded preceding and current row, 
+window w1 as (rows between 2 preceding and 2 following), 
+       w2 as (rows between unbounded preceding and current row), 
        w3 as w3;
 

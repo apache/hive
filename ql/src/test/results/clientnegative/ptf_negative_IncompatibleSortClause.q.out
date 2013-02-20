@@ -33,4 +33,4 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-FAILED: SemanticException Window Function 'sum((TOK_TABLE_OR_COL p_size)) w1 partitionColumns=[(TOK_TABLE_OR_COL p_mfgr)] orderColumns=[(TOK_TABLE_OR_COL p_name) ASC] window(start=range(2 PRECEDING), end=range(2 FOLLOWING))  as s' has an incompatible order clause
+FAILED: SemanticException Window Function 'sum' has an incompatible order clause

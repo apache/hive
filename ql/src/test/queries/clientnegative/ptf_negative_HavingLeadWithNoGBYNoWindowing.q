@@ -14,9 +14,9 @@ CREATE TABLE part(
 
 LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
--- testWhereLead
+-- testHavingLeadWithNoGBYNoWindowing
 select  p_mfgr,p_name, p_size 
 from part 
-where lead(p_size, 1) <= p_size 
+having lead(p_size, 1) <= p_size 
 distribute by p_mfgr 
 sort by p_name;

@@ -33,4 +33,4 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-FAILED: SemanticException Window Spec w3  refers to an unknown source 
+FAILED: SemanticException Cycle in Window references [w3, w3]

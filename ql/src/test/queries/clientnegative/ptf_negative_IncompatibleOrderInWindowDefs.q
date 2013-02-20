@@ -21,5 +21,5 @@ sum(p_size) as s2 over (w2)
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
-window w1 as distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following, 
-       w2 as distribute by p_mfgr sort by p_name rows between unbounded preceding and current row; 
+window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+       w2 as (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row); 
