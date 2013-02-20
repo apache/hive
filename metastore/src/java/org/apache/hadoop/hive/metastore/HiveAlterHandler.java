@@ -64,7 +64,7 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     if (!MetaStoreUtils.validateName(newt.getTableName())
-        || !MetaStoreUtils.validateColNames(newt.getSd().getCols())) {
+        || !MetaStoreUtils.validateTblColumns(newt.getSd().getCols())) {
       throw new InvalidOperationException(newt.getTableName()
           + " is not a valid object name");
     }

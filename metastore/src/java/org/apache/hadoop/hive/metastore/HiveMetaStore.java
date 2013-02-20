@@ -995,9 +995,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         InvalidObjectException, NoSuchObjectException {
 
       if (!MetaStoreUtils.validateName(tbl.getTableName())
-          || !MetaStoreUtils.validateColNames(tbl.getSd().getCols())
+          || !MetaStoreUtils.validateTblColumns(tbl.getSd().getCols())
           || (tbl.getPartitionKeys() != null && !MetaStoreUtils
-              .validateColNames(tbl.getPartitionKeys()))
+              .validateTblColumns(tbl.getPartitionKeys()))
           || !MetaStoreUtils.validateSkewedColNames(
               (null == tbl.getSd().getSkewedInfo()) ?
                   null : tbl.getSd().getSkewedInfo().getSkewedColNames())
