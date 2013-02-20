@@ -93,7 +93,7 @@ public final class ExprWalkerProcFactory {
         ctx.addAlias(exp, colAlias[0]);
       } else {
         if (colAlias == null) {
-          assert false;
+          return false;
         }
         ctx.addAlias(colref, colAlias[0]);
       }
