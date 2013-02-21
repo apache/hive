@@ -256,7 +256,8 @@ public enum ErrorMsg {
       10199,
       "hive.mapred.supports.subdirectories must be true"
           + " if any one of following is true: "
-          + " hive.optimize.listbucketing and mapred.input.dir.recursive"),
+          + " hive.optimize.listbucketing , mapred.input.dir.recursive"
+          + " and hive.optimize.union.remove."),
   SKEWED_TABLE_NO_COLUMN_NAME(10200, "No skewed column name."),
   SKEWED_TABLE_NO_COLUMN_VALUE(10201, "No skewed values."),
   SKEWED_TABLE_DUPLICATE_COLUMN_NAMES(10202,
