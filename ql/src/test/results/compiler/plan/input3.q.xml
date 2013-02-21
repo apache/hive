@@ -6,7 +6,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-13</string> 
+       <string>Stage-10</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList0" class="java.util.ArrayList"> 
@@ -21,7 +21,7 @@
                 <void method="add"> 
                  <object id="StatsTask0" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-8</string> 
+                   <string>Stage-5</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -49,7 +49,7 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-3</string> 
+               <string>Stage-0</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -66,7 +66,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-9</string> 
+                   <string>Stage-6</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork0" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -379,7 +379,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-12</string> 
+                   <string>Stage-9</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -393,7 +393,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-11</string> 
+                       <string>Stage-8</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork0"/> 
@@ -470,7 +470,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-10</string> 
+           <string>Stage-7</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork0"/> 
@@ -527,7 +527,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-19</string> 
+       <string>Stage-16</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList1" class="java.util.ArrayList"> 
@@ -542,7 +542,7 @@
                 <void method="add"> 
                  <object id="StatsTask1" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-14</string> 
+                   <string>Stage-11</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -570,7 +570,7 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-4</string> 
+               <string>Stage-1</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -587,7 +587,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-15</string> 
+                   <string>Stage-12</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork1" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -896,7 +896,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-18</string> 
+                   <string>Stage-15</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -910,7 +910,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-17</string> 
+                       <string>Stage-14</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork1"/> 
@@ -987,7 +987,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-16</string> 
+           <string>Stage-13</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork1"/> 
@@ -1044,7 +1044,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-25</string> 
+       <string>Stage-22</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList2" class="java.util.ArrayList"> 
@@ -1059,7 +1059,7 @@
                 <void method="add"> 
                  <object id="StatsTask2" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-20</string> 
+                   <string>Stage-17</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -1087,7 +1087,7 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-5</string> 
+               <string>Stage-2</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -1104,7 +1104,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-21</string> 
+                   <string>Stage-18</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork2" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1417,7 +1417,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-24</string> 
+                   <string>Stage-21</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -1431,7 +1431,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-23</string> 
+                       <string>Stage-20</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork2"/> 
@@ -1517,7 +1517,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-22</string> 
+           <string>Stage-19</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork2"/> 
@@ -1574,7 +1574,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-30</string> 
+       <string>Stage-27</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList3" class="java.util.ArrayList"> 
@@ -1585,7 +1585,7 @@
             <void method="add"> 
              <object id="MoveTask10" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="id"> 
-               <string>Stage-6</string> 
+               <string>Stage-3</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -1602,7 +1602,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-26</string> 
+                   <string>Stage-23</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork3" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1825,7 +1825,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-29</string> 
+                   <string>Stage-26</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -1839,7 +1839,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-28</string> 
+                       <string>Stage-25</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork3"/> 
@@ -1897,7 +1897,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-27</string> 
+           <string>Stage-24</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork3"/> 
@@ -1951,7 +1951,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-7</string> 
+   <string>Stage-4</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
