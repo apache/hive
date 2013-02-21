@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -5110,6 +5109,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       lbCtx.calculateSkewedValueSubDirList();
     }
     fileSinkDesc.setLbCtx(lbCtx);
+
+    // set it in plan instead of runtime in FileSinkOperator
+    fileSinkDesc.setStatsCollectRawDataSize(HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE));
 
     // set the stats publishing/aggregating key prefix
     // the same as directory name. The directory name

@@ -2145,6 +2145,9 @@
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
                       </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
+                      </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc0"/> 
                       </void> 
@@ -2452,6 +2455,9 @@
                       </void> 
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc1"/> 
@@ -2784,6 +2790,9 @@
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
                       </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
+                      </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc2"/> 
                       </void> 
@@ -3097,6 +3106,9 @@
                       </void> 
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc3"/> 
