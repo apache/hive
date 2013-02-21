@@ -1,2 +1,2 @@
-FAILED: ParseException line 1:13 cannot recognize input near 'invalid' '-' 'name' in table name
+FAILED: ParseException line 1:20 cannot recognize input near 'invalid' '-' 'name' in table name
 
