@@ -844,6 +844,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def partition_name_has_valid_characters(part_vals, throw_exception)
+      send_partition_name_has_valid_characters(part_vals, throw_exception)
+      return recv_partition_name_has_valid_characters()
+    end
+
+    def send_partition_name_has_valid_characters(part_vals, throw_exception)
+      send_message('partition_name_has_valid_characters', Partition_name_has_valid_characters_args, :part_vals => part_vals, :throw_exception => throw_exception)
+    end
+
+    def recv_partition_name_has_valid_characters()
+      result = receive_message(Partition_name_has_valid_characters_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'partition_name_has_valid_characters failed: unknown result')
+    end
+
     def get_config_value(name, defaultValue)
       send_get_config_value(name, defaultValue)
       return recv_get_config_value()
@@ -2035,6 +2051,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'rename_partition', seqid)
+    end
+
+    def process_partition_name_has_valid_characters(seqid, iprot, oprot)
+      args = read_args(iprot, Partition_name_has_valid_characters_args)
+      result = Partition_name_has_valid_characters_result.new()
+      begin
+        result.success = @handler.partition_name_has_valid_characters(args.part_vals, args.throw_exception)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'partition_name_has_valid_characters', seqid)
     end
 
     def process_get_config_value(seqid, iprot, oprot)
@@ -4377,6 +4404,42 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Partition_name_has_valid_characters_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PART_VALS = 1
+    THROW_EXCEPTION = 2
+
+    FIELDS = {
+      PART_VALS => {:type => ::Thrift::Types::LIST, :name => 'part_vals', :element => {:type => ::Thrift::Types::STRING}},
+      THROW_EXCEPTION => {:type => ::Thrift::Types::BOOL, :name => 'throw_exception'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Partition_name_has_valid_characters_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

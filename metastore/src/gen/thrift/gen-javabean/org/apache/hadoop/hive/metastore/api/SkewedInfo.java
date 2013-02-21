@@ -613,7 +613,7 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
                 for (int _i108 = 0; _i108 < _map107.size; ++_i108)
                 {
                   List<String> _key109; // required
-                  String _val110; // required
+                  String _val110; // optional
                   {
                     org.apache.thrift.protocol.TList _list111 = iprot.readListBegin();
                     _key109 = new ArrayList<String>(_list111.size);
@@ -815,7 +815,7 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
           for (int _i134 = 0; _i134 < _map133.size; ++_i134)
           {
             List<String> _key135; // required
-            String _val136; // required
+            String _val136; // optional
             {
               org.apache.thrift.protocol.TList _list137 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
               _key135 = new ArrayList<String>(_list137.size);

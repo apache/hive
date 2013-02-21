@@ -1,5 +1,5 @@
-SET hive.metastore.pre.event.listeners= ;
--- Test with PartitionNameWhitelistPreEventListener NOT registered
+SET hive.metastore.partition.name.whitelist.pattern=;
+-- Test with no partition name whitelist pattern
 
 CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING);
 SHOW PARTITIONS part_nowhitelist_test;

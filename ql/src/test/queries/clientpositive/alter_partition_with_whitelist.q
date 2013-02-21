@@ -6,4 +6,4 @@ SHOW PARTITIONS part_whitelist_test;
 
 ALTER TABLE part_whitelist_test ADD PARTITION (ds='Part');
 
-      
+ALTER TABLE part_whitelist_test PARTITION (ds='Part') rename to partition (ds='Apart');     

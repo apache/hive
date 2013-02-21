@@ -1140,4 +1140,37 @@ public class MetaStoreUtils {
     }
   }
 
+  public static void validatePartitionNameCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) throws MetaException {
+
+    String invalidPartitionVal =
+        getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+    if (invalidPartitionVal != null) {
+      throw new MetaException("Partition value '" + invalidPartitionVal +
+          "' contains a character " + "not matched by whitelist pattern '" +
+          partitionValidationPattern.toString() + "'.  " + "(configure with " +
+          HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+      }
+  }
+
+  public static boolean partitionNameHasValidCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+
+    return null;
+  }
+
 }

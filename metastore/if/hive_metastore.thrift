@@ -514,6 +514,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void rename_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:Partition new_part)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
+  // returns whether or not the partition name is valid based on the value of the config
+  // hive.metastore.partition.name.whitelist.pattern
+  bool partition_name_has_valid_characters(1:list<string> part_vals, 2:bool throw_exception)
+ 	throws(1: MetaException o1)
+
   // gets the value of the configuration key in the metastore server. returns
   // defaultValue if the key does not exist. if the configuration key does not
   // begin with "hive", "mapred", or "hdfs", a ConfigValSecurityException is

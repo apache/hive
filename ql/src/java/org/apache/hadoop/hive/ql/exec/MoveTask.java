@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -393,6 +394,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             }
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
+            List<String> partVals = Hive.getPvals(table.getPartCols(), tbd.getPartitionSpec());
+            db.validatePartitionNameCharacters(partVals);
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd));

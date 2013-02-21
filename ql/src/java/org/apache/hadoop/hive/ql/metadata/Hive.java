@@ -1355,6 +1355,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // No leaves in this directory
           LOG.info("NOT moving empty directory: " + s.getPath());
         } else {
+          try {
+            validatePartitionNameCharacters(
+                Warehouse.getPartValuesFromPartName(s.getPath().getParent().toString()));
+          } catch (MetaException e) {
+            throw new HiveException(e);
+          }
           validPartitions.add(s.getPath().getParent());
         }
       }
@@ -1700,7 +1706,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private static List<String> getPvals(List<FieldSchema> partCols,
+  public static List<String> getPvals(List<FieldSchema> partCols,
       Map<String, String> partSpec) {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : partCols) {
@@ -1871,6 +1877,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       results.add(part);
     }
     return results;
+  }
+
+  public void validatePartitionNameCharacters(List<String> partVals) throws HiveException {
+    try {
+      getMSC().validatePartitionNameCharacters(partVals);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
   }
 
   /**

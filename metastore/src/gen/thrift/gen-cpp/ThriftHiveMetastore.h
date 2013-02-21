@@ -65,6 +65,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void alter_partitions(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts) = 0;
   virtual void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
+  virtual bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
@@ -278,6 +279,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void rename_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const Partition& /* new_part */) {
     return;
+  }
+  bool partition_name_has_valid_characters(const std::vector<std::string> & /* part_vals */, const bool /* throw_exception */) {
+    bool _return = false;
+    return _return;
   }
   void get_config_value(std::string& /* _return */, const std::string& /* name */, const std::string& /* defaultValue */) {
     return;
@@ -7427,6 +7432,133 @@ class ThriftHiveMetastore_rename_partition_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_partition_name_has_valid_characters_args__isset {
+  _ThriftHiveMetastore_partition_name_has_valid_characters_args__isset() : part_vals(false), throw_exception(false) {}
+  bool part_vals;
+  bool throw_exception;
+} _ThriftHiveMetastore_partition_name_has_valid_characters_args__isset;
+
+class ThriftHiveMetastore_partition_name_has_valid_characters_args {
+ public:
+
+  ThriftHiveMetastore_partition_name_has_valid_characters_args() : throw_exception(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_has_valid_characters_args() throw() {}
+
+  std::vector<std::string>  part_vals;
+  bool throw_exception;
+
+  _ThriftHiveMetastore_partition_name_has_valid_characters_args__isset __isset;
+
+  void __set_part_vals(const std::vector<std::string> & val) {
+    part_vals = val;
+  }
+
+  void __set_throw_exception(const bool val) {
+    throw_exception = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_partition_name_has_valid_characters_args & rhs) const
+  {
+    if (!(part_vals == rhs.part_vals))
+      return false;
+    if (!(throw_exception == rhs.throw_exception))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_has_valid_characters_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_has_valid_characters_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_partition_name_has_valid_characters_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_has_valid_characters_pargs() throw() {}
+
+  const std::vector<std::string> * part_vals;
+  const bool* throw_exception;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_partition_name_has_valid_characters_result__isset {
+  _ThriftHiveMetastore_partition_name_has_valid_characters_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_partition_name_has_valid_characters_result__isset;
+
+class ThriftHiveMetastore_partition_name_has_valid_characters_result {
+ public:
+
+  ThriftHiveMetastore_partition_name_has_valid_characters_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_has_valid_characters_result() throw() {}
+
+  bool success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_partition_name_has_valid_characters_result__isset __isset;
+
+  void __set_success(const bool val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_partition_name_has_valid_characters_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_has_valid_characters_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_has_valid_characters_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_partition_name_has_valid_characters_presult__isset {
+  _ThriftHiveMetastore_partition_name_has_valid_characters_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_partition_name_has_valid_characters_presult__isset;
+
+class ThriftHiveMetastore_partition_name_has_valid_characters_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_has_valid_characters_presult() throw() {}
+
+  bool* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_partition_name_has_valid_characters_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_config_value_args__isset {
   _ThriftHiveMetastore_get_config_value_args__isset() : name(false), defaultValue(false) {}
   bool name;
@@ -11936,6 +12068,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void send_rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void recv_rename_partition();
+  bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
+  void send_partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception);
+  bool recv_partition_name_has_valid_characters();
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue);
   void send_get_config_value(const std::string& name, const std::string& defaultValue);
   void recv_get_config_value(std::string& _return);
@@ -12088,6 +12223,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_alter_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_rename_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_partition_name_has_valid_characters(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_config_value(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_vals(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_spec(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -12172,6 +12308,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["alter_partitions"] = &ThriftHiveMetastoreProcessor::process_alter_partitions;
     processMap_["alter_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_partition_with_environment_context;
     processMap_["rename_partition"] = &ThriftHiveMetastoreProcessor::process_rename_partition;
+    processMap_["partition_name_has_valid_characters"] = &ThriftHiveMetastoreProcessor::process_partition_name_has_valid_characters;
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
     processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
@@ -12704,6 +12841,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->rename_partition(db_name, tbl_name, part_vals, new_part);
     }
     ifaces_[i]->rename_partition(db_name, tbl_name, part_vals, new_part);
+  }
+
+  bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->partition_name_has_valid_characters(part_vals, throw_exception);
+    }
+    return ifaces_[i]->partition_name_has_valid_characters(part_vals, throw_exception);
   }
 
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) {

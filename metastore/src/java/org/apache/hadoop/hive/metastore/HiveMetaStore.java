@@ -295,6 +295,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private List<MetaStoreEventListener> listeners;
     private List<MetaStoreEndFunctionListener> endFunctionListeners;
     private List<MetaStoreInitListener> initListeners;
+    private Pattern partitionValidationPattern;
 
     {
       classLoader = Thread.currentThread().getContextClassLoader();
@@ -343,6 +344,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       endFunctionListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreEndFunctionListener.class, hiveConf,
           hiveConf.getVar(HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS));
+
+      String partitionValidationRegex =
+          hiveConf.getVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN);
+      if (partitionValidationRegex != null && partitionValidationRegex != "") {
+        partitionValidationPattern = Pattern.compile(partitionValidationRegex);
+      } else {
+        partitionValidationPattern = null;
+      }
 
       long cleanFreq = hiveConf.getLongVar(ConfVars.METASTORE_EVENT_CLEAN_FREQ) * 1000L;
       if (cleanFreq > 0) {
@@ -1485,6 +1494,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         PreAddPartitionEvent event = new PreAddPartitionEvent(part, this);
         firePreEvent(event);
 
+        MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+
         tbl = ms.getTable(part.getDbName(), part.getTableName());
         if (tbl == null) {
           throw new InvalidObjectException(
@@ -1687,6 +1698,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       try {
         firePreEvent(new PreAddPartitionEvent(part, this));
+
+        MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
+            partitionValidationPattern);
 
         Partition old_part = null;
         try {
@@ -2149,6 +2163,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, part_vals, new_part, this));
+
+        if (part_vals != null && !part_vals.isEmpty()) {
+          MetaStoreUtils.validatePartitionNameCharacters(new_part.getValues(),
+              partitionValidationPattern);
+        }
 
         oldPart = alterHandler.alterPartition(getMS(), wh, db_name, tbl_name, part_vals, new_part);
 
@@ -4049,6 +4068,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         TException {
       Collections.addAll(groupNames, username);
       return groupNames;
+    }
+
+    @Override
+    public boolean partition_name_has_valid_characters(List<String> part_vals,
+        boolean throw_exception) throws TException, MetaException {
+      startFunction("partition_name_has_valid_characters");
+      boolean ret = false;
+      Exception ex = null;
+      try {
+        if (throw_exception) {
+          MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+          ret = true;
+        } else {
+          ret = MetaStoreUtils.partitionNameHasValidCharacters(part_vals,
+              partitionValidationPattern);
+        }
+      } catch (Exception e) {
+        if (e instanceof MetaException) {
+          throw (MetaException)e;
+        } else {
+          ex = e;
+          MetaException me = new MetaException();
+          me.initCause(e);
+          throw me;
+        }
+      }
+      endFunction("partition_name_has_valid_characters", true, null);
+      return ret;
     }
   }
 

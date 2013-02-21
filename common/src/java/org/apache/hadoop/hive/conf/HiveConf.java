@@ -128,6 +128,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERATTEMPTS,
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
+      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN
       };
 
   /**

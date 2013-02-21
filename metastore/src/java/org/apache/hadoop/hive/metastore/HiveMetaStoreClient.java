@@ -424,6 +424,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         partName, envContext));
   }
 
+  public void validatePartitionNameCharacters(List<String> partVals)
+      throws TException, MetaException {
+    client.partition_name_has_valid_characters(partVals, true);
+  }
+
   /**
    * Create a new Database
    * @param db
