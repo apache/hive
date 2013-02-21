@@ -34,7 +34,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -323,8 +322,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       isCompressed = conf.getCompressed();
       parent = Utilities.toTempPath(conf.getDirName());
-      statsCollectRawDataSize =
-          HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE);
+      statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
 
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
