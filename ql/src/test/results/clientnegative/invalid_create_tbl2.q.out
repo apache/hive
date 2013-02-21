@@ -1,2 +1,2 @@
-FAILED: ParseException line 1:7 Failed to recognize predicate 'tabl'. Failed rule: 'kwRole' in create role
+FAILED: ParseException line 1:7 cannot recognize input near 'create' 'tabl' 'tmp_zshao_22' in ddl statement
 
