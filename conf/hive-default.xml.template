@@ -286,7 +286,7 @@
 <property>
   <name>hive.metastore.partition.name.whitelist.pattern</name>
   <value></value>
-  <description>Partition names will be checked against this regex pattern and rejected if not matched.  To use, enable hive.metastore.pre.event.listeners=org.apache.hadoop.hive.metastore.PartitionNameWhitelistPreEventListener  Listener will not register if this property value is empty.</description>
+  <description>Partition names will be checked against this regex pattern and rejected if not matched.</description>
 </property>
 
 <property>

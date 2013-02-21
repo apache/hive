@@ -491,6 +491,15 @@ public interface IMetaStoreClient {
       UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException;
 
   /**
+   * @param partVals
+   * @throws TException
+   * @throws MetaException
+   */
+  public void validatePartitionNameCharacters(List<String> partVals)
+      throws TException, MetaException;
+
+
+  /**
    * @param tbl
    * @throws AlreadyExistsException
    * @throws InvalidObjectException

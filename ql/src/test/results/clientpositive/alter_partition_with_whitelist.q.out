@@ -1,0 +1,30 @@
+PREHOOK: query: -- This pattern matches only letters.
+
+CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This pattern matches only letters.
+
+CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@part_whitelist_test
+PREHOOK: query: SHOW PARTITIONS part_whitelist_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS part_whitelist_test
+POSTHOOK: type: SHOWPARTITIONS
+PREHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='Part')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@part_whitelist_test
+POSTHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='Part')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@part_whitelist_test
+POSTHOOK: Output: default@part_whitelist_test@ds=Part
+PREHOOK: query: ALTER TABLE part_whitelist_test PARTITION (ds='Part') rename to partition (ds='Apart')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@part_whitelist_test
+PREHOOK: Output: default@part_whitelist_test@ds=Part
+POSTHOOK: query: ALTER TABLE part_whitelist_test PARTITION (ds='Part') rename to partition (ds='Apart')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@part_whitelist_test
+POSTHOOK: Input: default@part_whitelist_test@ds=Part
+POSTHOOK: Output: default@part_whitelist_test@ds=Apart
+POSTHOOK: Output: default@part_whitelist_test@ds=Part

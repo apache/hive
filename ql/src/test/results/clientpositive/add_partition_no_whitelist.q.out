@@ -1,8 +1,8 @@
-PREHOOK: query: -- Test with PartitionNameWhitelistPreEventListener NOT registered
+PREHOOK: query: -- Test with no partition name whitelist pattern
 
 CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test with PartitionNameWhitelistPreEventListener NOT registered
+POSTHOOK: query: -- Test with no partition name whitelist pattern
 
 CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE

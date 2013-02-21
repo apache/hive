@@ -2369,6 +2369,8 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+
+
   /**
    * This method simulates another Hive metastore renaming a table, by accessing the db and
    * updating the name.
