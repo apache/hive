@@ -120,6 +120,7 @@ printf
 radians
 rand
 reflect
+reflect2
 regexp
 regexp_extract
 regexp_replace
