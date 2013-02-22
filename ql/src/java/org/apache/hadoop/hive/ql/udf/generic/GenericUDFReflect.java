@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -29,12 +28,9 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -44,16 +40,14 @@ import org.apache.hadoop.util.ReflectionUtils;
   value = "_FUNC_(class,method[,arg1[,arg2..]]) calls method with reflection",
   extended = "Use this UDF to call Java methods by matching the argument signature\n")
 @UDFType(deterministic = false)
-public class GenericUDFReflect extends GenericUDF {
+public class GenericUDFReflect extends AbstractGenericUDFReflect {
 
-  PrimitiveObjectInspector[] argumentOIs;
+  StringObjectInspector inputClassNameOI;
+  StringObjectInspector inputMethodNameOI;
+
   StringObjectInspector classNameOI;
   StringObjectInspector methodNameOI;
-  
-  PrimitiveTypeEntry[] parameterTypes;
-  Class[] parameterClasses;
-  Object[] parameterJavaValues;
-  
+
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
   throws UDFArgumentException {
@@ -71,35 +65,16 @@ public class GenericUDFReflect extends GenericUDF {
             + " should be string.");
       }
     }
-    
+    inputClassNameOI = (StringObjectInspector) arguments[0];
+    inputMethodNameOI = (StringObjectInspector) arguments[1];
+
     classNameOI = (StringObjectInspector)
         ObjectInspectorUtils.getStandardObjectInspector(arguments[0]);
     methodNameOI = (StringObjectInspector)
         ObjectInspectorUtils.getStandardObjectInspector(arguments[1]);
-    
-    parameterTypes = new PrimitiveTypeEntry[arguments.length - 2];
-    parameterClasses = new Class[arguments.length - 2];
-    for (int i = 2; i < arguments.length; i++) {
-      if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-        throw new UDFArgumentTypeException(i,
-            "The parameters of GenericUDFReflect(class,method[,arg1[,arg2]...])"
-            + " must be primitive (int, double, string, etc).");
-      }
-      PrimitiveCategory category =
-          ((PrimitiveObjectInspector)arguments[i]).getPrimitiveCategory();
-      parameterTypes[i - 2] =
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveCategory(category);
-      parameterClasses[i - 2] = parameterTypes[i - 2].primitiveJavaType == null ?
-          parameterTypes[i - 2].primitiveJavaClass : parameterTypes[i - 2].primitiveJavaType;
-    }
-    
-    parameterJavaValues = new Object[arguments.length - 2];
 
-    argumentOIs = new PrimitiveObjectInspector[arguments.length];
-    for (int i = 0; i < arguments.length; i++) {
-      argumentOIs[i] = (PrimitiveObjectInspector)arguments[i];
-    }
-    
+    setupParameterOIs(arguments, 2);
+
     return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
         PrimitiveCategory.STRING);
   }
@@ -109,8 +84,7 @@ public class GenericUDFReflect extends GenericUDF {
   Method m;
   Object className;
   Object methodName;
-  String result;
-  
+
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     
@@ -118,15 +92,14 @@ public class GenericUDFReflect extends GenericUDF {
     // Skip class loading if the class name didn't change
     boolean classNameChanged = false;
     
-    ObjectInspector newClassNameOI = argumentOIs[0];
     Object newClassName = arguments[0].get();
     
     // We compare class name/method name using ObjectInspectorUtils.compare(...), to avoid
     // any object conversion (which may cause object creation) in most cases, when the class
     // name/method name is constant Java String, or constant Text (StringWritable).
     if (className == null || ObjectInspectorUtils.compare(className, classNameOI, newClassName,
-        newClassNameOI) != 0) {
-      className = ObjectInspectorUtils.copyToStandardObject(newClassName, newClassNameOI);
+        inputClassNameOI) != 0) {
+      className = ObjectInspectorUtils.copyToStandardObject(newClassName, inputClassNameOI);
       String classNameString = classNameOI.getPrimitiveJavaObject(className);
       try {
         c = Class.forName(classNameString);
@@ -144,80 +117,32 @@ public class GenericUDFReflect extends GenericUDF {
     
     // Try to find the method
     // Skip method finding if the method name didn't change, and class name didn't change.
-    ObjectInspector newMethodNameOI = argumentOIs[1];
     Object newMethodName = arguments[1].get();
-    
+
     if (methodName == null || ObjectInspectorUtils.compare(methodName, methodNameOI, newMethodName,
-        newMethodNameOI) != 0 || classNameChanged) {
-      methodName = ObjectInspectorUtils.copyToStandardObject(newMethodName, newMethodNameOI);
+        inputMethodNameOI) != 0 || classNameChanged) {
+      methodName = ObjectInspectorUtils.copyToStandardObject(newMethodName, inputMethodNameOI);
       String methodNameString = methodNameOI.getPrimitiveJavaObject(methodName);
       try {
-        m = findMethod(c, methodNameString, parameterTypes, parameterClasses);
+        m = findMethod(c, methodNameString, String.class, false);
       } catch (Exception e) {
         throw new HiveException("UDFReflect getMethod ", e);
       }
     }
     
-    // Get the parameter values
-    for (int i = 2; i < arguments.length; i++) {
-      parameterJavaValues[i - 2] = argumentOIs[i].getPrimitiveJavaObject(arguments[i].get());
-    }
+    Object[] parameterJavaValues = setupParameters(arguments, 2);
 
     try {
-      result = String.valueOf(m.invoke(o, parameterJavaValues));
-      return result;
-    } catch (IllegalArgumentException e1) {
-      System.err.println("UDFReflect evaluate "+ e1 + " method = " + m + " args = " +
-          Arrays.asList(parameterJavaValues));
-    } catch (IllegalAccessException e1) {
-      System.err.println("UDFReflect evaluate "+ e1 + " method = " + m + " args = " +
-          Arrays.asList(parameterJavaValues));
-    } catch (InvocationTargetException e1) {
-      System.err.println("UDFReflect evaluate "+ e1 + " method = " + m + " args = " +
+      return String.valueOf(m.invoke(o, parameterJavaValues));
+    } catch (Exception e1) {
+      System.err.println("UDFReflect evaluate " + e1 + " method = " + m + " args = " +
           Arrays.asList(parameterJavaValues));
     }
     return null;
   }
 
   @Override
-  public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("reflect(");
-    for (int i = 0; i < children.length; i++) {
-      if (i > 0) {
-        sb.append(',');
-      }
-      sb.append(children[i]);
-    }
-    sb.append(')');
-    return sb.toString();
-  }
-
-  // a(string,int,int) can be matched with methods like
-  // a(string,int,int), a(string,int,Integer), a(string,Integer,int) and a(string,Integer,Integer)
-  // and accepts the first one clazz.getMethods() returns
-  private Method findMethod(Class clazz, String name, PrimitiveTypeEntry[] parameterTypes,
-      Class[] parameterClasses) throws Exception {
-    for (Method method : clazz.getMethods()) {
-      if (!method.getName().equals(name) || method.getReturnType() != String.class ||
-          method.getParameterTypes().length != parameterTypes.length) {
-        continue;
-      }
-      // returns first one matches all of the params
-      boolean match = true;
-      Class<?>[] types = method.getParameterTypes();
-      for (int i = 0; i < parameterTypes.length; i++) {
-        if (types[i] != parameterTypes[i].primitiveJavaType &&
-            types[i] != parameterTypes[i].primitiveJavaClass) {
-          match = false;
-          break;
-        }
-      }
-      if (match) {
-        return method;
-      }
-    }
-    // tried all, back to original code (for error message)
-    return clazz.getMethod(name, parameterClasses);
+  protected String functionName() {
+    return "reflect";
   }
 }
