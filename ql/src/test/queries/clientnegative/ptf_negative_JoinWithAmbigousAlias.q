@@ -12,11 +12,9 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
-
 -- testJoinWithAmbigousAlias
 select abc.* 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part on abc.p_partkey = p1.p_partkey;

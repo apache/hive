@@ -12,13 +12,11 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
-
 -- testHavingLeadWithPTF
 select  p_mfgr,p_name, p_size 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name) 
+partition by p_mfgr 
+order by p_name) 
 having lead(p_size, 1) <= p_size 
 distribute by p_mfgr 
 sort by p_name;   

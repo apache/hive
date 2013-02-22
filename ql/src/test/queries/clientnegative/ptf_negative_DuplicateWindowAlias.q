@@ -12,13 +12,11 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
-
 -- testDuplicateWindowAlias
 select p_mfgr, p_name, p_size, 
 sum(p_size) as s1 over (w1), 
 sum(p_size) as s2 over (w2) 
 from part 
-window w1 as (distribute by p_mfgr  sort by p_mfgr rows between 2 preceding and 2 following), 
+window w1 as (partition by p_mfgr order by p_mfgr rows between 2 preceding and 2 following), 
        w2 as w1, 
        w2 as (rows between unbounded preceding and current row); 

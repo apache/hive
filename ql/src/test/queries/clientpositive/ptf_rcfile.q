@@ -18,7 +18,7 @@ LOAD DATA LOCAL INPATH '../data/files/part.rc' overwrite into table part_rc;
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
 from noop(part_rc 
-distribute by p_mfgr 
-sort by p_name);
+partition by p_mfgr 
+order by p_name);

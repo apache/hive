@@ -27,10 +27,4 @@ POSTHOOK: query: CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-PREHOOK: type: LOAD
-PREHOOK: Output: default@part
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@part
 FAILED: SemanticException 10:7 Duplicate definition of window w2 is not allowed. Error encountered near token 'w2'

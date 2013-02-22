@@ -70,10 +70,10 @@ PREHOOK: query: --1. test1
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part 
-  distribute by p_mfgr
-  sort by p_name
+  partition by p_mfgr
+  order by p_name
   )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -82,10 +82,10 @@ POSTHOOK: query: --1. test1
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part 
-  distribute by p_mfgr
-  sort by p_name
+  partition by p_mfgr
+  order by p_name
   )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -168,11 +168,11 @@ PREHOOK: query: --3. testLeadLag
 select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
-p_retailprice, sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),
+p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
 p_size, p_size - lag(p_size,1) as deltaSz
 from noop(part
-distribute by p_mfgr
-sort by p_name 
+partition by p_mfgr
+order by p_name 
 )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -181,11 +181,11 @@ POSTHOOK: query: --3. testLeadLag
 select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
-p_retailprice, sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),
+p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
 p_size, p_size - lag(p_size,1) as deltaSz
 from noop(part
-distribute by p_mfgr
-sort by p_name 
+partition by p_mfgr
+order by p_name 
 )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -461,16 +461,16 @@ Manufacturer#5	almond azure blanched chiffon midnight	23	1464.48	5	5	23	-23
 PREHOOK: query: -- 10. testOnlyPTF
 select p_mfgr, p_name, p_size
 from noop(part
-distribute by p_mfgr
-sort by p_name)
+partition by p_mfgr
+order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 10. testOnlyPTF
 select p_mfgr, p_name, p_size
 from noop(part
-distribute by p_mfgr
-sort by p_name)
+partition by p_mfgr
+order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -504,10 +504,10 @@ PREHOOK: query: -- 11. testAlias
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part 
-  distribute by p_mfgr
-  sort by p_name
+  partition by p_mfgr
+  order by p_name
   ) abc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -516,10 +516,10 @@ POSTHOOK: query: -- 11. testAlias
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part 
-  distribute by p_mfgr
-  sort by p_name
+  partition by p_mfgr
+  order by p_name
   ) abc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -556,8 +556,8 @@ rank() as r,
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
 from noop(part 
-          distribute by p_mfgr 
-          sort by p_name 
+          partition by p_mfgr 
+          order by p_name 
           ) 
 where p_size > 0 
 distribute by p_mfgr 
@@ -571,8 +571,8 @@ rank() as r,
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
 from noop(part 
-          distribute by p_mfgr 
-          sort by p_name 
+          partition by p_mfgr 
+          order by p_name 
           ) 
 where p_size > 0 
 distribute by p_mfgr 
@@ -612,8 +612,8 @@ rank() as r,
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
 from noop(part 
-          distribute by p_mfgr 
-          sort by p_name 
+          partition by p_mfgr 
+          order by p_name 
           ) 
 group by p_mfgr, p_name, p_size  
 distribute by p_mfgr 
@@ -627,8 +627,8 @@ rank() as r,
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
 from noop(part 
-          distribute by p_mfgr 
-          sort by p_name 
+          partition by p_mfgr 
+          order by p_name 
           ) 
 group by p_mfgr, p_name, p_size  
 distribute by p_mfgr 
@@ -820,8 +820,8 @@ POSTHOOK: Input: default@part
 PREHOOK: query: -- 17. testJoin
 select abc.* 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -829,8 +829,8 @@ PREHOOK: Input: default@part
 POSTHOOK: query: -- 17. testJoin
 select abc.* 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -866,8 +866,8 @@ POSTHOOK: Input: default@part
 PREHOOK: query: -- 18. testJoinRight
 select abc.* 
 from part p1 join noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -875,8 +875,8 @@ PREHOOK: Input: default@part
 POSTHOOK: query: -- 18. testJoinRight
 select abc.* 
 from part p1 join noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -916,8 +916,8 @@ dense_rank() as dr,
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
 distribute by abc.p_mfgr 
 sort by abc.p_name
@@ -931,8 +931,8 @@ dense_rank() as dr,
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
 distribute by abc.p_mfgr 
 sort by abc.p_name
@@ -1011,19 +1011,19 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4
 Manufacturer#5	almond azure blanched chiffon midnight	23	5
 PREHOOK: query: -- 21. testNoopWithMap
 select p_mfgr, p_name, p_size, 
-rank() as r over (distribute by p_mfgr sort by p_name, p_size desc)
+rank() as r over (partition by p_mfgr order by p_name, p_size desc)
 from noopwithmap(part
-distribute by p_mfgr
-sort by p_name, p_size desc)
+partition by p_mfgr
+order by p_name, p_size desc)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 21. testNoopWithMap
 select p_mfgr, p_name, p_size, 
-rank() as r over (distribute by p_mfgr sort by p_name, p_size desc)
+rank() as r over (partition by p_mfgr order by p_name, p_size desc)
 from noopwithmap(part
-distribute by p_mfgr
-sort by p_name, p_size desc)
+partition by p_mfgr
+order by p_name, p_size desc)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -1057,10 +1057,10 @@ PREHOOK: query: -- 22. testNoopWithMapWithWindowing
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noopwithmap(part 
-  distribute by p_mfgr
-  sort by p_name)
+  partition by p_mfgr
+  order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -1068,10 +1068,10 @@ POSTHOOK: query: -- 22. testNoopWithMapWithWindowing
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noopwithmap(part 
-  distribute by p_mfgr
-  sort by p_name)
+  partition by p_mfgr
+  order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -1189,10 +1189,10 @@ PREHOOK: query: -- 25. testHavingWithWindowingPTFNoGBY
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part
-distribute by p_mfgr
-sort by p_name)
+partition by p_mfgr
+order by p_name)
 having rank() < 4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -1201,10 +1201,10 @@ POSTHOOK: query: -- 25. testHavingWithWindowingPTFNoGBY
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
 from noop(part
-distribute by p_mfgr
-sort by p_name)
+partition by p_mfgr
+order by p_name)
 having rank() < 4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -1563,10 +1563,10 @@ PREHOOK: query: -- 33. testFunctionChain
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
 from noop(noopwithmap(noop(part 
-distribute by p_mfgr 
-sort by p_mfgr, p_name
+partition by p_mfgr 
+order by p_mfgr, p_name
 )))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -1575,10 +1575,10 @@ POSTHOOK: query: -- 33. testFunctionChain
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
 from noop(noopwithmap(noop(part 
-distribute by p_mfgr 
-sort by p_mfgr, p_name
+partition by p_mfgr 
+order by p_mfgr, p_name
 )))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -1617,9 +1617,9 @@ count(p_size) as cd,
 p_retailprice, 
 sum(p_retailprice) as s1 over w1 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name) 
-window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following) 
+partition by p_mfgr 
+order by p_name) 
+window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -1632,9 +1632,9 @@ count(p_size) as cd,
 p_retailprice, 
 sum(p_retailprice) as s1 over w1 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name) 
-window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following) 
+partition by p_mfgr 
+order by p_name) 
+window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -1720,8 +1720,8 @@ count(abc.p_name) as cd,
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
 distribute by abc.p_mfgr 
 sort by abc.p_name
@@ -1736,8 +1736,8 @@ count(abc.p_name) as cd,
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name 
+partition by p_mfgr 
+order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
 distribute by abc.p_mfgr 
 sort by abc.p_name
@@ -2032,16 +2032,16 @@ Manufacturer#5	almond azure blanched chiffon midnight	23	[{"x":1018.1,"y":1.0},{
 PREHOOK: query: -- 42. testDistinctInSelectWithPTF
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name)
+partition by p_mfgr 
+order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 42. testDistinctInSelectWithPTF
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(part 
-distribute by p_mfgr 
-sort by p_name)
+partition by p_mfgr 
+order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -2177,9 +2177,9 @@ PREHOOK: query: -- 45. testViewAsTableInputToPTF
 select p_mfgr, p_brand, s, 
 sum(s) as s1 over w1 
 from noop(mfgr_price_view 
-distribute by p_mfgr 
-sort by p_mfgr)  
-window w1 as ( distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
+partition by p_mfgr 
+order by p_mfgr)  
+window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mfgr_price_view
 PREHOOK: Input: default@part
@@ -2188,9 +2188,9 @@ POSTHOOK: query: -- 45. testViewAsTableInputToPTF
 select p_mfgr, p_brand, s, 
 sum(s) as s1 over w1 
 from noop(mfgr_price_view 
-distribute by p_mfgr 
-sort by p_mfgr)  
-window w1 as ( distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
+partition by p_mfgr 
+order by p_mfgr)  
+window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mfgr_price_view
 POSTHOOK: Input: default@part
@@ -2906,8 +2906,8 @@ POSTHOOK: Lineage: part_3.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, 
 POSTHOOK: Lineage: part_3.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: part_3.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 PREHOOK: query: from noop(part 
-distribute by p_mfgr 
-sort by p_name) 
+partition by p_mfgr 
+order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
@@ -2930,8 +2930,8 @@ PREHOOK: Input: default@part
 PREHOOK: Output: default@part_4
 PREHOOK: Output: default@part_5
 POSTHOOK: query: from noop(part 
-distribute by p_mfgr 
-sort by p_name) 
+partition by p_mfgr 
+order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
@@ -3126,14 +3126,14 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	85	46	4	4	0.8	6
 Manufacturer#5	almond azure blanched chiffon midnight	23	108	69	5	5	1.0	2
 PREHOOK: query: -- 53. testPartOrderInUDAFInvoke
 select p_mfgr, p_name, p_size,
-sum(p_size) as s over (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following)
+sum(p_size) as s over (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 53. testPartOrderInUDAFInvoke
 select p_mfgr, p_name, p_size,
-sum(p_size) as s over (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following)
+sum(p_size) as s over (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -3204,7 +3204,7 @@ PREHOOK: query: -- 54. testPartOrderInWdwDef
 select p_mfgr, p_name, p_size,
 sum(p_size) as s over w1
 from part
-window w1 as (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following)
+window w1 as (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3212,7 +3212,7 @@ POSTHOOK: query: -- 54. testPartOrderInWdwDef
 select p_mfgr, p_name, p_size,
 sum(p_size) as s over w1
 from part
-window w1 as (distribute by p_mfgr  sort by p_name  rows between 2 preceding and 2 following)
+window w1 as (partition by p_mfgr  order by p_name  rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3284,8 +3284,8 @@ sum(p_size) as s over w1,
  sum(p_size) as s2 over w2
 from part
 sort by p_name
-window w1 as (distribute by p_mfgr rows between 2 preceding and 2 following),
-       w2 as (distribute by p_mfgr sort by p_name)
+window w1 as (partition by p_mfgr rows between 2 preceding and 2 following),
+       w2 as (partition by p_mfgr order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3295,8 +3295,8 @@ sum(p_size) as s over w1,
  sum(p_size) as s2 over w2
 from part
 sort by p_name
-window w1 as (distribute by p_mfgr rows between 2 preceding and 2 following),
-       w2 as (distribute by p_mfgr sort by p_name)
+window w1 as (partition by p_mfgr rows between 2 preceding and 2 following),
+       w2 as (partition by p_mfgr order by p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3367,7 +3367,7 @@ select p_mfgr, p_name, p_size,
 sum(p_size) as s1 over w1, 
 sum(p_size) as s2 over w2
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+window w1 as (partition by p_mfgr order by p_mfgr rows between 2 preceding and 2 following), 
        w2 as w1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3377,7 +3377,7 @@ select p_mfgr, p_name, p_size,
 sum(p_size) as s1 over w1, 
 sum(p_size) as s2 over w2
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+window w1 as (partition by p_mfgr order by p_mfgr rows between 2 preceding and 2 following), 
        w2 as w1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -3449,7 +3449,7 @@ select p_mfgr, p_name, p_size,
 sum(p_size) as s1 over w1, 
 sum(p_size) as s2 over w2 
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+window w1 as (partition by p_mfgr order by p_mfgr rows between 2 preceding and 2 following), 
        w2 as (w1 rows between unbounded preceding and current row)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3459,7 +3459,7 @@ select p_mfgr, p_name, p_size,
 sum(p_size) as s1 over w1, 
 sum(p_size) as s2 over w2 
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following), 
+window w1 as (partition by p_mfgr order by p_mfgr rows between 2 preceding and 2 following), 
        w2 as (w1 rows between unbounded preceding and current row)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -3791,18 +3791,18 @@ PREHOOK: query: -- 61. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row) 
 from noop(
         noopwithmap(
           noop(
               noop(part 
-              distribute by p_mfgr 
-              sort by p_mfgr) 
+              partition by p_mfgr 
+              order by p_mfgr) 
             ) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name) 
-        distribute by p_mfgr,p_name  
-        sort by p_mfgr,p_name)
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name) 
+        partition by p_mfgr,p_name  
+        order by p_mfgr,p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3810,18 +3810,18 @@ POSTHOOK: query: -- 61. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row) 
 from noop(
         noopwithmap(
           noop(
               noop(part 
-              distribute by p_mfgr 
-              sort by p_mfgr) 
+              partition by p_mfgr 
+              order by p_mfgr) 
             ) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name) 
-        distribute by p_mfgr,p_name  
-        sort by p_mfgr,p_name)
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name) 
+        partition by p_mfgr,p_name  
+        order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3891,18 +3891,18 @@ PREHOOK: query: -- 62. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
 from noop(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr 
-              sort by p_mfgr) 
+              partition by p_mfgr 
+              order by p_mfgr) 
             ) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name) 
-        distribute by p_mfgr  
-        sort by p_mfgr )
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name) 
+        partition by p_mfgr  
+        order by p_mfgr )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3910,18 +3910,18 @@ POSTHOOK: query: -- 62. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
 from noop(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr 
-              sort by p_mfgr) 
+              partition by p_mfgr 
+              order by p_mfgr) 
             ) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name) 
-        distribute by p_mfgr  
-        sort by p_mfgr )
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name) 
+        partition by p_mfgr  
+        order by p_mfgr )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -3989,35 +3989,35 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	85
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
 PREHOOK: query: -- 63. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
-rank() as r over (distribute by p_mfgr sort by p_name), 
+rank() as r over (partition by p_mfgr order by p_name), 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 
 from noop(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr,p_name 
-              sort by p_mfgr,p_name) 
+              partition by p_mfgr,p_name 
+              order by p_mfgr,p_name) 
             ) 
-          distribute by p_mfgr 
-          sort by p_mfgr))
+          partition by p_mfgr 
+          order by p_mfgr))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 63. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
-rank() as r over (distribute by p_mfgr sort by p_name), 
+rank() as r over (partition by p_mfgr order by p_name), 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 
 from noop(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr,p_name 
-              sort by p_mfgr,p_name) 
+              partition by p_mfgr,p_name 
+              order by p_mfgr,p_name) 
             ) 
-          distribute by p_mfgr 
-          sort by p_mfgr))
+          partition by p_mfgr 
+          order by p_mfgr))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -4087,18 +4087,18 @@ PREHOOK: query: -- 64. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row)  
+p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  
 from noopwithmap(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr,p_name 
-              sort by p_mfgr,p_name) 
+              partition by p_mfgr,p_name 
+              order by p_mfgr,p_name) 
             ) 
-          distribute by p_mfgr 
-          sort by p_mfgr) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name)
+          partition by p_mfgr 
+          order by p_mfgr) 
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -4106,18 +4106,18 @@ POSTHOOK: query: -- 64. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (distribute by p_mfgr,p_name rows between unbounded preceding and current row)  
+p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  
 from noopwithmap(
         noop(
           noop(
               noop(part 
-              distribute by p_mfgr,p_name 
-              sort by p_mfgr,p_name) 
+              partition by p_mfgr,p_name 
+              order by p_mfgr,p_name) 
             ) 
-          distribute by p_mfgr 
-          sort by p_mfgr) 
-          distribute by p_mfgr,p_name 
-          sort by p_mfgr,p_name)
+          partition by p_mfgr 
+          order by p_mfgr) 
+          partition by p_mfgr,p_name 
+          order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -4189,14 +4189,14 @@ rank() as r,
 dense_rank() as dr, 
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (distribute by p_mfgr,p_name sort by p_mfgr,p_name rows between unbounded preceding and current row) 
+sum(p_size) as s2 over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) 
 from noop(
         noopwithmap(
               noop(part 
-              distribute by p_mfgr, p_name 
-              sort by p_mfgr, p_name) 
-          distribute by p_mfgr 
-          sort by p_mfgr
+              partition by p_mfgr, p_name 
+              order by p_mfgr, p_name) 
+          partition by p_mfgr 
+          order by p_mfgr
           ))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -4207,14 +4207,14 @@ rank() as r,
 dense_rank() as dr, 
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (distribute by p_mfgr,p_name sort by p_mfgr,p_name rows between unbounded preceding and current row) 
+sum(p_size) as s2 over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) 
 from noop(
         noopwithmap(
               noop(part 
-              distribute by p_mfgr, p_name 
-              sort by p_mfgr, p_name) 
-          distribute by p_mfgr 
-          sort by p_mfgr
+              partition by p_mfgr, p_name 
+              order by p_mfgr, p_name) 
+          partition by p_mfgr 
+          order by p_mfgr
           ))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -4287,12 +4287,12 @@ rank() as r,
 dense_rank() as dr, 
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (distribute by p_mfgr sort by p_mfgr rows between unbounded preceding and current row) 
+sum(p_size) as s2 over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) 
 from noopwithmap(
         noop(
               noop(part 
-              distribute by p_mfgr, p_name 
-              sort by p_mfgr, p_name) 
+              partition by p_mfgr, p_name 
+              order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -4303,12 +4303,12 @@ rank() as r,
 dense_rank() as dr, 
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (distribute by p_mfgr sort by p_mfgr rows between unbounded preceding and current row) 
+sum(p_size) as s2 over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) 
 from noopwithmap(
         noop(
               noop(part 
-              distribute by p_mfgr, p_name 
-              sort by p_mfgr, p_name) 
+              partition by p_mfgr, p_name 
+              order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
@@ -4457,14 +4457,14 @@ Chicago	897	2010	10	21	3	[{"origin_city_name":"Chicago","dest_city_name":"New Yo
 Chicago	897	2010	10	22	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
 PREHOOK: query: -- 68. testRankWithPartitioning
 select p_mfgr, p_name, p_size, 
-rank() as r over (distribute by p_mfgr sort by p_name ) 
+rank() as r over (partition by p_mfgr order by p_name ) 
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 68. testRankWithPartitioning
 select p_mfgr, p_name, p_size, 
-rank() as r over (distribute by p_mfgr sort by p_name ) 
+rank() as r over (partition by p_mfgr order by p_name ) 
 from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
