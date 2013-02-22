@@ -135,6 +135,7 @@ TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
+TOK_ALTERTABLE_ALTERPARTS;
 TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
@@ -1011,8 +1012,10 @@ tablePartitionPrefix
 alterTblPartitionStatement
 @init {msgs.push("alter table partition statement");}
 @after {msgs.pop();}
-  :  tablePartitionPrefix alterTblPartitionStatementSuffix
+  : tablePartitionPrefix alterTblPartitionStatementSuffix
   -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
+  |Identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
+  -> ^(TOK_ALTERTABLE_ALTERPARTS Identifier columnNameType)
   ;
 
 alterTblPartitionStatementSuffix
