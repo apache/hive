@@ -425,8 +425,9 @@ public class HiveAlterHandler implements AlterHandler {
     while (oldPartKeysIter.hasNext()) {
       oldFs = oldPartKeysIter.next();
       newFs = newPartKeysIter.next();
-      if (!oldFs.getName().equals(newFs.getName()) ||
-          !oldFs.getType().equals(newFs.getType())) {
+      // Alter table can change the type of partition key now.
+      // So check the column name only.
+      if (!oldFs.getName().equals(newFs.getName())) {
         return false;
       }
     }
