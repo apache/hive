@@ -16,6 +16,8 @@ CREATE TABLE part(
 
 LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
+set hive.ptf.partition.persistence.memsize=10485760;
+
 create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 
@@ -74,6 +76,13 @@ from part
 distribute by p_mfgr
 sort by p_name ;
 
+-- 6. testJoinWithLeadLag
+select p1.p_mfgr, p1.p_name,
+p1.p_size, p1.p_size - lag(p1.p_size,1) as deltaSz
+from part p1 join part p2 on p1.p_partkey = p2.p_partkey
+distribute by p1.p_mfgr
+sort by p1.p_name ;
+
 -- 7. testJoinWithNoop
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1) as deltaSz
@@ -129,7 +138,7 @@ from noop(part
           partition by p_mfgr 
           order by p_name 
           ) 
-where p_size > 0 
+having p_size > 0 
 distribute by p_mfgr 
 sort by p_name;
 

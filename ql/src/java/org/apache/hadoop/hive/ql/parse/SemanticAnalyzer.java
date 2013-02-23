@@ -10825,11 +10825,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
 
     RowResolver rr = opParseCtx.get(input).getRowResolver();
-    input = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(true), new RowSchema(rr.getColumnInfos()),
-        input), rr);
-
-    rr = opParseCtx.get(input).getRowResolver();
     input = genReduceSinkPlanForWindowing(wSpec, rr, input);
 
     rr = opParseCtx.get(input).getRowResolver();
@@ -10881,11 +10876,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       orderCols.add(orderExpr);
     }
 
-    /*
-     * We add the column to value columns or output column names
-     * only if it is not a virtual column
-     */
     ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
+    RowResolver rsNewRR = new RowResolver();
     int pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
         ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
@@ -10895,13 +10887,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         colExprMap.put(colInfo.getInternalName(), valueColExpr);
         String outColName = SemanticAnalyzer.getColumnInternalName(pos++);
         outputColumnNames.add(outColName);
+
+        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+        ColumnInfo newColInfo = new ColumnInfo(
+            outColName, colInfo.getType(), alias[0],
+            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+        rsNewRR.put(alias[0], alias[1], newColInfo);
+
     }
 
     input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(orderCols,
             valueCols, outputColumnNames, false,
             -1, partCols, orderString.toString(), -1),
-        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+        new RowSchema(inputRR.getColumnInfos()), input), rsNewRR);
     input.setColumnExprMap(colExprMap);
 
 
