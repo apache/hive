@@ -26,7 +26,6 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
@@ -226,9 +225,6 @@ public class PTFDeserializer {
     initialize(def.getOutputShape());
   }
 
-  /*
-   * consider getting rid of this step. During runtime just invoke GenericUDAFEvaluator.init
-   */
   static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException
   {
     ArrayList<PTFExpressionDef> args = def.getArgs();
@@ -243,11 +239,9 @@ public class PTFDeserializer {
       funcArgOIs = argOIs.toArray(funcArgOIs);
     }
 
-    GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericUDAFEvaluator(
-        def.getName(), argOIs,
-        def.isDistinct(), def.isStar());
+    GenericUDAFEvaluator wFnEval = def.getWFnEval();
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
-    def.setwFnEval(wFnEval);
+    def.setWFnEval(wFnEval);
     def.setOI(OI);
   }
 

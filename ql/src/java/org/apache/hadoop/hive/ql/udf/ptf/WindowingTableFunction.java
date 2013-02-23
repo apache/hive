@@ -84,7 +84,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       pItr.reset();
       if ( !processWindow )
       {
-        GenericUDAFEvaluator fEval = wFn.getwFnEval();
+        GenericUDAFEvaluator fEval = wFn.getWFnEval();
         Object[] args = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
         AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
         while(pItr.hasNext())
@@ -210,7 +210,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
   {
     ArrayList<Object> vals = new ArrayList<Object>();
 
-    GenericUDAFEvaluator fEval = wFnDef.getwFnEval();
+    GenericUDAFEvaluator fEval = wFnDef.getWFnEval();
     Object[] args = new Object[wFnDef.getArgs().size()];
     for(int i=0; i < iPart.size(); i++)
     {

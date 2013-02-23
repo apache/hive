@@ -689,7 +689,7 @@ public class PTFTranslator {
     GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericUDAFEvaluator(def.getName(), argOIs,
         def.isDistinct(), def.isStar());
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
-    def.setwFnEval(wFnEval);
+    def.setWFnEval(wFnEval);
     def.setOI(OI);
   }
 

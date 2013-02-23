@@ -16,8 +16,6 @@ CREATE TABLE part(
 
 LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
-set hive.ptf.partition.persistence.memsize=10485760;
-
 create table flights_tiny ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 

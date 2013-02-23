@@ -407,12 +407,8 @@ public class PTFDesc extends AbstractOperatorDesc
     boolean isDistinct;
     ArrayList<PTFExpressionDef> args;
     WindowFrameDef windowFrame;
-    transient GenericUDAFEvaluator wFnEval;
+    GenericUDAFEvaluator wFnEval;
     boolean pivotResult;
-
-    static{
-      PTFUtils.makeTransient(WindowFunctionDef.class, "wFnEval");
-    }
 
     public String getName() {
       return name;
@@ -459,11 +455,11 @@ public class PTFDesc extends AbstractOperatorDesc
       this.windowFrame = windowFrame;
     }
 
-    public GenericUDAFEvaluator getwFnEval() {
+    public GenericUDAFEvaluator getWFnEval() {
       return wFnEval;
     }
 
-    public void setwFnEval(GenericUDAFEvaluator wFnEval) {
+    public void setWFnEval(GenericUDAFEvaluator wFnEval) {
       this.wFnEval = wFnEval;
     }
 
