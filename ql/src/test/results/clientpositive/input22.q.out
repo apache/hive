@@ -39,21 +39,16 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
-              outputColumnNames: _col2
-              Select Operator
-                expressions:
-                      expr: _col2
+              outputColumnNames: _col0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
                       type: string
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
       Reduce Operator Tree:
         Extract
           Limit

@@ -125,23 +125,18 @@ STAGE PLANS:
                       expr: _col7
                       type: string
                 outputColumnNames: _col3
-                Select Operator
-                  expressions:
-                        expr: _col3
-                        type: string
-                  outputColumnNames: _col3
-                  Group By Operator
-                    aggregations:
-                          expr: sum(hash(_col3))
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -215,23 +210,18 @@ STAGE PLANS:
                       expr: _col7
                       type: string
                 outputColumnNames: _col3
-                Select Operator
-                  expressions:
-                        expr: _col3
-                        type: string
-                  outputColumnNames: _col3
-                  Group By Operator
-                    aggregations:
-                          expr: sum(hash(_col3))
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -277,23 +267,18 @@ STAGE PLANS:
                   expr: _col7
                   type: string
             outputColumnNames: _col3
-            Select Operator
-              expressions:
-                    expr: _col3
-                    type: string
-              outputColumnNames: _col3
-              Group By Operator
-                aggregations:
-                      expr: sum(hash(_col3))
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col3))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-15
     Map Reduce Local Work

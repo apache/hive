@@ -63,27 +63,22 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col1
-                Select Operator
-                  expressions:
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: _col1
                         type: string
-                  outputColumnNames: _col1
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
-                          expr: _col1
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
                           type: string
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: rand()
-                            type: double
-                      tag: -1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -231,27 +226,22 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col1
-                Select Operator
-                  expressions:
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: _col1
                         type: string
-                  outputColumnNames: _col1
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
-                          expr: _col1
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
                           type: string
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: -1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -372,20 +362,15 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col1
-                Select Operator
-                  expressions:
+                Reduce Output Operator
+                  key expressions:
                         expr: _col1
                         type: string
-                  outputColumnNames: _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col1
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: rand()
+                        type: double
+                  tag: -1
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -533,20 +518,15 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col1
-                Select Operator
-                  expressions:
+                Reduce Output Operator
+                  key expressions:
                         expr: _col1
                         type: string
-                  outputColumnNames: _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col1
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col1
-                          type: string
-                    tag: -1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col1
+                        type: string
+                  tag: -1
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

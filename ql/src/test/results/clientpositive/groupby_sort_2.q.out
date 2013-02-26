@@ -99,24 +99,17 @@ STAGE PLANS:
             expressions:
                   expr: _col0
                   type: string
-                  expr: _col1
-                  type: bigint
+                  expr: UDFToInteger(_col1)
+                  type: int
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: UDFToInteger(_col1)
-                    type: int
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator

@@ -64,24 +64,17 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Transform Operator
-                    command: cat
-                    output info:
+                Transform Operator
+                  command: cat
+                  output info:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
       Local Work:
         Map Reduce Local Work
 

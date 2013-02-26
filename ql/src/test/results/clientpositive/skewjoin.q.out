@@ -111,26 +111,19 @@ STAGE PLANS:
           outputColumnNames: _col0, _col5
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col5
                   type: string
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: string
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest_j1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest_j1
 
   Stage: Stage-5
     Conditional Operator
@@ -171,26 +164,19 @@ STAGE PLANS:
               Position of Big Table: 0
               Select Operator
                 expressions:
-                      expr: _col0
-                      type: string
+                      expr: UDFToInteger(_col0)
+                      type: int
                       expr: _col5
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_j1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest_j1
       Local Work:
         Map Reduce Local Work
 
@@ -1191,7 +1177,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 100.0) and (key < 80.0))
+                  expr: ((key < 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -1241,7 +1227,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 80.0) and (key < 100.0))
+                  expr: ((key < 100.0) and (key < 80.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -1574,28 +1560,21 @@ STAGE PLANS:
                       expr: _col5
                       type: string
                 outputColumnNames: _col0, _col5
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col5
-                        type: string
-                  outputColumnNames: _col0, _col5
-                  Group By Operator
-                    aggregations:
-                          expr: sum(hash(_col0))
-                          expr: sum(hash(_col5))
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-                            expr: _col1
-                            type: bigint
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col0))
+                        expr: sum(hash(_col5))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+                          expr: _col1
+                          type: bigint
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

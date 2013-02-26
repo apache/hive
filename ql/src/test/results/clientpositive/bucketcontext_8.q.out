@@ -147,19 +147,18 @@ STAGE PLANS:
               Position of Big Table: 1
               BucketMapJoin: true
               Select Operator
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count()
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
       Local Work:
         Map Reduce Local Work
       Needs Tagging: false
@@ -350,19 +349,18 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 1
               Select Operator
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count()
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####

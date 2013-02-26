@@ -138,6 +138,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return childOperators;
   }
 
+  public int getNumChild() {
+    return childOperators == null ? 0 : childOperators.size();
+  }
+
   /**
    * Implements the getChildren function for the Node Interface.
    */
@@ -162,6 +166,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public List<Operator<? extends OperatorDesc>> getParentOperators() {
     return parentOperators;
+  }
+
+  public int getNumParent() {
+    return parentOperators == null ? 0 : parentOperators.size();
   }
 
   protected T conf;

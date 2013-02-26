@@ -784,27 +784,22 @@ STAGE PLANS:
                       expr: key
                       type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: int
+                  mode: hash
                   outputColumnNames: _col0
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
+                  Reduce Output Operator
+                    key expressions:
                           expr: _col0
                           type: int
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: int
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: int
-                      tag: 1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: int
+                    tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -911,31 +906,24 @@ STAGE PLANS:
                       expr: value
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
+                  mode: hash
                   outputColumnNames: _col0, _col1
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
+                  Reduce Output Operator
+                    key expressions:
                           expr: _col0
                           type: int
-                          expr: _col1
-                          type: string
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: int
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: int
-                      tag: 1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: int
+                    tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1039,27 +1027,22 @@ STAGE PLANS:
                       expr: key
                       type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: int
+                  mode: hash
                   outputColumnNames: _col0
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
+                  Reduce Output Operator
+                    key expressions:
                           expr: _col0
                           type: int
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: int
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: int
-                      tag: 1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: int
+                    tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1197,20 +1180,15 @@ STAGE PLANS:
                       expr: _col0
                       type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
+                Reduce Output Operator
+                  key expressions:
                         expr: _col0
                         type: int
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -1794,20 +1772,15 @@ STAGE PLANS:
                       expr: _col0
                       type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
+                Reduce Output Operator
+                  key expressions:
                         expr: _col0
                         type: int
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

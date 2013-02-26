@@ -744,7 +744,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key < 15.0))
+                  expr: ((key < 15.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -765,7 +765,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key < 15.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key < 15.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:

@@ -118,26 +118,19 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.testtable1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.testtable1
 
   Stage: Stage-0
     Move Operator
@@ -188,30 +181,21 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col1
                   type: string
                   expr: _col2
                   type: bigint
             outputColumnNames: _col0, _col1, _col2
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: bigint
-              outputColumnNames: _col0, _col1, _col2
-              File Output Operator
-                compressed: false
-                GlobalTableId: 2
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.testtable2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 2
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.testtable2
 
   Stage: Stage-1
     Move Operator
@@ -409,26 +393,19 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.testtable1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.testtable1
 
   Stage: Stage-0
     Move Operator
@@ -479,30 +456,21 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Select Operator
             expressions:
-                  expr: _col1
-                  type: string
+                  expr: UDFToInteger(_col1)
+                  type: int
                   expr: _col0
                   type: string
                   expr: _col2
                   type: bigint
             outputColumnNames: _col0, _col1, _col2
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: bigint
-              outputColumnNames: _col0, _col1, _col2
-              File Output Operator
-                compressed: false
-                GlobalTableId: 2
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.testtable2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 2
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.testtable2
 
   Stage: Stage-1
     Move Operator
@@ -690,19 +658,12 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-2
     Map Reduce
@@ -951,23 +912,12 @@ STAGE PLANS:
                   expr: _col4
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
-              outputColumnNames: _col0, _col1, _col2, _col3
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-3
     Map Reduce

@@ -597,21 +597,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -641,21 +632,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -685,21 +667,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -781,21 +754,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -825,21 +789,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -869,21 +824,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -965,21 +911,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -1009,21 +946,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -1053,21 +981,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -1153,28 +1072,19 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col2
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
                             expr: _col0
                             type: int
                             expr: _col1
                             type: string
                             expr: _col2
                             type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      Reduce Output Operator
-                        key expressions:
-                              expr: _col2
-                              type: string
-                        sort order: +
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: int
-                              expr: _col1
-                              type: string
-                              expr: _col2
-                              type: string
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -1204,28 +1114,19 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col2
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
                             expr: _col0
                             type: int
                             expr: _col1
                             type: string
                             expr: _col2
                             type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      Reduce Output Operator
-                        key expressions:
-                              expr: _col2
-                              type: string
-                        sort order: +
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: int
-                              expr: _col1
-                              type: string
-                              expr: _col2
-                              type: string
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -1255,28 +1156,19 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col2
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
                             expr: _col0
                             type: int
                             expr: _col1
                             type: string
                             expr: _col2
                             type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      Reduce Output Operator
-                        key expressions:
-                              expr: _col2
-                              type: string
-                        sort order: +
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: int
-                              expr: _col1
-                              type: string
-                              expr: _col2
-                              type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1426,23 +1318,18 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Union
                 Select Operator
-                  expressions:
-                        expr: _col2
-                        type: string
-                  outputColumnNames: _col2
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count(1)
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        sort order: 
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: bigint
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -1464,23 +1351,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -1502,23 +1384,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1606,23 +1483,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -1640,23 +1512,18 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Union
                 Select Operator
-                  expressions:
-                        expr: _col2
-                        type: string
-                  outputColumnNames: _col2
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count(1)
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        sort order: 
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: bigint
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -1678,23 +1545,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1782,23 +1644,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -1820,23 +1677,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -1854,23 +1706,18 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Union
                 Select Operator
-                  expressions:
-                        expr: _col2
-                        type: string
-                  outputColumnNames: _col2
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count(1)
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        sort order: 
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: bigint
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1973,21 +1820,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -2017,21 +1855,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -2061,21 +1890,12 @@ STAGE PLANS:
                           expr: _col2
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -2146,23 +1966,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery1-subquery2:subq-subquery1-subquery2:src_union_2 
           TableScan
             alias: src_union_2
@@ -2184,23 +1999,18 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Union
                   Select Operator
-                    expressions:
-                          expr: _col2
-                          type: string
-                    outputColumnNames: _col2
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        Reduce Output Operator
-                          sort order: 
-                          tag: -1
-                          value expressions:
-                                expr: _col0
-                                type: bigint
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
         src_union_view-subquery2:subq-subquery2:src_union_3 
           TableScan
             alias: src_union_3
@@ -2218,23 +2028,18 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Union
                 Select Operator
-                  expressions:
-                        expr: _col2
-                        type: string
-                  outputColumnNames: _col2
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count(1)
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        sort order: 
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: bigint
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
