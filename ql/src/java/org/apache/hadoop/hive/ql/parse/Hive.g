@@ -1922,7 +1922,9 @@ partitioningSpec
 @init { msgs.push("partitioningSpec clause"); }
 @after { msgs.pop(); } 
    :
-   partitionOrDistributeByClause sortOrOrderByClause? -> ^(TOK_PARTITIONINGSPEC partitionOrDistributeByClause sortOrOrderByClause?)
+   partitionByClause orderByClause? -> ^(TOK_PARTITIONINGSPEC partitionByClause orderByClause?) |
+   distributeByClause sortByClause? -> ^(TOK_PARTITIONINGSPEC distributeByClause sortByClause?) |
+   clusterByClause -> ^(TOK_PARTITIONINGSPEC clusterByClause)
    ;
 
 partitionTableFunctionSource
@@ -2105,14 +2107,14 @@ clusterByClause
     ( (COMMA)=> COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
     ;
 
-partitionOrDistributeByClause
-@init { msgs.push("partition or distribute by clause"); }
+partitionByClause
+@init { msgs.push("partition by clause"); }
 @after { msgs.pop(); }
     :
-    (KW_PARTITION | KW_DISTRIBUTE) KW_BY
+    KW_PARTITION KW_BY
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
     |
-    (KW_PARTITION | KW_DISTRIBUTE) KW_BY
+    KW_PARTITION KW_BY
     expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
@@ -2126,18 +2128,7 @@ distributeByClause
     KW_DISTRIBUTE KW_BY
     expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
-sortOrOrderByClause
-@init { msgs.push("sort or Order by clause"); }
-@after { msgs.pop(); }
-    :
-    (KW_SORT | KW_ORDER) KW_BY
-    LPAREN columnRefOrder
-    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_SORTBY columnRefOrder+)
-    |
-    (KW_SORT | KW_ORDER) KW_BY
-    columnRefOrder
-    (  (COMMA)=> COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
-    ;
+
 sortByClause
 @init { msgs.push("sort by clause"); }
 @after { msgs.pop(); }

@@ -819,3 +819,21 @@ from npath(
 select p_mfgr, p_name, p_size, 
 rank() as r over (partition by p_mfgr order by p_name ) 
 from part;    
+
+-- 69. testPartitioningVariousForms
+select p_mfgr, p_name, p_size,
+sum(p_retailprice) as s1 over (partition by p_mfgr order by p_mfgr),
+min(p_retailprice) as s2 over (partition by p_mfgr),
+max(p_retailprice) as s3 over (distribute by p_mfgr sort by p_mfgr),
+avg(p_retailprice) as s4 over (distribute by p_mfgr),
+count(p_retailprice) as s5 over (cluster by p_mfgr )
+from part 
+;
+
+-- 70. testPartitioningVariousForms2
+select p_mfgr, p_name, p_size,
+sum(p_retailprice) as s1 over (partition by p_mfgr, p_name order by p_mfgr, p_name rows between unbounded preceding and current row),
+min(p_retailprice) as s2 over (distribute by p_mfgr, p_name sort by p_mfgr, p_name rows between unbounded preceding and current row),
+max(p_retailprice) as s3 over (cluster by p_mfgr, p_name )
+from part 
+;
