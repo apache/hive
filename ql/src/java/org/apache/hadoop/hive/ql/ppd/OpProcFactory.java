@@ -672,29 +672,20 @@ public final class OpProcFactory {
     RowResolver inputRR = owi.getRowResolver(op);
 
     // combine all predicates into a single expression
-    List<ExprNodeDesc> preds = null;
-    ExprNodeDesc condn = null;
+    List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
     Iterator<List<ExprNodeDesc>> iterator = pushDownPreds.getFinalCandidates()
         .values().iterator();
     while (iterator.hasNext()) {
-      preds = iterator.next();
-      int i = 0;
-      if (condn == null) {
-        condn = preds.get(0);
-        i++;
-      }
-
-      for (; i < preds.size(); i++) {
-        ExprNodeDesc next = preds.get(i);
-        if (!ExprNodeDescUtils.containsPredicate(condn, next)) {
-          condn = ExprNodeDescUtils.mergePredicates(condn, next);
-        }
+      for (ExprNodeDesc pred : iterator.next()) {
+        preds = ExprNodeDescUtils.split(pred, preds);
       }
     }
 
-    if (condn == null) {
+    if (preds.isEmpty()) {
       return null;
     }
+
+    ExprNodeDesc condn = ExprNodeDescUtils.mergePredicates(preds);
 
     if (op instanceof TableScanOperator) {
       boolean pushFilterToStorage;

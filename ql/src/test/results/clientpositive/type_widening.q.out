@@ -65,29 +65,24 @@ STAGE PLANS:
             alias: src
             Select Operator
               expressions:
-                    expr: 0
-                    type: int
+                    expr: UDFToLong(0)
+                    type: bigint
               outputColumnNames: _col0
-              Select Operator
-                expressions:
-                      expr: UDFToLong(_col0)
-                      type: bigint
-                outputColumnNames: _col0
-                Union
-                  Select Operator
-                    expressions:
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: bigint
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
                           expr: _col0
                           type: bigint
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: bigint
-                      sort order: +
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+                    sort order: +
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
         null-subquery2:a-subquery2:src 
           TableScan
             alias: src

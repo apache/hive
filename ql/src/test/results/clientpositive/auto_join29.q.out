@@ -2933,7 +2933,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -3088,7 +3088,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -6370,7 +6370,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6388,7 +6388,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6410,7 +6410,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -6508,7 +6508,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6526,7 +6526,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6548,7 +6548,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -6597,7 +6597,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -6618,7 +6618,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -6639,7 +6639,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -6737,7 +6737,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6759,7 +6759,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6876,7 +6876,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -6897,7 +6897,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -7516,7 +7516,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -7538,7 +7538,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -7672,7 +7672,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -7693,7 +7693,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -8254,7 +8254,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8272,7 +8272,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8294,7 +8294,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -8392,7 +8392,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8410,7 +8410,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8432,7 +8432,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -8488,7 +8488,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8506,7 +8506,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8528,7 +8528,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -8577,7 +8577,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -8598,7 +8598,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -8619,7 +8619,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               Reduce Output Operator
                 key expressions:

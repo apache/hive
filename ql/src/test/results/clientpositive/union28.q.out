@@ -158,11 +158,30 @@ STAGE PLANS:
             Union
               Select Operator
                 expressions:
-                      expr: _col0
-                      type: string
+                      expr: UDFToInteger(_col0)
+                      type: int
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.union_subq_union
+        null-subquery1:a-subquery1:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -178,39 +197,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.union_subq_union
-        null-subquery1:a-subquery1:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: UDFToInteger(_col0)
-                          type: int
-                          expr: _col1
-                          type: string
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.union_subq_union
 
   Stage: Stage-8
     Conditional Operator
