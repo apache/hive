@@ -24,12 +24,8 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator.LeadLagInfo;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag.GenericUDFLag;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag.GenericUDFLead;
@@ -50,7 +46,7 @@ public class WindowingExprNodeEvaluatorFactory {
     return ExprNodeEvaluatorFactory.get(desc);
   }
 
-  public static class FindLeadLagFuncExprs extends ExprNodeVisitor
+  public static class FindLeadLagFuncExprs
   {
     ExprNodeDesc topExpr;
     LeadLagInfo llInfo;
@@ -61,7 +57,6 @@ public class WindowingExprNodeEvaluatorFactory {
       this.topExpr = topExpr;
     }
 
-    @Override
     public void visit(ExprNodeGenericFuncDesc fnExpr) throws HiveException
     {
       GenericUDF fn = fnExpr.getGenericUDF();
@@ -72,34 +67,11 @@ public class WindowingExprNodeEvaluatorFactory {
     }
   }
 
-  static class ExprNodeVisitor
-  {
-    public void visit(ExprNodeColumnDesc e) throws HiveException
-    {
-    }
-
-    public void visit(ExprNodeConstantDesc e) throws HiveException
-    {
-    }
-
-    public void visit(ExprNodeFieldDesc e) throws HiveException
-    {
-    }
-
-    public void visit(ExprNodeGenericFuncDesc e) throws HiveException
-    {
-    }
-
-    public void visit(ExprNodeNullDesc e) throws HiveException
-    {
-    }
-  }
-
   static class ExprNodeWalker
   {
-    ExprNodeVisitor visitor;
+    FindLeadLagFuncExprs visitor;
 
-    public ExprNodeWalker(ExprNodeVisitor visitor)
+    public ExprNodeWalker(FindLeadLagFuncExprs visitor)
     {
       super();
       this.visitor = visitor;
@@ -119,56 +91,10 @@ public class WindowingExprNodeEvaluatorFactory {
         }
       }
 
-      if ( e instanceof ExprNodeColumnDesc)
+      if ( e instanceof ExprNodeGenericFuncDesc)
       {
-        walk((ExprNodeColumnDesc) e);
+        visitor.visit((ExprNodeGenericFuncDesc)e);
       }
-      else if ( e instanceof ExprNodeConstantDesc)
-      {
-        walk((ExprNodeConstantDesc) e);
-      }
-      else if ( e instanceof ExprNodeFieldDesc)
-      {
-        walk((ExprNodeFieldDesc) e);
-      }
-      else if ( e instanceof ExprNodeGenericFuncDesc)
-      {
-        walk((ExprNodeGenericFuncDesc) e);
-      }
-      else if ( e instanceof ExprNodeNullDesc)
-      {
-        walk((ExprNodeNullDesc) e);
-      }
-      else
-      {
-        throw new HiveException("Unknown Expr Type " + e.getClass().getName());
-      }
-    }
-
-    private void walk(ExprNodeColumnDesc e) throws HiveException
-    {
-      visitor.visit(e);
-    }
-
-    private void walk(ExprNodeConstantDesc e) throws HiveException
-    {
-      visitor.visit(e);
-    }
-
-    private void walk(ExprNodeFieldDesc e) throws HiveException
-    {
-      visitor.visit(e);
-    }
-
-    private void walk(ExprNodeGenericFuncDesc e) throws HiveException
-    {
-      visitor.visit(e);
-    }
-
-    private void walk(ExprNodeNullDesc e) throws HiveException
-    {
-      visitor.visit(e);
     }
   }
-
 }

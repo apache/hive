@@ -983,7 +983,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(generateErrorMessage(ast,
               checkLLFunctions.getErrString()));
         }
-        hasLLArgs = checkLLFunctions.isHasWindowingExprs();
+        hasLLArgs = checkLLFunctions.hasLeadLagExprs();
 
         // if QB has WindowingClauses and no GroupBy clause
         // - associate Having with qb.windowingSpec.
@@ -9915,27 +9915,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isFunction = ( function.getType() == HiveParser.TOK_FUNCTION ||
         function.getType() == HiveParser.TOK_FUNCTIONDI ||
         function.getType() == HiveParser.TOK_FUNCTIONSTAR );
-    String fnName = isFunction ? function.getChild(0).getText().toLowerCase() : null;
-    boolean isWindowFunction = isFunction ?
-        FunctionRegistry.isWindowFunction(fnName) : false;
-    boolean isRankingOrNavFunction = !isFunction ? false :
-        (
-            FunctionRegistry.RANKING_FUNCTIONS.contains(fnName) ||
-            FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName)
-        );
-
-    boolean hasLLArgs = false;
 
     if ( !isFunction ) {
       return false;
     }
 
+    String fnName = function.getChild(0).getText().toLowerCase();
+    if(!FunctionRegistry.isWindowFunction(fnName)) {
+      // Its either UDF, UDTF or lead or lag function.
+      if (hasWindowSpec){
+        // We currently supports windowing only with UDAFs, so if there is a windowing spec
+        // thats the error condition.
+        throw new SemanticException(generateErrorMessage(selectExpr,
+          "Currently windowing Specification can only be associated with a UDAF " +
+          "invocation or navigation functions"));
+      } else {
+        return false;
+      }
+    }
+
+    boolean hasLLArgs = false;
+    boolean isRankingOrNavFunction = FunctionRegistry.RANKING_FUNCTIONS.contains(fnName) ||
+        FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName);
     /*
-     * If this is a Windowing Function and it has LeadLag expression in its args,
+     * If Windowing Function has LeadLag expression in its args,
      * then it will be handled by WindowingTabFunc.
      */
-    if ( isWindowFunction && !isRankingOrNavFunction ) {
-
+    if (!isRankingOrNavFunction ) {
+      // but lead/lag are not supported as an argument of ranking or navigation function.
       TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
       CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs(qb, dest);
       for(int i=1; !hasLLArgs && i < function.getChildCount(); i++) {
@@ -9945,21 +9952,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(generateErrorMessage(selectExpr,
               checkLLFunctions.getErrString()));
         }
-        hasLLArgs = checkLLFunctions.isHasWindowingExprs();
+        hasLLArgs = checkLLFunctions.hasLeadLagExprs();
       }
     }
 
-    if ( hasWindowSpec && !isWindowFunction ) {
-      throw new SemanticException(generateErrorMessage(selectExpr,
-          "Currently windowing Specification can only be associated with a UDAF " +
-          "invocation or navigation functions"));
-    }
-
-    if (
-        (isWindowFunction && hasWindowSpec) ||
-        (isRankingOrNavFunction && isWindowFunction) ||
-        (isWindowFunction && hasLLArgs)
-        ) {
+    if (hasWindowSpec || isRankingOrNavFunction || hasLLArgs) {
       /*
        * @revisit: what should I do if there are more than 3 children;
        * i.e. more than one Identifier.
@@ -9986,7 +9983,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         spec = new WindowingSpec();
         qb.addDestToWindowingSpec(dest, spec);
       }
-      WindowFunctionSpec wFnSpec = processWindowFunction(spec, function,
+      WindowFunctionSpec wFnSpec = processWindowFunction(function,
           hasWindowSpec ? windowSpec : null);
       wFnSpec.setAlias(alias);
       spec.addWindowFunction(wFnSpec);
@@ -10001,7 +9998,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   {
     QB qb;
     String dest;
-    boolean hasWindowingExprs = false;
+    boolean hasLeadLagExprs = false;
     boolean error = false;
     String errString;
 
@@ -10010,6 +10007,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       this.dest = dest;
     }
 
+    @Override
     public void visit(Object t, Object parent, int childIndex, Map labels)
     {
       error = false; errString = null;
@@ -10030,7 +10028,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (fnName.equals(FunctionRegistry.LEAD_FUNC_NAME)
           || fnName.equals(FunctionRegistry.LAG_FUNC_NAME))
       {
-        hasWindowingExprs = true;
+        hasLeadLagExprs = true;
       }
       else if ( FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName)) {
         error = true;
@@ -10043,8 +10041,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    public boolean isHasWindowingExprs() {
-      return hasWindowingExprs;
+    public boolean hasLeadLagExprs() {
+      return hasLeadLagExprs;
     }
 
     protected boolean isError() {
@@ -10105,7 +10103,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               checkLLFunctions.getErrString()));
         }
 
-        hasWindowingExprs = checkLLFunctions.isHasWindowingExprs();
+        hasWindowingExprs = checkLLFunctions.hasLeadLagExprs();
 
         if ( hasWindowingExprs )
         {
@@ -10128,8 +10126,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
              * - calling getColAlias with a null InputResolver and null defaultName.
              * - so includeFunctionName should be true.
              */
-            String[] colAlias = getColAlias(expr, null, null, true, -1);
-            alias = colAlias[1];
+            alias = getColAlias(expr, null, null, true, -1)[1];
           }
           else {
             alias = selectExpr.getChild(1).getText();
@@ -10226,9 +10223,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return partitioning;
   }
 
-  private WindowFunctionSpec processWindowFunction(WindowingSpec spec,
-      ASTNode node,
-      ASTNode wsNode) throws SemanticException {
+  private WindowFunctionSpec processWindowFunction(ASTNode node, ASTNode wsNode)
+    throws SemanticException {
     WindowFunctionSpec wfSpec = new WindowFunctionSpec();
 
     switch(node.getType()) {
@@ -10501,7 +10497,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             String[] colAlias = getColAlias(expr, null, null, true, -1);
             alias = colAlias[1];
           }
-          WindowFunctionSpec wFn = processWindowFunction(spec, expr, null);
+          WindowFunctionSpec wFn = processWindowFunction(expr, null);
           wFn.setAlias(alias);
           spec.addWindowFunction(wFn);
           currQB.getParseInfo().getAllExprToColumnAlias().remove(expr);
