@@ -40,6 +40,7 @@
                 transitive="false"/>
     <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="${jackson.version}"/>
     <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="${jackson.version}"/>
+    <dependency org="log4j" name="log4j" rev="${log4j.version}" />
 
     <!-- Hadoop 0.23 dependencies. Used both for shims and for building against Hadoop 0.23. -->
     <dependency org="com.google.guava" name="guava" rev="${guava-hadoop23.version}"
