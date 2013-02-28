@@ -124,7 +124,7 @@ public final class TypeCheckProcFactory {
     return desc;
   }
 
-  public static HashMap<Node, Object> genExprNode(ASTNode expr,
+  public static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr,
       TypeCheckCtx tcCtx) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     // create a walker which walks the tree in a DFS manner while maintaining
@@ -162,10 +162,23 @@ public final class TypeCheckProcFactory {
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(expr);
-    HashMap<Node, Object> nodeOutputs = new HashMap<Node, Object>();
+    HashMap<Node, Object> nodeOutputs = new LinkedHashMap<Node, Object>();
     ogw.startWalking(topNodes, nodeOutputs);
 
-    return nodeOutputs;
+    return convert(nodeOutputs);
+  }
+
+  // temporary type-safe casting
+  private static Map<ASTNode, ExprNodeDesc> convert(Map<Node, Object> outputs) {
+    Map<ASTNode, ExprNodeDesc> converted = new LinkedHashMap<ASTNode, ExprNodeDesc>();
+    for (Map.Entry<Node, Object> entry : outputs.entrySet()) {
+      if (entry.getKey() instanceof ASTNode && entry.getValue() instanceof ExprNodeDesc) {
+        converted.put((ASTNode)entry.getKey(), (ExprNodeDesc)entry.getValue());
+      } else {
+        LOG.warn("Invalid type entry " + entry);
+      }
+    }
+    return converted;
   }
 
   /**
