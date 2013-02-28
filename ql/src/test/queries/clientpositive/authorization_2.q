@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 create table authorization_part (key int, value string) partitioned by (ds string);
 create table src_auth_tmp as select * from src;
 ALTER TABLE authorization_part SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE");

@@ -1,7 +1,11 @@
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_autho_test as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_autho_test as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test

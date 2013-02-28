@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 create table src_auth_tmp as select * from src;
 
 create table authorization_part (key int, value string) partitioned by (ds string);
