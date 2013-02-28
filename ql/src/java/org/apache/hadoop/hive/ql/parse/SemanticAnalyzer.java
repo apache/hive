@@ -9937,6 +9937,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean hasLLArgs = false;
     boolean isRankingOrNavFunction = FunctionRegistry.RANKING_FUNCTIONS.contains(fnName) ||
         FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName);
+
+    /*
+     * treat Lead & Lag as a UDF if there is no WindowSpec.
+     */
+    if (!hasWindowSpec
+        &&
+        (fnName.equals(FunctionRegistry.LAG_FUNC_NAME) || fnName
+            .equals(FunctionRegistry.LEAD_FUNC_NAME))) {
+      return false;
+    }
+
     /*
      * If Windowing Function has LeadLag expression in its args,
      * then it will be handled by WindowingTabFunc.

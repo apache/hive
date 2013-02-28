@@ -686,7 +686,7 @@ public class PTFTranslator {
       funcArgOIs = argOIs.toArray(funcArgOIs);
     }
 
-    GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericUDAFEvaluator(def.getName(), argOIs,
+    GenericUDAFEvaluator wFnEval = FunctionRegistry.getGenericWindowingEvaluator(def.getName(), argOIs,
         def.isDistinct(), def.isStar());
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
     def.setWFnEval(wFnEval);

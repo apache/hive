@@ -149,6 +149,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFPercentRank;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFPercentileApprox;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLag;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRowNumber;
@@ -528,6 +530,8 @@ public final class FunctionRegistry {
     registerWindowFunction("ntile", new GenericUDAFNTile());
     registerWindowFunction("first_value", new GenericUDAFFirstValue());
     registerWindowFunction("last_value", new GenericUDAFLastValue());
+    registerWindowFunction(LEAD_FUNC_NAME, new GenericUDAFLead(), false);
+    registerWindowFunction(LAG_FUNC_NAME, new GenericUDAFLag(), false);
 
     RANKING_FUNCTIONS.add("rank");
     RANKING_FUNCTIONS.add("dense_rank");
@@ -853,6 +857,26 @@ public final class FunctionRegistry {
       udafEvaluator = udafResolver.getEvaluator(paramInfo.getParameters());
     }
     return udafEvaluator;
+  }
+
+  @SuppressWarnings("deprecation")
+  public static GenericUDAFEvaluator getGenericWindowingEvaluator(String name,
+      List<ObjectInspector> argumentOIs, boolean isDistinct,
+      boolean isAllColumns) throws SemanticException {
+
+    WindowFunctionInfo finfo = windowFunctions.get(name.toLowerCase());
+    if (finfo == null) { return null;}
+    if ( !name.toLowerCase().equals(LEAD_FUNC_NAME) &&
+    !name.toLowerCase().equals(LAG_FUNC_NAME) ) {
+    return getGenericUDAFEvaluator(name, argumentOIs, isDistinct, isAllColumns);
+    }
+
+    // this must be lead/lag UDAF
+    ObjectInspector args[] = new ObjectInspector[argumentOIs.size()];
+    GenericUDAFResolver udafResolver = finfo.getfInfo().getGenericUDAFResolver();
+    GenericUDAFParameterInfo paramInfo = new SimpleGenericUDAFParameterInfo(
+    argumentOIs.toArray(args), isDistinct, isAllColumns);
+    return ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
   }
 
   /**
@@ -1417,8 +1441,34 @@ public final class FunctionRegistry {
 
   public static void registerWindowFunction(String name, GenericUDAFResolver wFn)
   {
-    registerGenericUDAF(true, name, wFn);
-    FunctionInfo fInfo = getFunctionInfo(name);
+    registerWindowFunction(name, wFn, true);
+  }
+
+  /**
+   * Typically a WindowFunction is the same as a UDAF. The only exceptions are Lead & Lag UDAFs. These
+   * are not registered as regular UDAFs because
+   * - we plan to support Lead & Lag as UDFs (usable only within argument expressions
+   *   of UDAFs when windowing is involved). Since mFunctions holds both UDFs and UDAFs we cannot
+   *   add both FunctionInfos to mFunctions.
+   * We choose to only register UDFs in mFunctions. The implication of this is that Lead/Lag UDAFs
+   * are only usable when windowing is involved.
+   *
+   * @param name
+   * @param wFn
+   * @param registerAsUDAF
+   */
+  public static void registerWindowFunction(String name, GenericUDAFResolver wFn, boolean registerAsUDAF)
+  {
+    FunctionInfo fInfo = null;
+    if (registerAsUDAF) {
+      registerGenericUDAF(true, name, wFn);
+      fInfo = getFunctionInfo(name);
+    }
+    else {
+      fInfo = new FunctionInfo(true,
+          name.toLowerCase(), wFn);
+    }
+
     WindowFunctionInfo wInfo = new WindowFunctionInfo(fInfo);
     windowFunctions.put(name.toLowerCase(), wInfo);
   }
