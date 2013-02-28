@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 create table test_user (user string, `group` string);
 grant select on table test_user to user hive_test;
 

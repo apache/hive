@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 create table authorization_fail (key int, value string);
 
 set hive.security.authorization.enabled=true;
