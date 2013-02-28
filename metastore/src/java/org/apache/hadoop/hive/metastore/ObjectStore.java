@@ -2029,7 +2029,9 @@ public class ObjectStore implements RawStore, Configurable {
     oldp.setValues(newp.getValues());
     oldp.setPartitionName(newp.getPartitionName());
     oldp.setParameters(newPart.getParameters());
-    copyMSD(newp.getSd(), oldp.getSd());
+    if (!TableType.VIRTUAL_VIEW.name().equals(oldp.getTable().getTableType())) {
+      copyMSD(newp.getSd(), oldp.getSd());
+    }
     if (newp.getCreateTime() != oldp.getCreateTime()) {
       oldp.setCreateTime(newp.getCreateTime());
     }
