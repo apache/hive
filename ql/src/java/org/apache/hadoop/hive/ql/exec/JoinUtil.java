@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,64 +50,59 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 public class JoinUtil {
 
-  public static HashMap<Byte, List<ObjectInspector>> getObjectInspectorsFromEvaluators(
-      Map<Byte, List<ExprNodeEvaluator>> exprEntries,
+  public static List<ObjectInspector>[] getObjectInspectorsFromEvaluators(
+      List<ExprNodeEvaluator>[] exprEntries,
       ObjectInspector[] inputObjInspector,
-      int posBigTableAlias) throws HiveException {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ExprNodeEvaluator>> exprEntry : exprEntries
-        .entrySet()) {
-      Byte alias = exprEntry.getKey();
+      int posBigTableAlias, int tagLen) throws HiveException {
+    List<ObjectInspector>[] result = new List[tagLen];
+    for (byte alias = 0; alias < exprEntries.length; alias++) {
       //get big table
-      if(alias == (byte) posBigTableAlias){
+      if (alias == (byte) posBigTableAlias){
         //skip the big tables
           continue;
       }
 
-      List<ExprNodeEvaluator> exprList = exprEntry.getValue();
-      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>();
+      List<ExprNodeEvaluator> exprList = exprEntries[alias];
+      List<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>();
       for (int i = 0; i < exprList.size(); i++) {
         fieldOIList.add(exprList.get(i).initialize(inputObjInspector[alias]));
       }
-      result.put(alias, fieldOIList);
+      result[alias] = fieldOIList;
     }
     return result;
   }
 
 
-  public static HashMap<Byte, List<ObjectInspector>> getStandardObjectInspectors(
-      Map<Byte, List<ObjectInspector>> aliasToObjectInspectors,
-      int posBigTableAlias) {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ObjectInspector>> oiEntry : aliasToObjectInspectors
-        .entrySet()) {
-      Byte alias = oiEntry.getKey();
-
+  public static List<ObjectInspector>[] getStandardObjectInspectors(
+      List<ObjectInspector>[] aliasToObjectInspectors,
+      int posBigTableAlias, int tagLen) {
+    List<ObjectInspector>[] result = new List[tagLen];
+    for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
       //get big table
       if(alias == (byte) posBigTableAlias ){
         //skip the big tables
           continue;
       }
 
-      List<ObjectInspector> oiList = oiEntry.getValue();
+      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
       ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(
           oiList.size());
       for (int i = 0; i < oiList.size(); i++) {
         fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList
             .get(i), ObjectInspectorCopyOption.WRITABLE));
       }
-      result.put(alias, fieldOIList);
+      result[alias] = fieldOIList;
     }
     return result;
 
   }
 
-  public static int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
+  public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) {
     return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
   }
 
-  public static int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
+  public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
       int posBigTableAlias) {
@@ -124,7 +117,7 @@ public class JoinUtil {
           valueFields.add(ExprNodeEvaluatorFactory.get(expr));
         }
       }
-      outMap.put(key, valueFields);
+      outMap[key] = valueFields;
       total += valueFields.size();
     }
 
@@ -289,27 +282,16 @@ public class JoinUtil {
     return tag != 0;
   }
 
-  public static TableDesc getSpillTableDesc(Byte alias,
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noFilter) {
-    if (spillTableDesc == null || spillTableDesc.size() == 0) {
+  public static TableDesc getSpillTableDesc(Byte alias, TableDesc[] spillTableDesc,
+      JoinDesc conf, boolean noFilter) {
+    if (spillTableDesc == null || spillTableDesc.length == 0) {
       spillTableDesc = initSpillTables(conf,noFilter);
     }
-    return spillTableDesc.get(alias);
+    return spillTableDesc[alias];
   }
 
-  public static Map<Byte, TableDesc> getSpillTableDesc(
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noFilter) {
-    if (spillTableDesc == null) {
-      spillTableDesc = initSpillTables(conf,noFilter);
-    }
-    return spillTableDesc;
-  }
-
-  public static SerDe getSpillSerDe(byte alias,
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noFilter) {
+  public static SerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
+      JoinDesc conf, boolean noFilter) {
     TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noFilter);
     if (desc == null) {
       return null;
@@ -325,9 +307,10 @@ public class JoinUtil {
     return sd;
   }
 
-  public static Map<Byte, TableDesc> initSpillTables(JoinDesc conf, boolean noFilter) {
+  public static TableDesc[] initSpillTables(JoinDesc conf, boolean noFilter) {
+    int tagLen = conf.getTagLength();
     Map<Byte, List<ExprNodeDesc>> exprs = conf.getExprs();
-    Map<Byte, TableDesc> spillTableDesc = new HashMap<Byte, TableDesc>(exprs.size());
+    TableDesc[] spillTableDesc = new TableDesc[tagLen];
     for (int tag = 0; tag < exprs.size(); tag++) {
       List<ExprNodeDesc> valueCols = exprs.get((byte) tag);
       int columnSize = valueCols.size();
@@ -362,7 +345,7 @@ public class JoinUtil {
           .toString(),
           org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
           colTypes.toString()));
-      spillTableDesc.put((byte) tag, tblDesc);
+      spillTableDesc[tag] = tblDesc;
     }
     return spillTableDesc;
   }
@@ -370,7 +353,7 @@ public class JoinUtil {
 
   public static RowContainer getRowContainer(Configuration hconf,
       List<ObjectInspector> structFieldObjectInspectors,
-      Byte alias,int containerSize, Map<Byte, TableDesc> spillTableDesc,
+      Byte alias,int containerSize, TableDesc[] spillTableDesc,
       JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
 
     TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);

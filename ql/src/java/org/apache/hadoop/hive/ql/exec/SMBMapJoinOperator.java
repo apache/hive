@@ -69,7 +69,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   RowContainer<ArrayList<Object>>[] nextGroupStorage;
   RowContainer<ArrayList<Object>>[] candidateStorage;
 
-  transient Map<Byte, String> tagToAlias;
+  transient String[] tagToAlias;
   private transient boolean[] fetchDone;
   private transient boolean[] foundNextKeyGroup;
   transient boolean firstFetchHappened = false;
@@ -127,17 +127,17 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
     for (byte pos = 0; pos < order.length; pos++) {
       RowContainer rc = JoinUtil.getRowContainer(hconf,
-          rowContainerStandardObjectInspectors.get(pos),
+          rowContainerStandardObjectInspectors[pos],
           pos, bucketSize,spillTableDesc, conf, !hasFilter(pos),
           reporter);
       nextGroupStorage[pos] = rc;
       RowContainer candidateRC = JoinUtil.getRowContainer(hconf,
-          rowContainerStandardObjectInspectors.get(pos),
-          pos,bucketSize,spillTableDesc, conf, !hasFilter(pos),
+          rowContainerStandardObjectInspectors[pos],
+          pos, bucketSize,spillTableDesc, conf, !hasFilter(pos),
           reporter);
       candidateStorage[pos] = candidateRC;
     }
-    tagToAlias = conf.getTagToAlias();
+    tagToAlias = conf.convertToArray(conf.getTagToAlias(), String.class);
 
     for (byte pos = 0; pos < order.length; pos++) {
       if (pos != posBigTable) {
@@ -207,9 +207,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   private byte tagForAlias(String alias) {
-    for (Map.Entry<Byte, String> entry : tagToAlias.entrySet()) {
-      if (entry.getValue().equals(alias)) {
-        return entry.getKey();
+    for (byte tag = 0; tag < tagToAlias.length; tag++) {
+      if (alias.equals(tagToAlias[tag])) {
+        return tag;
       }
     }
     return -1;
@@ -254,18 +254,18 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     byte alias = (byte) tag;
 
     // compute keys and values as StandardObjects
-    ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys.get(alias),
-        joinKeysObjectInspectors.get(alias));
-    ArrayList<Object> value = JoinUtil.computeValues(row, joinValues.get(alias),
-        joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
-        joinFilterObjectInspectors.get(alias),
+    ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys[alias],
+        joinKeysObjectInspectors[alias]);
+    ArrayList<Object> value = JoinUtil.computeValues(row, joinValues[alias],
+        joinValuesObjectInspectors[alias], joinFilters[alias],
+        joinFilterObjectInspectors[alias],
         filterMap == null ? null : filterMap[alias]);
 
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
     if (nextKeyGroup) {
-      //assert this.nextGroupStorage.get(alias).size() == 0;
+      //assert this.nextGroupStorage[alias].size() == 0;
       this.nextGroupStorage[alias].add(value);
       foundNextKeyGroup[tag] = true;
       if (tag != posBigTable) {
@@ -378,7 +378,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         putDummyOrEmpty(index);
         continue;
       }
-      storage.put(index, candidateStorage[index]);
+      storage[index] = candidateStorage[index];
       needFetchList.add(index);
       if (smallestPos[index] < 0) {
         break;
@@ -464,9 +464,9 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private void putDummyOrEmpty(Byte i) {
     // put a empty list or null
     if (noOuterJoin) {
-      storage.put(i, emptyList);
+      storage[i] = emptyList;
     } else {
-      storage.put(i, dummyObjVectors[i.intValue()]);
+      storage[i] = dummyObjVectors[i];
     }
   }
 
@@ -531,7 +531,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   private void fetchOneRow(byte tag) {
-    String table = tagToAlias.get(tag);
+    String table = tagToAlias[tag];
     MergeQueue mergeQueue = aliasToMergeQueue.get(table);
 
     // The operator tree till the sink operator has already been processed while
@@ -780,8 +780,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       if (keyFields == null) {
         byte tag = tagForAlias(alias);
         // joinKeys/joinKeysOI are initialized after making merge queue, so setup lazily at runtime
-        keyFields = joinKeys.get(tag);
-        keyFieldOIs = joinKeysObjectInspectors.get(tag);
+        keyFields = joinKeys[tag];
+        keyFieldOIs = joinKeysObjectInspectors[tag];
       }
       InspectableObject nextRow = segments[current].getNextRow();
       while (nextRow != null) {
