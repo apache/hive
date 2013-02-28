@@ -363,6 +363,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     for (ExprNodeEvaluator keyField : keyFields) {
       objectInspectors.add(null);
     }
+    MapredContext context = MapredContext.get();
+    if (context != null) {
+      for (GenericUDAFEvaluator genericUDAFEvaluator : aggregationEvaluators) {
+        context.setup(genericUDAFEvaluator);
+      }
+    }
     for (int i = 0; i < aggregationEvaluators.length; i++) {
       ObjectInspector roi = aggregationEvaluators[i].init(conf.getAggregators()
           .get(i).getMode(), aggregationParameterObjectInspectors[i]);

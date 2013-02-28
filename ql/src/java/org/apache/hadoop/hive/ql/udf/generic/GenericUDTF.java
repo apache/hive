@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -32,6 +33,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public abstract class GenericUDTF {
   Collector collector = null;
+
+  /**
+   * Additionally setup GenericUDTF with MapredContext before initializing.
+   * This is only called in runtime of MapRedTask.
+   *
+   * @param context context
+   */
+  public void configure(MapredContext mapredContext) {
+  }
 
   /**
    * Initialize this GenericUDTF. This will be called only once per instance.
