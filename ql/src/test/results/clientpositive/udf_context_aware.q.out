@@ -1,0 +1,32 @@
+PREHOOK: query: create temporary function counter as 'org.apache.hadoop.hive.ql.udf.generic.DummyContextUDF'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: create temporary function counter as 'org.apache.hadoop.hive.ql.udf.generic.DummyContextUDF'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: select *, counter(key) from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select *, counter(key) from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238	1
+86	val_86	2
+311	val_311	3
+27	val_27	4
+165	val_165	5
+409	val_409	6
+255	val_255	7
+278	val_278	8
+98	val_98	9
+484	val_484	10
+265	val_265	11
+193	val_193	12
+401	val_401	13
+150	val_150	14
+273	val_273	15
+224	val_224	16
+369	val_369	17
+66	val_66	18
+128	val_128	19
+213	val_213	20

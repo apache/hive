@@ -94,6 +94,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       localWork = mrwork.getMapLocalWork();
       execContext.setLocalWork(localWork);
 
+      MapredContext.init(true, new JobConf(jc));
+
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
@@ -131,6 +133,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setOutputCollector(oc);
       mo.setReporter(rp);
       mo.setOperatorHooks(opHooks);
+      MapredContext.get().setReporter(reporter);
     }
     // reset the execContext for each new row
     execContext.resetRow();
@@ -226,6 +229,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators", e);
       }
+    } finally {
+      MapredContext.close();
     }
   }
 
@@ -257,8 +262,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     }
 
     public void func(Operator op) {
-      Map<Enum, Long> opStats = op.getStats();
-      for (Map.Entry<Enum, Long> e : opStats.entrySet()) {
+      Map<Enum<?>, Long> opStats = op.getStats();
+      for (Map.Entry<Enum<?>, Long> e : opStats.entrySet()) {
         if (rp != null) {
           rp.incrCounter(e.getKey(), e.getValue());
         }
