@@ -10398,32 +10398,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private BoundarySpec processValueBoundary(ASTNode node) {
-    BoundarySpec vbs = null;
+    BoundarySpec bs = null;
     int type = node.getType();
 
     switch(type)
     {
     case HiveParser.KW_PRECEDING:
-      vbs = new ValueBoundarySpec(Direction.PRECEDING, null, BoundarySpec.UNBOUNDED_AMOUNT);
+      bs = new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT);
       break;
     case HiveParser.KW_FOLLOWING:
-      vbs = new ValueBoundarySpec(Direction.FOLLOWING, null, BoundarySpec.UNBOUNDED_AMOUNT);
+      bs = new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT);
       break;
     case HiveParser.KW_CURRENT:
-      vbs = new CurrentRowSpec();
+      bs = new CurrentRowSpec();
       break;
     case HiveParser.KW_LESS:
-      vbs = new ValueBoundarySpec(Direction.PRECEDING,
+      bs = new ValueBoundarySpec(Direction.PRECEDING,
           (ASTNode) node.getChild(0),
           Integer.parseInt(node.getChild(1).getText()));
       break;
     case HiveParser.KW_MORE:
-      vbs = new ValueBoundarySpec(Direction.FOLLOWING,
+      bs = new ValueBoundarySpec(Direction.FOLLOWING,
           (ASTNode) node.getChild(0),
           Integer.parseInt(node.getChild(1).getText()));
       break;
     }
-    return vbs;
+    return bs;
   }
 
   /*

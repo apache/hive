@@ -1979,6 +1979,7 @@ window_range_expression
 @init { msgs.push("window_range_expression"); }
 @after { msgs.pop(); } 
 :
+ KW_ROWS KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWRANGE ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
  KW_ROWS KW_BETWEEN s=rowsboundary KW_AND end=rowsboundary -> ^(TOK_WINDOWRANGE $s $end)
 ;
 
@@ -1995,6 +1996,7 @@ window_value_expression
 @init { msgs.push("window_value_expression"); }
 @after { msgs.pop(); } 
 :
+ KW_RANGE KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWVALUES ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
  KW_RANGE KW_BETWEEN s=valuesboundary KW_AND end=valuesboundary -> ^(TOK_WINDOWVALUES $s $end)
 ;
 
