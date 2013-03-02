@@ -312,7 +312,7 @@ public class PTFInvocationSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("partitionColumns=%s",PTFUtils.toString(expressions));
+      return String.format("partitionColumns=%s",PTFUtils.toString(expressions));
     }
   }
 
@@ -445,7 +445,7 @@ public class PTFInvocationSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("orderColumns=%s",PTFUtils.toString(expressions));
+      return String.format("orderColumns=%s",PTFUtils.toString(expressions));
     }
   }
 
@@ -508,7 +508,7 @@ public class PTFInvocationSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("%s %s", super.toString(), order);
+      return String.format("%s %s", super.toString(), order);
     }
   }
 

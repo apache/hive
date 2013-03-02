@@ -139,7 +139,7 @@ public class PTFPersistence {
       j = j << 1;
       if ( j >  2 * currentSize )
       {
-        throw new HiveException(PTFUtils.sprintf("index invalid %d", i));
+        throw new HiveException(String.format("index invalid %d", i));
       }
       return j;
     }
@@ -667,7 +667,7 @@ public class PTFPersistence {
       */
       if ( !directory.isDirectory())
       {
-        throw new IOException(PTFUtils.sprintf("Not a directory: %s", directory));
+        throw new IOException(String.format("Not a directory: %s", directory));
       }
 
       // Symbolic links will have different canonical and absolute paths

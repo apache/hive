@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.ql.exec.PTFUtils.sprintf;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -154,7 +152,7 @@ public class PTFTranslator {
     WindowingTableFunctionResolver tFn = (WindowingTableFunctionResolver)
         FunctionRegistry.getTableFunctionResolver(FunctionRegistry.WINDOWING_TABLE_FUNCTION);
     if (tFn == null) {
-      throw new SemanticException(sprintf("INternal Error: Unknown Table Function %s",
+      throw new SemanticException(String.format("INternal Error: Unknown Table Function %s",
           FunctionRegistry.WINDOWING_TABLE_FUNCTION));
     }
     wdwTFnDef.setName(FunctionRegistry.WINDOWING_TABLE_FUNCTION);
@@ -336,7 +334,7 @@ public class PTFTranslator {
       throws SemanticException {
     TableFunctionResolver tFn = FunctionRegistry.getTableFunctionResolver(spec.getName());
     if (tFn == null) {
-      throw new SemanticException(sprintf("Unknown Table Function %s",
+      throw new SemanticException(String.format("Unknown Table Function %s",
           spec.getName()));
     }
     PartitionedTableFunctionDef def = new PartitionedTableFunctionDef();
@@ -453,7 +451,7 @@ public class PTFTranslator {
       WindowFrameDef wdwFrame = translate(spec.getName(), inpShape, wdwSpec);
       if (!wFnInfo.isSupportsWindow() && wdwFrame != null)
       {
-        throw new SemanticException(sprintf("Function %s doesn't support windowing",
+        throw new SemanticException(String.format("Function %s doesn't support windowing",
             desc));
       }
       def.setWindowFrame(wdwFrame);
@@ -509,7 +507,7 @@ public class PTFTranslator {
       throw new SemanticException(he);
     }
     PTFTranslator.validateComparable(expDef.getOI(),
-        sprintf("Partition Expression %s is not a comparable expression", pExpr.getExpression().toStringTree()));
+        String.format("Partition Expression %s is not a comparable expression", pExpr.getExpression().toStringTree()));
     return expDef;
   }
 
@@ -526,8 +524,8 @@ public class PTFTranslator {
     }
 
     if (partitionDef == null) {
-      throw new SemanticException(sprintf(
-          "Cannot have an Order spec w/o a Partition spec", spec));
+      throw new SemanticException(String.format(
+          "Cannot have an Order spec (%s) w/o a Partition spec", spec));
     }
 
     OrderDef def = new OrderDef();
@@ -560,7 +558,7 @@ public class PTFTranslator {
     if (numOfPartColumns != 0 && numOfPartColumns != partExprs.size())
     {
       throw new SemanticException(
-          sprintf(
+          String.format(
                   "all partition columns must be in order clause(%s) or none should be specified",
                   spec));
     }
@@ -597,7 +595,7 @@ public class PTFTranslator {
       throw new SemanticException(he);
     }
     PTFTranslator.validateComparable(oexpDef.getOI(),
-        sprintf("Partition Expression %s is not a comparable expression",
+        String.format("Partition Expression %s is not a comparable expression",
             oExpr.getExpression().toStringTree()));
     return oexpDef;
   }
@@ -626,7 +624,7 @@ public class PTFTranslator {
     int cmp = s.compareTo(e);
     if (cmp > 0)
     {
-      throw new SemanticException(sprintf(
+      throw new SemanticException(String.format(
           "Window range invalid, start boundary is greater than end boundary: %s", spec));
     }
 
@@ -700,12 +698,12 @@ public class PTFTranslator {
     {
       if ( visited.contains(sourceId)) {
         visited.add(sourceId);
-        throw new SemanticException(sprintf("Cycle in Window references %s", visited));
+        throw new SemanticException(String.format("Cycle in Window references %s", visited));
       }
       WindowSpec source = windowingSpec.getWindowSpecs().get(sourceId);
       if (source == null || source.equals(dest))
       {
-        throw new SemanticException(sprintf("Window Spec %s refers to an unknown source " ,
+        throw new SemanticException(String.format("Window Spec %s refers to an unknown source " ,
             dest));
       }
 
@@ -755,7 +753,7 @@ public class PTFTranslator {
       break;
     default:
       throw new SemanticException(
-          sprintf("Primitve type %s not supported in Value Boundary expression",
+          String.format("Primitve type %s not supported in Value Boundary expression",
               pC));
     }
 
@@ -769,14 +767,14 @@ public class PTFTranslator {
     if (!PTFTranslator.isCompatible(tPart, fPart))
     {
       throw new SemanticException(
-          sprintf("Window Function '%s' has an incompatible partition clause", wFnName));
+          String.format("Window Function '%s' has an incompatible partition clause", wFnName));
     }
 
     OrderDef tOrder = ptfDesc.getFuncDef().getOrder();
     if (!PTFTranslator.isCompatible(tOrder, fOrder))
     {
       throw new SemanticException(
-          sprintf("Window Function '%s' has an incompatible order clause", wFnName));
+          String.format("Window Function '%s' has an incompatible order clause", wFnName));
     }
   }
 
@@ -869,9 +867,17 @@ public class PTFTranslator {
     }
 
     if (numOfPartColumns != 0 && numOfPartColumns != partCols.size()) {
+      List<String> partitionColumnNames = new ArrayList<String>();
+      for(PartitionExpression partitionExpression : partCols) {
+        ASTNode column = partitionExpression.getExpression();
+        if(column != null && column.getChildCount() > 0) {
+          partitionColumnNames.add(column.getChild(0).getText());
+        }
+      }
       throw new SemanticException(
-          sprintf(
-                  "all partition columns must be in order clause(%s) or none should be specified"));
+          String.format(
+                  "all partition columns %s must be in order clause or none should be specified",
+                  partitionColumnNames.toString()));
     }
     ArrayList<OrderExpression> combinedOrdExprs = new ArrayList<OrderExpression>();
     if (numOfPartColumns == 0)

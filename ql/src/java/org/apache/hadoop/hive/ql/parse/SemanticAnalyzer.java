@@ -74,7 +74,6 @@ import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -10996,14 +10995,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < childCount; i++) {
       ASTNode selExpr = (ASTNode) selNode.getChild(i);
       if (selExpr.getType() != HiveParser.TOK_SELEXPR) {
-        throw new SemanticException(PTFUtils.sprintf(
-            "Only Select expressions supported in dynamic select list", selectExprStr));
+        throw new SemanticException(String.format(
+            "Only Select expressions supported in dynamic select list: %s", selectExprStr));
       }
       ASTNode expr = (ASTNode) selExpr.getChild(0);
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         throw new SemanticException(
-            PTFUtils.sprintf("'*' column not allowed in dynamic select list",
-            selectExprStr));
+            String.format("'%s' column not allowed in dynamic select list", selectExprStr));
       }
       ASTNode aliasNode = selExpr.getChildCount() > 1
           && selExpr.getChild(1).getType() == HiveParser.Identifier ?

@@ -29,10 +29,8 @@ import java.beans.PropertyDescriptor;
 import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,13 +46,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class PTFUtils {
-  public static String sprintf(String format, Object... values)
-  {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    PrintStream out = new PrintStream(outputStream);
-    out.printf(format, values);
-    return outputStream.toString();
-  }
 
   public static String toString(List<?> col)
   {

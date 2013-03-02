@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
@@ -431,7 +430,7 @@ public class WindowingSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("window(start=%s, end=%s)", start, end);
+      return String.format("window(start=%s, end=%s)", start, end);
     }
 
   }
@@ -500,7 +499,7 @@ public class WindowingSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("range(%s %s)", (amt == UNBOUNDED_AMOUNT ? "Unbounded" : amt),
+      return String.format("range(%s %s)", (amt == UNBOUNDED_AMOUNT ? "Unbounded" : amt),
           direction);
     }
 
@@ -524,7 +523,7 @@ public class WindowingSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("currentRow");
+      return "currentRow";
     }
 
     @Override
@@ -591,7 +590,7 @@ public class WindowingSpec {
     @Override
     public String toString()
     {
-      return PTFUtils.sprintf("value(%s %s %s)", expression.toStringTree(), amt, direction);
+      return String.format("value(%s %s %s)", expression.toStringTree(), amt, direction);
     }
 
     public int compareTo(BoundarySpec other)

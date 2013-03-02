@@ -117,7 +117,7 @@ public class NPath extends TableFunctionEvaluator
 
   static void throwErrorWithSignature(String message) throws SemanticException
   {
-    throw new SemanticException(PTFUtils.sprintf(
+    throw new SemanticException(String.format(
         "NPath signature is: SymbolPattern, one or more SymbolName, " +
         "expression pairs, the result expression as a select list. Error %s",
         message));
@@ -253,7 +253,7 @@ public class NPath extends TableFunctionEvaluator
             PrimitiveObjectInspector.PrimitiveCategory.STRING )
         {
           throwErrorWithSignature(
-              PTFUtils.sprintf("Currently a Symbol Name(%s) must be a Constant String",
+              String.format("Currently a Symbol Name(%s) must be a Constant String",
                   symbolNameArg.getExpressionTreeString()));
         }
         String symbolName = ((ConstantObjectInspector)symbolNameArgOI).
@@ -265,7 +265,7 @@ public class NPath extends TableFunctionEvaluator
               ((PrimitiveObjectInspector)symolExprArgOI).getPrimitiveCategory() !=
               PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN )
         {
-          throwErrorWithSignature(PTFUtils.sprintf("Currently a Symbol Expression(%s) " +
+          throwErrorWithSignature(String.format("Currently a Symbol Expression(%s) " +
           		"must be a boolean expression", symolExprArg.getExpressionTreeString()));
         }
         evaluator.symInfo.add(symbolName, symolExprArg);
@@ -668,7 +668,7 @@ public class NPath extends TableFunctionEvaluator
         Object[] symbolDetails = symbolExprEvalMap.get(symbol.toLowerCase());
         if ( symbolDetails == null )
         {
-          throw new SemanticException(PTFUtils.sprintf("Unknown Symbol %s", symbol));
+          throw new SemanticException(String.format("Unknown Symbol %s", symbol));
         }
 
         ExprNodeEvaluator symbolExprEval = (ExprNodeEvaluator) symbolDetails[0];

@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
-import static org.apache.hadoop.hive.ql.exec.PTFUtils.sprintf;
-
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
@@ -158,7 +156,7 @@ public abstract class TableFunctionEvaluator
   {
     if ( !isTransformsRawInput())
     {
-      throw new HiveException(sprintf("Internal Error: mapExecute called on function (%s)that has no Map Phase", tDef.getName()));
+      throw new HiveException(String.format("Internal Error: mapExecute called on function (%s)that has no Map Phase", tDef.getName()));
     }
     return _transformRawInput(iPart);
   }
