@@ -19,6 +19,6 @@ select p_mfgr, p_name, p_size,
 rank() as r, 
 dense_rank() as dr, 
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
-from noop(part_seq 
+from noop(on part_seq 
 partition by p_mfgr 
 order by p_name);  

@@ -33,7 +33,7 @@ select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
-from noop(part 
+from noop(on part 
   partition by p_mfgr
   order by p_name
   );
@@ -53,7 +53,7 @@ rank() as r,
 dense_rank() as dr,
 p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
 p_size, p_size - lag(p_size,1) as deltaSz
-from noop(part
+from noop(on part
 partition by p_mfgr
 order by p_name 
 );
@@ -84,7 +84,7 @@ sort by p1.p_name ;
 -- 7. testJoinWithNoop
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1) as deltaSz
-from noop ( (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
+from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 distribute by p_mfgr
@@ -113,7 +113,7 @@ sort by p_name ;
         
 -- 10. testOnlyPTF
 select p_mfgr, p_name, p_size
-from noop(part
+from noop(on part
 partition by p_mfgr
 order by p_name);
 
@@ -122,7 +122,7 @@ select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
-from noop(part 
+from noop(on part 
   partition by p_mfgr
   order by p_name
   ) abc;
@@ -132,7 +132,7 @@ select p_mfgr, p_name, p_size,
 rank() as r, 
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
-from noop(part 
+from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
@@ -145,7 +145,7 @@ select p_mfgr, p_name, p_size,
 rank() as r, 
 dense_rank() as dr, 
 p_size, p_size - lag(p_size,1) as deltaSz 
-from noop(part 
+from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
@@ -189,14 +189,14 @@ sort by p_name
 
 -- 17. testJoin
 select abc.* 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey;
 
 -- 18. testJoinRight
 select abc.* 
-from part p1 join noop(part 
+from part p1 join noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey;
@@ -207,7 +207,7 @@ rank() as r,
 dense_rank() as dr, 
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
@@ -223,7 +223,7 @@ sort by p_name, p_size desc;
 -- 21. testNoopWithMap
 select p_mfgr, p_name, p_size, 
 rank() as r over (partition by p_mfgr order by p_name, p_size desc)
-from noopwithmap(part
+from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc);
 
@@ -232,7 +232,7 @@ select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
-from noopwithmap(part 
+from noopwithmap(on part 
   partition by p_mfgr
   order by p_name);
 
@@ -261,7 +261,7 @@ select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
-from noop(part
+from noop(on part
 partition by p_mfgr
 order by p_name)
 having rank() < 4;
@@ -349,7 +349,7 @@ select p_mfgr, p_name, p_size,
 rank() as r, 
 dense_rank() as dr, 
 sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
-from noop(noopwithmap(noop(part 
+from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
 order by p_mfgr, p_name
 )));
@@ -361,7 +361,7 @@ from (select p_mfgr, p_name,
 count(p_size) as cd, 
 p_retailprice, 
 sum(p_retailprice) as s1 over w1 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name) 
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
@@ -385,7 +385,7 @@ dense_rank() as dr,
 count(abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
 abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
@@ -448,7 +448,7 @@ window w1 as (rows between 2 preceding and 2 following);
 
 -- 42. testDistinctInSelectWithPTF
 select DISTINCT p_mfgr, p_name, p_size 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name);
         
@@ -479,7 +479,7 @@ window w1 as (rows between 2 preceding and current row);
 -- 45. testViewAsTableInputToPTF
 select p_mfgr, p_brand, s, 
 sum(s) as s1 over w1 
-from noop(mfgr_price_view 
+from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
@@ -610,7 +610,7 @@ dr INT,
 cud DOUBLE, 
 fv1 INT);
 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
@@ -711,10 +711,10 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row) 
-from noop(
-        noopwithmap(
-          noop(
-              noop(part 
+from noop(on
+        noopwithmap(on
+          noop(on
+              noop(on part 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -728,10 +728,10 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
-from noop(
-        noop(
-          noop(
-              noop(part 
+from noop(on
+        noop(on
+          noop(on
+              noop(on part 
               partition by p_mfgr 
               order by p_mfgr) 
             ) 
@@ -745,10 +745,10 @@ select p_mfgr, p_name,
 rank() as r over (partition by p_mfgr order by p_name), 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 
-from noop(
-        noop(
-          noop(
-              noop(part 
+from noop(on
+        noop(on
+          noop(on
+              noop(on part 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -761,10 +761,10 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  
-from noopwithmap(
-        noop(
-          noop(
-              noop(part 
+from noopwithmap(on
+        noop(on
+          noop(on
+              noop(on part 
               partition by p_mfgr,p_name 
               order by p_mfgr,p_name) 
             ) 
@@ -780,9 +780,9 @@ dense_rank() as dr,
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
 sum(p_size) as s2 over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) 
-from noop(
-        noopwithmap(
-              noop(part 
+from noop(on
+        noopwithmap(on
+              noop(on part 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           partition by p_mfgr 
@@ -796,23 +796,22 @@ dense_rank() as dr,
 p_size, 
 sum(p_size) as s1 over (rows between unbounded preceding and current row), 
 sum(p_size) as s2 over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) 
-from noopwithmap(
-        noop(
-              noop(part 
+from noopwithmap(on
+        noop(on
+              noop(on part 
               partition by p_mfgr, p_name 
               order by p_mfgr, p_name) 
           ));
 
 -- 67. basic Npath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npath( 
-      'LATE.LATE+', 
-      'LATE', arr_delay > 15, 
-    'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath' 
-     on 
+from npath(on 
         flights_tiny 
         distribute by fl_num 
-      sort by year, month, day_of_month  
+        sort by year, month, day_of_month  
+      arg1('LATE.LATE+'), 
+      arg2('LATE'), arg3(arr_delay > 15), 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
    );       
    
 -- 68. testRankWithPartitioning

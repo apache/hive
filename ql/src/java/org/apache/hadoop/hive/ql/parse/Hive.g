@@ -1941,9 +1941,8 @@ partitionedTableFunction
 @after { msgs.pop(); } 
    :
    name=Identifier 
-   LPAREN
-     ((expression COMMA)=> expression (COMMA expression)* KW_ON)?
-     ptfsrc=partitionTableFunctionSource partitioningSpec?
+   LPAREN KW_ON
+     ptfsrc=partitionTableFunctionSource partitioningSpec? ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)?
    RPAREN alias=Identifier?
    ->   ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
    ;   

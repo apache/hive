@@ -14,7 +14,7 @@ CREATE TABLE part(
 
 -- testHavingLeadWithPTF
 select  p_mfgr,p_name, p_size 
-from noop(part 
+from noop(on part 
 partition by p_mfgr 
 order by p_name) 
 having lead(p_size, 1) <= p_size 
