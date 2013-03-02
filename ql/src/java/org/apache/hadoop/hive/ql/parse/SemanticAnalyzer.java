@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -224,6 +225,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private Map<JoinOperator, QBJoinTree> joinContext;
+  private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
   private QB qb;
   private ASTNode ast;
@@ -281,6 +283,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadFileWork = new ArrayList<LoadFileDesc>();
     opParseCtx = new LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>();
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
+    smbMapJoinContext = new HashMap<SMBMapJoinOperator, QBJoinTree>();
     topToTable = new HashMap<TableScanOperator, Table>();
     destTableId = 1;
     uCtx = null;
@@ -309,6 +312,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ast = null;
     uCtx = null;
     joinContext.clear();
+    smbMapJoinContext.clear();
     opParseCtx.clear();
     groupOpToInputTables.clear();
     prunedPartitions.clear();
@@ -324,6 +328,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
     joinContext = pctx.getJoinContext();
+    smbMapJoinContext = pctx.getSmbMapJoinContext();
     ctx = pctx.getContext();
     destTableId = pctx.getDestTableId();
     idToTableNameMap = pctx.getIdToTableNameMap();
@@ -338,7 +343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
-        topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
+        topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
@@ -3695,21 +3700,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Need to pass all of the columns used in the where clauses as reduce values
       ASTNode whereClause = parseInfo.getWhrForClause(destination);
       if (whereClause != null) {
-        List<ASTNode> columnExprs =
-            getColumnExprsFromASTNode(whereClause, reduceSinkInputRowResolver);
-        for (int i = 0; i < columnExprs.size(); i++) {
-          ASTNode parameter = columnExprs.get(i);
-          if (reduceSinkOutputRowResolver.getExpression(parameter) == null) {
-            reduceValues.add(genExprNodeDesc(parameter,
-                reduceSinkInputRowResolver));
-            outputValueColumnNames
-                .add(getColumnInternalName(reduceValues.size() - 1));
-            String field = Utilities.ReduceField.VALUE.toString() + "."
-                + getColumnInternalName(reduceValues.size() - 1);
-            reduceSinkOutputRowResolver.putExpression(parameter, new ColumnInfo(field,
-                reduceValues.get(reduceValues.size() - 1).getTypeInfo(), null,
-                false));
+        assert whereClause.getChildCount() == 1;
+        ASTNode predicates = (ASTNode) whereClause.getChild(0);
+
+        Map<ASTNode, ExprNodeDesc> nodeOutputs =
+            genAllExprNodeDesc(predicates, reduceSinkInputRowResolver);
+        removeMappingForKeys(predicates, nodeOutputs, reduceKeys);
+
+        // extract columns missing in current RS key/value
+        for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
+          ASTNode parameter = (ASTNode) entry.getKey();
+          ExprNodeDesc expression = (ExprNodeDesc) entry.getValue();
+          if (!(expression instanceof ExprNodeColumnDesc)) {
+            continue;
           }
+          if (ExprNodeDescUtils.indexOf(expression, reduceValues) >= 0) {
+            continue;
+          }
+          String internalName = getColumnInternalName(reduceValues.size());
+          String field = Utilities.ReduceField.VALUE.toString() + "." + internalName;
+
+          reduceValues.add(expression);
+          outputValueColumnNames.add(internalName);
+          reduceSinkOutputRowResolver.putExpression(parameter,
+              new ColumnInfo(field, expression.getTypeInfo(), null, false));
         }
       }
     }
@@ -3724,32 +3738,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return rsOp;
   }
 
-  /**
-   * Given an ASTNode, it returns all of the descendant ASTNodes which represent column expressions
-   *
-   * @param node
-   * @param inputRR
-   * @return
-   * @throws SemanticException
-   */
-  private List<ASTNode> getColumnExprsFromASTNode(ASTNode node, RowResolver inputRR)
-      throws SemanticException {
-
-    List<ASTNode> nodes = new ArrayList<ASTNode>();
-    if (node.getChildCount() == 0) {
-      return nodes;
-    }
-    for (int i = 0; i < node.getChildCount(); i++) {
-      ASTNode child = (ASTNode) node.getChild(i);
-      if (child.getType() == HiveParser.TOK_TABLE_OR_COL && child.getChild(0) != null &&
-          inputRR.get(null,
-              BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText())) != null) {
-        nodes.add(child);
-      } else {
-        nodes.addAll(getColumnExprsFromASTNode(child, inputRR));
+  // Remove expression node descriptor and children of it for a given predicate
+  // from mapping if it's already on RS keys.
+  // Remaining column expressions would be a candidate for an RS value
+  private void removeMappingForKeys(ASTNode predicate, Map<ASTNode, ExprNodeDesc> mapping,
+      List<ExprNodeDesc> keys) {
+    ExprNodeDesc expr = (ExprNodeDesc) mapping.get(predicate);
+    if (expr != null && ExprNodeDescUtils.indexOf(expr, keys) >= 0) {
+      removeRecursively(predicate, mapping);
+    } else {
+      for (int i = 0; i < predicate.getChildCount(); i++) {
+        removeMappingForKeys((ASTNode) predicate.getChild(i), mapping, keys);
       }
     }
-    return nodes;
+  }
+
+  // Remove expression node desc and all children of it from mapping
+  private void removeRecursively(ASTNode current, Map<ASTNode, ExprNodeDesc> mapping) {
+    mapping.remove(current);
+    for (int i = 0; i < current.getChildCount(); i++) {
+      removeRecursively((ASTNode) current.getChild(i), mapping);
+    }
   }
 
   /**
@@ -5263,6 +5272,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     fileSinkDesc.setLbCtx(lbCtx);
 
+    // set it in plan instead of runtime in FileSinkOperator
+    fileSinkDesc.setStatsCollectRawDataSize(HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE));
+
     // set the stats publishing/aggregating key prefix
     // the same as directory name. The directory name
     // can be changed in the optimizer but the key should not be changed
@@ -6055,7 +6068,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     genJoinOperatorTypeCheck(joinSrcOp, srcOps);
 
     JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
-        joinSrcOp, srcOps, omitOpts);
+      joinSrcOp, srcOps, omitOpts);
     joinContext.put(joinOp, joinTree);
     return joinOp;
   }
@@ -8672,7 +8685,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
-        opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
+        opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
+        topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
@@ -8834,16 +8848,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Generates an expression node descriptor for the expression passed in the
-   * arguments. This function uses the row resolver and the metadata information
-   * that are passed as arguments to resolve the column names to internal names.
-   *
-   * @param expr
-   *          The expression
-   * @param input
-   *          The row resolver
-   * @return exprNodeDesc
-   * @throws SemanticException
+   * Generates an expression node descriptor for the expression with TypeCheckCtx.
    */
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input)
       throws SemanticException {
@@ -8854,20 +8859,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Generates an expression node descriptor for the expression passed in the
-   * arguments. This function uses the row resolver and the metadata information
-   * that are passed as arguments to resolve the column names to internal names.
-   *
-   * @param expr
-   *          The expression
-   * @param input
-   *          The row resolver
-   * @param tcCtx
-   *          Customized type-checking context
-   * @return exprNodeDesc
-   * @throws SemanticException
+   * Generates an expression node descriptors for the expression and children of it
+   * with default TypeCheckCtx.
    */
-  @SuppressWarnings("nls")
+  public Map<ASTNode, ExprNodeDesc> genAllExprNodeDesc(ASTNode expr, RowResolver input)
+      throws SemanticException {
+    TypeCheckCtx tcCtx = new TypeCheckCtx(input);
+    return genAllExprNodeDesc(expr, input, tcCtx);
+  }
+
+  /**
+   * Returns expression node descriptor for the expression.
+   * If it's evaluated already in previous operator, it can be retrieved from cache.
+   */
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
       TypeCheckCtx tcCtx) throws SemanticException {
     // We recursively create the exprNodeDesc. Base cases: when we encounter
@@ -8878,6 +8882,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // build the exprNodeFuncDesc with recursively built children.
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
+    ExprNodeDesc cached = getExprNodeDescCached(expr, input);
+    if (cached == null) {
+      Map<ASTNode, ExprNodeDesc> allExprs = genAllExprNodeDesc(expr, input, tcCtx);
+      return allExprs.get(expr);
+    }
+    return cached;
+  }
+
+  /**
+   * Find ExprNodeDesc for the expression cached in the RowResolver. Returns null if not exists.
+   */
+  private ExprNodeDesc getExprNodeDescCached(ASTNode expr, RowResolver input)
+      throws SemanticException {
     ColumnInfo colInfo = input.getExpression(expr);
     if (colInfo != null) {
       ASTNode source = input.getExpressionSource(expr);
@@ -8888,11 +8905,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getInternalName(), colInfo.getTabAlias(), colInfo
           .getIsVirtualCol(), colInfo.isSkewedCol());
     }
+    return null;
+  }
 
-    // Create the walker and the rules dispatcher.
+  /**
+   * Generates all of the expression node descriptors for the expression and children of it
+   * passed in the arguments. This function uses the row resolver and the metadata information
+   * that are passed as arguments to resolve the column names to internal names.
+   *
+   * @param expr
+   *          The expression
+   * @param input
+   *          The row resolver
+   * @param tcCtx
+   *          Customized type-checking context
+   * @return expression to exprNodeDesc mapping
+   * @throws SemanticException Failed to evaluate expression
+   */
+  @SuppressWarnings("nls")
+  public Map<ASTNode, ExprNodeDesc> genAllExprNodeDesc(ASTNode expr, RowResolver input,
+    TypeCheckCtx tcCtx) throws SemanticException {
+    // Create the walker and  the rules dispatcher.
     tcCtx.setUnparseTranslator(unparseTranslator);
 
-    HashMap<Node, Object> nodeOutputs =
+    Map<ASTNode, ExprNodeDesc> nodeOutputs =
         TypeCheckProcFactory.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = (ExprNodeDesc) nodeOutputs.get(expr);
     if (desc == null) {
@@ -8905,17 +8941,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (!unparseTranslator.isEnabled()) {
       // Not creating a view, so no need to track view expansions.
-      return desc;
+      return nodeOutputs;
     }
 
-    for (Map.Entry<Node, Object> entry : nodeOutputs.entrySet()) {
-      if (!(entry.getKey() instanceof ASTNode)) {
-        continue;
-      }
+    for (Map.Entry<ASTNode, ExprNodeDesc> entry : nodeOutputs.entrySet()) {
       if (!(entry.getValue() instanceof ExprNodeColumnDesc)) {
         continue;
       }
-      ASTNode node = (ASTNode) entry.getKey();
+      ASTNode node = entry.getKey();
       ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) entry.getValue();
       if ((columnDesc.getTabAlias() == null)
           || (columnDesc.getTabAlias().length() == 0)) {
@@ -8931,7 +8964,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       unparseTranslator.addTranslation(node, replacementText.toString());
     }
 
-    return desc;
+    return nodeOutputs;
   }
 
   @Override

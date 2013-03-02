@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -818,9 +819,9 @@ public class NPath extends TableFunctionEvaluator
     {
       // todo: use SemanticAnalyzer::genExprNodeDesc
       // currently SA not available to PTFTranslator.
-      HashMap<Node, Object> map = TypeCheckProcFactory
+      Map<ASTNode, ExprNodeDesc> map = TypeCheckProcFactory
           .genExprNode(expr, typeCheckCtx);
-      ExprNodeDesc desc = (ExprNodeDesc) map.get(expr);
+      ExprNodeDesc desc = map.get(expr);
       if (desc == null) {
         String errMsg = typeCheckCtx.getError();
         if ( errMsg == null) {

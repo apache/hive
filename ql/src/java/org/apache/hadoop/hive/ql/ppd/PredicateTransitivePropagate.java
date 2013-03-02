@@ -63,18 +63,15 @@ public class PredicateTransitivePropagate implements Transform {
 
   private ParseContext pGraphContext;
 
+  @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1",
-      "(" + FilterOperator.getOperatorName() + "%" +
+    opRules.put(new RuleRegExp("R1", "(" +
+        FilterOperator.getOperatorName() + "%" +
         ReduceSinkOperator.getOperatorName() + "%" +
-        JoinOperator.getOperatorName() + "%)|" +
-      "(" + FilterOperator.getOperatorName() + "%" +
-        ReduceSinkOperator.getOperatorName() + "%" +
-        MapJoinOperator.getOperatorName() + "%)")
-      , new JoinTransitive());
+        JoinOperator.getOperatorName() + "%)"), new JoinTransitive());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -87,21 +84,22 @@ public class PredicateTransitivePropagate implements Transform {
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
 
-    Map<ReduceSinkOperator, ExprNodeDesc> newFilters = context.getNewfilters();
+    Map<ReduceSinkOperator, List<ExprNodeDesc>> newFilters = context.getNewfilters();
 
     // insert new filter between RS and parent of RS
-    for (Map.Entry<ReduceSinkOperator, ExprNodeDesc> entry : newFilters.entrySet()) {
+    for (Map.Entry<ReduceSinkOperator, List<ExprNodeDesc>> entry : newFilters.entrySet()) {
       ReduceSinkOperator reducer = entry.getKey();
       Operator<?> parent = reducer.getParentOperators().get(0);
 
-      ExprNodeDesc expr = entry.getValue();
+      List<ExprNodeDesc> exprs = entry.getValue();
       if (parent instanceof FilterOperator) {
-        ExprNodeDesc prev = ((FilterOperator)parent).getConf().getPredicate();
-        ExprNodeDesc merged = ExprNodeDescUtils.mergePredicates(prev, expr);
+        exprs = ExprNodeDescUtils.split(((FilterOperator)parent).getConf().getPredicate(), exprs);
+        ExprNodeDesc merged = ExprNodeDescUtils.mergePredicates(exprs);
         ((FilterOperator)parent).getConf().setPredicate(merged);
       } else {
+        ExprNodeDesc merged = ExprNodeDescUtils.mergePredicates(exprs);
         RowResolver parentRR = pGraphContext.getOpParseCtx().get(parent).getRowResolver();
-        Operator<FilterDesc> newFilter = createFilter(reducer, parent, parentRR, expr);
+        Operator<FilterDesc> newFilter = createFilter(reducer, parent, parentRR, merged);
         pGraphContext.getOpParseCtx().put(newFilter, new OpParseContext(parentRR));
       }
     }
@@ -126,24 +124,24 @@ public class PredicateTransitivePropagate implements Transform {
   private static class TransitiveContext implements NodeProcessorCtx {
 
     private final Map<CommonJoinOperator, int[][]> filterPropagates;
-    private final Map<ReduceSinkOperator, ExprNodeDesc> newFilters;
+    private final Map<ReduceSinkOperator, List<ExprNodeDesc>> newFilters;
 
     public TransitiveContext() {
       filterPropagates = new HashMap<CommonJoinOperator, int[][]>();
-      newFilters = new HashMap<ReduceSinkOperator, ExprNodeDesc>();
+      newFilters = new HashMap<ReduceSinkOperator, List<ExprNodeDesc>>();
     }
 
-    public Map<CommonJoinOperator, int[][]> getFilterPropates() {
+    public Map<CommonJoinOperator, int[][]> getFilterPropagates() {
       return filterPropagates;
     }
 
-    public Map<ReduceSinkOperator, ExprNodeDesc> getNewfilters() {
+    public Map<ReduceSinkOperator, List<ExprNodeDesc>> getNewfilters() {
       return newFilters;
     }
   }
 
   private static class JoinTransitive implements NodeProcessor {
-
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
@@ -153,8 +151,8 @@ public class PredicateTransitivePropagate implements Transform {
       int srcPos = join.getParentOperators().indexOf(source);
 
       TransitiveContext context = (TransitiveContext) procCtx;
-      Map<CommonJoinOperator, int[][]> filterPropagates = context.getFilterPropates();
-      Map<ReduceSinkOperator, ExprNodeDesc> newFilters = context.getNewfilters();
+      Map<CommonJoinOperator, int[][]> filterPropagates = context.getFilterPropagates();
+      Map<ReduceSinkOperator, List<ExprNodeDesc>> newFilters = context.getNewfilters();
 
       int[][] targets = filterPropagates.get(join);
       if (targets == null) {
@@ -170,11 +168,11 @@ public class PredicateTransitivePropagate implements Transform {
         ExprNodeDesc predicate = filter.getConf().getPredicate();
         ExprNodeDesc replaced = ExprNodeDescUtils.replace(predicate, sourceKeys, targetKeys);
         if (replaced != null && !filterExists(target, replaced)) {
-          ExprNodeDesc prev = newFilters.get(target);
+          List<ExprNodeDesc> prev = newFilters.get(target);
           if (prev == null) {
-            newFilters.put(target, replaced);
+            newFilters.put(target, ExprNodeDescUtils.split(replaced));
           } else {
-            newFilters.put(target, ExprNodeDescUtils.mergePredicates(prev, replaced));
+            ExprNodeDescUtils.split(replaced, prev);
           }
         }
       }

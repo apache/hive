@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -416,6 +417,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
       if (mergeFilesDesc != null) {
         return mergeFiles(db, mergeFilesDesc);
+      }
+
+      AlterTableAlterPartDesc alterPartDesc = work.getAlterTableAlterPartDesc();
+      if(alterPartDesc != null) {
+        return alterTableAlterPart(db, alterPartDesc);
       }
 
       TruncateTableDesc truncateTableDesc = work.getTruncateTblDesc();
@@ -1066,6 +1072,49 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         .getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
     work.getInputs().add(new ReadEntity(oldPart));
     work.getOutputs().add(new WriteEntity(newPart));
+    return 0;
+  }
+
+  /**
+  * Alter partition column type in a table
+  *
+  * @param db
+  *          Database to rename the partition.
+  * @param alterPartitionDesc
+  *          change partition column type.
+  * @return Returns 0 when execution succeeds and above 0 if it fails.
+  * @throws HiveException
+  */
+  private int alterTableAlterPart(Hive db, AlterTableAlterPartDesc alterPartitionDesc)
+    throws HiveException {
+
+    Table tbl = db.getTable(alterPartitionDesc.getDbName(), alterPartitionDesc.getTableName());
+    String tabName = alterPartitionDesc.getTableName();
+
+    // This is checked by DDLSemanticAnalyzer
+    assert(tbl.isPartitioned());
+
+    List<FieldSchema> newPartitionKeys = new ArrayList<FieldSchema>();
+
+    for(FieldSchema col : tbl.getTTable().getPartitionKeys()) {
+      if (col.getName().compareTo(alterPartitionDesc.getPartKeySpec().getName()) == 0) {
+        newPartitionKeys.add(alterPartitionDesc.getPartKeySpec());
+      } else {
+        newPartitionKeys.add(col);
+      }
+    }
+
+    tbl.getTTable().setPartitionKeys(newPartitionKeys);
+
+    try {
+      db.alterTable(tabName, tbl);
+    } catch (InvalidOperationException e) {
+      throw new HiveException("Uable to update table");
+    }
+
+    work.getInputs().add(new ReadEntity(tbl));
+    work.getOutputs().add(new WriteEntity(tbl));
+
     return 0;
   }
 

@@ -27,11 +27,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -326,10 +328,37 @@ public class MetaStoreUtils {
     return false;
   }
 
-  static public boolean validateColNames(List<FieldSchema> cols) {
+  static public boolean validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateName(fieldSchema.getName())) {
         return false;
+      }
+      if (!validateColumnType(fieldSchema.getType())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * validate column type
+   *
+   * if it is predefined, yes. otherwise no
+   * @param name
+   * @return
+   */
+  static public boolean validateColumnType(String type) {
+    int last = 0;
+    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    for (int i = 1; i <= type.length(); i++) {
+      if (i == type.length()
+          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+        String token = type.substring(last, i);
+        last = i;
+        if (!hiveThriftTypeMap.contains(token)) {
+          return false;
+        }
+        break;
       }
     }
     return true;
@@ -417,6 +446,15 @@ public class MetaStoreUtils {
             "timestamp");
     typeToThriftTypeMap.put(
         org.apache.hadoop.hive.serde.serdeConstants.DECIMAL_TYPE_NAME, "decimal");
+  }
+
+  static Set<String> hiveThriftTypeMap; //for validation
+  static {
+    hiveThriftTypeMap = new HashSet<String>();
+    hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.PrimitiveTypes);
+    hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.CollectionTypes);
+    hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME);
+    hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.STRUCT_TYPE_NAME);
   }
 
   /**
@@ -1100,6 +1138,39 @@ public class MetaStoreUtils {
     } catch (Exception e) {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
+  }
+
+  public static void validatePartitionNameCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) throws MetaException {
+
+    String invalidPartitionVal =
+        getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+    if (invalidPartitionVal != null) {
+      throw new MetaException("Partition value '" + invalidPartitionVal +
+          "' contains a character " + "not matched by whitelist pattern '" +
+          partitionValidationPattern.toString() + "'.  " + "(configure with " +
+          HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+      }
+  }
+
+  public static boolean partitionNameHasValidCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+
+    return null;
   }
 
 }

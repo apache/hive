@@ -188,6 +188,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_TOUCH:
       case HiveParser.TOK_ALTERTABLE_ARCHIVE:
       case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
+      case HiveParser.TOK_ALTERTABLE_ALTERPARTS:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
       case HiveParser.TOK_CREATEROLE:

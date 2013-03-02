@@ -79,7 +79,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 80.0) and (key < 100.0))
+                  expr: ((key < 100.0) and (key < 80.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -106,7 +106,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 100.0) and (key < 80.0))
+                  expr: ((key < 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -194,7 +194,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 100.0) and (key < 80.0))
+                  expr: ((key < 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -217,7 +217,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 80.0) and (key < 100.0))
+                  expr: ((key < 100.0) and (key < 80.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -305,7 +305,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 100.0) and (key < 80.0))
+                  expr: ((key < 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -357,7 +357,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 80.0) and (key < 100.0))
+                  expr: ((key < 100.0) and (key < 80.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -409,7 +409,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 100.0) and (key < 80.0))
+                  expr: ((key < 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -459,7 +459,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 80.0) and (key < 100.0))
+                  expr: ((key < 100.0) and (key < 80.0))
                   type: boolean
               Select Operator
                 expressions:

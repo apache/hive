@@ -67,26 +67,19 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Select Operator
               expressions:
-                    expr: _col0
-                    type: string
+                    expr: UDFToInteger(_col0)
+                    type: int
                     expr: _col1
                     type: double
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: double
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: true
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+              File Output Operator
+                compressed: true
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dest1
           Group By Operator
             aggregations:
                   expr: sum(VALUE._col0)
@@ -98,26 +91,19 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Select Operator
               expressions:
-                    expr: _col0
-                    type: string
+                    expr: UDFToInteger(_col0)
+                    type: int
                     expr: _col1
                     type: double
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: double
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: true
-                  GlobalTableId: 2
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest2
+              File Output Operator
+                compressed: true
+                GlobalTableId: 2
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dest2
 
   Stage: Stage-0
     Move Operator

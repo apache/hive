@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -536,7 +536,7 @@ public class CliDriver {
     }
 
     // We add Hive keywords, including lower-cased versions
-    for (String s : ParseDriver.getKeywords()) {
+    for (String s : HiveParser.getKeywords()) {
       sc.addCandidateString(s);
       sc.addCandidateString(s.toLowerCase());
     }

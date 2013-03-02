@@ -93,13 +93,51 @@ public class ExprNodeDescUtils {
 
   /**
    * bind two predicates by AND op
-    */
+   */
   public static ExprNodeDesc mergePredicates(ExprNodeDesc prev, ExprNodeDesc next) {
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
     children.add(prev);
     children.add(next);
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
         FunctionRegistry.getGenericUDFForAnd(), children);
+  }
+
+  /**
+   * bind n predicates by AND op
+   */
+  public static ExprNodeDesc mergePredicates(List<ExprNodeDesc> exprs) {
+    ExprNodeDesc prev = null;
+    for (ExprNodeDesc expr : exprs) {
+      if (prev == null) {
+        prev = expr;
+        continue;
+      }
+      prev = mergePredicates(prev, expr);
+    }
+    return prev;
+  }
+
+  /**
+   * split predicates by AND op
+   */
+  public static List<ExprNodeDesc> split(ExprNodeDesc current) {
+    return split(current, new ArrayList<ExprNodeDesc>());
+  }
+
+  /**
+   * split predicates by AND op
+   */
+  public static List<ExprNodeDesc> split(ExprNodeDesc current, List<ExprNodeDesc> splitted) {
+    if (FunctionRegistry.isOpAnd(current)) {
+      for (ExprNodeDesc child : current.getChildren()) {
+        split(child, splitted);
+      }
+      return splitted;
+    }
+    if (indexOf(current, splitted) < 0) {
+      splitted.add(current);
+    }
+    return splitted;
   }
 
   /**
@@ -115,6 +153,25 @@ public class ExprNodeDescUtils {
       return ((ExprNodeColumnDesc)children.get(0)).getColumn();
     }
     return null;
+  }
+
+  /**
+   * Return false if the expression has any non determinitic function
+   */
+  public static boolean isDeterministic(ExprNodeDesc desc) {
+    if (desc instanceof ExprNodeGenericFuncDesc) {
+      if (!FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc)desc).getGenericUDF())) {
+        return false;
+      }
+    }
+    if (desc.getChildren() != null) {
+      for (ExprNodeDesc child : desc.getChildren()) {
+        if (!isDeterministic(child)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /**
@@ -170,7 +227,7 @@ public class ExprNodeDescUtils {
     return backtrack(mapped, parent, terminal);    // forward with resolved expr
   }
 
-  private static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)
+  public static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)
       throws SemanticException {
     List<Operator<?>> parents = current.getParentOperators();
     if (parents == null || parents.isEmpty()) {

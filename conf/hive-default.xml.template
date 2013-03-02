@@ -286,7 +286,7 @@
 <property>
   <name>hive.metastore.partition.name.whitelist.pattern</name>
   <value></value>
-  <description>Partition names will be checked against this regex pattern and rejected if not matched.  To use, enable hive.metastore.pre.event.listeners=org.apache.hadoop.hive.metastore.PartitionNameWhitelistPreEventListener  Listener will not register if this property value is empty.</description>
+  <description>Partition names will be checked against this regex pattern and rejected if not matched.</description>
 </property>
 
 <property>
@@ -931,6 +931,27 @@
   <value>false</value>
   <description>If the user asked for sort-merge bucketed map-side join, and it cannot be performed,
     should the query fail or not ?
+  </description>
+</property>
+
+<property>
+  <name>hive.auto.convert.sortmerge.join</name>
+  <value>false</value>
+  <description>Will the join be automatically converted to a sort-merge join, if the joined tables pass
+    the criteria for sort-merge join.
+  </description>
+</property>
+
+<property>
+  <name>hive.auto.convert.sortmerge.join.bigtable.selection.policy</name>
+  <value>org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ</value>
+  <description>The policy to choose the big table for automatic conversion to sort-merge join.
+    By default, the leftmost table is assigned the big table. Other policies are based on size:
+    . based on total size (all the partitions selected in the query) of the table 
+    org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ.
+    . based on average size (all the partitions selected in the query) of the table 
+    org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ.
+    New policies can be added in future.
   </description>
 </property>
 

@@ -172,6 +172,11 @@ public class FilterOperator extends Operator<FilterDesc> implements
   }
 
   @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
+
+  @Override
   public boolean supportUnionRemoveOptimization() {
     return true;
   }

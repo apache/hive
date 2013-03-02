@@ -141,18 +141,13 @@ STAGE PLANS:
                   expr: _col1
                   type: string
             outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-              outputColumnNames: _col0
-              Limit
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-3
     Map Reduce

@@ -161,40 +161,31 @@ STAGE PLANS:
                       type: string
                       expr: _col6
                       type: string
-                outputColumnNames: _col0, _col1, _col6
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col6
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.types string:string:string
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        bucket_count -1
+                        columns key,value1,value2
+                        columns.types string:string:string
 #### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name default.bucketmapjoin_tmp_result
+                        serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.bucketmapjoin_tmp_result
+                  TotalFiles: 1
+                  GatherStats: true
+                  MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Needs Tagging: false
@@ -667,45 +658,36 @@ STAGE PLANS:
                       type: string
                       expr: _col6
                       type: string
-                outputColumnNames: _col0, _col1, _col6
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col6
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          bucket_count -1
-                          columns key,value1,value2
-                          columns.types string:string:string
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        bucket_count -1
+                        columns key,value1,value2
+                        columns.types string:string:string
 #### A masked pattern was here ####
-                          name default.bucketmapjoin_tmp_result
-                          numFiles 1
-                          numPartitions 0
-                          numRows 564
-                          rawDataSize 10503
-                          serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
-                          serialization.format 1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          totalSize 11067
+                        name default.bucketmapjoin_tmp_result
+                        numFiles 1
+                        numPartitions 0
+                        numRows 564
+                        rawDataSize 10503
+                        serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        totalSize 11067
 #### A masked pattern was here ####
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.bucketmapjoin_tmp_result
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.bucketmapjoin_tmp_result
+                  TotalFiles: 1
+                  GatherStats: true
+                  MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
       Needs Tagging: false

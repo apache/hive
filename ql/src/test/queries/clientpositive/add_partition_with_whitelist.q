@@ -1,4 +1,3 @@
-SET hive.metastore.pre.event.listeners=org.apache.hadoop.hive.metastore.PartitionNameWhitelistPreEventListener;
 SET hive.metastore.partition.name.whitelist.pattern=[A-Za-z]*;
 -- This pattern matches only letters.
 

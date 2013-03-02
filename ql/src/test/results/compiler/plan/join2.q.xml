@@ -14,7 +14,7 @@
             <void method="add"> 
              <object id="StatsTask0" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
               <void property="id"> 
-               <string>Stage-6</string> 
+               <string>Stage-3</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -42,7 +42,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-3</string> 
+           <string>Stage-0</string> 
           </void> 
           <void property="parentTasks"> 
            <object class="java.util.ArrayList"> 
@@ -159,7 +159,7 @@
        </object> 
       </void> 
       <void property="id"> 
-       <string>Stage-5</string> 
+       <string>Stage-2</string> 
       </void> 
       <void property="parentTasks"> 
        <object class="java.util.ArrayList"> 
@@ -1268,6 +1268,9 @@
                     <void property="statsAggPrefix"> 
                      #### A masked pattern was here #### 
                     </void> 
+                    <void property="statsCollectRawDataSize"> 
+                     <boolean>true</boolean> 
+                    </void> 
                     <void property="tableInfo"> 
                      <object idref="TableDesc0"/> 
                     </void> 
@@ -1725,7 +1728,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-4</string> 
+   <string>Stage-1</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 

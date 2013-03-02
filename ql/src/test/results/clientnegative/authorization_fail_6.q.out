@@ -1,6 +1,10 @@
-PREHOOK: query: create table authorization_part_fail (key int, value string) partitioned by (ds string)
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_part_fail (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table authorization_part_fail (key int, value string) partitioned by (ds string)
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_part_fail (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_part_fail
 Authorization failed:No privilege 'Alter' found for inputs { database:default, table:authorization_part_fail}. Use show grant to get more details.

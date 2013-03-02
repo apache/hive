@@ -18,7 +18,7 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 -- A join is being performed across different sub-queries, where a mapjoin is being performed in each of them.
 -- Each sub-query should be converted to a sort-merge join.
 -- A join followed by mapjoin is not allowed, so this query should fail.
--- Once HIVE-3433 is in, this should be automatically converted to a sort-merge join without the hint
+-- Once HIVE-3403 is in, this should be automatically converted to a sort-merge join without the hint
 explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (

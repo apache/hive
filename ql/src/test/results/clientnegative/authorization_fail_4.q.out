@@ -1,6 +1,10 @@
-PREHOOK: query: create table authorization_fail_4 (key int, value string) partitioned by (ds string)
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_fail_4 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table authorization_fail_4 (key int, value string) partitioned by (ds string)
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_fail_4 (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_fail_4
 PREHOOK: query: grant Alter on table authorization_fail_4 to user hive_test_user

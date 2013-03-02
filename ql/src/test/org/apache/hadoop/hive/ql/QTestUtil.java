@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,6 +101,8 @@ public class QTestUtil {
   protected final String logDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
+  private final Set<String> qSortSet;
+  private static final String SORT_SUFFIX = ".sorted";
   public static final HashSet<String> srcTables = new HashSet<String>
     (Arrays.asList(new String [] {
         "src", "src1", "srcbucket", "srcbucket2", "src_json", "src_thrift",
@@ -286,6 +289,7 @@ public class QTestUtil {
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
+    qSortSet = new HashSet<String>();
 
     if (miniMr) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
@@ -347,15 +351,29 @@ public class QTestUtil {
     while ((line = br.readLine()) != null) {
       qsb.append(line + "\n");
     }
-    String query = qsb.toString();
+    br.close();
 
+    String query = qsb.toString();
     qMap.put(qf.getName(), query);
 
     if(checkHadoopVersionExclude(qf.getName(), query)
       || checkOSExclude(qf.getName(), query)) {
       qSkipSet.add(qf.getName());
     }
-    br.close();
+
+    if (checkNeedsSort(qf.getName(), query)) {
+      qSortSet.add(qf.getName());
+    }
+  }
+
+  private boolean checkNeedsSort(String fileName, String query) {
+    Pattern pattern = Pattern.compile("-- SORT_BEFORE_DIFF");
+    Matcher matcher = pattern.matcher(query);
+    
+    if (matcher.find()) {
+      return true;
+    }
+    return false;
   }
 
   private boolean checkHadoopVersionExclude(String fileName, String query){
@@ -394,14 +412,14 @@ public class QTestUtil {
       String versions = matcher.group(2);
       for (String s : versions.split("\\,")) {
         s = s.trim();
-	versionSet.add(s);
+        versionSet.add(s);
       }
     }
 
     if (matcher.find()) {
       //2nd match is not supposed to be there
       String message = "QTestUtil: qfile " + fileName
-	  + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
+        + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
       throw new UnsupportedOperationException(message);
     }
 
@@ -427,20 +445,20 @@ public class QTestUtil {
     if (matcher.find()) {
       String prefix = matcher.group(1);
       if ("EX".equals(prefix)) {
-	//windows is to be exluded
-	if(Shell.WINDOWS){
-	  System.out.println("Due to the OS being windows " +
-	    "adding the  query " + fileName +
-	    " to the set of tests to skip");
-	  return true;
-	}
+        //windows is to be exluded
+        if(Shell.WINDOWS){
+          System.out.println("Due to the OS being windows " +
+                             "adding the  query " + fileName +
+                             " to the set of tests to skip");
+          return true;
+        }
       }
       else  if(!Shell.WINDOWS){
-	//non windows to be exluded
-	System.out.println("Due to the OS not being windows " +
-	    "adding the  query " + fileName +
-	    " to the set of tests to skip");
-	return true;
+        //non windows to be exluded
+        System.out.println("Due to the OS not being windows " +
+                           "adding the  query " + fileName +
+                           " to the set of tests to skip");
+        return true;
       }
     }
     return false;
@@ -817,7 +835,8 @@ public class QTestUtil {
     outfd.write(e.getMessage());
     outfd.close();
 
-    int exitVal = executeDiffCommand(outf.getPath(), expf, false);
+    int exitVal = executeDiffCommand(outf.getPath(), expf, false, 
+                                     qSortSet.contains(qf.getName()));
     if (exitVal != 0 && overWrite) {
       exitVal = overwriteResults(outf.getPath(), expf);
     }
@@ -839,7 +858,7 @@ public class QTestUtil {
       outfd.write(tree.toStringTree());
       outfd.close();
 
-      int exitVal = executeDiffCommand(outf.getPath(), expf, false);
+      int exitVal = executeDiffCommand(outf.getPath(), expf, false, false);
 
       if (exitVal != 0 && overWrite) {
         exitVal = overwriteResults(outf.getPath(), expf);
@@ -876,7 +895,7 @@ public class QTestUtil {
       };
       maskPatterns(patterns, outf.getPath());
 
-      int exitVal = executeDiffCommand(outf.getPath(), planFile, true);
+      int exitVal = executeDiffCommand(outf.getPath(), planFile, true, false);
 
       if (exitVal != 0 && overWrite) {
         exitVal = overwriteResults(outf.getPath(), planFile);
@@ -1009,7 +1028,8 @@ public class QTestUtil {
 
     maskPatterns(patterns, f.getPath());
     int exitVal = executeDiffCommand(f.getPath(),
-                    outFileName, false);
+                                     outFileName, false,
+                                     qSortSet.contains(tname));
 
     if (exitVal != 0 && overWrite) {
       exitVal = overwriteResults(f.getPath(), outFileName);
@@ -1022,18 +1042,42 @@ public class QTestUtil {
     // This method can be replaced with Files.copy(source, target, REPLACE_EXISTING)
     // once Hive uses JAVA 7.
     System.out.println("Overwriting results");
-    String[] cmdArray = new String[] {
+    return executeCmd(new String[] {
         "cp",
-        Shell.WINDOWS ? getQuotedString(inFileName) : inFileName,
-        Shell.WINDOWS ? getQuotedString(outFileName) : outFileName
-    };
-    Process executor = Runtime.getRuntime().exec(cmdArray);
-    return executor.waitFor();
+        getQuotedString(inFileName),
+        getQuotedString(outFileName)
+      });
   }
 
   private static int executeDiffCommand(String inFileName,
       String outFileName,
-      boolean ignoreWhiteSpace) throws Exception {
+      boolean ignoreWhiteSpace,
+      boolean sortResults
+      ) throws Exception {
+
+    int result = 0;
+    
+    if (sortResults) {
+      // sort will try to open the output file in write mode on windows. We need to
+      // close it first.
+      SessionState ss = SessionState.get();
+      if (ss != null && ss.out != null && ss.out != System.out) {
+	ss.out.close();
+      }
+
+      String inSorted = inFileName + SORT_SUFFIX;
+      String outSorted = outFileName + SORT_SUFFIX;
+
+      result = sortFiles(inFileName, inSorted);
+      result |= sortFiles(outFileName, outSorted);
+      if (result != 0) {
+        System.err.println("ERROR: Could not sort files before comparing");
+        return result;
+      }
+      inFileName = inSorted;
+      outFileName = outSorted;
+    }
+
     ArrayList<String> diffCommandArgs = new ArrayList<String>();
     diffCommandArgs.add("diff");
 
@@ -1055,26 +1099,75 @@ public class QTestUtil {
       diffCommandArgs.add("-B"); // Ignore changes whose lines are all blank
     }
     // Add files to compare to the arguments list
-    diffCommandArgs.add(Shell.WINDOWS ? getQuotedString(inFileName) : inFileName);
-    diffCommandArgs.add(Shell.WINDOWS ? getQuotedString(outFileName) : outFileName);
-    String[] cmdArray =(String [])diffCommandArgs.toArray(new String [diffCommandArgs.size ()]);
-    System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
+    diffCommandArgs.add(getQuotedString(inFileName));
+    diffCommandArgs.add(getQuotedString(outFileName));
 
-    Process executor = Runtime.getRuntime().exec(cmdArray);
+    result = executeCmd(diffCommandArgs);
 
-    StreamPrinter outPrinter = new StreamPrinter(
-        executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
-    StreamPrinter errPrinter = new StreamPrinter(
-        executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
+    if (sortResults) {
+      new File(inFileName).delete();
+      new File(outFileName).delete();
+    }
 
+    return result;
+  }
+
+  private static int sortFiles(String in, String out) throws Exception {
+    return executeCmd(new String[] {
+        "sort",
+        getQuotedString(in),
+      }, out, null);
+  }
+
+  private static int executeCmd(Collection<String> args) throws Exception {
+    return executeCmd(args, null, null);
+  }
+
+  private static int executeCmd(String[] args) throws Exception {
+    return executeCmd(args, null, null);
+  }
+
+  private static int executeCmd(Collection<String> args, String outFile, String errFile) throws Exception {
+    String[] cmdArray = (String[]) args.toArray(new String[args.size()]);
+    return executeCmd(cmdArray, outFile, errFile);
+  }
+
+  private static int executeCmd(String[] args, String outFile, String errFile) throws Exception {
+    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(args, ' '));
+
+    PrintStream out = outFile == null ? 
+      SessionState.getConsole().getChildOutStream() : 
+      new PrintStream(new FileOutputStream(outFile), true);
+    PrintStream err = errFile == null ? 
+      SessionState.getConsole().getChildErrStream() : 
+      new PrintStream(new FileOutputStream(errFile), true);
+
+    Process executor = Runtime.getRuntime().exec(args);
+
+    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, err);
+    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, out);
+    
     outPrinter.start();
     errPrinter.start();
 
-    return executor.waitFor();
+    int result = executor.waitFor();
+
+    outPrinter.join();
+    errPrinter.join();
+
+    if (outFile != null) {
+      out.close();
+    }
+
+    if (errFile != null) {
+      err.close();
+    }
+
+    return result;
   }
 
   private static String getQuotedString(String str){
-    return String.format("\"%s\"", str);
+    return Shell.WINDOWS ? String.format("\"%s\"", str) : str;
   }
 
   public ASTNode parseQuery(String tname) throws Exception {

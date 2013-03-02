@@ -81,9 +81,9 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
 
-      ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues.get(alias),
-          joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
-          joinFilterObjectInspectors.get(alias),
+      ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues[alias],
+          joinValuesObjectInspectors[alias], joinFilters[alias],
+          joinFilterObjectInspectors[alias],
           filterMap == null ? null : filterMap[alias]);
 
 
@@ -92,7 +92,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
       // number of rows for the key in the given table
-      int sz = storage.get(alias).size();
+      int sz = storage[alias].size();
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
@@ -107,7 +107,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
           // storage,
           // to preserve the correctness for outer joins.
           checkAndGenObject();
-          storage.get(alias).clear();
+          storage[alias].clear();
         }
       } else {
         if (sz == nextSz) {
@@ -128,7 +128,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         endGroup();
         startGroup();
       }
-      storage.get(alias).add(nr);
+      storage[alias].add(nr);
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);

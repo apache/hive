@@ -128,6 +128,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERATTEMPTS,
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
+      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN
       };
 
   /**
@@ -499,6 +500,11 @@ public class HiveConf extends Configuration {
     HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
     HIVEENFORCESORTMERGEBUCKETMAPJOIN("hive.enforce.sortmergebucketmapjoin", false),
     HIVEENFORCEBUCKETMAPJOIN("hive.enforce.bucketmapjoin", false),
+
+    HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false),
+    HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR(
+        "hive.auto.convert.sortmerge.join.bigtable.selection.policy",
+        "org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ"),
 
     HIVESCRIPTOPERATORTRUST("hive.exec.script.trust", false),
     HIVEROWOFFSET("hive.exec.rowoffset", false),

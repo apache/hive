@@ -1,4 +1,3 @@
-SET hive.metastore.pre.event.listeners=org.apache.hadoop.hive.metastore.PartitionNameWhitelistPreEventListener;
 SET hive.metastore.partition.name.whitelist.pattern=[\\x20-\\x7E&&[^,]]* ;
 -- This pattern matches all printable ASCII characters (disallow unicode) and disallows commas
 

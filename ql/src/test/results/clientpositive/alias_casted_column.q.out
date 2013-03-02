@@ -23,17 +23,12 @@ STAGE PLANS:
                     expr: UDFToInteger(key)
                     type: int
               outputColumnNames: _col0
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -65,17 +60,12 @@ STAGE PLANS:
                     expr: UDFToInteger(key)
                     type: int
               outputColumnNames: _col0
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

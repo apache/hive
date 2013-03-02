@@ -80,26 +80,19 @@ STAGE PLANS:
                 Position of Big Table: 0
                 Select Operator
                   expressions:
-                        expr: _col0
-                        type: string
+                        expr: UDFToInteger(_col0)
+                        type: int
                         expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: UDFToInteger(_col0)
-                          type: int
-                          expr: _col1
-                          type: string
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
       Local Work:
         Map Reduce Local Work
 
@@ -164,26 +157,19 @@ STAGE PLANS:
                 Position of Big Table: 1
                 Select Operator
                   expressions:
-                        expr: _col0
-                        type: string
+                        expr: UDFToInteger(_col0)
+                        type: int
                         expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: UDFToInteger(_col0)
-                          type: int
-                          expr: _col1
-                          type: string
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
       Local Work:
         Map Reduce Local Work
 
@@ -239,26 +225,19 @@ STAGE PLANS:
           outputColumnNames: _col0, _col5
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col5
                   type: string
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: string
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
 
 
 PREHOOK: query: FROM src JOIN srcpart ON src.key = srcpart.key AND srcpart.ds = '2008-04-08' and src.key > 100

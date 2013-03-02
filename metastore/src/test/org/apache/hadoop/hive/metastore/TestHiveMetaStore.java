@@ -586,6 +586,106 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   }
 
+  public void testAlterViewParititon() throws Throwable {
+    String dbName = "compdb";
+    String tblName = "comptbl";
+    String viewName = "compView";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    Database db = new Database();
+    db.setName(dbName);
+    db.setDescription("Alter Partition Test database");
+    client.createDatabase(db);
+
+    ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+    cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
+
+    Table tbl = new Table();
+    tbl.setDbName(dbName);
+    tbl.setTableName(tblName);
+    StorageDescriptor sd = new StorageDescriptor();
+    tbl.setSd(sd);
+    sd.setCols(cols);
+    sd.setCompressed(false);
+    sd.setParameters(new HashMap<String, String>());
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tbl.getTableName());
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().getParameters()
+        .put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    sd.setSortCols(new ArrayList<Order>());
+
+    client.createTable(tbl);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tblName);
+    }
+
+    ArrayList<FieldSchema> viewCols = new ArrayList<FieldSchema>(1);
+    viewCols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
+
+    ArrayList<FieldSchema> viewPartitionCols = new ArrayList<FieldSchema>(1);
+    viewPartitionCols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+
+    Table view = new Table();
+    view.setDbName(dbName);
+    view.setTableName(viewName);
+    view.setTableType(TableType.VIRTUAL_VIEW.name());
+    view.setPartitionKeys(viewPartitionCols);
+    view.setViewOriginalText("SELECT income, name FROM " + tblName);
+    view.setViewExpandedText("SELECT `" + tblName + "`.`income`, `" + tblName +
+        "`.`name` FROM `" + dbName + "`.`" + tblName + "`");
+    StorageDescriptor viewSd = new StorageDescriptor();
+    view.setSd(viewSd);
+    viewSd.setCols(viewCols);
+    viewSd.setCompressed(false);
+    viewSd.setParameters(new HashMap<String, String>());
+    viewSd.setSerdeInfo(new SerDeInfo());
+    viewSd.getSerdeInfo().setParameters(new HashMap<String, String>());
+
+    client.createTable(view);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      view = client.getTable(dbName, viewName);
+    }
+
+    List<String> vals = new ArrayList<String>(1);
+    vals.add("abc");
+
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(viewName);
+    part.setValues(vals);
+    part.setParameters(new HashMap<String, String>());
+
+    client.add_partition(part);
+
+    Partition part2 = client.getPartition(dbName, viewName, part.getValues());
+
+    part2.getParameters().put("a", "b");
+
+    client.alter_partition(dbName, viewName, part2);
+
+    Partition part3 = client.getPartition(dbName, viewName, part.getValues());
+    assertEquals("couldn't view alter partition", part3.getParameters().get(
+        "a"), "b");
+
+    client.dropTable(dbName, viewName);
+
+    client.dropTable(dbName, tblName);
+
+    client.dropDatabase(dbName);
+  }
 
   public void testAlterPartition() throws Throwable {
 
@@ -854,8 +954,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   public void testDatabaseLocationWithPermissionProblems() throws Exception {
 
-    // Note: The following test will fail if you are running this test as root. Setting 
-    // permission to '0' on the database folder will not preclude root from being able 
+    // Note: The following test will fail if you are running this test as root. Setting
+    // permission to '0' on the database folder will not preclude root from being able
     // to create the necessary files.
 
     if (System.getProperty("user.name").equals("root")) {
@@ -1482,6 +1582,24 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertTrue("Able to create table with invalid name: " + invTblName,
             false);
       }
+
+      // create an invalid table which has wrong column type
+      ArrayList<FieldSchema> invColsInvType = new ArrayList<FieldSchema>(2);
+      invColsInvType.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+      invColsInvType.add(new FieldSchema("income", "xyz", ""));
+      tbl.setTableName(tblName);
+      tbl.getSd().setCols(invColsInvType);
+      boolean failChecker = false;
+      try {
+        client.createTable(tbl);
+      } catch (InvalidObjectException ex) {
+        failChecker = true;
+      }
+      if (!failChecker) {
+        assertTrue("Able to create table with invalid column type: " + invTblName,
+            false);
+      }
+
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
       cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       cols.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
@@ -1561,6 +1679,17 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertEquals("alter table didn't move data correct location", tbl3
             .getSd().getLocation(), tbl2.getSd().getLocation());
       }
+
+      // alter table with invalid column type
+      tbl_pk.getSd().setCols(invColsInvType);
+      failed = false;
+      try {
+        client.alter_table(dbName, tbl2.getTableName(), tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertTrue("Should not have succeeded in altering column", failed);
+
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
@@ -1757,7 +1886,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     } catch (TException e) {
       e.printStackTrace();
       assert (false);
-    } 
+    }
     assert (threwException);
   }
 
@@ -2106,7 +2235,7 @@ public abstract class TestHiveMetaStore extends TestCase {
    * at least works correctly.
    */
   public void testSynchronized() throws Exception {
-    int currentNumberOfDbs = client.getAllDatabases().size(); 
+    int currentNumberOfDbs = client.getAllDatabases().size();
 
     IMetaStoreClient synchronizedClient =
       HiveMetaStoreClient.newSynchronizedClient(client);
@@ -2339,6 +2468,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       silentDropDatabase(dbName);
     }
   }
+
+
 
   /**
    * This method simulates another Hive metastore renaming a table, by accessing the db and

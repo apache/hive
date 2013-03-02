@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSentences;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSortArray;
@@ -477,6 +478,7 @@ public final class FunctionRegistry {
 
     // Generic UDFs
     registerGenericUDF("reflect", GenericUDFReflect.class);
+    registerGenericUDF("reflect2", GenericUDFReflect2.class);
     registerGenericUDF("java_method", GenericUDFReflect.class);
 
     registerGenericUDF("array", GenericUDFArray.class);

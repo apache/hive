@@ -126,6 +126,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 
 /**
  * DDLSemanticAnalyzer.
@@ -329,6 +330,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.TOK_ALTERTABLE_DROPPARTS:
       analyzeAlterTableDropParts(ast, false);
+      break;
+    case HiveParser.TOK_ALTERTABLE_ALTERPARTS:
+      analyzeAlterTableAlterParts(ast);
       break;
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false, false);
@@ -2277,7 +2281,60 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropTblDesc), conf));
   }
 
-  /**
+  private void analyzeAlterTableAlterParts(ASTNode ast)
+      throws SemanticException {
+    // get table name
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
+
+    Table tab = null;
+
+    // check if table exists.
+    try {
+      tab = db.getTable(db.getCurrentDatabase(), tblName, true);
+      inputs.add(new ReadEntity(tab));
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+    }
+
+    // validate the DDL is a valid operation on the table.
+    validateAlterTableType(tab, AlterTableTypes.ALTERPARTITION, false);
+
+    // Alter table ... partition column ( column newtype) only takes one column at a time.
+    // It must have a column name followed with type.
+    ASTNode colAst = (ASTNode) ast.getChild(1);
+    assert(colAst.getChildCount() == 2);
+
+    FieldSchema newCol = new FieldSchema();
+
+    // get column name
+    String name = colAst.getChild(0).getText().toLowerCase();
+    newCol.setName(unescapeIdentifier(name));
+
+    // get column type
+    ASTNode typeChild = (ASTNode) (colAst.getChild(1));
+    newCol.setType(getTypeStringFromAST(typeChild));
+
+    // check if column is defined or not
+    boolean fFoundColumn = false;
+    for( FieldSchema col : tab.getTTable().getPartitionKeys()) {
+      if (col.getName().compareTo(newCol.getName()) == 0) {
+        fFoundColumn = true;
+      }
+    }
+
+    // raise error if we could not find the column
+    if (!fFoundColumn) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(newCol.getName()));
+    }
+
+    AlterTableAlterPartDesc alterTblAlterPartDesc =
+            new AlterTableAlterPartDesc(db.getCurrentDatabase(), tblName, newCol);
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+            alterTblAlterPartDesc), conf));
+  }
+
+    /**
    * Add one or more partitions to a table. Useful when the data has been copied
    * to the right location by some other process.
    *

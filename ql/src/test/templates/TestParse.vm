@@ -38,6 +38,7 @@ public class $className extends TestCase {
         miniMR = true;
       String hadoopVer = "$hadoopVersion";
       qt = new QTestUtil("$resultsDir", "$logDir", miniMR, hadoopVer);
+      qt.init(null);
     } catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -107,8 +108,8 @@ public class $className extends TestCase {
 
       qt.addFile(fpath);
       org.apache.hadoop.hive.ql.exec.Operator.resetId();
+      org.apache.hadoop.hive.ql.exec.TaskFactory.resetId();
 
-      qt.init(fname);
       ASTNode tree = qt.parseQuery(fname);
       int ecode = qt.checkParseResults(fname, tree);
       if (ecode != 0) {
@@ -121,6 +122,7 @@ public class $className extends TestCase {
             + debugHint);
       }
       System.out.println("Done query: " + fname);
+      qt.getQMap().clear();
     }
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());

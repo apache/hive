@@ -138,6 +138,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return childOperators;
   }
 
+  public int getNumChild() {
+    return childOperators == null ? 0 : childOperators.size();
+  }
+
   /**
    * Implements the getChildren function for the Node Interface.
    */
@@ -162,6 +166,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public List<Operator<? extends OperatorDesc>> getParentOperators() {
     return parentOperators;
+  }
+
+  public int getNumParent() {
+    return parentOperators == null ? 0 : parentOperators.size();
   }
 
   protected T conf;
@@ -1475,6 +1483,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     this.useBucketizedHiveInputFormat = useBucketizedHiveInputFormat;
   }
 
+  /**
+   * Whether this operator supports automatic sort merge join.
+   * The stack is traversed, and this method is invoked for all the operators.
+   * @return TRUE if yes, FALSE otherwise.
+   */
+  public boolean supportAutomaticSortMergeJoin() {
+    return false;
+  }
+
   public boolean supportUnionRemoveOptimization() {
     return false;
   }
@@ -1494,6 +1511,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * Check the operators which are allowed after mapjoin.
    */
   public boolean opAllowedAfterMapJoin() {
+    return true;
+  }
+
+  /*
+   * If this task contains a join, it can be converted to a map-join task if this operator is
+   * present in the mapper. For eg. if a sort-merge join operator is present followed by a regular
+   * join, it cannot be converted to a auto map-join.
+   */
+  public boolean opAllowedConvertMapJoin() {
     return true;
   }
 }

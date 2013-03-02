@@ -325,6 +325,13 @@ public class RCFile {
     public int[] getEachColumnValueLen() {
       return eachColumnValueLen;
     }
+
+    /**
+     * @return the numberRows
+     */
+    public int getNumberRows() {
+      return numberRows;
+    }
   }
 
   /**

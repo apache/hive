@@ -372,6 +372,21 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       throw new HiveException(e);
     } catch (IOException e) {
       if (isBrokenPipeException(e) && allowPartialConsumption()) {
+        // Give the outThread a chance to finish before marking the operator as done
+        try {
+          scriptPid.waitFor();
+        } catch (InterruptedException interruptedException) {
+        }
+        // best effort attempt to write all output from the script before marking the operator
+        // as done
+        try {
+          if (outThread != null) {
+            outThread.join(0);
+          }
+        } catch (Exception e2) {
+          LOG.warn("Exception in closing outThread: "
+              + StringUtils.stringifyException(e2));
+        }
         setDone(true);
         LOG
             .warn("Got broken pipe during write: ignoring exception and setting operator to done");

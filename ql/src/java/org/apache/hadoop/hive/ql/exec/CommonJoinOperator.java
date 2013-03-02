@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -90,34 +90,32 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   /**
    * The expressions for join inputs.
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinValues;
+  protected transient List<ExprNodeEvaluator>[] joinValues;
 
   /**
    * The filters for join
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinFilters;
+  protected transient List<ExprNodeEvaluator>[] joinFilters;
 
   protected transient int[][] filterMap;
 
   /**
    * The ObjectInspectors for the join inputs.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinValuesObjectInspectors;
+  protected transient List<ObjectInspector>[] joinValuesObjectInspectors;
 
   /**
    * The ObjectInspectors for join filters.
    */
-  protected transient
-    Map<Byte, List<ObjectInspector>> joinFilterObjectInspectors;
+  protected transient List<ObjectInspector>[] joinFilterObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinValuesStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] joinValuesStandardObjectInspectors;
   /**
    * The standard ObjectInspectors for the row container.
    */
-  protected transient
-    Map<Byte, List<ObjectInspector>> rowContainerStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] rowContainerStandardObjectInspectors;
 
   protected transient Byte[] order; // order in which the results should
   // be output
@@ -141,12 +139,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   private transient Map<Integer, Set<String>> posToAliasMap;
 
   transient LazyBinarySerDe[] spillTableSerDe;
-  protected transient Map<Byte, TableDesc> spillTableDesc; // spill tables are
+  protected transient TableDesc[] spillTableDesc; // spill tables are
   // used if the join
   // input is too large
   // to fit in memory
 
-  HashMap<Byte, AbstractRowContainer<ArrayList<Object>>> storage; // map b/w table alias
+  AbstractRowContainer<ArrayList<Object>>[] storage; // map b/w table alias
   // to RowContainer
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
@@ -206,12 +204,14 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
 
   protected static <T extends JoinDesc> ObjectInspector getJoinOutputObjectInspector(
-      Byte[] order, Map<Byte, List<ObjectInspector>> aliasToObjectInspectors,
+      Byte[] order, List<ObjectInspector>[] aliasToObjectInspectors,
       T conf) {
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
+    List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
     for (Byte alias : order) {
-      List<ObjectInspector> oiList = aliasToObjectInspectors.get(alias);
-      structFieldObjectInspectors.addAll(oiList);
+      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
+      if (oiList != null) {
+        structFieldObjectInspectors.addAll(oiList);
+      }
     }
 
     StructObjectInspector joinOutputObjectInspector = ObjectInspectorFactory
@@ -223,6 +223,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   Configuration hconf;
 
   @Override
+  @SuppressWarnings("unchecked")
   protected void initializeOp(Configuration hconf) throws HiveException {
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
@@ -232,14 +233,16 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     countAfterReport = 0;
 
     totalSz = 0;
+
+    int tagLen = conf.getTagLength();
     // Map that contains the rows for each alias
-    storage = new HashMap<Byte, AbstractRowContainer<ArrayList<Object>>>();
+    storage = new AbstractRowContainer[tagLen];
 
     numAliases = conf.getExprs().size();
 
-    joinValues = new HashMap<Byte, List<ExprNodeEvaluator>>();
+    joinValues = new List[tagLen];
 
-    joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
+    joinFilters = new List[tagLen];
 
     order = conf.getTagOrder();
     condn = conf.getConds();
@@ -250,34 +253,33 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         order,NOTSKIPBIGTABLE);
 
     //process join filters
-    joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
+    joinFilters = new List[tagLen];
     JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE);
 
 
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
-        inputObjInspectors,NOTSKIPBIGTABLE);
+        inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
-        inputObjInspectors,NOTSKIPBIGTABLE);
+        inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinValuesObjectInspectors,NOTSKIPBIGTABLE);
+        joinValuesObjectInspectors,NOTSKIPBIGTABLE, tagLen);
 
     filterMap = conf.getFilterMap();
 
     if (noOuterJoin) {
       rowContainerStandardObjectInspectors = joinValuesStandardObjectInspectors;
     } else {
-      Map<Byte, List<ObjectInspector>> rowContainerObjectInspectors =
-        new HashMap<Byte, List<ObjectInspector>>();
+      List<ObjectInspector>[] rowContainerObjectInspectors = new List[tagLen];
       for (Byte alias : order) {
         ArrayList<ObjectInspector> rcOIs = new ArrayList<ObjectInspector>();
-        rcOIs.addAll(joinValuesObjectInspectors.get(alias));
+        rcOIs.addAll(joinValuesObjectInspectors[alias]);
         // for each alias, add object inspector for boolean as the last element
         rcOIs.add(
             PrimitiveObjectInspectorFactory.writableByteObjectInspector);
-        rowContainerObjectInspectors.put(alias, rcOIs);
+        rowContainerObjectInspectors[alias] = rcOIs;
       }
       rowContainerStandardObjectInspectors =
-        JoinUtil.getStandardObjectInspectors(rowContainerObjectInspectors,NOTSKIPBIGTABLE);
+        JoinUtil.getStandardObjectInspectors(rowContainerObjectInspectors,NOTSKIPBIGTABLE, tagLen);
     }
 
 
@@ -312,7 +314,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
       RowContainer<ArrayList<Object>> values = JoinUtil.getRowContainer(hconf,
-          rowContainerStandardObjectInspectors.get((byte)pos),
+          rowContainerStandardObjectInspectors[pos],
           alias, 1, spillTableDesc, conf, !hasFilter(pos), reporter);
 
       values.add((ArrayList<Object>) dummyObj[pos]);
@@ -321,9 +323,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       // if serde is null, the input doesn't need to be spilled out
       // e.g., the output columns does not contains the input table
       RowContainer rc = JoinUtil.getRowContainer(hconf,
-          rowContainerStandardObjectInspectors.get((byte)pos),
+          rowContainerStandardObjectInspectors[pos],
           alias, joinCacheSize,spillTableDesc, conf, !hasFilter(pos), reporter);
-      storage.put(pos, rc);
+      storage[pos] = rc;
 
       pos++;
     }
@@ -340,7 +342,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     }
 
     LOG.info("JOIN "
-        + ((StructObjectInspector) outputObjInspector).getTypeName()
+        + outputObjInspector.getTypeName()
         + " totalsz = " + totalSz);
 
   }
@@ -353,7 +355,7 @@ transient boolean newGroupStarted = false;
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
     newGroupStarted = true;
-    for (AbstractRowContainer<ArrayList<Object>> alw : storage.values()) {
+    for (AbstractRowContainer<ArrayList<Object>> alw : storage) {
       alw.clear();
     }
   }
@@ -376,7 +378,7 @@ transient boolean newGroupStarted = false;
     int p = 0;
     for (int i = 0; i < numAliases; i++) {
       Byte alias = order[i];
-      int sz = joinValues.get(alias).size();
+      int sz = joinValues[alias].size();
       if (nullsArr[i]) {
         for (int j = 0; j < sz; j++) {
           forwardCache[p++] = null;
@@ -675,7 +677,7 @@ transient boolean newGroupStarted = false;
     if (aliasNum < numAliases) {
 
       // search for match in the rhs table
-      AbstractRowContainer<ArrayList<Object>> aliasRes = storage.get(order[aliasNum]);
+      AbstractRowContainer<ArrayList<Object>> aliasRes = storage[order[aliasNum]];
 
       for (ArrayList<Object> newObj = aliasRes.first(); newObj != null; newObj = aliasRes
           .next()) {
@@ -731,9 +733,9 @@ transient boolean newGroupStarted = false;
 
   private void genUniqueJoinObject(int aliasNum, int forwardCachePos)
       throws HiveException {
-    AbstractRowContainer<ArrayList<Object>> alias = storage.get(order[aliasNum]);
+    AbstractRowContainer<ArrayList<Object>> alias = storage[order[aliasNum]];
     for (ArrayList<Object> row = alias.first(); row != null; row = alias.next()) {
-      int sz = joinValues.get(order[aliasNum]).size();
+      int sz = joinValues[order[aliasNum]].size();
       int p = forwardCachePos;
       for (int j = 0; j < sz; j++) {
         forwardCache[p++] = row.get(j);
@@ -751,8 +753,8 @@ transient boolean newGroupStarted = false;
       throws HiveException {
     int p = 0;
     for (int i = 0; i < numAliases; i++) {
-      int sz = joinValues.get(order[i]).size();
-      ArrayList<Object> obj = storage.get(order[i]).first();
+      int sz = joinValues[order[i]].size();
+      ArrayList<Object> obj = storage[order[i]].first();
       for (int j = 0; j < sz; j++) {
         forwardCache[p++] = obj.get(j);
       }
@@ -774,7 +776,7 @@ transient boolean newGroupStarted = false;
       boolean allOne = true;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
+        AbstractRowContainer<ArrayList<Object>> alw = storage[alias];
 
         if (alw.size() != 1) {
           allOne = false;
@@ -807,7 +809,7 @@ transient boolean newGroupStarted = false;
       boolean hasEmpty = false;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
+        AbstractRowContainer<ArrayList<Object>> alw = storage[alias];
 
         if (noOuterJoin) {
           if (alw.size() == 0) {
@@ -858,7 +860,7 @@ transient boolean newGroupStarted = false;
 
   // returns filter result of left object by filters associated with right alias
   private boolean isLeftFiltered(int left, int right, List<Object> leftObj) {
-    if (joinValues.get(order[left]).size() < leftObj.size()) {
+    if (joinValues[order[left]].size() < leftObj.size()) {
       ByteWritable filter = (ByteWritable) leftObj.get(leftObj.size() - 1);
       return JoinUtil.isFiltered(filter.get(), right);
     }
@@ -867,7 +869,7 @@ transient boolean newGroupStarted = false;
 
   // returns filter result of right object by filters associated with left alias
   private boolean isRightFiltered(int left, int right, List<Object> rightObj) {
-    if (joinValues.get(order[right]).size() < rightObj.size()) {
+    if (joinValues[order[right]].size() < rightObj.size()) {
       ByteWritable filter = (ByteWritable) rightObj.get(rightObj.size() - 1);
       return JoinUtil.isFiltered(filter.get(), left);
     }
@@ -902,12 +904,12 @@ transient boolean newGroupStarted = false;
   @Override
   public void closeOp(boolean abort) throws HiveException {
     LOG.trace("Join Op close");
-    for (AbstractRowContainer<ArrayList<Object>> alw : storage.values()) {
+    for (AbstractRowContainer<ArrayList<Object>> alw : storage) {
       if (alw != null) {
         alw.clear(); // clean up the temp files
       }
     }
-    storage.clear();
+    Arrays.fill(storage, null);
   }
 
   @Override

@@ -80,28 +80,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -169,28 +154,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -258,28 +228,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -352,28 +307,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -447,28 +387,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -547,28 +472,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -638,28 +548,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -731,28 +626,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -826,28 +706,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -923,28 +788,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -1014,28 +864,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -1112,28 +947,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -1207,28 +1027,13 @@ STAGE PLANS:
                       type: int
                       expr: _col9
                       type: string
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: int
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: int
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

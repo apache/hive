@@ -54,30 +54,21 @@ STAGE PLANS:
             alias: src
             Select Operator
               expressions:
-                    expr: key
-                    type: string
+                    expr: UDFToInteger(key)
+                    type: int
                     expr: value
                     type: string
                     expr: pmod(hash(key), 100)
                     type: int
               outputColumnNames: _col0, _col1, _col2
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col2
-                      type: int
-                outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                      name: default.rcfile_merge1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.rcfile_merge1
 
   Stage: Stage-7
     Conditional Operator
@@ -675,30 +666,21 @@ STAGE PLANS:
             alias: src
             Select Operator
               expressions:
-                    expr: key
-                    type: string
+                    expr: UDFToInteger(key)
+                    type: int
                     expr: value
                     type: string
                     expr: pmod(hash(key), 100)
                     type: int
               outputColumnNames: _col0, _col1, _col2
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: string
-                      expr: _col2
-                      type: int
-                outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                      name: default.rcfile_merge1b
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.rcfile_merge1b
 
   Stage: Stage-7
     Conditional Operator

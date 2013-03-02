@@ -14,15 +14,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-grammar Hive;
+parser grammar HiveParser;
 
 options
 {
+tokenVocab=HiveLexer;
 output=AST;
 ASTLabelType=CommonTree;
 backtrack=false;
 k=3;
 }
+import SelectClauseParser, FromClauseParser, IdentifiersParser;
 
 tokens {
 TOK_INSERT;
@@ -133,6 +135,7 @@ TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
+TOK_ALTERTABLE_ALTERPARTS;
 TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
@@ -297,12 +300,241 @@ TOK_IGNOREPROTECTION;
 // Package headers
 @header {
 package org.apache.hadoop.hive.ql.parse;
+
+import java.util.Collection;
+import java.util.HashMap;
 }
-@lexer::header {package org.apache.hadoop.hive.ql.parse;}
 
 
 @members {
+  ArrayList<ParseError> errors = new ArrayList<ParseError>();
   Stack msgs = new Stack<String>();
+
+  private static HashMap<String, String> xlateMap;
+  static {
+    xlateMap = new HashMap<String, String>();
+
+    // Keywords
+    xlateMap.put("KW_TRUE", "TRUE");
+    xlateMap.put("KW_FALSE", "FALSE");
+    xlateMap.put("KW_ALL", "ALL");
+    xlateMap.put("KW_AND", "AND");
+    xlateMap.put("KW_OR", "OR");
+    xlateMap.put("KW_NOT", "NOT");
+    xlateMap.put("KW_LIKE", "LIKE");
+
+    xlateMap.put("KW_ASC", "ASC");
+    xlateMap.put("KW_DESC", "DESC");
+    xlateMap.put("KW_ORDER", "ORDER");
+    xlateMap.put("KW_BY", "BY");
+    xlateMap.put("KW_GROUP", "GROUP");
+    xlateMap.put("KW_WHERE", "WHERE");
+    xlateMap.put("KW_FROM", "FROM");
+    xlateMap.put("KW_AS", "AS");
+    xlateMap.put("KW_SELECT", "SELECT");
+    xlateMap.put("KW_DISTINCT", "DISTINCT");
+    xlateMap.put("KW_INSERT", "INSERT");
+    xlateMap.put("KW_OVERWRITE", "OVERWRITE");
+    xlateMap.put("KW_OUTER", "OUTER");
+    xlateMap.put("KW_JOIN", "JOIN");
+    xlateMap.put("KW_LEFT", "LEFT");
+    xlateMap.put("KW_RIGHT", "RIGHT");
+    xlateMap.put("KW_FULL", "FULL");
+    xlateMap.put("KW_ON", "ON");
+    xlateMap.put("KW_PARTITION", "PARTITION");
+    xlateMap.put("KW_PARTITIONS", "PARTITIONS");
+    xlateMap.put("KW_TABLE", "TABLE");
+    xlateMap.put("KW_TABLES", "TABLES");
+    xlateMap.put("KW_TBLPROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_SHOW", "SHOW");
+    xlateMap.put("KW_MSCK", "MSCK");
+    xlateMap.put("KW_DIRECTORY", "DIRECTORY");
+    xlateMap.put("KW_LOCAL", "LOCAL");
+    xlateMap.put("KW_TRANSFORM", "TRANSFORM");
+    xlateMap.put("KW_USING", "USING");
+    xlateMap.put("KW_CLUSTER", "CLUSTER");
+    xlateMap.put("KW_DISTRIBUTE", "DISTRIBUTE");
+    xlateMap.put("KW_SORT", "SORT");
+    xlateMap.put("KW_UNION", "UNION");
+    xlateMap.put("KW_LOAD", "LOAD");
+    xlateMap.put("KW_DATA", "DATA");
+    xlateMap.put("KW_INPATH", "INPATH");
+    xlateMap.put("KW_IS", "IS");
+    xlateMap.put("KW_NULL", "NULL");
+    xlateMap.put("KW_CREATE", "CREATE");
+    xlateMap.put("KW_EXTERNAL", "EXTERNAL");
+    xlateMap.put("KW_ALTER", "ALTER");
+    xlateMap.put("KW_DESCRIBE", "DESCRIBE");
+    xlateMap.put("KW_DROP", "DROP");
+    xlateMap.put("KW_REANME", "REANME");
+    xlateMap.put("KW_TO", "TO");
+    xlateMap.put("KW_COMMENT", "COMMENT");
+    xlateMap.put("KW_BOOLEAN", "BOOLEAN");
+    xlateMap.put("KW_TINYINT", "TINYINT");
+    xlateMap.put("KW_SMALLINT", "SMALLINT");
+    xlateMap.put("KW_INT", "INT");
+    xlateMap.put("KW_BIGINT", "BIGINT");
+    xlateMap.put("KW_FLOAT", "FLOAT");
+    xlateMap.put("KW_DOUBLE", "DOUBLE");
+    xlateMap.put("KW_DATE", "DATE");
+    xlateMap.put("KW_DATETIME", "DATETIME");
+    xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
+    xlateMap.put("KW_STRING", "STRING");
+    xlateMap.put("KW_BINARY", "BINARY");
+    xlateMap.put("KW_ARRAY", "ARRAY");
+    xlateMap.put("KW_MAP", "MAP");
+    xlateMap.put("KW_REDUCE", "REDUCE");
+    xlateMap.put("KW_PARTITIONED", "PARTITIONED");
+    xlateMap.put("KW_CLUSTERED", "CLUSTERED");
+    xlateMap.put("KW_SORTED", "SORTED");
+    xlateMap.put("KW_INTO", "INTO");
+    xlateMap.put("KW_BUCKETS", "BUCKETS");
+    xlateMap.put("KW_ROW", "ROW");
+    xlateMap.put("KW_FORMAT", "FORMAT");
+    xlateMap.put("KW_DELIMITED", "DELIMITED");
+    xlateMap.put("KW_FIELDS", "FIELDS");
+    xlateMap.put("KW_TERMINATED", "TERMINATED");
+    xlateMap.put("KW_COLLECTION", "COLLECTION");
+    xlateMap.put("KW_ITEMS", "ITEMS");
+    xlateMap.put("KW_KEYS", "KEYS");
+    xlateMap.put("KW_KEY_TYPE", "$KEY$");
+    xlateMap.put("KW_LINES", "LINES");
+    xlateMap.put("KW_STORED", "STORED");
+    xlateMap.put("KW_SEQUENCEFILE", "SEQUENCEFILE");
+    xlateMap.put("KW_TEXTFILE", "TEXTFILE");
+    xlateMap.put("KW_INPUTFORMAT", "INPUTFORMAT");
+    xlateMap.put("KW_OUTPUTFORMAT", "OUTPUTFORMAT");
+    xlateMap.put("KW_LOCATION", "LOCATION");
+    xlateMap.put("KW_TABLESAMPLE", "TABLESAMPLE");
+    xlateMap.put("KW_BUCKET", "BUCKET");
+    xlateMap.put("KW_OUT", "OUT");
+    xlateMap.put("KW_OF", "OF");
+    xlateMap.put("KW_CAST", "CAST");
+    xlateMap.put("KW_ADD", "ADD");
+    xlateMap.put("KW_REPLACE", "REPLACE");
+    xlateMap.put("KW_COLUMNS", "COLUMNS");
+    xlateMap.put("KW_RLIKE", "RLIKE");
+    xlateMap.put("KW_REGEXP", "REGEXP");
+    xlateMap.put("KW_TEMPORARY", "TEMPORARY");
+    xlateMap.put("KW_FUNCTION", "FUNCTION");
+    xlateMap.put("KW_EXPLAIN", "EXPLAIN");
+    xlateMap.put("KW_EXTENDED", "EXTENDED");
+    xlateMap.put("KW_SERDE", "SERDE");
+    xlateMap.put("KW_WITH", "WITH");
+    xlateMap.put("KW_SERDEPROPERTIES", "SERDEPROPERTIES");
+    xlateMap.put("KW_LIMIT", "LIMIT");
+    xlateMap.put("KW_SET", "SET");
+    xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_VALUE_TYPE", "$VALUE$");
+    xlateMap.put("KW_ELEM_TYPE", "$ELEM$");
+
+    // Operators
+    xlateMap.put("DOT", ".");
+    xlateMap.put("COLON", ":");
+    xlateMap.put("COMMA", ",");
+    xlateMap.put("SEMICOLON", ");");
+
+    xlateMap.put("LPAREN", "(");
+    xlateMap.put("RPAREN", ")");
+    xlateMap.put("LSQUARE", "[");
+    xlateMap.put("RSQUARE", "]");
+
+    xlateMap.put("EQUAL", "=");
+    xlateMap.put("NOTEQUAL", "<>");
+    xlateMap.put("EQUAL_NS", "<=>");
+    xlateMap.put("LESSTHANOREQUALTO", "<=");
+    xlateMap.put("LESSTHAN", "<");
+    xlateMap.put("GREATERTHANOREQUALTO", ">=");
+    xlateMap.put("GREATERTHAN", ">");
+
+    xlateMap.put("DIVIDE", "/");
+    xlateMap.put("PLUS", "+");
+    xlateMap.put("MINUS", "-");
+    xlateMap.put("STAR", "*");
+    xlateMap.put("MOD", "%");
+
+    xlateMap.put("AMPERSAND", "&");
+    xlateMap.put("TILDE", "~");
+    xlateMap.put("BITWISEOR", "|");
+    xlateMap.put("BITWISEXOR", "^");
+    xlateMap.put("CharSetLiteral", "\\'");
+  }
+
+  public static Collection<String> getKeywords() {
+    return xlateMap.values();
+  }
+
+  private static String xlate(String name) {
+
+    String ret = xlateMap.get(name);
+    if (ret == null) {
+      ret = name;
+    }
+
+    return ret;
+  }
+
+  @Override
+  public Object recoverFromMismatchedSet(IntStream input,
+      RecognitionException re, BitSet follow) throws RecognitionException {
+    throw re;
+  }
+
+  @Override
+  public void displayRecognitionError(String[] tokenNames,
+      RecognitionException e) {
+    errors.add(new ParseError(this, e, tokenNames));
+  }
+
+  @Override
+  public String getErrorHeader(RecognitionException e) {
+    String header = null;
+    if (e.charPositionInLine < 0 && input.LT(-1) != null) {
+      Token t = input.LT(-1);
+      header = "line " + t.getLine() + ":" + t.getCharPositionInLine();
+    } else {
+      header = super.getErrorHeader(e);
+    }
+
+    return header;
+  }
+  
+  @Override
+  public String getErrorMessage(RecognitionException e, String[] tokenNames) {
+    String msg = null;
+
+    // Translate the token names to something that the user can understand
+    String[] xlateNames = new String[tokenNames.length];
+    for (int i = 0; i < tokenNames.length; ++i) {
+      xlateNames[i] = HiveParser.xlate(tokenNames[i]);
+    }
+
+    if (e instanceof NoViableAltException) {
+      @SuppressWarnings("unused")
+      NoViableAltException nvae = (NoViableAltException) e;
+      // for development, can add
+      // "decision=<<"+nvae.grammarDecisionDescription+">>"
+      // and "(decision="+nvae.decisionNumber+") and
+      // "state "+nvae.stateNumber
+      msg = "cannot recognize input near"
+              + (input.LT(1) != null ? " " + getTokenErrorDisplay(input.LT(1)) : "")
+              + (input.LT(2) != null ? " " + getTokenErrorDisplay(input.LT(2)) : "")
+              + (input.LT(3) != null ? " " + getTokenErrorDisplay(input.LT(3)) : "");
+    } else if (e instanceof MismatchedTokenException) {
+      MismatchedTokenException mte = (MismatchedTokenException) e;
+      msg = super.getErrorMessage(e, xlateNames) + (input.LT(-1) == null ? "":" near '" + input.LT(-1).getText()) + "'";
+    } else if (e instanceof FailedPredicateException) {
+      FailedPredicateException fpe = (FailedPredicateException) e;
+      msg = "Failed to recognize predicate '" + fpe.token.getText() + "'. Failed rule: '" + fpe.ruleName + "'";
+    } else {
+      msg = super.getErrorMessage(e, xlateNames);
+    }
+
+    if (msgs.size() > 0) {
+      msg = msg + " in " + msgs.peek();
+    }
+    return msg;
+  }
 }
 
 @rulecatch {
@@ -437,7 +669,7 @@ createDatabaseStatement
 @after { msgs.pop(); }
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=Identifier
+        name=identifier
         databaseComment?
         dbLocation?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
@@ -469,15 +701,15 @@ dbPropertiesList
 switchDatabaseStatement
 @init { msgs.push("switch database statement"); }
 @after { msgs.pop(); }
-    : KW_USE Identifier
-    -> ^(TOK_SWITCHDATABASE Identifier)
+    : KW_USE identifier
+    -> ^(TOK_SWITCHDATABASE identifier)
     ;
 
 dropDatabaseStatement
 @init { msgs.push("drop database statement"); }
 @after { msgs.pop(); }
-    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? Identifier restrictOrCascade?
-    -> ^(TOK_DROPDATABASE Identifier ifExists? restrictOrCascade?)
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? identifier restrictOrCascade?
+    -> ^(TOK_DROPDATABASE identifier ifExists? restrictOrCascade?)
     ;
 
 databaseComment
@@ -528,7 +760,7 @@ truncateTableStatement
 createIndexStatement
 @init { msgs.push("create index statement");}
 @after {msgs.pop();}
-    : KW_CREATE KW_INDEX indexName=Identifier
+    : KW_CREATE KW_INDEX indexName=identifier
       KW_ON KW_TABLE tab=tableName LPAREN indexedCols=columnNameList RPAREN
       KW_AS typeName=StringLiteral
       autoRebuild?
@@ -595,7 +827,7 @@ indexPropertiesList
 dropIndexStatement
 @init { msgs.push("drop index statement");}
 @after {msgs.pop();}
-    : KW_DROP KW_INDEX ifExists? indexName=Identifier KW_ON tab=tableName
+    : KW_DROP KW_INDEX ifExists? indexName=identifier KW_ON tab=tableName
     ->^(TOK_DROPINDEX $indexName $tab ifExists?)
     ;
 
@@ -653,8 +885,8 @@ alterViewStatementSuffix
 alterIndexStatementSuffix
 @init { msgs.push("alter index statement"); }
 @after { msgs.pop(); }
-    : indexName=Identifier
-      (KW_ON tableNameId=Identifier)
+    : indexName=identifier
+      (KW_ON tableNameId=identifier)
       partitionSpec?
     (
       KW_REBUILD
@@ -675,34 +907,34 @@ alterDatabaseStatementSuffix
 alterDatabaseSuffixProperties
 @init { msgs.push("alter database properties statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_DBPROPERTIES dbProperties
+    : name=identifier KW_SET KW_DBPROPERTIES dbProperties
     -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
     ;
 
 alterStatementSuffixRename
 @init { msgs.push("rename statement"); }
 @after { msgs.pop(); }
-    : oldName=Identifier KW_RENAME KW_TO newName=Identifier
+    : oldName=identifier KW_RENAME KW_TO newName=identifier
     -> ^(TOK_ALTERTABLE_RENAME $oldName $newName)
     ;
 
 alterStatementSuffixAddCol
 @init { msgs.push("add column statement"); }
 @after { msgs.pop(); }
-    : Identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
-    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS Identifier columnNameTypeList)
-    ->                 ^(TOK_ALTERTABLE_REPLACECOLS Identifier columnNameTypeList)
+    : identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
+    -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS identifier columnNameTypeList)
+    ->                 ^(TOK_ALTERTABLE_REPLACECOLS identifier columnNameTypeList)
     ;
 
 alterStatementSuffixRenameCol
 @init { msgs.push("rename column name"); }
 @after { msgs.pop(); }
-    : Identifier KW_CHANGE KW_COLUMN? oldName=Identifier newName=Identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
-    ->^(TOK_ALTERTABLE_RENAMECOL Identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    : identifier KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
+    ->^(TOK_ALTERTABLE_RENAMECOL identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
     ;
 
 alterStatementChangeColPosition
-    : first=KW_FIRST|KW_AFTER afterCol=Identifier
+    : first=KW_FIRST|KW_AFTER afterCol=identifier
     ->{$first != null}? ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION )
     -> ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION $afterCol)
     ;
@@ -710,29 +942,29 @@ alterStatementChangeColPosition
 alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
-    -> ^(TOK_ALTERTABLE_ADDPARTS Identifier ifNotExists? (partitionSpec partitionLocation?)+)
+    : identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
+    -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? (partitionSpec partitionLocation?)+)
     ;
 
 alterStatementSuffixTouch
 @init { msgs.push("touch statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_TOUCH (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_TOUCH Identifier (partitionSpec)*)
+    : identifier KW_TOUCH (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_TOUCH identifier (partitionSpec)*)
     ;
 
 alterStatementSuffixArchive
 @init { msgs.push("archive statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_ARCHIVE (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_ARCHIVE Identifier (partitionSpec)*)
+    : identifier KW_ARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_ARCHIVE identifier (partitionSpec)*)
     ;
 
 alterStatementSuffixUnArchive
 @init { msgs.push("unarchive statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_UNARCHIVE (partitionSpec)*
-    -> ^(TOK_ALTERTABLE_UNARCHIVE Identifier (partitionSpec)*)
+    : identifier KW_UNARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_UNARCHIVE identifier (partitionSpec)*)
     ;
 
 partitionLocation
@@ -745,25 +977,25 @@ partitionLocation
 alterStatementSuffixDropPartitions
 @init { msgs.push("drop partition statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
-    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier dropPartitionSpec+ ifExists? ignoreProtection?)
+    : identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)* ignoreProtection?
+    -> ^(TOK_ALTERTABLE_DROPPARTS identifier dropPartitionSpec+ ifExists? ignoreProtection?)
     ;
 
 alterStatementSuffixProperties
 @init { msgs.push("alter properties statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
+    : name=identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_PROPERTIES $name tableProperties)
-    | name=Identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    | name=identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
     -> ^(TOK_DROPTABLE_PROPERTIES $name tableProperties ifExists?)
     ;
 
 alterViewSuffixProperties
 @init { msgs.push("alter view properties statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
+    : name=identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERVIEW_PROPERTIES $name tableProperties)
-    | name=Identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
+    | name=identifier KW_UNSET KW_TBLPROPERTIES ifExists? tableProperties
     -> ^(TOK_DROPVIEW_PROPERTIES $name tableProperties ifExists?)
     ;
 
@@ -779,15 +1011,17 @@ alterStatementSuffixSerdeProperties
 tablePartitionPrefix
 @init {msgs.push("table partition prefix");}
 @after {msgs.pop();}
-  :name=Identifier partitionSpec?
+  :name=identifier partitionSpec?
   ->^(TOK_TABLE_PARTITION $name partitionSpec?)
   ;
 
 alterTblPartitionStatement
 @init {msgs.push("alter table partition statement");}
 @after {msgs.pop();}
-  :  tablePartitionPrefix alterTblPartitionStatementSuffix
+  : tablePartitionPrefix alterTblPartitionStatementSuffix
   -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
+  |Identifier KW_PARTITION KW_COLUMN LPAREN columnNameType RPAREN
+  -> ^(TOK_ALTERTABLE_ALTERPARTS Identifier columnNameType)
   ;
 
 alterTblPartitionStatementSuffix
@@ -858,13 +1092,13 @@ alterStatementSuffixLocation
 alterStatementSuffixSkewedby
 @init {msgs.push("alter skewed by statement");}
 @after{msgs.pop();}
-	:name=Identifier tableSkewed
+	:name=identifier tableSkewed
 	->^(TOK_ALTERTABLE_SKEWED $name tableSkewed)
 	|
-	name=Identifier KW_NOT KW_SKEWED
+	name=identifier KW_NOT KW_SKEWED
 	->^(TOK_ALTERTABLE_SKEWED $name)
 	|
-	name=Identifier KW_NOT storedAsDirs
+	name=identifier KW_NOT storedAsDirs
 	->^(TOK_ALTERTABLE_SKEWED $name storedAsDirs)
 	;
 
@@ -919,21 +1153,21 @@ fileFormat
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
     | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
-    | genericSpec=Identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
+    | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
 tabTypeExpr
 @init { msgs.push("specifying table types"); }
 @after { msgs.pop(); }
 
-   : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
+   : identifier (DOT^ (KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE | identifier))*
    ;
 
 descTabTypeExpr
 @init { msgs.push("specifying describe table types"); }
 @after { msgs.pop(); }
 
-   : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))* Identifier?
+   : identifier (DOT^ (KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE | identifier))* identifier?
    ;
 
 partTypeExpr
@@ -953,7 +1187,7 @@ descStatement
 @after { msgs.pop(); }
     : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED|descOptions=KW_PRETTY)? (parttype=descPartTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
-    | (KW_DESCRIBE|KW_DESC) KW_DATABASE KW_EXTENDED? (dbName=Identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
+    | (KW_DESCRIBE|KW_DESC) KW_DATABASE KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     ;
 
 analyzeStatement
@@ -966,17 +1200,17 @@ showStatement
 @init { msgs.push("show statement"); }
 @after { msgs.pop(); }
     : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
-    | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=Identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
-    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=Identifier)? 
+    | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
+    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tabname=tableName ((KW_FROM|KW_IN) db_name=identifier)? 
     -> ^(TOK_SHOWCOLUMNS $db_name? $tabname)
     | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
-    | KW_SHOW KW_PARTITIONS Identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS Identifier partitionSpec?)
+    | KW_SHOW KW_PARTITIONS identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS identifier partitionSpec?)
     | KW_SHOW KW_CREATE KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
-    | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
+    | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
-    | KW_SHOW KW_TBLPROPERTIES tblName=Identifier (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES $tblName $prptyName?)
+    | KW_SHOW KW_TBLPROPERTIES tblName=identifier (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES $tblName $prptyName?)
     | KW_SHOW KW_LOCKS (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
-    | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=Identifier)?
+    | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=identifier)?
     -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
     ;
 
@@ -1001,14 +1235,14 @@ unlockStatement
 createRoleStatement
 @init { msgs.push("create role"); }
 @after { msgs.pop(); }
-    : KW_CREATE kwRole roleName=Identifier
+    : KW_CREATE KW_ROLE roleName=identifier
     -> ^(TOK_CREATEROLE $roleName)
     ;
 
 dropRoleStatement
 @init {msgs.push("drop role");}
 @after {msgs.pop();}
-    : KW_DROP kwRole roleName=Identifier
+    : KW_DROP KW_ROLE roleName=identifier
     -> ^(TOK_DROPROLE $roleName)
     ;
 
@@ -1032,21 +1266,21 @@ revokePrivileges
 grantRole
 @init {msgs.push("grant role");}
 @after {msgs.pop();}
-    : KW_GRANT kwRole Identifier (COMMA Identifier)* KW_TO principalSpecification
-    -> ^(TOK_GRANT_ROLE principalSpecification Identifier+)
+    : KW_GRANT KW_ROLE identifier (COMMA identifier)* KW_TO principalSpecification
+    -> ^(TOK_GRANT_ROLE principalSpecification identifier+)
     ;
 
 revokeRole
 @init {msgs.push("revoke role");}
 @after {msgs.pop();}
-    : KW_REVOKE kwRole Identifier (COMMA Identifier)* KW_FROM principalSpecification
-    -> ^(TOK_REVOKE_ROLE principalSpecification Identifier+)
+    : KW_REVOKE KW_ROLE identifier (COMMA identifier)* KW_FROM principalSpecification
+    -> ^(TOK_REVOKE_ROLE principalSpecification identifier+)
     ;
 
 showRoleGrants
 @init {msgs.push("show role grants");}
 @after {msgs.pop();}
-    : KW_SHOW kwRole KW_GRANT principalName
+    : KW_SHOW KW_ROLE KW_GRANT principalName
     -> ^(TOK_SHOW_ROLE_GRANT principalName)
     ;
 
@@ -1060,15 +1294,15 @@ showGrants
 privilegeIncludeColObject
 @init {msgs.push("privilege object including columns");}
 @after {msgs.pop();}
-    : KW_ON (table=KW_TABLE|KW_DATABASE) Identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
-    -> ^(TOK_PRIV_OBJECT_COL Identifier $table? $cols? partitionSpec?)
+    : KW_ON (table=KW_TABLE|KW_DATABASE) identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
+    -> ^(TOK_PRIV_OBJECT_COL identifier $table? $cols? partitionSpec?)
     ;
 
 privilegeObject
 @init {msgs.push("privilege subject");}
 @after {msgs.pop();}
-    : KW_ON (table=KW_TABLE|KW_DATABASE) Identifier partitionSpec?
-    -> ^(TOK_PRIV_OBJECT Identifier $table? partitionSpec?)
+    : KW_ON (table=KW_TABLE|KW_DATABASE) identifier partitionSpec?
+    -> ^(TOK_PRIV_OBJECT identifier $table? partitionSpec?)
     ;
 
 privilegeList
@@ -1108,9 +1342,9 @@ principalSpecification
 principalName
 @init {msgs.push("user|group|role name");}
 @after {msgs.pop();}
-    : kwUser Identifier -> ^(TOK_USER Identifier)
-    | KW_GROUP Identifier -> ^(TOK_GROUP Identifier)
-    | kwRole Identifier -> ^(TOK_ROLE Identifier)
+    : KW_USER identifier -> ^(TOK_USER identifier)
+    | KW_GROUP identifier -> ^(TOK_GROUP identifier)
+    | KW_ROLE identifier -> ^(TOK_ROLE identifier)
     ;
 
 withOption
@@ -1123,22 +1357,22 @@ withOption
 metastoreCheck
 @init { msgs.push("metastore check statement"); }
 @after { msgs.pop(); }
-    : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE table=Identifier partitionSpec? (COMMA partitionSpec)*)?
+    : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE table=identifier partitionSpec? (COMMA partitionSpec)*)?
     -> ^(TOK_MSCK $repair? ($table partitionSpec*)?)
     ;
 
 createFunctionStatement
 @init { msgs.push("create function statement"); }
 @after { msgs.pop(); }
-    : KW_CREATE KW_TEMPORARY KW_FUNCTION Identifier KW_AS StringLiteral
-    -> ^(TOK_CREATEFUNCTION Identifier StringLiteral)
+    : KW_CREATE KW_TEMPORARY KW_FUNCTION identifier KW_AS StringLiteral
+    -> ^(TOK_CREATEFUNCTION identifier StringLiteral)
     ;
 
 dropFunctionStatement
 @init { msgs.push("drop temporary function statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? Identifier
-    -> ^(TOK_DROPFUNCTION Identifier ifExists?)
+    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
+    -> ^(TOK_DROPFUNCTION identifier ifExists?)
     ;
 
 createViewStatement
@@ -1175,9 +1409,9 @@ dropViewStatement
     ;
 
 showStmtIdentifier
-@init { msgs.push("Identifier for show statement"); }
+@init { msgs.push("identifier for show statement"); }
 @after { msgs.pop(); }
-    : Identifier
+    : identifier
     | StringLiteral
     ;
 
@@ -1339,7 +1573,7 @@ tableFileFormat
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
       -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
-      | KW_STORED KW_AS genericSpec=Identifier
+      | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
@@ -1372,7 +1606,7 @@ columnName
 @init { msgs.push("column name"); }
 @after { msgs.pop(); }
     :
-      Identifier
+      identifier
     ;
 
 columnNameOrderList
@@ -1427,9 +1661,9 @@ skewedValueLocationElement
 columnNameOrder
 @init { msgs.push("column name order"); }
 @after { msgs.pop(); }
-    : Identifier (asc=KW_ASC | desc=KW_DESC)?
-    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC Identifier)
-    ->                  ^(TOK_TABSORTCOLNAMEDESC Identifier)
+    : identifier (asc=KW_ASC | desc=KW_DESC)?
+    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC identifier)
+    ->                  ^(TOK_TABSORTCOLNAMEDESC identifier)
     ;
 
 columnNameCommentList
@@ -1441,7 +1675,7 @@ columnNameCommentList
 columnNameComment
 @init { msgs.push("column name comment"); }
 @after { msgs.pop(); }
-    : colName=Identifier (KW_COMMENT comment=StringLiteral)?
+    : colName=identifier (KW_COMMENT comment=StringLiteral)?
     -> ^(TOK_TABCOL $colName TOK_NULL $comment?)
     ;
 
@@ -1456,7 +1690,7 @@ columnRefOrder
 columnNameType
 @init { msgs.push("column specification"); }
 @after { msgs.pop(); }
-    : colName=Identifier colType (KW_COMMENT comment=StringLiteral)?
+    : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
@@ -1464,7 +1698,7 @@ columnNameType
 columnNameColonType
 @init { msgs.push("column specification"); }
 @after { msgs.pop(); }
-    : colName=Identifier COLON colType (KW_COMMENT comment=StringLiteral)?
+    : colName=identifier COLON colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
@@ -1642,1219 +1876,4 @@ limitClause
    KW_LIMIT num=Number -> ^(TOK_LIMIT $num)
    ;
 
-//----------------------- Rules for parsing selectClause -----------------------------
-// select a,b,c ...
-selectClause
-@init { msgs.push("select clause"); }
-@after { msgs.pop(); }
-    :
-    KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList)
-                          | (transform=KW_TRANSFORM selectTrfmClause))
-     -> {$transform == null && $dist == null}? ^(TOK_SELECT hintClause? selectList)
-     -> {$transform == null && $dist != null}? ^(TOK_SELECTDI hintClause? selectList)
-     -> ^(TOK_SELECT hintClause? ^(TOK_SELEXPR selectTrfmClause) )
-    |
-    trfmClause  ->^(TOK_SELECT ^(TOK_SELEXPR trfmClause))
-    ;
-
-selectList
-@init { msgs.push("select list"); }
-@after { msgs.pop(); }
-    :
-    selectItem ( COMMA  selectItem )* -> selectItem+
-    ;
-
-selectTrfmClause
-@init { msgs.push("transform clause"); }
-@after { msgs.pop(); }
-    :
-    LPAREN selectExpressionList RPAREN
-    inSerde=rowFormat inRec=recordWriter
-    KW_USING StringLiteral
-    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))?
-    outSerde=rowFormat outRec=recordReader
-    -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
-    ;
-
-hintClause
-@init { msgs.push("hint clause"); }
-@after { msgs.pop(); }
-    :
-    DIVIDE STAR PLUS hintList STAR DIVIDE -> ^(TOK_HINTLIST hintList)
-    ;
-
-hintList
-@init { msgs.push("hint list"); }
-@after { msgs.pop(); }
-    :
-    hintItem (COMMA hintItem)* -> hintItem+
-    ;
-
-hintItem
-@init { msgs.push("hint item"); }
-@after { msgs.pop(); }
-    :
-    hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs?)
-    ;
-
-hintName
-@init { msgs.push("hint name"); }
-@after { msgs.pop(); }
-    :
-    KW_MAPJOIN -> TOK_MAPJOIN
-    | KW_STREAMTABLE -> TOK_STREAMTABLE
-    | KW_HOLD_DDLTIME -> TOK_HOLD_DDLTIME
-    ;
-
-hintArgs
-@init { msgs.push("hint arguments"); }
-@after { msgs.pop(); }
-    :
-    hintArgName (COMMA hintArgName)* -> ^(TOK_HINTARGLIST hintArgName+)
-    ;
-
-hintArgName
-@init { msgs.push("hint argument name"); }
-@after { msgs.pop(); }
-    :
-    Identifier
-    ;
-
-selectItem
-@init { msgs.push("selection target"); }
-@after { msgs.pop(); }
-    :
-    ( selectExpression  
-      ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?
-      (KW_OVER ws=window_specification )?
-    ) -> ^(TOK_SELEXPR selectExpression Identifier* $ws?)
-    ;
-
-trfmClause
-@init { msgs.push("transform clause"); }
-@after { msgs.pop(); }
-    :
-    (   KW_MAP    selectExpressionList
-      | KW_REDUCE selectExpressionList )
-    inSerde=rowFormat inRec=recordWriter
-    KW_USING StringLiteral
-    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))?
-    outSerde=rowFormat outRec=recordReader
-    -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
-    ;
-
-selectExpression
-@init { msgs.push("select expression"); }
-@after { msgs.pop(); }
-    :
-    expression | tableAllColumns
-    ;
-
-selectExpressionList
-@init { msgs.push("select expression list"); }
-@after { msgs.pop(); }
-    :
-    selectExpression (COMMA selectExpression)* -> ^(TOK_EXPLIST selectExpression+)
-    ;
-
-
-//-----------------------------------------------------------------------------------
-
-tableAllColumns
-    : STAR
-        -> ^(TOK_ALLCOLREF)
-    | tableName DOT STAR
-        -> ^(TOK_ALLCOLREF tableName)
-    ;
-
-// (table|column)
-tableOrColumn
-@init { msgs.push("table or column identifier"); }
-@after { msgs.pop(); }
-    :
-    Identifier -> ^(TOK_TABLE_OR_COL Identifier)
-    ;
-
-expressionList
-@init { msgs.push("expression list"); }
-@after { msgs.pop(); }
-    :
-    expression (COMMA expression)* -> ^(TOK_EXPLIST expression+)
-    ;
-
-aliasList
-@init { msgs.push("alias list"); }
-@after { msgs.pop(); }
-    :
-    Identifier (COMMA Identifier)* -> ^(TOK_ALIASLIST Identifier+)
-    ;
-
-//----------------------- Rules for parsing fromClause ------------------------------
-// from [col1, col2, col3] table1, [col4, col5] table2
-fromClause
-@init { msgs.push("from clause"); }
-@after { msgs.pop(); }
-    :
-    KW_FROM joinSource -> ^(TOK_FROM joinSource)
-    ;
-
-joinSource
-@init { msgs.push("join source"); }
-@after { msgs.pop(); }
-    : fromSource ( joinToken^ fromSource (KW_ON! expression)? )*
-    | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
-    ;
-
-uniqueJoinSource
-@init { msgs.push("join source"); }
-@after { msgs.pop(); }
-    : KW_PRESERVE? fromSource uniqueJoinExpr
-    ;
-
-uniqueJoinExpr
-@init { msgs.push("unique join expression list"); }
-@after { msgs.pop(); }
-    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN
-      -> ^(TOK_EXPLIST $e1*)
-    ;
-
-uniqueJoinToken
-@init { msgs.push("unique join"); }
-@after { msgs.pop(); }
-    : KW_UNIQUEJOIN -> TOK_UNIQUEJOIN;
-
-joinToken
-@init { msgs.push("join type specifier"); }
-@after { msgs.pop(); }
-    :
-      KW_JOIN                     -> TOK_JOIN
-    | kwInner  KW_JOIN            -> TOK_JOIN
-    | KW_CROSS KW_JOIN            -> TOK_CROSSJOIN
-    | KW_LEFT  KW_OUTER KW_JOIN   -> TOK_LEFTOUTERJOIN
-    | KW_RIGHT KW_OUTER KW_JOIN   -> TOK_RIGHTOUTERJOIN
-    | KW_FULL  KW_OUTER KW_JOIN   -> TOK_FULLOUTERJOIN
-    | KW_LEFT  KW_SEMI  KW_JOIN   -> TOK_LEFTSEMIJOIN
-    ;
-
-lateralView
-@init {msgs.push("lateral view"); }
-@after {msgs.pop(); }
-	:
-	KW_LATERAL KW_VIEW function tableAlias KW_AS Identifier (COMMA Identifier)* -> ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR function Identifier+ tableAlias)))
-	;
-
-tableAlias
-@init {msgs.push("table alias"); }
-@after {msgs.pop(); }
-    :
-    Identifier -> ^(TOK_TABALIAS Identifier)
-    ;
-
-fromSource
-@init { msgs.push("from source"); }
-@after { msgs.pop(); }
-    :
-    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource ) (lateralView^)*
-    ;
-
-tableBucketSample
-@init { msgs.push("table bucket sample specification"); }
-@after { msgs.pop(); }
-    :
-    KW_TABLESAMPLE LPAREN KW_BUCKET (numerator=Number) KW_OUT KW_OF (denominator=Number) (KW_ON expr+=expression (COMMA expr+=expression)*)? RPAREN -> ^(TOK_TABLEBUCKETSAMPLE $numerator $denominator $expr*)
-    ;
-
-splitSample
-@init { msgs.push("table split sample specification"); }
-@after { msgs.pop(); }
-    :
-    KW_TABLESAMPLE LPAREN  (numerator=Number) (percent=KW_PERCENT|KW_ROWS) RPAREN
-    -> {percent != null}? ^(TOK_TABLESPLITSAMPLE TOK_PERCENT $numerator)
-    -> ^(TOK_TABLESPLITSAMPLE TOK_ROWCOUNT $numerator)
-    |
-    KW_TABLESAMPLE LPAREN  (numerator=ByteLengthLiteral) RPAREN
-    -> ^(TOK_TABLESPLITSAMPLE TOK_LENGTH $numerator)
-    ;
-
-tableSample
-@init { msgs.push("table sample specification"); }
-@after { msgs.pop(); }
-    :
-    tableBucketSample |
-    splitSample
-    ;
-
-tableSource
-@init { msgs.push("table source"); }
-@after { msgs.pop(); }
-    : tabname=tableName (ts=tableSample)? (alias=Identifier)?
-    -> ^(TOK_TABREF $tabname $ts? $alias?)
-    ;
-
-tableName
-@init { msgs.push("table name"); }
-@after { msgs.pop(); }
-    :
-    db=Identifier DOT tab=Identifier
-    -> ^(TOK_TABNAME $db $tab)
-    |
-    tab=Identifier
-    -> ^(TOK_TABNAME $tab)
-    ;
-
-viewName
-@init { msgs.push("view name"); }
-@after { msgs.pop(); }
-    :
-    (db=Identifier DOT)? view=Identifier
-    -> ^(TOK_TABNAME $db? $view)
-    ;
-
-subQuerySource
-@init { msgs.push("subquery source"); }
-@after { msgs.pop(); }
-    :
-    LPAREN queryStatementExpression RPAREN Identifier -> ^(TOK_SUBQUERY queryStatementExpression Identifier)
-    ;
-    
-//---------------------- Rules for parsing PTF clauses -----------------------------
-partitioningSpec
-@init { msgs.push("partitioningSpec clause"); }
-@after { msgs.pop(); } 
-   :
-   partitionByClause orderByClause? -> ^(TOK_PARTITIONINGSPEC partitionByClause orderByClause?) |
-   distributeByClause sortByClause? -> ^(TOK_PARTITIONINGSPEC distributeByClause sortByClause?) |
-   clusterByClause -> ^(TOK_PARTITIONINGSPEC clusterByClause)
-   ;
-
-partitionTableFunctionSource
-@init { msgs.push("partitionTableFunctionSource clause"); }
-@after { msgs.pop(); } 
-   :
-   subQuerySource |
-   tableSource |
-   partitionedTableFunction
-   ;
-
-partitionedTableFunction
-@init { msgs.push("ptf clause"); }
-@after { msgs.pop(); } 
-   :
-   name=Identifier 
-   LPAREN KW_ON
-     ptfsrc=partitionTableFunctionSource partitioningSpec? ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)?
-   RPAREN alias=Identifier?
-   ->   ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
-   ;   
-   
-//---------------------- Rules for windowing clauses -------------------------------
-window_clause 
-@init { msgs.push("window_clause"); }
-@after { msgs.pop(); } 
-:
-  KW_WINDOW window_defn (COMMA window_defn)* -> ^(KW_WINDOW window_defn+)
-;  
-
-window_defn 
-@init { msgs.push("window_defn"); }
-@after { msgs.pop(); } 
-:
-  Identifier KW_AS window_specification -> ^(TOK_WINDOWDEF Identifier window_specification)
-;  
-
-window_specification 
-@init { msgs.push("window_specification"); }
-@after { msgs.pop(); } 
-:
-  (Identifier | ( LPAREN Identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
-;
-
-window_frame :
- window_range_expression |
- window_value_expression
-;
-
-window_range_expression 
-@init { msgs.push("window_range_expression"); }
-@after { msgs.pop(); } 
-:
- KW_ROWS KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWRANGE ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
- KW_ROWS KW_BETWEEN s=rowsboundary KW_AND end=rowsboundary -> ^(TOK_WINDOWRANGE $s $end)
-;
-
-rowsboundary 
-@init { msgs.push("rowsboundary"); }
-@after { msgs.pop(); } 
-:
-  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
-  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
-  Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
-;
-
-window_value_expression 
-@init { msgs.push("window_value_expression"); }
-@after { msgs.pop(); } 
-:
- KW_RANGE KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWVALUES ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
- KW_RANGE KW_BETWEEN s=valuesboundary KW_AND end=valuesboundary -> ^(TOK_WINDOWVALUES $s $end)
-;
-
-valuesboundary 
-@init { msgs.push("valuesboundary"); }
-@after { msgs.pop(); } 
-:
-  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
-  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
-  rowExp=expression rngExp=Number (d=KW_LESS | d=KW_MORE ) -> ^($d $rowExp $rngExp)
-;   
-
-//----------------------- Rules for parsing whereClause -----------------------------
-// where a=b and ...
-whereClause
-@init { msgs.push("where clause"); }
-@after { msgs.pop(); }
-    :
-    KW_WHERE searchCondition -> ^(TOK_WHERE searchCondition)
-    ;
-
-searchCondition
-@init { msgs.push("search condition"); }
-@after { msgs.pop(); }
-    :
-    expression
-    ;
-
-//-----------------------------------------------------------------------------------
-
-// group by a,b
-groupByClause
-@init { msgs.push("group by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_GROUP KW_BY
-    groupByExpression
-    ( COMMA groupByExpression )*
-    ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
-    (sets=KW_GROUPING KW_SETS 
-    LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
-    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY groupByExpression+)
-    -> {cube != null}? ^(TOK_CUBE_GROUPBY groupByExpression+)
-    -> {sets != null}? ^(TOK_GROUPING_SETS groupByExpression+ groupingSetExpression+)
-    -> ^(TOK_GROUPBY groupByExpression+)
-    ;
-
-groupingSetExpression
-@init {msgs.push("grouping set expression"); }
-@after {msgs.pop(); }
-   :
-   groupByExpression
-   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression)
-   |
-   LPAREN 
-   groupByExpression (COMMA groupByExpression)*
-   RPAREN
-   -> ^(TOK_GROUPING_SETS_EXPRESSION groupByExpression+)
-   |
-   LPAREN
-   RPAREN
-   -> ^(TOK_GROUPING_SETS_EXPRESSION)
-   ;
-
-
-groupByExpression
-@init { msgs.push("group by expression"); }
-@after { msgs.pop(); }
-    :
-    expression
-    ;
-
-havingClause
-@init { msgs.push("having clause"); }
-@after { msgs.pop(); }
-    :
-    KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
-    ;
-
-havingCondition
-@init { msgs.push("having condition"); }
-@after { msgs.pop(); }
-    :
-    expression
-    ;
-
-// order by a,b
-orderByClause
-@init { msgs.push("order by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_ORDER KW_BY
-    LPAREN columnRefOrder
-    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_ORDERBY columnRefOrder+)
-    |
-    KW_ORDER KW_BY
-    columnRefOrder
-    ( COMMA columnRefOrder)* -> ^(TOK_ORDERBY columnRefOrder+)
-    ;
-
-clusterByClause
-@init { msgs.push("cluster by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_CLUSTER KW_BY
-    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_CLUSTERBY expression+)
-    |
-    KW_CLUSTER KW_BY
-    expression
-    ( (COMMA)=> COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
-    ;
-
-partitionByClause
-@init { msgs.push("partition by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_PARTITION KW_BY
-    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
-    |
-    KW_PARTITION KW_BY
-    expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
-    ;
-
-distributeByClause
-@init { msgs.push("distribute by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_DISTRIBUTE KW_BY
-    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
-    |
-    KW_DISTRIBUTE KW_BY
-    expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
-    ;
-
-sortByClause
-@init { msgs.push("sort by clause"); }
-@after { msgs.pop(); }
-    :
-    KW_SORT KW_BY
-    LPAREN columnRefOrder
-    ( COMMA columnRefOrder)* RPAREN -> ^(TOK_SORTBY columnRefOrder+)
-    |
-    KW_SORT KW_BY
-    columnRefOrder
-    (  (COMMA)=> COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
-    ;
-
-// fun(par1, par2, par3)
-function
-@init { msgs.push("function specification"); }
-@after { msgs.pop(); }
-    :
-    functionName
-    LPAREN
-      (
-        (star=STAR)
-        | (dist=KW_DISTINCT)? (expression (COMMA expression)*)?
-      ) 
-    RPAREN
-           -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName)
-           -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
-                            -> ^(TOK_FUNCTIONDI functionName (expression+)?)
-    ;
-
-functionName
-@init { msgs.push("function name"); }
-@after { msgs.pop(); }
-    : // Keyword IF is also a function name
-    Identifier | KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE
-    ;
-
-castExpression
-@init { msgs.push("cast expression"); }
-@after { msgs.pop(); }
-    :
-    KW_CAST
-    LPAREN
-          expression
-          KW_AS
-          primitiveType
-    RPAREN -> ^(TOK_FUNCTION primitiveType expression)
-    ;
-
-caseExpression
-@init { msgs.push("case expression"); }
-@after { msgs.pop(); }
-    :
-    KW_CASE expression
-    (KW_WHEN expression KW_THEN expression)+
-    (KW_ELSE expression)?
-    KW_END -> ^(TOK_FUNCTION KW_CASE expression*)
-    ;
-
-whenExpression
-@init { msgs.push("case expression"); }
-@after { msgs.pop(); }
-    :
-    KW_CASE
-     ( KW_WHEN expression KW_THEN expression)+
-    (KW_ELSE expression)?
-    KW_END -> ^(TOK_FUNCTION KW_WHEN expression*)
-    ;
-
-constant
-@init { msgs.push("constant"); }
-@after { msgs.pop(); }
-    :
-    Number
-    | StringLiteral
-    | stringLiteralSequence
-    | BigintLiteral
-    | SmallintLiteral
-    | TinyintLiteral
-    | charSetStringLiteral
-    | booleanValue
-    ;
-
-stringLiteralSequence
-    :
-    StringLiteral StringLiteral+ -> ^(TOK_STRINGLITERALSEQUENCE StringLiteral StringLiteral+)
-    ;
-
-charSetStringLiteral
-@init { msgs.push("character string literal"); }
-@after { msgs.pop(); }
-    :
-    csName=CharSetName csLiteral=CharSetLiteral -> ^(TOK_CHARSETLITERAL $csName $csLiteral)
-    ;
-
-expression
-@init { msgs.push("expression specification"); }
-@after { msgs.pop(); }
-    :
-    precedenceOrExpression
-    ;
-
-atomExpression
-    :
-    KW_NULL -> TOK_NULL
-    | constant
-    | function
-    | castExpression
-    | caseExpression
-    | whenExpression
-    | tableOrColumn
-    | LPAREN! expression RPAREN!
-    ;
-
-
-precedenceFieldExpression
-    :
-    atomExpression ((LSQUARE^ expression RSQUARE!) | (DOT^ Identifier))*
-    ;
-
-precedenceUnaryOperator
-    :
-    PLUS | MINUS | TILDE
-    ;
-
-nullCondition
-    :
-    KW_NULL -> ^(TOK_ISNULL)
-    | KW_NOT KW_NULL -> ^(TOK_ISNOTNULL)
-    ;
-
-precedenceUnaryPrefixExpression
-    :
-    (precedenceUnaryOperator^)* precedenceFieldExpression
-    ;
-
-precedenceUnarySuffixExpression
-    : precedenceUnaryPrefixExpression (a=KW_IS nullCondition)?
-    -> {$a != null}? ^(TOK_FUNCTION nullCondition precedenceUnaryPrefixExpression)
-    -> precedenceUnaryPrefixExpression
-    ;
-
-
-precedenceBitwiseXorOperator
-    :
-    BITWISEXOR
-    ;
-
-precedenceBitwiseXorExpression
-    :
-    precedenceUnarySuffixExpression (precedenceBitwiseXorOperator^ precedenceUnarySuffixExpression)*
-    ;
-
-
-precedenceStarOperator
-    :
-    STAR | DIVIDE | MOD | DIV
-    ;
-
-precedenceStarExpression
-    :
-    precedenceBitwiseXorExpression (precedenceStarOperator^ precedenceBitwiseXorExpression)*
-    ;
-
-
-precedencePlusOperator
-    :
-    PLUS | MINUS
-    ;
-
-precedencePlusExpression
-    :
-    precedenceStarExpression (precedencePlusOperator^ precedenceStarExpression)*
-    ;
-
-
-precedenceAmpersandOperator
-    :
-    AMPERSAND
-    ;
-
-precedenceAmpersandExpression
-    :
-    precedencePlusExpression (precedenceAmpersandOperator^ precedencePlusExpression)*
-    ;
-
-
-precedenceBitwiseOrOperator
-    :
-    BITWISEOR
-    ;
-
-precedenceBitwiseOrExpression
-    :
-    precedenceAmpersandExpression (precedenceBitwiseOrOperator^ precedenceAmpersandExpression)*
-    ;
-
-
-// Equal operators supporting NOT prefix
-precedenceEqualNegatableOperator
-    :
-    KW_LIKE | KW_RLIKE | KW_REGEXP
-    ;
-
-precedenceEqualOperator
-    :
-    precedenceEqualNegatableOperator | EQUAL | EQUAL_NS | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
-    ;
-
-precedenceEqualExpression
-    :
-    (left=precedenceBitwiseOrExpression -> $left)
-    (
-       (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
-       -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpression $notExpr))
-    | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
-       -> ^(precedenceEqualOperator $precedenceEqualExpression $equalExpr)
-    | (KW_NOT KW_IN expressions)
-       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions))
-    | (KW_IN expressions)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions)
-    | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $left $min $max)
-    | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $left $min $max)
-    )*
-    ;
-
-expressions
-    :
-    LPAREN expression (COMMA expression)* RPAREN -> expression*
-    ;
-
-precedenceNotOperator
-    :
-    KW_NOT
-    ;
-
-precedenceNotExpression
-    :
-    (precedenceNotOperator^)* precedenceEqualExpression
-    ;
-
-
-precedenceAndOperator
-    :
-    KW_AND
-    ;
-
-precedenceAndExpression
-    :
-    precedenceNotExpression (precedenceAndOperator^ precedenceNotExpression)*
-    ;
-
-
-precedenceOrOperator
-    :
-    KW_OR
-    ;
-
-precedenceOrExpression
-    :
-    precedenceAndExpression (precedenceOrOperator^ precedenceAndExpression)*
-    ;
-
-
-booleanValue
-    :
-    KW_TRUE^ | KW_FALSE^
-    ;
-
-tableOrPartition
-   :
-   tableName partitionSpec? -> ^(TOK_TAB tableName partitionSpec?)
-   ;
-
-partitionSpec
-    :
-    KW_PARTITION
-     LPAREN partitionVal (COMMA  partitionVal )* RPAREN -> ^(TOK_PARTSPEC partitionVal +)
-    ;
-
-partitionVal
-    :
-    Identifier (EQUAL constant)? -> ^(TOK_PARTVAL Identifier constant?)
-    ;
-
-dropPartitionSpec
-    :
-    KW_PARTITION
-     LPAREN dropPartitionVal (COMMA  dropPartitionVal )* RPAREN -> ^(TOK_PARTSPEC dropPartitionVal +)
-    ;
-
-dropPartitionVal
-    :
-    Identifier dropPartitionOperator constant -> ^(TOK_PARTVAL Identifier dropPartitionOperator constant)
-    ;
-
-dropPartitionOperator
-    :
-    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
-    ;
-
-sysFuncNames
-    :
-      KW_AND
-    | KW_OR
-    | KW_NOT
-    | KW_LIKE
-    | KW_IF
-    | KW_CASE
-    | KW_WHEN
-    | KW_TINYINT
-    | KW_SMALLINT
-    | KW_INT
-    | KW_BIGINT
-    | KW_FLOAT
-    | KW_DOUBLE
-    | KW_BOOLEAN
-    | KW_STRING
-    | KW_BINARY
-    | KW_ARRAY
-    | KW_MAP
-    | KW_STRUCT
-    | KW_UNIONTYPE
-    | EQUAL
-    | EQUAL_NS
-    | NOTEQUAL
-    | LESSTHANOREQUALTO
-    | LESSTHAN
-    | GREATERTHANOREQUALTO
-    | GREATERTHAN
-    | DIVIDE
-    | PLUS
-    | MINUS
-    | STAR
-    | MOD
-    | DIV
-    | AMPERSAND
-    | TILDE
-    | BITWISEOR
-    | BITWISEXOR
-    | KW_RLIKE
-    | KW_REGEXP
-    | KW_IN
-    | KW_BETWEEN
-    ;
-
-descFuncNames
-    :
-      sysFuncNames
-    | StringLiteral
-    | Identifier
-    ;
-
-// Keywords
-
-kwUser
-:
-{input.LT(1).getText().equalsIgnoreCase("user")}? Identifier;
-
-kwRole
-:
-{input.LT(1).getText().equalsIgnoreCase("role")}? Identifier;
-
-kwInner
-:
-{input.LT(1).getText().equalsIgnoreCase("inner")}? Identifier;
-
-KW_TRUE : 'TRUE';
-KW_FALSE : 'FALSE';
-KW_ALL : 'ALL';
-KW_AND : 'AND';
-KW_OR : 'OR';
-KW_NOT : 'NOT' | '!';
-KW_LIKE : 'LIKE';
-
-KW_IF : 'IF';
-KW_EXISTS : 'EXISTS';
-
-KW_ASC : 'ASC';
-KW_DESC : 'DESC';
-KW_ORDER : 'ORDER';
-KW_GROUP : 'GROUP';
-KW_BY : 'BY';
-KW_HAVING : 'HAVING';
-KW_WHERE : 'WHERE';
-KW_FROM : 'FROM';
-KW_AS : 'AS';
-KW_SELECT : 'SELECT';
-KW_DISTINCT : 'DISTINCT';
-KW_INSERT : 'INSERT';
-KW_OVERWRITE : 'OVERWRITE';
-KW_OUTER : 'OUTER';
-KW_UNIQUEJOIN : 'UNIQUEJOIN';
-KW_PRESERVE : 'PRESERVE';
-KW_JOIN : 'JOIN';
-KW_LEFT : 'LEFT';
-KW_RIGHT : 'RIGHT';
-KW_FULL : 'FULL';
-KW_ON : 'ON';
-KW_PARTITION : 'PARTITION';
-KW_PARTITIONS : 'PARTITIONS';
-KW_TABLE: 'TABLE';
-KW_TABLES: 'TABLES';
-KW_COLUMNS: 'COLUMNS';
-KW_INDEX: 'INDEX';
-KW_INDEXES: 'INDEXES';
-KW_REBUILD: 'REBUILD';
-KW_FUNCTIONS: 'FUNCTIONS';
-KW_SHOW: 'SHOW';
-KW_MSCK: 'MSCK';
-KW_REPAIR: 'REPAIR';
-KW_DIRECTORY: 'DIRECTORY';
-KW_LOCAL: 'LOCAL';
-KW_TRANSFORM : 'TRANSFORM';
-KW_USING: 'USING';
-KW_CLUSTER: 'CLUSTER';
-KW_DISTRIBUTE: 'DISTRIBUTE';
-KW_SORT: 'SORT';
-KW_UNION: 'UNION';
-KW_LOAD: 'LOAD';
-KW_EXPORT: 'EXPORT';
-KW_IMPORT: 'IMPORT';
-KW_DATA: 'DATA';
-KW_INPATH: 'INPATH';
-KW_IS: 'IS';
-KW_NULL: 'NULL';
-KW_CREATE: 'CREATE';
-KW_EXTERNAL: 'EXTERNAL';
-KW_ALTER: 'ALTER';
-KW_CHANGE: 'CHANGE';
-KW_COLUMN: 'COLUMN';
-KW_FIRST: 'FIRST';
-KW_AFTER: 'AFTER';
-KW_DESCRIBE: 'DESCRIBE';
-KW_DROP: 'DROP';
-KW_RENAME: 'RENAME';
-KW_IGNORE: 'IGNORE';
-KW_PROTECTION: 'PROTECTION';
-KW_TO: 'TO';
-KW_COMMENT: 'COMMENT';
-KW_BOOLEAN: 'BOOLEAN';
-KW_TINYINT: 'TINYINT';
-KW_SMALLINT: 'SMALLINT';
-KW_INT: 'INT';
-KW_BIGINT: 'BIGINT';
-KW_FLOAT: 'FLOAT';
-KW_DOUBLE: 'DOUBLE';
-KW_DATE: 'DATE';
-KW_DATETIME: 'DATETIME';
-KW_TIMESTAMP: 'TIMESTAMP';
-KW_DECIMAL: 'DECIMAL';
-KW_STRING: 'STRING';
-KW_ARRAY: 'ARRAY';
-KW_STRUCT: 'STRUCT';
-KW_MAP: 'MAP';
-KW_UNIONTYPE: 'UNIONTYPE';
-KW_REDUCE: 'REDUCE';
-KW_PARTITIONED: 'PARTITIONED';
-KW_CLUSTERED: 'CLUSTERED';
-KW_SORTED: 'SORTED';
-KW_INTO: 'INTO';
-KW_BUCKETS: 'BUCKETS';
-KW_ROW: 'ROW';
-KW_ROWS: 'ROWS';
-KW_FORMAT: 'FORMAT';
-KW_DELIMITED: 'DELIMITED';
-KW_FIELDS: 'FIELDS';
-KW_TERMINATED: 'TERMINATED';
-KW_ESCAPED: 'ESCAPED';
-KW_COLLECTION: 'COLLECTION';
-KW_ITEMS: 'ITEMS';
-KW_KEYS: 'KEYS';
-KW_KEY_TYPE: '$KEY$';
-KW_LINES: 'LINES';
-KW_STORED: 'STORED';
-KW_FILEFORMAT: 'FILEFORMAT';
-KW_SEQUENCEFILE: 'SEQUENCEFILE';
-KW_TEXTFILE: 'TEXTFILE';
-KW_RCFILE: 'RCFILE';
-KW_INPUTFORMAT: 'INPUTFORMAT';
-KW_OUTPUTFORMAT: 'OUTPUTFORMAT';
-KW_INPUTDRIVER: 'INPUTDRIVER';
-KW_OUTPUTDRIVER: 'OUTPUTDRIVER';
-KW_OFFLINE: 'OFFLINE';
-KW_ENABLE: 'ENABLE';
-KW_DISABLE: 'DISABLE';
-KW_READONLY: 'READONLY';
-KW_NO_DROP: 'NO_DROP';
-KW_LOCATION: 'LOCATION';
-KW_TABLESAMPLE: 'TABLESAMPLE';
-KW_BUCKET: 'BUCKET';
-KW_OUT: 'OUT';
-KW_OF: 'OF';
-KW_PERCENT: 'PERCENT';
-KW_CAST: 'CAST';
-KW_ADD: 'ADD';
-KW_REPLACE: 'REPLACE';
-KW_RLIKE: 'RLIKE';
-KW_REGEXP: 'REGEXP';
-KW_TEMPORARY: 'TEMPORARY';
-KW_FUNCTION: 'FUNCTION';
-KW_EXPLAIN: 'EXPLAIN';
-KW_EXTENDED: 'EXTENDED';
-KW_FORMATTED: 'FORMATTED';
-KW_PRETTY: 'PRETTY';
-KW_DEPENDENCY: 'DEPENDENCY';
-KW_SERDE: 'SERDE';
-KW_WITH: 'WITH';
-KW_DEFERRED: 'DEFERRED';
-KW_SERDEPROPERTIES: 'SERDEPROPERTIES';
-KW_DBPROPERTIES: 'DBPROPERTIES';
-KW_LIMIT: 'LIMIT';
-KW_SET: 'SET';
-KW_UNSET: 'UNSET';
-KW_TBLPROPERTIES: 'TBLPROPERTIES';
-KW_IDXPROPERTIES: 'IDXPROPERTIES';
-KW_VALUE_TYPE: '$VALUE$';
-KW_ELEM_TYPE: '$ELEM$';
-KW_CASE: 'CASE';
-KW_WHEN: 'WHEN';
-KW_THEN: 'THEN';
-KW_ELSE: 'ELSE';
-KW_END: 'END';
-KW_MAPJOIN: 'MAPJOIN';
-KW_STREAMTABLE: 'STREAMTABLE';
-KW_HOLD_DDLTIME: 'HOLD_DDLTIME';
-KW_CLUSTERSTATUS: 'CLUSTERSTATUS';
-KW_UTC: 'UTC';
-KW_UTCTIMESTAMP: 'UTC_TMESTAMP';
-KW_LONG: 'LONG';
-KW_DELETE: 'DELETE';
-KW_PLUS: 'PLUS';
-KW_MINUS: 'MINUS';
-KW_FETCH: 'FETCH';
-KW_INTERSECT: 'INTERSECT';
-KW_VIEW: 'VIEW';
-KW_IN: 'IN';
-KW_DATABASE: 'DATABASE';
-KW_DATABASES: 'DATABASES';
-KW_MATERIALIZED: 'MATERIALIZED';
-KW_SCHEMA: 'SCHEMA';
-KW_SCHEMAS: 'SCHEMAS';
-KW_GRANT: 'GRANT';
-KW_REVOKE: 'REVOKE';
-KW_SSL: 'SSL';
-KW_UNDO: 'UNDO';
-KW_LOCK: 'LOCK';
-KW_LOCKS: 'LOCKS';
-KW_UNLOCK: 'UNLOCK';
-KW_SHARED: 'SHARED';
-KW_EXCLUSIVE: 'EXCLUSIVE';
-KW_PROCEDURE: 'PROCEDURE';
-KW_UNSIGNED: 'UNSIGNED';
-KW_WHILE: 'WHILE';
-KW_READ: 'READ';
-KW_READS: 'READS';
-KW_PURGE: 'PURGE';
-KW_RANGE: 'RANGE';
-KW_ANALYZE: 'ANALYZE';
-KW_BEFORE: 'BEFORE';
-KW_BETWEEN: 'BETWEEN';
-KW_BOTH: 'BOTH';
-KW_BINARY: 'BINARY';
-KW_CROSS: 'CROSS';
-KW_CONTINUE: 'CONTINUE';
-KW_CURSOR: 'CURSOR';
-KW_TRIGGER: 'TRIGGER';
-KW_RECORDREADER: 'RECORDREADER';
-KW_RECORDWRITER: 'RECORDWRITER';
-KW_SEMI: 'SEMI';
-KW_LATERAL: 'LATERAL';
-KW_TOUCH: 'TOUCH';
-KW_ARCHIVE: 'ARCHIVE';
-KW_UNARCHIVE: 'UNARCHIVE';
-KW_COMPUTE: 'COMPUTE';
-KW_STATISTICS: 'STATISTICS';
-KW_USE: 'USE';
-KW_OPTION: 'OPTION';
-KW_CONCATENATE: 'CONCATENATE';
-KW_SHOW_DATABASE: 'SHOW_DATABASE';
-KW_UPDATE: 'UPDATE';
-KW_RESTRICT: 'RESTRICT';
-KW_CASCADE: 'CASCADE';
-KW_SKEWED: 'SKEWED';
-KW_ROLLUP: 'ROLLUP';
-KW_CUBE: 'CUBE';
-KW_DIRECTORIES: 'DIRECTORIES';
-KW_FOR: 'FOR';
-KW_WINDOW: 'WINDOW';
-KW_UNBOUNDED: 'UNBOUNDED';
-KW_PRECEDING: 'PRECEDING';
-KW_FOLLOWING: 'FOLLOWING';
-KW_CURRENT: 'CURRENT';
-KW_LESS: 'LESS';
-KW_MORE: 'MORE';
-KW_OVER: 'OVER';
-KW_GROUPING: 'GROUPING';
-KW_SETS: 'SETS';
-KW_TRUNCATE: 'TRUNCATE';
-KW_NOSCAN: 'NOSCAN';
-
-// Operators
-// NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
-
-DOT : '.'; // generated as a part of Number rule
-COLON : ':' ;
-COMMA : ',' ;
-SEMICOLON : ';' ;
-
-LPAREN : '(' ;
-RPAREN : ')' ;
-LSQUARE : '[' ;
-RSQUARE : ']' ;
-LCURLY : '{';
-RCURLY : '}';
-
-EQUAL : '=' | '==';
-EQUAL_NS : '<=>';
-NOTEQUAL : '<>' | '!=';
-LESSTHANOREQUALTO : '<=';
-LESSTHAN : '<';
-GREATERTHANOREQUALTO : '>=';
-GREATERTHAN : '>';
-
-DIVIDE : '/';
-PLUS : '+';
-MINUS : '-';
-STAR : '*';
-MOD : '%';
-DIV : 'DIV';
-
-AMPERSAND : '&';
-TILDE : '~';
-BITWISEOR : '|';
-BITWISEXOR : '^';
-QUESTION : '?';
-DOLLAR : '$';
-
-// LITERALS
-fragment
-Letter
-    : 'a'..'z' | 'A'..'Z'
-    ;
-
-fragment
-HexDigit
-    : 'a'..'f' | 'A'..'F'
-    ;
-
-fragment
-Digit
-    :
-    '0'..'9'
-    ;
-
-fragment
-Exponent
-    :
-    ('e' | 'E') ( PLUS|MINUS )? (Digit)+
-    ;
-
-fragment
-RegexComponent
-    : 'a'..'z' | 'A'..'Z' | '0'..'9' | '_'
-    | PLUS | STAR | QUESTION | MINUS | DOT
-    | LPAREN | RPAREN | LSQUARE | RSQUARE | LCURLY | RCURLY
-    | BITWISEXOR | BITWISEOR | DOLLAR
-    ;
-
-StringLiteral
-    :
-    ( '\'' ( ~('\''|'\\') | ('\\' .) )* '\''
-    | '\"' ( ~('\"'|'\\') | ('\\' .) )* '\"'
-    )+
-    ;
-
-CharSetLiteral
-    :
-    StringLiteral
-    | '0' 'X' (HexDigit|Digit)+
-    ;
-
-BigintLiteral
-    :
-    (Digit)+ 'L'
-    ;
-
-SmallintLiteral
-    :
-    (Digit)+ 'S'
-    ;
-
-TinyintLiteral
-    :
-    (Digit)+ 'Y'
-    ;
-
-ByteLengthLiteral
-    :
-    (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
-    ;
-
-Number
-    :
-    (Digit)+ ( DOT (Digit)* (Exponent)? | Exponent)?
-    ;
-
-Identifier
-    :
-    (Letter | Digit) (Letter | Digit | '_')*
-    | '`' RegexComponent+ '`'
-    ;
-
-CharSetName
-    :
-    '_' (Letter | Digit | '_' | '-' | '.' | ':' )+
-    ;
-
-WS  :  (' '|'\r'|'\t'|'\n') {$channel=HIDDEN;}
-    ;
-
-COMMENT
-  : '--' (~('\n'|'\r'))*
-    { $channel=HIDDEN; }
-  ;
 

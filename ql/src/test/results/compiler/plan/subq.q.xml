@@ -6,7 +6,7 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-9</string> 
+       <string>Stage-6</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList0" class="java.util.ArrayList"> 
@@ -17,7 +17,7 @@
             <void method="add"> 
              <object id="MoveTask1" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="id"> 
-               <string>Stage-3</string> 
+               <string>Stage-0</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -34,7 +34,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-5</string> 
+                   <string>Stage-2</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork0" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -274,7 +274,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-8</string> 
+                   <string>Stage-5</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -288,7 +288,7 @@
                        </object> 
                       </void> 
                       <void property="id"> 
-                       <string>Stage-7</string> 
+                       <string>Stage-4</string> 
                       </void> 
                       <void property="work"> 
                        <object idref="MapredWork0"/> 
@@ -346,7 +346,7 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-6</string> 
+           <string>Stage-3</string> 
           </void> 
           <void property="work"> 
            <object idref="MoveWork0"/> 
@@ -400,7 +400,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-4</string> 
+   <string>Stage-1</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -570,143 +570,50 @@
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object id="SelectOperator1" class="org.apache.hadoop.hive.ql.exec.SelectOperator"> 
-                    <void property="childOperators"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
-                        <void property="conf"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
-                          <void property="destTableId"> 
-                           <int>1</int> 
-                          </void> 
-                          <void property="dirName"> 
-                           #### A masked pattern was here #### 
-                          </void> 
-                          <void property="numFiles"> 
-                           <int>1</int> 
-                          </void> 
-                          <void property="statsAggPrefix"> 
-                           #### A masked pattern was here #### 
-                          </void> 
-                          <void property="tableInfo"> 
-                           <object idref="TableDesc0"/> 
-                          </void> 
-                          <void property="totalFiles"> 
-                           <int>1</int> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="counterNames"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <string>CNTR_NAME_FS_4_NUM_INPUT_ROWS</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>CNTR_NAME_FS_4_NUM_OUTPUT_ROWS</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>CNTR_NAME_FS_4_TIME_TAKEN</string> 
-                          </void> 
-                          <void method="add"> 
-                           <string>CNTR_NAME_FS_4_FATAL_ERROR</string> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="operatorId"> 
-                         <string>FS_4</string> 
-                        </void> 
-                        <void property="parentOperators"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <object idref="SelectOperator1"/> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="schema"> 
-                         <object idref="RowSchema0"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void property="columnExprMap"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>_col1</string> 
-                       <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>_col1</string> 
-                        </void> 
-                        <void property="tabAlias"> 
-                         <string>src</string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>_col0</string> 
-                       <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>_col0</string> 
-                        </void> 
-                        <void property="tabAlias"> 
-                         <string>src</string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
-                    </void> 
+                   <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
                     <void property="conf"> 
-                     <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
-                      <void property="colList"> 
-                       <object class="java.util.ArrayList"> 
-                        <void method="add"> 
-                         <object idref="ExprNodeColumnDesc1"/> 
-                        </void> 
-                        <void method="add"> 
-                         <object idref="ExprNodeColumnDesc0"/> 
-                        </void> 
-                       </object> 
+                     <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
+                      <void property="destTableId"> 
+                       <int>1</int> 
                       </void> 
-                      <void property="outputColumnNames"> 
-                       <object class="java.util.ArrayList"> 
-                        <void method="add"> 
-                         <string>_col0</string> 
-                        </void> 
-                        <void method="add"> 
-                         <string>_col1</string> 
-                        </void> 
-                       </object> 
+                      <void property="dirName"> 
+                       #### A masked pattern was here #### 
                       </void> 
-                      <void property="selectStar"> 
+                      <void property="numFiles"> 
+                       <int>1</int> 
+                      </void> 
+                      <void property="statsAggPrefix"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
                        <boolean>true</boolean> 
+                      </void> 
+                      <void property="tableInfo"> 
+                       <object idref="TableDesc0"/> 
+                      </void> 
+                      <void property="totalFiles"> 
+                       <int>1</int> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_SEL_3_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_4_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_SEL_3_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_4_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_SEL_3_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_FS_4_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_SEL_3_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_FS_4_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>SEL_3</string> 
+                     <string>FS_4</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -716,44 +623,7 @@
                      </object> 
                     </void> 
                     <void property="schema"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-                      <void property="signature"> 
-                       <object class="java.util.ArrayList"> 
-                        <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                          <void property="alias"> 
-                           <string>key</string> 
-                          </void> 
-                          <void property="internalName"> 
-                           <string>_col0</string> 
-                          </void> 
-                          <void property="tabAlias"> 
-                           <string>src</string> 
-                          </void> 
-                          <void property="type"> 
-                           <object idref="PrimitiveTypeInfo0"/> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                          <void property="alias"> 
-                           <string>value</string> 
-                          </void> 
-                          <void property="internalName"> 
-                           <string>_col1</string> 
-                          </void> 
-                          <void property="tabAlias"> 
-                           <string>src</string> 
-                          </void> 
-                          <void property="type"> 
-                           <object idref="PrimitiveTypeInfo0"/> 
-                          </void> 
-                         </object> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
+                     <object idref="RowSchema0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -763,7 +633,7 @@
                  <object class="java.util.HashMap"> 
                   <void method="put"> 
                    <string>_col1</string> 
-                   <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                   <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                     <void property="column"> 
                      <string>value</string> 
                     </void> 
@@ -777,7 +647,7 @@
                   </void> 
                   <void method="put"> 
                    <string>_col0</string> 
-                   <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                   <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                     <void property="column"> 
                      <string>key</string> 
                     </void> 
@@ -796,10 +666,10 @@
                   <void property="colList"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="ExprNodeColumnDesc3"/> 
+                     <object idref="ExprNodeColumnDesc1"/> 
                     </void> 
                     <void method="add"> 
-                     <object idref="ExprNodeColumnDesc2"/> 
+                     <object idref="ExprNodeColumnDesc0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -850,6 +720,9 @@
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="alias"> 
+                       <string>key</string> 
+                      </void> 
                       <void property="internalName"> 
                        <string>_col0</string> 
                       </void> 
@@ -863,6 +736,9 @@
                     </void> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="alias"> 
+                       <string>value</string> 
+                      </void> 
                       <void property="internalName"> 
                        <string>_col1</string> 
                       </void> 
