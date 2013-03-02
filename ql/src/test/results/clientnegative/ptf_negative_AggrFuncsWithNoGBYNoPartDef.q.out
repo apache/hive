@@ -33,4 +33,4 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-FAILED: SemanticException 6:5 No partition specification associated with Windowing . Error encountered near token 's1'
+FAILED: SemanticException 6:5 No partition specification associated with Windowing. Error encountered near token 's1'

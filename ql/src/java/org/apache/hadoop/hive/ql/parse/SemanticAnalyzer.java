@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.BaseTree;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeWizard;
@@ -9885,7 +9886,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     PartitionSpec pSpec = qSpec.getQueryPartitionSpec();
     if ( pSpec == null ) {
       throw new SemanticException(generateErrorMessage(node,
-                  "No partition specification associated with Windowing "));
+          "No partition specification associated with Windowing"));
     }
    }
 
@@ -10330,6 +10331,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode partNode = (ASTNode) node.getChild(partIdx);
       PartitioningSpec partitioning = processPTFPartitionSpec(partNode);
       ws.setPartitioning(partitioning);
+    } else if(node.getChildCount() == 0){
+      // no partition information was specified so partition by a constant
+      PartitioningSpec partitioningSpec = new PartitioningSpec();
+      PartitionSpec partitionSpec = new PartitionSpec();
+      PartitionExpression partExpr = new PartitionExpression();
+      partExpr.setExpression(new ASTNode(new CommonToken(HiveParser.Number, "0")));
+      partitionSpec.addExpression(partExpr);
+      partitioningSpec.setPartSpec(partitionSpec);
+      ws.setPartitioning(partitioningSpec);
     }
 
     if ( hasWF)
