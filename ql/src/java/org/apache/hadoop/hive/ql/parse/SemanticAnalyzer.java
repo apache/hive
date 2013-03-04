@@ -125,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -8726,6 +8727,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         errMsg = "Error in parsing ";
       }
       throw new SemanticException(errMsg);
+    }
+    if (desc instanceof ExprNodeColumnListDesc) {
+      throw new SemanticException("TOK_ALLCOLREF is not supported in current context");
     }
 
     if (!unparseTranslator.isEnabled()) {
