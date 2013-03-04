@@ -240,6 +240,22 @@ public final class ColumnPrunerProcFactory {
           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
         }
       }
+     if(tDef.getPartition() != null){
+         for(PTFExpressionDef col : tDef.getPartition().getExpressions()){
+           ExprNodeDesc exprNode = col.getExprNode();
+           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+         }
+       }
+       if(tDef.getOrder() != null){
+         for(PTFExpressionDef col : tDef.getOrder().getExpressions()){
+           ExprNodeDesc exprNode = col.getExprNode();
+           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+         }
+       }
+       if(tDef.getHavingExpression() != null){
+         ExprNodeDesc exprNode = tDef.getHavingExpression().getExprNode();
+         Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+       }
     }
 
     private List<String> getLowerCasePrunedCols(List<String> prunedCols){
