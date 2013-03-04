@@ -40,7 +40,7 @@ STAGE PLANS:
             alias: src2
             HashTable Sink Operator
               condition expressions:
-                0 {key} {ds} {hr}
+                0 {key}
                 1 {value}
               handleSkewJoin: false
               keys:
@@ -58,13 +58,13 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
               condition expressions:
-                0 {key} {ds} {hr}
+                0 {key}
                 1 {value}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col2, _col3, _col7
+              outputColumnNames: _col0, _col7
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -109,7 +109,7 @@ STAGE PLANS:
             alias: src1
             HashTable Sink Operator
               condition expressions:
-                0 {key} {ds} {hr}
+                0 {key}
                 1 {value}
               handleSkewJoin: false
               keys:
@@ -127,13 +127,13 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
               condition expressions:
-                0 {key} {ds} {hr}
+                0 {key}
                 1 {value}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col2, _col3, _col7
+              outputColumnNames: _col0, _col7
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -171,10 +171,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
         src2 
           TableScan
             alias: src2
@@ -195,10 +191,10 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {VALUE._col3}
+            0 {VALUE._col0}
             1 {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col2, _col3, _col7
+          outputColumnNames: _col0, _col7
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -214,7 +210,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
-
 
 PREHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
