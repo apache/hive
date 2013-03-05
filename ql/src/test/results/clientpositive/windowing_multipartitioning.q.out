@@ -1,0 +1,149 @@
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	1	34359739722
+alice allen	2	34359739722
+alice allen	3	34359739722
+alice allen	4	34359739722
+alice allen	5	34359739722
+alice allen	6	34359739722
+alice allen	6	34359739722
+alice allen	8	34359739722
+alice brown	1	60129543595
+alice brown	2	60129543595
+alice brown	3	60129543595
+alice brown	4	60129543595
+alice brown	5	60129543595
+alice brown	6	60129543595
+alice brown	7	60129543595
+alice brown	8	60129543595
+alice brown	9	60129543595
+alice brown	10	60129543595
+alice brown	11	60129543595
+alice brown	12	60129543595
+alice brown	13	60129543595
+alice brown	14	60129543595
+alice carson	1	42949673743
+alice carson	2	42949673743
+alice carson	3	42949673743
+alice carson	4	42949673743
+alice carson	5	42949673743
+alice carson	6	42949673743
+alice carson	7	42949673743
+alice carson	8	42949673743
+alice carson	9	42949673743
+alice carson	10	42949673743
+alice davidson	1	77309413954
+alice davidson	2	77309413954
+alice davidson	3	77309413954
+alice davidson	4	77309413954
+alice davidson	5	77309413954
+alice davidson	6	77309413954
+alice davidson	7	77309413954
+alice davidson	8	77309413954
+alice davidson	9	77309413954
+alice davidson	10	77309413954
+alice davidson	10	77309413954
+alice davidson	12	77309413954
+alice davidson	13	77309413954
+alice davidson	14	77309413954
+alice davidson	15	77309413954
+alice davidson	16	77309413954
+alice davidson	17	77309413954
+alice davidson	18	77309413954
+alice ellison	1	64424511508
+alice ellison	2	64424511508
+alice ellison	3	64424511508
+alice ellison	4	64424511508
+alice ellison	5	64424511508
+alice ellison	6	64424511508
+alice ellison	7	64424511508
+alice ellison	8	64424511508
+alice ellison	9	64424511508
+alice ellison	10	64424511508
+alice ellison	11	64424511508
+alice ellison	12	64424511508
+alice ellison	13	64424511508
+alice ellison	14	64424511508
+alice ellison	15	64424511508
+alice falkner	1	73014445956
+alice falkner	2	73014445956
+alice falkner	3	73014445956
+alice falkner	4	73014445956
+alice falkner	5	73014445956
+alice falkner	6	73014445956
+alice falkner	7	73014445956
+alice falkner	8	73014445956
+alice falkner	8	73014445956
+alice falkner	10	73014445956
+alice falkner	11	73014445956
+alice falkner	11	73014445956
+alice falkner	13	73014445956
+alice falkner	14	73014445956
+alice falkner	15	73014445956
+alice falkner	16	73014445956
+alice falkner	17	73014445956
+alice garcia	1	55834576425
+alice garcia	2	55834576425
+alice garcia	3	55834576425
+alice garcia	4	55834576425
+alice garcia	5	55834576425
+alice garcia	6	55834576425
+alice garcia	7	55834576425
+alice garcia	8	55834576425
+alice garcia	9	55834576425
+alice garcia	10	55834576425
+alice garcia	10	55834576425
+alice garcia	12	55834576425
+alice garcia	13	55834576425
+alice hernandez	1	77309413194
+alice hernandez	2	77309413194
+alice hernandez	3	77309413194
+alice hernandez	4	77309413194
+alice hernandez	5	77309413194
