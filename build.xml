@@ -256,6 +256,11 @@
     <iterate target="thriftif" iterate="${iterate.hive.thrift}"/>
   </target>
 
+  <target name="protobuf">
+    <echo message="Project: ${ant.project.name}"/>
+    <iterate target="protobuf" iterate="${iterate.hive.protobuf}"/>
+  </target>
+
   <target name="jar"
           depends="init"
           description="Build JAR artifacts">

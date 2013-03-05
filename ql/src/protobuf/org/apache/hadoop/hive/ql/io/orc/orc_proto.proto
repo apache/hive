@@ -1,0 +1,130 @@
+package org.apache.hadoop.hive.ql.io.orc;
+
+message IntegerStatistics  {
+  optional sint64 minimum = 1;
+  optional sint64 maximum = 2;
+  optional sint64 sum = 3;
+}
+
+message DoubleStatistics {
+  optional double minimum = 1;
+  optional double maximum = 2;
+  optional double sum = 3;
+}
+
+message StringStatistics {
+  optional string minimum = 1;
+  optional string maximum = 2;
+}
+
+message BucketStatistics {
+  repeated uint64 count = 1 [packed=true];
+}
+
+message ColumnStatistics {
+  optional uint64 numberOfValues = 1;
+  optional IntegerStatistics intStatistics = 2;
+  optional DoubleStatistics doubleStatistics = 3;
+  optional StringStatistics stringStatistics = 4;
+  optional BucketStatistics bucketStatistics = 5;
+}
+
+message RowIndexEntry {
+  repeated uint64 positions = 1 [packed=true];
+  optional ColumnStatistics statistics = 2;
+}
+
+message RowIndex {
+  repeated RowIndexEntry entry = 1;
+}
+
+message Stream {
+  // if you add new index stream kinds, you need to make sure to update
+  // StreamName to ensure it is added to the stripe in the right area
+  enum Kind {
+    PRESENT = 0;
+    DATA = 1;
+    LENGTH = 2;
+    DICTIONARY_DATA = 3;
+    DICTIONARY_COUNT = 4;
+    NANO_DATA = 5;
+    ROW_INDEX = 6;
+  }
+  required Kind kind = 1;
+  optional uint32 column = 2;
+  optional uint64 length = 3;
+}
+
+message ColumnEncoding {
+  enum Kind {
+    DIRECT = 0;
+    DICTIONARY = 1;
+  }
+  required Kind kind = 1;
+  optional uint32 dictionarySize = 2;
+}
+
+message StripeFooter {
+  repeated Stream streams = 1;
+  repeated ColumnEncoding columns = 2;
+}
+
+message Type {
+  enum Kind {
+    BOOLEAN = 0;
+    BYTE = 1;
+    SHORT = 2;
+    INT = 3;
+    LONG = 4;
+    FLOAT = 5;
+    DOUBLE = 6;
+    STRING = 7;
+    BINARY = 8;
+    TIMESTAMP = 9;
+    LIST = 10;
+    MAP = 11;
+    STRUCT = 12;
+    UNION = 13;
+  }
+  required Kind kind = 1;
+  repeated uint32 subtypes = 2 [packed=true];
+  repeated string fieldNames = 3;
+}
+
+message StripeInformation {
+  optional uint64 offset = 1;
+  optional uint64 indexLength = 2;
+  optional uint64 dataLength = 3;
+  optional uint64 footerLength = 4;
+  optional uint64 numberOfRows = 5;
+}
+
+message UserMetadataItem {
+  required string name = 1;
+  required bytes value = 2;
+}
+
+message Footer {
+  optional uint64 headerLength = 1;
+  optional uint64 contentLength = 2;
+  repeated StripeInformation stripes = 3;
+  repeated Type types = 4;
+  repeated UserMetadataItem metadata = 5;
+  optional uint64 numberOfRows = 6;
+  repeated ColumnStatistics statistics = 7;
+  optional uint32 rowIndexStride = 8;
+}
+
+enum CompressionKind {
+  NONE = 0;
+  ZLIB = 1;
+  SNAPPY = 2;
+  LZO = 3;
+}
+
+// Serialized length must be less that 255 bytes
+message PostScript {
+  optional uint64 footerLength = 1;
+  optional CompressionKind compression = 2;
+  optional uint64 compressionBlockSize = 3;
+}

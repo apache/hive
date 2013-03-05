@@ -38,6 +38,10 @@
                 conf="test->default" transitive="false"/>
     <dependency org="org.antlr" name="antlr" rev="${antlr.version}"
                 transitive="false"/>
+    <dependency org="com.google.protobuf" name="protobuf-java" 
+                rev="${protobuf.version}" transitive="false"/>
+    <dependency org="org.iq80.snappy" name="snappy" 
+                rev="${snappy.version}" transitive="false"/>
 
     <!-- hadoop specific guava -->
     <dependency org="com.google.guava" name="guava" rev="${guava-hadoop20.version}"
