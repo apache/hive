@@ -11117,7 +11117,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       opNum++;
     }
-    System.out.println(buf);
+    LOG.info(buf);
   }
 
   static void dumpRowResolver(StringBuilder buf, RowResolver rr) {
