@@ -281,8 +281,10 @@ public final class FunctionRegistry {
   static Map<String, PTFFunctionInfo> tableFunctions = Collections.synchronizedMap(new LinkedHashMap<String, PTFFunctionInfo>());
   static Map<String, WindowFunctionInfo> windowFunctions = Collections.synchronizedMap(new LinkedHashMap<String, WindowFunctionInfo>());
 
-  public static final ArrayList<String> RANKING_FUNCTIONS = new  ArrayList<String>();
-  public static final ArrayList<String> NAVIGATION_FUNCTIONS = new  ArrayList<String>();
+  /*
+   * UDAFS that only work when the input rows have an order.
+   */
+  public static final HashSet<String> UDAFS_IMPLY_ORDER = new HashSet<String>();
 
   static {
     registerUDF("concat", UDFConcat.class, false);
@@ -535,14 +537,14 @@ public final class FunctionRegistry {
     registerWindowFunction(LEAD_FUNC_NAME, new GenericUDAFLead(), false);
     registerWindowFunction(LAG_FUNC_NAME, new GenericUDAFLag(), false);
 
-    RANKING_FUNCTIONS.add("rank");
-    RANKING_FUNCTIONS.add("dense_rank");
-    RANKING_FUNCTIONS.add("percent_rank");
-
-    NAVIGATION_FUNCTIONS.add(LEAD_FUNC_NAME);
-    NAVIGATION_FUNCTIONS.add(LAG_FUNC_NAME);
-    NAVIGATION_FUNCTIONS.add("first_value");
-    NAVIGATION_FUNCTIONS.add("last_value");
+    UDAFS_IMPLY_ORDER.add("rank");
+    UDAFS_IMPLY_ORDER.add("dense_rank");
+    UDAFS_IMPLY_ORDER.add("percent_rank");
+    UDAFS_IMPLY_ORDER.add("cume_dist");
+    UDAFS_IMPLY_ORDER.add(LEAD_FUNC_NAME);
+    UDAFS_IMPLY_ORDER.add(LAG_FUNC_NAME);
+    UDAFS_IMPLY_ORDER.add("first_value");
+    UDAFS_IMPLY_ORDER.add("last_value");
 
     registerTableFunction(NOOP_TABLE_FUNCTION, NoopResolver.class);
     registerTableFunction(NOOP_MAP_TABLE_FUNCTION, NoopWithMapResolver.class);
@@ -1475,15 +1477,13 @@ public final class FunctionRegistry {
     windowFunctions.put(name.toLowerCase(), wInfo);
   }
 
-  public static boolean isWindowFunction(String name)
-  {
-     WindowFunctionInfo wFInfo = windowFunctions.get(name.toLowerCase());
-     return wFInfo != null;
-  }
-
   public static WindowFunctionInfo getWindowFunctionInfo(String name)
   {
     return windowFunctions.get(name.toLowerCase());
+  }
+
+  public static boolean impliesOrder(String functionName) {
+    return functionName == null ? false : UDAFS_IMPLY_ORDER.contains(functionName.toLowerCase());
   }
 
   static void registerHiveUDAFsAsWindowFunctions()

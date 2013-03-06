@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -86,6 +85,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -390,27 +390,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private LinkedHashMap<String, ASTNode> doPhase1GetAggregationsFromSelect(
       ASTNode selExpr, QB qb, String dest) {
 
-    ArrayList<ASTNode> wdwingexprNodes = null;
-    if ( queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ) {
-      WindowingSpec wdwSpec = qb.getWindowingSpec(dest);
-      HashMap<String, WindowExpressionSpec> aliasToWdwExprs = wdwSpec.getAliasToWdwExpr();
-      wdwingexprNodes = new ArrayList<ASTNode>();
-      for (WindowExpressionSpec exprSpec : aliasToWdwExprs.values()) {
-        wdwingexprNodes.add(exprSpec.getExpression());
-      }
-    }
-
     // Iterate over the selects search for aggregation Trees.
     // Use String as keys to eliminate duplicate trees.
     LinkedHashMap<String, ASTNode> aggregationTrees = new LinkedHashMap<String, ASTNode>();
     for (int i = 0; i < selExpr.getChildCount(); ++i) {
       ASTNode sel = (ASTNode) selExpr.getChild(i);
-      if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ){
-        if(wdwingexprNodes.contains(sel.getChild(0))){
-          continue;
+      doPhase1GetAllAggregations((ASTNode) sel.getChild(0), aggregationTrees);
+    }
+
+    /*
+     * remove any aggregation to be handled by Windowing.
+     */
+    if ( queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ) {
+      HashMap<String, ASTNode> aliasToWdwExprs = qb.getParseInfo().getWindowingExprsForClause(dest);
+      LinkedHashMap<String, ASTNode> aggTreesMinusWindowing = new LinkedHashMap<String, ASTNode>();
+      for(Map.Entry<String,ASTNode> entry : aggregationTrees.entrySet()) {
+        if ( !aliasToWdwExprs.containsKey(entry.getKey())) {
+          aggTreesMinusWindowing.put(entry.getKey(), entry.getValue());
         }
       }
-      doPhase1GetAllAggregations((ASTNode) sel.getChild(0), aggregationTrees);
+      aggregationTrees = aggTreesMinusWindowing;
     }
     return aggregationTrees;
   }
@@ -9924,18 +9923,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /*
    * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
-   * What constitutes a Windowing Select Expression:
-   * 1.
-   * - It must be a UDAF function invocation
-   * - It must have a Windowing Spec
-   * 2.
-   * - It must be a Ranking or Navigation Function invocation which is also a UDAF function
-   *   (so no lead/lag)
-   * 3.
-   * - It must be a UDAF function invocation
-   * - must have an argument which invokes Lead/Lag
-   * Error Expressions are:
-   * - a Window Spec without a UDAF invocation: we don't support expressions i Windowing.
+   * What makes a UDAF invocation a Windowing Function invocation:
+   * 1. It appears in a SelectExpr that as a WindowSpec
+   * 2. It is a UDAF that implies order (FunctionRegistry.impliesOrder)
+   * 3. It contains lead/lag UDF invocations in its args.
    */
   private boolean checkAndExtractWindowFunctionsInSelect(QB qb, ASTNode selectExpr, String dest)
       throws SemanticException {
@@ -9944,95 +9935,136 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode windowSpec = (ASTNode) selectExpr.getChild(childCount - 1);
 
     boolean hasWindowSpec = windowSpec.getType() == HiveParser.TOK_WINDOWSPEC;
-    ASTNode function = (ASTNode) selectExpr.getChild(0);
-    boolean isFunction = ( function.getType() == HiveParser.TOK_FUNCTION ||
-        function.getType() == HiveParser.TOK_FUNCTIONDI ||
-        function.getType() == HiveParser.TOK_FUNCTIONSTAR );
 
-    if ( !isFunction ) {
+    ArrayList<ASTNode> functions =
+        extractWindowingUDAFs((ASTNode) selectExpr.getChild(0), !hasWindowSpec);
+    if ( functions.size() == 0 ) {
       return false;
     }
 
-    String fnName = function.getChild(0).getText().toLowerCase();
-    if(!FunctionRegistry.isWindowFunction(fnName)) {
-      // Its either UDF, UDTF or lead or lag function.
-      if (hasWindowSpec){
-        // We currently supports windowing only with UDAFs, so if there is a windowing spec
-        // thats the error condition.
-        throw new SemanticException(generateErrorMessage(selectExpr,
-          "Currently windowing Specification can only be associated with a UDAF " +
-          "invocation or navigation functions"));
-      } else {
+    /*
+     * If there are only Lead and Lags, for now treat them as a Window Expression
+     * until we remove support for Wdw Expressions.
+     */
+    if (!hasWindowSpec ) {
+      boolean onlyLL = true;
+      for(ASTNode function : functions) {
+        String fnName = function.getChild(0).getText().toLowerCase();
+        if ( !FunctionRegistry.LAG_FUNC_NAME.equals(fnName) &&
+            !FunctionRegistry.LEAD_FUNC_NAME.equals(fnName) ) {
+          onlyLL = false;
+          break;
+        }
+      }
+      if (onlyLL ) {
         return false;
       }
     }
 
-    boolean hasLLArgs = false;
-    boolean isRankingOrNavFunction = FunctionRegistry.RANKING_FUNCTIONS.contains(fnName) ||
-        FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName);
-
-    /*
-     * treat Lead & Lag as a UDF if there is no WindowSpec.
-     */
-    if (!hasWindowSpec
-        &&
-        (fnName.equals(FunctionRegistry.LAG_FUNC_NAME) || fnName
-            .equals(FunctionRegistry.LEAD_FUNC_NAME))) {
-      return false;
+    WindowingSpec spec = qb.getWindowingSpec(dest);
+    if(spec == null) {
+      queryProperties.setHasWindowing(true);
+      spec = new WindowingSpec();
+      qb.addDestToWindowingSpec(dest, spec);
     }
 
-    /*
-     * If Windowing Function has LeadLag expression in its args,
-     * then it will be handled by WindowingTabFunc.
-     */
-    if (!isRankingOrNavFunction ) {
-      // but lead/lag are not supported as an argument of ranking or navigation function.
-      TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-      CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs(qb, dest);
-      for(int i=1; !hasLLArgs && i < function.getChildCount(); i++) {
-        ASTNode child = (ASTNode) function.getChild(i);
-        tw.visit(child, HiveParser.TOK_FUNCTION, checkLLFunctions);
-        if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(selectExpr,
-              checkLLFunctions.getErrString()));
-        }
-        hasLLArgs = checkLLFunctions.hasLeadLagExprs();
-      }
-    }
-
-    if (hasWindowSpec || isRankingOrNavFunction || hasLLArgs) {
-      /*
-       * @revisit: what should I do if there are more than 3 children;
-       * i.e. more than one Identifier.
-       */
-
-      String alias = null;
-      ASTNode secondChildNode = (ASTNode) selectExpr.getChild(1);
-        if ( childCount > 1 && secondChildNode.getType() == HiveParser.Identifier) {
-          alias = secondChildNode.getText();
-        }
-        else {
-          /*
-           * generate an alias using the function AST tree.
-           * - calling getColAlias with a null InputResolver and null defaultName.
-           * - so includeFunctionName should be true.
-           */
-          String[] colAlias = getColAlias(function, null, null, true, -1);
-          alias = colAlias[1];
-         }
-
-      WindowingSpec spec = qb.getWindowingSpec(dest);
-      if(spec == null) {
-        queryProperties.setHasWindowing(true);
-        spec = new WindowingSpec();
-        qb.addDestToWindowingSpec(dest, spec);
-      }
+    HashMap<String, ASTNode> wExprsInDest = qb.getParseInfo().getWindowingExprsForClause(dest);
+    int wColIdx = spec.getWindowExpressions() == null ? 0 : spec.getWindowExpressions().size();
+    for(ASTNode function : functions) {
       WindowFunctionSpec wFnSpec = processWindowFunction(function,
           hasWindowSpec ? windowSpec : null);
-      wFnSpec.setAlias(alias);
+
+      /*
+       * If this is a duplicate invocation of a function; don't add to WindowingSpec.
+       */
+      if ( wExprsInDest != null &&
+          wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
+        continue;
+      }
+      wFnSpec.setAlias("_wcol" + wColIdx++);
       spec.addWindowFunction(wFnSpec);
       qb.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
-      return true;
+    }
+    return true;
+  }
+
+  /*
+   * return the UDAFs within the expressionTree.
+   * If implyOrder is true, then only return the invocations that:
+   * - are for UDAFs that implyOrder (FunctionRegistry.implyOrder)
+   * - or contain a Lead/Lag UDF invocation in their arguments
+   * If implyOrder is false, then return all UDAF invocations.
+   */
+  private ArrayList<ASTNode> extractWindowingUDAFs(ASTNode expressionTree, boolean implyOrder) {
+    ArrayList<ASTNode> aggregations = new ArrayList<ASTNode>();
+    extractWindowingUDAFs(expressionTree, aggregations);
+    if (!implyOrder) {
+      return aggregations;
+    }
+    ArrayList<ASTNode> wdwUDAFs = new ArrayList<ASTNode>();
+    for(ASTNode function : aggregations) {
+      String fnName = function.getChild(0).getText().toLowerCase();
+      if ( FunctionRegistry.impliesOrder(fnName)) {
+        wdwUDAFs.add(function);
+        continue;
+      }
+      boolean hasLLInArgs = false;
+      for(int i=1; i < function.getChildCount(); i++) {
+        ASTNode child = (ASTNode) function.getChild(i);
+        hasLLInArgs = containsLeadLagUDF(child);
+        if (hasLLInArgs) {
+          break;
+        }
+      }
+      if (hasLLInArgs) {
+        wdwUDAFs.add(function);
+      }
+    }
+    return wdwUDAFs;
+  }
+
+  private void extractWindowingUDAFs(ASTNode expressionTree,
+      ArrayList<ASTNode> aggregations) {
+    int exprTokenType = expressionTree.getToken().getType();
+    if (exprTokenType == HiveParser.TOK_FUNCTION
+        || exprTokenType == HiveParser.TOK_FUNCTIONDI
+        || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
+      assert (expressionTree.getChildCount() != 0);
+      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = unescapeIdentifier(expressionTree.getChild(0)
+            .getText());
+        WindowFunctionInfo fi = FunctionRegistry.getWindowFunctionInfo(functionName);
+        if (fi != null) {
+          aggregations.add(expressionTree);
+          return;
+        }
+      }
+    }
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      extractWindowingUDAFs((ASTNode) expressionTree.getChild(i),
+          aggregations);
+    }
+  }
+
+  private boolean containsLeadLagUDF(ASTNode expressionTree) {
+    int exprTokenType = expressionTree.getToken().getType();
+    if (exprTokenType == HiveParser.TOK_FUNCTION) {
+      assert (expressionTree.getChildCount() != 0);
+      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = unescapeIdentifier(expressionTree.getChild(0)
+            .getText());
+        functionName = functionName.toLowerCase();
+        if ( FunctionRegistry.LAG_FUNC_NAME.equals(functionName) ||
+            FunctionRegistry.LEAD_FUNC_NAME.equals(functionName)
+            ) {
+          return true;
+        }
+      }
+    }
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      if ( containsLeadLagUDF((ASTNode) expressionTree.getChild(i))) {
+        return true;
+      }
     }
     return false;
   }
@@ -10049,6 +10081,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     private CheckLeadLagInSelectExprs(QB qb, String dest) {
       this.qb = qb;
       this.dest = dest;
+    }
+
+    void reset() {
+      hasLeadLagExprs = false;
+      error = false;
+      errString = null;
     }
 
     @Override
@@ -10073,15 +10111,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           || fnName.equals(FunctionRegistry.LAG_FUNC_NAME))
       {
         hasLeadLagExprs = true;
-      }
-      else if ( FunctionRegistry.NAVIGATION_FUNCTIONS.contains(fnName)) {
-        error = true;
-        errString = "Currently you cannot use a Navigation Functions: " +
-        		"first_value, last_value in expressions";
-      }
-      else if ( FunctionRegistry.RANKING_FUNCTIONS.contains(fnName)) {
-        error = true;
-        errString = "Currently you cannot use a Ranking Functions: in expressions";
       }
     }
 
@@ -10140,6 +10169,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean hasWindowingExprs = checkAndExtractWindowFunctionsInSelect(qb, selectExpr, dest);
 
       if ( !hasWindowingExprs ) {
+        checkLLFunctions.reset();
         tw.visit(selectExpr, HiveParser.TOK_FUNCTION, checkLLFunctions);
 
         if ( checkLLFunctions.isError() ) {
@@ -10164,16 +10194,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           /*
             * @revisit what if there are multiple Identifiers(lateral view)
            */
-          if ( childCount < 2 ) {
-            /*
-             * generate an alias using the function AST tree.
-             * - calling getColAlias with a null InputResolver and null defaultName.
-             * - so includeFunctionName should be true.
-             */
-            alias = getColAlias(expr, null, null, true, -1)[1];
+          if ( childCount >= 2 ) {
+            alias = getColAlias(selectExpr, null, null, true, -1)[1];
           }
           else {
-            alias = selectExpr.getChild(1).getText();
+            int wColIdx = spec.getWindowExpressions() == null ? 0 :
+              spec.getWindowExpressions().size();
+            alias = "_wcol" + wColIdx;
           }
           spec.addExpression(expr, alias);
           qb.getParseInfo().addWindowingExprToClause(dest, expr);
@@ -10529,30 +10556,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void moveaggregationExprsToWindowingSpec(QB currQB, String dest)
       throws SemanticException {
-      HashMap<String, ASTNode> aggregationTree =
+      HashMap<String, ASTNode> aggregations =
           currQB.getParseInfo().getAggregationExprsForClause(dest);
-      if((aggregationTree != null) && !(aggregationTree.isEmpty()) ){
+      if((aggregations != null) && !(aggregations.isEmpty()) ){
         WindowingSpec spec = currQB.getWindowingSpec(dest);
         if(spec == null){
           queryProperties.setHasWindowing(true);
           spec = new WindowingSpec();
           currQB.addDestToWindowingSpec(dest, spec);
         }
-        Collection<ASTNode> aggrExprs = aggregationTree.values();
-        for (ASTNode expr : aggrExprs) {
-          String alias = currQB.getParseInfo().getExprToColumnAlias(expr);
-          if ( alias == null ) {
-            /*
-             * generate an alias using the function AST tree.
-             * - calling getColAlias with a null InputResolver and null defaultName.
-             * - so includeFunctionName should be true.
-             */
-            String[] colAlias = getColAlias(expr, null, null, true, -1);
-            alias = colAlias[1];
+        HashMap<String, ASTNode> wExprsInDest = qb.getParseInfo().getWindowingExprsForClause(dest);
+        int wColIdx = spec.getWindowExpressions() == null ? 0 : spec.getWindowExpressions().size();
+        for (ASTNode expr : aggregations.values()) {
+          WindowFunctionSpec wFnSpec = processWindowFunction(expr, null);
+          wFnSpec.setAlias("_wcol" + wColIdx++);
+
+          /*
+           * If this is a duplicate invocation of a function; don't add to WindowingSpec.
+           */
+          if ( wExprsInDest != null &&
+              wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
+            continue;
           }
-          WindowFunctionSpec wFn = processWindowFunction(expr, null);
-          wFn.setAlias(alias);
-          spec.addWindowFunction(wFn);
+          spec.addWindowFunction(wFnSpec);
+          currQB.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
           currQB.getParseInfo().getAllExprToColumnAlias().remove(expr);
         }
         currQB.getParseInfo().clearAggregationExprsForClause(dest);

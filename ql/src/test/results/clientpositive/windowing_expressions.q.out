@@ -1,0 +1,602 @@
+PREHOOK: query: DROP TABLE part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@part
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
+PREHOOK: type: LOAD
+PREHOOK: Output: default@part
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@part
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) ,
+max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
+from part
+distribute by p_mfgr
+sort by p_retailprice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) ,
+max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
+from part
+distribute by p_mfgr
+sort by p_retailprice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	2	true	true
+Manufacturer#1	1173.15	2	true	true
+Manufacturer#1	1414.42	28	true	true
+Manufacturer#1	1602.59	6	true	true
+Manufacturer#1	1632.66	42	true	true
+Manufacturer#1	1753.76	34	true	true
+Manufacturer#2	1690.68	14	true	true
+Manufacturer#2	1698.66	25	true	true
+Manufacturer#2	1701.6	18	true	true
+Manufacturer#2	1800.7	40	true	true
+Manufacturer#2	2031.98	2	true	true
+Manufacturer#3	1190.27	14	true	true
+Manufacturer#3	1337.29	45	true	true
+Manufacturer#3	1410.39	19	true	true
+Manufacturer#3	1671.68	17	true	true
+Manufacturer#3	1922.98	1	true	true
+Manufacturer#4	1206.26	27	true	true
+Manufacturer#4	1290.35	12	true	true
+Manufacturer#4	1375.42	39	true	true
+Manufacturer#4	1620.67	10	true	true
+Manufacturer#4	1844.92	7	true	true
+Manufacturer#5	1018.1	46	true	true
+Manufacturer#5	1464.48	23	true	true
+Manufacturer#5	1611.66	6	true	true
+Manufacturer#5	1788.73	2	true	true
+Manufacturer#5	1789.69	31	true	true
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+rank() as r,
+ lag(rank(),1) as pr,
+sum(p_retailprice) as s2 over (rows between unbounded preceding and current row),
+sum(p_retailprice) - 5 as s1 over (rows between unbounded preceding and current row)
+from part
+distribute by p_mfgr
+sort by p_retailprice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+rank() as r,
+ lag(rank(),1) as pr,
+sum(p_retailprice) as s2 over (rows between unbounded preceding and current row),
+sum(p_retailprice) - 5 as s1 over (rows between unbounded preceding and current row)
+from part
+distribute by p_mfgr
+sort by p_retailprice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1173.15	2	1	1	1173.15	1168.15
+Manufacturer#1	1173.15	2	1	1	2346.3	2341.3
+Manufacturer#1	1414.42	28	3	1	3760.7200000000003	3755.7200000000003
+Manufacturer#1	1602.59	6	4	3	5363.31	5358.31
+Manufacturer#1	1632.66	42	5	4	6995.97	6990.97
+Manufacturer#1	1753.76	34	6	5	8749.73	8744.73
+Manufacturer#2	1690.68	14	1	1	1690.68	1685.68
+Manufacturer#2	1698.66	25	2	1	3389.34	3384.34
+Manufacturer#2	1701.6	18	3	2	5090.9400000000005	5085.9400000000005
+Manufacturer#2	1800.7	40	4	3	6891.64	6886.64
+Manufacturer#2	2031.98	2	5	4	8923.62	8918.62
+Manufacturer#3	1190.27	14	1	1	1190.27	1185.27
+Manufacturer#3	1337.29	45	2	1	2527.56	2522.56
+Manufacturer#3	1410.39	19	3	2	3937.95	3932.95
+Manufacturer#3	1671.68	17	4	3	5609.63	5604.63
+Manufacturer#3	1922.98	1	5	4	7532.610000000001	7527.610000000001
+Manufacturer#4	1206.26	27	1	1	1206.26	1201.26
+Manufacturer#4	1290.35	12	2	1	2496.6099999999997	2491.6099999999997
+Manufacturer#4	1375.42	39	3	2	3872.0299999999997	3867.0299999999997
+Manufacturer#4	1620.67	10	4	3	5492.7	5487.7
+Manufacturer#4	1844.92	7	5	4	7337.62	7332.62
+Manufacturer#5	1018.1	46	1	1	1018.1	1013.1
+Manufacturer#5	1464.48	23	2	1	2482.58	2477.58
+Manufacturer#5	1611.66	6	3	2	4094.24	4089.24
+Manufacturer#5	1788.73	2	4	3	5882.969999999999	5877.969999999999
+Manufacturer#5	1789.69	31	5	4	7672.66	7667.66
+PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+sarah polk	325	24.97	295.89
+mike young	504	28.26	418.22
+xavier johnson	419	25.68	414.72
+irene steinbeck	420	29.11	417.0
+calvin quirinius	316	85.78	249.85
+gabriella hernandez	457	4.28	403.72
+victor polk	370	3.0	313.83002
+calvin hernandez	446	66.15	359.9
+irene robinson	442	53.28	425.28
+david xylophone	389	56.17	362.56
+jessica ichabod	309	86.1	230.69
+mike hernandez	491	16.72	477.61
+fred robinson	409	26.44	358.62
+fred davidson	507	78.31	471.26
+tom quirinius	492	13.39	426.86
+priscilla king	285	50.38	230.56
+luke thompson	414	35.74	331.49
+mike quirinius	300	65.14	223.07
+irene van buren	454	54.44	436.25
+quinn quirinius	352	82.51	282.23
+zach nixon	386	76.93	301.56
+holly zipper	506	17.75	440.39
+gabriella brown	270	69.77	232.81
+victor van buren	263	84.44	190.03
+yuri laertes	450	65.61	392.28
+luke polk	480	37.19	432.41
+irene ichabod	474	72.97	434.39
+mike zipper	441	57.72	354.41998
+alice robinson	423	47.59	404.01
+calvin hernandez	507	39.61	493.04
+ulysses ovid	500	86.58	409.14
+wendy laertes	405	18.99	322.11
+bob laertes	487	13.96	395.69
+irene white	261	90.86	250.33
+irene davidson	495	82.89	488.83
+sarah garcia	399	91.31	307.88
+bob laertes	376	10.67	360.62
+zach carson	381	6.17	350.7
+luke falkner	441	91.12	409.34
+victor young	263	15.38	185.18
+alice brown	425	30.3	417.14
+gabriella king	474	31.66	444.05
+sarah nixon	378	77.82	328.47
+calvin laertes	329	7.86	317.5
+fred polk	295	29.95	276.57
+tom ichabod	292	49.53	287.59
+victor thompson	294	11.5	226.78
+luke laertes	428	18.43	414.83
+yuri thompson	267	4.41	236.2
+katie king	396	67.22	320.43
+gabriella nixon	405	13.17	394.26
+sarah johnson	337	30.8	240.63
+calvin carson	447	75.57	384.23
+wendy davidson	449	10.74	403.83002
+fred underhill	489	96.37	411.1
+jessica king	435	62.77	365.2
+luke xylophone	431	45.17	383.12
+fred underhill	473	77.9	375.88
+gabriella van buren	276	69.8	273.65
+victor king	444	47.88	392.91998
+alice garcia	486	97.12	437.11
+ethan polk	260	2.35	239.64
+gabriella underhill	329	51.08	292.44
+yuri carson	489	48.89	443.61
+holly quirinius	363	20.36	279.69
+jessica garcia	400	36.56	354.9
+mike johnson	278	45.39	198.86
+xavier falkner	434	83.31	354.79
+sarah laertes	262	45.1	250.61
+victor underhill	434	79.14	372.59
+tom johnson	320	79.21	237.89
+david underhill	311	11.39	276.22
+yuri hernandez	413	61.41	391.86
+tom davidson	336	82.11	309.09
+ethan steinbeck	461	34.78	384.96
+priscilla miller	267	21.14	168.91
+mike johnson	286	26.91	203.20999
+luke young	276	76.04	195.76999
+ethan king	279	98.09	215.19
+fred van buren	501	82.79	441.02
+alice nixon	299	80.23	246.4
+xavier robinson	469	63.81	433.31
+bob miller	484	59.98	434.58002
+irene quirinius	486	52.6	441.41998
+ethan underhill	299	35.69	258.51
+wendy polk	352	49.42	264.9
+gabriella garcia	395	44.58	317.65
+oscar laertes	432	40.49	429.61
+gabriella ichabod	403	87.1	368.52
+sarah carson	493	77.35	415.3
+david white	432	2.39	355.13
+quinn thompson	372	34.48	277.82
+rachel underhill	282	77.7	278.48
+holly laertes	306	76.87	239.05
+quinn carson	361	94.18	352.49
+mike nixon	434	3.52	352.15
+sarah falkner	360	66.95	355.31
+wendy xylophone	274	8.51	245.64
+tom allen	373	81.85	308.18
+irene laertes	402	4.69	329.72
+PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+wendy garcia	65540	-18
+ethan thompson	65543	-20
+zach nixon	65549	-31
+alice robinson	65558	-28
+wendy nixon	65563	-33
+victor robinson	65580	-19
+ethan falkner	65586	-18
+victor davidson	65596	-17
+xavier quirinius	65599	-14
+fred quirinius	65604	-11
+xavier van buren	65613	-3
+nick zipper	65613	-7
+victor johnson	65615	-12
+alice ovid	65616	-24
+xavier ovid	65620	-23
+ulysses white	65627	-24
+sarah white	65640	-13
+calvin young	65643	-25
+victor thompson	65651	-42
+calvin johnson	65653	-53
+irene polk	65668	-45
+zach underhill	65693	-38
+quinn hernandez	65706	-27
+rachel ovid	65713	-24
+gabriella falkner	65731	-7
+zach white	65733	-8
+fred hernandez	65737	-7
+rachel ellison	65738	-6
+oscar steinbeck	65741	-6
+tom allen	65744	-8
+alice ellison	65744	-19
+quinn quirinius	65747	-31
+victor hernandez	65752	-26
+holly xylophone	65763	-26
+david davidson	65778	65778
+ulysses young	65778	65778
+sarah brown	65789	65789
+xavier brown	65541	-16
+zach hernandez	65542	-18
+katie ichabod	65547	-19
+oscar young	65557	-15
+holly white	65560	-14
+priscilla laertes	65566	-9
+ethan king	65572	-6
+zach hernandez	65574	-10
+oscar thompson	65575	-13
+victor xylophone	65578	-16
+gabriella ellison	65584	-26
+nick quirinius	65588	-22
+holly robinson	65594	-18
+yuri brown	65610	-16
+alice xylophone	65610	-21
+sarah hernandez	65612	-26
+katie garcia	65626	-28
+jessica laertes	65631	-23
+ethan underhill	65638	-17
+priscilla thompson	65654	-37
+irene young	65654	-40
+luke quirinius	65655	-44
+david brown	65691	-20
+luke falkner	65694	-18
+priscilla miller	65699	-20
+rachel robinson	65711	-9
+ethan polk	65712	-10
+wendy brown	65719	-13
+mike underhill	65720	-18
+zach underhill	65722	-26
+nick zipper	65732	-20
+fred brown	65738	-18
+ulysses young	65748	-23
+nick davidson	65752	-19
+fred zipper	65756	-15
+yuri nixon	65771	-10
+zach zipper	65771	-19
+zach hernandez	65771	65771
+alice underhill	65781	65781
+oscar laertes	65790	65790
+sarah zipper	65546	-19
+luke ovid	65551	-17
+bob falkner	65551	-17
+katie allen	65565	-4
+zach steinbeck	65568	-5
+nick falkner	65568	-11
+oscar van buren	65569	-13
+gabriella young	65573	-11
+jessica ichabod	65579	-24
+david garcia	65582	-24
+nick xylophone	65584	-27
+calvin johnson	65603	-14
+xavier zipper	65606	-50
+alice nixon	65611	-58
+jessica laertes	65617	-62
+fred king	65656	-61
+priscilla underhill	65669	-48
+priscilla zipper	65679	-45
+sarah polk	65717	-11
+nick king	65717	-17
+irene quirinius	65724	-28
+tom laertes	65728	-25
+yuri johnson	65734	-27
+PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+jessica ellison	262	30.41	NULL
+david young	266	45.12	NULL
+jessica steinbeck	274	2.15	NULL
+david zipper	275	43.45	244.59
+zach nixon	283	15.95	237.88
+holly allen	285	24.37	282.85
+irene garcia	292	33.54	248.55
+ulysses xylophone	292	44.66	276.05
+irene van buren	309	35.81	284.63
+sarah miller	312	6.65	278.46
+victor garcia	312	39.14	267.34000000000003
+ethan ichabod	319	29.4	283.19
+wendy falkner	322	10.02	315.35
+oscar miller	324	25.95	284.86
+david ovid	332	28.34	302.6
+alice zipper	333	3.38	322.98
+yuri nixon	333	8.28	307.05
+ulysses nixon	335	18.48	306.66
+david ovid	336	9.36	332.62
+calvin falkner	337	17.63	328.72
+katie quirinius	349	11.3	330.52
+quinn miller	351	22.46	341.64
+victor xylophone	357	38.58	339.37
+ethan garcia	368	9.2	356.7
+nick steinbeck	395	37.54	372.54
+ulysses ichabod	415	47.61	376.42
+rachel thompson	416	37.99	406.8
+calvin young	418	47.22	380.46
+katie xylophone	425	32.59	377.39
+nick quirinius	429	19.63	391.01
+ethan ellison	453	47.92	405.78
+irene nixon	454	48.03	421.40999999999997
+bob steinbeck	462	47.04	442.37
+luke robinson	462	47.48	414.08
+tom hernandez	467	29.36	418.97
+gabriella steinbeck	467	9.35	419.96
+irene polk	485	14.26	437.52
+mike xylophone	494	36.92	464.64
+calvin allen	499	39.99	489.65
+quinn steinbeck	503	16.62	488.74
+ulysses garcia	263	31.85	NULL
+calvin thompson	263	30.87	NULL
+rachel quirinius	263	29.46	NULL
+mike steinbeck	266	48.57	234.15
+rachel young	275	14.75	244.13
+tom king	278	31.11	248.54
+oscar robinson	283	30.35	234.43
+zach allen	284	1.88	269.25
+bob king	308	27.61	276.89
+ulysses allen	310	22.77	279.65
+fred nixon	317	0.48	315.12
+gabriella robinson	321	0.33	293.39
+bob johnson	325	9.61	302.23
+rachel davidson	335	2.34	334.52
+fred brown	337	5.8	336.67
+wendy ellison	350	20.25	340.39
+zach falkner	391	13.67	388.66
+katie xylophone	410	39.09	404.2
+holly king	413	3.56	392.75
+sarah van buren	417	7.81	403.33
+calvin van buren	430	36.01	390.90999999999997
+katie white	434	33.56	430.44
+oscar quirinius	454	7.03	446.19
+zach young	505	18.19	468.99
+gabriella robinson	506	12.8	472.44
+sarah xylophone	507	16.09	499.97
+rachel thompson	267	46.87	NULL
+gabriella van buren	271	41.04	NULL
+mike steinbeck	284	11.44	NULL
+luke falkner	293	40.67	246.13
+ethan ovid	293	2.08	251.96
+irene nixon	321	24.35	309.56
+mike van buren	327	2.58	286.33
+ulysses robinson	329	26.64	326.92
+quinn laertes	332	10.71	307.65
+tom polk	346	34.03	343.42
+jessica johnson	352	45.71	325.36
+xavier davidson	354	33.9	343.29
+wendy nixon	364	29.42	329.97
+jessica quirinius	375	47.33	329.29
+xavier brown	376	26.17	342.1
+gabriella davidson	383	18.87	353.58
+jessica brown	388	34.09	340.67
+gabriella garcia	391	32.44	364.83
+ethan miller	396	49.07	377.13
+bob garcia	416	7.82	381.90999999999997
+priscilla hernandez	416	29.94	383.56
+holly nixon	419	17.81	369.93
+nick underhill	429	39.54	421.18
+xavier falkner	434	0.88	404.06
+luke robinson	461	44.02	443.19
+bob underhill	465	22.58	425.46
+ulysses king	483	37.98	482.12
+jessica miller	486	26.14	441.98
+bob ovid	493	9.7	470.42
+alice falkner	500	37.85	462.02
+quinn xylophone	267	49.8	NULL
+gabriella thompson	268	17.15	NULL
+calvin xylophone	275	49.32	NULL
+gabriella zipper	279	30.41	229.2
+PREHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+yuri thompson	fred
+bob ichabod	fred
+luke king	fred
+luke steinbeck	fred
+fred zipper	fred
+quinn miller	fred
+calvin van buren	fred
+holly steinbeck	fred
+david davidson	fred
+calvin thompson	fred
+calvin quirinius	fred
+david ovid	fred
+holly thompson	fred
+nick zipper	fred
+victor steinbeck	fred
+victor robinson	fred
+zach ovid	fred
+ulysses zipper	fred
+luke falkner	fred
+irene thompson	fred
+yuri johnson	fred
+ulysses falkner	fred
+gabriella robinson	fred
+alice robinson	fred
+priscilla xylophone	fred
+david laertes	fred
+mike underhill	fred
+victor van buren	fred
+holly falkner	fred
+priscilla falkner	fred
+ethan ovid	fred
+luke zipper	fred
+mike steinbeck	fred
+calvin white	fred
+alice quirinius	fred
+irene miller	fred
+wendy polk	fred
+nick young	fred
+yuri davidson	fred
+ethan ellison	fred
+zach hernandez	fred
+wendy miller	fred
+katie underhill	fred
+irene zipper	fred
+holly allen	fred
+quinn brown	fred
+calvin ovid	fred
+zach robinson	fred
+nick miller	fred
+mike allen	fred
+yuri van buren	fred
+priscilla young	fred
+zach miller	fred
+victor xylophone	fred
+sarah falkner	fred
+rachel ichabod	fred
+alice robinson	fred
+calvin ovid	fred
+calvin ovid	fred
+luke laertes	fred
+david hernandez	fred
+alice ovid	fred
+luke quirinius	fred
+oscar white	fred
+zach falkner	fred
+rachel thompson	fred
+priscilla king	fred
+xavier polk	fred
+wendy ichabod	fred
+rachel ovid	fred
+wendy allen	fred
+luke brown	fred
+mike brown	fred
+oscar ichabod	fred
+xavier garcia	fred
+yuri brown	fred
+bob xylophone	fred
+luke davidson	fred
+ethan quirinius	fred
+zach davidson	fred
+irene miller	fred
+wendy king	fred
+bob zipper	fred
+sarah thompson	fred
+bob carson	fred
+bob laertes	fred
+xavier allen	fred
+sarah robinson	fred
+david king	fred
+oscar davidson	fred
+victor hernandez	fred
+wendy polk	fred
+david ellison	fred
+ulysses johnson	fred
+jessica ovid	fred
+bob king	fred
+ulysses garcia	fred
+irene falkner	fred
+holly robinson	fred
+yuri white	fred

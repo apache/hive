@@ -81,6 +81,15 @@ public class GenericUDAFLag extends GenericUDAFLeadLag {
     }
 
     public Object terminate() {
+
+      /*
+       * if partition is smaller than the lagAmt;
+       * the entire partition is in lagValues.
+       */
+      if ( values.size() < lagAmt ) {
+        return lagValues;
+      }
+
       int lastIdx = values.size() - 1;
       for(int i = 0; i < lagAmt; i++) {
         values.remove(lastIdx - i);
