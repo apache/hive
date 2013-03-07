@@ -470,7 +470,7 @@ public class HiveConf extends Configuration {
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
-    HIVECONVERTJOIN("hive.auto.convert.join", false),
+    HIVECONVERTJOIN("hive.auto.convert.join", true),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", false),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L),
