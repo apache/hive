@@ -62,6 +62,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@-tests.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libthrift-@libthrift.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/protobuf-java-@protobuf.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/zookeeper-@zookeeper.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/log4j-@log4j.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/antlr-@antlr.version@.jar"/>
@@ -86,6 +87,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-xc-1.8.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/stringtemplate-@stringtemplate.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/snappy-@snappy.version@.jar"/>
   <classpathentry kind="lib" path="build/builtins/hive-builtins-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
@@ -101,6 +103,7 @@
   <classpathentry kind="src" path="metastore/src/model"/>
   <classpathentry kind="src" path="metastore/src/test"/>
   <classpathentry kind="src" path="ql/src/gen/thrift/gen-javabean"/>
+  <classpathentry kind="src" path="ql/src/gen/protobuf/gen-java"/>
   <classpathentry kind="src" path="ql/src/java"/>
   <classpathentry kind="src" path="ql/src/test"/>
   <classpathentry kind="src" path="serde/src/gen/thrift/gen-javabean"/>
