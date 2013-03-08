@@ -48,36 +48,32 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
     private final long offset;
     private final long length;
-    private final OrcStruct row;
-    private boolean firstRow = true;
+    private final int numColumns;
     private float progress = 0.0f;
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
       this.reader = file.rows(offset, length,
           findIncludedColumns(file.getTypes(), conf));
+      List<OrcProto.Type> types = file.getTypes();
+      if (types.size() == 0) {
+        numColumns = 0;
+      } else {
+        numColumns = types.get(0).getSubtypesCount();
+      }
       this.offset = offset;
       this.length = length;
-      if (reader.hasNext()) {
-        row = (OrcStruct) reader.next(null);
-      } else {
-        row = null;
-      }
     }
 
     @Override
     public boolean next(NullWritable key, OrcStruct value) throws IOException {
-      if (firstRow) {
-        firstRow = false;
-        assert value == row: "User didn't pass our value back " + value;
-        return row != null;
-      } else if (reader.hasNext()) {
-        Object obj = reader.next(value);
+      if (reader.hasNext()) {
+        reader.next(value);
         progress = reader.getProgress();
-        assert obj == value : "Reader returned different object " + obj;
         return true;
+      } else {
+        return false;
       }
-      return false;
     }
 
     @Override
@@ -87,7 +83,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
 
     @Override
     public OrcStruct createValue() {
-      return row;
+      return new OrcStruct(numColumns);
     }
 
     @Override
