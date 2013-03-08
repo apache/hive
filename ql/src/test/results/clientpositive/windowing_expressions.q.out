@@ -122,7 +122,6 @@ Manufacturer#5	1788.73	2	true	true
 Manufacturer#5	1789.69	31	true	true
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
 rank() as r,
- lag(rank(),1) as pr,
 sum(p_retailprice) as s2 over (rows between unbounded preceding and current row),
 sum(p_retailprice) - 5 as s1 over (rows between unbounded preceding and current row)
 from part
@@ -133,7 +132,6 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
 rank() as r,
- lag(rank(),1) as pr,
 sum(p_retailprice) as s2 over (rows between unbounded preceding and current row),
 sum(p_retailprice) - 5 as s1 over (rows between unbounded preceding and current row)
 from part
@@ -142,32 +140,32 @@ sort by p_retailprice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	1173.15	2	1	1	1173.15	1168.15
-Manufacturer#1	1173.15	2	1	1	2346.3	2341.3
-Manufacturer#1	1414.42	28	3	1	3760.7200000000003	3755.7200000000003
-Manufacturer#1	1602.59	6	4	3	5363.31	5358.31
-Manufacturer#1	1632.66	42	5	4	6995.97	6990.97
-Manufacturer#1	1753.76	34	6	5	8749.73	8744.73
-Manufacturer#2	1690.68	14	1	1	1690.68	1685.68
-Manufacturer#2	1698.66	25	2	1	3389.34	3384.34
-Manufacturer#2	1701.6	18	3	2	5090.9400000000005	5085.9400000000005
-Manufacturer#2	1800.7	40	4	3	6891.64	6886.64
-Manufacturer#2	2031.98	2	5	4	8923.62	8918.62
-Manufacturer#3	1190.27	14	1	1	1190.27	1185.27
-Manufacturer#3	1337.29	45	2	1	2527.56	2522.56
-Manufacturer#3	1410.39	19	3	2	3937.95	3932.95
-Manufacturer#3	1671.68	17	4	3	5609.63	5604.63
-Manufacturer#3	1922.98	1	5	4	7532.610000000001	7527.610000000001
-Manufacturer#4	1206.26	27	1	1	1206.26	1201.26
-Manufacturer#4	1290.35	12	2	1	2496.6099999999997	2491.6099999999997
-Manufacturer#4	1375.42	39	3	2	3872.0299999999997	3867.0299999999997
-Manufacturer#4	1620.67	10	4	3	5492.7	5487.7
-Manufacturer#4	1844.92	7	5	4	7337.62	7332.62
-Manufacturer#5	1018.1	46	1	1	1018.1	1013.1
-Manufacturer#5	1464.48	23	2	1	2482.58	2477.58
-Manufacturer#5	1611.66	6	3	2	4094.24	4089.24
-Manufacturer#5	1788.73	2	4	3	5882.969999999999	5877.969999999999
-Manufacturer#5	1789.69	31	5	4	7672.66	7667.66
+Manufacturer#1	1173.15	2	1	1173.15	1168.15
+Manufacturer#1	1173.15	2	1	2346.3	2341.3
+Manufacturer#1	1414.42	28	3	3760.7200000000003	3755.7200000000003
+Manufacturer#1	1602.59	6	4	5363.31	5358.31
+Manufacturer#1	1632.66	42	5	6995.97	6990.97
+Manufacturer#1	1753.76	34	6	8749.73	8744.73
+Manufacturer#2	1690.68	14	1	1690.68	1685.68
+Manufacturer#2	1698.66	25	2	3389.34	3384.34
+Manufacturer#2	1701.6	18	3	5090.9400000000005	5085.9400000000005
+Manufacturer#2	1800.7	40	4	6891.64	6886.64
+Manufacturer#2	2031.98	2	5	8923.62	8918.62
+Manufacturer#3	1190.27	14	1	1190.27	1185.27
+Manufacturer#3	1337.29	45	2	2527.56	2522.56
+Manufacturer#3	1410.39	19	3	3937.95	3932.95
+Manufacturer#3	1671.68	17	4	5609.63	5604.63
+Manufacturer#3	1922.98	1	5	7532.610000000001	7527.610000000001
+Manufacturer#4	1206.26	27	1	1206.26	1201.26
+Manufacturer#4	1290.35	12	2	2496.6099999999997	2491.6099999999997
+Manufacturer#4	1375.42	39	3	3872.0299999999997	3867.0299999999997
+Manufacturer#4	1620.67	10	4	5492.7	5487.7
+Manufacturer#4	1844.92	7	5	7337.62	7332.62
+Manufacturer#5	1018.1	46	1	1018.1	1013.1
+Manufacturer#5	1464.48	23	2	2482.58	2477.58
+Manufacturer#5	1611.66	6	3	4094.24	4089.24
+Manufacturer#5	1788.73	2	4	5882.969999999999	5877.969999999999
+Manufacturer#5	1789.69	31	5	7672.66	7667.66
 PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k

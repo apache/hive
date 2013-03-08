@@ -9942,25 +9942,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    /*
-     * If there are only Lead and Lags, for now treat them as a Window Expression
-     * until we remove support for Wdw Expressions.
-     */
-    if (!hasWindowSpec ) {
-      boolean onlyLL = true;
-      for(ASTNode function : functions) {
-        String fnName = function.getChild(0).getText().toLowerCase();
-        if ( !FunctionRegistry.LAG_FUNC_NAME.equals(fnName) &&
-            !FunctionRegistry.LEAD_FUNC_NAME.equals(fnName) ) {
-          onlyLL = false;
-          break;
-        }
-      }
-      if (onlyLL ) {
-        return false;
-      }
-    }
-
     WindowingSpec spec = qb.getWindowingSpec(dest);
     if(spec == null) {
       queryProperties.setHasWindowing(true);
@@ -10133,32 +10114,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * - Select tree form is: ^(TOK_SELECT ^(TOK_SELECTEXPR...) ^(TOK_SELECTEXPR...) ...)
    * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
    *
-   * We need to extract the SelectList any SelectItems that must be handled during
-   * Windowing processing. These are:
-   * - SelectItems that have a window_specification
-   * - SelectItems that invoke row navigation functions: Lead/Lag.
-   *
-   * Do we need to change the SelectList in any way?
-   * - initially we thought of replacing the selectExpressions handled by Windowing
-   * with a ASTNode that is of type Identfier and
-   * references the alias to the orginal expression. Why?
-   *   - the output of processing the PTF Operator that handles windowing will
-   *   contain the values of the Windowing expressions.
-   *   - the final Select Op that is a child of the above PTF Op can get these values
-   *     from its input by referring to the computed
-   *     windowing expression via its alias.
-   * - but this is not needed. Why?
-   *   - When transforming a AST tree to an ExprNodeDesc the TypeCheckFactory checks
-   *     if there is a mapping from an AST tree to an output
-   *     column in the InputResolver; if there is it uses the alias for the Output column
-   *   - This is how values get handed from a GBy Op to the next Select Op;
-   *   - we need the same thing to happen.
+   * See checkAndExtractWindowFunctionsInSelect for rules on what makes a UDAF invocation
+   * a Windowing Function invocation
    */
   private void handleWindowingExprsInSelectList(QB qb, String dest, ASTNode selectNode)
       throws SemanticException {
-    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-    CheckLeadLagInSelectExprs checkLLFunctions = new CheckLeadLagInSelectExprs(qb, dest);
-
     for(int i=0; i < selectNode.getChildCount(); i++)
     {
       ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
@@ -10168,44 +10128,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       boolean hasWindowingExprs = checkAndExtractWindowFunctionsInSelect(qb, selectExpr, dest);
 
-      if ( !hasWindowingExprs ) {
-        checkLLFunctions.reset();
-        tw.visit(selectExpr, HiveParser.TOK_FUNCTION, checkLLFunctions);
-
-        if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(selectExpr,
-              checkLLFunctions.getErrString()));
-        }
-
-        hasWindowingExprs = checkLLFunctions.hasLeadLagExprs();
-
-        if ( hasWindowingExprs )
-        {
-          ASTNode expr = (ASTNode)selectExpr.getChild(0);
-          WindowingSpec spec = qb.getWindowingSpec(dest);
-          if(spec == null) {
-            queryProperties.setHasWindowing(true);
-            spec = new WindowingSpec();
-            qb.addDestToWindowingSpec(dest, spec);
-          }
-
-          String alias;
-          int childCount = selectExpr.getChildCount();
-          /*
-            * @revisit what if there are multiple Identifiers(lateral view)
-           */
-          if ( childCount >= 2 ) {
-            alias = getColAlias(selectExpr, null, null, true, -1)[1];
-          }
-          else {
-            int wColIdx = spec.getWindowExpressions() == null ? 0 :
-              spec.getWindowExpressions().size();
-            alias = "_wcol" + wColIdx;
-          }
-          spec.addExpression(expr, alias);
-          qb.getParseInfo().addWindowingExprToClause(dest, expr);
-        }
-      }
     }
   }
 

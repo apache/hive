@@ -28,7 +28,7 @@ sort by p_name;
 select p_mfgr, p_name, p_size, min(p_retailprice),
 rank() as r,
 dense_rank() as dr,
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 group by p_mfgr, p_name, p_size
 distribute by p_mfgr
@@ -38,7 +38,7 @@ sort by p_name ;
 select p_mfgr, p_name, p_size, min(p_retailprice),
 rank() as r,
 dense_rank() as dr,
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 group by p_mfgr, p_name, p_size
 having p_size > 0
@@ -58,7 +58,7 @@ rank() as r,
 dense_rank() as dr, 
 count(p_size) as cd, 
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row), 
-p_size, p_size - lag(p_size,1) as deltaSz 
+p_size, p_size - lag(p_size,1,p_size) as deltaSz 
 from part 
 distribute by p_mfgr 
 sort by p_name;
@@ -70,7 +70,7 @@ rank() as r,
 dense_rank() as dr, 
 count(p_size) as cd, 
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row), 
-p_size, p_size - lag(p_size,1) as deltaSz 
+p_size, p_size - lag(p_size,1,p_size) as deltaSz 
 from part 
 distribute by p_mfgr 
 sort by p_name
@@ -81,7 +81,7 @@ select abc.p_mfgr, abc.p_name,
 rank() as r, 
 dense_rank() as dr, 
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
-abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
+abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 
@@ -343,7 +343,7 @@ select * from part_3;
 select p_mfgr, p_name, p_size, min(p_retailprice) as mi,
 rank() as r,
 dense_rank() as dr,
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 group by p_mfgr, p_name, p_size
 having p_size > 0

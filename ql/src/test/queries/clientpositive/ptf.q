@@ -27,7 +27,7 @@ from noop(on part
 
 -- 2. testJoinWithNoop
 select p_mfgr, p_name,
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
@@ -54,7 +54,7 @@ from noop(on part
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-p_size, p_size - lag(p_size,1) as deltaSz 
+p_size, p_size - lag(p_size,1,p_size) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
@@ -67,7 +67,7 @@ sort by p_name;
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-p_size, p_size - lag(p_size,1) as deltaSz 
+p_size, p_size - lag(p_size,1,p_size) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
@@ -145,7 +145,7 @@ rank() as r,
 dense_rank() as dr, 
 count(abc.p_name) as cd, 
 abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
-abc.p_size, abc.p_size - lag(abc.p_size,1) as deltaSz 
+abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 

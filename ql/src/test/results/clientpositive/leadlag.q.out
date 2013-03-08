@@ -40,7 +40,7 @@ select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
 p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from noop(on part
 partition by p_mfgr
 order by p_name 
@@ -53,7 +53,7 @@ select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
 p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from noop(on part
 partition by p_mfgr
 order by p_name 
@@ -92,7 +92,7 @@ select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row),
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 distribute by p_mfgr
 sort by p_name
@@ -104,7 +104,7 @@ select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
 p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row),
-p_size, p_size - lag(p_size,1) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 distribute by p_mfgr
 sort by p_name
@@ -139,7 +139,7 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	1018.1	6208.18	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	1464.48	7672.66	23	-23
 PREHOOK: query: -- 3. testJoinWithLag
 select p1.p_mfgr, p1.p_name,
-p1.p_size, p1.p_size - lag(p1.p_size,1) as deltaSz
+p1.p_size, p1.p_size - lag(p1.p_size,1,p1.p_size) as deltaSz
 from part p1 join part p2 on p1.p_partkey = p2.p_partkey
 distribute by p1.p_mfgr
 sort by p1.p_name
@@ -148,7 +148,7 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 3. testJoinWithLag
 select p1.p_mfgr, p1.p_name,
-p1.p_size, p1.p_size - lag(p1.p_size,1) as deltaSz
+p1.p_size, p1.p_size - lag(p1.p_size,1,p1.p_size) as deltaSz
 from part p1 join part p2 on p1.p_partkey = p2.p_partkey
 distribute by p1.p_mfgr
 sort by p1.p_name
@@ -276,22 +276,26 @@ Manufacturer#5	almond antique sky peru orange	2	-8
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	17
 Manufacturer#5	almond azure blanched chiffon midnight	23	21
 PREHOOK: query: -- 6. testRankInLead
+select p_mfgr, p_name, p_size, r1,
+lead(r1,1,r1) as deltaRank over (distribute by p_mfgr sort by p_name)
+from (
 select p_mfgr, p_name, p_size, 
-rank() as r1, 
-lead(rank(), 1) as deltaRank 
+rank() as r1 
 from part 
 distribute by p_mfgr 
-sort by p_name
+sort by p_name) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 6. testRankInLead
+select p_mfgr, p_name, p_size, r1,
+lead(r1,1,r1) as deltaRank over (distribute by p_mfgr sort by p_name)
+from (
 select p_mfgr, p_name, p_size, 
-rank() as r1, 
-lead(rank(), 1) as deltaRank 
+rank() as r1 
 from part 
 distribute by p_mfgr 
-sort by p_name
+sort by p_name) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -325,7 +329,7 @@ PREHOOK: query: -- 7. testLeadWithPTF
 select p_mfgr, p_name, 
 rank() as r, 
 dense_rank() as dr, 
-p_size, p_size - lead(p_size,1) as deltaSz 
+p_size, p_size - lead(p_size,1,p_size) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name  
@@ -339,7 +343,7 @@ POSTHOOK: query: -- 7. testLeadWithPTF
 select p_mfgr, p_name, 
 rank() as r, 
 dense_rank() as dr, 
-p_size, p_size - lead(p_size,1) as deltaSz 
+p_size, p_size - lead(p_size,1,p_size) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name  

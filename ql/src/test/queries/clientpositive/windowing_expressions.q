@@ -43,7 +43,6 @@ sort by p_retailprice;
 
 select p_mfgr, p_retailprice, p_size,
 rank() as r,
- lag(rank(),1) as pr,
 sum(p_retailprice) as s2 over (rows between unbounded preceding and current row),
 sum(p_retailprice) - 5 as s1 over (rows between unbounded preceding and current row)
 from part
