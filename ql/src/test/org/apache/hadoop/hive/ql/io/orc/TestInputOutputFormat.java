@@ -169,6 +169,22 @@ public class TestInputOutputFormat {
     }
     assertEquals(3, rowNum);
     reader.close();
+
+    // test the mapping of empty string to all columns
+    conf.set("hive.io.file.readcolumn.ids", "");
+    reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
+    key = reader.createKey();
+    value = (Writable) reader.createValue();
+    rowNum = 0;
+    fields = inspector.getAllStructFieldRefs();
+    while (reader.next(key, value)) {
+      assertEquals(++rowNum, intInspector.get(inspector.
+          getStructFieldData(value, fields.get(0))));
+      assertEquals(2, intInspector.get(inspector.
+          getStructFieldData(serde.deserialize(value), fields.get(1))));
+    }
+    assertEquals(3, rowNum);
+    reader.close();
   }
 
   static class NestedRow implements Writable {

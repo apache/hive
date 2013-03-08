@@ -138,7 +138,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
                                                Configuration conf) {
     String includedStr =
         conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
-    if (includedStr == null) {
+    if (includedStr == null || includedStr.trim().length() == 0) {
       return null;
     } else {
       int numColumns = types.size();
