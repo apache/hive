@@ -49,16 +49,12 @@ public class TestFileDump {
   FileSystem fs;
   Path testFilePath;
 
-  @Rule
-  public TestName testCaseName = new TestName();
-
   @Before
   public void openFileSystem () throws Exception {
     conf = new Configuration();
     fs = FileSystem.getLocal(conf);
     fs.setWorkingDirectory(workDir);
-    testFilePath = new Path("TestFileDump." +
-        testCaseName.getMethodName() + ".orc");
+    testFilePath = new Path("TestFileDump.testDump.orc");
     fs.delete(testFilePath, false);
   }
 
