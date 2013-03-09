@@ -19,7 +19,7 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
   order by p_name
@@ -44,7 +44,7 @@ order by p_name);
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
   order by p_name
@@ -92,7 +92,7 @@ order by p_name
 
 -- 9. testNoopWithMap
 select p_mfgr, p_name, p_size, 
-rank() as r over (partition by p_mfgr order by p_name, p_size desc)
+rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc);
@@ -101,7 +101,7 @@ order by p_name, p_size desc);
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noopwithmap(on part 
   partition by p_mfgr
   order by p_name);
@@ -110,7 +110,7 @@ from noopwithmap(on part
 select p_mfgr, p_name, p_size,
 rank() as r,
 dense_rank() as dr,
-sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part
 partition by p_mfgr
 order by p_name)
@@ -120,7 +120,7 @@ having rank() < 4;
 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
 order by p_mfgr, p_name
@@ -132,7 +132,7 @@ sub1.cd, sub1.s1
 from (select p_mfgr, p_name, 
 count(p_size) as cd, 
 p_retailprice, 
-sum(p_retailprice) as s1 over w1 
+sum(p_retailprice) over w1  as s1
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
@@ -144,7 +144,7 @@ select abc.p_mfgr, abc.p_name,
 rank() as r, 
 dense_rank() as dr, 
 count(abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) as s1 over (rows between unbounded preceding and current row), 
+abc.p_retailprice, sum(abc.p_retailprice) over (rows between unbounded preceding and current row) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
@@ -168,7 +168,7 @@ from part
 group by p_mfgr, p_brand;
 
 select p_mfgr, p_brand, s, 
-sum(s) as s1 over w1 
+sum(s) over w1  as s1
 from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
@@ -200,16 +200,16 @@ order by p_name)
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() as r, 
 dense_rank() as dr, 
-sum(p_retailprice) as s over (rows between unbounded preceding and current row) 
+sum(p_retailprice) over (rows between unbounded preceding and current row)  as s
 distribute by p_mfgr 
 sort by p_name  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
-sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (range between p_size 5 less and current row), 
+sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (range between p_size 5 less and current row) as s2, 
 rank() as r, 
 dense_rank() as dr, 
 cume_dist() as cud, 
-first_value(p_size, true) as fv1 over w1 
+first_value(p_size, true) over w1  as fv1
 having p_size > 5 
 distribute by p_mfgr 
 sort by p_mfgr, p_name 
@@ -223,7 +223,7 @@ select * from part_5;
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noopwithmap(on 
           noop(on 
@@ -240,7 +240,7 @@ from noop(on
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) 
+p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noop(on 
           noop(on 
@@ -255,7 +255,7 @@ from noop(on
         
 -- 20. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
-rank() as r over (partition by p_mfgr order by p_name), 
+rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() as dr, 
 p_size, sum(p_size) as s1 
 from noop(on 
@@ -273,7 +273,7 @@ from noop(on
 select p_mfgr, p_name,  
 rank() as r, 
 dense_rank() as dr, 
-p_size, sum(p_size) as s1 over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  
+p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1 
 from noopwithmap(on 
         noop(on 
           noop(on 
@@ -291,8 +291,8 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 p_size, 
-sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) 
+sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
               noop(on part 
@@ -307,8 +307,8 @@ select p_mfgr, p_name,
 rank() as r, 
 dense_rank() as dr, 
 p_size, 
-sum(p_size) as s1 over (rows between unbounded preceding and current row), 
-sum(p_size) as s2 over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) 
+sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
               noop(on part 

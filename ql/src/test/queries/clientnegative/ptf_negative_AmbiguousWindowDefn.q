@@ -16,9 +16,9 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
 -- testAmbiguousWindowDefn
 select p_mfgr, p_name, p_size, 
-sum(p_size) as s1 over (w1), 
-sum(p_size) as s2 over (w2),
-sum(p_size) as s3 over (w3) 
+sum(p_size) over (w1) as s1, 
+sum(p_size) over (w2) as s2,
+sum(p_size) over (w3) as s3
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 

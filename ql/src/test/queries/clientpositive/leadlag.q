@@ -19,7 +19,7 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
-p_retailprice, sum(p_retailprice) as s1 over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),
+p_retailprice, sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1,
 p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from noop(on part
 partition by p_mfgr
@@ -30,7 +30,7 @@ order by p_name
 select p_mfgr, p_name,
 rank() as r,
 dense_rank() as dr,
-p_retailprice, sum(p_retailprice) as s1 over (rows between unbounded preceding and current row),
+p_retailprice, sum(p_retailprice) over (rows between unbounded preceding and current row) as s1,
 p_size, p_size - lag(p_size,1,p_size) as deltaSz
 from part
 distribute by p_mfgr
@@ -53,7 +53,7 @@ window w1 as (rows between 2 preceding and 2 following) ;
 
 -- 5. testLagInSumOverWindow
 select  p_mfgr,p_name, p_size,   
-sum(p_size - lag(p_size,1)) as deltaSum over w1
+sum(p_size - lag(p_size,1)) over w1 as deltaSum 
 from part 
 distribute by p_mfgr 
 sort by p_mfgr 
@@ -61,7 +61,7 @@ window w1 as (rows between 2 preceding and 2 following) ;
 
 -- 6. testRankInLead
 select p_mfgr, p_name, p_size, r1,
-lead(r1,1,r1) as deltaRank over (distribute by p_mfgr sort by p_name)
+lead(r1,1,r1) over (distribute by p_mfgr sort by p_name) as deltaRank
 from (
 select p_mfgr, p_name, p_size, 
 rank() as r1 
@@ -83,8 +83,8 @@ sort by p_name;
 
 -- 8. testOverNoPartitionMultipleAggregate
 select p_name, p_retailprice,
-lead(p_retailprice) as l1 over(),
-lag(p_retailprice) as l2 over()
+lead(p_retailprice) over() as l1 ,
+lag(p_retailprice)  over() as l2
 from part
 order by p_name;
 

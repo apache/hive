@@ -16,7 +16,7 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
 -- testInvalidValueBoundary
 select  p_mfgr,p_name, p_size,   
-sum(p_size) as s over (w1) ,    
+sum(p_size) over (w1) as s ,    
 dense_rank() as dr  
 from part  
 distribute by p_mfgr  

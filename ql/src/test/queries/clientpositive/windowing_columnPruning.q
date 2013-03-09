@@ -17,17 +17,17 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
 -- 1. testQueryLevelPartitionColsNotInSelect
 select p_size,
-sum(p_retailprice) as s1 over (rows between unbounded preceding and current row)
+sum(p_retailprice) over (rows between unbounded preceding and current row) as s1
 from part 
 distribute by p_mfgr sort by p_name ;
 
 -- 2. testWindowPartitionColsNotInSelect
 select p_size,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part;
 
 -- 3. testHavingColNotInSelect
 select p_mfgr,
-sum(p_retailprice) as s1 over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part 
 having p_size > 5;

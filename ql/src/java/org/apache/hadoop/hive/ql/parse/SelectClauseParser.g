@@ -125,9 +125,8 @@ selectItem
 @init { gParent.msgs.push("selection target"); }
 @after { gParent.msgs.pop(); }
     :
-    ( selectExpression  
+    ( selectExpression (KW_OVER ws=window_specification )?
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
-      (KW_OVER ws=window_specification )?
     ) -> ^(TOK_SELEXPR selectExpression identifier* $ws?)
     ;
 
@@ -157,4 +156,67 @@ selectExpressionList
     :
     selectExpression (COMMA selectExpression)* -> ^(TOK_EXPLIST selectExpression+)
     ;
+
+//---------------------- Rules for windowing clauses -------------------------------
+window_clause 
+@init { gParent.msgs.push("window_clause"); }
+@after { gParent.msgs.pop(); } 
+:
+  KW_WINDOW window_defn (COMMA window_defn)* -> ^(KW_WINDOW window_defn+)
+;  
+
+window_defn 
+@init { gParent.msgs.push("window_defn"); }
+@after { gParent.msgs.pop(); } 
+:
+  Identifier KW_AS window_specification -> ^(TOK_WINDOWDEF Identifier window_specification)
+;  
+
+window_specification 
+@init { gParent.msgs.push("window_specification"); }
+@after { gParent.msgs.pop(); } 
+:
+  (Identifier | ( LPAREN Identifier? partitioningSpec? window_frame? RPAREN)) -> ^(TOK_WINDOWSPEC Identifier? partitioningSpec? window_frame?)
+;
+
+window_frame :
+ window_range_expression |
+ window_value_expression
+;
+
+window_range_expression 
+@init { gParent.msgs.push("window_range_expression"); }
+@after { gParent.msgs.pop(); } 
+:
+ KW_ROWS KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWRANGE ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
+ KW_ROWS KW_BETWEEN s=rowsboundary KW_AND end=rowsboundary -> ^(TOK_WINDOWRANGE $s $end)
+;
+
+rowsboundary 
+@init { gParent.msgs.push("rowsboundary"); }
+@after { gParent.msgs.pop(); } 
+:
+  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
+  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
+  Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
+;
+
+window_value_expression 
+@init { gParent.msgs.push("window_value_expression"); }
+@after { gParent.msgs.pop(); } 
+:
+ KW_RANGE KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWVALUES ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
+ KW_RANGE KW_BETWEEN s=valuesboundary KW_AND end=valuesboundary -> ^(TOK_WINDOWVALUES $s $end)
+;
+
+valuesboundary 
+@init { gParent.msgs.push("valuesboundary"); }
+@after { gParent.msgs.pop(); } 
+:
+  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
+  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
+  rowExp=expression rngExp=Number (d=KW_LESS | d=KW_MORE ) -> ^($d $rowExp $rngExp)
+;   
+
+
 

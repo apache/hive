@@ -25,5 +25,5 @@ CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-FAILED: ParseException line 4:51 mismatched input 'following' expecting KW_PRECEDING near 'unbounded' in window_value_expression
+FAILED: ParseException line 4:45 mismatched input 'following' expecting KW_PRECEDING near 'unbounded' in window_value_expression
 
