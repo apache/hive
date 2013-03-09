@@ -49,9 +49,6 @@ public class Optimizer {
     transformations = new ArrayList<Transform>();
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
-      transformations.add(new ColumnPruner());
-    }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicateTransitivePropagate());
       transformations.add(new PredicatePushDown());
@@ -61,6 +58,9 @@ public class Optimizer {
         /* Add list bucketing pruner. */
         transformations.add(new ListBucketingPruner());
       }
+    }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
+      transformations.add(new ColumnPruner());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       transformations.add(new SkewJoinOptimizer());

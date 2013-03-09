@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -112,7 +114,7 @@ public class HashMapWrapper<K, V> implements Serializable {
    */
   public long flushMemoryCacheToPersistent(File file) throws IOException {
     ObjectOutputStream outputStream = null;
-    outputStream = new ObjectOutputStream(new FileOutputStream(file));
+    outputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file), 4096));
     outputStream.writeObject(mHash);
     outputStream.flush();
     outputStream.close();
@@ -122,7 +124,7 @@ public class HashMapWrapper<K, V> implements Serializable {
 
   public void initilizePersistentHash(String fileName) throws IOException, ClassNotFoundException {
     ObjectInputStream inputStream = null;
-    inputStream = new ObjectInputStream(new FileInputStream(fileName));
+    inputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(fileName), 4096));
     HashMap<K, V> hashtable = (HashMap<K, V>) inputStream.readObject();
     this.setMHash(hashtable);
 

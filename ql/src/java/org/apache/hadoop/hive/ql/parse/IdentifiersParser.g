@@ -171,11 +171,11 @@ function
     LPAREN
       (
         (star=STAR)
-        | (dist=KW_DISTINCT)? (expression (COMMA expression)*)?
+        | (dist=KW_DISTINCT)? (selectExpression (COMMA selectExpression)*)?
       )
     RPAREN -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName)
-           -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
-                            -> ^(TOK_FUNCTIONDI functionName (expression+)?)
+           -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)?)
+                            -> ^(TOK_FUNCTIONDI functionName (selectExpression+)?)
     ;
 
 functionName

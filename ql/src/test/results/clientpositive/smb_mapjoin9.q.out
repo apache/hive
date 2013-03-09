@@ -46,13 +46,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
-                  0 {key} {ds}
+                  0 {key}
                   1 {key} {value} {ds}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
                   1 [Column[key]]
-                outputColumnNames: _col0, _col2, _col5, _col6, _col7
+                outputColumnNames: _col0, _col5, _col6, _col7
                 Position of Big Table: 0
                 Select Operator
                   expressions:
@@ -141,13 +141,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
-                  0 {key} {ds}
+                  0 {key}
                   1 {key} {value} {ds}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
                   1 [Column[key]]
-                outputColumnNames: _col0, _col2, _col5, _col6, _col7
+                outputColumnNames: _col0, _col5, _col6, _col7
                 Position of Big Table: 1
                 Select Operator
                   expressions:
@@ -269,13 +269,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
-                  0 {key} {ds}
+                  0 {key}
                   1 {key} {value} {ds}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
                   1 [Column[key]]
-                outputColumnNames: _col0, _col2, _col5, _col6, _col7
+                outputColumnNames: _col0, _col5, _col6, _col7
                 Position of Big Table: 0
                 Select Operator
                   expressions:

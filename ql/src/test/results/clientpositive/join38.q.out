@@ -95,7 +95,7 @@ STAGE PLANS:
               HashTable Sink Operator
                 condition expressions:
                   0 {value}
-                  1 {col5} {col11}
+                  1 {col5}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
@@ -117,12 +117,12 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 condition expressions:
                   0 {value}
-                  1 {col5} {col11}
+                  1 {col5}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
                   1 [Column[col11]]
-                outputColumnNames: _col1, _col9, _col15
+                outputColumnNames: _col1, _col9
                 Position of Big Table: 1
                 Select Operator
                   expressions:
