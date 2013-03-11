@@ -20,14 +20,24 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 public class PreDropPartitionEvent extends PreEventContext {
 
   private final Partition partition;
+  private final Table table;
 
   public PreDropPartitionEvent (Partition partition, HMSHandler handler) {
     super (PreEventType.DROP_PARTITION, handler);
     this.partition = partition;
+    this.table = null;
+  }
+
+
+  public PreDropPartitionEvent (Table table, Partition partition, HMSHandler handler) {
+    super (PreEventType.DROP_PARTITION, handler);
+    this.partition = partition;
+    this.table = table;
   }
 
   /**
@@ -36,5 +46,12 @@ public class PreDropPartitionEvent extends PreEventContext {
   public Partition getPartition() {
 
     return partition;
+  }
+
+ /**
+  * @return the table
+  */
+  public Table getTable() {
+    return table;
   }
 }
