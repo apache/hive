@@ -31,11 +31,11 @@ PREHOOK: Output: default@decimal_text
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_TEXT
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@decimal_text
-PREHOOK: query: SELECT * FROM DECIMAL_TEXT ORDER BY key
+PREHOOK: query: SELECT * FROM DECIMAL_TEXT ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_text
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_TEXT ORDER BY key
+POSTHOOK: query: SELECT * FROM DECIMAL_TEXT ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_text
 #### A masked pattern was here ####
@@ -120,11 +120,11 @@ SELECT * FROM DECIMAL_LAZY_COL ORDER BY key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@decimal_lazy_col
 POSTHOOK: Output: default@DECIMAL_SEQUENCE
-PREHOOK: query: SELECT * FROM DECIMAL_SEQUENCE
+PREHOOK: query: SELECT * FROM DECIMAL_SEQUENCE ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_sequence
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_SEQUENCE
+POSTHOOK: query: SELECT * FROM DECIMAL_SEQUENCE ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_sequence
 #### A masked pattern was here ####
