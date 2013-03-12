@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.logging.Log;
@@ -471,6 +472,7 @@ public class PTFTranslator {
       PartitionedTableFunctionSpec spec)
       throws SemanticException {
 
+    applyConstantPartition(spec);
     if ( spec.getPartition() == null ) {
       return;
     }
@@ -478,6 +480,24 @@ public class PTFTranslator {
     OrderDef orderDef = translate(def.getRawInputShape(), spec.getOrder(), partDef);
     def.setPartition(partDef);
     def.setOrder(orderDef);
+  }
+
+  /*
+   * If this the first PPTF in the chain and there is no partition specified
+   * then assume the user wants to include the entire input in 1 partition.
+   */
+  private static void applyConstantPartition( PartitionedTableFunctionSpec spec) {
+    if ( spec.getPartition() != null ) {
+      return;
+    }
+    PTFInputSpec iSpec = spec.getInput();
+    if ( iSpec instanceof PTFInputSpec ) {
+        PartitionSpec partSpec = new PartitionSpec();
+        PartitionExpression partExpr = new PartitionExpression();
+        partExpr.setExpression(new ASTNode(new CommonToken(HiveParser.Number, "0")));
+        partSpec.addExpression(partExpr);
+        spec.setPartition(partSpec);
+    }
   }
 
   private PartitionDef translate(ShapeDetails inpShape, PartitionSpec spec)
@@ -1310,6 +1330,7 @@ public class PTFTranslator {
     }
 
     PartitionedTableFunctionSpec prevFn = (PartitionedTableFunctionSpec) ptfChain.pop();
+    applyConstantPartition(prevFn);
     PartitionSpec partSpec = prevFn.getPartition();
     OrderSpec orderSpec = prevFn.getOrder();
 

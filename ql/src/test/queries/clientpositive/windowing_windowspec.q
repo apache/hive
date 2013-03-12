@@ -31,3 +31,6 @@ select s, avg(f) over (partition by bo order by bin range between unbounded prec
 
 select s, sum(i) over() from over10k limit 100;
 
+select f, sum(f) over (order by f range between unbounded preceding and current row) from over10k limit 100;
+
+

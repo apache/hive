@@ -208,7 +208,9 @@ partitioningSpec
 @after { gParent.msgs.pop(); } 
    :
    partitionByClause orderByClause? -> ^(TOK_PARTITIONINGSPEC partitionByClause orderByClause?) |
+   orderByClause -> ^(TOK_PARTITIONINGSPEC orderByClause) |
    distributeByClause sortByClause? -> ^(TOK_PARTITIONINGSPEC distributeByClause sortByClause?) |
+   sortByClause -> ^(TOK_PARTITIONINGSPEC sortByClause) |
    clusterByClause -> ^(TOK_PARTITIONINGSPEC clusterByClause)
    ;
 

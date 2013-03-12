@@ -71,3 +71,32 @@ Washington	7291	2010	10	27	2	[{"origin_city_name":"Washington","dest_city_name":
 Chicago	897	2010	10	20	4	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":20,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
 Chicago	897	2010	10	21	3	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
 Chicago	897	2010	10	22	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
+PREHOOK: query: -- 2. Npath on 1 partition
+select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+from npath(on 
+        flights_tiny 
+        sort by year, month, day_of_month  
+      arg1('LATE.LATE+'), 
+      arg2('LATE'), arg3(arr_delay > 15), 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+   )
+where fl_num = 1142
+PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2. Npath on 1 partition
+select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+from npath(on 
+        flights_tiny 
+        sort by year, month, day_of_month  
+      arg1('LATE.LATE+'), 
+      arg2('LATE'), arg3(arr_delay > 15), 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+   )
+where fl_num = 1142
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny
+#### A masked pattern was here ####
+Baltimore	1142	2010	10	21	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":105.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":28.0,"fl_num":"1599"}]
+Baltimore	1142	2010	10	22	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":54.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":18.0,"fl_num":"1599"}]
+Baltimore	1142	2010	10	25	3	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":106.0,"fl_num":"1599"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":31.0,"fl_num":"361"}]

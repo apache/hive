@@ -9831,27 +9831,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     PTFInvocationSpec spec = new PTFInvocationSpec();
     spec.setFunction(ptfSpec);
-    ensurePTFChainHasPartitioning(spec, ptf);
     qb.addPTFNodeToSpec(ptf, spec);
   }
-
-  /*
-   * ensure that the PTF chain has a partitioning specification associated. This method
-   * should be called when a PTF chain is encountered as a fromSource.
-   * (from the processPTF method)
-   */
-  private void ensurePTFChainHasPartitioning(PTFInvocationSpec qSpec, ASTNode node)
-      throws SemanticException {
-    if(qSpec == null){
-      return;
-    }
-    PartitionedTableFunctionSpec ptfSpec = qSpec.getStartOfChain();
-    PartitionSpec pSpec = ptfSpec.getPartition();
-    if ( pSpec == null ) {
-      throw new SemanticException(generateErrorMessage(node,
-                  "No partition specification associated with start of PTF chain "));
-    }
-   }
 
 //--------------------------- Windowing handling -----------------------------------
 
@@ -10113,17 +10094,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int type = firstChild.getType();
     int exprCnt;
 
-    PartitionSpec pSpec = processPartitionSpec(firstChild);
-    partitioning.setPartSpec(pSpec);
 
-    if ( type == HiveParser.TOK_DISTRIBUTEBY )
+    if ( type == HiveParser.TOK_DISTRIBUTEBY || type == HiveParser.TOK_CLUSTERBY )
     {
+      PartitionSpec pSpec = processPartitionSpec(firstChild);
+      partitioning.setPartSpec(pSpec);
       ASTNode sortNode = pSpecNode.getChildCount() > 1 ? (ASTNode) pSpecNode.getChild(1) : null;
       if ( sortNode != null )
       {
         OrderSpec oSpec = processOrderSpec(sortNode);
         partitioning.setOrderSpec(oSpec);
       }
+    }
+    else if ( type == HiveParser.TOK_SORTBY || type == HiveParser.TOK_ORDERBY ) {
+      ASTNode sortNode = firstChild;
+      OrderSpec oSpec = processOrderSpec(sortNode);
+      partitioning.setOrderSpec(oSpec);
     }
     return partitioning;
   }
