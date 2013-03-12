@@ -2,7 +2,7 @@ PREHOOK: query: CREATE DATABASE hbaseDB
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE hbaseDB
 POSTHOOK: type: CREATEDATABASE
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 1.0)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
 -- Exit Code == 0 on success
@@ -17,7 +17,7 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 1.0)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
 -- Exit Code == 0 on success
