@@ -34,6 +34,8 @@
                 conf="test->default" transitive="false"/>
     <dependency org="org.apache.hive" name="hive-contrib" rev="${version}"
                 conf="test->default" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-testutils" rev="${version}"
+                conf="test->default" transitive="false"/>
     <dependency org="com.google.protobuf" name="protobuf-java" 
                 rev="${protobuf.version}" transitive="false"/>
     <dependency org="org.iq80.snappy" name="snappy" 

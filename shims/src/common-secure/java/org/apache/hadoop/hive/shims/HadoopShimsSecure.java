@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.io.Text;
@@ -59,6 +60,7 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
@@ -463,19 +465,19 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     return ToolRunner.run(har, args.toArray(new String[0]));
   }
-  
+
   /*
    * This particular instance is for Hadoop 1.0 which creates an archive
    * with only the relative path of the archived directory stored within
    * the archive as compared to the full path in case of earlier versions.
    * See this api in Hadoop20Shims for comparison.
    */
-  public URI getHarUri(URI original, URI base, URI originalBase) 
+  public URI getHarUri(URI original, URI base, URI originalBase)
     throws URISyntaxException {
     URI relative = originalBase.relativize(original);
     if (relative.isAbsolute()) {
       throw new URISyntaxException("Couldn't create URI for location.",
-                                   "Relative: " + relative + " Base: " 
+                                   "Relative: " + relative + " Base: "
                                    + base + " OriginalBase: " + originalBase);
     }
 
@@ -538,8 +540,27 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   }
 
   @Override
-  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws IOException, InterruptedException {
-    ugi.doAs(pvea);
+  public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService) throws IOException {
+    Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
+    delegationToken.decodeFromUrlString(tokenStr);
+    delegationToken.setService(new Text(tokenService));
+    ugi.addToken(delegationToken);
+  }
+
+  @Override
+  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws IOException, InterruptedException {
+    return ugi.doAs(pvea);
+  }
+
+  @Override
+  public UserGroupInformation createProxyUser(String userName) throws IOException {
+    return UserGroupInformation.createProxyUser(
+        userName, UserGroupInformation.getLoginUser());
+  }
+
+  @Override
+  public boolean isSecurityEnabled() {
+    return UserGroupInformation.isSecurityEnabled();
   }
 
   @Override
@@ -554,6 +575,12 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     } catch (IOException e) {
       LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
     }
+  }
+
+  @Override
+  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
+    String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    UserGroupInformation.loginUserFromKeytab(hostPrincipal, keytabFile);
   }
 
   @Override

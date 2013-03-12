@@ -175,17 +175,14 @@ public class QTestUtil {
         normalizeNames(file);
       }
     } else {
-      // System.out.println("Trying to match: " + path.getPath());
       Matcher m = reduceTok.matcher(path.getName());
       if (m.matches()) {
         String name = m.group(1) + "reduce" + m.group(3);
-        // System.out.println("Matched new name: " + name);
         path.renameTo(new File(path.getParent(), name));
       } else {
         m = mapTok.matcher(path.getName());
         if (m.matches()) {
           String name = m.group(1) + "map_" + m.group(3);
-          // System.out.println("Matched new name: " + name);
           path.renameTo(new File(path.getParent(), name));
         }
       }
@@ -196,6 +193,14 @@ public class QTestUtil {
     this(outDir, logDir, false, "0.20");
   }
 
+  public String getOutputDirectory() {
+    return outDir;
+  }
+
+  public String getLogDirectory() {
+    return logDir;
+  }
+  
   private String getHadoopMainVersion(String input) {
     if (input == null) {
       return null;

@@ -22,15 +22,6 @@
   <import file="../build-common.xml"/>
   <property name="model.dir" value="${src.dir}/model"/>
 
-  <target name="thriftif" depends="check-thrift-home">
-    <echo message="Project: ${ant.project.name}"/>
-    <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
-    <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/hive_metastore.thrift</echo>
-    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="${thrift.args} -o ${src.dir}/gen/thrift if/hive_metastore.thrift " />
-    </exec>
-  </target>
-
   <uptodate property="grammarBuild.notRequired">
     <srcfiles dir= "${src.dir}/java/org/apache/hadoop/hive/metastore/parser" includes="**/*.g"/>
     <mapper type="merge" to="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/metastore/parser/FilterParser.java"/>

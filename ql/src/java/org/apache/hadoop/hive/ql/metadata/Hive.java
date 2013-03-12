@@ -182,6 +182,10 @@ public class Hive {
     return db;
   }
 
+  public static void set(Hive hive) {
+    hiveDB.set(hive);
+  }
+
   public static void closeCurrent() {
     hiveDB.remove();
   }
@@ -2406,6 +2410,26 @@ private void constructOneLBLocationMap(FileStatus fSta,
         e.printStackTrace();
       }
       throw new HiveException("Invalid table name: " + tableName);
+    }
+  }
+
+  public String getDelegationToken(String owner, String renewer)
+    throws HiveException{
+    try {
+      return getMSC().getDelegationToken(owner, renewer);
+    } catch(Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
+  public void cancelDelegationToken(String tokenStrForm)
+    throws HiveException {
+    try {
+      getMSC().cancelDelegationToken(tokenStrForm);
+    }  catch(Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
     }
   }
 

@@ -37,6 +37,11 @@ import org.apache.thrift.transport.TTransportFactory;
        "The current version of Hadoop does not support Authentication");
    }
 
+   public Client createClientWithConf(String authType) {
+     throw new UnsupportedOperationException(
+       "The current version of Hadoop does not support Authentication");
+   }
+   
    public Server createServer(String keytabFile, String principalConf)
      throws TTransportException {
      throw new UnsupportedOperationException(
@@ -67,7 +72,9 @@ import org.apache.thrift.transport.TTransportFactory;
    public static abstract class Server {
      public abstract TTransportFactory createTransportFactory() throws TTransportException;
      public abstract TProcessor wrapProcessor(TProcessor processor);
+     public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
      public abstract InetAddress getRemoteAddress();
+     public abstract String getRemoteUser();
      public abstract void startDelegationTokenSecretManager(Configuration conf) throws IOException;
      public abstract String getDelegationToken(String owner, String renewer) 
      throws IOException, InterruptedException;

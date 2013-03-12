@@ -61,7 +61,7 @@
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" 
-           checkmodified="true" 
+           checkmodified="${ivy.checkmodified}" 
            changingPattern="${ivy.changingPattern}">
       <resolver ref="local" />
       <resolver ref="apache-snapshot"/>
