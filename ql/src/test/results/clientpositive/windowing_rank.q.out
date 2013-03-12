@@ -471,3 +471,83 @@ ulysses steinbeck	0.0
 victor van buren	0.3333333333333333
 sarah carson	0.6666666666666666
 priscilla nixon	1.0
+PREHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
+
+select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where rnk =  1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
+
+select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where rnk =  1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.136070307	38.43	1
+PREHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where dec = 89.5 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where dec = 89.5 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.136070312	89.5	1
