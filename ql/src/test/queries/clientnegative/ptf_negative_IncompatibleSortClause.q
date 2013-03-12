@@ -14,8 +14,7 @@ CREATE TABLE part(
 
 -- testIncompatibleSortClause 
 select  p_mfgr,p_name, p_size,  
-rank() as r, dense_rank() as dr,  
+rank() over(distribute by p_mfgr) as r, dense_rank() over(distribute by p_mfgr) as dr,  
 sum(p_size) over (w1)   as s
-from part  
-distribute by p_mfgr  
+from part    
 window w1 as (partition by p_mfgr order by p_name  rows between 2 preceding and 2 following);

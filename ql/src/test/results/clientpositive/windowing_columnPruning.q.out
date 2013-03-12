@@ -37,17 +37,15 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
 PREHOOK: query: -- 1. testQueryLevelPartitionColsNotInSelect
 select p_size,
-sum(p_retailprice) over (rows between unbounded preceding and current row) as s1
-from part 
-distribute by p_mfgr sort by p_name
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
+from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 1. testQueryLevelPartitionColsNotInSelect
 select p_size,
-sum(p_retailprice) over (rows between unbounded preceding and current row) as s1
-from part 
-distribute by p_mfgr sort by p_name
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
+from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####

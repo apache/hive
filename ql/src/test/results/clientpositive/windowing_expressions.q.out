@@ -77,20 +77,20 @@ POSTHOOK: query: load data local inpath '../data/files/over10k' into table over1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) ,
+round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
+  over(distribute by p_mfgr sort by p_retailprice)
 from part
-distribute by p_mfgr
-sort by p_retailprice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) ,
+round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
+  over(distribute by p_mfgr sort by p_retailprice)
 from part
-distribute by p_mfgr
-sort by p_retailprice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -121,22 +121,18 @@ Manufacturer#5	1611.66	6	true	true
 Manufacturer#5	1788.73	2	true	true
 Manufacturer#5	1789.69	31	true	true
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
-rank() as r,
-sum(p_retailprice) over (rows between unbounded preceding and current row) as s2,
-sum(p_retailprice) - 5 over (rows between unbounded preceding and current row) as s1
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) - 5 over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s1
 from part
-distribute by p_mfgr
-sort by p_retailprice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
-rank() as r,
-sum(p_retailprice) over (rows between unbounded preceding and current row) as s2,
-sum(p_retailprice) - 5 over (rows between unbounded preceding and current row) as s1
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) - 5 over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s1
 from part
-distribute by p_mfgr
-sort by p_retailprice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####

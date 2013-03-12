@@ -23,13 +23,12 @@ sort by p_name ;
         
 -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
-sum(p_retailprice) as s,
-min(p_retailprice) as mi,
-max(p_retailprice) as ma,
-avg(p_retailprice) as av 
+sum(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as s,
+min(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as mi,
+max(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as ma,
+avg(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as av 
 from part 
-distribute by p_mfgr 
-sort by p_mfgr, p_name;        
+;        
         
 -- 3. testConstExprInSelect
 select 'tst1' as key, count(1) as value from part;

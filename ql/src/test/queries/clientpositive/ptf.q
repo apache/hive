@@ -17,8 +17,8 @@ LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
 
 --1. test1
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -27,12 +27,11 @@ from noop(on part
 
 -- 2. testJoinWithNoop
 select p_mfgr, p_name,
-p_size, p_size - lag(p_size,1,p_size) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-distribute by p_mfgr
-sort by p_name;    
+;    
 
 -- 3. testOnlyPTF
 select p_mfgr, p_name, p_size
@@ -42,8 +41,8 @@ order by p_name);
 
 -- 4. testPTFAlias
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -52,29 +51,27 @@ from noop(on part
 
 -- 5. testPTFAndWhereWithWindowing
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
 having p_size > 0 
-distribute by p_mfgr 
-sort by p_name;
+;
 
 -- 6. testSWQAndPTFAndGBy
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
 group by p_mfgr, p_name, p_size  
-distribute by p_mfgr 
-sort by p_name;
+;
 
 -- 7. testJoin
 select abc.* 
@@ -99,8 +96,8 @@ order by p_name, p_size desc);
 
 -- 10. testNoopWithMapWithWindowing 
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noopwithmap(on part 
   partition by p_mfgr
@@ -108,18 +105,18 @@ from noopwithmap(on part
   
 -- 11. testHavingWithWindowingPTFNoGBY
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part
 partition by p_mfgr
 order by p_name)
-having rank() < 4;
+;
   
 -- 12. testFunctionChain
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
@@ -130,7 +127,7 @@ order by p_mfgr, p_name
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
-count(p_size) as cd, 
+count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
 from noop(on part 
@@ -141,17 +138,16 @@ window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2
 
 -- 14. testPTFJoinWithWindowingWithCount
 select abc.p_mfgr, abc.p_name, 
-rank() as r, 
-dense_rank() as dr, 
-count(abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (rows between unbounded preceding and current row) as s1, 
-abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
+rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
+dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
+count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
+abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey 
-distribute by abc.p_mfgr 
-sort by abc.p_name;
+;
 
 -- 15. testDistinctInSelectWithPTF
 select DISTINCT p_mfgr, p_name, p_size 
@@ -198,22 +194,18 @@ from noop(on part
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-sum(p_retailprice) over (rows between unbounded preceding and current row)  as s
-distribute by p_mfgr 
-sort by p_name  
+rank() over (distribute by p_mfgr sort by p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (range between p_size 5 less and current row) as s2, 
-rank() as r, 
-dense_rank() as dr, 
-cume_dist() as cud, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 less and current row) as s2, 
+rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
+cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
 having p_size > 5 
-distribute by p_mfgr 
-sort by p_mfgr, p_name 
-window w1 as (rows between 2 preceding and 2 following);
+window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 select * from part_4;
 
@@ -221,8 +213,8 @@ select * from part_5;
 
 -- 18. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noopwithmap(on 
@@ -238,8 +230,8 @@ from noop(on
 
 -- 19. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noop(on 
@@ -256,8 +248,8 @@ from noop(on
 -- 20. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
-dense_rank() as dr, 
-p_size, sum(p_size) as s1 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1 
 from noop(on 
         noop(on 
           noop(on 
@@ -271,8 +263,8 @@ from noop(on
 
 -- 21. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1 
 from noopwithmap(on 
         noop(on 
@@ -288,10 +280,10 @@ from noopwithmap(on
 
 -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
@@ -304,10 +296,10 @@ from noop(on
 
 -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_mfgr) as r, 
+dense_rank() over (partition by p_mfgr order by p_mfgr) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 

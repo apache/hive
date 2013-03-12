@@ -37,8 +37,8 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
 PREHOOK: query: --1. test1
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -49,8 +49,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: --1. test1
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -87,23 +87,19 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
 PREHOOK: query: -- 2. testJoinWithNoop
 select p_mfgr, p_name,
-p_size, p_size - lag(p_size,1,p_size) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-distribute by p_mfgr
-sort by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 2. testJoinWithNoop
 select p_mfgr, p_name,
-p_size, p_size - lag(p_size,1,p_size) as deltaSz
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
-distribute by p_mfgr
-sort by p_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -179,8 +175,8 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
 PREHOOK: query: -- 4. testPTFAlias
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -191,8 +187,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 4. testPTFAlias
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part 
   partition by p_mfgr
@@ -229,31 +225,27 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
 PREHOOK: query: -- 5. testPTFAndWhereWithWindowing
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
-having p_size > 0 
-distribute by p_mfgr 
-sort by p_name
+having p_size > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 5. testPTFAndWhereWithWindowing
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
-having p_size > 0 
-distribute by p_mfgr 
-sort by p_name
+having p_size > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -285,31 +277,27 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	23	-23
 PREHOOK: query: -- 6. testSWQAndPTFAndGBy
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
-group by p_mfgr, p_name, p_size  
-distribute by p_mfgr 
-sort by p_name
+group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 6. testSWQAndPTFAndGBy
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-p_size, p_size - lag(p_size,1,p_size) as deltaSz 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz 
 from noop(on part 
           partition by p_mfgr 
           order by p_name 
           ) 
-group by p_mfgr, p_name, p_size  
-distribute by p_mfgr 
-sort by p_name
+group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -476,8 +464,8 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4
 Manufacturer#5	almond azure blanched chiffon midnight	23	5
 PREHOOK: query: -- 10. testNoopWithMapWithWindowing 
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noopwithmap(on part 
   partition by p_mfgr
@@ -487,8 +475,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 10. testNoopWithMapWithWindowing 
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noopwithmap(on part 
   partition by p_mfgr
@@ -524,47 +512,56 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
 PREHOOK: query: -- 11. testHavingWithWindowingPTFNoGBY
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part
 partition by p_mfgr
 order by p_name)
-having rank() < 4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 11. testHavingWithWindowingPTFNoGBY
 select p_mfgr, p_name, p_size,
-rank() as r,
-dense_rank() as dr,
+rank() over (partition by p_mfgr order by p_name) as r,
+dense_rank() over (partition by p_mfgr order by p_name) as dr,
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part
 partition by p_mfgr
 order by p_name)
-having rank() < 4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
 Manufacturer#1	almond antique chartreuse lavender yellow	34	3	2	4100.06
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	4	3	5702.650000000001
+Manufacturer#1	almond aquamarine burnished black steel	28	5	4	7117.070000000001
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	6	5	8749.730000000001
 Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	1690.68
 Manufacturer#2	almond antique violet turquoise frosted	40	2	2	3491.38
 Manufacturer#2	almond aquamarine midnight light salmon	2	3	3	5523.360000000001
+Manufacturer#2	almond aquamarine rose maroon antique	25	4	4	7222.02
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	5	5	8923.62
 Manufacturer#3	almond antique chartreuse khaki white	17	1	1	1671.68
 Manufacturer#3	almond antique forest lavender goldenrod	14	2	2	2861.95
 Manufacturer#3	almond antique metallic orange dim	19	3	3	4272.34
+Manufacturer#3	almond antique misty red olive	1	4	4	6195.32
+Manufacturer#3	almond antique olive coral navajo	45	5	5	7532.61
 Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	1620.67
 Manufacturer#4	almond antique violet mint lemon	39	2	2	2996.09
 Manufacturer#4	almond aquamarine floral ivory bisque	27	3	3	4202.35
+Manufacturer#4	almond aquamarine yellow dodger mint	7	4	4	6047.27
+Manufacturer#4	almond azure aquamarine papaya violet	12	5	5	7337.620000000001
 Manufacturer#5	almond antique blue firebrick mint	31	1	1	1789.69
 Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.3500000000004
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
+Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
 PREHOOK: query: -- 12. testFunctionChain
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
@@ -575,8 +572,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 12. testFunctionChain
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on noopwithmap(on noop(on part 
 partition by p_mfgr 
@@ -615,7 +612,7 @@ PREHOOK: query: -- 13. testPTFAndWindowingInSubQ
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
-count(p_size) as cd, 
+count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
 from noop(on part 
@@ -630,7 +627,7 @@ POSTHOOK: query: -- 13. testPTFAndWindowingInSubQ
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
-count(p_size) as cd, 
+count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
 sum(p_retailprice) over w1  as s1
 from noop(on part 
@@ -669,33 +666,29 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	5	5882.970000000001
 Manufacturer#5	almond azure blanched chiffon midnight	5	4271.3099999999995
 PREHOOK: query: -- 14. testPTFJoinWithWindowingWithCount
 select abc.p_mfgr, abc.p_name, 
-rank() as r, 
-dense_rank() as dr, 
-count(abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (rows between unbounded preceding and current row) as s1, 
-abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
+rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
+dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
+count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
+abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey 
-distribute by abc.p_mfgr 
-sort by abc.p_name
+) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 14. testPTFJoinWithWindowingWithCount
 select abc.p_mfgr, abc.p_name, 
-rank() as r, 
-dense_rank() as dr, 
-count(abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (rows between unbounded preceding and current row) as s1, 
-abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) as deltaSz 
+rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
+dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
+count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
+abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 
-) abc join part p1 on abc.p_partkey = p1.p_partkey 
-distribute by abc.p_mfgr 
-sort by abc.p_name
+) abc join part p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -867,22 +860,18 @@ PREHOOK: query: from noop(on part
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-sum(p_retailprice) over (rows between unbounded preceding and current row)  as s
-distribute by p_mfgr 
-sort by p_name  
+rank() over (distribute by p_mfgr sort by p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (range between p_size 5 less and current row) as s2, 
-rank() as r, 
-dense_rank() as dr, 
-cume_dist() as cud, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 less and current row) as s2, 
+rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
+cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
 having p_size > 5 
-distribute by p_mfgr 
-sort by p_mfgr, p_name 
-window w1 as (rows between 2 preceding and 2 following)
+window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 PREHOOK: Output: default@part_4
@@ -891,22 +880,18 @@ POSTHOOK: query: from noop(on part
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
-sum(p_retailprice) over (rows between unbounded preceding and current row)  as s
-distribute by p_mfgr 
-sort by p_name  
+rank() over (distribute by p_mfgr sort by p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
+sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (range between p_size 5 less and current row) as s2, 
-rank() as r, 
-dense_rank() as dr, 
-cume_dist() as cud, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 less and current row) as s2, 
+rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
+dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
+cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
 having p_size > 5 
-distribute by p_mfgr 
-sort by p_mfgr, p_name 
-window w1 as (rows between 2 preceding and 2 following)
+window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Output: default@part_4
@@ -1021,8 +1006,8 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	85	46	4	4	0.8	6
 Manufacturer#5	almond azure blanched chiffon midnight	23	108	69	5	5	1.0	2
 PREHOOK: query: -- 18. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noopwithmap(on 
@@ -1040,8 +1025,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 18. testMulti2OperatorsFunctionChainWithMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noopwithmap(on 
@@ -1100,8 +1085,8 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
 PREHOOK: query: -- 19. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noop(on 
@@ -1119,8 +1104,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 19. testMulti3OperatorsFunctionChain
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
 from noop(on 
         noop(on 
@@ -1180,8 +1165,8 @@ Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
 PREHOOK: query: -- 20. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
-dense_rank() as dr, 
-p_size, sum(p_size) as s1 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1 
 from noop(on 
         noop(on 
           noop(on 
@@ -1197,8 +1182,8 @@ PREHOOK: Input: default@part
 POSTHOOK: query: -- 20. testMultiOperatorChainWithNoWindowing
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
-dense_rank() as dr, 
-p_size, sum(p_size) as s1 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+p_size, sum(p_size) over (partition by p_mfgr order by p_name) as s1 
 from noop(on 
         noop(on 
           noop(on 
@@ -1254,8 +1239,8 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	108
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
 PREHOOK: query: -- 21. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1 
 from noopwithmap(on 
         noop(on 
@@ -1273,8 +1258,8 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 21. testMultiOperatorChainEndsWithNoopMap
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name) as dr, 
 p_size, sum(p_size) over (partition by p_mfgr,p_name rows between unbounded preceding and current row)  as s1 
 from noopwithmap(on 
         noop(on 
@@ -1333,10 +1318,10 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
 PREHOOK: query: -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
@@ -1351,10 +1336,10 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
+dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr,p_name order by p_mfgr,p_name rows between unbounded preceding and current row)  as s2
 from noop(on 
         noopwithmap(on 
@@ -1410,10 +1395,10 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23	23
 PREHOOK: query: -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_mfgr) as r, 
+dense_rank() over (partition by p_mfgr order by p_mfgr) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
@@ -1426,10 +1411,10 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 select p_mfgr, p_name,  
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_mfgr) as r, 
+dense_rank() over (partition by p_mfgr order by p_mfgr) as dr, 
 p_size, 
-sum(p_size) over (rows between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) as s1, 
 sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 

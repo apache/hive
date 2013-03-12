@@ -34,7 +34,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.BaseTree;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeWizard;
@@ -361,8 +360,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QB qb = new QB(id, alias, true);
       Phase1Ctx ctx_1 = initPhase1Ctx();
       doPhase1(ast, qb, ctx_1);
-      ensureWindowingSpecOnQB(qb, ctx_1.dest);
-      ensureWindowingSourceHasPartitioning(qb.getWindowingSpec(ctx_1.dest), ast);
 
       qbexpr.setOpcode(QBExpr.Opcode.NULLOP);
       qbexpr.setQB(qb);
@@ -859,30 +856,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_CLUSTERBY:
-
-        // if there is no GroupBy Clause, but there are still Agg Exprs remaining in the select list
-        //  - move them to qb.windowingQSpec.
-        if ( qbp.getAggregationExprsForClause(ctx_1.dest) != null &&
-            !queryProperties.hasGroupBy()) {
-          moveaggregationExprsToWindowingSpec(qb, ctx_1.dest);
-        }
-
-        // if QB has WindowingClauses
-        // - associate DistributeBy with qb.windowingQSpec
-        if (qb.hasWindowingSpec(ctx_1.dest) )
-        {
-          handleClusterOrDistributeByForWindowing(qb, ctx_1, ast);
-        }
-        else {
-          // Get the clusterby aliases - these are aliased to the entries in the
-          // select list
-          queryProperties.setHasClusterBy(true);
-          qbp.setClusterByExprForClause(ctx_1.dest, ast);
-        }
+        // Get the clusterby aliases - these are aliased to the entries in the
+        // select list
+        queryProperties.setHasClusterBy(true);
+        qbp.setClusterByExprForClause(ctx_1.dest, ast);
         break;
 
       case HiveParser.TOK_DISTRIBUTEBY:
-
+        // Get the distribute by aliases - these are aliased to the entries in
+        // the
+        // select list
+        queryProperties.setHasDistributeBy(true);
+        qbp.setDistributeByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.CLUSTERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
@@ -890,52 +875,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
         }
-
-        // if there is no GroupBy Clause, but there are still Agg Exprs remaining
-        // in the select list
-        //  - move them to qb.windowingQSpec.
-        if ( qbp.getAggregationExprsForClause(ctx_1.dest) != null &&
-            !queryProperties.hasGroupBy()) {
-          moveaggregationExprsToWindowingSpec(qb, ctx_1.dest);
-        }
-
-        // if QB has WindowingClauses
-        // - associate DistributeBy with qb.windowingQSpec
-        if (qb.hasWindowingSpec(ctx_1.dest) )
-        {
-          handleClusterOrDistributeByForWindowing(qb, ctx_1, ast);
-        }
-        else {
-
-          // Get the distribute by aliases - these are aliased to the entries in
-          // the
-          // select list
-          queryProperties.setHasDistributeBy(true);
-          qbp.setDistributeByExprForClause(ctx_1.dest, ast);
-        }
         break;
 
       case HiveParser.TOK_SORTBY:
-
+     // Get the sort by aliases - these are aliased to the entries in the
+        // select list
+        queryProperties.setHasSortBy(true);
+        qbp.setSortByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.CLUSTERBY_SORTBY_CONFLICT.getMsg()));
         } else if (qbp.getOrderByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.ORDERBY_SORTBY_CONFLICT.getMsg()));
-        }
-
-        // if QB has WindowingClauses
-        // - associate SortBy with qb.windowingSpec.
-        if (qb.hasWindowingSpec(ctx_1.dest) )
-        {
-          handleSortByForWindowing(qb, ctx_1, ast);
-        }
-        else {
-          // Get the sort by aliases - these are aliased to the entries in the
-          // select list
-          queryProperties.setHasSortBy(true);
-          qbp.setSortByExprForClause(ctx_1.dest, ast);
         }
 
         break;
@@ -8649,8 +8601,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // if phase1Result false return
       return;
     }
-    ensureWindowingSpecOnQB(qb, ctx_1.dest);
-    ensureWindowingSourceHasPartitioning(qb.getWindowingSpec(ctx_1.dest), ast);
 
     LOG.info("Completed phase 1 of Semantic Analysis");
 
@@ -9905,26 +9855,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 //--------------------------- Windowing handling -----------------------------------
 
-
-  /*
-   * ensure that the PTF chain has a partitioning specification associated.
-   * This method should be called at the end of Phase1
-   * to check that the WindowingTableFunction
-   * is driven from a partitioning specification
-   * (specified in the distribute by or cluster by clauses).
-   */
-  private void ensureWindowingSourceHasPartitioning(WindowingSpec qSpec, ASTNode node)
-      throws SemanticException {
-    if(qSpec == null){
-      return;
-    }
-    PartitionSpec pSpec = qSpec.getQueryPartitionSpec();
-    if ( pSpec == null ) {
-      throw new SemanticException(generateErrorMessage(node,
-          "No partition specification associated with Windowing"));
-    }
-   }
-
   /*
    * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
    * What makes a UDAF invocation a Windowing Function invocation:
@@ -10135,28 +10065,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  /*
-   * this method is called in the case when the Query has Windowing Clauses and a
-   * Distribute/Cluster By.
-   * - the Distribute/Cluster By is associated with the WindowingSpec
-   * - If the Query has no Group by, but there are qb.destToAggExprs then
-   * move these to the Windowing Spec.
-   */
-  private void handleClusterOrDistributeByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast)
-      throws SemanticException {
-    QBParseInfo qbp = qb.getParseInfo();
-    PartitionSpec pSpec = processPartitionSpec(ast);
-    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
-    spec.setQueryPartitonSpec(pSpec);
-  }
-
-  private void handleSortByForWindowing(QB qb, Phase1Ctx ctx_1, ASTNode ast)
-      throws SemanticException {
-    OrderSpec oSpec = processOrderSpec(ast);
-    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
-    spec.setQueryOrderSpec(oSpec);
-  }
-
   private void handleQueryWindowClauses(QB qb, Phase1Ctx ctx_1, ASTNode node)
       throws SemanticException {
     WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
@@ -10316,15 +10224,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode partNode = (ASTNode) node.getChild(partIdx);
       PartitioningSpec partitioning = processPTFPartitionSpec(partNode);
       ws.setPartitioning(partitioning);
-    } else if(node.getChildCount() == 0){
-      // no partition information was specified so partition by a constant
-      PartitioningSpec partitioningSpec = new PartitioningSpec();
-      PartitionSpec partitionSpec = new PartitionSpec();
-      PartitionExpression partExpr = new PartitionExpression();
-      partExpr.setExpression(new ASTNode(new CommonToken(HiveParser.Number, "0")));
-      partitionSpec.addExpression(partExpr);
-      partitioningSpec.setPartSpec(partitionSpec);
-      ws.setPartitioning(partitioningSpec);
     }
 
     if ( hasWF)
@@ -10476,43 +10375,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /*
-   * If we decide to create a PTFSpec for the QB (see ensurePTFSpecOnQB(...))
-   * then this method is invoked.
-   * Constructs the function expr and alias list and invokes addWindowingFuncsToPTFSpec
-   */
-  private void moveaggregationExprsToWindowingSpec(QB currQB, String dest)
-      throws SemanticException {
-      HashMap<String, ASTNode> aggregations =
-          currQB.getParseInfo().getAggregationExprsForClause(dest);
-      if((aggregations != null) && !(aggregations.isEmpty()) ){
-        WindowingSpec spec = currQB.getWindowingSpec(dest);
-        if(spec == null){
-          queryProperties.setHasWindowing(true);
-          spec = new WindowingSpec();
-          currQB.addDestToWindowingSpec(dest, spec);
-        }
-        HashMap<String, ASTNode> wExprsInDest = qb.getParseInfo().getWindowingExprsForClause(dest);
-        int wColIdx = spec.getWindowExpressions() == null ? 0 : spec.getWindowExpressions().size();
-        for (ASTNode expr : aggregations.values()) {
-          WindowFunctionSpec wFnSpec = processWindowFunction(expr, null);
-          wFnSpec.setAlias("_wcol" + wColIdx++);
-
-          /*
-           * If this is a duplicate invocation of a function; don't add to WindowingSpec.
-           */
-          if ( wExprsInDest != null &&
-              wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
-            continue;
-          }
-          spec.addWindowFunction(wFnSpec);
-          currQB.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
-          currQB.getParseInfo().getAllExprToColumnAlias().remove(expr);
-        }
-        currQB.getParseInfo().clearAggregationExprsForClause(dest);
-      }
-  }
-
-  /*
    * Returns false if there is a SelectExpr that is not a constant or an aggr.
    *
    */
@@ -10552,23 +10414,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return true;
   }
-
-  /**
-   *  If the query has no group by and has aggregations, then we treat this as a
-   *  windowing query.
-   *  There is one caveat: if the select list has only aggregations, then
-   *  this is not handled by windowing.
-   */
-  private void ensureWindowingSpecOnQB(QB currQB, String clause) throws SemanticException{
-    if( currQB.getParseInfo().getAggregationExprsForClause(clause) != null
-        && !queryProperties.hasGroupBy()){
-      boolean isValid = isValidGroupBySelectList(currQB, clause);
-      if(!isValid) {
-        moveaggregationExprsToWindowingSpec(currQB, clause);
-      }
-    }
-  }
-
 
 //--------------------------- PTF handling: PTFInvocationSpec to PTFDesc --------------------------
 
@@ -10816,21 +10661,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
 
-  private PTFDesc translateWindowingSpec(WindowingSpec wSpec, RowResolver inputRR)
-      throws SemanticException{
-    PTFDesc ptfDesc = null;
-    PTFTranslator translator = new PTFTranslator();
-    ptfDesc = translator.translate(wSpec, this, conf, inputRR, unparseTranslator);
-    return ptfDesc;
-  }
-
   Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
 
+    wSpec.fillInWindowingSpecs();
     RowResolver rr = opParseCtx.get(input).getRowResolver();
     input = genReduceSinkPlanForWindowing(wSpec, rr, input);
 
     rr = opParseCtx.get(input).getRowResolver();
-    PTFDesc ptfDesc = translateWindowingSpec(wSpec, rr);
+    PTFTranslator translator = new PTFTranslator();
+    PTFDesc ptfDesc = translator.translate(wSpec, this, conf, rr, unparseTranslator);
 
     /*
      * d. Construct PTF Operator.

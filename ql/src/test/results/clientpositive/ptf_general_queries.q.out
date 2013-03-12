@@ -79,25 +79,21 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond azure blanched chiffon midnight	23
 PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
-sum(p_retailprice) as s,
-min(p_retailprice) as mi,
-max(p_retailprice) as ma,
-avg(p_retailprice) as av 
-from part 
-distribute by p_mfgr 
-sort by p_mfgr, p_name
+sum(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as s,
+min(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as mi,
+max(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as ma,
+avg(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as av 
+from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
-sum(p_retailprice) as s,
-min(p_retailprice) as mi,
-max(p_retailprice) as ma,
-avg(p_retailprice) as av 
-from part 
-distribute by p_mfgr 
-sort by p_mfgr, p_name
+sum(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as s,
+min(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as mi,
+max(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as ma,
+avg(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as av 
+from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####

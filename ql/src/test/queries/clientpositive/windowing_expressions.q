@@ -35,19 +35,19 @@ create table over10k(
 load data local inpath '../data/files/over10k' into table over10k;
 
 select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) ,
+round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
+  over(distribute by p_mfgr sort by p_retailprice)
 from part
-distribute by p_mfgr
-sort by p_retailprice;
+;
 
 select p_mfgr, p_retailprice, p_size,
-rank() as r,
-sum(p_retailprice) over (rows between unbounded preceding and current row) as s2,
-sum(p_retailprice) - 5 over (rows between unbounded preceding and current row) as s1
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) - 5 over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s1
 from part
-distribute by p_mfgr
-sort by p_retailprice;
+;
 
 select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100;
 select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100;

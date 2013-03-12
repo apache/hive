@@ -16,8 +16,8 @@ LOAD DATA LOCAL INPATH '../data/files/part.rc' overwrite into table part_rc;
 
 -- testWindowingPTFWithPartRC
 select p_mfgr, p_name, p_size, 
-rank() as r, 
-dense_rank() as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice)  over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
 from noop(on part_rc 
 partition by p_mfgr 

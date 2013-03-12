@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 
@@ -59,33 +61,9 @@ public class WindowingSpec {
   HashMap<String, WindowSpec> windowSpecs;
   ArrayList<WindowExpressionSpec> windowExpressions;
 
-  /*
-   * this is specified explicitly on the Distribute/Cluster by specified at the Query level
-   * or it is inferred from a WindowingFunction or Window Clause as a convenience.
-   * As a further convenience functions w/o a
-   * Partitioning Spec can inherit this from the default.
-   * The rules for setting the default are the following:
-   * 1. On encountering the first UDAF with a WindowingSpec we set this.
-   * 2. On encountering a Distribute/Cluster clause we set this.
-   * 3. On encountering a Sort clause:
-   *   a. we set the Partitioning's OrderSpec.
-   * 4. On encountering the first Window Clause, if there is no PartitionSpec we set it from
-   * the Window Clause.
-   * If there is no OrderSpec, we set it from the Window Clause.
-   * If there is a OrderSpec and the Window Clause doesn't then we set the OrderSpec on the
-   * Window Clause.
-   */
-  PartitioningSpec queryPartitioningSpec;
-  /*
-   * set if Query level partitioning is set using this WindowSpec.
-   */
-  WindowSpec sourceOfQueryPartitoningSpec;
-
-
   public void addWindowSpec(String name, WindowSpec wdwSpec) {
     windowSpecs = windowSpecs == null ? new HashMap<String, WindowSpec>() : windowSpecs;
     windowSpecs.put(name, wdwSpec);
-    inferDefaultWindowingSpec(wdwSpec);
   }
 
   public void addExpression(ASTNode expr, String alias) {
@@ -108,7 +86,6 @@ public class WindowingSpec {
         new HashMap<String, WindowExpressionSpec>() : aliasToWdwExpr;
     windowExpressions.add(wFn);
     aliasToWdwExpr.put(wFn.getAlias(), wFn);
-    inferDefaultWindowingSpec(wFn);
   }
 
   public HashMap<String, WindowExpressionSpec> getAliasToWdwExpr() {
@@ -143,76 +120,101 @@ public class WindowingSpec {
     this.windowExpressions = windowExpressions;
   }
 
-  public WindowSpec getSourceOfQueryPartitoningSpec() {
-    return sourceOfQueryPartitoningSpec;
-  }
-
-  public void setSourceOfQueryPartitoningSpec(WindowSpec sourceOfQueryPartitoningSpec) {
-    this.sourceOfQueryPartitoningSpec = sourceOfQueryPartitoningSpec;
-  }
-
   public PartitioningSpec getQueryPartitioningSpec() {
-    return queryPartitioningSpec;
+    /*
+     * Why no null and class checks?
+     * With the new design a WindowingSpec must contain a WindowFunctionSpec.
+     * todo: cleanup datastructs.
+     */
+    WindowFunctionSpec wFn = (WindowFunctionSpec) getWindowExpressions().get(0);
+    return wFn.getWindowSpec().getPartitioning();
   }
 
   public PartitionSpec getQueryPartitionSpec() {
-    return queryPartitioningSpec == null ? null : queryPartitioningSpec.getPartSpec();
-  }
-
-  public void setQueryPartitonSpec(PartitionSpec partSpec) {
-    if ( queryPartitioningSpec == null ) {
-      queryPartitioningSpec = new PartitioningSpec();
-    }
-    queryPartitioningSpec.setPartSpec(partSpec);
-    setSourceOfQueryPartitoningSpec(null);
+    return getQueryPartitioningSpec().getPartSpec();
   }
 
   public OrderSpec getQueryOrderSpec() {
-    return queryPartitioningSpec == null ? null : queryPartitioningSpec.getOrderSpec();
+    return getQueryPartitioningSpec().getOrderSpec();
   }
 
-  public void setQueryOrderSpec(OrderSpec orderSpec) {
-    if ( queryPartitioningSpec == null ) {
-      queryPartitioningSpec = new PartitioningSpec();
-    }
-    queryPartitioningSpec.setOrderSpec(orderSpec);
-    if ( getSourceOfQueryPartitoningSpec() != null ) {
-      WindowSpec dws = getSourceOfQueryPartitoningSpec();
-      if ( dws.getOrder() == null ) {
-        dws.setOrder(orderSpec);
+  /*
+   * Rules for Partitoning are:
+   * | has Part | has Order | has Window | note                  |
+   * |----------+-----------+------------+-----------------------|
+   * | y        | y         | y          | everything specified  |
+   * | y        | y         | n          | no window             |
+   * | y        | n         | y          | order = partition     |
+   * | y        | n         | n          | same as above         |
+   * | n        | y         | y          | partition on constant |
+   * | n        | y         | n          | same as above         |
+   * | n        | n         | y          | same as above, o = p  |
+   * | n        | n         | n          | the over() case       |
+   */
+  public void fillInWindowingSpecs() throws SemanticException {
+    if ( getWindowExpressions() != null ) {
+      for(WindowExpressionSpec expr : getWindowExpressions()) {
+        if ( expr instanceof WindowFunctionSpec) {
+          WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
+          WindowSpec wdwSpec = wFn.getWindowSpec();
+          if ( wdwSpec != null ) {
+            ArrayList<String> sources = new ArrayList<String>();
+            fillInWindowSpec(wdwSpec.getSourceId(), wdwSpec, sources);
+          }
+          wFn.setWindowSpec(applyContantPartition(wdwSpec));
+        }
       }
     }
   }
 
-  private void inferDefaultWindowingSpec(WindowFunctionSpec wFnSpec) {
-    WindowSpec wSpec = wFnSpec == null ? null : wFnSpec.getWindowSpec();
-    if ( getSourceOfQueryPartitoningSpec() == null && wSpec != null &&
-        wSpec.getPartition() != null ) {
-      setQueryPartitonSpec(wSpec.getPartition());
-      setQueryOrderSpec(wSpec.getOrder());
-      setSourceOfQueryPartitoningSpec(wSpec);
+  private void fillInWindowSpec(String sourceId, WindowSpec dest, ArrayList<String> visited)
+      throws SemanticException
+  {
+    if (sourceId != null)
+    {
+      if ( visited.contains(sourceId)) {
+        visited.add(sourceId);
+        throw new SemanticException(String.format("Cycle in Window references %s", visited));
+      }
+      WindowSpec source = getWindowSpecs().get(sourceId);
+      if (source == null || source.equals(dest))
+      {
+        throw new SemanticException(String.format("Window Spec %s refers to an unknown source " ,
+            dest));
+      }
+
+      if (dest.getPartition() == null)
+      {
+        dest.setPartition(source.getPartition());
+      }
+
+      if (dest.getOrder() == null)
+      {
+        dest.setOrder(source.getOrder());
+      }
+
+      if (dest.getWindowFrame() == null)
+      {
+        dest.setWindowFrame(source.getWindowFrame());
+      }
+
+      visited.add(sourceId);
+
+      fillInWindowSpec(source.getSourceId(), dest, visited);
     }
   }
 
-  private void inferDefaultWindowingSpec(WindowSpec wSpec) {
-    if ( wSpec == null
-        || wSpec.getPartition() == null
-        || getSourceOfQueryPartitoningSpec() != null
-        || this.getQueryPartitionSpec() != null) {
-      return;
+  private WindowSpec applyContantPartition(WindowSpec wdwSpec) {
+    wdwSpec = wdwSpec == null ? new WindowSpec() : wdwSpec;
+    PartitionSpec partSpec = wdwSpec.getPartition();
+    if ( partSpec == null ) {
+      partSpec = new PartitionSpec();
+      PartitionExpression partExpr = new PartitionExpression();
+      partExpr.setExpression(new ASTNode(new CommonToken(HiveParser.Number, "0")));
+      partSpec.addExpression(partExpr);
+      wdwSpec.setPartition(partSpec);
     }
-
-    setQueryPartitonSpec(wSpec.getPartition());
-
-    if ( getQueryOrderSpec() == null ) {
-      setQueryOrderSpec(wSpec.getOrder());
-    }
-    else {
-      if ( wSpec.getOrder() == null ) {
-        wSpec.setOrder(getQueryOrderSpec());
-      }
-    }
-    setSourceOfQueryPartitoningSpec(wSpec);
+    return wdwSpec;
   }
 
   /*

@@ -601,8 +601,6 @@ public class PTFTranslator {
   }
 
   private WindowFrameDef translate(String wFnName, ShapeDetails inpShape, WindowSpec spec) throws SemanticException {
-    ArrayList<String> sources = new ArrayList<String>();
-    fillInWindowSpec(spec.getSourceId(), spec, sources);
     PartitionSpec pSpec = spec.getPartition();
     OrderSpec oSpec = spec.getOrder();
     PartitionDef pDef = translate(inpShape, pSpec);
@@ -689,43 +687,6 @@ public class PTFTranslator {
     ObjectInspector OI = wFnEval.init(GenericUDAFEvaluator.Mode.COMPLETE, funcArgOIs);
     def.setWFnEval(wFnEval);
     def.setOI(OI);
-  }
-
-  private void fillInWindowSpec(String sourceId, WindowSpec dest, ArrayList<String> visited)
-      throws SemanticException
-  {
-    if (sourceId != null)
-    {
-      if ( visited.contains(sourceId)) {
-        visited.add(sourceId);
-        throw new SemanticException(String.format("Cycle in Window references %s", visited));
-      }
-      WindowSpec source = windowingSpec.getWindowSpecs().get(sourceId);
-      if (source == null || source.equals(dest))
-      {
-        throw new SemanticException(String.format("Window Spec %s refers to an unknown source " ,
-            dest));
-      }
-
-      if (dest.getPartition() == null)
-      {
-        dest.setPartition(source.getPartition());
-      }
-
-      if (dest.getOrder() == null)
-      {
-        dest.setOrder(source.getOrder());
-      }
-
-      if (dest.getWindowFrame() == null)
-      {
-        dest.setWindowFrame(source.getWindowFrame());
-      }
-
-      visited.add(sourceId);
-
-      fillInWindowSpec(source.getSourceId(), dest, visited);
-    }
   }
 
   private static void validateValueBoundaryExprType(ObjectInspector OI)
