@@ -1,0 +1,28 @@
+Saving all output to "!!{outputDirectory}!!/load_dyn_part15.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/load_dyn_part15.q
+>>>  
+>>>  set hive.exec.dynamic.partition=true;
+No rows affected 
+>>>  set hive.exec.dynamic.partition.mode=nonstrict;
+No rows affected 
+>>>  
+>>>  create table if not exists load_dyn_part15_test (key string) 
+partitioned by (part_key string);
+No rows affected 
+>>>  
+>>>  show partitions load_dyn_part15_test;
+'partition'
+No rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key) 
+SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key;
+'key','part_key'
+No rows selected 
+>>>  
+>>>  show partitions load_dyn_part15_test;
+'partition'
+'part_key=%7B2'
+'part_key=1'
+'part_key=3%5D'
+3 rows selected 
+>>>  !record

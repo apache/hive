@@ -1,0 +1,295 @@
+Saving all output to "!!{outputDirectory}!!/create_view_partitioned.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/create_view_partitioned.q
+>>>  DROP VIEW vp1;
+No rows affected 
+>>>  DROP VIEW vp2;
+No rows affected 
+>>>  DROP VIEW vp3;
+No rows affected 
+>>>  
+>>>  -- test partitioned view definition
+>>>  -- (underlying table is not actually partitioned)
+>>>  CREATE VIEW vp1 
+PARTITIONED ON (value) 
+AS 
+SELECT key, value 
+FROM src 
+WHERE key=86;
+'key','value'
+No rows selected 
+>>>  DESCRIBE EXTENDED vp1;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:vp1, dbName:create_view_partitioned, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:SELECT key, value ',''
+'FROM src ','',''
+'WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value` ','',''
+'FROM `create_view_partitioned`.`src` ','',''
+'WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)','',''
+8 rows selected 
+>>>  DESCRIBE FORMATTED vp1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'value               ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_view_partitioned',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Table Type:         ','VIRTUAL_VIEW        ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','null                ',''
+'InputFormat:        ','org.apache.hadoop.mapred.SequenceFileInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'','',''
+'# View Information','',''
+'View Original Text: ','SELECT key, value ',''
+'FROM src ','',''
+'WHERE key=86','',''
+'View Expanded Text: ','SELECT `src`.`key`, `src`.`value` ',''
+'FROM `create_view_partitioned`.`src` ','',''
+'WHERE `src`.`key`=86','',''
+36 rows selected 
+>>>  
+>>>  SELECT * FROM vp1;
+'key','value'
+'86','val_86'
+1 row selected 
+>>>  
+>>>  SELECT key FROM vp1;
+'key'
+'86'
+1 row selected 
+>>>  
+>>>  SELECT value FROM vp1;
+'value'
+'val_86'
+1 row selected 
+>>>  
+>>>  ALTER VIEW vp1 
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz');
+No rows affected 
+>>>  
+>>>  -- should work since we use IF NOT EXISTS
+>>>  ALTER VIEW vp1 
+ADD IF NOT EXISTS PARTITION (value='val_xyz');
+No rows affected 
+>>>  
+>>>  SHOW PARTITIONS vp1;
+'partition'
+'value=val_86'
+'value=val_xyz'
+2 rows selected 
+>>>  
+>>>  SHOW PARTITIONS vp1 PARTITION(value='val_86');
+'partition'
+'value=val_86'
+1 row selected 
+>>>  
+>>>  SHOW TABLE EXTENDED LIKE vp1;
+'tab_name'
+'tableName:vp1'
+'owner:!!{user.name}!!'
+'location:null'
+'inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+'columns:struct columns { string key}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string value}'
+''
+9 rows selected 
+>>>  
+>>>  SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86');
+'tab_name'
+'tableName:vp1'
+'owner:!!{user.name}!!'
+'location:null'
+'inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+'columns:struct columns { string key}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string value}'
+''
+9 rows selected 
+>>>  
+>>>  ALTER VIEW vp1 
+DROP PARTITION (value='val_xyz');
+No rows affected 
+>>>  
+>>>  SET hive.exec.drop.ignorenonexistent=false;
+No rows affected 
+>>>  
+>>>  -- should work since we use IF EXISTS
+>>>  ALTER VIEW vp1 
+DROP IF EXISTS PARTITION (value='val_xyz');
+No rows affected 
+>>>  
+>>>  SHOW PARTITIONS vp1;
+'partition'
+'value=val_86'
+1 row selected 
+>>>  
+>>>  SET hive.mapred.mode=strict;
+No rows affected 
+>>>  
+>>>  -- Even though no partition predicate is specified in the next query,
+>>>  -- the WHERE clause inside of the view should satisfy strict mode.
+>>>  -- In other words, strict only applies to underlying tables
+>>>  -- (regardless of whether or not the view is partitioned).
+>>>  SELECT * FROM vp1;
+'key','value'
+'86','val_86'
+1 row selected 
+>>>  
+>>>  SET hive.mapred.mode=nonstrict;
+No rows affected 
+>>>  
+>>>  -- test a partitioned view on top of an underlying partitioned table,
+>>>  -- but with only a suffix of the partitioning columns
+>>>  CREATE VIEW vp2 
+PARTITIONED ON (hr) 
+AS SELECT * FROM srcpart WHERE key < 10;
+'key','value','ds','hr'
+No rows selected 
+>>>  DESCRIBE FORMATTED vp2;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'ds                  ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_view_partitioned',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Table Type:         ','VIRTUAL_VIEW        ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','null                ',''
+'InputFormat:        ','org.apache.hadoop.mapred.SequenceFileInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'','',''
+'# View Information','',''
+'View Original Text: ','SELECT * FROM srcpart WHERE key < 10',''
+'View Expanded Text: ','SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `create_view_partitioned`.`srcpart` WHERE `srcpart`.`key` < 10',''
+34 rows selected 
+>>>  
+>>>  ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12');
+No rows affected 
+>>>  SELECT key FROM vp2 WHERE hr='12' ORDER BY key;
+'key'
+'0'
+'0'
+'0'
+'0'
+'0'
+'0'
+'2'
+'2'
+'4'
+'4'
+'5'
+'5'
+'5'
+'5'
+'5'
+'5'
+'8'
+'8'
+'9'
+'9'
+20 rows selected 
+>>>  
+>>>  -- test a partitioned view where the PARTITIONED ON clause references
+>>>  -- an imposed column name
+>>>  CREATE VIEW vp3(k,v) 
+PARTITIONED ON (v) 
+AS 
+SELECT key, value 
+FROM src 
+WHERE key=86;
+'key','value'
+No rows selected 
+>>>  DESCRIBE FORMATTED vp3;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'k                   ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'v                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_view_partitioned',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Table Type:         ','VIRTUAL_VIEW        ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','null                ',''
+'InputFormat:        ','org.apache.hadoop.mapred.SequenceFileInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'','',''
+'# View Information','',''
+'View Original Text: ','SELECT key, value ',''
+'FROM src ','',''
+'WHERE key=86','',''
+'View Expanded Text: ','SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value` ',''
+'FROM `create_view_partitioned`.`src` ','',''
+'WHERE `src`.`key`=86) `vp3`','',''
+36 rows selected 
+>>>  
+>>>  ALTER VIEW vp3 
+ADD PARTITION (v='val_86');
+No rows affected 
+>>>  
+>>>  DROP VIEW vp1;
+No rows affected 
+>>>  DROP VIEW vp2;
+No rows affected 
+>>>  DROP VIEW vp3;
+No rows affected 
+>>>  !record

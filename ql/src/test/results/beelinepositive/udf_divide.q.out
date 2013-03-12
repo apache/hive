@@ -1,0 +1,19 @@
+Saving all output to "!!{outputDirectory}!!/udf_divide.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_divide.q
+>>>  DESCRIBE FUNCTION /;
+'tab_name'
+'a / b - Divide a by b'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED /;
+'tab_name'
+'a / b - Divide a by b'
+'Example:'
+'  > SELECT 3 / 2 FROM src LIMIT 1;'
+'  1.5'
+4 rows selected 
+>>>  
+>>>  SELECT 3 / 2 FROM SRC LIMIT 1;
+'_c0'
+'1.5'
+1 row selected 
+>>>  !record

@@ -1,0 +1,66 @@
+Saving all output to "!!{outputDirectory}!!/inputddl6.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/inputddl6.q
+>>>  -- test for describe extended table
+>>>  -- test for describe extended table partition
+>>>  -- test for alter table drop partition
+>>>  CREATE TABLE INPUTDDL6(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-09');
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUTDDL6 PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  DESCRIBE EXTENDED INPUTDDL6;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Table Information','Table(tableName:inputddl6, dbName:inputddl6, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/inputddl6.db/inputddl6, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=2, transient_lastDdlTime=!!UNIXTIME!!, totalSize=11624, numRows=0, rawDataSize=0}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08');
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2008-04-08], dbName:inputddl6, tableName:inputddl6, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/inputddl6.db/inputddl6/ds=2008-04-08, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, totalSize=5812, numRows=0, rawDataSize=0})',''
+5 rows selected 
+>>>  SHOW PARTITIONS INPUTDDL6;
+'partition'
+'ds=2008-04-08'
+'ds=2008-04-09'
+2 rows selected 
+>>>  ALTER TABLE INPUTDDL6 DROP PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  SHOW PARTITIONS INPUTDDL6;
+'partition'
+'ds=2008-04-09'
+1 row selected 
+>>>  EXPLAIN 
+DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09');
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_DESCTABLE (TOK_TABTYPE INPUTDDL6 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-09'))) EXTENDED)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Describe Table Operator:'
+'        Describe Table'
+'          partition:'
+'            ds 2008-04-09'
+'          table: INPUTDDL6'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+20 rows selected 
+>>>  DROP TABLE INPUTDDL6;
+No rows affected 
+>>>  
+>>>  !record

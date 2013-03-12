@@ -1,0 +1,24 @@
+Saving all output to "!!{outputDirectory}!!/avro_schema_error_message.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/avro_schema_error_message.q
+>>>  -- verify we get the sentinel schema if we don't provide one
+>>>  
+>>>  CREATE TABLE avro_with_no_schema 
+ROW FORMAT 
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' 
+STORED AS 
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat';
+No rows affected 
+>>>  
+>>>  DESCRIBE avro_with_no_schema;
+'col_name','data_type','comment'
+'error_error_error_error_error_error_error','string','from deserializer'
+'cannot_determine_schema','string','from deserializer'
+'check','string','from deserializer'
+'schema','string','from deserializer'
+'url','string','from deserializer'
+'and','string','from deserializer'
+'literal','string','from deserializer'
+7 rows selected 
+>>>  
+>>>  !record

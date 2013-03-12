@@ -1,0 +1,53 @@
+Saving all output to "!!{outputDirectory}!!/drop_multi_partitions.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/drop_multi_partitions.q
+>>>  create table mp (a string) partitioned by (b string, c string);
+No rows affected 
+>>>  
+>>>  alter table mp add partition (b='1', c='1');
+No rows affected 
+>>>  alter table mp add partition (b='1', c='2');
+No rows affected 
+>>>  alter table mp add partition (b='2', c='2');
+No rows affected 
+>>>  
+>>>  show partitions mp;
+'partition'
+'b=1/c=1'
+'b=1/c=2'
+'b=2/c=2'
+3 rows selected 
+>>>  
+>>>  explain extended alter table mp drop partition (b='1');
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_ALTERTABLE_DROPPARTS mp (TOK_PARTSPEC (TOK_PARTVAL b = '1')))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Drop Table Operator:'
+'        Drop Table'
+'          table: mp'
+''
+''
+13 rows selected 
+>>>  alter table mp drop partition (b='1');
+No rows affected 
+>>>  
+>>>  show partitions mp;
+'partition'
+'b=2/c=2'
+1 row selected 
+>>>  
+>>>  set hive.exec.drop.ignorenonexistent=false;
+No rows affected 
+>>>  alter table mp drop if exists partition (b='3');
+No rows affected 
+>>>  
+>>>  show partitions mp;
+'partition'
+'b=2/c=2'
+1 row selected 
+>>>  !record

@@ -1,0 +1,179 @@
+Saving all output to "!!{outputDirectory}!!/create_like.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/create_like.q
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE FORMATTED table1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like         ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like.db/table1',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+27 rows selected 
+>>>  
+>>>  CREATE TABLE table2 LIKE table1;
+No rows affected 
+>>>  DESCRIBE FORMATTED table2;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like         ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like.db/table2',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+27 rows selected 
+>>>  
+>>>  CREATE TABLE IF NOT EXISTS table2 LIKE table1;
+No rows affected 
+>>>  
+>>>  CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE table1;
+No rows affected 
+>>>  
+>>>  CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE table1;
+No rows affected 
+>>>  DESCRIBE FORMATTED table3;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like         ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like.db/table3',''
+'Table Type:         ','EXTERNAL_TABLE      ',''
+'Table Parameters:','',''
+'','EXTERNAL            ','TRUE                '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+28 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86;
+'key','value'
+No rows selected 
+>>>  INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100;
+'key','value'
+No rows selected 
+>>>  
+>>>  SELECT * FROM table1;
+'a','b'
+'86','val_86'
+1 row selected 
+>>>  SELECT * FROM table2;
+'a','b'
+'100','val_100'
+'100','val_100'
+2 rows selected 
+>>>  
+>>>  CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:test.src.data.dir}/files/ext_test';
+No rows affected 
+>>>  CREATE EXTERNAL TABLE table5 LIKE table4 LOCATION '${system:test.src.data.dir}/files/ext_test';
+No rows affected 
+>>>  
+>>>  SELECT * FROM table4;
+'a'
+'1'
+'2'
+'3'
+'4'
+'5'
+'6'
+6 rows selected 
+>>>  SELECT * FROM table5;
+'a'
+'1'
+'2'
+'3'
+'4'
+'5'
+'6'
+6 rows selected 
+>>>  
+>>>  DROP TABLE table5;
+No rows affected 
+>>>  SELECT * FROM table4;
+'a'
+'1'
+'2'
+'3'
+'4'
+'5'
+'6'
+6 rows selected 
+>>>  DROP TABLE table4;
+No rows affected 
+>>>  
+>>>  CREATE EXTERNAL TABLE table4 (a INT) LOCATION '${system:test.src.data.dir}/files/ext_test';
+No rows affected 
+>>>  SELECT * FROM table4;
+'a'
+'1'
+'2'
+'3'
+'4'
+'5'
+'6'
+6 rows selected 
+>>>  !record

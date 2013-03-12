@@ -1,0 +1,17 @@
+Saving all output to "!!{outputDirectory}!!/join24.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/join24.q
+>>>  create table tst1(key STRING, cnt INT);
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE tst1 
+SELECT a.key, count(1) FROM src a group by a.key;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  
+>>>  !record

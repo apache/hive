@@ -1,0 +1,31 @@
+Saving all output to "!!{outputDirectory}!!/udf_concat.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_concat.q
+>>>  DESCRIBE FUNCTION concat;
+'tab_name'
+'concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED concat;
+'tab_name'
+'concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN'
+'Returns NULL if any argument is NULL.'
+'Example:'
+'  > SELECT concat('abc', 'def') FROM src LIMIT 1;'
+'  'abcdef''
+5 rows selected 
+>>>  
+>>>  SELECT 
+concat('a', 'b'), 
+concat('a', 'b', 'c'), 
+concat('a', null, 'c'), 
+concat(null), 
+concat('a'), 
+concat(null, 1, 2), 
+concat(1, 2, 3, 'a'), 
+concat(1, 2), 
+concat(1), 
+concat('1234', 'abc', 'extra argument') 
+FROM src LIMIT 1;
+'_c0','_c1','_c2','_c3','_c4','_c5','_c6','_c7','_c8','_c9'
+'ab','abc','','','a','','123a','12','1','1234abcextra argument'
+1 row selected 
+>>>  !record

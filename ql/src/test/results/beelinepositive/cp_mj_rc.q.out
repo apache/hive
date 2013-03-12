@@ -1,0 +1,20 @@
+Saving all output to "!!{outputDirectory}!!/cp_mj_rc.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/cp_mj_rc.q
+>>>  create table src_six_columns (k1 string, v1 string, k2 string, v2 string, k3 string, v3 string) stored as rcfile;
+No rows affected 
+>>>  insert overwrite table src_six_columns select value, value, key, value, value, value from src;
+'value','value','key','value','value','value'
+No rows selected 
+>>>  create table src_two_columns (k1 string, v1 string) stored as rcfile;
+No rows affected 
+>>>  insert overwrite table src_two_columns select key, value from src;
+'key','value'
+No rows selected 
+>>>  SELECT /*+ MAPJOIN(six) */ six.*, two.k1 from src_six_columns six join src_two_columns two on (six.k3=two.k1);
+'k1','v1','k2','v2','k3','v3','k1'
+No rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(two) */ two.*, six.k3 from src_six_columns six join src_two_columns two on (six.k3=two.k1);
+'k1','v1','k3'
+No rows selected 
+>>>  !record

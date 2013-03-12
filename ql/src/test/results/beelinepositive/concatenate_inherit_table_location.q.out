@@ -1,0 +1,37 @@
+Saving all output to "!!{outputDirectory}!!/concatenate_inherit_table_location.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/concatenate_inherit_table_location.q
+>>>  CREATE TABLE citl_table (key STRING, value STRING) PARTITIONED BY (part STRING) 
+STORED AS RCFILE 
+LOCATION 'pfile:${system:test.tmp.dir}/citl_table';
+No rows affected 
+>>>  
+>>>  SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyPartitionIsSubdirectoryOfTableHook;
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE citl_table PARTITION (part = '1') SELECT * FROM src;
+'key','value'
+No rows selected 
+>>>  
+>>>  SET hive.exec.post.hooks=;
+No rows affected 
+>>>  
+>>>  ALTER TABLE citl_table SET LOCATION 'file:${system:test.tmp.dir}/citl_table';
+No rows affected 
+>>>  
+>>>  ALTER TABLE citl_table PARTITION (part = '1') CONCATENATE;
+No rows affected 
+>>>  
+>>>  SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyPartitionIsSubdirectoryOfTableHook;
+No rows affected 
+>>>  
+>>>  SELECT count(*) FROM citl_table where part = '1';
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  SET hive.exec.post.hooks=;
+No rows affected 
+>>>  
+>>>  DROP TABLE citl_table;
+No rows affected 
+>>>  !record

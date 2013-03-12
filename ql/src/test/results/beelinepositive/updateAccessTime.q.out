@@ -1,0 +1,111 @@
+Saving all output to "!!{outputDirectory}!!/updateAccessTime.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/updateAccessTime.q
+>>>  drop table tstsrc;
+No rows affected 
+>>>  
+>>>  set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.PreExecutePrinter,org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables,org.apache.hadoop.hive.ql.hooks.UpdateInputAccessTimeHook$PreExec;
+No rows affected 
+>>>  
+>>>  create table tstsrc as select * from src;
+'key','value'
+No rows selected 
+>>>  desc extended tstsrc;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tstsrc, dbName:updateaccesstime, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrc, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  select count(1) from tstsrc;
+'_c0'
+'500'
+1 row selected 
+>>>  desc extended tstsrc;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tstsrc, dbName:updateaccesstime, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:!!UNIXTIME!!, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrc, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  drop table tstsrc;
+No rows affected 
+>>>  
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  create table tstsrcpart like srcpart;
+No rows affected 
+>>>  
+>>>  set hive.exec.dynamic.partition.mode=nonstrict;
+No rows affected 
+>>>  set hive.exec.dynamic.partition=true;
+No rows affected 
+>>>  
+>>>  
+>>>  insert overwrite table tstsrcpart partition (ds, hr) select key, value, ds, hr from srcpart;
+'key','value','ds','hr'
+No rows selected 
+>>>  
+>>>  desc extended tstsrcpart;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tstsrcpart, dbName:updateaccesstime, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=4, numFiles=4, transient_lastDdlTime=!!UNIXTIME!!, numRows=2000, totalSize=23248, rawDataSize=21248}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+6 rows selected 
+>>>  desc extended tstsrcpart partition (ds='2008-04-08', hr='11');
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2008-04-08, 11], dbName:updateaccesstime, tableName:tstsrcpart, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312})',''
+6 rows selected 
+>>>  desc extended tstsrcpart partition (ds='2008-04-08', hr='12');
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2008-04-08, 12], dbName:updateaccesstime, tableName:tstsrcpart, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312})',''
+6 rows selected 
+>>>  
+>>>  select count(1) from tstsrcpart where ds = '2008-04-08' and hr = '11';
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  desc extended tstsrcpart;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tstsrcpart, dbName:updateaccesstime, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:!!UNIXTIME!!, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=4, numFiles=4, transient_lastDdlTime=!!UNIXTIME!!, numRows=2000, totalSize=23248, rawDataSize=21248}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+6 rows selected 
+>>>  desc extended tstsrcpart partition (ds='2008-04-08', hr='11');
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2008-04-08, 11], dbName:updateaccesstime, tableName:tstsrcpart, createTime:!!UNIXTIME!!, lastAccessTime:!!UNIXTIME!!, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312})',''
+6 rows selected 
+>>>  desc extended tstsrcpart partition (ds='2008-04-08', hr='12');
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2008-04-08, 12], dbName:updateaccesstime, tableName:tstsrcpart, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/updateaccesstime.db/tstsrcpart/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312})',''
+6 rows selected 
+>>>  
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  !record

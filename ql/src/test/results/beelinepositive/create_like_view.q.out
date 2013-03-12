@@ -1,0 +1,207 @@
+Saving all output to "!!{outputDirectory}!!/create_like_view.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/create_like_view.q
+>>>  DROP TABLE IF EXISTS table1;
+No rows affected 
+>>>  DROP TABLE IF EXISTS table2;
+No rows affected 
+>>>  DROP TABLE IF EXISTS table3;
+No rows affected 
+>>>  DROP VIEW IF EXISTS view1;
+No rows affected 
+>>>  
+>>>  CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE table1;
+'col_name','data_type','comment'
+'a','string',''
+'b','string',''
+2 rows selected 
+>>>  DESCRIBE FORMATTED table1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like_view    ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like_view.db/table1',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+27 rows selected 
+>>>  
+>>>  CREATE VIEW view1 AS SELECT * FROM table1;
+'a','b'
+No rows selected 
+>>>  
+>>>  CREATE TABLE table2 LIKE view1;
+No rows affected 
+>>>  DESCRIBE table2;
+'col_name','data_type','comment'
+'a','string',''
+'b','string',''
+2 rows selected 
+>>>  DESCRIBE FORMATTED table2;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like_view    ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like_view.db/table2',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+27 rows selected 
+>>>  
+>>>  CREATE TABLE IF NOT EXISTS table2 LIKE view1;
+No rows affected 
+>>>  
+>>>  CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE view1;
+No rows affected 
+>>>  
+>>>  CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE view1;
+No rows affected 
+>>>  DESCRIBE table3;
+'col_name','data_type','comment'
+'a','string',''
+'b','string',''
+2 rows selected 
+>>>  DESCRIBE FORMATTED table3;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'a                   ','string              ','None                '
+'b                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like_view    ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like_view.db/table3',''
+'Table Type:         ','EXTERNAL_TABLE      ',''
+'Table Parameters:','',''
+'','EXTERNAL            ','TRUE                '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+28 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86;
+'key','value'
+No rows selected 
+>>>  INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100;
+'key','value'
+No rows selected 
+>>>  
+>>>  SELECT * FROM table1 order by a, b;
+'a','b'
+'86','val_86'
+1 row selected 
+>>>  SELECT * FROM table2 order by a, b;
+'a','b'
+'100','val_100'
+'100','val_100'
+2 rows selected 
+>>>  
+>>>  DROP TABLE table1;
+No rows affected 
+>>>  DROP TABLE table2;
+No rows affected 
+>>>  DROP VIEW view1;
+No rows affected 
+>>>  
+>>>  -- check partitions
+>>>  create view view1 partitioned on (ds, hr) as select * from srcpart;
+'key','value','ds','hr'
+No rows selected 
+>>>  create table table1 like view1;
+No rows affected 
+>>>  describe formatted table1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'ds                  ','string              ','None                '
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','create_like_view    ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/create_like_view.db/table1',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+33 rows selected 
+>>>  DROP TABLE table1;
+No rows affected 
+>>>  DROP VIEW view1;
+No rows affected 
+>>>  !record

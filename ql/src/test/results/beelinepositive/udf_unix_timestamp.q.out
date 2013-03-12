@@ -1,0 +1,46 @@
+Saving all output to "!!{outputDirectory}!!/udf_unix_timestamp.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_unix_timestamp.q
+>>>  DESCRIBE FUNCTION unix_timestamp;
+'tab_name'
+'unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED unix_timestamp;
+'tab_name'
+'unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp'
+'Converts the current or specified time to number of seconds since 1970-01-01.'
+2 rows selected 
+>>>  
+>>>  SELECT 
+'2009-03-20 11:30:01', 
+unix_timestamp('2009-03-20 11:30:01') 
+FROM src LIMIT 1;
+'_c0','_c1'
+'2009-03-20 11:30:01','1237573801'
+1 row selected 
+>>>  
+>>>  SELECT 
+'2009-03-20', 
+unix_timestamp('2009-03-20', 'yyyy-MM-dd') 
+FROM src LIMIT 1;
+'_c0','_c1'
+'2009-03-20','1237532400'
+1 row selected 
+>>>  
+>>>  SELECT 
+'2009 Mar 20 11:30:01 am', 
+unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a') 
+FROM src LIMIT 1;
+'_c0','_c1'
+'2009 Mar 20 11:30:01 am','1237573801'
+1 row selected 
+>>>  
+>>>  SELECT 
+'random_string', 
+unix_timestamp('random_string') 
+FROM src LIMIT 1;
+'_c0','_c1'
+'random_string',''
+1 row selected 
+>>>  
+>>>  
+>>>  !record

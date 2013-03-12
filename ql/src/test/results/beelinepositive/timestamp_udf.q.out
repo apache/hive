@@ -1,0 +1,111 @@
+Saving all output to "!!{outputDirectory}!!/timestamp_udf.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/timestamp_udf.q
+>>>  drop table timestamp_udf;
+No rows affected 
+>>>  drop table timestamp_udf_string;
+No rows affected 
+>>>  
+>>>  create table timestamp_udf (t timestamp);
+No rows affected 
+>>>  create table timestamp_udf_string (t string);
+No rows affected 
+>>>  from src 
+insert overwrite table timestamp_udf 
+select '2011-05-06 07:08:09.1234567' limit 1 
+insert overwrite table timestamp_udf_string 
+select '2011-05-06 07:08:09.1234567' limit 1;
+'_c0'
+No rows selected 
+>>>  
+>>>  -- Test UDFs with Timestamp input
+>>>  select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
+weekofyear(t), hour(t), minute(t), second(t), to_date(t) 
+from timestamp_udf;
+'_c0','_c1','_c2','_c3','_c4','_c5','_c6','_c7','_c8','_c9'
+'1304690889','2011','5','6','6','18','7','8','9','2011-05-06'
+1 row selected 
+>>>  
+>>>  select date_add(t, 5), date_sub(t, 10) 
+from timestamp_udf;
+'_c0','_c1'
+'2011-05-11','2011-04-26'
+1 row selected 
+>>>  
+>>>  select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t) 
+from timestamp_udf;
+'_c0','_c1','_c2'
+'0','3333','-3333'
+1 row selected 
+>>>  
+>>>  select from_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'_c0'
+'2011-05-06 02:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select to_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'_c0'
+'2011-05-06 12:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select t, from_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'t','_c1'
+'2011-05-06 07:08:09.1234567','2011-05-06 02:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select t, from_utc_timestamp(t, 'America/Chicago'), t, from_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'t','_c1','t','_c3'
+'2011-05-06 07:08:09.1234567','2011-05-06 02:08:09.1234567','2011-05-06 07:08:09.1234567','2011-05-06 02:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select t, to_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'t','_c1'
+'2011-05-06 07:08:09.1234567','2011-05-06 12:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select t, to_utc_timestamp(t, 'America/Chicago'), t, to_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf;
+'t','_c1','t','_c3'
+'2011-05-06 07:08:09.1234567','2011-05-06 12:08:09.1234567','2011-05-06 07:08:09.1234567','2011-05-06 12:08:09.1234567'
+1 row selected 
+>>>  
+>>>  -- Test UDFs with string input
+>>>  select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
+weekofyear(t), hour(t), minute(t), second(t), to_date(t) 
+from timestamp_udf_string;
+'_c0','_c1','_c2','_c3','_c4','_c5','_c6','_c7','_c8','_c9'
+'1304690889','2011','5','6','6','18','7','8','9','2011-05-06'
+1 row selected 
+>>>  
+>>>  select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string;
+'_c0','_c1'
+'2011-05-11','2011-04-26'
+1 row selected 
+>>>  
+>>>  select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t) 
+from timestamp_udf_string;
+'_c0','_c1','_c2'
+'0','3333','-3333'
+1 row selected 
+>>>  
+>>>  select from_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf_string;
+'_c0'
+'2011-05-06 02:08:09.1234567'
+1 row selected 
+>>>  
+>>>  select to_utc_timestamp(t, 'America/Chicago') 
+from timestamp_udf_string;
+'_c0'
+'2011-05-06 12:08:09.1234567'
+1 row selected 
+>>>  
+>>>  drop table timestamp_udf;
+No rows affected 
+>>>  drop table timestamp_udf_string;
+No rows affected 
+>>>  !record

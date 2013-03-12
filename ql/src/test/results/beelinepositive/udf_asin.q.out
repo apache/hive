@@ -1,0 +1,40 @@
+Saving all output to "!!{outputDirectory}!!/udf_asin.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_asin.q
+>>>  DESCRIBE FUNCTION asin;
+'tab_name'
+'asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED asin;
+'tab_name'
+'asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise'
+'Example:'
+'  > SELECT asin(0) FROM src LIMIT 1;'
+'  0'
+'  > SELECT asin(2) FROM src LIMIT 1;'
+'  NULL'
+6 rows selected 
+>>>  
+>>>  SELECT asin(null) 
+FROM src LIMIT 1;
+'_c0'
+''
+1 row selected 
+>>>  
+>>>  SELECT asin(0) 
+FROM src LIMIT 1;
+'_c0'
+'0.0'
+1 row selected 
+>>>  
+>>>  SELECT asin(-0.5), asin(0.66) 
+FROM src LIMIT 1;
+'_c0','_c1'
+'-0.5235987755982989','0.7208187608700897'
+1 row selected 
+>>>  
+>>>  SELECT asin(2) 
+FROM src LIMIT 1;
+'_c0'
+'NaN'
+1 row selected 
+>>>  !record

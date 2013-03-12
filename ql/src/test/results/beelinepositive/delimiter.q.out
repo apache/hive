@@ -1,0 +1,28 @@
+Saving all output to "!!{outputDirectory}!!/delimiter.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/delimiter.q
+>>>  create table impressions (imp string, msg string) 
+row format delimited 
+fields terminated by '\t' 
+lines terminated by '\n' 
+stored as textfile;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in7.txt' INTO TABLE impressions;
+No rows affected 
+>>>  
+>>>  select * from impressions;
+'imp','msg'
+'','35'
+'48',''
+'100','100'
+3 rows selected 
+>>>  
+>>>  select imp,msg from impressions;
+'imp','msg'
+'','35'
+'48',''
+'100','100'
+3 rows selected 
+>>>  
+>>>  drop table impressions;
+No rows affected 
+>>>  !record

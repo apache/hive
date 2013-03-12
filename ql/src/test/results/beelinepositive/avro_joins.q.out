@@ -1,0 +1,107 @@
+Saving all output to "!!{outputDirectory}!!/avro_joins.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/avro_joins.q
+>>>  -- verify that new joins bring in correct schemas (including evolved schemas)
+>>>  
+>>>  CREATE TABLE doctors4 
+ROW FORMAT 
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' 
+STORED AS 
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat' 
+TBLPROPERTIES ('avro.schema.literal'='{ 
+"namespace": "testing.hive.avro.serde", 
+"name": "doctors", 
+"type": "record", 
+"fields": [ 
+{ 
+"name":"number", 
+"type":"int", 
+"doc":"Order of playing the role" 
+}, 
+{ 
+"name":"first_name", 
+"type":"string", 
+"doc":"first name of actor playing role" 
+}, 
+{ 
+"name":"last_name", 
+"type":"string", 
+"doc":"last name of actor playing role" 
+}, 
+{ 
+"name":"extra_field", 
+"type":"string", 
+"doc:":"an extra field not in the original file", 
+"default":"fishfingers and custard" 
+} 
+] 
+}');
+No rows affected 
+>>>  
+>>>  DESCRIBE doctors4;
+'col_name','data_type','comment'
+'number','int','from deserializer'
+'first_name','string','from deserializer'
+'last_name','string','from deserializer'
+'extra_field','string','from deserializer'
+4 rows selected 
+>>>  
+>>>  LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors4;
+No rows affected 
+>>>  
+>>>  CREATE TABLE episodes 
+ROW FORMAT 
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' 
+STORED AS 
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat' 
+TBLPROPERTIES ('avro.schema.literal'='{ 
+"namespace": "testing.hive.avro.serde", 
+"name": "episodes", 
+"type": "record", 
+"fields": [ 
+{ 
+"name":"title", 
+"type":"string", 
+"doc":"episode title" 
+}, 
+{ 
+"name":"air_date", 
+"type":"string", 
+"doc":"initial date" 
+}, 
+{ 
+"name":"doctor", 
+"type":"int", 
+"doc":"main actor playing the Doctor in episode" 
+} 
+] 
+}');
+No rows affected 
+>>>  
+>>>  DESCRIBE episodes;
+'col_name','data_type','comment'
+'title','string','from deserializer'
+'air_date','string','from deserializer'
+'doctor','int','from deserializer'
+3 rows selected 
+>>>  
+>>>  LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes;
+No rows affected 
+>>>  
+>>>  SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date 
+FROM doctors4 d JOIN episodes e ON (d.number=e.doctor) 
+ORDER BY d.last_name, e.title;
+'title','air_date','first_name','last_name','extra_field','air_date'
+'Horror of Fang Rock','3 September 1977','Tom','Baker','fishfingers and custard','3 September 1977'
+'The Mysterious Planet','6 September 1986','Colin','Baker','fishfingers and custard','6 September 1986'
+'Castrolava','4 January 1982','Peter','Davison','fishfingers and custard','4 January 1982'
+'Rose','26 March 2005','Christopher','Eccleston','fishfingers and custard','26 March 2005'
+'An Unearthly Child','23 November 1963','William','Hartnell','fishfingers and custard','23 November 1963'
+'The Doctor's Wife','14 May 2011','Matt','Smith','fishfingers and custard','14 May 2011'
+'The Eleventh Hour','3 April 2010','Matt','Smith','fishfingers and custard','3 April 2010'
+'The Power of the Daleks','5 November 1966','Patrick','Troughton','fishfingers and custard','5 November 1966'
+8 rows selected 
+>>>  
+>>>  
+>>>  !record

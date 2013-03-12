@@ -1,0 +1,675 @@
+Saving all output to "!!{outputDirectory}!!/join_filters.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/join_filters.q
+>>>  CREATE TABLE myinput1(key int, value int);
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in3.txt' INTO TABLE myinput1;
+No rows affected 
+>>>  
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','','40'
+'','','','40'
+'','','','40'
+'','','12','35'
+'','','12','35'
+'','','12','35'
+'','','12','35'
+'','','48',''
+'','','48',''
+'','','48',''
+'','','48',''
+'','40','',''
+'','40','',''
+'','40','',''
+'','40','',''
+'12','35','',''
+'12','35','',''
+'12','35','',''
+'12','35','',''
+'48','','',''
+'48','','',''
+'48','','',''
+'48','','',''
+'100','100','',''
+'100','100','',''
+'100','100','',''
+'100','100','100','100'
+28 rows selected 
+>>>  
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+7 rows selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+7 rows selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+7 rows selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+7 rows selected 
+>>>  
+>>>  SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','','','40'
+'','','','','12','35'
+'','','','','48',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','40','',''
+'','','12','35','',''
+'','','48','','',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','','','40'
+'','','','','12','35'
+'','','','','48',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','','','40'
+'','','','','12','35'
+'','','','','48',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','40','',''
+'','','12','35','',''
+'','','48','','',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'','','','','','40'
+'','','','','12','35'
+'','','','','48',''
+'100','100','100','100','100','100'
+4 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','40','',''
+'12','35','',''
+'48','','',''
+'100','100','100','100'
+4 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','40'
+'','','12','35'
+'','','48',''
+'100','100','100','100'
+4 rows selected 
+>>>  
+>>>  CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+No rows affected 
+>>>  CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2;
+No rows affected 
+>>>  
+>>>  SET hive.optimize.bucketmapjoin = true;
+No rows affected 
+>>>  SET hive.optimize.bucketmapjoin.sortedmerge = true;
+No rows affected 
+>>>  SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+No rows affected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','35','',''
+'','135','',''
+'48','','',''
+'100','100','100','100'
+'148','','',''
+'200','200','200','200'
+6 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','35','',''
+'','135','',''
+'48','','',''
+'100','100','100','100'
+'148','','',''
+'200','200','200','200'
+6 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','35','',''
+'','135','',''
+'48','','',''
+'100','100','100','100'
+'148','','',''
+'200','200','200','200'
+6 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','35'
+'','','','135'
+'','','48',''
+'','','148',''
+'100','100','100','100'
+'200','200','200','200'
+6 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','35'
+'','','','135'
+'','','48',''
+'','','148',''
+'100','100','100','100'
+'200','200','200','200'
+6 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'','','','35'
+'','','','135'
+'','','48',''
+'','','148',''
+'100','100','100','100'
+'200','200','200','200'
+6 rows selected 
+>>>  
+>>>  SET hive.outerjoin.supports.filters = false;
+No rows affected 
+>>>  
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC, c.key ASC, c.value ASC;
+'key','value','key','value','key','value'
+'100','100','100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+1 row selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC;
+'key','value','key','value'
+'100','100','100','100'
+'200','200','200','200'
+2 rows selected 
+>>>  !record

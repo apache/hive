@@ -1,0 +1,30 @@
+Saving all output to "!!{outputDirectory}!!/udf_bin.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_bin.q
+>>>  DESCRIBE FUNCTION bin;
+'tab_name'
+'bin(n) - returns n in binary'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED bin;
+'tab_name'
+'bin(n) - returns n in binary'
+'n is a BIGINT. Returns NULL if n is NULL.'
+'Example:'
+'  > SELECT bin(13) FROM src LIMIT 1'
+'  '1101''
+5 rows selected 
+>>>  
+>>>  SELECT 
+bin(1), 
+bin(0), 
+bin(99992421) 
+FROM src LIMIT 1;
+'_c0','_c1','_c2'
+'1','0','101111101011100001101100101'
+1 row selected 
+>>>  
+>>>  -- Negative numbers should be treated as two's complement (64 bit).
+>>>  SELECT bin(-5) FROM src LIMIT 1;
+'_c0'
+'1111111111111111111111111111111111111111111111111111111111111011'
+1 row selected 
+>>>  !record

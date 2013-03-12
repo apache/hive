@@ -1,0 +1,148 @@
+Saving all output to "!!{outputDirectory}!!/combine3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/combine3.q
+>>>  set hive.exec.compress.output = true;
+No rows affected 
+>>>  set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+No rows affected 
+>>>  set mapred.min.split.size=256;
+No rows affected 
+>>>  set mapred.min.split.size.per.node=256;
+No rows affected 
+>>>  set mapred.min.split.size.per.rack=256;
+No rows affected 
+>>>  set mapred.max.split.size=256;
+No rows affected 
+>>>  
+>>>  
+>>>  drop table combine_3_srcpart_seq_rc;
+No rows affected 
+>>>  
+>>>  create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile;
+No rows affected 
+>>>  
+>>>  insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="00") select * from src;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  alter table combine_3_srcpart_seq_rc set fileformat rcfile;
+No rows affected 
+>>>  insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="001") select * from src;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="00");
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2010-08-03, 00], dbName:combine3, tableName:combine_3_srcpart_seq_rc, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/combine3.db/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=15250, rawDataSize=5312})',''
+6 rows selected 
+>>>  desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001");
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'hr','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2010-08-03, 001], dbName:combine3, tableName:combine_3_srcpart_seq_rc, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/combine3.db/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=1981, rawDataSize=4812})',''
+6 rows selected 
+>>>  
+>>>  select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30;
+'key','value','ds','hr'
+'0','val_0','2010-08-03','00'
+'0','val_0','2010-08-03','00'
+'0','val_0','2010-08-03','00'
+'0','val_0','2010-08-03','001'
+'0','val_0','2010-08-03','001'
+'0','val_0','2010-08-03','001'
+'2','val_2','2010-08-03','00'
+'2','val_2','2010-08-03','001'
+'4','val_4','2010-08-03','00'
+'4','val_4','2010-08-03','001'
+'5','val_5','2010-08-03','00'
+'5','val_5','2010-08-03','00'
+'5','val_5','2010-08-03','00'
+'5','val_5','2010-08-03','001'
+'5','val_5','2010-08-03','001'
+'5','val_5','2010-08-03','001'
+'8','val_8','2010-08-03','00'
+'8','val_8','2010-08-03','001'
+'9','val_9','2010-08-03','00'
+'9','val_9','2010-08-03','001'
+'10','val_10','2010-08-03','00'
+'10','val_10','2010-08-03','001'
+'11','val_11','2010-08-03','00'
+'11','val_11','2010-08-03','001'
+'12','val_12','2010-08-03','00'
+'12','val_12','2010-08-03','00'
+'12','val_12','2010-08-03','001'
+'12','val_12','2010-08-03','001'
+'15','val_15','2010-08-03','00'
+'15','val_15','2010-08-03','00'
+30 rows selected 
+>>>  
+>>>  set hive.enforce.bucketing = true;
+No rows affected 
+>>>  set hive.exec.reducers.max = 1;
+No rows affected 
+>>>  
+>>>  drop table bucket3_1;
+No rows affected 
+>>>  CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile;
+No rows affected 
+>>>  
+>>>  insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='1') 
+select * from src;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  alter table combine_3_srcpart_seq_rc_bucket set fileformat rcfile;
+No rows affected 
+>>>  
+>>>  insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='11') 
+select * from src;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30;
+'key','ds'
+'0','1'
+'0','1'
+'0','1'
+'0','11'
+'0','11'
+'0','11'
+'2','1'
+'2','11'
+'4','1'
+'4','11'
+'8','1'
+'8','11'
+'10','1'
+'10','11'
+'12','1'
+'12','1'
+'12','11'
+'12','11'
+'18','1'
+'18','1'
+'18','11'
+'18','11'
+'20','1'
+'20','11'
+'24','1'
+'24','1'
+'24','11'
+'24','11'
+'26','1'
+'26','1'
+30 rows selected 
+>>>  
+>>>  drop table combine_3_srcpart_seq_rc_bucket;
+No rows affected 
+>>>  
+>>>  drop table combine_3_srcpart_seq_rc;
+No rows affected 
+>>>  !record

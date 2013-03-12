@@ -1,0 +1,122 @@
+Saving all output to "!!{outputDirectory}!!/bucketmapjoin6.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/bucketmapjoin6.q
+>>>  set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+No rows affected 
+>>>  create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets;
+No rows affected 
+>>>  
+>>>  create table tmp2 (a string, b string) clustered by (a) sorted by (a) into 10 buckets;
+No rows affected 
+>>>  
+>>>  
+>>>  set hive.enforce.bucketing = true;
+No rows affected 
+>>>  set hive.enforce.sorting = true;
+No rows affected 
+>>>  set hive.exec.reducers.max=1;
+No rows affected 
+>>>  
+>>>  
+>>>  insert overwrite table tmp1 select * from src where key < 50;
+'key','value'
+No rows selected 
+>>>  insert overwrite table tmp2 select * from src where key < 50;
+'key','value'
+No rows selected 
+>>>  
+>>>  set hive.optimize.bucketmapjoin = true;
+No rows affected 
+>>>  set hive.optimize.bucketmapjoin.sortedmerge = true;
+No rows affected 
+>>>  set hive.merge.mapfiles=false;
+No rows affected 
+>>>  set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+No rows affected 
+>>>  
+>>>  create table tmp3 (a string, b string, c string) clustered by (a) sorted by (a) into 10 buckets;
+No rows affected 
+>>>  
+>>>  
+>>>  insert overwrite table tmp3 
+select /*+ MAPJOIN(l) */ i.a, i.b, l.b 
+from tmp1 i join tmp2 l ON i.a = l.a;
+'a','b','b'
+No rows selected 
+>>>  
+>>>  select * from tmp3 order by a, b, c;
+'a','b','c'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'0','val_0','val_0'
+'10','val_10','val_10'
+'11','val_11','val_11'
+'12','val_12','val_12'
+'12','val_12','val_12'
+'12','val_12','val_12'
+'12','val_12','val_12'
+'15','val_15','val_15'
+'15','val_15','val_15'
+'15','val_15','val_15'
+'15','val_15','val_15'
+'17','val_17','val_17'
+'18','val_18','val_18'
+'18','val_18','val_18'
+'18','val_18','val_18'
+'18','val_18','val_18'
+'19','val_19','val_19'
+'2','val_2','val_2'
+'20','val_20','val_20'
+'24','val_24','val_24'
+'24','val_24','val_24'
+'24','val_24','val_24'
+'24','val_24','val_24'
+'26','val_26','val_26'
+'26','val_26','val_26'
+'26','val_26','val_26'
+'26','val_26','val_26'
+'27','val_27','val_27'
+'28','val_28','val_28'
+'30','val_30','val_30'
+'33','val_33','val_33'
+'34','val_34','val_34'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'35','val_35','val_35'
+'37','val_37','val_37'
+'37','val_37','val_37'
+'37','val_37','val_37'
+'37','val_37','val_37'
+'4','val_4','val_4'
+'41','val_41','val_41'
+'42','val_42','val_42'
+'42','val_42','val_42'
+'42','val_42','val_42'
+'42','val_42','val_42'
+'43','val_43','val_43'
+'44','val_44','val_44'
+'47','val_47','val_47'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'5','val_5','val_5'
+'8','val_8','val_8'
+'9','val_9','val_9'
+73 rows selected 
+>>>  !record

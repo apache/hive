@@ -1,0 +1,111 @@
+Saving all output to "!!{outputDirectory}!!/stats18.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/stats18.q
+>>>  set datanucleus.cache.collections=false;
+No rows affected 
+>>>  set hive.stats.autogather=true;
+No rows affected 
+>>>  set hive.merge.mapfiles=false;
+No rows affected 
+>>>  set hive.merge.mapredfiles=false;
+No rows affected 
+>>>  set hive.map.aggr=true;
+No rows affected 
+>>>  
+>>>  create table stats_part like srcpart;
+No rows affected 
+>>>  
+>>>  insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src;
+'key','value'
+No rows selected 
+>>>  
+>>>  -- Load a file into a existing partition
+>>>  -- Some stats (numFiles, totalSize) should be updated correctly
+>>>  -- Some other stats (numRows, rawDataSize) should be cleared
+>>>  desc formatted stats_part partition (ds='2010-04-08', hr='13');
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'ds                  ','string              ','None                '
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Partition Information','',''
+'Partition Value:    ','[2010-04-08, 13]    ',''
+'Database:           ','stats18             ',''
+'Table:              ','stats_part          ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats18.db/stats_part/ds=2010-04-08/hr=13',''
+'Partition Parameters:','',''
+'','numFiles            ','1                   '
+'','numRows             ','500                 '
+'','rawDataSize         ','5312                '
+'','totalSize           ','5812                '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+36 rows selected 
+>>>  
+>>>  load data local inpath '../data/files/srcbucket20.txt' INTO TABLE stats_part partition (ds='2010-04-08', hr='13');
+No rows affected 
+>>>  
+>>>  desc formatted stats_part partition (ds='2010-04-08', hr='13');
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'ds                  ','string              ','None                '
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Partition Information','',''
+'Partition Value:    ','[2010-04-08, 13]    ',''
+'Database:           ','stats18             ',''
+'Table:              ','stats_part          ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats18.db/stats_part/ds=2010-04-08/hr=13',''
+'Partition Parameters:','',''
+'','numFiles            ','2                   '
+'','numRows             ','0                   '
+'','rawDataSize         ','0                   '
+'','totalSize           ','7170                '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+36 rows selected 
+>>>  
+>>>  drop table stats_src;
+No rows affected 
+>>>  drop table stats_part;
+No rows affected 
+>>>  !record

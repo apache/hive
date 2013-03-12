@@ -1,0 +1,135 @@
+Saving all output to "!!{outputDirectory}!!/partition_wise_fileformat3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/partition_wise_fileformat3.q
+>>>  
+>>>  
+>>>  create table partition_test_partitioned(key string, value string) partitioned by (dt string);
+No rows affected 
+>>>  
+>>>  alter table partition_test_partitioned set fileformat rcfile;
+No rows affected 
+>>>  insert overwrite table partition_test_partitioned partition(dt=101) select * from src1;
+'key','value'
+No rows selected 
+>>>  show table extended like partition_test_partitioned partition(dt=101);
+'tab_name'
+'tableName:partition_test_partitioned'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/partition_wise_fileformat3.db/partition_test_partitioned/dt=101'
+'inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'columns:struct columns { string key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string dt}'
+'totalNumberFiles:1'
+'totalFileSize:275'
+'maxFileSize:275'
+'minFileSize:275'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  alter table partition_test_partitioned set fileformat Sequencefile;
+No rows affected 
+>>>  insert overwrite table partition_test_partitioned partition(dt=102) select * from src1;
+'key','value'
+No rows selected 
+>>>  show table extended like partition_test_partitioned partition(dt=102);
+'tab_name'
+'tableName:partition_test_partitioned'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/partition_wise_fileformat3.db/partition_test_partitioned/dt=102'
+'inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+'columns:struct columns { string key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string dt}'
+'totalNumberFiles:1'
+'totalFileSize:888'
+'maxFileSize:888'
+'minFileSize:888'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  select key from partition_test_partitioned where dt=102;
+'key'
+'238'
+''
+'311'
+''
+''
+''
+'255'
+'278'
+'98'
+''
+''
+''
+'401'
+'150'
+'273'
+'224'
+'369'
+'66'
+'128'
+'213'
+'146'
+'406'
+''
+''
+''
+25 rows selected 
+>>>  
+>>>  insert overwrite table partition_test_partitioned partition(dt=101) select * from src1;
+'key','value'
+No rows selected 
+>>>  show table extended like partition_test_partitioned partition(dt=101);
+'tab_name'
+'tableName:partition_test_partitioned'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/partition_wise_fileformat3.db/partition_test_partitioned/dt=101'
+'inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+'columns:struct columns { string key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string dt}'
+'totalNumberFiles:1'
+'totalFileSize:888'
+'maxFileSize:888'
+'minFileSize:888'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  select key from partition_test_partitioned where dt=101;
+'key'
+'238'
+''
+'311'
+''
+''
+''
+'255'
+'278'
+'98'
+''
+''
+''
+'401'
+'150'
+'273'
+'224'
+'369'
+'66'
+'128'
+'213'
+'146'
+'406'
+''
+''
+''
+25 rows selected 
+>>>  
+>>>  
+>>>  !record

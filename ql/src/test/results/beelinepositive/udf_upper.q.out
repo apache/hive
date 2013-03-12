@@ -1,0 +1,15 @@
+Saving all output to "!!{outputDirectory}!!/udf_upper.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_upper.q
+>>>  DESCRIBE FUNCTION upper;
+'tab_name'
+'upper(str) - Returns str with all characters changed to uppercase'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED upper;
+'tab_name'
+'upper(str) - Returns str with all characters changed to uppercase'
+'Synonyms: ucase'
+'Example:'
+'  > SELECT upper('Facebook') FROM src LIMIT 1;'
+'  'FACEBOOK''
+5 rows selected 
+>>>  !record

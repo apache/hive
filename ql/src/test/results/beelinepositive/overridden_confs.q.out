@@ -1,0 +1,12 @@
+Saving all output to "!!{outputDirectory}!!/overridden_confs.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/overridden_confs.q
+>>>  set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyOverriddenConfigsHook;
+No rows affected 
+>>>  set hive.config.doesnt.exit=abc;
+No rows affected 
+>>>  
+>>>  select count(*) from src;
+'_c0'
+'500'
+1 row selected 
+>>>  !record

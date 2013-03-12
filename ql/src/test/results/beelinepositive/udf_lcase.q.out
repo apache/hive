@@ -1,0 +1,16 @@
+Saving all output to "!!{outputDirectory}!!/udf_lcase.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_lcase.q
+>>>  DESCRIBE FUNCTION lcase;
+'tab_name'
+'lcase(str) - Returns str with all characters changed to lowercase'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED lcase;
+'tab_name'
+'lcase(str) - Returns str with all characters changed to lowercase'
+'Synonyms: lower'
+'Example:'
+'  > SELECT lcase('Facebook') FROM src LIMIT 1;'
+'  'facebook''
+5 rows selected 
+>>>  
+>>>  !record

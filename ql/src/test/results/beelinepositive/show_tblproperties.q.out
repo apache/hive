@@ -1,0 +1,32 @@
+Saving all output to "!!{outputDirectory}!!/show_tblproperties.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/show_tblproperties.q
+>>>  
+>>>  create table tmpfoo (a String);
+No rows affected 
+>>>  show tblproperties tmpfoo("bar");
+'prpt_name','prpt_value'
+'Table tmpfoo does not have property: bar',''
+1 row selected 
+>>>  
+>>>  alter table tmpfoo set tblproperties ("bar" = "bar value");
+No rows affected 
+>>>  alter table tmpfoo set tblproperties ("tmp" = "true");
+No rows affected 
+>>>  
+>>>  show tblproperties tmpfoo;
+'prpt_name','prpt_value'
+'',''
+'last_modified_by','!!{user.name}!!'
+'last_modified_time','!!UNIXTIME!!'
+'tmp','true'
+'transient_lastDdlTime','!!UNIXTIME!!'
+'bar','bar value'
+6 rows selected 
+>>>  show tblproperties tmpfoo("bar");
+'prpt_name','prpt_value'
+'bar value',''
+1 row selected 
+>>>  
+>>>  drop table tmpfoo;
+No rows affected 
+>>>  !record

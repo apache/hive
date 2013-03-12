@@ -1,0 +1,33 @@
+Saving all output to "!!{outputDirectory}!!/scriptfile1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/scriptfile1.q
+>>>  set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+No rows affected 
+>>>  CREATE TABLE dest1(key INT, value STRING);
+No rows affected 
+>>>  
+>>>  ADD FILE src/test/scripts/testgrep;
+No rows affected 
+>>>  
+>>>  FROM ( 
+FROM src 
+SELECT TRANSFORM(src.key, src.value) 
+USING 'testgrep' AS (tkey, tvalue) 
+CLUSTER BY tkey 
+) tmap 
+INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  SELECT dest1.* FROM dest1;
+'key','value'
+'10','val_10'
+'100','val_100'
+'100','val_100'
+'103','val_103'
+'103','val_103'
+'104','val_104'
+'104','val_104'
+'105','val_105'
+'310','val_310'
+9 rows selected 
+>>>  !record

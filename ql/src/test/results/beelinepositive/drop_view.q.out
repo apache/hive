@@ -1,0 +1,7 @@
+Saving all output to "!!{outputDirectory}!!/drop_view.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/drop_view.q
+>>>  SET hive.exec.drop.ignorenonexistent=false;
+No rows affected 
+>>>  DROP VIEW IF EXISTS UnknownView;
+No rows affected 
+>>>  !record

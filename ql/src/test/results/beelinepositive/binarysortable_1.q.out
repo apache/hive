@@ -1,0 +1,118 @@
+Saving all output to "!!{outputDirectory}!!/binarysortable_1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/binarysortable_1.q
+>>>  CREATE TABLE mytable(key STRING, value STRING) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY '9' 
+STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  LOAD DATA LOCAL INPATH '../data/files/string.txt' INTO TABLE mytable;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+SELECT REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(key, '\001', '^A'), '\0', '^@'), '\002', '^B'), value 
+FROM ( 
+SELECT key, sum(value) as value 
+FROM mytable 
+GROUP BY key 
+) a;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME mytable))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL value)) value)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE (TOK_FUNCTION REGEXP_REPLACE (TOK_FUNCTION REGEXP_REPLACE (TOK_TABLE_OR_COL key) '\001' '^A') '\0' '^@') '\002' '^B')) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        a:mytable '
+'          TableScan'
+'            alias: mytable'
+'            Select Operator'
+'              expressions:'
+'                    expr: key'
+'                    type: string'
+'                    expr: value'
+'                    type: string'
+'              outputColumnNames: key, value'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: sum(value)'
+'                bucketGroup: false'
+'                keys:'
+'                      expr: key'
+'                      type: string'
+'                mode: hash'
+'                outputColumnNames: _col0, _col1'
+'                Reduce Output Operator'
+'                  key expressions:'
+'                        expr: _col0'
+'                        type: string'
+'                  sort order: +'
+'                  Map-reduce partition columns:'
+'                        expr: _col0'
+'                        type: string'
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col1'
+'                        type: double'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: sum(VALUE._col0)'
+'          bucketGroup: false'
+'          keys:'
+'                expr: KEY._col0'
+'                type: string'
+'          mode: mergepartial'
+'          outputColumnNames: _col0, _col1'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: string'
+'                  expr: _col1'
+'                  type: double'
+'            outputColumnNames: _col0, _col1'
+'            Select Operator'
+'              expressions:'
+'                    expr: regexp_replace(regexp_replace(regexp_replace(_col0, ''
+'                    type: string'
+'                    expr: _col1'
+'                    type: double'
+'              outputColumnNames: _col0, _col1'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 0'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+78 rows selected 
+>>>  
+>>>  SELECT REGEXP_REPLACE(REGEXP_REPLACE(REGEXP_REPLACE(key, '\001', '^A'), '\0', '^@'), '\002', '^B'), value 
+FROM ( 
+SELECT key, sum(value) as value 
+FROM mytable 
+GROUP BY key 
+) a;
+'_c0','value'
+'^@^@^@','7.0'
+'^@^A^@','9.0'
+'^@test^@','2.0'
+'^A^@^A','10.0'
+'^A^A^A','8.0'
+'^Atest^A','3.0'
+'a^@bc^A^B^A^@','1.0'
+'test^@^@^A^Atest','6.0'
+'test^@test','4.0'
+'test^Atest','5.0'
+10 rows selected 
+>>>  !record

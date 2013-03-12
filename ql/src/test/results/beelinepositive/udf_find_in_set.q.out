@@ -1,0 +1,141 @@
+Saving all output to "!!{outputDirectory}!!/udf_find_in_set.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_find_in_set.q
+>>>  DESCRIBE FUNCTION find_in_set;
+'tab_name'
+'find_in_set(str,str_array) - Returns the first occurrence  of str in str_array where str_array is a comma-delimited string. Returns null if either argument is null. Returns 0 if the first argument has any commas.'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED find_in_set;
+'tab_name'
+'find_in_set(str,str_array) - Returns the first occurrence  of str in str_array where str_array is a comma-delimited string. Returns null if either argument is null. Returns 0 if the first argument has any commas.'
+'Example:'
+'  > SELECT find_in_set('ab','abc,b,ab,c,def') FROM src LIMIT 1;'
+'  3'
+'  > SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,956')=0;'
+'  311  val_311'
+'  128'
+7 rows selected 
+>>>  
+>>>  EXPLAIN 
+FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value));
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION find_in_set (. (TOK_TABLE_OR_COL src1) key) (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL src1) key) ',' (. (TOK_TABLE_OR_COL src1) value)))))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        src1 '
+'          TableScan'
+'            alias: src1'
+'            Select Operator'
+'              expressions:'
+'                    expr: find_in_set(key, concat(key, ',', value))'
+'                    type: int'
+'              outputColumnNames: _col0'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 0'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+31 rows selected 
+>>>  
+>>>  FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value));
+'_c0'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+'1'
+25 rows selected 
+>>>  
+>>>  SELECT find_in_set('ab','ab,abc,abcde') FROM src1 LIMIT 1;
+'_c0'
+'1'
+1 row selected 
+>>>  SELECT find_in_set('ab','abc,ab,bbb') FROM src1 LIMIT 1;
+'_c0'
+'2'
+1 row selected 
+>>>  SELECT find_in_set('ab','def,abc,ab') FROM src1 LIMIT 1;
+'_c0'
+'3'
+1 row selected 
+>>>  SELECT find_in_set('ab','abc,abd,abf') FROM src1 LIMIT 1;
+'_c0'
+'0'
+1 row selected 
+>>>  SELECT find_in_set(null,'a,b,c') FROM src1 LIMIT 1;
+'_c0'
+''
+1 row selected 
+>>>  SELECT find_in_set('a',null) FROM src1 LIMIT 1;
+'_c0'
+''
+1 row selected 
+>>>  SELECT find_in_set('', '') FROM src1 LIMIT 1;
+'_c0'
+'1'
+1 row selected 
+>>>  SELECT find_in_set('',',') FROM src1 LIMIT 1;
+'_c0'
+'1'
+1 row selected 
+>>>  SELECT find_in_set('','a,,b') FROM src1 LIMIT 1;
+'_c0'
+'2'
+1 row selected 
+>>>  SELECT find_in_set('','a,b,') FROM src1 LIMIT 1;
+'_c0'
+'3'
+1 row selected 
+>>>  SELECT find_in_set(',','a,b,d,') FROM src1 LIMIT 1;
+'_c0'
+'0'
+1 row selected 
+>>>  SELECT find_in_set('a','') FROM src1 LIMIT 1;
+'_c0'
+'0'
+1 row selected 
+>>>  SELECT find_in_set('a,','a,b,c,d') FROM src1 LIMIT 1;
+'_c0'
+'0'
+1 row selected 
+>>>  
+>>>  SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,2,956')=0;
+'key','value'
+'311','val_311'
+'128',''
+2 rows selected 
+>>>  !record
