@@ -72,6 +72,14 @@ public class Metrics {
       open();
     }
 
+    public Long getNumCounter() throws IOException {
+      return (Long)Metrics.get(numCounter);
+    }
+
+    public Long getTimeCounter() throws IOException {
+      return (Long)Metrics.get(timeCounter);
+    }
+
     /**
      * Opens scope, and makes note of the time started, increments run counter
      * @throws IOException
