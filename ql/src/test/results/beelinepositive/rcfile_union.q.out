@@ -1,0 +1,42 @@
+Saving all output to "!!{outputDirectory}!!/rcfile_union.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/rcfile_union.q
+>>>  
+>>>  CREATE table rcfile_unionTable (b STRING, c STRING) 
+ROW FORMAT SERDE 
+'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED AS RCFILE;
+No rows affected 
+>>>  
+>>>  FROM src 
+INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10;
+'key','value'
+No rows selected 
+>>>  
+>>>  SELECT * FROM ( 
+SELECT b AS cola FROM rcfile_unionTable 
+UNION ALL 
+SELECT c AS cola FROM rcfile_unionTable) s ORDER BY cola ASC;
+'cola'
+'165'
+'238'
+'255'
+'27'
+'278'
+'311'
+'409'
+'484'
+'86'
+'98'
+'val_165'
+'val_238'
+'val_255'
+'val_27'
+'val_278'
+'val_311'
+'val_409'
+'val_484'
+'val_86'
+'val_98'
+20 rows selected 
+>>>  
+>>>  !record

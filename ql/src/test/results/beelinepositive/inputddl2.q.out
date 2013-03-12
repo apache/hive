@@ -1,0 +1,38 @@
+Saving all output to "!!{outputDirectory}!!/inputddl2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/inputddl2.q
+>>>  EXPLAIN 
+CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds STRING, country STRING) STORED AS TEXTFILE;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_CREATETABLE (TOK_TABNAME INPUTDDL2) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEPARTCOLS (TOK_TABCOLLIST (TOK_TABCOL ds TOK_STRING) (TOK_TABCOL country TOK_STRING))) TOK_TBLTEXTFILE)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Create Table Operator:'
+'        Create Table'
+'          columns: key int, value string'
+'          if not exists: false'
+'          input format: org.apache.hadoop.mapred.TextInputFormat'
+'          # buckets: -1'
+'          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+'          partition columns: ds string, country string'
+'          name: INPUTDDL2'
+'          isExternal: false'
+''
+''
+20 rows selected 
+>>>  CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds STRING, country STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE INPUTDDL2;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'country','string',''
+4 rows selected 
+>>>  
+>>>  
+>>>  !record

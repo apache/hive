@@ -1,0 +1,13 @@
+Saving all output to "!!{outputDirectory}!!/driverhook.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/driverhook.q
+>>>  SET hive.exec.driver.run.hooks=org.apache.hadoop.hive.ql.hooks.DriverTestHook;
+No rows affected 
+>>>  
+>>>  -- This query should appear in the Hive CLI output.
+>>>  -- We test DriverTestHook, which does exactly that.
+>>>  -- This should not break.
+>>>  SELECT * FROM src LIMIT 1;
+'key','value'
+'238','val_238'
+1 row selected 
+>>>  !record

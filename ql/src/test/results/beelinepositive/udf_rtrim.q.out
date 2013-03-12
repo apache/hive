@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_rtrim.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_rtrim.q
+>>>  DESCRIBE FUNCTION rtrim;
+'tab_name'
+'rtrim(str) - Removes the trailing space characters from str '
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED rtrim;
+'tab_name'
+'rtrim(str) - Removes the trailing space characters from str '
+'Example:'
+'  > SELECT rtrim('facebook   ') FROM src LIMIT 1;'
+'  'facebook''
+4 rows selected 
+>>>  !record

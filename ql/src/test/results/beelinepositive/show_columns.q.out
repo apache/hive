@@ -1,0 +1,77 @@
+Saving all output to "!!{outputDirectory}!!/show_columns.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/show_columns.q
+>>>  CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+SHOW COLUMNS from shcol_test;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_SHOWCOLUMNS (TOK_TABNAME shcol_test))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Show Columns Operator:'
+'          table name: shcol_test'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+17 rows selected 
+>>>  
+>>>  SHOW COLUMNS from shcol_test;
+'field'
+'key'
+'value'
+'ds'
+3 rows selected 
+>>>  
+>>>  -- SHOW COLUMNS
+>>>  CREATE DATABASE test_db;
+No rows affected 
+>>>  USE test_db;
+No rows affected 
+>>>  CREATE TABLE foo(a INT);
+No rows affected 
+>>>  
+>>>  -- SHOW COLUMNS basic syntax tests
+>>>  USE test_db;
+No rows affected 
+>>>  SHOW COLUMNS from foo;
+'field'
+'a'
+1 row selected 
+>>>  SHOW COLUMNS in foo;
+'field'
+'a'
+1 row selected 
+>>>  
+>>>  -- SHOW COLUMNS from a database with a name that requires escaping
+>>>  CREATE DATABASE `database`;
+No rows affected 
+>>>  USE `database`;
+No rows affected 
+>>>  CREATE TABLE foo(a INT);
+No rows affected 
+>>>  SHOW COLUMNS from foo;
+'field'
+'a'
+1 row selected 
+>>>  
+>>>  use default;
+No rows affected 
+>>>  SHOW COLUMNS from test_db.foo;
+'field'
+'a'
+1 row selected 
+>>>  SHOW COLUMNS from foo from test_db;
+'field'
+'a'
+1 row selected 
+>>>  !record

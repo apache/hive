@@ -1,0 +1,12 @@
+Saving all output to "!!{outputDirectory}!!/script_env_var1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/script_env_var1.q
+>>>  -- Verifies that script operator ID environment variables have unique values
+>>>  -- in each instance of the script operator.
+>>>  SELECT count(1) FROM 
+( SELECT TRANSFORM('echo $HIVE_SCRIPT_OPERATOR_ID') USING 'bash' AS key FROM src LIMIT 1 UNION ALL 
+SELECT TRANSFORM('echo $HIVE_SCRIPT_OPERATOR_ID') USING 'bash' AS key FROM src LIMIT 1 ) a GROUP BY key;
+'_c0'
+'1'
+'1'
+2 rows selected 
+>>>  !record

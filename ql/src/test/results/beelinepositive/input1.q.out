@@ -1,0 +1,37 @@
+Saving all output to "!!{outputDirectory}!!/input1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input1.q
+>>>  CREATE TABLE TEST1(A INT, B DOUBLE) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+DESCRIBE TEST1;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_DESCTABLE (TOK_TABTYPE TEST1))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Describe Table Operator:'
+'        Describe Table'
+'          table: TEST1'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+18 rows selected 
+>>>  
+>>>  DESCRIBE TEST1;
+'col_name','data_type','comment'
+'a','int',''
+'b','double',''
+2 rows selected 
+>>>  
+>>>  
+>>>  
+>>>  !record

@@ -1,0 +1,149 @@
+Saving all output to "!!{outputDirectory}!!/alter_merge.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/alter_merge.q
+>>>  create table src_rc_merge_test(key int, value string) stored as rcfile;
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test;
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test;
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test;
+No rows affected 
+>>>  
+>>>  show table extended like `src_rc_merge_test`;
+'tab_name'
+'tableName:src_rc_merge_test'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/alter_merge.db/src_rc_merge_test'
+'inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'columns:struct columns { i32 key, string value}'
+'partitioned:false'
+'partitionColumns:'
+'totalNumberFiles:3'
+'totalFileSize:636'
+'maxFileSize:222'
+'minFileSize:206'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  select count(1) from src_rc_merge_test;
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test;
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  alter table src_rc_merge_test concatenate;
+No rows affected 
+>>>  
+>>>  show table extended like `src_rc_merge_test`;
+'tab_name'
+'tableName:src_rc_merge_test'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/alter_merge.db/src_rc_merge_test'
+'inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'columns:struct columns { i32 key, string value}'
+'partitioned:false'
+'partitionColumns:'
+'totalNumberFiles:1'
+'totalFileSize:239'
+'maxFileSize:239'
+'minFileSize:239'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  select count(1) from src_rc_merge_test;
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test;
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  
+>>>  create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile;
+No rows affected 
+>>>  
+>>>  alter table src_rc_merge_test_part add partition (ds='2011');
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2011');
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2011');
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2011');
+No rows affected 
+>>>  
+>>>  show table extended like `src_rc_merge_test_part` partition (ds='2011');
+'tab_name'
+'tableName:src_rc_merge_test_part'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/alter_merge.db/src_rc_merge_test_part/ds=2011'
+'inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'columns:struct columns { i32 key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string ds}'
+'totalNumberFiles:3'
+'totalFileSize:636'
+'maxFileSize:222'
+'minFileSize:206'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  select count(1) from src_rc_merge_test_part;
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part;
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  alter table src_rc_merge_test_part partition (ds='2011') concatenate;
+No rows affected 
+>>>  
+>>>  show table extended like `src_rc_merge_test_part` partition (ds='2011');
+'tab_name'
+'tableName:src_rc_merge_test_part'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/alter_merge.db/src_rc_merge_test_part/ds=2011'
+'inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'columns:struct columns { i32 key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string ds}'
+'totalNumberFiles:1'
+'totalFileSize:239'
+'maxFileSize:239'
+'minFileSize:239'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  select count(1) from src_rc_merge_test_part;
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part;
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  drop table src_rc_merge_test;
+No rows affected 
+>>>  drop table src_rc_merge_test_part;
+No rows affected 
+>>>  !record

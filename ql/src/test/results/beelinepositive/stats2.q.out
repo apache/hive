@@ -1,0 +1,180 @@
+Saving all output to "!!{outputDirectory}!!/stats2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/stats2.q
+>>>  set datanucleus.cache.collections=false;
+No rows affected 
+>>>  set hive.stats.autogather=false;
+No rows affected 
+>>>  set hive.exec.dynamic.partition=true;
+No rows affected 
+>>>  set hive.exec.dynamic.partition.mode=nonstrict;
+No rows affected 
+>>>  set hive.merge.mapfiles=false;
+No rows affected 
+>>>  
+>>>  create table analyze_t1 like srcpart;
+No rows affected 
+>>>  
+>>>  
+>>>  explain 
+insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME analyze_t1) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ds)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 depends on stages: Stage-1'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        srcpart '
+'          TableScan'
+'            alias: srcpart'
+'            Select Operator'
+'              expressions:'
+'                    expr: key'
+'                    type: string'
+'                    expr: value'
+'                    type: string'
+'                    expr: ds'
+'                    type: string'
+'                    expr: hr'
+'                    type: string'
+'              outputColumnNames: _col0, _col1, _col2, _col3'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 1'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                    name: stats2.analyze_t1'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          partition:'
+'            ds '
+'            hr '
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: stats2.analyze_t1'
+''
+''
+48 rows selected 
+>>>  
+>>>  insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null;
+'key','value','ds','hr'
+No rows selected 
+>>>  
+>>>  desc formatted analyze_t1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'ds                  ','string              ','None                '
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','stats2              ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats2.db/analyze_t1',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+33 rows selected 
+>>>  
+>>>  explain analyze table analyze_t1 partition (ds, hr) compute statistics;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME analyze_t1) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        analyze_t1 '
+'          TableScan'
+'            alias: analyze_t1'
+''
+'  Stage: Stage-1'
+'    Stats-Aggr Operator'
+''
+''
+19 rows selected 
+>>>  
+>>>  analyze table analyze_t1 partition (ds, hr) compute statistics;
+'key','value','ds','hr'
+No rows selected 
+>>>  
+>>>  describe formatted analyze_t1;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'ds                  ','string              ','None                '
+'hr                  ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','stats2              ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats2.db/analyze_t1',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','numFiles            ','4                   '
+'','numPartitions       ','4                   '
+'','numRows             ','2000                '
+'','rawDataSize         ','21248               '
+'','totalSize           ','23248               '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+38 rows selected 
+>>>  !record

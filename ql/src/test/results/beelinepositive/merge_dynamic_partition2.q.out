@@ -1,0 +1,162 @@
+Saving all output to "!!{outputDirectory}!!/merge_dynamic_partition2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/merge_dynamic_partition2.q
+>>>  set hive.exec.dynamic.partition=true;
+No rows affected 
+>>>  set hive.exec.dynamic.partition.mode=nonstrict;
+No rows affected 
+>>>  
+>>>  create table srcpart_merge_dp like srcpart;
+No rows affected 
+>>>  
+>>>  create table merge_dynamic_part like srcpart;
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11);
+No rows affected 
+>>>  load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11);
+No rows affected 
+>>>  load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11);
+No rows affected 
+>>>  load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11);
+No rows affected 
+>>>  load data local inpath '../data/files/srcbucket0.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12);
+No rows affected 
+>>>  load data local inpath '../data/files/srcbucket1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12);
+No rows affected 
+>>>  
+>>>  
+>>>  set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+No rows affected 
+>>>  set hive.merge.mapfiles=true;
+No rows affected 
+>>>  set hive.merge.mapredfiles=true;
+No rows affected 
+>>>  set hive.merge.smallfiles.avgsize=3000;
+No rows affected 
+>>>  set hive.exec.compress.output=false;
+No rows affected 
+>>>  
+>>>  explain 
+insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08';
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart_merge_dp))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME merge_dynamic_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5'
+'  Stage-4'
+'  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6'
+'  Stage-2 depends on stages: Stage-0'
+'  Stage-3'
+'  Stage-5'
+'  Stage-6 depends on stages: Stage-5'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        srcpart_merge_dp '
+'          TableScan'
+'            alias: srcpart_merge_dp'
+'            Select Operator'
+'              expressions:'
+'                    expr: key'
+'                    type: string'
+'                    expr: value'
+'                    type: string'
+'                    expr: hr'
+'                    type: string'
+'              outputColumnNames: _col0, _col1, _col2'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 1'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                    name: merge_dynamic_partition2.merge_dynamic_part'
+''
+'  Stage: Stage-7'
+'    Conditional Operator'
+''
+'  Stage: Stage-4'
+'    Move Operator'
+'      files:'
+'          hdfs directory: true'
+'          destination: pfile:!!{hive.exec.scratchdir}!!'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          partition:'
+'            ds 2008-04-08'
+'            hr '
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: merge_dynamic_partition2.merge_dynamic_part'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+''
+'  Stage: Stage-3'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        pfile:!!{hive.exec.scratchdir}!! '
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                  name: merge_dynamic_partition2.merge_dynamic_part'
+''
+'  Stage: Stage-5'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        pfile:!!{hive.exec.scratchdir}!! '
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                  name: merge_dynamic_partition2.merge_dynamic_part'
+''
+'  Stage: Stage-6'
+'    Move Operator'
+'      files:'
+'          hdfs directory: true'
+'          destination: pfile:!!{hive.exec.scratchdir}!!'
+''
+''
+96 rows selected 
+>>>  insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08';
+'key','value','hr'
+No rows selected 
+>>>  
+>>>  show table extended like `merge_dynamic_part`;
+'tab_name'
+'tableName:merge_dynamic_part'
+'owner:!!{user.name}!!'
+'location:!!{hive.metastore.warehouse.dir}!!/merge_dynamic_partition2.db/merge_dynamic_part'
+'inputformat:org.apache.hadoop.mapred.TextInputFormat'
+'outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'columns:struct columns { string key, string value}'
+'partitioned:true'
+'partitionColumns:struct partition_columns { string ds, string hr}'
+'totalNumberFiles:3'
+'totalFileSize:17415'
+'maxFileSize:5901'
+'minFileSize:5702'
+'lastAccessTime:0'
+'lastUpdateTime:!!UNIXTIMEMILLIS!!'
+''
+15 rows selected 
+>>>  
+>>>  !record

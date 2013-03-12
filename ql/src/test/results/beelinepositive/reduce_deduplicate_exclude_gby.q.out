@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/reduce_deduplicate_exclude_gby.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/reduce_deduplicate_exclude_gby.q
+>>>  create table t1( key_int1 int, key_int2 int, key_string1 string, key_string2 string);
+No rows affected 
+>>>  
+>>>  set hive.map.aggr=false;
+No rows affected 
+>>>  select Q1.key_int1, sum(Q1.key_int1) from (select * from t1 cluster by key_int1) Q1 group by Q1.key_int1;
+'key_int1','_c1'
+No rows selected 
+>>>  
+>>>  drop table t1;
+No rows affected 
+>>>  !record

@@ -1,0 +1,160 @@
+Saving all output to "!!{outputDirectory}!!/protectmode.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/protectmode.q
+>>>  -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+>>>  
+>>>  drop table tbl1;
+No rows affected 
+>>>  drop table tbl2;
+No rows affected 
+>>>  
+>>>  create table tbl1  (col string);
+No rows affected 
+>>>  select * from tbl1;
+'col'
+No rows selected 
+>>>  select col from tbl1;
+'col'
+No rows selected 
+>>>  alter table tbl1 enable offline;
+No rows affected 
+>>>  desc extended tbl1;
+'col_name','data_type','comment'
+'col','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl1, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=OFFLINE, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  alter table tbl1 disable offline;
+No rows affected 
+>>>  desc extended tbl1;
+'col_name','data_type','comment'
+'col','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl1, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  select * from tbl1;
+'col'
+No rows selected 
+>>>  select col from tbl1;
+'col'
+No rows selected 
+>>>  
+>>>  create table tbl2  (col string) partitioned by (p string);
+No rows affected 
+>>>  alter table tbl2 add partition (p='p1');
+No rows affected 
+>>>  alter table tbl2 add partition (p='p2');
+No rows affected 
+>>>  alter table tbl2 add partition (p='p3');
+No rows affected 
+>>>  alter table tbl2 drop partition (p='not_exist');
+No rows affected 
+>>>  
+>>>  select * from tbl2 where p='p1';
+'col','p'
+No rows selected 
+>>>  select * from tbl2 where p='p2';
+'col','p'
+No rows selected 
+>>>  
+>>>  alter table tbl2 partition (p='p1') enable offline;
+No rows affected 
+>>>  desc extended tbl2 partition (p='p1');
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[p1], dbName:protectmode, tableName:tbl2, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=OFFLINE, transient_lastDdlTime=!!UNIXTIME!!})',''
+4 rows selected 
+>>>  
+>>>  alter table tbl2 enable offline;
+No rows affected 
+>>>  desc extended tbl2;
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl2, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=OFFLINE, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  alter table tbl2 enable no_drop;
+No rows affected 
+>>>  desc extended tbl2;
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl2, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=OFFLINE,NO_DROP, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  alter table tbl2 drop partition (p='p3');
+No rows affected 
+>>>  
+>>>  alter table tbl2 disable offline;
+No rows affected 
+>>>  desc extended tbl2;
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl2, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=NO_DROP, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  alter table tbl2 disable no_drop;
+No rows affected 
+>>>  desc extended tbl2;
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl2, dbName:protectmode, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  select * from tbl2 where p='p2';
+'col','p'
+No rows selected 
+>>>  select col from tbl2 where p='p2';
+'col'
+No rows selected 
+>>>  
+>>>  alter table tbl2 partition (p='p1') disable offline;
+No rows affected 
+>>>  desc extended tbl2 partition (p='p1');
+'col_name','data_type','comment'
+'col','string',''
+'p','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[p1], dbName:protectmode, tableName:tbl2, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode.db/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!})',''
+4 rows selected 
+>>>  
+>>>  select * from tbl2 where p='p1';
+'col','p'
+No rows selected 
+>>>  select col from tbl2 where p='p1';
+'col'
+No rows selected 
+>>>  
+>>>  insert overwrite table tbl1 select col from tbl2 where p='p1';
+'col'
+No rows selected 
+>>>  insert overwrite table tbl1 select col from tbl1;
+'col'
+No rows selected 
+>>>  
+>>>  alter table tbl2 partition (p='p1') enable no_drop;
+No rows affected 
+>>>  alter table tbl2 partition (p='p1') disable no_drop;
+No rows affected 
+>>>  
+>>>  alter table tbl2 partition (p='p2') enable no_drop;
+No rows affected 
+>>>  
+>>>  alter table tbl2 drop partition (p='p1');
+No rows affected 
+>>>  
+>>>  alter table tbl2 partition (p='p2') disable no_drop;
+No rows affected 
+>>>  
+>>>  drop table tbl1;
+No rows affected 
+>>>  drop table tbl2;
+No rows affected 
+>>>  !record

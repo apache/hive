@@ -1,0 +1,70 @@
+Saving all output to "!!{outputDirectory}!!/autogen_colalias.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/autogen_colalias.q
+>>>  CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax';
+No rows affected 
+>>>  
+>>>  create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1, 
+1, 
+0) 
+from src group by src.key;
+'_c0','zz','key','_c3','_c4','_c5','_c6','_c7','_c8','_c9'
+No rows selected 
+>>>  describe dest_grouped_old1;
+'col_name','data_type','comment'
+'_c0','int',''
+'zz','int',''
+'key','string',''
+'_c3','int',''
+'_c4','bigint',''
+'_c5','double',''
+'_c6','bigint',''
+'_c7','bigint',''
+'_c8','int',''
+'_c9','int',''
+10 rows selected 
+>>>  
+>>>  create table dest_grouped_old2 as select distinct src.key from src;
+'key'
+No rows selected 
+>>>  describe dest_grouped_old2;
+'col_name','data_type','comment'
+'key','string',''
+1 row selected 
+>>>  
+>>>  set hive.autogen.columnalias.prefix.label=column_;
+No rows affected 
+>>>  set hive.autogen.columnalias.prefix.includefuncname=true;
+No rows affected 
+>>>  
+>>>  create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10, 
+(src.key +5) % 2, 
+0) 
+from src group by src.key;
+'column_0','zz','column_2','test_max_length_src__3','count_src_value_4','sin_count_src_value_5','count_sin_src_value_6','unix_timestamp_7','sum_if_value_10_valu_8','if_src_key_10_src_ke_9'
+No rows selected 
+>>>  describe dest_grouped_new1;
+'col_name','data_type','comment'
+'column_0','int',''
+'zz','int',''
+'column_2','double',''
+'test_max_length_src__3','int',''
+'count_src_value_4','bigint',''
+'sin_count_src_value_5','double',''
+'count_sin_src_value_6','bigint',''
+'unix_timestamp_7','bigint',''
+'sum_if_value_10_valu_8','int',''
+'if_src_key_10_src_ke_9','double',''
+10 rows selected 
+>>>  
+>>>  create table dest_grouped_new2 as select distinct src.key from src;
+'key'
+No rows selected 
+>>>  describe dest_grouped_new2;
+'col_name','data_type','comment'
+'key','string',''
+1 row selected 
+>>>  
+>>>  -- Drop the temporary function at the end till HIVE-3160 gets fixed
+>>>  DROP TEMPORARY FUNCTION test_max;
+No rows affected 
+>>>  !record

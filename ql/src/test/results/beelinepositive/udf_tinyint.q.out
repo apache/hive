@@ -1,0 +1,11 @@
+Saving all output to "!!{outputDirectory}!!/udf_tinyint.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_tinyint.q
+>>>  DESCRIBE FUNCTION tinyint;
+'tab_name'
+'There is no documentation for function 'tinyint''
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED tinyint;
+'tab_name'
+'There is no documentation for function 'tinyint''
+1 row selected 
+>>>  !record

@@ -1,0 +1,155 @@
+Saving all output to "!!{outputDirectory}!!/archive_excludeHadoop20.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/archive_excludeHadoop20.q
+>>>  set hive.archive.enabled = true;
+No rows affected 
+>>>  set hive.enforce.bucketing = true;
+No rows affected 
+>>>  
+>>>  -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+>>>  
+>>>  drop table tstsrc;
+No rows affected 
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  
+>>>  create table tstsrc like src;
+No rows affected 
+>>>  insert overwrite table tstsrc select key, value from src;
+'key','value'
+No rows selected 
+>>>  
+>>>  create table tstsrcpart (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 10 buckets;
+No rows affected 
+>>>  
+>>>  insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11') 
+select key, value from srcpart where ds='2008-04-08' and hr='11';
+'key','value'
+No rows selected 
+>>>  
+>>>  insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12') 
+select key, value from srcpart where ds='2008-04-08' and hr='12';
+'key','value'
+No rows selected 
+>>>  
+>>>  insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='11') 
+select key, value from srcpart where ds='2008-04-09' and hr='11';
+'key','value'
+No rows selected 
+>>>  
+>>>  insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12') 
+select key, value from srcpart where ds='2008-04-09' and hr='12';
+'key','value'
+No rows selected 
+>>>  
+>>>  SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2;
+'_c0'
+'48479881068'
+1 row selected 
+>>>  
+>>>  ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12');
+No rows affected 
+>>>  
+>>>  SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2;
+'_c0'
+'48479881068'
+1 row selected 
+>>>  
+>>>  SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key;
+'key','_c1'
+'0','3'
+1 row selected 
+>>>  
+>>>  SELECT * FROM tstsrcpart a JOIN tstsrc b ON a.key=b.key 
+WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0';
+'key','value','ds','hr','key','value'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+'0','val_0','2008-04-08','12','0','val_0'
+9 rows selected 
+>>>  
+>>>  ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12');
+No rows affected 
+>>>  
+>>>  SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2;
+'_c0'
+'48479881068'
+1 row selected 
+>>>  
+>>>  CREATE TABLE harbucket(key INT) 
+PARTITIONED by (ds STRING) 
+CLUSTERED BY (key) INTO 10 BUCKETS;
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50;
+'a'
+No rows selected 
+>>>  
+>>>  SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key;
+'key'
+'0'
+'0'
+'0'
+'10'
+'20'
+'30'
+6 rows selected 
+>>>  ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12');
+No rows affected 
+>>>  SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key;
+'key'
+'0'
+'0'
+'0'
+'10'
+'20'
+'30'
+6 rows selected 
+>>>  ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12');
+No rows affected 
+>>>  SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key;
+'key'
+'0'
+'0'
+'0'
+'10'
+'20'
+'30'
+6 rows selected 
+>>>  
+>>>  
+>>>  CREATE TABLE old_name(key INT) 
+PARTITIONED by (ds STRING);
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50;
+'a'
+No rows selected 
+>>>  ALTER TABLE old_name ARCHIVE PARTITION (ds='1');
+No rows affected 
+>>>  SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2;
+'_c0'
+'48656137'
+1 row selected 
+>>>  ALTER TABLE old_name RENAME TO new_name;
+No rows affected 
+>>>  SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2;
+'_c0'
+''
+1 row selected 
+>>>  
+>>>  drop table tstsrc;
+No rows affected 
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  !record

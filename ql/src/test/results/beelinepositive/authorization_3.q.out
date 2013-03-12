@@ -1,0 +1,33 @@
+Saving all output to "!!{outputDirectory}!!/authorization_3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/authorization_3.q
+>>>  create table src_autho_test as select * from src;
+'key','value'
+No rows selected 
+>>>  
+>>>  grant drop on table src_autho_test to user hive_test_user;
+No rows affected 
+>>>  grant select on table src_autho_test to user hive_test_user;
+No rows affected 
+>>>  
+>>>  show grant user hive_test_user on table src_autho_test;
+No rows affected 
+>>>  
+>>>  revoke select on table src_autho_test from user hive_test_user;
+No rows affected 
+>>>  revoke drop on table src_autho_test from user hive_test_user;
+No rows affected 
+>>>  
+>>>  grant drop,select on table src_autho_test to user hive_test_user;
+No rows affected 
+>>>  show grant user hive_test_user on table src_autho_test;
+No rows affected 
+>>>  revoke drop,select on table src_autho_test from user hive_test_user;
+No rows affected 
+>>>  
+>>>  grant drop,select(key), select(value) on table src_autho_test to user hive_test_user;
+No rows affected 
+>>>  show grant user hive_test_user on table src_autho_test;
+No rows affected 
+>>>  revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user;
+No rows affected 
+>>>  !record

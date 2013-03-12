@@ -1,0 +1,106 @@
+Saving all output to "!!{outputDirectory}!!/alter_partition_format_loc.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/alter_partition_format_loc.q
+>>>  create table alter_partition_format_test (key int, value string);
+No rows affected 
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test set fileformat rcfile;
+No rows affected 
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test set location "file:/!!ELIDED!!
+No rows affected 
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/!!ELIDED!! inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  drop table alter_partition_format_test;
+No rows affected 
+>>>  
+>>>  --partitioned table
+>>>  create table alter_partition_format_test (key int, value string) partitioned by (ds string);
+No rows affected 
+>>>  
+>>>  alter table alter_partition_format_test add partition(ds='2010');
+No rows affected 
+>>>  desc extended alter_partition_format_test partition(ds='2010');
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2010], dbName:alter_partition_format_loc, tableName:alter_partition_format_test, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{transient_lastDdlTime=!!UNIXTIME!!})',''
+5 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile;
+No rows affected 
+>>>  desc extended alter_partition_format_test partition(ds='2010');
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2010], dbName:alter_partition_format_loc, tableName:alter_partition_format_test, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!})',''
+5 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test partition(ds='2010') set location "file:/!!ELIDED!!
+No rows affected 
+>>>  desc extended alter_partition_format_test partition(ds='2010');
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2010], dbName:alter_partition_format_loc, tableName:alter_partition_format_test, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:file:/!!ELIDED!! inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!})',''
+5 rows selected 
+>>>  
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test set fileformat rcfile;
+No rows affected 
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_partition_format_loc.db/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  
+>>>  alter table alter_partition_format_test set location "file:/!!ELIDED!!
+No rows affected 
+>>>  desc extended alter_partition_format_test;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter_partition_format_test, dbName:alter_partition_format_loc, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:file:/!!ELIDED!! inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  
+>>>  drop table alter_partition_format_test;
+No rows affected 
+>>>  !record

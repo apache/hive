@@ -1,0 +1,33 @@
+Saving all output to "!!{outputDirectory}!!/inputddl1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/inputddl1.q
+>>>  EXPLAIN 
+CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_CREATETABLE (TOK_TABNAME INPUTDDL1) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) TOK_TBLTEXTFILE)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Create Table Operator:'
+'        Create Table'
+'          columns: key int, value string'
+'          if not exists: false'
+'          input format: org.apache.hadoop.mapred.TextInputFormat'
+'          # buckets: -1'
+'          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+'          name: INPUTDDL1'
+'          isExternal: false'
+''
+''
+19 rows selected 
+>>>  
+>>>  CREATE TABLE INPUTDDL1(key INT, value STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  SELECT INPUTDDL1.* from INPUTDDL1;
+'key','value'
+No rows selected 
+>>>  !record

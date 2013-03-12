@@ -1,0 +1,16 @@
+Saving all output to "!!{outputDirectory}!!/default_partition_name.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/default_partition_name.q
+>>>  create table default_partition_name (key int, value string) partitioned by (ds string);
+No rows affected 
+>>>  
+>>>  set hive.exec.default.partition.name='some_other_default_partition_name';
+No rows affected 
+>>>  
+>>>  alter table default_partition_name add partition(ds='__HIVE_DEFAULT_PARTITION__');
+No rows affected 
+>>>  
+>>>  show partitions default_partition_name;
+'partition'
+'ds=__HIVE_DEFAULT_PARTITION__'
+1 row selected 
+>>>  !record

@@ -1,0 +1,111 @@
+Saving all output to "!!{outputDirectory}!!/drop_partitions_filter.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/drop_partitions_filter.q
+>>>  create table ptestfilter (a string, b int) partitioned by (c string, d string);
+No rows affected 
+>>>  describe ptestfilter;
+'col_name','data_type','comment'
+'a','string',''
+'b','int',''
+'c','string',''
+'d','string',''
+4 rows selected 
+>>>  
+>>>  alter table ptestfilter add partition (c='US', d=1);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='US', d=2);
+No rows affected 
+>>>  alter table ptestFilter add partition (c='Uganda', d=2);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='Germany', d=2);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='Canada', d=3);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='Russia', d=3);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='Greece', d=2);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='India', d=3);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='France', d=4);
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=Canada/d=3'
+'c=France/d=4'
+'c=Germany/d=2'
+'c=Greece/d=2'
+'c=India/d=3'
+'c=Russia/d=3'
+'c=US/d=1'
+'c=US/d=2'
+'c=Uganda/d=2'
+9 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c='US', d<'2');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=Canada/d=3'
+'c=France/d=4'
+'c=Germany/d=2'
+'c=Greece/d=2'
+'c=India/d=3'
+'c=Russia/d=3'
+'c=US/d=2'
+'c=Uganda/d=2'
+8 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c>='US', d<='2');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=Canada/d=3'
+'c=France/d=4'
+'c=Germany/d=2'
+'c=Greece/d=2'
+'c=India/d=3'
+'c=Russia/d=3'
+6 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c >'India');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=Canada/d=3'
+'c=France/d=4'
+'c=Germany/d=2'
+'c=Greece/d=2'
+'c=India/d=3'
+5 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c >='India'), 
+partition (c='Greece', d='2');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=Canada/d=3'
+'c=France/d=4'
+'c=Germany/d=2'
+3 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c != 'France');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=France/d=4'
+1 row selected 
+>>>  
+>>>  set hive.exec.drop.ignorenonexistent=false;
+No rows affected 
+>>>  alter table ptestfilter drop if exists partition (c='US');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=France/d=4'
+1 row selected 
+>>>  
+>>>  drop table ptestfilter;
+No rows affected 
+>>>  
+>>>  
+>>>  !record

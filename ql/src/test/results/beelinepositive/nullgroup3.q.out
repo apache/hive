@@ -1,0 +1,265 @@
+Saving all output to "!!{outputDirectory}!!/nullgroup3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/nullgroup3.q
+>>>  CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09');
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  explain 
+select count(1) from tstparttbl;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        tstparttbl '
+'          TableScan'
+'            alias: tstparttbl'
+'            Select Operator'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: count(1)'
+'                bucketGroup: false'
+'                mode: hash'
+'                outputColumnNames: _col0'
+'                Reduce Output Operator'
+'                  sort order: '
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: bigint'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: count(VALUE._col0)'
+'          bucketGroup: false'
+'          mode: mergepartial'
+'          outputColumnNames: _col0'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: bigint'
+'            outputColumnNames: _col0'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+50 rows selected 
+>>>  select count(1) from tstparttbl;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09');
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  explain 
+select count(1) from tstparttbl2;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        tstparttbl2 '
+'          TableScan'
+'            alias: tstparttbl2'
+'            Select Operator'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: count(1)'
+'                bucketGroup: false'
+'                mode: hash'
+'                outputColumnNames: _col0'
+'                Reduce Output Operator'
+'                  sort order: '
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: bigint'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: count(VALUE._col0)'
+'          bucketGroup: false'
+'          mode: mergepartial'
+'          outputColumnNames: _col0'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: bigint'
+'            outputColumnNames: _col0'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+50 rows selected 
+>>>  select count(1) from tstparttbl2;
+'_c0'
+'0'
+1 row selected 
+>>>  DROP TABLE tstparttbl;
+No rows affected 
+>>>  CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09');
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  explain 
+select count(1) from tstparttbl;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        tstparttbl '
+'          TableScan'
+'            alias: tstparttbl'
+'            Select Operator'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: count(1)'
+'                bucketGroup: false'
+'                mode: hash'
+'                outputColumnNames: _col0'
+'                Reduce Output Operator'
+'                  sort order: '
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: bigint'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: count(VALUE._col0)'
+'          bucketGroup: false'
+'          mode: mergepartial'
+'          outputColumnNames: _col0'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: bigint'
+'            outputColumnNames: _col0'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+50 rows selected 
+>>>  select count(1) from tstparttbl;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  DROP TABLE tstparttbl2;
+No rows affected 
+>>>  CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09');
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08');
+No rows affected 
+>>>  explain 
+select count(1) from tstparttbl2;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        tstparttbl2 '
+'          TableScan'
+'            alias: tstparttbl2'
+'            Select Operator'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: count(1)'
+'                bucketGroup: false'
+'                mode: hash'
+'                outputColumnNames: _col0'
+'                Reduce Output Operator'
+'                  sort order: '
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: bigint'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: count(VALUE._col0)'
+'          bucketGroup: false'
+'          mode: mergepartial'
+'          outputColumnNames: _col0'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: bigint'
+'            outputColumnNames: _col0'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+50 rows selected 
+>>>  select count(1) from tstparttbl2;
+'_c0'
+'0'
+1 row selected 
+>>>  !record

@@ -1,0 +1,19 @@
+Saving all output to "!!{outputDirectory}!!/diff_part_input_formats.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/diff_part_input_formats.q
+>>>  -- Tests the case where a table is changed from sequence file to a RC file,
+>>>  -- resulting in partitions in both file formats. If no valid partitions are
+>>>  -- selected, then it should still use RC file for reading the dummy partition.
+>>>  CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE;
+No rows affected 
+>>>  ALTER TABLE part_test ADD PARTITION(ds='1');
+No rows affected 
+>>>  ALTER TABLE part_test SET FILEFORMAT RCFILE;
+No rows affected 
+>>>  ALTER TABLE part_test ADD PARTITION(ds='2');
+No rows affected 
+>>>  SELECT count(1) FROM part_test WHERE ds='3';
+'_c0'
+'0'
+1 row selected 
+>>>  
+>>>  !record

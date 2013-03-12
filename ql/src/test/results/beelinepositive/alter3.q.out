@@ -1,0 +1,171 @@
+Saving all output to "!!{outputDirectory}!!/alter3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/alter3.q
+>>>  create table alter3_src ( col1 string ) stored as textfile ;
+No rows affected 
+>>>  load data local inpath '../data/files/test.dat' overwrite into table alter3_src ;
+No rows affected 
+>>>  
+>>>  create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile;
+No rows affected 
+>>>  
+>>>  create table alter3_like like alter3;
+No rows affected 
+>>>  
+>>>  insert overwrite table alter3 partition (pCol1='test_part:', pcol2='test_part:') select col1 from alter3_src ;
+'col1'
+No rows selected 
+>>>  select * from alter3 where pcol1='test_part:' and pcol2='test_part:';
+'col1','pcol1','pcol2'
+'1','test_part:','test_part:'
+'2','test_part:','test_part:'
+'3','test_part:','test_part:'
+'4','test_part:','test_part:'
+'5','test_part:','test_part:'
+'6','test_part:','test_part:'
+6 rows selected 
+>>>  
+>>>  
+>>>  alter table alter3 rename to alter3_renamed;
+No rows affected 
+>>>  describe extended alter3_renamed;
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter3_renamed, dbName:alter3, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3.db/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:');
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[test_part:, test_part:], dbName:alter3, tableName:alter3_renamed, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3.db/alter3_renamed/pcol1=test_part%3A/pcol2=test_part%3A, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6})',''
+5 rows selected 
+>>>  select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:';
+'col1','pcol1','pcol2'
+'1','test_part:','test_part:'
+'2','test_part:','test_part:'
+'3','test_part:','test_part:'
+'4','test_part:','test_part:'
+'5','test_part:','test_part:'
+'6','test_part:','test_part:'
+6 rows selected 
+>>>  
+>>>  insert overwrite table alter3_like 
+partition (pCol1='test_part:', pcol2='test_part:') 
+select col1 from alter3_src;
+'col1'
+No rows selected 
+>>>  alter table alter3_like rename to alter3_like_renamed;
+No rows affected 
+>>>  
+>>>  describe extended alter3_like_renamed;
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter3_like_renamed, dbName:alter3, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3.db/alter3_like_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  
+>>>  -- Cleanup
+>>>  DROP TABLE alter3_src;
+No rows affected 
+>>>  DROP TABLE alter3_renamed;
+No rows affected 
+>>>  DROP TABLE alter3_like_renamed;
+No rows affected 
+>>>  SHOW TABLES;
+'tab_name'
+'primitives'
+'src'
+'src1'
+'src_json'
+'src_sequencefile'
+'src_thrift'
+'srcbucket'
+'srcbucket2'
+'srcpart'
+9 rows selected 
+>>>  
+>>>  -- With non-default Database
+>>>  
+>>>  CREATE DATABASE alter3_db;
+No rows affected 
+>>>  USE alter3_db;
+No rows affected 
+>>>  SHOW TABLES;
+'tab_name'
+No rows selected 
+>>>  
+>>>  CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE ;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE alter3_src ;
+No rows affected 
+>>>  
+>>>  CREATE TABLE alter3 (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE;
+No rows affected 
+>>>  
+>>>  CREATE TABLE alter3_like LIKE alter3;
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE alter3 PARTITION (pCol1='test_part:', pcol2='test_part:') SELECT col1 FROM alter3_src ;
+'col1'
+No rows selected 
+>>>  SELECT * FROM alter3 WHERE pcol1='test_part:' AND pcol2='test_part:';
+'col1','pcol1','pcol2'
+'1','test_part:','test_part:'
+'2','test_part:','test_part:'
+'3','test_part:','test_part:'
+'4','test_part:','test_part:'
+'5','test_part:','test_part:'
+'6','test_part:','test_part:'
+6 rows selected 
+>>>  
+>>>  ALTER TABLE alter3 RENAME TO alter3_renamed;
+No rows affected 
+>>>  DESCRIBE EXTENDED alter3_renamed;
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter3_renamed, dbName:alter3_db, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3_db.db/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  DESCRIBE EXTENDED alter3_renamed PARTITION (pCol1='test_part:', pcol2='test_part:');
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[test_part:, test_part:], dbName:alter3_db, tableName:alter3_renamed, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3_db.db/alter3_renamed/pcol1=test_part%3A/pcol2=test_part%3A, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6})',''
+5 rows selected 
+>>>  SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:';
+'col1','pcol1','pcol2'
+'1','test_part:','test_part:'
+'2','test_part:','test_part:'
+'3','test_part:','test_part:'
+'4','test_part:','test_part:'
+'5','test_part:','test_part:'
+'6','test_part:','test_part:'
+6 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE alter3_like 
+PARTITION (pCol1='test_part:', pcol2='test_part:') 
+SELECT col1 FROM alter3_src;
+'col1'
+No rows selected 
+>>>  ALTER TABLE alter3_like RENAME TO alter3_like_renamed;
+No rows affected 
+>>>  
+>>>  DESCRIBE EXTENDED alter3_like_renamed;
+'col_name','data_type','comment'
+'col1','string',''
+'pcol1','string',''
+'pcol2','string',''
+'','',''
+'Detailed Table Information','Table(tableName:alter3_like_renamed, dbName:alter3_db, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter3_db.db/alter3_like_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!, numRows=6, totalSize=171, rawDataSize=6}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+5 rows selected 
+>>>  !record

@@ -1,0 +1,49 @@
+Saving all output to "!!{outputDirectory}!!/input_part8.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input_part8.q
+>>>  EXPLAIN 
+SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRCPART) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')) (TOK_LIMIT 10)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: 10'
+'      Processor Tree:'
+'        TableScan'
+'          alias: x'
+'          Select Operator'
+'            expressions:'
+'                  expr: key'
+'                  type: string'
+'                  expr: value'
+'                  type: string'
+'                  expr: ds'
+'                  type: string'
+'                  expr: hr'
+'                  type: string'
+'            outputColumnNames: _col0, _col1, _col2, _col3'
+'            Limit'
+'              ListSink'
+''
+''
+28 rows selected 
+>>>  
+>>>  SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10;
+'key','value','ds','hr'
+'238','val_238','2008-04-08','11'
+'86','val_86','2008-04-08','11'
+'311','val_311','2008-04-08','11'
+'27','val_27','2008-04-08','11'
+'165','val_165','2008-04-08','11'
+'409','val_409','2008-04-08','11'
+'255','val_255','2008-04-08','11'
+'278','val_278','2008-04-08','11'
+'98','val_98','2008-04-08','11'
+'484','val_484','2008-04-08','11'
+10 rows selected 
+>>>  !record

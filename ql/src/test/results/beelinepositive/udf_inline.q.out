@@ -1,0 +1,64 @@
+Saving all output to "!!{outputDirectory}!!/udf_inline.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_inline.q
+>>>  describe function inline;
+'tab_name'
+'inline( ARRAY( STRUCT()[,STRUCT()] - explodes and array and struct into a table'
+1 row selected 
+>>>  
+>>>  explain SELECT inline( 
+ARRAY( 
+STRUCT (1,'dude!'), 
+STRUCT (2,'Wheres'), 
+STRUCT (3,'my car?') 
+) 
+)  as (id, text) FROM SRC limit 2;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION inline (TOK_FUNCTION ARRAY (TOK_FUNCTION STRUCT 1 'dude!') (TOK_FUNCTION STRUCT 2 'Wheres') (TOK_FUNCTION STRUCT 3 'my car?'))) id text)) (TOK_LIMIT 2)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        src '
+'          TableScan'
+'            alias: src'
+'            Select Operator'
+'              expressions:'
+'                    expr: array(struct(1,'dude!'),struct(2,'Wheres'),struct(3,'my car?'))'
+'                    type: array<struct<col1:int,col2:string>>'
+'              outputColumnNames: _col0'
+'              UDTF Operator'
+'                function name: inline'
+'                Limit'
+'                  File Output Operator'
+'                    compressed: false'
+'                    GlobalTableId: 0'
+'                    table:'
+'                        input format: org.apache.hadoop.mapred.TextInputFormat'
+'                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: 2'
+''
+''
+34 rows selected 
+>>>  
+>>>  SELECT inline( 
+ARRAY( 
+STRUCT (1,'dude!'), 
+STRUCT (2,'Wheres'), 
+STRUCT (3,'my car?') 
+) 
+)  as (id, text) FROM SRC limit 2;
+'id','text'
+'1','dude!'
+'2','Wheres'
+2 rows selected 
+>>>  
+>>>  !record

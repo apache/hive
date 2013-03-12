@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_from_unixtime.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_from_unixtime.q
+>>>  DESCRIBE FUNCTION from_unixtime;
+'tab_name'
+'from_unixtime(unix_time, format) - returns unix_time in the specified format'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED from_unixtime;
+'tab_name'
+'from_unixtime(unix_time, format) - returns unix_time in the specified format'
+'Example:'
+'  > SELECT from_unixtime(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;'
+'  '1970-01-01 00:00:00''
+4 rows selected 
+>>>  !record

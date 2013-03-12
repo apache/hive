@@ -1,0 +1,16 @@
+Saving all output to "!!{outputDirectory}!!/udf_day.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_day.q
+>>>  DESCRIBE FUNCTION day;
+'tab_name'
+'day(date) - Returns the date of the month of date'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED day;
+'tab_name'
+'day(date) - Returns the date of the month of date'
+'Synonyms: dayofmonth'
+'date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.'
+'Example:'
+'   > SELECT day('2009-30-07', 1) FROM src LIMIT 1;'
+'  30'
+6 rows selected 
+>>>  !record

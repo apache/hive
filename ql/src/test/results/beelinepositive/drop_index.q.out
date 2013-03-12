@@ -1,0 +1,7 @@
+Saving all output to "!!{outputDirectory}!!/drop_index.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/drop_index.q
+>>>  SET hive.exec.drop.ignorenonexistent=false;
+No rows affected 
+>>>  DROP INDEX IF EXISTS UnknownIndex ON src;
+No rows affected 
+>>>  !record

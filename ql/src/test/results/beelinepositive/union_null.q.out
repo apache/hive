@@ -1,0 +1,17 @@
+Saving all output to "!!{outputDirectory}!!/union_null.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/union_null.q
+>>>  -- HIVE-2901
+>>>  select x from (select value as x from src union all select NULL as x from src)a limit 10;
+'x'
+'val_238'
+''
+'val_86'
+''
+'val_311'
+''
+'val_27'
+''
+'val_165'
+''
+10 rows selected 
+>>>  !record

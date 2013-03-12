@@ -1,0 +1,11 @@
+Saving all output to "!!{outputDirectory}!!/udf_float.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_float.q
+>>>  DESCRIBE FUNCTION float;
+'tab_name'
+'There is no documentation for function 'float''
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED float;
+'tab_name'
+'There is no documentation for function 'float''
+1 row selected 
+>>>  !record

@@ -1,0 +1,17 @@
+Saving all output to "!!{outputDirectory}!!/nomore_ambiguous_table_col.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/nomore_ambiguous_table_col.q
+>>>  -- was negative/ambiguous_table_col.q
+>>>  
+>>>  drop table ambiguous;
+No rows affected 
+>>>  create table ambiguous (key string, value string);
+No rows affected 
+>>>  
+>>>  FROM src key 
+INSERT OVERWRITE TABLE ambiguous SELECT key.key, key.value WHERE key.value < 'val_100';
+'key','value'
+No rows selected 
+>>>  
+>>>  drop table ambiguous;
+No rows affected 
+>>>  !record

@@ -1,0 +1,36 @@
+Saving all output to "!!{outputDirectory}!!/partcols1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/partcols1.q
+>>>  
+>>>  create table test1(col1 string) partitioned by (partitionId int);
+No rows affected 
+>>>  insert overwrite table test1 partition (partitionId=1) 
+select key from src limit 10;
+'key'
+No rows selected 
+>>>  
+>>>  FROM ( 
+FROM test1 
+SELECT partitionId, 111 as col2, 222 as col3, 333 as col4 
+WHERE partitionId = 1 
+DISTRIBUTE BY partitionId 
+SORT BY partitionId 
+) b 
+ 
+SELECT TRANSFORM( 
+b.partitionId,b.col2,b.col3,b.col4 
+) 
+ 
+USING 'cat' as (a,b,c,d);
+'a','b','c','d'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+'1','111','222','333'
+10 rows selected 
+>>>  !record

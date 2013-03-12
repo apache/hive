@@ -1,0 +1,100 @@
+Saving all output to "!!{outputDirectory}!!/show_indexes_syntax.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/show_indexes_syntax.q
+>>>  DROP TABLE show_idx_t1;
+No rows affected 
+>>>  
+>>>  CREATE TABLE show_idx_t1(KEY STRING, VALUE STRING);
+No rows affected 
+>>>  
+>>>  CREATE INDEX idx_t1 ON TABLE show_idx_t1(KEY) AS "COMPACT" WITH DEFERRED REBUILD;
+No rows affected 
+>>>  ALTER INDEX idx_t1 ON show_idx_t1 REBUILD;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+SHOW INDEX ON show_idx_t1;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_SHOWINDEXES show_idx_t1)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Show Index Operator:'
+'        Show Indexes'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+17 rows selected 
+>>>  
+>>>  SHOW INDEX ON show_idx_t1;
+'idx_name','tab_name','col_names','idx_tab_name','idx_type','comment'
+'idx_t1              ','show_idx_t1         ','key                 ','show_indexes_syntax__show_idx_t1_idx_t1__','compact             ',''
+1 row selected 
+>>>  
+>>>  EXPLAIN 
+SHOW INDEXES ON show_idx_t1;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_SHOWINDEXES show_idx_t1)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Show Index Operator:'
+'        Show Indexes'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+17 rows selected 
+>>>  
+>>>  SHOW INDEXES ON show_idx_t1;
+'idx_name','tab_name','col_names','idx_tab_name','idx_type','comment'
+'idx_t1              ','show_idx_t1         ','key                 ','show_indexes_syntax__show_idx_t1_idx_t1__','compact             ',''
+1 row selected 
+>>>  
+>>>  EXPLAIN 
+SHOW FORMATTED INDEXES ON show_idx_t1;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_SHOWINDEXES show_idx_t1 FORMATTED)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Show Index Operator:'
+'        Show Indexes'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+17 rows selected 
+>>>  
+>>>  SHOW FORMATTED INDEXES ON show_idx_t1;
+'idx_name','tab_name','col_names','idx_tab_name','idx_type','comment'
+'idx_name            ','tab_name            ','col_names           ','idx_tab_name        ','idx_type            ','comment             '
+'','','','','',''
+'','','','','',''
+'idx_t1              ','show_idx_t1         ','key                 ','show_indexes_syntax__show_idx_t1_idx_t1__','compact             ',''
+4 rows selected 
+>>>  
+>>>  DROP TABLE show_idx_t1;
+No rows affected 
+>>>  !record

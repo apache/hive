@@ -1,0 +1,11 @@
+Saving all output to "!!{outputDirectory}!!/udf_int.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_int.q
+>>>  DESCRIBE FUNCTION int;
+'tab_name'
+'There is no documentation for function 'int''
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED int;
+'tab_name'
+'There is no documentation for function 'int''
+1 row selected 
+>>>  !record
