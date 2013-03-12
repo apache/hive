@@ -29,16 +29,7 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-exec" rev="${version}"
                 conf="compile->default" />
-    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                transitive="false"/>
-    <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
-                transitive="false"/>
 
     <!-- Test Dependencies -->
-    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
   </dependencies>
 </ivy-module>
