@@ -138,6 +138,7 @@
     <pathelement location="${build.dir.hive}/metastore/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
+    <pathelement location="${build.dir.hive}/beeline/classes"/>
     <fileset dir="${hive.root}/data" includes="files/*.jar"/>
     <fileset dir="${hive.root}/ql" includes="lib/*.jar"/>
     <fileset dir="${hive.root}/cli" includes="lib/*.jar"/>
@@ -391,16 +392,18 @@
     <mkdir dir="${target.lib.dir}/php"/>
     <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/metatool" todir="${target.bin.dir}"/>
+    <copy file="${hive.root}/bin/beeline" todir="${target.bin.dir}"/>
+    <copy file="${hive.root}/bin/hiveserver2" todir="${target.bin.dir}"/>
+    <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
+    <copy todir="${target.bin.dir}/ext">
+      <fileset dir="${hive.root}/bin/ext" excludes="${vcs.excludes}"/>
+    </copy>
     <copy todir="${target.scripts.dir}/metastore/upgrade">
       <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.scripts.dir}/pdk">
       <fileset dir="${hive.root}/pdk/scripts" excludes="${vcs.excludes},README"/>
     </copy>
-    <copy todir="${target.bin.dir}/ext">
-      <fileset dir="${hive.root}/bin/ext" excludes="${vcs.excludes}"/>
-    </copy>
-    <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
     <copy file="${basedir}/conf/hive-default.xml.template" todir="${target.conf.dir}">
       <filterset>
         <filter token="VERSION" value="${version}"/>
@@ -447,6 +450,9 @@
     <copy todir="${target.lib.dir}/py/hive_service">
       <fileset dir="${hive.root}/service/src/gen/thrift/gen-py/hive_service" excludes="${vcs.excludes}"/>
     </copy>
+    <copy todir="${target.lib.dir}/py/TCLIService">
+      <fileset dir="${hive.root}/service/src/gen/thrift/gen-py/TCLIService" excludes="${vcs.excludes}"/>
+    </copy>
     <copy todir="${target.lib.dir}/py/queryplan">
       <fileset dir="${hive.root}/ql/src/gen/thrift/gen-py/queryplan" excludes="${vcs.excludes}"/>
     </copy>
@@ -460,14 +466,15 @@
         <exclude name="build/hadoopcore/*.jar"/>
         <exclude name="**/ant-contrib*.jar"/>
         <exclude name="**/hive-anttasks*.jar"/>
+        <exclude name="**/hive-testutils*.jar"/>
       </fileset>
+      <fileset file="${build.dir.hive}/beeline/hive-beeline-${version}.jar"/>
       <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar"/>
       <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
       <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
-      <fileset file="${build.dir.hive}/contrib/hive-hbase_handler-${version}.jar"/>
       <fileset dir="${build.dir.hive}/ivy/lib/default">
         <include name="*.jar"/>
         <exclude name="*.tar.gz"/>
@@ -660,6 +667,7 @@
       <packageset dir="metastore/src/gen/thrift/gen-javabean"/>
       <packageset dir="metastore/src/model"/>
       <packageset dir="cli/src/java"/>
+      <packageset dir="beeline/src/java"/>
       <packageset dir="ql/src/java"/>
       <packageset dir="ql/src/test"/>
       <packageset dir="ql/src/gen/thrift/gen-javabean"/>
@@ -884,89 +892,91 @@
     </available>
   </target>
 
-	<!-- ================================================================== -->
-	<!-- Findbugs                                                         -->
-	<!-- ================================================================== -->
+  <!-- ================================================================== -->
+  <!-- Findbugs                                                         -->
+  <!-- ================================================================== -->
+  
 
-
-	<target name="ivy-resolve-findbugs" depends="ivy-init-settings">
-		<echo message="Project: ${ant.project.name}" />
-		<ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="findbugs" log="${ivyresolvelog}" />
-	</target>
-
-	<property name="ivy.findbugs.retrieve.pattern" value="[conf]/[artifact].[ext]" />
-
-	<target name="ivy-retrieve-findbugs" depends="ivy-resolve-findbugs" description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
-		<echo message="Project: ${ant.project.name}" />
-		<ivy:retrieve settingsRef="${ant.project.name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.findbugs.retrieve.pattern}" log="${ivyresolvelog}" />
-	</target>
-
-	<target name="check-for-findbugs">
-		<echo message="Project: ${ant.project.name}" />
-		<path id="findbugs.classpath">
-			<fileset dir="${build.ivy.lib.dir}/findbugs">
-				<include name="*.jar" />
-			</fileset>
-		</path>
-		<pathconvert property="findbugs.classpath" refid="findbugs.classpath" />
-	</target>
-
-	<target name="findbugs" depends="init,ivy-retrieve-findbugs,check-for-findbugs" description="Run findbugs on source files">
-		<echo message="Project: ${ant.project.name}" />
-        
-        <property name="findbugs.conf.dir" location="${hive.root}/findbugs" />
-        <property name="findbugs.build.dir" location="${build.dir.hive}/findbugs" />
-        <property name="findbugs.exclude.file" value="${findbugs.conf.dir}/findbugs-exclude.xml"/>
-        <property name="findbugs.report.htmlfile" value="${findbugs.build.dir}/findbugs-report.html"/>
-        <property name="findbugs.report.xmlfile" value="${findbugs.build.dir}/findbugs-report.xml"/>
-        
-		<mkdir dir="${findbugs.build.dir}" />
-		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${build.ivy.lib.dir}/findbugs/findbugs-ant.jar" />
-
-		<findbugs classpath="${findbugs.classpath}" pluginList="" effort="max" output="xml" outputFile="${findbugs.report.xmlfile}" excludeFilter="${findbugs.exclude.file}">
-		 
-            <auxClasspath>
-				<fileset dir="${build.dir.hive}">
-					<include name="**/*.jar" />
-				</fileset>
-			</auxClasspath>
-            
-			<sourcePath path="${hive.root}/ant" />
-			<sourcePath path="${hive.root}/builtins" />
-            <sourcePath path="${hive.root}/cli" />
-			<sourcePath path="${hive.root}/common" />
-			<sourcePath path="${hive.root}/contrib" />
-			<sourcePath path="${hive.root}/hbase-handler" />
-			<sourcePath path="${hive.root}/hwi" />
-			<sourcePath path="${hive.root}/jdbc" />
-			<sourcePath path="${hive.root}/metastore" />
-			<sourcePath path="${hive.root}/odbc" />
-			<sourcePath path="${hive.root}/pdk" />
-            <sourcePath path="${hive.root}/ql" />
-			<sourcePath path="${hive.root}/serde" />
-			<sourcePath path="${hive.root}/service" />
-			<sourcePath path="${hive.root}/shims" />
-			<class location="${build.dir.hive}/anttasks/classes" />
-            <class location="${build.dir.hive}/builtins/classes" />
-            <class location="${build.dir.hive}/cli/classes" />
-			<class location="${build.dir.hive}/common/classes" />
-			<class location="${build.dir.hive}/contrib/classes" />
-            <class location="${build.dir.hive}/hbase-handler/classes" />
-			<class location="${build.dir.hive}/hwi/classes" />
-            <class location="${build.dir.hive}/jdbc/classes" />
-			<class location="${build.dir.hive}/metastore/classes" />
-            <class location="${build.dir.hive}/pdk/classes" />
-			<class location="${build.dir.hive}/ql/classes" />
-            <class location="${build.dir.hive}/serde/classes" />
-			<class location="${build.dir.hive}/service/classes" />
-            <class location="${build.dir.hive}/shims/classes" />
-		</findbugs>
-        <!--
+  <target name="ivy-resolve-findbugs" depends="ivy-init-settings">
+    <echo message="Project: ${ant.project.name}" />
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="findbugs" log="${ivyresolvelog}" />
+  </target>
+  
+  <property name="ivy.findbugs.retrieve.pattern" value="[conf]/[artifact].[ext]" />
+  
+  <target name="ivy-retrieve-findbugs" depends="ivy-resolve-findbugs" description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
+    <echo message="Project: ${ant.project.name}" />
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.findbugs.retrieve.pattern}" log="${ivyresolvelog}" />
+  </target>
+  
+  <target name="check-for-findbugs">
+    <echo message="Project: ${ant.project.name}" />
+    <path id="findbugs.classpath">
+      <fileset dir="${build.ivy.lib.dir}/findbugs">
+	<include name="*.jar" />
+      </fileset>
+    </path>
+    <pathconvert property="findbugs.classpath" refid="findbugs.classpath" />
+  </target>
+  
+  <target name="findbugs" depends="init,ivy-retrieve-findbugs,check-for-findbugs" description="Run findbugs on source files">
+    <echo message="Project: ${ant.project.name}" />
+    
+    <property name="findbugs.conf.dir" location="${hive.root}/findbugs" />
+    <property name="findbugs.build.dir" location="${build.dir.hive}/findbugs" />
+    <property name="findbugs.exclude.file" value="${findbugs.conf.dir}/findbugs-exclude.xml"/>
+    <property name="findbugs.report.htmlfile" value="${findbugs.build.dir}/findbugs-report.html"/>
+    <property name="findbugs.report.xmlfile" value="${findbugs.build.dir}/findbugs-report.xml"/>
+    
+    <mkdir dir="${findbugs.build.dir}" />
+    <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${build.ivy.lib.dir}/findbugs/findbugs-ant.jar" />
+    
+    <findbugs classpath="${findbugs.classpath}" pluginList="" effort="max" output="xml" outputFile="${findbugs.report.xmlfile}" excludeFilter="${findbugs.exclude.file}">
+      
+      <auxClasspath>
+	<fileset dir="${build.dir.hive}">
+	  <include name="**/*.jar" />
+	</fileset>
+      </auxClasspath>
+      
+      <sourcePath path="${hive.root}/ant" />
+      <sourcePath path="${hive.root}/beeline" />
+      <sourcePath path="${hive.root}/builtins" />
+      <sourcePath path="${hive.root}/cli" />
+      <sourcePath path="${hive.root}/common" />
+      <sourcePath path="${hive.root}/contrib" />
+      <sourcePath path="${hive.root}/hbase-handler" />
+      <sourcePath path="${hive.root}/hwi" />
+      <sourcePath path="${hive.root}/jdbc" />
+      <sourcePath path="${hive.root}/metastore" />
+      <sourcePath path="${hive.root}/odbc" />
+      <sourcePath path="${hive.root}/pdk" />
+      <sourcePath path="${hive.root}/ql" />
+      <sourcePath path="${hive.root}/serde" />
+      <sourcePath path="${hive.root}/service" />
+      <sourcePath path="${hive.root}/shims" />
+      <class location="${build.dir.hive}/anttasks/classes" />
+      <class location="${build.dir.hive}/beeline/classes" />
+      <class location="${build.dir.hive}/builtins/classes" />
+      <class location="${build.dir.hive}/cli/classes" />
+      <class location="${build.dir.hive}/common/classes" />
+      <class location="${build.dir.hive}/contrib/classes" />
+      <class location="${build.dir.hive}/hbase-handler/classes" />
+      <class location="${build.dir.hive}/hwi/classes" />
+      <class location="${build.dir.hive}/jdbc/classes" />
+      <class location="${build.dir.hive}/metastore/classes" />
+      <class location="${build.dir.hive}/pdk/classes" />
+      <class location="${build.dir.hive}/ql/classes" />
+      <class location="${build.dir.hive}/serde/classes" />
+      <class location="${build.dir.hive}/service/classes" />
+      <class location="${build.dir.hive}/shims/classes" />
+    </findbugs>
+    <!--
         <xslt style="${findbugs.conf.dir}/default.xsl" in="${findbugs.report.xmlfile}"  out="${findbugs.report.htmlfile}"/>
         -->
-	</target>
+  </target>
   <target name="ivy-docs" depends="ivy-init-settings"
-    description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
+          description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
     <echo message="Project: ${ant.project.name}"/>
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="docs"/>
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
@@ -1038,6 +1048,10 @@
     <!-- copy the jars  -->
     <copy file="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar"
           todir="${mvn.jar.dir}" />
+    <copy file="${build.dir.hive}/beeline/hive-beeline-${version}.jar"
+          todir="${mvn.jar.dir}" />
+    <copy file="${build.dir.hive}/builtins/hive-builtins-${version}.jar"
+          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/cli/hive-cli-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/common/hive-common-${version}.jar"
@@ -1052,6 +1066,8 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
           todir="${mvn.jar.dir}" />
+    <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
+          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/ql/hive-exec-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/serde/hive-serde-${version}.jar"
@@ -1060,14 +1076,14 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/shims/hive-shims-${version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
-          todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/builtins/hive-builtins-${version}.jar"
-          todir="${mvn.jar.dir}" />
 
     <!-- copy over maven pom files created using the make-pom target and rename to maven convention -->
     <copy file="${build.dir.hive}/anttasks/pom.xml"
           tofile="${mvn.pom.dir}/hive-anttasks-${version}.pom" />
+    <copy file="${build.dir.hive}/beeline/pom.xml"
+          tofile="${mvn.pom.dir}/hive-beeline-${version}.pom" />
+    <copy file="${build.dir.hive}/builtins/pom.xml"
+          tofile="${mvn.pom.dir}/hive-builtins-${version}.pom" />
     <copy file="${build.dir.hive}/cli/pom.xml"
           tofile="${mvn.pom.dir}/hive-cli-${version}.pom" />
     <copy file="${build.dir.hive}/common/pom.xml"
@@ -1082,6 +1098,8 @@
           tofile="${mvn.pom.dir}/hive-jdbc-${version}.pom" />
     <copy file="${build.dir.hive}/metastore/pom.xml"
           tofile="${mvn.pom.dir}/hive-metastore-${version}.pom" />
+    <copy file="${build.dir.hive}/pdk/pom.xml"
+          tofile="${mvn.pom.dir}/hive-pdk-${version}.pom" />
     <copy file="${build.dir.hive}/ql/pom.xml"
           tofile="${mvn.pom.dir}/hive-exec-${version}.pom" />
     <copy file="${build.dir.hive}/serde/pom.xml"
@@ -1090,10 +1108,8 @@
           tofile="${mvn.pom.dir}/hive-service-${version}.pom" />
     <copy file="${build.dir.hive}/shims/pom.xml"
           tofile="${mvn.pom.dir}/hive-shims-${version}.pom" />
-    <copy file="${build.dir.hive}/pdk/pom.xml"
-          tofile="${mvn.pom.dir}/hive-pdk-${version}.pom" />
-    <copy file="${build.dir.hive}/builtins/pom.xml"
-          tofile="${mvn.pom.dir}/hive-builtins-${version}.pom" />
+
+
 
     <!-- copy over licence -->
     <copy file="${hive.root}/LICENSE" todir="${mvn.license.dir}" />
@@ -1169,6 +1185,12 @@
       <param name="hive.project" value="anttasks" />
     </antcall>
     <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="beeline" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="builtins" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
       <param name="hive.project" value="cli" />
     </antcall>
     <antcall target="maven-publish-artifact">
@@ -1187,16 +1209,13 @@
       <param name="hive.project" value="hwi" />
     </antcall>
     <antcall target="maven-publish-artifact">
-      <param name="hive.project" value="pdk" />
-    </antcall>
-    <antcall target="maven-publish-artifact">
-      <param name="hive.project" value="builtins" />
-    </antcall>
-    <antcall target="maven-publish-artifact">
       <param name="hive.project" value="jdbc" />
     </antcall>
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="metastore" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="pdk" />
     </antcall>
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="serde" />
@@ -1240,6 +1259,14 @@
         output.file="${mvn.pom.dir}/hive-anttasks-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
+        input.file="${mvn.jar.dir}/hive-beeline-${version}.jar"
+        output.file="${mvn.jar.dir}/hive-beeline-${version}.jar.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+    <sign-artifact
+        input.file="${mvn.pom.dir}/hive-beeline-${version}.pom"
+        output.file="${mvn.pom.dir}/hive-beeline-${version}.pom.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+    <sign-artifact
         input.file="${mvn.jar.dir}/hive-cli-${version}.jar"
         output.file="${mvn.jar.dir}/hive-cli-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
@@ -1262,6 +1289,14 @@
     <sign-artifact
         input.file="${mvn.pom.dir}/hive-contrib-${version}.pom"
         output.file="${mvn.pom.dir}/hive-contrib-${version}.pom.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+    <sign-artifact
+        input.file="${mvn.jar.dir}/hive-exec-${version}.jar"
+        output.file="${mvn.jar.dir}/hive-exec-${version}.jar.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+    <sign-artifact
+        input.file="${mvn.pom.dir}/hive-exec-${version}.pom"
+        output.file="${mvn.pom.dir}/hive-exec-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-hbase-handler-${version}.jar"
@@ -1296,28 +1331,12 @@
         output.file="${mvn.pom.dir}/hive-metastore-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
-        input.file="${mvn.jar.dir}/hive-exec-${version}.jar"
-        output.file="${mvn.jar.dir}/hive-exec-${version}.jar.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-exec-${version}.pom"
-        output.file="${mvn.pom.dir}/hive-exec-${version}.pom.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
         input.file="${mvn.jar.dir}/hive-pdk-${version}.jar"
         output.file="${mvn.jar.dir}/hive-pdk-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
         input.file="${mvn.pom.dir}/hive-pdk-${version}.pom"
         output.file="${mvn.pom.dir}/hive-pdk-${version}.pom.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
-        input.file="${mvn.jar.dir}/hive-builtins-${version}.jar"
-        output.file="${mvn.jar.dir}/hive-builtins-${version}.jar.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-builtins-${version}.pom"
-        output.file="${mvn.pom.dir}/hive-builtins-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-serde-${version}.jar"

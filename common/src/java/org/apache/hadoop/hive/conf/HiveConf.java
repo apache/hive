@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -57,6 +59,7 @@ public class HiveConf extends Configuration {
   private static byte[] confVarByteArray = null;
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
+  private final List<String> restrictList = new ArrayList<String>();
 
   static {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -143,6 +146,16 @@ public class HiveConf extends Configuration {
     HiveConf.ConfVars.HADOOPJT,
     HiveConf.ConfVars.METASTOREWAREHOUSE,
     HiveConf.ConfVars.SCRATCHDIR
+  };
+
+  /**
+   * The conf variables that depends on current user
+   */
+  public static final HiveConf.ConfVars[] userVars = {
+    HiveConf.ConfVars.SCRATCHDIR,
+    HiveConf.ConfVars.LOCALSCRATCHDIR,
+    HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR,
+    HiveConf.ConfVars.HIVEHISTORYFILELOC
   };
 
   /**
@@ -688,6 +701,24 @@ public class HiveConf extends Configuration {
     HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
+    HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
+    HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 100),
+
+    HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
+    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
+
+
+    // HiveServer2 auth configuration
+    HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE"),
+    HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", ""),
+    HIVE_SERVER2_KERBEROS_PRINCIPAL("hive.server2.authentication.kerberos.principal", ""),
+    HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null),
+    HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null),
+    HIVE_SERVER2_KERBEROS_IMPERSONATION("hive.server2.enable.impersonation", false),
+    HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
+
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", null),
+
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -868,6 +899,13 @@ public class HiveConf extends Configuration {
       }
     }
     return new LoopingByteArrayInputStream(confVarByteArray);
+  }
+
+  public void verifyAndSet(String name, String value) throws IllegalArgumentException {
+    if (restrictList.contains(name)) {
+      throw new IllegalArgumentException("Cann't modify " + name + " at runtime");
+    }
+    set(name, value);
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {
@@ -1057,7 +1095,17 @@ public class HiveConf extends Configuration {
     if (auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
     }
+
+    // setup list of conf vars that are not allowed to change runtime
+    String restrictListStr = this.get(ConfVars.HIVE_CONF_RESTRICTED_LIST.toString());
+    if (restrictListStr != null) {
+      for (String entry : restrictListStr.split(",")) {
+        restrictList.add(entry);
+      }
+    }
+    restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.toString());
   }
+
 
   /**
    * Apply system properties to this object if the property name is defined in ConfVars

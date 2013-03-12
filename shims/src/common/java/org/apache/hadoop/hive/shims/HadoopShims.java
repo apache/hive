@@ -192,15 +192,15 @@ public interface HadoopShims {
   public void closeAllForUGI(UserGroupInformation ugi);
 
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
-
   /**
    * Used by metastore server to perform requested rpc in client context.
+   * @param <T>
    * @param ugi
    * @param pvea
    * @throws IOException
    * @throws InterruptedException
    */
-  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws
+  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws
     IOException, InterruptedException;
 
   /**
@@ -226,6 +226,12 @@ public interface HadoopShims {
   public boolean isSecureShimImpl();
 
   /**
+   * Return true if the hadoop configuration has security enabled
+   * @return
+   */
+  public boolean isSecurityEnabled();
+
+  /**
    * Get the string form of the token given a token signature.
    * The signature is used as the value of the "service" field in the token for lookup.
    * Ref: AbstractDelegationTokenSelector in Hadoop. If there exists such a token
@@ -241,6 +247,16 @@ public interface HadoopShims {
    * @throws IOException
    */
   String getTokenStrForm(String tokenSignature) throws IOException;
+
+  /**
+   * Add a delegation token to the given ugi
+   * @param ugi
+   * @param tokenStr
+   * @param tokenService
+   * @throws IOException
+   */
+  void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService)
+    throws IOException;
 
 
   enum JobTrackerState { INITIALIZING, RUNNING };
@@ -290,6 +306,12 @@ public interface HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf);
 
 
+ /**
+  *  Perform kerberos login using the given principal and keytab
+ * @throws IOException
+  */
+  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException;
+
   /**
    * Move the directory/file to trash. In case of the symlinks or mount points, the file is
    * moved to the trashbin in the actual volume of the path p being deleted
@@ -319,6 +341,13 @@ public interface HadoopShims {
    * @return
    */
   public short getDefaultReplication(FileSystem fs, Path path);
+
+  /**
+   * Create the proxy ugi for the given userid
+   * @param userName
+   * @return
+   */
+  UserGroupInformation createProxyUser(String userName) throws IOException;
 
   /**
    * InputSplitShim.
@@ -380,4 +409,5 @@ public interface HadoopShims {
     RecordReader getRecordReader(JobConf job, InputSplitShim split, Reporter reporter,
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
+
 }

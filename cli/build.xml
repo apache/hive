@@ -40,6 +40,11 @@ to call at top-level: ant deploy-contrib compile-core-test
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
+    <copy todir="${build.classes}" failonerror="false">
+      <fileset dir="${src.dir}">
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
   </target>
 
 </project>
