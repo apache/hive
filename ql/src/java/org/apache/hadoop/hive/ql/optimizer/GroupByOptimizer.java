@@ -175,7 +175,9 @@ public class GroupByOptimizer implements Transform {
       boolean useMapperSort =
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT);
 
-      if (useMapperSort && (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
+      // Dont remove the operator for distincts
+      if (useMapperSort && !groupByOp.getConf().isDistinct() &&
+          (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
         convertGroupByMapSideSortedGroupBy(groupByOp, depth);
       }
       else if ((match == GroupByOptimizerSortMatch.PARTIAL_MATCH) ||
