@@ -10284,23 +10284,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch(type)
     {
     case HiveParser.KW_PRECEDING:
-      bs = new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT);
+      if (node.getChildCount() == 2) {
+        bs = new ValueBoundarySpec(Direction.PRECEDING,
+            (ASTNode) node.getChild(0),
+            Integer.parseInt(node.getChild(1).getText()));
+      }
+      else{
+        bs = new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT);
+      }
       break;
     case HiveParser.KW_FOLLOWING:
-      bs = new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT);
+      if (node.getChildCount() == 2) {
+        bs = new ValueBoundarySpec(Direction.FOLLOWING,
+            (ASTNode) node.getChild(0),
+            Integer.parseInt(node.getChild(1).getText()));
+      } else {
+        bs = new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT);
+      }
       break;
     case HiveParser.KW_CURRENT:
       bs = new CurrentRowSpec();
-      break;
-    case HiveParser.KW_LESS:
-      bs = new ValueBoundarySpec(Direction.PRECEDING,
-          (ASTNode) node.getChild(0),
-          Integer.parseInt(node.getChild(1).getText()));
-      break;
-    case HiveParser.KW_MORE:
-      bs = new ValueBoundarySpec(Direction.FOLLOWING,
-          (ASTNode) node.getChild(0),
-          Integer.parseInt(node.getChild(1).getText()));
       break;
     }
     return bs;

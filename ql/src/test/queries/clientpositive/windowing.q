@@ -159,7 +159,7 @@ select  p_mfgr,p_name, p_size,
   dense_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as dr, 
 cume_dist() over(distribute by p_mfgr sort by p_mfgr, p_name ) as cud, 
 sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 less and current row) as s2, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 preceding and current row) as s2, 
 first_value(p_size, true) over w1  as fv1
 from part 
 having p_size > 5 
@@ -280,7 +280,7 @@ rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as r,
 dense_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as dr, 
 cume_dist() over(distribute by p_mfgr sort by p_mfgr, p_name ) as cud, 
 sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 less and current row) as s2, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 preceding and current row) as s2, 
 first_value(p_size, true) over w1  as fv1
 having p_size > 5 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
@@ -310,8 +310,8 @@ having p_size > 0
 	 
 -- 27. testMultipleRangeWindows
 select  p_mfgr,p_name, p_size, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between p_size 10 less and current row) as s2, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between current row and p_size 10 more )  as s1
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between p_size 10 preceding and current row) as s2, 
+sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between current row and p_size 10 following )  as s1
 from part  
 window w1 as (rows between 2 preceding and 2 following);
 

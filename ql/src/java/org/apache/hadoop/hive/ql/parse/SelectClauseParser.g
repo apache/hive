@@ -215,8 +215,6 @@ valuesboundary
 :
   KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
   KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
-  rowExp=expression rngExp=Number (d=KW_LESS | d=KW_MORE ) -> ^($d $rowExp $rngExp)
+  rowExp=expression rngExp=Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d $rowExp $rngExp)
 ;   
-
-
 
