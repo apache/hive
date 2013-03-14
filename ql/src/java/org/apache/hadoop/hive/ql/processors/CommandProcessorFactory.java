@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import java.util.Map;
-import java.util.HashMap;
 
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.cube.processors.CubeDriver;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * CommandProcessorFactory.
@@ -55,6 +57,8 @@ public final class CommandProcessorFactory {
       return new AddResourceProcessor();
     } else if ("delete".equals(cmdl)) {
       return new DeleteResourceProcessor();
+    } else if ("cube".equals(cmdl)) {
+      return new CubeDriver(conf);
     } else if (!isBlank(cmd)) {
       if (conf == null) {
         return new Driver();
