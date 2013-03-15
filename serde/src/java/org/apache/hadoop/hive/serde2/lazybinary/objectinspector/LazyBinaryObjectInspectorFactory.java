@@ -18,18 +18,18 @@
 package org.apache.hadoop.hive.serde2.lazybinary.objectinspector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
  * instances.
- * 
+ *
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
- * 
+ *
  * The reason of having caches here is that ObjectInspectors do not have an
  * internal state - so ObjectInspectors with the same construction parameters
  * should result in exactly the same ObjectInspector.
@@ -37,7 +37,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public final class LazyBinaryObjectInspectorFactory {
 
-  static HashMap<ArrayList<Object>, LazyBinaryStructObjectInspector> cachedLazyBinaryStructObjectInspector = new HashMap<ArrayList<Object>, LazyBinaryStructObjectInspector>();
+  static ConcurrentHashMap<ArrayList<Object>, LazyBinaryStructObjectInspector> cachedLazyBinaryStructObjectInspector =
+      new ConcurrentHashMap<ArrayList<Object>, LazyBinaryStructObjectInspector>();
 
   public static LazyBinaryStructObjectInspector getLazyBinaryStructObjectInspector(
       List<String> structFieldNames,
@@ -65,7 +66,8 @@ public final class LazyBinaryObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<ArrayList<Object>, LazyBinaryListObjectInspector> cachedLazyBinaryListObjectInspector = new HashMap<ArrayList<Object>, LazyBinaryListObjectInspector>();
+  static ConcurrentHashMap<ArrayList<Object>, LazyBinaryListObjectInspector> cachedLazyBinaryListObjectInspector =
+      new ConcurrentHashMap<ArrayList<Object>, LazyBinaryListObjectInspector>();
 
   public static LazyBinaryListObjectInspector getLazyBinaryListObjectInspector(
       ObjectInspector listElementObjectInspector) {
@@ -80,7 +82,8 @@ public final class LazyBinaryObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<ArrayList<Object>, LazyBinaryMapObjectInspector> cachedLazyBinaryMapObjectInspector = new HashMap<ArrayList<Object>, LazyBinaryMapObjectInspector>();
+  static ConcurrentHashMap<ArrayList<Object>, LazyBinaryMapObjectInspector> cachedLazyBinaryMapObjectInspector =
+      new ConcurrentHashMap<ArrayList<Object>, LazyBinaryMapObjectInspector>();
 
   public static LazyBinaryMapObjectInspector getLazyBinaryMapObjectInspector(
       ObjectInspector mapKeyObjectInspector,
