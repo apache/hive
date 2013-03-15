@@ -110,21 +110,14 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -185,21 +178,14 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
 
 PREHOOK: query: insert overwrite table outputTbl1
@@ -359,21 +345,14 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -438,21 +417,14 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
 
 
 PREHOOK: query: insert overwrite table outputTbl1
@@ -576,37 +548,30 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: (_col0 + _col0)
+                  type: double
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: (_col0 + _col0)
-                    type: double
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Filter Operator
-                predicate:
-                    expr: (_col0 >= 7.0)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: bigint
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+            Filter Operator
+              predicate:
+                  expr: (_col0 >= 7.0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: double
+                      expr: _col1
+                      type: bigint
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1
 
   Stage: Stage-0
     Move Operator
@@ -662,37 +627,30 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: (_col0 + _col0)
+                  type: double
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: (_col0 + _col0)
-                    type: double
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Filter Operator
-                predicate:
-                    expr: (_col0 >= 7.0)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: double
-                        expr: _col1
-                        type: bigint
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+            Filter Operator
+              predicate:
+                  expr: (_col0 >= 7.0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: double
+                      expr: _col1
+                      type: bigint
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1
 
 
 PREHOOK: query: insert overwrite table outputTbl1
