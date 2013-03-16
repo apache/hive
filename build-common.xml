@@ -86,6 +86,7 @@
       <pathelement location="${build.dir.hive}/hwi/test/classes"/>
       <pathelement location="${build.dir.hive}/jdbc/test/classes"/>
       <pathelement location="${build.dir.hive}/metastore/test/classes"/>
+      <pathelement location="${build.dir.hive}/hcatalog/test/classes"/>
       <pathelement location="${build.dir.hive}/ql/test/classes"/>
       <pathelement location="${build.dir.hive}/serde/test/classes"/>
       <pathelement location="${build.dir.hive}/service/test/classes"/>
@@ -197,6 +198,7 @@
     <pathelement location="${build.dir.hive}/common/classes"/>
     <pathelement location="${build.dir.hive}/serde/classes"/>
     <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/hcatalog/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/beeline/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
