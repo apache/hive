@@ -8,3 +8,4 @@ build-eclipse
 *.launch
 *~
 metastore_db
+common/src/gen
