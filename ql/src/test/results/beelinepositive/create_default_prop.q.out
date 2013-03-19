@@ -1,0 +1,34 @@
+Saving all output to "!!{outputDirectory}!!/create_default_prop.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/create_default_prop.q
+>>>  set hive.table.parameters.default=p1=v1,P2=v21=v22=v23;
+No rows affected 
+>>>  CREATE TABLE table_p1 (a STRING);
+No rows affected 
+>>>  DESC EXTENDED table_p1;
+'col_name','data_type','comment'
+'a','string',''
+'','',''
+'Detailed Table Information','Table(tableName:table_p1, dbName:create_default_prop, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/create_default_prop.db/table_p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{p1=v1, transient_lastDdlTime=!!UNIXTIME!!, P2=v21=v22=v23}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  
+>>>  set hive.table.parameters.default=p3=v3;
+No rows affected 
+>>>  CREATE TABLE table_p2 LIKE table_p1;
+No rows affected 
+>>>  DESC EXTENDED table_p2;
+'col_name','data_type','comment'
+'a','string',''
+'','',''
+'Detailed Table Information','Table(tableName:table_p2, dbName:create_default_prop, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/create_default_prop.db/table_p2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  
+>>>  CREATE TABLE table_p3 AS SELECT * FROM table_p1;
+'a'
+No rows selected 
+>>>  DESC EXTENDED table_p3;
+'col_name','data_type','comment'
+'a','string',''
+'','',''
+'Detailed Table Information','Table(tableName:table_p3, dbName:create_default_prop, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/create_default_prop.db/table_p3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, p3=v3, transient_lastDdlTime=!!UNIXTIME!!, numRows=0, totalSize=0, rawDataSize=0}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  !record

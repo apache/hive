@@ -1,0 +1,59 @@
+Saving all output to "!!{outputDirectory}!!/drop_partitions_filter3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/drop_partitions_filter3.q
+>>>  create table ptestfilter (a string, b int) partitioned by (c string, d int);
+No rows affected 
+>>>  describe ptestfilter;
+'col_name','data_type','comment'
+'a','string',''
+'b','int',''
+'c','string',''
+'d','int',''
+4 rows selected 
+>>>  
+>>>  alter table ptestfilter add partition (c='1', d=1);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='1', d=2);
+No rows affected 
+>>>  alter table ptestFilter add partition (c='2', d=1);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='2', d=2);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='3', d=1);
+No rows affected 
+>>>  alter table ptestfilter add partition (c='3', d=2);
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=1/d=1'
+'c=1/d=2'
+'c=2/d=1'
+'c=2/d=2'
+'c=3/d=1'
+'c=3/d=2'
+6 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c='1', d=1);
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=1/d=2'
+'c=2/d=1'
+'c=2/d=2'
+'c=3/d=1'
+'c=3/d=2'
+5 rows selected 
+>>>  
+>>>  alter table ptestfilter drop partition (c='2');
+No rows affected 
+>>>  show partitions ptestfilter;
+'partition'
+'c=1/d=2'
+'c=3/d=1'
+'c=3/d=2'
+3 rows selected 
+>>>  
+>>>  drop table ptestfilter;
+No rows affected 
+>>>  
+>>>  
+>>>  !record

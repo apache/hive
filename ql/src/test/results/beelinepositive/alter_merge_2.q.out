@@ -1,0 +1,49 @@
+Saving all output to "!!{outputDirectory}!!/alter_merge_2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/alter_merge_2.q
+>>>  create table src_rc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as rcfile;
+No rows affected 
+>>>  
+>>>  alter table src_rc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+No rows affected 
+>>>  desc extended src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+'ds','string',''
+'ts','string',''
+'','',''
+'Detailed Partition Information','Partition(values:[2012-01-03, 2012-01-03+14:46:31], dbName:alter_merge_2, tableName:src_rc_merge_test_part, createTime:!!UNIXTIME!!, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:ts, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/alter_merge_2.db/src_rc_merge_test_part/ds=2012-01-03/ts=2012-01-03+14%3A46%3A31, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), parameters:{transient_lastDdlTime=!!UNIXTIME!!})',''
+6 rows selected 
+>>>  
+>>>  load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+No rows affected 
+>>>  load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+No rows affected 
+>>>  
+>>>  select count(1) from src_rc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  alter table src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate;
+No rows affected 
+>>>  
+>>>  
+>>>  select count(1) from src_rc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+'_c0'
+'15'
+1 row selected 
+>>>  select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+'_c0','_c1'
+'214','-7678496319'
+1 row selected 
+>>>  
+>>>  drop table src_rc_merge_test_part;
+No rows affected 
+>>>  !record

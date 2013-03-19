@@ -1,0 +1,77 @@
+Saving all output to "!!{outputDirectory}!!/input2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input2.q
+>>>  CREATE TABLE TEST2a(A INT, B DOUBLE) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE TEST2a;
+'col_name','data_type','comment'
+'a','int',''
+'b','double',''
+2 rows selected 
+>>>  DESC TEST2a;
+'col_name','data_type','comment'
+'a','int',''
+'b','double',''
+2 rows selected 
+>>>  CREATE TABLE TEST2b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE TEST2b;
+'col_name','data_type','comment'
+'a','array<int>',''
+'b','double',''
+'c','map<double,int>',''
+3 rows selected 
+>>>  SHOW TABLES;
+'tab_name'
+'primitives'
+'src'
+'src1'
+'src_json'
+'src_sequencefile'
+'src_thrift'
+'srcbucket'
+'srcbucket2'
+'srcpart'
+'test2a'
+'test2b'
+11 rows selected 
+>>>  DROP TABLE TEST2a;
+No rows affected 
+>>>  SHOW TABLES;
+'tab_name'
+'primitives'
+'src'
+'src1'
+'src_json'
+'src_sequencefile'
+'src_thrift'
+'srcbucket'
+'srcbucket2'
+'srcpart'
+'test2b'
+10 rows selected 
+>>>  DROP TABLE TEST2b;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+SHOW TABLES;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  TOK_SHOWTABLES'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+'  Stage-1 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Show Table Operator:'
+'        Show Tables'
+'          database name: input2'
+''
+'  Stage: Stage-1'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+18 rows selected 
+>>>  !record

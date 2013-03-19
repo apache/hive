@@ -24,9 +24,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -34,10 +34,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
  * instances.
- * 
+ *
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
- * 
+ *
  * The reason of having caches here is that ObjectInspector is because
  * ObjectInspectors do not have an internal state - so ObjectInspectors with the
  * same construction parameters should result in exactly the same
@@ -60,7 +60,7 @@ public final class ObjectInspectorFactory {
     JAVA, THRIFT, PROTOCOL_BUFFERS
   };
 
-  private static HashMap<Type, ObjectInspector> objectInspectorCache = new HashMap<Type, ObjectInspector>();
+  private static ConcurrentHashMap<Type, ObjectInspector> objectInspectorCache = new ConcurrentHashMap<Type, ObjectInspector>();
 
   public static ObjectInspector getReflectionObjectInspector(Type t,
       ObjectInspectorOptions options) {
@@ -197,7 +197,8 @@ public final class ObjectInspectorFactory {
     return oi;
   }
 
-  static HashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector = new HashMap<ObjectInspector, StandardListObjectInspector>();
+  static ConcurrentHashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector =
+      new ConcurrentHashMap<ObjectInspector, StandardListObjectInspector>();
 
   public static StandardListObjectInspector getStandardListObjectInspector(
       ObjectInspector listElementObjectInspector) {
@@ -216,7 +217,8 @@ public final class ObjectInspectorFactory {
   }
 
 
-  static HashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector = new HashMap<List<ObjectInspector>, StandardMapObjectInspector>();
+  static ConcurrentHashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector =
+      new ConcurrentHashMap<List<ObjectInspector>, StandardMapObjectInspector>();
 
   public static StandardMapObjectInspector getStandardMapObjectInspector(
       ObjectInspector mapKeyObjectInspector,
@@ -242,9 +244,9 @@ public final class ObjectInspectorFactory {
           mapValueObjectInspector, constantValue);
   }
 
-  static HashMap<List<ObjectInspector>, StandardUnionObjectInspector>
+  static ConcurrentHashMap<List<ObjectInspector>, StandardUnionObjectInspector>
     cachedStandardUnionObjectInspector =
-      new HashMap<List<ObjectInspector>, StandardUnionObjectInspector>();
+      new ConcurrentHashMap<List<ObjectInspector>, StandardUnionObjectInspector>();
 
   public static StandardUnionObjectInspector getStandardUnionObjectInspector(
       List<ObjectInspector> unionObjectInspectors) {
@@ -257,7 +259,8 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector = new HashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
+  static ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector =
+      new ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
 
   public static StandardStructObjectInspector getStandardStructObjectInspector(
       List<String> structFieldNames,
@@ -283,7 +286,8 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector = new HashMap<List<StructObjectInspector>, UnionStructObjectInspector>();
+  static ConcurrentHashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =
+      new ConcurrentHashMap<List<StructObjectInspector>, UnionStructObjectInspector>();
 
   public static UnionStructObjectInspector getUnionStructObjectInspector(
       List<StructObjectInspector> structObjectInspectors) {
@@ -296,7 +300,8 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<ArrayList<Object>, ColumnarStructObjectInspector> cachedColumnarStructObjectInspector = new HashMap<ArrayList<Object>, ColumnarStructObjectInspector>();
+  static ConcurrentHashMap<ArrayList<Object>, ColumnarStructObjectInspector> cachedColumnarStructObjectInspector =
+      new ConcurrentHashMap<ArrayList<Object>, ColumnarStructObjectInspector>();
 
   public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
       List<String> structFieldNames,

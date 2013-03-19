@@ -1,0 +1,141 @@
+Saving all output to "!!{outputDirectory}!!/rcfile_createas1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/rcfile_createas1.q
+>>>  set hive.merge.rcfile.block.level=true;
+No rows affected 
+>>>  set mapred.max.split.size=100;
+No rows affected 
+>>>  set mapred.min.split.size=1;
+No rows affected 
+>>>  
+>>>  DROP TABLE rcfile_createas1a;
+No rows affected 
+>>>  DROP TABLE rcfile_createas1b;
+No rows affected 
+>>>  
+>>>  CREATE TABLE rcfile_createas1a (key INT, value STRING) 
+PARTITIONED BY (ds string);
+No rows affected 
+>>>  INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='1') 
+SELECT * FROM src;
+'_col0','_col1'
+No rows selected 
+>>>  INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='2') 
+SELECT * FROM src;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  EXPLAIN 
+CREATE TABLE rcfile_createas1b 
+STORED AS RCFILE AS 
+SELECT key, value, PMOD(HASH(key), 50) as part 
+FROM rcfile_createas1a;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_CREATETABLE (TOK_TABNAME rcfile_createas1b) TOK_LIKETABLE TOK_TBLRCFILE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME rcfile_createas1a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION PMOD (TOK_FUNCTION HASH (TOK_TABLE_OR_COL key)) 50) part)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5'
+'  Stage-4'
+'  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6'
+'  Stage-8 depends on stages: Stage-0'
+'  Stage-2 depends on stages: Stage-8'
+'  Stage-3'
+'  Stage-5'
+'  Stage-6 depends on stages: Stage-5'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        rcfile_createas1a '
+'          TableScan'
+'            alias: rcfile_createas1a'
+'            Select Operator'
+'              expressions:'
+'                    expr: key'
+'                    type: int'
+'                    expr: value'
+'                    type: string'
+'                    expr: pmod(hash(key), 50)'
+'                    type: int'
+'              outputColumnNames: _col0, _col1, _col2'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 1'
+'                table:'
+'                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'                    name: rcfile_createas1.rcfile_createas1b'
+''
+'  Stage: Stage-7'
+'    Conditional Operator'
+''
+'  Stage: Stage-4'
+'    Move Operator'
+'      files:'
+'          hdfs directory: true'
+'          destination: pfile:!!{hive.exec.scratchdir}!!'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      files:'
+'          hdfs directory: true'
+'          destination: !!{hive.metastore.warehouse.dir}!!/rcfile_createas1.db/rcfile_createas1b'
+''
+'  Stage: Stage-8'
+'      Create Table Operator:'
+'        Create Table'
+'          columns: key int, value string, part int'
+'          if not exists: false'
+'          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+'          # buckets: -1'
+'          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+'          serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+'          name: rcfile_createas1b'
+'          isExternal: false'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+''
+'  Stage: Stage-3'
+'    Block level merge'
+''
+'  Stage: Stage-5'
+'    Block level merge'
+''
+'  Stage: Stage-6'
+'    Move Operator'
+'      files:'
+'          hdfs directory: true'
+'          destination: pfile:!!{hive.exec.scratchdir}!!'
+''
+''
+81 rows selected 
+>>>  CREATE TABLE rcfile_createas1b 
+STORED AS RCFILE AS 
+SELECT key, value, PMOD(HASH(key), 50) as part 
+FROM rcfile_createas1a;
+'key','value','part'
+No rows selected 
+>>>  
+>>>  SELECT SUM(HASH(c)) FROM ( 
+SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c) 
+FROM rcfile_createas1a 
+) t;
+'_c0'
+'14412220296'
+1 row selected 
+>>>  SELECT SUM(HASH(c)) FROM ( 
+SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c) 
+FROM rcfile_createas1b 
+) t;
+'_c0'
+'14412220296'
+1 row selected 
+>>>  
+>>>  DROP TABLE rcfile_createas1a;
+No rows affected 
+>>>  DROP TABLE rcfile_createas1b;
+No rows affected 
+>>>  !record

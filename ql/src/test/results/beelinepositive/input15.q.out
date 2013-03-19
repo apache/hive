@@ -1,0 +1,37 @@
+Saving all output to "!!{outputDirectory}!!/input15.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input15.q
+>>>  EXPLAIN 
+CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_CREATETABLE (TOK_TABNAME TEST15) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD '\t'))) TOK_TBLTEXTFILE)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Create Table Operator:'
+'        Create Table'
+'          columns: key int, value string'
+'          field delimiter: 	'
+'          if not exists: false'
+'          input format: org.apache.hadoop.mapred.TextInputFormat'
+'          # buckets: -1'
+'          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+'          name: TEST15'
+'          isExternal: false'
+''
+''
+20 rows selected 
+>>>  
+>>>  CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  DESCRIBE TEST15;
+'col_name','data_type','comment'
+'key','int',''
+'value','string',''
+2 rows selected 
+>>>  
+>>>  !record

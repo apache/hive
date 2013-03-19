@@ -1,0 +1,138 @@
+Saving all output to "!!{outputDirectory}!!/input3.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input3.q
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE TEST3a;
+'col_name','data_type','comment'
+'a','int',''
+'b','double',''
+2 rows selected 
+>>>  CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE;
+No rows affected 
+>>>  DESCRIBE TEST3b;
+'col_name','data_type','comment'
+'a','array<int>',''
+'b','double',''
+'c','map<double,int>',''
+3 rows selected 
+>>>  SHOW TABLES;
+'tab_name'
+'primitives'
+'src'
+'src1'
+'src_json'
+'src_sequencefile'
+'src_thrift'
+'srcbucket'
+'srcbucket2'
+'srcpart'
+'test3a'
+'test3b'
+11 rows selected 
+>>>  EXPLAIN 
+ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE);
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_ALTERTABLE_ADDCOLS TEST3b (TOK_TABCOLLIST (TOK_TABCOL X TOK_DOUBLE)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Alter Table Operator:'
+'        Alter Table'
+'          type: add columns'
+'          new columns: x double'
+'          old name: TEST3b'
+''
+''
+15 rows selected 
+>>>  ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE);
+No rows affected 
+>>>  DESCRIBE TEST3b;
+'col_name','data_type','comment'
+'a','array<int>',''
+'b','double',''
+'c','map<double,int>',''
+'x','double',''
+4 rows selected 
+>>>  EXPLAIN 
+ALTER TABLE TEST3b RENAME TO TEST3c;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_ALTERTABLE_RENAME TEST3b TEST3c)'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Alter Table Operator:'
+'        Alter Table'
+'          type: rename'
+'          new name: TEST3c'
+'          old name: TEST3b'
+''
+''
+15 rows selected 
+>>>  ALTER TABLE TEST3b RENAME TO TEST3c;
+No rows affected 
+>>>  DESCRIBE TEST3c;
+'col_name','data_type','comment'
+'a','array<int>',''
+'b','double',''
+'c','map<double,int>',''
+'x','double',''
+4 rows selected 
+>>>  SHOW TABLES;
+'tab_name'
+'primitives'
+'src'
+'src1'
+'src_json'
+'src_sequencefile'
+'src_thrift'
+'srcbucket'
+'srcbucket2'
+'srcpart'
+'test3a'
+'test3c'
+11 rows selected 
+>>>  EXPLAIN 
+ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE);
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_ALTERTABLE_REPLACECOLS TEST3c (TOK_TABCOLLIST (TOK_TABCOL R1 TOK_INT) (TOK_TABCOL R2 TOK_DOUBLE)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+'      Alter Table Operator:'
+'        Alter Table'
+'          type: replace columns'
+'          new columns: r1 int, r2 double'
+'          old name: TEST3c'
+''
+''
+15 rows selected 
+>>>  ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE);
+No rows affected 
+>>>  DESCRIBE EXTENDED TEST3c;
+'col_name','data_type','comment'
+'r1','int',''
+'r2','double',''
+'','',''
+'Detailed Table Information','Table(tableName:test3c, dbName:input3, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/input3.db/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  !record

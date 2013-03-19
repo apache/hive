@@ -27,28 +27,7 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="org.apache.hadoop" name="hadoop-common"
-                rev="${hadoop-0.23.version}"
-                conf="hadoop23.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-auth"
-                rev="${hadoop-0.23.version}"
-                conf="hadoop23.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
-    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
-                rev="${hadoop-0.23.version}"
-                conf="hadoop23.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
-    <dependency org="org.apache.hadoop" name="hadoop-archives"
                 rev="${hadoop-0.23.version}"
                 conf="hadoop23.compile->default" transitive="false">
       <include type="jar"/>
@@ -58,38 +37,11 @@
     <dependency org="org.apache.avro" name="avro" rev="${avro.version}"
                 conf="hadoop23.compile->default" transitive="false" />
 
-    <dependency org="org.apache.hadoop" name="hadoop-core"
-                rev="${hadoop-0.20.version}"
-                conf="hadoop20.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
-
-    <dependency org="org.apache.hadoop" name="hadoop-test"
-                rev="${hadoop-0.20.version}"
-                conf="hadoop20.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
-    <dependency org="org.apache.hadoop" name="hadoop-tools"
-                rev="${hadoop-0.20.version}"
-                conf="hadoop20.compile->default" transitive="false">
-      <include type="jar"/>
-      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
-      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
-    </dependency>
-
     <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
                 conf="compile->default" transitive="false" />
     <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
     <dependency org="org.apache.commons" name="commons-compress" rev="${commons-compress.version}"/>
     <dependency org="commons-lang" name="commons-lang" rev="${commons-lang.version}"/>
-    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
-                transitive="false"/>
     <dependency org="log4j" name="log4j" rev="${log4j.version}"
                 transitive="false"/>
   </dependencies>

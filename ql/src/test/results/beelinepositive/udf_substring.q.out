@@ -1,0 +1,21 @@
+Saving all output to "!!{outputDirectory}!!/udf_substring.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_substring.q
+>>>  -- Synonym. See udf_substr.q
+>>>  DESCRIBE FUNCTION substring;
+'tab_name'
+'substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstring(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED substring;
+'tab_name'
+'substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstring(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len'
+'Synonyms: substr'
+'pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.'
+'Example:'
+'   > SELECT substring('Facebook', 5) FROM src LIMIT 1;'
+'  'book''
+'  > SELECT substring('Facebook', -5) FROM src LIMIT 1;'
+'  'ebook''
+'  > SELECT substring('Facebook', 5, 1) FROM src LIMIT 1;'
+'  'b''
+10 rows selected 
+>>>  !record

@@ -331,6 +331,7 @@ public class TestMetaStoreEventListener extends TestCase {
 
     PreDropPartitionEvent preDropPart = (PreDropPartitionEvent)preNotifyList.get(listSize - 1);
     validateDropPartition(part, preDropPart.getPartition());
+    validateTableInDropPartition(tbl, preDropPart.getTable());
 
     driver.run("drop table " + tblName);
     listSize++;

@@ -1,0 +1,8 @@
+Saving all output to "!!{outputDirectory}!!/transform2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/transform2.q
+>>>  -- Transform with a function that has many parameters
+>>>  SELECT TRANSFORM(substr(key, 1, 2)) USING 'cat' FROM src LIMIT 1;
+'key','value'
+'23',''
+1 row selected 
+>>>  !record

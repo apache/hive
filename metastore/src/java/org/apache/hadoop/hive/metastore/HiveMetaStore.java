@@ -1877,8 +1877,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         part = ms.getPartition(db_name, tbl_name, part_vals);
-
-        firePreEvent(new PreDropPartitionEvent(part, this));
+        tbl = get_table(db_name, tbl_name);
+        firePreEvent(new PreDropPartitionEvent(tbl, part, this));
 
         if (part == null) {
           throw new NoSuchObjectException("Partition doesn't exist. "
@@ -1906,7 +1906,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 hiveConf.getUser());
           }
         }
-        tbl = get_table(db_name, tbl_name);
       } finally {
         if (!success) {
           ms.rollbackTransaction();

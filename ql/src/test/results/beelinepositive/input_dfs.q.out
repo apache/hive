@@ -1,0 +1,6 @@
+Saving all output to "!!{outputDirectory}!!/input_dfs.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input_dfs.q
+>>>  dfs -cat ../data/files/kv1.txt;
+No rows affected 
+>>>  
+>>>  !record

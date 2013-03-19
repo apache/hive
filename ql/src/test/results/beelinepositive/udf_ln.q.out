@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_ln.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_ln.q
+>>>  DESCRIBE FUNCTION ln;
+'tab_name'
+'ln(x) - Returns the natural logarithm of x'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED ln;
+'tab_name'
+'ln(x) - Returns the natural logarithm of x'
+'Example:'
+'  > SELECT ln(1) FROM src LIMIT 1;'
+'  0'
+4 rows selected 
+>>>  !record

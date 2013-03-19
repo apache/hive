@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_regexp_replace.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_regexp_replace.q
+>>>  DESCRIBE FUNCTION regexp_replace;
+'tab_name'
+'regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED regexp_replace;
+'tab_name'
+'regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep'
+'Example:'
+'  > SELECT regexp_replace('100-200', '(\d+)', 'num') FROM src LIMIT 1;'
+'  'num-num''
+4 rows selected 
+>>>  !record

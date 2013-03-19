@@ -1,0 +1,16 @@
+Saving all output to "!!{outputDirectory}!!/udf_greaterthan.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_greaterthan.q
+>>>  DESCRIBE FUNCTION >;
+'tab_name'
+'a > b - Returns TRUE if a is greater than b'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED >;
+'tab_name'
+'a > b - Returns TRUE if a is greater than b'
+1 row selected 
+>>>  
+>>>  SELECT true>false, false>true, false>false, true>true FROM src LIMIT 1;
+'_c0','_c1','_c2','_c3'
+'true','false','false','false'
+1 row selected 
+>>>  !record

@@ -1,0 +1,204 @@
+Saving all output to "!!{outputDirectory}!!/mapjoin_subquery2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/mapjoin_subquery2.q
+>>>  drop table x;
+No rows affected 
+>>>  drop table y;
+No rows affected 
+>>>  drop table z;
+No rows affected 
+>>>  
+>>>  CREATE TABLE x (name STRING, id INT) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+No rows affected 
+>>>  
+>>>  CREATE TABLE y (id INT, name STRING) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+No rows affected 
+>>>  
+>>>  CREATE TABLE z (id INT, name STRING) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/x.txt' INTO TABLE x;
+No rows affected 
+>>>  load data local inpath '../data/files/y.txt' INTO TABLE y;
+No rows affected 
+>>>  load data local inpath '../data/files/z.txt' INTO TABLE z;
+No rows affected 
+>>>  
+>>>  SELECT subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name 
+FROM 
+(SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 
+FROM y JOIN x ON (x.id = y.id)) subq 
+JOIN z ON (subq.key1 = z.id);
+'key1','value1','key2','value2','id','name'
+'2','Joe','2','Tie','2','Tie'
+'2','Hank','2','Tie','2','Tie'
+2 rows selected 
+>>>  
+>>>  EXPLAIN 
+SELECT /*+ MAPJOIN(z) */ subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name 
+FROM 
+(SELECT /*+ MAPJOIN(x) */ x.id as key1, x.name as value1, y.id as key2, y.name as value2 
+FROM y JOIN x ON (x.id = y.id)) subq 
+JOIN z ON (subq.key1 = z.id);
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME y)) (TOK_TABREF (TOK_TABNAME x)) (= (. (TOK_TABLE_OR_COL x) id) (. (TOK_TABLE_OR_COL y) id)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) id) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) name) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) id) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) name) value2)))) subq) (TOK_TABREF (TOK_TABNAME z)) (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) id)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST z))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) value1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) value2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) id)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) name)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-4 is a root stage'
+'  Stage-1 depends on stages: Stage-4'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-4'
+'    Map Reduce Local Work'
+'      Alias -> Map Local Tables:'
+'        subq:x '
+'          Fetch Operator'
+'            limit: -1'
+'        z '
+'          Fetch Operator'
+'            limit: -1'
+'      Alias -> Map Local Operator Tree:'
+'        subq:x '
+'          TableScan'
+'            alias: x'
+'            HashTable Sink Operator'
+'              condition expressions:'
+'                0 {id} {name}'
+'                1 {name} {id}'
+'              handleSkewJoin: false'
+'              keys:'
+'                0 [Column[id]]'
+'                1 [Column[id]]'
+'              Position of Big Table: 0'
+'        z '
+'          TableScan'
+'            alias: z'
+'            HashTable Sink Operator'
+'              condition expressions:'
+'                0 {_col0} {_col1} {_col2} {_col3}'
+'                1 {id} {name}'
+'              handleSkewJoin: false'
+'              keys:'
+'                0 [Column[_col0]]'
+'                1 [Column[id]]'
+'              Position of Big Table: 0'
+''
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        subq:y '
+'          TableScan'
+'            alias: y'
+'            Map Join Operator'
+'              condition map:'
+'                   Inner Join 0 to 1'
+'              condition expressions:'
+'                0 {id} {name}'
+'                1 {name} {id}'
+'              handleSkewJoin: false'
+'              keys:'
+'                0 [Column[id]]'
+'                1 [Column[id]]'
+'              outputColumnNames: _col0, _col1, _col4, _col5'
+'              Position of Big Table: 0'
+'              Select Operator'
+'                expressions:'
+'                      expr: _col0'
+'                      type: int'
+'                      expr: _col1'
+'                      type: string'
+'                      expr: _col4'
+'                      type: string'
+'                      expr: _col5'
+'                      type: int'
+'                outputColumnNames: _col0, _col1, _col4, _col5'
+'                Select Operator'
+'                  expressions:'
+'                        expr: _col5'
+'                        type: int'
+'                        expr: _col4'
+'                        type: string'
+'                        expr: _col0'
+'                        type: int'
+'                        expr: _col1'
+'                        type: string'
+'                  outputColumnNames: _col0, _col1, _col2, _col3'
+'                  Map Join Operator'
+'                    condition map:'
+'                         Inner Join 0 to 1'
+'                    condition expressions:'
+'                      0 {_col0} {_col1} {_col2} {_col3}'
+'                      1 {id} {name}'
+'                    handleSkewJoin: false'
+'                    keys:'
+'                      0 [Column[_col0]]'
+'                      1 [Column[id]]'
+'                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5'
+'                    Position of Big Table: 0'
+'                    Select Operator'
+'                      expressions:'
+'                            expr: _col0'
+'                            type: int'
+'                            expr: _col1'
+'                            type: string'
+'                            expr: _col2'
+'                            type: int'
+'                            expr: _col3'
+'                            type: string'
+'                            expr: _col4'
+'                            type: int'
+'                            expr: _col5'
+'                            type: string'
+'                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5'
+'                      Select Operator'
+'                        expressions:'
+'                              expr: _col0'
+'                              type: int'
+'                              expr: _col1'
+'                              type: string'
+'                              expr: _col2'
+'                              type: int'
+'                              expr: _col3'
+'                              type: string'
+'                              expr: _col4'
+'                              type: int'
+'                              expr: _col5'
+'                              type: string'
+'                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5'
+'                        File Output Operator'
+'                          compressed: false'
+'                          GlobalTableId: 0'
+'                          table:'
+'                              input format: org.apache.hadoop.mapred.TextInputFormat'
+'                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'      Local Work:'
+'        Map Reduce Local Work'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+140 rows selected 
+>>>  
+>>>  SELECT /*+ MAPJOIN(z) */ subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name 
+FROM 
+(SELECT /*+ MAPJOIN(x) */ x.id as key1, x.name as value1, y.id as key2, y.name as value2 
+FROM y JOIN x ON (x.id = y.id)) subq 
+JOIN z ON (subq.key1 = z.id);
+'key1','value1','key2','value2','id','name'
+'2','Joe','2','Tie','2','Tie'
+'2','Hank','2','Tie','2','Tie'
+2 rows selected 
+>>>  
+>>>  drop table x;
+No rows affected 
+>>>  drop table y;
+No rows affected 
+>>>  drop table z;
+No rows affected 
+>>>  !record

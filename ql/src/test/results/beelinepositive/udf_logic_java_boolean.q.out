@@ -1,0 +1,90 @@
+Saving all output to "!!{outputDirectory}!!/udf_logic_java_boolean.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_logic_java_boolean.q
+>>>  EXPLAIN 
+CREATE TEMPORARY FUNCTION test_udf_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean';
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_CREATEFUNCTION test_udf_get_java_boolean 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean')'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-0'
+''
+''
+10 rows selected 
+>>>  
+>>>  CREATE TEMPORARY FUNCTION test_udf_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean';
+No rows affected 
+>>>  
+>>>  select 1 from src where test_udf_get_java_boolean("false") and True limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") and True limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where True and test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where False and test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("true") limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("true") limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  
+>>>  select 1 from src where test_udf_get_java_boolean("false") or True limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") or True limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where True or test_udf_get_java_boolean("false") limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where False or test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("true") limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("false") limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("true") limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("false") limit 1;
+'_c0'
+No rows selected 
+>>>  
+>>>  select 1 from src where not(test_udf_get_java_boolean("false")) limit 1;
+'_c0'
+'1'
+1 row selected 
+>>>  select 1 from src where not(test_udf_get_java_boolean("true")) limit 1;
+'_c0'
+No rows selected 
+>>>  
+>>>  
+>>>  DROP TEMPORARY FUNCTION test_udf_get_java_boolean;
+No rows affected 
+>>>  !record

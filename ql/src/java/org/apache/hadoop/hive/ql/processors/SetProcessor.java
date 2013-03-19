@@ -28,8 +28,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -116,20 +116,29 @@ public class SetProcessor implements CommandProcessor {
       return new CommandProcessorResponse(0);
     } else if (varname.startsWith(SetProcessor.HIVECONF_PREFIX)){
       String propName = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
-      String error = setConf(varname, propName, varvalue, false);
-      return new CommandProcessorResponse(error == null ? 0 : 1, error, null);
+      try {
+        setConf(varname, propName, varvalue, false);
+        return new CommandProcessorResponse(0);
+      } catch (IllegalArgumentException e) {
+        return new CommandProcessorResponse(1, e.getMessage(), "42000");
+      }
     } else if (varname.startsWith(SetProcessor.HIVEVAR_PREFIX)) {
       String propName = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
       return new CommandProcessorResponse(0);
     } else {
-      String error = setConf(varname, varname, varvalue, true);
-      return new CommandProcessorResponse(error == null ? 0 : 1, error, null);
+      try {
+        setConf(varname, varname, varvalue, true);
+        return new CommandProcessorResponse(0);
+      } catch (IllegalArgumentException e) {
+        return new CommandProcessorResponse(1, e.getMessage(), "42000");
+      }
     }
   }
 
   // returns non-null string for validation fail
-  private String setConf(String varname, String key, String varvalue, boolean register) {
+  private void setConf(String varname, String key, String varvalue, boolean register)
+        throws IllegalArgumentException {
     HiveConf conf = SessionState.get().getConf();
     String value = new VariableSubstitution().substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
@@ -139,14 +148,13 @@ public class SetProcessor implements CommandProcessor {
         message.append("'SET ").append(varname).append('=').append(varvalue);
         message.append("' FAILED because "); message.append(key).append(" expects an ");
         message.append(confVars.typeString()).append(" value.");
-        return message.toString();
+        throw new IllegalArgumentException(message.toString());
       }
     }
-    conf.set(key, value);
+    conf.verifyAndSet(key, value);
     if (register) {
       SessionState.get().getOverriddenConfigurations().put(key, value);
     }
-    return null;
   }
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){
@@ -209,7 +217,7 @@ public class SetProcessor implements CommandProcessor {
       }
     } else {
       dumpOption(varname);
-      return new CommandProcessorResponse(0);
+      return new CommandProcessorResponse(0, null, null, getSchema());
     }
   }
 

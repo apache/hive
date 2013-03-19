@@ -1,0 +1,56 @@
+Saving all output to "!!{outputDirectory}!!/stats_empty_partition.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/stats_empty_partition.q
+>>>  -- This test verifies that writing an empty partition succeeds when
+>>>  -- hive.stats.reliable is set to true.
+>>>  
+>>>  create table tmptable(key string, value string) partitioned by (part string);
+No rows affected 
+>>>  
+>>>  set hive.stats.autogather=true;
+No rows affected 
+>>>  set hive.stats.reliable=true;
+No rows affected 
+>>>  
+>>>  insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value';
+'key','value'
+No rows selected 
+>>>  
+>>>  describe formatted tmptable partition (part = '1');
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'key                 ','string              ','None                '
+'value               ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'part                ','string              ','None                '
+'','',''
+'# Detailed Partition Information','',''
+'Partition Value:    ','[1]                 ',''
+'Database:           ','stats_empty_partition',''
+'Table:              ','tmptable            ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/stats_empty_partition.db/tmptable/part=1',''
+'Partition Parameters:','',''
+'','numFiles            ','1                   '
+'','numRows             ','0                   '
+'','rawDataSize         ','0                   '
+'','totalSize           ','0                   '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+35 rows selected 
+>>>  !record

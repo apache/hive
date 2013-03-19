@@ -1,0 +1,13 @@
+Saving all output to "!!{outputDirectory}!!/script_env_var2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/script_env_var2.q
+>>>  set hive.script.operator.id.env.var = MY_ID;
+No rows affected 
+>>>  -- Same test as script_env_var1, but test setting the variable name
+>>>  SELECT count(1) FROM 
+( SELECT TRANSFORM('echo $MY_ID') USING 'bash' AS key FROM src LIMIT 1 UNION ALL 
+SELECT TRANSFORM('echo $MY_ID') USING 'bash' AS key FROM src LIMIT 1 ) a GROUP BY key;
+'_c0'
+'1'
+'1'
+2 rows selected 
+>>>  !record

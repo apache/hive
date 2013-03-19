@@ -1,7 +1,7 @@
 
 CREATE DATABASE hbaseDB;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 1.0)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 -- Hadoop 0.23 changes the behavior FsShell on Exit Codes
 -- In Hadoop 0.20
 -- Exit Code == 0 on success

@@ -1,0 +1,70 @@
+Saving all output to "!!{outputDirectory}!!/multi_sahooks.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/multi_sahooks.q
+>>>  set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook1;
+No rows affected 
+>>>  
+>>>  drop table tbl_sahook;
+No rows affected 
+>>>  create table tbl_sahook (c string);
+No rows affected 
+>>>  desc extended tbl_sahook;
+'col_name','data_type','comment'
+'c','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl_sahook, dbName:multi_sahooks, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/multi_sahooks.db/tbl_sahook, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 0, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  drop table tbl_sahook;
+No rows affected 
+>>>  
+>>>  set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook1,org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook;
+No rows affected 
+>>>  
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  create table tbl_sahooks (c string);
+No rows affected 
+>>>  desc extended tbl_sahooks;
+'col_name','data_type','comment'
+'c','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl_sahooks, dbName:multi_sahooks, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/multi_sahooks.db/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Open Source rocks!!, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  
+>>>  set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook,org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook1;
+No rows affected 
+>>>  
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  create table tbl_sahooks (c string);
+No rows affected 
+>>>  desc extended tbl_sahooks;
+'col_name','data_type','comment'
+'c','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl_sahooks, dbName:multi_sahooks, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/multi_sahooks.db/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 0, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  
+>>>  set hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook1,org.apache.hadoop.hive.ql.metadata.DummySemanticAnalyzerHook1;
+No rows affected 
+>>>  
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  create table tbl_sahooks (c string);
+No rows affected 
+>>>  desc extended tbl_sahooks;
+'col_name','data_type','comment'
+'c','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl_sahooks, dbName:multi_sahooks, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/multi_sahooks.db/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 1, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  
+>>>  set hive.semantic.analyzer.hook=;
+No rows affected 
+>>>  drop table tbl_sahooks;
+No rows affected 
+>>>  
+>>>  !record

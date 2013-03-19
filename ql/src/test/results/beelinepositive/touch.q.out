@@ -1,0 +1,33 @@
+Saving all output to "!!{outputDirectory}!!/touch.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/touch.q
+>>>  drop table tstsrc;
+No rows affected 
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  
+>>>  create table tstsrc like src;
+No rows affected 
+>>>  insert overwrite table tstsrc select key, value from src;
+'key','value'
+No rows selected 
+>>>  
+>>>  create table tstsrcpart like srcpart;
+No rows affected 
+>>>  insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12') 
+select key, value from srcpart where ds='2008-04-08' and hr='12';
+'key','value'
+No rows selected 
+>>>  
+>>>  
+>>>  ALTER TABLE tstsrc TOUCH;
+No rows affected 
+>>>  ALTER TABLE tstsrcpart TOUCH;
+No rows affected 
+>>>  ALTER TABLE tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12');
+No rows affected 
+>>>  
+>>>  drop table tstsrc;
+No rows affected 
+>>>  drop table tstsrcpart;
+No rows affected 
+>>>  !record

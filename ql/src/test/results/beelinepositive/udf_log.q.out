@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_log.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_log.q
+>>>  DESCRIBE FUNCTION log;
+'tab_name'
+'log([b], x) - Returns the logarithm of x with base b'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED log;
+'tab_name'
+'log([b], x) - Returns the logarithm of x with base b'
+'Example:'
+'  > SELECT log(13, 13) FROM src LIMIT 1;'
+'  1'
+4 rows selected 
+>>>  !record

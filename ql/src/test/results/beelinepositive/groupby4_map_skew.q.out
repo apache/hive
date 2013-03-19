@@ -1,0 +1,94 @@
+Saving all output to "!!{outputDirectory}!!/groupby4_map_skew.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/groupby4_map_skew.q
+>>>  set hive.map.aggr=true;
+No rows affected 
+>>>  set hive.groupby.skewindata=true;
+No rows affected 
+>>>  set mapred.reduce.tasks=31;
+No rows affected 
+>>>  
+>>>  CREATE TABLE dest1(key INT) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+FROM src INSERT OVERWRITE TABLE dest1 SELECT count(1);
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 depends on stages: Stage-1'
+'  Stage-2 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        src '
+'          TableScan'
+'            alias: src'
+'            Select Operator'
+'              Group By Operator'
+'                aggregations:'
+'                      expr: count(1)'
+'                bucketGroup: false'
+'                mode: hash'
+'                outputColumnNames: _col0'
+'                Reduce Output Operator'
+'                  sort order: '
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: bigint'
+'      Reduce Operator Tree:'
+'        Group By Operator'
+'          aggregations:'
+'                expr: count(VALUE._col0)'
+'          bucketGroup: false'
+'          mode: final'
+'          outputColumnNames: _col0'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: bigint'
+'            outputColumnNames: _col0'
+'            Select Operator'
+'              expressions:'
+'                    expr: UDFToInteger(_col0)'
+'                    type: int'
+'              outputColumnNames: _col0'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 1'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                    name: groupby4_map_skew.dest1'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: groupby4_map_skew.dest1'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+''
+''
+68 rows selected 
+>>>  
+>>>  FROM src INSERT OVERWRITE TABLE dest1 SELECT count(1);
+'_col0'
+No rows selected 
+>>>  
+>>>  SELECT dest1.* FROM dest1;
+'key'
+'500'
+1 row selected 
+>>>  !record

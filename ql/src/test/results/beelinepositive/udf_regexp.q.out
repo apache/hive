@@ -1,0 +1,22 @@
+Saving all output to "!!{outputDirectory}!!/udf_regexp.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_regexp.q
+>>>  DESCRIBE FUNCTION regexp;
+'tab_name'
+'str regexp regexp - Returns true if str matches regexp and false otherwise'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED regexp;
+'tab_name'
+'str regexp regexp - Returns true if str matches regexp and false otherwise'
+'Synonyms: rlike'
+'Example:'
+'  > SELECT 'fb' regexp '.*' FROM src LIMIT 1;'
+'  true'
+5 rows selected 
+>>>  
+>>>  SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo', 
+'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$' 
+FROM src LIMIT 1;
+'_c0','_c1','_c2','_c3','_c4','_c5','_c6','_c7'
+'true','true','true','true','false','false','false','false'
+1 row selected 
+>>>  !record

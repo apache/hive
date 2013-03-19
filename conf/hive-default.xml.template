@@ -1120,7 +1120,7 @@
 <property>
   <name>hive.profiler.retries.wait</name>
   <value>3000</value>
-  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues + baseWindow * (failure + 1) * (random number between [0.0,1.0]).</description>
+  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues  baseWindow * (failure  1) * (random number between [0.0,1.0]).</description>
 </property>
 
 <property>
@@ -1174,7 +1174,7 @@
 <property>
   <name>hive.stats.retries.wait</name>
   <value>3000</value>
-  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues + baseWindow * (failure + 1) * (random number between [0.0,1.0]).</description>
+  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues  baseWindow * (failure  1) * (random number between [0.0,1.0]).</description>
 </property>
 
 <property>
@@ -1676,7 +1676,7 @@
     Currently the query should be single sourced not having any subquery and should not have
     any aggregations or distincts (which incurrs RS), lateral views and joins.
     1. minimal : SELECT STAR, FILTER on partition columns, LIMIT only
-    2. more    : SELECT, FILTER, LIMIT only (+TABLESAMPLE, virtual columns)
+    2. more    : SELECT, FILTER, LIMIT only (TABLESAMPLE, virtual columns)
   </description>
 </property>
 
@@ -1691,7 +1691,6 @@
    <value>1000</value>
    <description>The number of miliseconds between HMSHandler retry attempts</description>
 </property>
-
 
 <property>
    <name>hive.server.read.socket.timeout</name>
@@ -1765,5 +1764,92 @@
   <value>false</value>
   <description>Whether to enable using Column Position Alias in Group By or Order By</description>
 </property>
+
+ <property>
+  <name>hive.server2.thrift.min.worker.threads</name>
+  <value>5</value>
+  <description>Minimum number of Thrift worker threads</description>
+</property>
+
+<property>
+  <name>hive.server2.thrift.max.worker.threads</name>
+  <value>100</value>
+  <description>Maximum number of Thrift worker threads</description>
+</property>
+
+<property>
+  <name>hive.server2.thrift.port</name>
+  <value>10000</value>
+  <description>Port number of HiveServer2 Thrift interface.
+  Can be overridden by setting $HIVE_SERVER2_THRIFT_PORT</description>
+</property>
+
+<property>
+  <name>hive.server2.thrift.bind.host</name>
+  <value>localhost</value>
+  <description>Bind host on which to run the HiveServer2 Thrift interface.
+  Can be overridden by setting $HIVE_SERVER2_THRIFT_BIND_HOST</description>
+</property>
+
+<property>
+  <name>hive.server2.authentication</name>
+  <value>NONE</value>
+  <description>
+    Client authentication types.
+       NONE: no authentication check
+       LDAP: LDAP/AD based authentication
+       KERBEROS: Kerberos/GSSAPI authentication
+       CUSTOM: Custom authentication provider
+               (Use with property hive.server2.custom.authentication.class)
+  </description>
+</property>
+
+<property>
+  <name>hive.server2.custom.authentication.class</name>
+  <value></value>
+  <description>
+    Custom authentication class. Used when property
+    'hive.server2.authentication' is set to 'CUSTOM'. Provided class
+    must be a proper implementation of the interface
+    org.apache.hive.service.auth.PasswdAuthenticationProvider. HiveServer2
+    will call its Authenticate(user, passed) method to authenticate requests.
+    The implementation may optionally extend the Hadoop's
+    org.apache.hadoop.conf.Configured class to grab Hive's Configuration object.
+  </description>
+</property>
+
+<property>
+  <name>>hive.server2.authentication.kerberos.principal</name>
+  <value></value>
+  <description>
+    Kerberos server principal
+  </description>
+</property>
+
+<property>
+  <name>>hive.server2.authentication.kerberos.keytab</name>
+  <value></value>
+  <description>
+    Kerberos keytab file for server principal
+  </description>
+</property>
+ 
+<property>
+  <name>hive.server2.authentication.ldap.url</name>
+  <value></value>
+  <description>
+    LDAP connection URL
+  </description>
+</property>
+
+
+<property>
+  <name>hive.server2.authentication.ldap.baseDN</name>
+  <value></value>
+  <description>
+    LDAP base DN
+  </description>
+</property>
+
 </configuration>
 

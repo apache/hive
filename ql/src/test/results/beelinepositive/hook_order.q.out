@@ -1,0 +1,25 @@
+Saving all output to "!!{outputDirectory}!!/hook_order.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/hook_order.q
+>>>  SET hive.exec.pre.hooks=org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunFirst,org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunSecond;
+No rows affected 
+>>>  SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunFirst,org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunSecond;
+No rows affected 
+>>>  SET hive.semantic.analyzer.hook=org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunFirstSemanticAnalysisHook,org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunSecondSemanticAnalysisHook;
+No rows affected 
+>>>  SET hive.exec.driver.run.hooks=org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunFirstDriverRunHook,org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunSecondDriverRunHook;
+No rows affected 
+>>>  
+>>>  SELECT count(*) FROM src;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  SET hive.exec.pre.hooks=;
+No rows affected 
+>>>  SET hive.exec.post.hooks=;
+No rows affected 
+>>>  SET hive.semantic.analyzer.hook=;
+No rows affected 
+>>>  SET hive.exec.driver.run.hooks=;
+No rows affected 
+>>>  !record

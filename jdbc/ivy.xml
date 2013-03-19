@@ -27,17 +27,9 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="org.apache.hive" name="hive-service" rev="${version}"
-                conf="compile->default" />
-    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
-                transitive="false"/>
     <dependency org="sqlline" name="sqlline" rev="${sqlline.version}" branch="${sqlline.branch}"
                 transitive="false"/>
-
-    <!-- Test Dependencies -->
-    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
-
+    <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
+                conf="compile->default" />
   </dependencies>
 </ivy-module>

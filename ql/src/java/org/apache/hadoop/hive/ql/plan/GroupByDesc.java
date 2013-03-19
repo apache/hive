@@ -65,6 +65,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
   private float memoryThreshold;
+  transient private boolean isDistinct;
 
   public GroupByDesc() {
   }
@@ -79,10 +80,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final float memoryThreshold,
       final List<Integer> listGroupingSets,
       final boolean groupingSetsPresent,
-      final int groupingSetsPosition) {
+      final int groupingSetsPosition,
+      final boolean isDistinct) {
     this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
       false, groupByMemoryUsage, memoryThreshold, listGroupingSets,
-      groupingSetsPresent, groupingSetsPosition);
+      groupingSetsPresent, groupingSetsPosition, isDistinct);
   }
 
   public GroupByDesc(
@@ -96,7 +98,8 @@ public class GroupByDesc extends AbstractOperatorDesc {
       final float memoryThreshold,
       final List<Integer> listGroupingSets,
       final boolean groupingSetsPresent,
-      final int groupingSetsPosition) {
+      final int groupingSetsPosition,
+      final boolean isDistinct) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
@@ -108,6 +111,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.listGroupingSets = listGroupingSets;
     this.groupingSetsPresent = groupingSetsPresent;
     this.groupingSetPosition = groupingSetsPosition;
+    this.isDistinct = isDistinct;
   }
 
   public Mode getMode() {
@@ -248,5 +252,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   public void setGroupingSetPosition(int groupingSetPosition) {
     this.groupingSetPosition = groupingSetPosition;
+  }
+
+  public boolean isDistinct() {
+    return isDistinct;
   }
 }

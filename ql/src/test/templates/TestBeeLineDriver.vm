@@ -1,0 +1,160 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hive.beeline.util;
+
+import static org.junit.Assert.fail;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.testutils.junit.runners.ConcurrentTestRunner;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(ConcurrentTestRunner.class)
+public class $className {
+  private static final String hiveRootDirectory = "$hiveRootDir";
+  private static final String queryDirectory = "$queryDir";
+  private static final String logDirectory = "$logDir";
+  private static final String resultsDirectory = "$resultsDir";
+  private static boolean overwrite = false;
+  private static String scratchDirectory;
+  private static QTestUtil.QTestSetup miniZKCluster = null;
+
+  private static HiveServer2 hiveServer2;
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.logVars(System.err);
+    System.err.flush();
+
+    scratchDirectory = hiveConf.getVar(SCRATCHDIR);
+
+    String testOutputOverwrite = System.getProperty("test.output.overwrite");
+    if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
+      overwrite = true;
+    }
+
+    miniZKCluster = new QTestUtil.QTestSetup();
+    miniZKCluster.preTest(hiveConf);
+
+    System.setProperty("hive.zookeeper.quorum",
+        hiveConf.get("hive.zookeeper.quorum"));
+    System.setProperty("hive.zookeeper.client.port",
+        hiveConf.get("hive.zookeeper.client.port"));
+    
+    String disableserver = System.getProperty("test.service.disable.server");
+    if (null != disableserver && disableserver.equalsIgnoreCase("true")) {
+      System.err.println("test.service.disable.server=true "
+        + "Skipping HiveServer2 initialization!");
+      return;
+    }
+
+    hiveServer2 = new HiveServer2();
+    hiveServer2.init(hiveConf);
+    System.err.println("Starting HiveServer2...");
+    hiveServer2.start();
+    Thread.sleep(5000);
+  }
+
+
+  @AfterClass
+  public static void afterClass() {
+    try {
+      if (hiveServer2 != null) {
+        System.err.println("Stopping HiveServer2...");
+        hiveServer2.stop();
+      }
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    
+    if (miniZKCluster != null) {
+      try {
+        miniZKCluster.tearDown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+
+  /*
+  public $className() {
+  }
+  */
+
+  protected static void runTest(String qFileName) throws Exception {
+    QFileClient qClient = new QFileClient(new HiveConf(), hiveRootDirectory,
+        queryDirectory, logDirectory, resultsDirectory)
+    .setQFileName(qFileName)
+    .setUsername("user")
+    .setPassword("password")
+    .setJdbcUrl("jdbc:hive2://localhost:10000")
+    .setJdbcDriver("org.apache.hive.jdbc.HiveDriver")
+    .setTestDataDirectory(hiveRootDirectory + "/data/files")
+    .setTestScriptDirectory(hiveRootDirectory + "/data/scripts");
+
+    long startTime = System.currentTimeMillis();
+    System.out.println(">>> STARTED " + qFileName
+        + " (Thread " + Thread.currentThread().getName() + ")");
+    try {
+      qClient.run();
+    } catch (Exception e) {
+      System.err.println(">>> FAILED " + qFileName + " with exception:");
+      e.printStackTrace();
+      throw e;
+    }
+    long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
+    String time = "(" + elapsedTime + "s)";
+    
+    if (qClient.compareResults()) {
+      System.out.println(">>> PASSED " + qFileName + " " + time);
+    } else {
+      if (qClient.hasErrors()) {
+        System.err.println(">>> FAILED " + qFileName + " (ERROR) " + time);
+        fail();
+      }
+      if (overwrite) {
+        System.err.println(">>> PASSED " + qFileName + " (OVERWRITE) " + time);
+        qClient.overwriteResults();
+      } else {
+        System.err.println(">>> FAILED " + qFileName + " (DIFF) " + time);
+        fail();
+      }
+    }
+  }
+
+  
+#foreach ($qf in $qfiles)
+  #set ($fname = $qf.getName())
+  #set ($eidx = $fname.indexOf('.'))
+  #set ($tname = $fname.substring(0, $eidx))
+  @Test
+  public void testBeeLineDriver_$tname() throws Exception {
+    runTest("$fname");
+  }
+#end
+
+}
+
+
