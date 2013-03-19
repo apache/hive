@@ -412,16 +412,20 @@ public class ReduceSinkDeDuplication implements Transform{
         if(partitionCols != null) {
           for (ExprNodeDesc desc : partitionCols) {
             List<String> cols = desc.getCols();
-            for(String col : cols) {
-              columnMapping.put(col, col);
+            if ( cols != null ) {
+              for(String col : cols) {
+                columnMapping.put(col, col);
+              }
             }
           }
         }
         if(reduceKeyCols != null) {
           for (ExprNodeDesc desc : reduceKeyCols) {
             List<String> cols = desc.getCols();
-            for(String col : cols) {
-              columnMapping.put(col, col);
+            if ( cols != null ) {
+              for(String col : cols) {
+                columnMapping.put(col, col);
+              }
             }
           }
         }
