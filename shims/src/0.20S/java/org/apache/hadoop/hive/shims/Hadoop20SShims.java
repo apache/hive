@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
+import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TaskLogServlet;
@@ -118,5 +120,72 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   @Override
   public short getDefaultReplication(FileSystem fs, Path path) {
     return fs.getDefaultReplication();
+  }
+
+  /**
+   * Returns a shim to wrap MiniMrCluster
+   */
+  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers, 
+                                     String nameNode, int numDir) throws IOException {
+    return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  /**
+   * Shim for MiniMrCluster
+   */
+  public class MiniMrShim implements HadoopShims.MiniMrShim {
+
+    private final MiniMRCluster mr;
+
+    public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
+        String nameNode, int numDir) throws IOException {
+      this.mr = new MiniMRCluster(numberOfTaskTrackers, nameNode, numDir);
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      return mr.getJobTrackerPort();
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      mr.shutdown();
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      setJobLauncherRpcAddress(conf, "localhost:" + mr.getJobTrackerPort());
+    }
+  }
+
+  // Don't move this code to the parent class. There's a binary
+  // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
+  // need to have two different shim classes even though they are
+  // exactly the same.
+  public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
+      int numDataNodes,
+      boolean format,
+      String[] racks) throws IOException {
+    return new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
+  }
+
+  /**
+   * MiniDFSShim.
+   *
+   */
+  public class MiniDFSShim implements HadoopShims.MiniDFSShim {
+    private final MiniDFSCluster cluster;
+
+    public MiniDFSShim(MiniDFSCluster cluster) {
+      this.cluster = cluster;
+    }
+
+    public FileSystem getFileSystem() throws IOException {
+      return cluster.getFileSystem();
+    }
+
+    public void shutdown() {
+      cluster.shutdown();
+    }
   }
 }
