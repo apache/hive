@@ -19,6 +19,4 @@ select  p_mfgr,p_name, p_size,
 sum(p_size) over (w1) as s ,    
 dense_rank() as dr  
 from part  
-distribute by p_mfgr  
-sort by p_name  
-window w1 as (range between p_name 2 preceding and current row);
+window w1 as (partition by p_mfgr order by p_name range between p_name 2 preceding and current row);

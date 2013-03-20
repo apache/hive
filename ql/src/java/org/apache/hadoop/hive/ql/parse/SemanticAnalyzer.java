@@ -10657,22 +10657,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
 
   Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
-
+    WindowingComponentizer groups = new WindowingComponentizer(wSpec);
     wSpec.fillInWindowingSpecs();
     RowResolver rr = opParseCtx.get(input).getRowResolver();
-    input = genReduceSinkPlanForWindowing(wSpec, rr, input);
 
-    rr = opParseCtx.get(input).getRowResolver();
-    PTFTranslator translator = new PTFTranslator();
-    PTFDesc ptfDesc = translator.translate(wSpec, this, conf, rr, unparseTranslator);
-
-    /*
-     * d. Construct PTF Operator.
-     */
-    RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
-    input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
-        new RowSchema(ptfOpRR.getColumnInfos()),
-        input), ptfOpRR);
+    while(groups.hasNext() ) {
+      wSpec = groups.next(conf, this, unparseTranslator, rr);
+      input = genReduceSinkPlanForWindowing(wSpec, rr, input);
+      rr = opParseCtx.get(input).getRowResolver();
+      PTFTranslator translator = new PTFTranslator();
+      PTFDesc ptfDesc = translator.translate(wSpec, this, conf, rr, unparseTranslator);
+      RowResolver ptfOpRR = ptfDesc.getFuncDef().getOutputShape().getRr();
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
+          new RowSchema(ptfOpRR.getColumnInfos()),
+          input), ptfOpRR);
+      rr = ptfOpRR;
+    }
 
     dumpOperatorChain(input, null);
 

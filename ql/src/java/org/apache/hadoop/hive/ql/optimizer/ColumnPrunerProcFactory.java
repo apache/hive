@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -208,12 +209,12 @@ public final class ColumnPrunerProcFactory {
     private static RowResolver buildPrunedRR(List<String> prunedCols,
         RowResolver oldRR, ArrayList<ColumnInfo> sig) throws SemanticException{
       RowResolver newRR = new RowResolver();
-      for (String col : prunedCols) {
-        String[] nm = oldRR.reverseLookup(col);
-        ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
-        if (colInfo != null) {
-          newRR.put(nm[0], nm[1], colInfo);
-          sig.add(colInfo);
+      HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
+      for(ColumnInfo cInfo : oldRR.getRowSchema().getSignature()) {
+        if ( prunedColsSet.contains(cInfo.getInternalName())) {
+          String[] nm = oldRR.reverseLookup(cInfo.getInternalName());
+          newRR.put(nm[0], nm[1], cInfo);
+          sig.add(cInfo);
         }
       }
       return newRR;

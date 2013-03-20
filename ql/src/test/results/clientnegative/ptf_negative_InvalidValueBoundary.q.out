@@ -33,4 +33,5 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-FAILED: SemanticException Primitve type STRING not supported in Value Boundary expression
+FAILED: SemanticException Failed to breakup Windowing invocations into Groups. At least 1 group must only depend on input columns. Also check for circular dependencies.
+Underlying error: Primitve type STRING not supported in Value Boundary expression

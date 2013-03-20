@@ -339,7 +339,7 @@ public class PTFInvocationSpec {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((expression == null) ? 0 : expression.hashCode());
+      result = prime * result + ((expression == null) ? 0 : expression.toStringTree().hashCode());
       return result;
     }
 
@@ -351,7 +351,7 @@ public class PTFInvocationSpec {
       if (obj == null) {
         return false;
       }
-      if (getClass() != obj.getClass()) {
+      if (!getClass().isAssignableFrom(obj.getClass())) {
         return false;
       }
       PartitionExpression other = (PartitionExpression) obj;
@@ -406,6 +406,38 @@ public class PTFInvocationSpec {
     {
       expressions = expressions == null ? new ArrayList<OrderExpression>() : expressions;
       expressions.add(c);
+    }
+
+    protected boolean isPrefixedBy(PartitionSpec pSpec) {
+      if ( pSpec == null || pSpec.getExpressions() == null) {
+        return true;
+      }
+
+      int pExprCnt = pSpec.getExpressions().size();
+      int exprCnt = getExpressions() == null ? 0 : getExpressions().size();
+
+      if ( exprCnt < pExprCnt ) {
+        return false;
+      }
+
+      for(int i=0; i < pExprCnt; i++) {
+        if ( !pSpec.getExpressions().get(i).equals(getExpressions().get(i)) ) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    protected void prefixBy(PartitionSpec pSpec) {
+      if ( pSpec == null || pSpec.getExpressions() == null) {
+        return;
+      }
+      if ( expressions == null ) {
+        expressions = new ArrayList<PTFInvocationSpec.OrderExpression>();
+      }
+      for(int i = pSpec.getExpressions().size() - 1; i >= 0; i--) {
+        expressions.add(0, new OrderExpression(pSpec.getExpressions().get(i)));
+      }
     }
 
     @Override

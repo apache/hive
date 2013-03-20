@@ -477,6 +477,14 @@ public class PTFTranslator {
       return;
     }
     PartitionDef partDef = translate(def.getRawInputShape(), spec.getPartition());
+
+    if ( spec.getOrder() == null ) {
+      spec.setOrder(new OrderSpec());
+    }
+    if ( !spec.getOrder().isPrefixedBy(spec.getPartition()) ) {
+      spec.getOrder().prefixBy(spec.getPartition());
+    }
+
     OrderDef orderDef = translate(def.getRawInputShape(), spec.getOrder(), partDef);
     def.setPartition(partDef);
     def.setOrder(orderDef);
@@ -535,64 +543,11 @@ public class PTFTranslator {
       OrderSpec spec,
       PartitionDef partitionDef) throws SemanticException {
 
-    if (spec == null || spec.getExpressions() == null || spec.getExpressions().size() == 0)
-    {
-      if (partitionDef == null) {
-        return null;
-      }
-      return new OrderDef(partitionDef);
-    }
-
-    if (partitionDef == null) {
-      throw new SemanticException(String.format(
-          "Cannot have an Order spec (%s) w/o a Partition spec", spec));
-    }
-
     OrderDef def = new OrderDef();
     for (OrderExpression oExpr : spec.getExpressions())
     {
       OrderExpressionDef oexpDef = translate(inpShape, oExpr);
       def.addExpression(oexpDef);
-    }
-
-    /*
-     * either all partition expressions must be in Order list or none must be specified.
-     * If none are specified then add them all.
-     */
-    int numOfPartColumns = 0;
-    List<OrderExpressionDef> orderExprs = def.getExpressions();
-    List<PTFExpressionDef> partExprs = partitionDef.getExpressions();
-    int chkSize = partExprs.size();
-    chkSize = chkSize > orderExprs.size() ? orderExprs.size() : chkSize;
-    for (int i = 0; i < chkSize; i++)
-    {
-      if (orderExprs.get(i).getExpressionTreeString()
-          .equals(partExprs.get(i).getExpressionTreeString()))
-      {
-        numOfPartColumns++;
-      } else {
-        break;
-      }
-    }
-
-    if (numOfPartColumns != 0 && numOfPartColumns != partExprs.size())
-    {
-      throw new SemanticException(
-          String.format(
-                  "all partition columns must be in order clause(%s) or none should be specified",
-                  spec));
-    }
-
-    if (numOfPartColumns == 0)
-    {
-      ArrayList<OrderExpressionDef> combinedOrderCols = new ArrayList<OrderExpressionDef>();
-      for (PTFExpressionDef eDef : partExprs)
-      {
-        OrderExpressionDef oeDef = new OrderExpressionDef(eDef);
-        combinedOrderCols.add(oeDef);
-      }
-      combinedOrderCols.addAll(orderExprs);
-      def.setExpressions(combinedOrderCols);
     }
 
     return def;
@@ -620,12 +575,12 @@ public class PTFTranslator {
     return oexpDef;
   }
 
-  private WindowFrameDef translate(String wFnName, ShapeDetails inpShape, WindowSpec spec) throws SemanticException {
-    PartitionSpec pSpec = spec.getPartition();
-    OrderSpec oSpec = spec.getOrder();
-    PartitionDef pDef = translate(inpShape, pSpec);
-    OrderDef oDef = translate(inpShape, oSpec, pDef);
-    validatePartitioningForWdwFn(wFnName, pDef, oDef);
+  private WindowFrameDef translate(String wFnName, ShapeDetails inpShape, WindowSpec spec)
+      throws SemanticException {
+    /*
+     * Since we componentize Windowing, no need to translate
+     * the Partition & Order specs of individual WFns.
+    */
     return translate(inpShape, spec.getWindowFrame());
   }
 
@@ -738,25 +693,6 @@ public class PTFTranslator {
               pC));
     }
 
-  }
-
-  private void validatePartitioningForWdwFn(String wFnName, PartitionDef fPart, OrderDef fOrder)
-      throws SemanticException
-  {
-    PartitionDef tPart = ptfDesc.getFuncDef().getPartition();
-
-    if (!PTFTranslator.isCompatible(tPart, fPart))
-    {
-      throw new SemanticException(
-          String.format("Window Function '%s' has an incompatible partition clause", wFnName));
-    }
-
-    OrderDef tOrder = ptfDesc.getFuncDef().getOrder();
-    if (!PTFTranslator.isCompatible(tOrder, fOrder))
-    {
-      throw new SemanticException(
-          String.format("Window Function '%s' has an incompatible order clause", wFnName));
-    }
   }
 
   private ShapeDetails setupTableFnShape(String fnName, ShapeDetails inpShape, StructObjectInspector OI, ArrayList<String> columnNames, RowResolver rr)
@@ -953,84 +889,6 @@ public class PTFTranslator {
     }
 
     return outOI;
-  }
-
-  /*
-   * Partition & Order expression compatibility methods
-   */
-
-  protected static boolean isCompatible(PartitionDef p1, PartitionDef p2) {
-    if (p1 == null && p2 == null) {
-      return true;
-    }
-    if (p1 == null && p2 != null) {
-      return false;
-    }
-    if (p1 != null && p2 == null) {
-      return true;
-    }
-
-    ArrayList<PTFExpressionDef> p1Exprs = p1.getExpressions();
-    ArrayList<PTFExpressionDef> p2Exprs = p2.getExpressions();
-    if (p1Exprs.size() != p2Exprs.size()) {
-      return false;
-    }
-    for (int i = 0; i < p1Exprs.size(); i++)
-    {
-      boolean e = isEqual(p1Exprs.get(i), p2Exprs.get(i));
-      if (!e) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  protected static boolean isEqual(PTFExpressionDef e1, PTFExpressionDef e2) {
-    if (e1 == null && e2 == null) {
-      return false;
-    }
-    if (e1 == null && e2 != null) {
-      return false;
-    }
-    if (e1 != null && e2 == null) {
-      return false;
-    }
-
-    return e1.getExpressionTreeString().equals(e2.getExpressionTreeString());
-  }
-
-  protected static boolean isCompatible(OrderDef o1, OrderDef o2) {
-    if (o1 == null && o2 == null) {
-      return true;
-    }
-    if (o1 == null && o2 != null) {
-      return false;
-    }
-    if (o1 != null && o2 == null) {
-      return true;
-    }
-
-    ArrayList<OrderExpressionDef> o1Exprs = o1.getExpressions();
-    ArrayList<OrderExpressionDef> o2Exprs = o2.getExpressions();
-    if (o1Exprs.size() != o2Exprs.size()) {
-      return false;
-    }
-    for (int i = 0; i < o1Exprs.size(); i++)
-    {
-      boolean e = isEqual(o1Exprs.get(i), o2Exprs.get(i));
-      if (!e) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  protected static boolean isEqual(OrderExpressionDef e1, OrderExpressionDef e2) {
-    boolean e = isEqual((PTFExpressionDef)e1, (PTFExpressionDef)e2);
-    if (!e) {
-      return false;
-    }
-    return e1.getOrder().equals(e2.getOrder());
   }
 
   /*

@@ -162,6 +162,7 @@ public class WindowingSpec {
             fillInWindowSpec(wdwSpec.getSourceId(), wdwSpec, sources);
           }
           wFn.setWindowSpec(applyContantPartition(wdwSpec));
+          wFn.getWindowSpec().prefixOrderByPartitionSpec();
         }
       }
     }
@@ -386,6 +387,15 @@ public class WindowingSpec {
     public void setOrder(OrderSpec orderSpec) {
       partitioning = partitioning == null ? new PartitioningSpec() : partitioning;
       partitioning.setOrderSpec(orderSpec);
+    }
+
+    protected void prefixOrderByPartitionSpec() {
+      if ( getOrder() == null ) {
+        setOrder(new OrderSpec());
+      }
+      if ( !getOrder().isPrefixedBy(getPartition()) ) {
+        getOrder().prefixBy(getPartition());
+      }
     }
   };
 
