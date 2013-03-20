@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.concurrent.locks.Lock;
@@ -103,6 +104,21 @@ public class PTFPersistence {
     public ByteBasedList()
     {
       this(0, MEDIUM_SIZE);
+    }
+
+    protected void reset(int startOffset)  throws HiveException {
+      PTFPersistence.lock(lock.writeLock());
+      try
+      {
+        this.startOffset = startOffset;
+        bytesUsed = 0;
+        currentSize = 0;
+        Arrays.fill(offsetsArray, 0);
+        lastModified = System.nanoTime();
+      }
+      finally {
+        lock.writeLock().unlock();
+      }
     }
 
     public ByteBasedList(int capacity)
@@ -389,6 +405,7 @@ public class PTFPersistence {
   {
     ArrayList<ByteBasedList> partitions;
     ArrayList<Integer> partitionOffsets;
+    ArrayList<File> reusableFiles;
     File dir;
     int batchSize;
 
@@ -401,12 +418,32 @@ public class PTFPersistence {
 
       partitions = new ArrayList<ByteBasedList>();
       partitionOffsets = new ArrayList<Integer>();
+      reusableFiles = new ArrayList<File>();
       addPartition();
     }
 
     public PartitionedByteBasedList() throws HiveException
     {
       this(ByteBasedList.LARGE_SIZE);
+    }
+
+    @Override
+    protected void reset(int startOffset) throws HiveException {
+      PTFPersistence.lock(lock.writeLock());
+      try {
+        currentSize = 0;
+        for(int i=0; i < partitions.size() - 1; i++) {
+          PersistentByteBasedList p = (PersistentByteBasedList)
+                          partitions.remove(0);
+          reusableFiles.add(p.getFile());
+          partitionOffsets.remove(0);
+        }
+        partitions.get(0).reset(0);
+        partitionOffsets.set(0, currentSize);
+      }
+      finally {
+        lock.writeLock().unlock();
+      }
     }
 
     private void addPartition() throws HiveException
@@ -417,7 +454,13 @@ public class PTFPersistence {
         {
           int idx = partitions.size() - 1;
           ByteBasedList bl = partitions.get(idx);
-          File f = File.createTempFile("wdw", null, dir);
+          File f;
+          if ( reusableFiles.size() > 0 ) {
+            f = reusableFiles.remove(0);
+          }
+          else {
+            f = File.createTempFile("wdw", null, dir);
+          }
           PersistentByteBasedList.store(bl, f);
           partitions.set(idx, new PersistentByteBasedList(f, bl));
 
@@ -804,6 +847,11 @@ public class PTFPersistence {
       this(file, null);
     }
 
+    @Override
+    protected void reset(int startOffset) throws HiveException {
+      throw new HiveException("Reset on PersistentByteBasedList not supported");
+    }
+
     private ByteBasedList getList() throws HiveException
     {
       PTFPersistence.lock(lock.readLock());
@@ -829,6 +877,10 @@ public class PTFPersistence {
       {
         lock.readLock().unlock();
       }
+    }
+
+    File getFile() {
+      return file;
     }
 
     @Override

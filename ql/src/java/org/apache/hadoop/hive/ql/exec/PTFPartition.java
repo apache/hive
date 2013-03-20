@@ -62,6 +62,11 @@ public class PTFPartition
     wRow = createWritable();
   }
 
+  public void reset() throws HiveException {
+    sz = 0;
+    elems.reset(0);
+  }
+
   public SerDe getSerDe()
   {
     return serDe;

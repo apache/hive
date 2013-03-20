@@ -57,10 +57,17 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     WindowTableFunctionDef wFnDef = (WindowTableFunctionDef) getTableDef();
     PTFPartitionIterator<Object> pItr = iPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
-    PTFPartition outP = new PTFPartition(getPartitionClass(),
-        getPartitionMemSize(), wFnDef.getOutputFromWdwFnProcessing().getSerde(), OI);
-    execute(pItr, outP);
-    return outP;
+
+    if ( outputPartition == null ) {
+      outputPartition = new PTFPartition(getPartitionClass(),
+          getPartitionMemSize(), wFnDef.getOutputFromWdwFnProcessing().getSerde(), OI);
+    }
+    else {
+      outputPartition.reset();
+    }
+
+    execute(pItr, outputPartition);
+    return outputPartition;
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })

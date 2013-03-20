@@ -62,6 +62,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
 	protected transient KeyWrapper newKeys;
 	transient HiveConf hiveConf;
 
+
 	/*
 	 * 1. Find out if the operator is invoked at Map-Side or Reduce-side
 	 * 2. Get the deserialized QueryDef
@@ -137,7 +138,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
       if (currentKeys != null && !keysAreEqual)
       {
         processInputPartition();
-        inputPart = createFirstPartitionForChain(inputObjInspectors[0], hiveConf, isMapOperator);
+        inputPart.reset();
       }
 
       if (currentKeys == null || !keysAreEqual)

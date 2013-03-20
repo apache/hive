@@ -64,10 +64,12 @@ public abstract class TableFunctionEvaluator
   String partitionClass;
   int partitionMemSize;
   boolean transformsRawInput;
+  transient protected PTFPartition outputPartition;
 
   static{
     PTFUtils.makeTransient(TableFunctionEvaluator.class, "OI");
     PTFUtils.makeTransient(TableFunctionEvaluator.class, "rawInputOI");
+    PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputPartition");
   }
 
 
@@ -144,10 +146,17 @@ public abstract class TableFunctionEvaluator
   {
     PTFPartitionIterator<Object> pItr = iPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
-    PTFPartition outP = new PTFPartition(getPartitionClass(),
-        getPartitionMemSize(), tDef.getOutputShape().getSerde(), OI);
-    execute(pItr, outP);
-    return outP;
+
+    if ( outputPartition == null ) {
+      outputPartition = new PTFPartition(getPartitionClass(),
+          getPartitionMemSize(), tDef.getOutputShape().getSerde(), OI);
+    }
+    else {
+      outputPartition.reset();
+    }
+
+    execute(pItr, outputPartition);
+    return outputPartition;
   }
 
   protected abstract void execute(PTFPartitionIterator<Object> pItr, PTFPartition oPart) throws HiveException;
