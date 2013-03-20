@@ -91,6 +91,36 @@
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
 
+    <!-- jobclient tests dependency -->
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-jobclient" rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default" transitive="false">
+      <artifact name="hadoop-mapreduce-client-jobclient" ext="jar" />
+      <artifact name="hadoop-mapreduce-client-jobclient" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-server-tests"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <artifact name="hadoop-yarn-server-tests" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-app"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-hs"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
     <!-- Hadoop 0.20 shim dependencies. Used for building 0.20 shims. -->
     <dependency org="com.google.guava" name="guava" rev="${guava-hadoop20.version}"
                 conf="hadoop0.20.shim->default" transitive="false"/>
