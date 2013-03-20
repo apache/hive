@@ -329,31 +329,35 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
               HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
 
           boolean bigTableFound = false;
-          long largestTableSize = 0;
+          long largestBigTableCandidateSize = 0;
           long sumTableSizes = 0;
           for (String alias : aliasToWork.keySet()) {
+            int tablePosition = getPosition(currWork, joinOp, alias);
+            boolean bigTableCandidate = bigTableCandidates.contains(tablePosition);
             Long size = aliasToSize.get(alias);
             // The size is not available at compile time if the input is a sub-query.
             // If the size of atleast n-1 inputs for a n-way join are available at compile time,
             // and the sum of them is less than the specified threshold, then convert the join
             // into a map-join without the conditional task.
             if ((size == null) || (size > mapJoinSize)) {
-              sumTableSizes += largestTableSize;
-              if (bigTableFound || (sumTableSizes > mapJoinSize)) {
+              sumTableSizes += largestBigTableCandidateSize;
+              if (bigTableFound || (sumTableSizes > mapJoinSize) || !bigTableCandidate) {
                 convertJoinMapJoin = false;
                 break;
               }
               bigTableFound = true;
-              bigTablePosition = getPosition(currWork, joinOp, alias);
-              largestTableSize = mapJoinSize + 1;
+              bigTablePosition = tablePosition;
+              largestBigTableCandidateSize = mapJoinSize + 1;
             } else {
-              if (size > largestTableSize) {
-                sumTableSizes += largestTableSize;
-                largestTableSize = size;
-                bigTablePosition = getPosition(currWork, joinOp, alias);
-              } else {
+              if (bigTableCandidate && size > largestBigTableCandidateSize) {
+                bigTablePosition = tablePosition;
+                sumTableSizes += largestBigTableCandidateSize;
+                largestBigTableCandidateSize = size;
+              }
+              else {
                 sumTableSizes += size;
               }
+
               if (sumTableSizes > mapJoinSize) {
                 convertJoinMapJoin = false;
                 break;

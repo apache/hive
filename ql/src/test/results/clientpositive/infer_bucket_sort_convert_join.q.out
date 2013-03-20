@@ -65,7 +65,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Tests a join which is not converted to a map join, the output should be bucketed and sorted
+PREHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
+-- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
 SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
@@ -84,7 +85,8 @@ Logs:
 #### A masked pattern was here ####
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
-POSTHOOK: query: -- Tests a join which is not converted to a map join, the output should be bucketed and sorted
+POSTHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
+-- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
 SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key

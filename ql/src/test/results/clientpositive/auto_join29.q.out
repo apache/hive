@@ -8,18 +8,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src1 
@@ -160,101 +155,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: (key > 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 2
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Left Outer Join0 to 1
-               Right Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 {(VALUE._col0 < 10.0)}
-            1 
-            2 {(VALUE._col0 < 10.0)}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -2885,18 +2785,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src2 
@@ -3041,105 +2936,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: (key > 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Left Outer Join0 to 1
-               Left Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 {(VALUE._col0 < 10.0)}
-            1 
-            2 
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -4180,18 +3976,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src1 
@@ -4336,105 +4127,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Right Outer Join0 to 1
-               Left Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 
-            1 {(VALUE._col0 > 10.0)}
-            2 
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -5007,18 +4699,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src1 
@@ -5159,101 +4846,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src3 
-          TableScan
-            alias: src3
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 2
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Right Outer Join0 to 1
-               Right Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 
-            1 {(VALUE._col0 > 10.0)}
-            2 {(VALUE._col0 < 10.0)}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -6342,35 +5934,28 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-1
-  Stage-8 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-8
-  Stage-2 depends on stages: Stage-1, Stage-5, Stage-6
-  Stage-9 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-9
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-7
-    Conditional Operator
-
-  Stage: Stage-8
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        src2 
+        src1 
           Fetch Operator
             limit: -1
         src3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        src2 
+        src1 
           TableScan
-            alias: src2
+            alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -6382,7 +5967,7 @@ STAGE PLANS:
                   0 [Column[key]]
                   1 [Column[key]]
                   2 [Column[key]]
-                Position of Big Table: 0
+                Position of Big Table: 1
         src3 
           TableScan
             alias: src3
@@ -6400,17 +5985,17 @@ STAGE PLANS:
                   0 [Column[key]]
                   1 [Column[key]]
                   2 [Column[key]]
-                Position of Big Table: 0
+                Position of Big Table: 1
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        src1 
+        src2 
           TableScan
-            alias: src1
+            alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -6426,7 +6011,7 @@ STAGE PLANS:
                   1 [Column[key]]
                   2 [Column[key]]
                 outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 0
+                Position of Big Table: 1
                 Select Operator
                   expressions:
                         expr: _col0
@@ -6493,201 +6078,6 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        src1 
-          Fetch Operator
-            limit: -1
-        src3 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 1
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 1
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                     Left Outer Join1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: string
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: string
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-               Left Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
@@ -6711,18 +6101,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src1 
@@ -6867,105 +6252,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 2
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-               Right Outer Join1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 
-            1 
-            2 {(VALUE._col0 < 10.0)}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -7490,18 +6776,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage , consists of Stage-7, Stage-1
-  Stage-7 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-5
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-6
-    Conditional Operator
-
-  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src2 
@@ -7647,105 +6928,6 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Left Outer Join0 to 1
-               Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 {(VALUE._col0 < 10.0)}
-            1 
-            2 
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
@@ -7769,20 +6951,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-1
-  Stage-8 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-8
-  Stage-2 depends on stages: Stage-1, Stage-5, Stage-6
-  Stage-9 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-9
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-7
-    Conditional Operator
-
-  Stage: Stage-8
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
         src1 
@@ -7931,217 +7106,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-9
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        src1 
-          Fetch Operator
-            limit: -1
-        src2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                filter predicates:
-                  0 
-                  1 {(key > 10.0)}
-                  2 
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 2
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                filter predicates:
-                  0 
-                  1 {(key > 10.0)}
-                  2 
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 2
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Map Join Operator
-                condition map:
-                     Right Outer Join0 to 1
-                     Inner Join 1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                filter predicates:
-                  0 
-                  1 {(key > 10.0)}
-                  2 
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 2
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: string
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: string
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: (key < 10.0)
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Right Outer Join0 to 1
-               Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          filter predicates:
-            0 
-            1 {(VALUE._col0 > 10.0)}
-            2 
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -8224,37 +7188,28 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-11, Stage-1
-  Stage-9 has a backup stage: Stage-1
-  Stage-5 depends on stages: Stage-9
-  Stage-2 depends on stages: Stage-1, Stage-5, Stage-6, Stage-7
-  Stage-10 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-10
-  Stage-11 has a backup stage: Stage-1
-  Stage-7 depends on stages: Stage-11
-  Stage-1
+  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-9
+  Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        src2 
+        src1 
           Fetch Operator
             limit: -1
         src3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        src2 
+        src1 
           TableScan
-            alias: src2
+            alias: src1
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
+                  expr: ((key > 10.0) and (key < 10.0))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -8266,7 +7221,7 @@ STAGE PLANS:
                   0 [Column[key]]
                   1 [Column[key]]
                   2 [Column[key]]
-                Position of Big Table: 0
+                Position of Big Table: 1
         src3 
           TableScan
             alias: src3
@@ -8284,17 +7239,17 @@ STAGE PLANS:
                   0 [Column[key]]
                   1 [Column[key]]
                   2 [Column[key]]
-                Position of Big Table: 0
+                Position of Big Table: 1
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        src1 
+        src2 
           TableScan
-            alias: src1
+            alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key < 10.0) and (key > 10.0))
                   type: boolean
               Map Join Operator
                 condition map:
@@ -8310,7 +7265,7 @@ STAGE PLANS:
                   1 [Column[key]]
                   2 [Column[key]]
                 outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 0
+                Position of Big Table: 1
                 Select Operator
                   expressions:
                         expr: _col0
@@ -8376,297 +7331,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        src1 
-          Fetch Operator
-            limit: -1
-        src3 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 1
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 1
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                     Inner Join 1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: string
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: string
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-11
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        src1 
-          Fetch Operator
-            limit: -1
-        src2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 2
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              HashTable Sink Operator
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                Position of Big Table: 2
-
-  Stage: Stage-7
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Map Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                     Inner Join 1 to 2
-                condition expressions:
-                  0 {key} {value}
-                  1 {key} {value}
-                  2 {key} {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[key]]
-                  1 [Column[key]]
-                  2 [Column[key]]
-                outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                Position of Big Table: 2
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col4
-                        type: string
-                        expr: _col5
-                        type: string
-                        expr: _col8
-                        type: string
-                        expr: _col9
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: ((key < 10.0) and (key > 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-        src3 
-          TableScan
-            alias: src3
-            Filter Operator
-              predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-               Inner Join 1 to 2
-          condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
-          handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: string
-                  expr: _col4
-                  type: string
-                  expr: _col5
-                  type: string
-                  expr: _col8
-                  type: string
-                  expr: _col9
-                  type: string
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
