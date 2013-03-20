@@ -16,8 +16,10 @@ DESCRIBE FORMATTED test_table PARTITION (part = '1');
 
 set hive.mapjoin.check.memory.rows=1;
 set hive.mapjoin.localtask.max.memory.usage = 0.0001;
+set hive.auto.convert.join.noconditionaltask = false;
 
--- Tests a join which is not converted to a map join, the output should be bucketed and sorted
+-- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
+-- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
 SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key;
