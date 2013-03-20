@@ -1143,6 +1143,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputFormat = RCFILE_OUTPUT;
       serde = COLUMNAR_SERDE;
       break;
+    case HiveParser.TOK_TBLORCFILE:
+      inputFormat = ORCFILE_INPUT;
+      outputFormat = ORCFILE_OUTPUT;
+      serde = ORCFILE_SERDE;
+      break;
     case HiveParser.TOK_FILEFORMAT_GENERIC:
       handleGenericFileFormat(child);
       break;
