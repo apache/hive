@@ -32,7 +32,14 @@ public class JavaBigDecimalObjectInspector
 
   @Override
   public BigDecimalWritable getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new BigDecimalWritable((BigDecimal) o);
+    if (o == null) {
+      return null;
+    }
+
+    if (o instanceof String) {
+      o = new BigDecimal((String)o);
+    }
+    return new BigDecimalWritable((BigDecimal) o);
   }
 
   @Override

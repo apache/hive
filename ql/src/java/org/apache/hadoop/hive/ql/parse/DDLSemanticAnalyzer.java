@@ -2994,6 +2994,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TinyintLiteral:
         result = true;
         break;
+      case HiveParser.DecimalLiteral:
+        result = true;
+        break;
       case HiveParser.CharSetName:
         result = true;
         break;
