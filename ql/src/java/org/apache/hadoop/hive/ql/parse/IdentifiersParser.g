@@ -216,6 +216,7 @@ constant
     | BigintLiteral
     | SmallintLiteral
     | TinyintLiteral
+    | DecimalLiteral
     | charSetStringLiteral
     | booleanValue
     ;

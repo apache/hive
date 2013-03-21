@@ -138,7 +138,8 @@ public final class TypeCheckProcFactory {
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
         HiveParser.TinyintLiteral + "%|" +
         HiveParser.SmallintLiteral + "%|" +
-        HiveParser.BigintLiteral + "%"),
+        HiveParser.BigintLiteral + "%|" +
+        HiveParser.DecimalLiteral + "%"),
         getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
@@ -252,6 +253,10 @@ public final class TypeCheckProcFactory {
           // Literal tinyint.
           v = Byte.valueOf(expr.getText().substring(
                 0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("BD")) {
+          // Literal decimal
+          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo, 
+                expr.getText().substring(0, expr.getText().length() - 2));
         } else {
           v = Double.valueOf(expr.getText());
           v = Long.valueOf(expr.getText());

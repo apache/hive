@@ -346,6 +346,11 @@ TinyintLiteral
     (Digit)+ 'Y'
     ;
 
+DecimalLiteral
+    :
+    Number 'B' 'D'
+    ;
+
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
