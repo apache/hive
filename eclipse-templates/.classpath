@@ -86,7 +86,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-mapper-asl-1.8.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jackson-xc-1.8.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/stringtemplate-@stringtemplate.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/ST4-@ST4.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/snappy-@snappy.version@.jar"/>
   <classpathentry kind="lib" path="build/beeline/hive-beeline-@HIVE_VERSION@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/tempus-fugit-@tempus-fugit.version@.jar"/>
