@@ -51,3 +51,16 @@ from
   ) ranked
 where dec = 89.5 limit 10;
 
+select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+             where other.t < 10
+            ) joined
+  ) ranked
+where rnk = 1 limit 10;
+
