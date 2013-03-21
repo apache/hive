@@ -45,6 +45,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/oro-2.0.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/servlet-api-2.5-6.1.14.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/xmlenc-0.52.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/guava-@guava-hadoop20.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-mapred-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jline-@jline.version@.jar"/>
@@ -57,7 +58,6 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-api-@commons-logging-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-io-@commons-io.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/derby-@derby.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava-hadoop20.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@-tests.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>
@@ -88,10 +88,12 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/stringtemplate-@stringtemplate.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/snappy-@snappy.version@.jar"/>
+  <classpathentry kind="lib" path="build/beeline/hive-beeline-@HIVE_VERSION@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/tempus-fugit-@tempus-fugit.version@.jar"/>
   <classpathentry kind="lib" path="build/builtins/hive-builtins-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
+  <classpathentry kind="lib" path="build/testutils/hive-testutils-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/ql/test/src"/>
   <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="beeline/src/java"/>
