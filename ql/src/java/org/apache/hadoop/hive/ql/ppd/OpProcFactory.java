@@ -525,17 +525,6 @@ public final class OpProcFactory {
 
   }
 
-  public static class PTFPPD extends DefaultPPD {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " + nd.getName() + "("+ ((Operator<?>) nd).getIdentifier() + ")");
-      // It's not safe to push filters up through PTFPPD.
-      ((OpWalkerInfo) procCtx).getCandidateFilterOps().clear();
-      return null;
-    }
-  }
   /**
    * Default processor which just merges its children.
    */
@@ -858,7 +847,7 @@ public final class OpProcFactory {
   }
 
   public static NodeProcessor getPTFProc() {
-    return new PTFPPD();
+    return new ScriptPPD();
   }
 
   public static NodeProcessor getSCRProc() {
