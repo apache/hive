@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-public class CubeMeasure implements Named {
+public abstract class CubeMeasure implements Named {
   private final String formatString;
   private final String aggregate;
   private final String unit;
@@ -130,6 +130,8 @@ public class CubeMeasure implements Named {
   }
 
   public void addProperties(Map<String, String> props) {
+    props.put(MetastoreUtil.getMeasureClassPropertyKey(getName()),
+        getClass().getName());
     props.put(MetastoreUtil.getMeasureTypePropertyKey(getName()), getType());
     if (unit != null) {
       props.put(MetastoreUtil.getMeasureUnitPropertyKey(getName()), unit);

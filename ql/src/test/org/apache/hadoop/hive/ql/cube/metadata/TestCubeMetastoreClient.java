@@ -68,7 +68,7 @@ public class TestCubeMetastoreClient {
         "(msr1 + msr2)/ msr4", "", "SUM", "RS"));
 
     cubeDimensions = new HashSet<CubeDimension>();
-    List<BaseDimension> locationHierarchy = new ArrayList<BaseDimension>();
+    List<CubeDimension> locationHierarchy = new ArrayList<CubeDimension>();
     locationHierarchy.add(new ReferencedDimension(new FieldSchema("zipcode",
         "int", "zip"), new TableReference("ziptable", "zipcode")));
     locationHierarchy.add(new ReferencedDimension(new FieldSchema("cityid",
@@ -81,16 +81,14 @@ public class TestCubeMetastoreClient {
     locationHierarchy.add(new InlineDimension(new FieldSchema("regionname",
         "string", "region"), regions));
 
-    cubeDimensions.add(new CubeDimension("location", locationHierarchy));
-    cubeDimensions.add(new CubeDimension("dim1", Arrays.asList(
-        new BaseDimension(new FieldSchema("dim1", "string", "basedim")))));
-    cubeDimensions.add(new CubeDimension("dim2", Arrays.asList(
-        (BaseDimension)(new ReferencedDimension(
+    cubeDimensions.add(new HierarchicalDimension("location", locationHierarchy));
+    cubeDimensions.add(new BaseDimension(new FieldSchema("dim1", "string",
+        "basedim")));
+    cubeDimensions.add(new ReferencedDimension(
             new FieldSchema("dim2", "string", "ref dim"),
-            new TableReference("testdim2", "id"))))));
-    cubeDimensions.add(new CubeDimension("dim3", Arrays.asList(
-        (BaseDimension)(new InlineDimension(
-            new FieldSchema("region", "string", "region dim"), regions)))));
+            new TableReference("testdim2", "id")));
+    cubeDimensions.add(new InlineDimension(
+            new FieldSchema("region", "string", "region dim"), regions));
     cube = new Cube(cubeName, cubeMeasures, cubeDimensions);
   }
 

@@ -408,9 +408,22 @@ public class CubeMetastoreClient {
 
   public boolean isFactTable(String tableName) throws HiveException {
     Table tbl = getTable(tableName);
+    return isFactTable(tbl);
+  }
+
+  private boolean isFactTable(Table tbl) {
     String tableType = tbl.getParameters().get(
         MetastoreConstants.TABLE_TYPE_KEY);
     return CubeTableType.FACT.equals(tableType);
+  }
+
+  private boolean isFactTableForCube(Table tbl, Cube cube) {
+    if (isFactTable(tbl)) {
+      String cubeName = tbl.getParameters().get(
+          MetastoreUtil.getFactCubeNameKey(tbl.getTableName()));
+      return cube.getName().equals(cubeName);
+    }
+    return false;
   }
 
   public boolean isDimensionTable(String tableName) throws HiveException {
@@ -429,8 +442,11 @@ public class CubeMetastoreClient {
 
   public CubeFactTable getFactTable(String tableName) throws HiveException {
     Table tbl = getTable(tableName);
-    if (CubeTableType.FACT.equals(tbl.getParameters().get(
-        MetastoreConstants.TABLE_TYPE_KEY))) {
+    return getFactTable(tbl);
+  }
+
+  private CubeFactTable getFactTable(Table tbl) throws HiveException {
+    if (isFactTable(tbl)) {
       return new CubeFactTable(tbl);
     }
     return null;
@@ -470,12 +486,13 @@ public class CubeMetastoreClient {
     return dimTables;
   }
 
-  public List<CubeFactTable> getAllFactTables() throws HiveException {
+  public List<CubeFactTable> getAllFactTables(Cube cube) throws HiveException {
     List<CubeFactTable> factTables = new ArrayList<CubeFactTable>();
     try {
-      for (String table : getClient().getAllTables()) {
-        if (isFactTable(table)) {
-          factTables.add(getFactTable(table));
+      for (String tableName : getClient().getAllTables()) {
+        Table tbl = getTable(tableName);
+        if (isFactTableForCube(tbl, cube)) {
+          factTables.add(new CubeFactTable(tbl));
         }
       }
     } catch (HiveException e) {
@@ -506,5 +523,4 @@ public class CubeMetastoreClient {
     }
     return columns;
   }
-
 }

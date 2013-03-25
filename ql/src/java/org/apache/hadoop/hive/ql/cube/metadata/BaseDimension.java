@@ -4,36 +4,28 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-public class BaseDimension {
-  private final FieldSchema column;
+public class BaseDimension extends CubeDimension {
+  private final String type;
 
   public BaseDimension(FieldSchema column) {
-    this.column = column;
-    assert (column != null);
-    assert (column.getName() != null);
-    assert (column.getType() != null);
-  }
-
-  public FieldSchema getColumn() {
-    return column;
-  }
-
-  public String getName() {
-    return column.getName();
+    super(column.getName());
+    this.type = column.getType();
+    assert (type != null);
   }
 
   public String getType() {
-    return column.getType();
+    return type;
   }
 
+  @Override
   public void addProperties(Map<String, String> props) {
-    props.put(MetastoreUtil.getDimTypePropertyKey(column.getName()),
-        column.getType());
+    super.addProperties(props);
+    props.put(MetastoreUtil.getDimTypePropertyKey(getName()), type);
   }
 
   public BaseDimension(String name, Map<String, String> props) {
-    String type = getDimType(name, props);
-    this.column = new FieldSchema(name, type, "");
+    super(name);
+    this.type = getDimType(name, props);
   }
 
   public static String getDimType(String name, Map<String, String> props) {
@@ -43,9 +35,7 @@ public class BaseDimension {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = 1;
-    result = prime * result + ((getName() == null) ? 0 :
-      getName().toLowerCase().hashCode());
+    int result = super.hashCode();
     result = prime * result + ((getType() == null) ? 0 :
       getType().toLowerCase().hashCode());
     return result;
@@ -53,14 +43,10 @@ public class BaseDimension {
 
   @Override
   public boolean equals(Object obj) {
-    BaseDimension other = (BaseDimension)obj;
-    if (this.getName() == null) {
-      if (other.getName() != null) {
-        return false;
-      }
-    } else if (!this.getName().equalsIgnoreCase(other.getName())) {
+    if (!super.equals(obj)) {
       return false;
     }
+    BaseDimension other = (BaseDimension)obj;
     if (this.getType() == null) {
       if (other.getType() != null) {
         return false;

@@ -118,7 +118,30 @@ public final class Cube extends AbstractCubeTable {
     String dimStr = props.get(MetastoreUtil.getCubeDimensionListKey(name));
     String[] names = dimStr.split(",");
     for (String dimName : names) {
-      CubeDimension dim = new CubeDimension(dimName, props);
+      String className = props.get(MetastoreUtil.getDimensionClassPropertyKey(
+          dimName));
+      CubeDimension dim;
+      try {
+        Class<?> clazz = Class.forName(className);
+        Constructor<?> constructor;
+          constructor = clazz.getConstructor(String.class, Map.class);
+        dim = (CubeDimension) constructor.newInstance(new Object[]
+           {dimName, props});
+      } catch (ClassNotFoundException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (SecurityException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (NoSuchMethodException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (InstantiationException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (IllegalAccessException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      } catch (InvocationTargetException e) {
+        throw new IllegalArgumentException("Invalid dimension", e);
+      }
       dimensions.add(dim);
     }
     return dimensions;

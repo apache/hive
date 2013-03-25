@@ -87,6 +87,10 @@ public class MetastoreUtil implements MetastoreConstants {
     return getDimensionKeyPrefix(name) +  STORAGE_LIST_SFX;
   }
 
+  public static final String getDimensionClassPropertyKey(String dimName) {
+    return getDimensionKeyPrefix(dimName) + CLASS_SFX;
+  }
+
   ////////////////////////////
   // Measure properties  ///
   ///////////////////////////

@@ -30,8 +30,6 @@ public final class ExprMeasure extends CubeMeasure {
   @Override
   public void addProperties(Map<String, String> props) {
     super.addProperties(props);
-    props.put(MetastoreUtil.getMeasureClassPropertyKey(getName()),
-        this.getClass().getCanonicalName());
     props.put(MetastoreUtil.getMeasureExprPropertyKey(getName()), expr);
   }
 
