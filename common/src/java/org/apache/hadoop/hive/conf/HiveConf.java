@@ -223,6 +223,9 @@ public class HiveConf extends Configuration {
     // not specified
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true),
 
+    // ignore the mapjoin hint
+    HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null
