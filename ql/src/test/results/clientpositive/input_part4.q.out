@@ -37,7 +37,9 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####

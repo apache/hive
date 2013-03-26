@@ -80,10 +80,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 238	val_238	2008-04-08	11
@@ -370,10 +372,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 238	val_238	2008-04-08	11
@@ -514,10 +518,12 @@ STAGE PLANS:
 
 PREHOOK: query: select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 238
@@ -626,6 +632,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -633,6 +640,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -757,6 +765,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -764,6 +773,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -871,6 +881,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (0.25 PERCENT)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -878,6 +889,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select *, BLOCK__OFFSET__INSIDE__FILE from srcpart TABLESAMPLE (0.25 PERCENT)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -928,11 +940,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####

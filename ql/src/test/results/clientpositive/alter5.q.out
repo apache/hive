@@ -63,10 +63,12 @@ POSTHOOK: Output: default@alter5@dt=a
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from alter5 where dt='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter5
 PREHOOK: Input: default@alter5@dt=a
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter5
 POSTHOOK: Input: default@alter5@dt=a
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -199,10 +201,12 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from alter5 where dt='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: alter5_db@alter5
 PREHOOK: Input: alter5_db@alter5@dt=a
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: alter5_db@alter5
 POSTHOOK: Input: alter5_db@alter5@dt=a
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]

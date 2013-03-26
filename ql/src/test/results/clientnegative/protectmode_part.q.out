@@ -27,18 +27,22 @@ POSTHOOK: Input: default@tbl_protectmode3
 POSTHOOK: Output: default@tbl_protectmode3@p=p2
 PREHOOK: query: select * from tbl_protectmode3 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode3
 PREHOOK: Input: default@tbl_protectmode3@p=p1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode3
 POSTHOOK: Input: default@tbl_protectmode3@p=p1
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode3
 PREHOOK: Input: default@tbl_protectmode3@p=p2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode3
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl_protectmode3 partition (p='p1') enable offline
@@ -52,10 +56,12 @@ POSTHOOK: Input: default@tbl_protectmode3@p=p1
 POSTHOOK: Output: default@tbl_protectmode3@p=p1
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode3
 PREHOOK: Input: default@tbl_protectmode3@p=p2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode3
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table tbl_protectmode3 Partition p=p1

@@ -123,10 +123,12 @@ ts                  	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_special
 PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_special
 POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
