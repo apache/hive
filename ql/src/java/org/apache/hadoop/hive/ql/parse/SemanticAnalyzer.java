@@ -6096,18 +6096,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private List<String> getMapSideJoinTables(QB qb) {
     List<String> cols = new ArrayList<String>();
+
+
     ASTNode hints = qb.getParseInfo().getHints();
     for (int pos = 0; pos < hints.getChildCount(); pos++) {
       ASTNode hint = (ASTNode) hints.getChild(pos);
       if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
-        ASTNode hintTblNames = (ASTNode) hint.getChild(1);
-        int numCh = hintTblNames.getChildCount();
-        for (int tblPos = 0; tblPos < numCh; tblPos++) {
-          String tblName = ((ASTNode) hintTblNames.getChild(tblPos)).getText()
-              .toLowerCase();
-          if (!cols.contains(tblName)) {
-            cols.add(tblName);
+        // the user has specified to ignore mapjoin hint
+        if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)) {
+          ASTNode hintTblNames = (ASTNode) hint.getChild(1);
+          int numCh = hintTblNames.getChildCount();
+          for (int tblPos = 0; tblPos < numCh; tblPos++) {
+            String tblName = ((ASTNode) hintTblNames.getChild(tblPos)).getText()
+                .toLowerCase();
+            if (!cols.contains(tblName)) {
+              cols.add(tblName);
+            }
           }
+        }
+        else {
+          queryProperties.setMapJoinRemoved(true);
         }
       }
     }

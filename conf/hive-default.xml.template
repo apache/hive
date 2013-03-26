@@ -785,6 +785,12 @@
 </property>
 
 <property>
+  <name>hive.ignore.mapjoin.hint</name>
+  <value>true</value>
+  <description>Ignore the mapjoin hint</description>
+</property>
+
+<property>
   <name>hive.mapjoin.localtask.max.memory.usage</name>
   <value>0.90</value>
   <description>This number means how much memory the local task can take to hold the key/value into in-memory hash table; If the local task's memory usage is more than this number, the local task will be abort by themself. It means the data of small table is too large to be hold in the memory.</description>
