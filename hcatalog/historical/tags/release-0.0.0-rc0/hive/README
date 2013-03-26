@@ -1,0 +1,16 @@
+The Hive code is pulled in via an SVN external definition.  This allows 
+us to have a local version of hive to build against, including an 
+up to date trunk version, without needing to fork the code.
+
+The external definition is pegged to an SVN revision, so that 
+changes in Hive's code base do not cause suprising changes in HCatalog.  
+The SVN revision should be updated regularly.
+
+For release branches, the SVN revision should be pegged against a Hive release
+tag.
+
+The external definition can be edited by doing:
+
+svn propedit svn:externals hive
+
+in the top level directory.

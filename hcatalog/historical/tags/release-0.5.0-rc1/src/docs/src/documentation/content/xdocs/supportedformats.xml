@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>Storage Formats</title>
+  </header>
+  <body>
+  <p>As of version 0.4, HCatalog uses Hive's SerDe class to serialize and deserialize data. SerDes are provided for RCFile, CSV text, JSON text, and SequenceFile formats.</p>
+
+  <p>Users can write SerDes for custom formats using the instructions at <a href="https://cwiki.apache.org/confluence/display/Hive/SerDe/">https://cwiki.apache.org/confluence/display/Hive/SerDe</a>.</p>
+
+  <p><strong>Usage from Hive</strong></p>
+
+  <p> As of 0.4, Hive and HCatalog share the same storage abstractions, and thus, you can read from and write to HCatalog tables from within Hive, and vice versa.</p>
+
+  <p>However, Hive does not know where to find the HCatalog jar by default, so if you use any features that have been introduced by HCatalog, such as a table using the JSON SerDe, you might get a "class not found" exception.
+In this situation, before you run Hive, set environment variable <code>HIVE_AUX_JARS_PATH</code> to the directory with your HCatalog jar.
+(If the examples in the <a href="install.html">Installation</a> document were followed, that should be <code>/usr/local/hcat/share/hcatalog/</code>).</p>
+
+  <p><strong>CTAS Issue with JSON SerDe</strong></p>
+
+  <p>Using the Hive CREATE TABLE ... AS SELECT command with a JSON SerDe
+results in a table that has column headers such as "<code>_col0</code>",
+which can be read by HCatalog or Hive but cannot be easily read by external users.
+To avoid this issue, create the table in two steps instead of using CTAS:</p>
+  <ol>
+    <li>CREATE TABLE ...</li>
+    <li>INSERT OVERWRITE TABLE ... SELECT ...</li>
+  </ol>
+  
+  <p>See <a href="https://issues.apache.org/jira/browse/HCATALOG-436">HCATALOG-436</a> for details.</p>
+
+ </body>
+</document>

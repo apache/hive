@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<locationmap xmlns="http://apache.org/forrest/locationmap/1.0">
+  <components>
+    <matchers default="lm">
+      <matcher name="lm" src="org.apache.forrest.locationmap.WildcardLocationMapHintMatcher"/>
+    </matchers>
+<!--
+      * Can contain any sitemap selector with the following syntax. * 
+    <selectors default="exists">
+      <selector name="exists" logger="sitemap.selector.exists"  
+          src="org.apache.forrest.sourceexists.SourceExistsSelector" />
+    </selectors>
+    -->
+  </components>
+<!--
+    * Can contain a mount statement as a sibling to components and locator *
+    <mount src="somelocation.xml"/>
+  -->
+  <locator>
+<!--
+      * Can contain a mount within a selector where a selector is valid. 
+    <select>
+      <mount src="somelocation.xml"/>
+    </select>
+    -->
+    <match pattern="project.rewrite.**">
+      <location src="http://cocoon.apache.org/{1}.html"/>
+    </match>
+    <match pattern="project.remote.**.xml">
+      <location src="http://svn.apache.org/repos/asf/forrest/trunk/main/fresh-site/src/documentation/content/xdocs/{1}.xml"/>
+    </match>
+<!-- 
+      * Can use a selector inside a match.  *
+    <match pattern="somepattern/**">
+      <select>
+        <location src="first-location-attempted"/>
+        <location src="second-location-attempted"/>
+        <location src="third-location-attepted"/>
+      </select>
+    </match>
+    -->
+<!--
+     To locate all your source documents in a slide repository you can do:
+
+    <match pattern="tabs.xml">
+      <location src="http://127.0.0.1:8080/slide/files/tabs.xml"/>
+    </match>
+    <match pattern="site.xml">
+      <location src="http://127.0.0.1:8080/slide/files/site.xml"/>
+    </match>
+    <match pattern="**.xml">
+      <location src="http://127.0.0.1:8080/slide/files/{1}.xml"/>
+    </match>
+    -->
+  </locator>
+</locationmap>

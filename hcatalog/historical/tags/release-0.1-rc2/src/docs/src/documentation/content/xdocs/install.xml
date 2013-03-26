@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>Installing HCatalog</title>
+  </header>
+  <body>
+
+  <section>
+    <title>Server Installation</title>
+
+    <p><strong>Prerequisites</strong></p>
+    <ul>
+        <li>Machine on which the server can be installed - this should have
+        access to the hadoop cluster in question, and be accessible from
+        the machines you launch jobs from</li>
+        <li>MySQL db</li>
+        <li>Hadoop cluster</li>
+        <li>Unix user that the server will run as, and an associated kerberos
+        service principal and keytabs.</li>
+    </ul>
+
+    <p>Throughout these instructions when you see a word in <em>italics</em> it
+    indicates a place where you should replace the word with a locally 
+    appropriate value such as a hostname or password.</p>
+
+    <p><strong>Database Setup</strong></p>
+
+    <p>Select a machine to install the database on.  This need not be the same
+    machine as the Thrift server, which we will set up later.  For large
+    clusters we recommend that they not be the same machine.  For the 
+    purposes of these instructions we will refer to this machine as
+    <em>hcatdb.acme.com</em></p>
+
+    <p>Install MySQL server on <em>hcatdb.acme.com</em>.  You can obtain
+    packages for MySQL from <a href="http://www.mysql.com/downloads/">MySQL's
+    download site</a>.  We have developed and tested with versions 5.1.46
+    and 5.1.48.  We suggest you use these versions or later.
+    Once you have MySQL up and running, use the <code>mysql</code> command line
+    tool to add the <code>hive</code> user and <code>hivemetastoredb</code>
+    database.  You will need to pick a password for your <code>hive</code>
+    user, and replace <em>dbpassword</em> in the following commands with it.</p>
+
+    <p><code>mysql -u root</code></p>
+    <p><code>mysql> CREATE USER 'hive'@'</code><em>hcatdb.acme.com</em><code>' IDENTIFIED BY '</code><em>dbpassword</em><code>';</code></p>
+    <p><code>mysql> CREATE DATABASE hivemetastoredb DEFAULT CHARACTER SET latin1 DEFAULT COLLATE latin1_swedish_ci;</code></p>
+    <p><code>mysql> GRANT ALL PRIVILEGES ON hivemetastoredb.* TO 'hive'@'</code><em>hcatdb.acme.com</em><code>' WITH GRANT OPTION;</code></p>
+    <p><code>mysql> flush privileges;</code></p>
+    <p><code>mysql> quit;</code></p>
+
+    <p>In a temporary directory, untar the HCatalog artifact</p>
+
+    <p><code>tar xzf hcatalog-</code><em>version</em><code>.tar.gz</code></p>
+
+    <p>Use the database installation script found in the package to create the
+    database</p>
+    <p><code>mysql -u hive -D hivemetastoredb -h</code><em>hcatdb.acme.com</em><code> -p &lt; scripts/hive-schema-0.7.0.mysql.sql</code></p>
+
+    <p><strong>Thrift Server Setup</strong></p>
+
+    <p>Select a machine to install your Thrift server on.  For smaller and test
+    installations this can be the same machine as the database.  For the
+    purposes of these instructions we will refer to this machine as
+    <em>hcatsvr.acme.com</em>.</p>
+
+    <p>Install the MySQL Java connector libraries on <em>hcatsvr.acme.com</em>.
+    You can obtain these from
+    <a href="http://www.mysql.com/downloads/connector/j/5.1.html">MySQL's
+    download site</a>.</p>
+
+    <p>Select a user to run the Thrift server as.  This user should not be a
+    human user, and must be able to act as a proxy for other users.  We suggest
+    the name "hcat" for the user.  Throughout the rest of this documentation 
+    we will refer to this user as "hcat".  If necessary, add the user to 
+    <em>hcatsvr.acme.com</em>.</p>
+
+    <p>Select a <em>root</em> directory for your installation of HCatalog.  This 
+    directory must be owned by the hcat user.  We recommend
+    <code>/usr/local/hcat</code>.  If necessary, create the directory.</p>
+
+    <p>Download the HCatalog release into a temporary directory, and untar
+    it.  Then change directories into the new distribution and run the HCatalog
+    server installation script.  You will need to know the directory you chose
+    as <em>root</em> and the
+    directory you installed the MySQL Java connector libraries into (referred
+    to in the command below as <em>dbroot</em>).</p>
+
+    <p><code>tar zxf hcatalog-</code><em>version</em><code>.tar.gz
+    cd hcatalog-</code><em>version</em></p>
+    <p><code>scripts/hcat_server_install.sh -r </code><em>root</em><code> -d </code><em>dbroot</em></p>
+
+    <p>Now you need to edit your <em>root</em><code>/conf/hive-site.xml</code> file.
+    Open this file in your favorite text editor.  The following table shows the
+    values you need to configure.</p>
+
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value to Set it to</th>
+        </tr>
+        <tr>
+            <td>javax.jdo.option.ConnectionURL</td>
+            <td>In the JDBC connection string, change DBHOSTNAME to the name 
+            of the machine you put the MySQL server on.</td>
+        </tr>
+        <tr>
+            <td>javax.jdo.option.ConnectionPassword</td>
+            <td><em>dbpassword</em> value you used in setting up the MySQL server
+            above</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.warehouse.dir</td>
+            <td>The directory you want to use for the default database in your
+            installation</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.uris</td>
+            <td>You need to set the hostname to your Thrift
+            server.  Replace <em>SVRHOST</em> with the name of the
+            machine you are installing the Thrift server on.  You can also
+            change the port the Thrift server runs on by changing the default
+            value of 3306.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.sasl.enabled</td>
+            <td>Set to true by default.  Set to false if you do not wish to
+            secure the thrift interface.  This can be convenient for testing.
+            We do not recommend turning this off in production.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.kerberos.keytab.file</td>
+            <td>The path to the Kerberos keytab file containg the metastore
+            thrift server's service principal.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.kerberos.principal</td>
+            <td>The service principal for the metastore thrift server.  You can
+            reference your host as _HOST and it will be replaced with your
+            actual hostname</td>
+        </tr>
+    </table>
+
+    <p>You can now procede to starting the server.</p>
+  </section>
+
+  <section>
+    <title>Starting the Server</title>
+            
+    <p>Start the HCatalog server by switching directories to
+    <em>root</em> and invoking the start script
+    <code>bin/hcat_server_start.sh</code></p>
+
+  </section>
+
+  <section>
+    <title>Logging</title>
+
+    <p>Server activity logs and gc logs are located in
+    <em>root</em><code>/var/log/hcat_server</code>.  Logging configuration is located at
+    <em>root</em><code>/conf/log4j.properties</code>.  Server logging uses
+    <code>DailyRollingFileAppender</code> by default. It will generate a new
+    file per day and does not expire old log files automatically.</p>
+
+  </section>
+
+  <section>
+    <title>Stopping the Server</title>
+
+    <p>To stop the HCatalog server, change directories to the <em>root</em>
+    directory and invoke the stop script
+    <code>bin/hcat_server_stop.sh</code></p>
+
+  </section>
+
+  <section>
+    <title>Client Install</title>
+
+    <p>Select a <em>root</em> directory for your installation of HCatalog client.
+    We recommend <code>/usr/local/hcat</code>.  If necessary, create the directory.</p>
+
+    <p>Download the HCatalog release into a temporary directory, and untar
+    it.</p>
+
+    <p><code>tar zxf hcatalog-</code><em>version</em><code>.tar.gz</code></p>
+
+    <p>Now you need to edit your <em>root</em><code>/conf/hive-site.xml</code> file.
+    Open this file in your favorite text editor.  The following table shows the
+    values you need to configure.   These values should match the values set on
+    the HCatalog server.  Do <strong>NOT</strong> copy the configuration file
+    from your server installation as that contains the password to your
+    database, which you should not distribute to your clients.</p>
+
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value to Set it to</th>
+        </tr>
+        <tr>
+            <td>hive.metastore.warehouse.dir</td>
+            <td>The directory you want to use for the default database in your
+            installation</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.uris</td>
+            <td>You need to set the hostname wish your Thrift
+            server to use by replacing <em>SVRHOST</em> with the name of the
+            machine you are installing the Thrift server on.  You can also
+            change the port the Thrift server runs on by changing the default
+            value of 3306.</td>
+        </tr>
+    </table>
+
+    <p>The HCatalog command line interface (CLI) can now be invoked as
+    <em>root</em><code>/bin/hcat.sh</code>.</p>
+
+  </section>
+
+  </body>
+</document>

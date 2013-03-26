@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>HCatalog Load and Store Interfaces</title>
+  </header>
+  <body>
+ 
+ <!-- ==================================================================== --> 
+  <section>
+  <title>Set Up</title>
+  
+<p>The HCatLoader and HCatStorer interfaces are used with Pig scripts to read and write data in HCatalog managed tables. If you run your Pig script using the "pig" command (the bin/pig Perl script) no set up is required. </p>
+<source>
+$ pig mypig.script
+</source>    
+    
+   <p> If you run your Pig script using the "java" command (java -cp pig.jar...), then the hcat jar needs to be included in the classpath of the java command line (using the -cp option). Additionally, the following properties are required in the command line: </p>
+    <ul>
+		<li>-Dhcat.metastore.uri=thrift://&lt;hcatalog server hostname&gt;:9080 </li>
+		<li>-Dhcat.metastore.principal=&lt;hcatalog server kerberos principal&gt; </li>
+	</ul>
+	
+<source>
+$ java -cp pig.jar hcatalog.jar
+     -Dhcat.metastore.uri=thrift://&lt;hcatalog server hostname&gt;:9080 
+     -Dhcat.metastore.principal=&lt;hcatalog server kerberos principal&gt; myscript.pig
+</source>
+<p></p>
+<p><strong>Authentication</strong></p>
+<table>
+	<tr>
+	<td><p>If a failure results in a message like "2010-11-03 16:17:28,225 WARN hive.metastore ... - Unable to connect metastore with URI thrift://..." in /tmp/&lt;username&gt;/hive.log, then make sure you have run "kinit &lt;username&gt;@FOO.COM" to get a kerberos ticket and to be able to authenticate to the HCatalog server. </p></td>
+	</tr>
+</table>
+
+</section>
+  
+      
+<!-- ==================================================================== -->
+     <section>
+		<title>HCatLoader</title>
+		<p>HCatLoader is used with Pig scripts to read data from HCatalog managed tables.</p>  
+<section> 
+<title>Usage</title>
+<p>HCatLoader is accessed via a Pig load statement.</p>	
+<source>
+A = LOAD 'dbname.tablename' USING org.apache.hcatalog.pig.HCatLoader(); 
+</source>
+
+    <p><strong>Assumptions</strong></p>	  
+    <p>You must specify the database name and table name using this format: 'dbname.tablename'. Both the database and table must be created prior to running your Pig script. The Hive metastore lets you create tables without specifying a database; if you created tables this way, then the database name is 'default' and the string becomes 'default.tablename'. </p>
+    <p>If the table is partitioned, you can indicate which partitions to scan by immediately following the load statement with a partition filter statement 
+    (see <a href="#Examples">Examples</a>). </p>
+ </section>   
+<section> 
+<title>HCatalog Data Types</title>
+<p>Restrictions apply to the types of columns HCatLoader can read.</p>
+<p>HCatLoader  can read <strong>only</strong> the data types listed in the table. 
+The table shows how Pig will interpret the HCatalog data type.</p>
+<p>(Note: HCatalog does not support type Boolean.)</p>
+   <table>
+        <tr>
+            <td>
+               <p><strong>HCatalog Data Type</strong></p>
+            </td>
+            <td>
+               <p><strong>Pig Data Type</strong></p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>primitives (int, long, float, double, string) </p>
+            </td>
+            <td>
+               <p>int, long, float, double <br></br> string to chararray</p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>map (key type should be string, valuetype can be a primitive listed above)</p>
+            </td>
+            <td>
+               <p>map </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>List&lt;primitive&gt; or List&lt;map&gt; where map is of the type noted above </p>
+            </td>
+            <td>
+               <p>bag, with the primitive or map type as the field in each tuple of the bag </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>struct&lt;primitive fields&gt; </p>
+            </td>
+            <td>
+               <p>tuple </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>List&lt;struct&lt;primitive fields&gt;&gt; </p>
+            </td>
+            <td>
+               <p>bag, where each tuple in the bag maps to struct &lt;primitive fields&gt; </p>
+            </td>
+    </tr>
+ </table>
+</section> 
+
+<section> 
+<title>Examples</title>
+<p>This load statement will load all partitions of the specified table.</p>
+<source>
+/* myscript.pig */
+A = LOAD 'dbname.tablename' USING org.apache.hcatalog.pig.HCatLoader(); 
+...
+...
+</source>
+<p>If only some partitions of the specified table are needed, include a partition filter statement <strong>immediately</strong> following the load statement. 
+The filter statement can include conditions on partition as well as non-partition columns.</p>
+<source>
+/* myscript.pig */
+A = LOAD 'dbname.tablename' USING  org.apache.hcatalog.pig.HCatLoader();
+ 
+B = filter A by date == '20100819' and by age &lt; 30; -- datestamp is a partition column; age is not
+ 
+C = filter A by date == '20100819' and by country == 'US'; -- datestamp and country are partition columns
+...
+...
+</source>
+
+<p>Certain combinations of conditions on partition and non-partition columns are not allowed in filter statements.
+For example, the following script results in this error message:  <br></br> <br></br>
+<code>ERROR 1112: Unsupported query: You have an partition column (datestamp ) in a construction like: (pcond and ...) or ( pcond and ...) where pcond is a condition on a partition column.</code> <br></br> <br></br>
+A workaround is to restructure the filter condition by splitting it into multiple filter conditions, with the first condition immediately following the load statement.
+</p>
+
+<source>
+/* This script produces an ERROR */
+
+A = LOAD 'default.search_austria' USING org.apache.hcatalog.pig.HCatLoader();
+B = FILTER A BY
+    (   (datestamp &lt; '20091103' AND browser &lt; 50)
+     OR (action == 'click' and browser &gt; 100)
+    );
+...
+...
+</source>
+
+</section> 
+</section> 
+	
+<!-- ==================================================================== -->	
+	<section>
+		<title>HCatStorer</title>
+		<p>HCatStorer is used with Pig scripts to write data to HCatalog managed tables.</p>	
+
+	
+	<section>
+	<title>Usage</title>
+	
+<p>HCatStorer is accessed via a Pig store statement.</p>	
+
+<source>
+A = LOAD ...
+B = FOREACH A ...
+...
+...
+my_processed_data = ...
+
+STORE my_processed_data INTO 'dbname.tablename' 
+    USING org.apache.hcatalog.pig.HCatStorer('month=12,date=25,hour=0300','a:int,b:chararray,c:map[]');
+</source>
+
+<p><strong>Assumptions</strong></p>
+
+<p>You must specify the database name and table name using this format: 'dbname.tablename'. Both the database and table must be created prior to running your Pig script. The Hive metastore lets you create tables without specifying a database; if you created tables this way, then the database name is 'default' and string becomes 'default.tablename'. </p>
+
+<p>For the USING clause, you can have two string arguments: </p>	
+<ul>
+<li>The first string argument represents key/value pairs for partition. This is a mandatory argument. In the above example, month, date and hour are columns on which table is partitioned. 
+The values for partition keys should NOT be quoted, even if the partition key is defined to be of string type. 
+</li>
+<li>The second string argument is the Pig schema for the data that will be written. This argument is optional, and if no schema is specified, a schema will be computed by Pig. If a schema is provided, it must match with the schema computed by Pig. (See also: <a href="inputoutput.html#Partition+Schema+Semantics">Partition Schema Semantics</a>.)</li>
+</ul>
+<p></p>
+<p></p>
+
+	</section>
+	
+    <section>
+	<title>HCatalog Data Types</title>
+	<p>Restrictions apply to the types of columns HCatStorer can write.</p>
+<p>HCatStorer can write <strong>only</strong> the data types listed in the table. 
+The table shows how Pig will interpret the HCatalog data type.</p>
+<p>(Note: HCatalog does not support type Boolean.)</p>
+   <table>
+        <tr>
+            <td>
+               <p><strong>HCatalog Data Type</strong></p>
+            </td>
+            <td>
+               <p><strong>Pig Data Type</strong></p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>primitives (int, long, float, double, string) </p>
+            </td>
+            <td>
+               <p>int, long, float, double, string <br></br><br></br>
+               <strong>Note:</strong> HCatStorer does NOT support writing table columns of type smallint or tinyint. 
+               To be able to write form Pig using the HCatalog storer, table columns must by of type int or bigint.
+               </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>map (key type should be string, valuetype can be a primitive listed above)</p>
+            </td>
+            <td>
+               <p>map </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>List&lt;primitive&gt; or List&lt;map&gt; where map is of the type noted above </p>
+            </td>
+            <td>
+               <p>bag, with the primitive or map type as the field in each tuple of the bag </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>struct&lt;primitive fields&gt; </p>
+            </td>
+            <td>
+               <p>tuple </p>
+            </td>
+    </tr>
+    <tr>
+            <td>
+               <p>List&lt;struct&lt;primitive fields&gt;&gt; </p>
+            </td>
+            <td>
+               <p>bag, where each tuple in the bag maps to struct &lt;primitive fields&gt; </p>
+            </td>
+    </tr>
+ </table>
+	</section>
+	
+		</section>
+	
+  </body>
+</document>

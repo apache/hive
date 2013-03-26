@@ -1,0 +1,485 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Apache HCatalog Change Log
+
+Release 0.4.1 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  BUG FIXES
+
+Release 0.4.0 - Unreleased
+
+  INCOMPATIBLE CHANGES
+  HCAT-304 Remove hcat.hbase.column.mapping table property (rohini via gates)
+
+  HCAT-358 Remove externed hive code from HCat code and use maven instead (thw and gates via gates)
+
+  HCAT-359 hcatalog tar.gz should only have hcatalog binaries (gkesavan via gates)
+
+  HCAT-267 rename 64 bit rpm/deb package (gkesavan via gates)
+
+  HCAT-289 InputJobInfo still uses serverUri and serverKerberosPrincipal (khorgath via gates)
+
+  HCAT-295 Rename storage-drivers directory to storage-handlers (gates)
+
+  HCAT-264 Barrier for HCatOutputFormat for Pig/Mapreduce if the table contains feature only supported in Hive (daijy via gates)
+
+  HCAT-279 Remove remaining code mentioning isd/osd (daijy via gates)
+
+  HCAT-261 Enable more DDL statements for HCat (daijy via gates)
+
+  HCAT-252 Rework HBase storage driver into HBase storage handler (rohini via toffer) 
+
+  HCAT-265 remove deprecated HCatStorageHandler (toffer)
+
+  HCAT-239. Changes to HCatInputFormat to make it use SerDes instead of StorageDrivers (vikram.dixit via gates)
+
+  HCAT-245. StorageHandler authorization providers (enis via hashutosh) 
+
+  HCAT-241. Changes to HCatRecord to support switch from StorageDriver to SerDe (khorgath)
+
+  HCAT-240. Changes to HCatOutputFormat to make it use SerDes instead of StorageDriver (toffer)
+
+  NEW FEATURES
+  HCAT-342 enable hcat to work with hive bigtop rpm (thejas via gates)
+
+  HCAT-287 Add data api to HCatalog (hashutosh)
+
+  HCAT-310 Turn current RM implementation into HBase Coprocessor (thw via toffer)
+
+  HCAT-334 HCatalog should generate a POM file so it can be deployed to a maven repo (traviscrawford via gates)
+
+  HCAT-296 Hcatalog should be able talk to secure hbase server using hbase delegation tokens (rohini via toffer)
+
+  HCAT-249 Rework JSON StorageDriver into a JSON SerDe (khorgath via gates)
+
+  HCAT-255 Define hadoop properties on the hcat command line (ctdean via gates)
+
+  HCAT-2 Support nested schema conversion between Hive an Pig (julienledem via hashutosh)
+
+  IMPROVEMENTS
+  HCAT-372 Add filter information to Load/Store and Input/Output docs (lefty via gates)
+
+  HCAT-357 e2e harness: allow to run again pre-installed packages (thw via gates)
+
+  HCAT-352 Need tests for complex types (gates)
+
+  HCAT-268 Remove remnants of storage drivers. (rohini via gates)
+
+  HCAT-306 Need more end-to-end tests (gates)
+
+  HCAT-130 Documentation improvements (lefty and gates via gates)
+
+  HCAT-266 Upgrade HBase dependency to 0.92 (thw via toffer)
+
+  HCAT-243 HCat e2e tests need to change to not use StorageDrivers (gaets)
+
+  HCAT-256 HCatalog should provide its classpath to tools (gates)
+
+  HCAT-266 Upgrade HBase dependency to 0.92. (thw via toffer)
+
+  HCAT-253 HBase revision manager should configure/drop znodes in the create/drop table meta hooks in the storage handler. (avandana via toffer)
+
+  HCAT-259 Make readFields() and write() in LazyHCatRecord work (gates via khorgath)
+
+  HCAT-194. Better error messages for HCatalog access control errors (julienledem via hashutosh)  
+  
+  OPTIMIZATIONS
+
+  BUG FIXES
+  HCAT-396 src-release leaves out lib directory (gates)
+
+  HCAT-393 Several hcat 0.4 document fixes (daijy via gates)
+
+  HCAT-395 Hcat 0.4 last minute doc fixes (gates)
+
+  HCAT-394 HCatalog 0.4 should pull hive-0.9.0 from maven instead of 0.9.0-SNAPSHOT (gates)
+
+  HCAT-386 e2e tests should respect JAVA_HOME when it's set (gates)
+
+  HCAT-378 Found a few source files missing Apache headers (gates)
+
+  HCAT-377 Recent changes broke releaseaudit target (gates)
+
+  HCAT-367 Pig writes data but partition information isn't getting updated (rohini via gates)
+
+  HCAT-365 HCatUtil.getStorageHandler should set the configuration (traviscrawford via gates)
+
+  HCAT-371 A few javadoc warnings have crept into HCat (gates)
+
+  HCAT-320 Remove filtering of table properties which are not prefix with "hcat." (rohini via gates)
+
+  HCAT-354 hive-hbase-handler jar not getting put in hcat package (gates)
+
+  HCAT-348 HCatUtil::getHiveConf(Configuration) ignores passed-in conf while creating HiveConf (gates)
+
+  HCAT-312 Hcatalog rpms change the ownership of /usr/lib64 to hcat user (gkesavan via gates)
+
+  HCAT-301 Reading from a table created with upper case table name throws error. (rohini via toffer)
+
+  HCAT-319 Cleanup of 0.3 mapred classes (khorgath via gates)
+
+  HCAT-302 unable to write to hbase channel. HBaseHCatStorageHandler class not found (rohini via gates)
+
+  HCAT-338 A couple of typos in the 0.4.0 document (gates)
+
+  HCAT-335 Release notes issues for 0.4 (gates)
+
+  HCAT-291 Pig and MR fail to write to a sequence file (avandana via gates)
+
+  HCAT-305 hcat shell is not properly picking up the hcat jar (gates)
+
+  HCAT-307 NOTICE and LICENSE file need updated to add new jars and move copyright date to 2012 (gates)
+
+  HCAT-300 A number of files lack Apache license headers (gates)
+
+  HCAT-299 Javadoc build issues (gates)
+
+  HCAT-303 Fix build failure due to HBaseSerDe.parseColumnMapping method signature change in hive (rohini via toffer)
+
+  HCAT-282 HCatInputFormat shouldn't expect storageHandler to be serializable (khorgath via gates)
+
+  HCAT-281 HCat use table schema instead of partition schema to read partition data (daijy and khorgath via gates)
+
+  HCAT 286 NPE in HdfsAuthorizationProvider (enis via gates)
+
+  HCAT 290 Changes in HBase maven objects breaks hcat build (thw via gates)
+
+  HCAT 280 part file name prefix with attempxxxx (daijy via gates)
+
+  HCAT-275 JSON SerDe issues (khorgath via gates)
+
+  HCAT-278 When outputSchema doesn't match table schema wrong columns are returned to the user (gates)
+
+  HCAT-276 After merging in HCATALOG-237 related changes Pig scripts with more than one store fail (daijy and mithun via gates)
+
+  HCAT-257 e2e harness not working properly after file location change (gates)
+
+  HCAT-270 HCatRecord SerDe does not handle List<Map> or List<List> or List<lazy primitive> correctly (khorgath via gates)
+
+  HCAT-248 Set execute.setugi conf variable to true by default (hashutosh via gates)
+
+  HCAT-254. Fix storage-drives build.xml (hashutosh via khorgath)
+
+Release 0.3.0 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+  HCAT-208. mapred HCatInputFormat/HCatOutputFomat changes to make it work from hive (khorgath via gates)
+
+  HCAT-207. Changes to current HCat subsystem to allow it to work with hive (khorgath via gates)
+
+  HCAT-204. HCatRecord SerDe (khorgath via gates)
+
+  HCAT-192. HBase output storage driver integration with zookeeper based revision manager (toffer via hashutosh) 
+
+  HCAT-191. HBase input storage driver integration with zookeeper based revision manager. (avandana via toffer)
+
+  HCAT-193. Snapshot class for HCatalog tables. (avandana via toffer)
+
+  HCAT-87. Newly added partition should inherit table properties. (hashutosh at HIVE-2589 via khorgath)
+
+  HCAT-189. Zookpeeper based revision manager for HBase Storage Driver (avandana via toffer)
+
+  HCAT-145. Add support for binary data type (hashutosh)  
+
+  HCAT-151. Fixed native table names used for tables stored in non-default DBs in HBaseInputStorageDriver (avandana via toffer)
+
+  HCAT-143. Projection pushdown for HBaseInputStorageDriver (avandana via toffer)
+
+  HCAT-121. TextStorageOutputDriver for Pig (daijyc via hashutosh)  
+
+  HCAT-129. HBase Storage Driver Test doesn't use unique test dir for warehouse (toffer via khorgath)
+
+  HCAT-109. HBase Storage Handler for HCatalog (avandana via khorgath)
+
+  HCAT-119. Output Storage Driver for HBase (Bulk) and HBaseStorageDriver Composite class (toffer via khorgath)
+
+  HCAT-75. Input storage driver for HBase (avandana via khorgath)
+
+  HCAT-73. Output Storage Driver for HBase (Direct PUTs) (toffer via khorgath)
+
+  HCAT-74. ResultConverter for HBase Storage Drivers (avandana via khorgath)
+
+  HCAT-89. Support for creating non-native tables (avandana via gates)
+
+  HCAT-60. Refactor HCatalog to support non-filebased outputformats (toffer via gates)
+
+  HCAT-63. RPM package integration with Hadoop (khorgath via hashutosh)
+
+  IMPROVEMENTS
+  HCAT-238. Absence of msgbus.topic.name should not be deemed as notification-failure. (mithun via gates)
+
+  HCAT-246. Exception masked in HCatSplit class (avandana via toffer)
+
+  HCAT-211. Update tar ball installation documentation (vikram.dixit via khorgath)
+
+  HCAT-219. Adding HBase e2e tests (daijy via toffer) 
+
+  HCAT-226. HBase storage drivers should load hbase resources (hbase-site, hbase-default) for the user (hashutosh via toffer)
+
+  HCAT-223. Include HWI (vikram.dixit via khorgath)
+
+  HCAT-166. Making configuration/installation automatable (vikram.dixit via khorgath)
+
+  HCAT-179. Make HCatalog compile against Hadoop 0.23 (thw via khorgath)
+
+
+
+  HCAT-184. Optionally do not generate forrest docs (traviscrawford via hashutosh)
+
+  HCAT-187. HCatalog release missing Hive builtins (traviscrawford via hashutosh)
+
+  HCAT-186. Downgrade ivy to 2.1.0 (currently 2.2.0) per HIVE-2580 (traviscrawford via hashutosh)
+
+  HCAT-10. Shouldn't assume the secure hadoop installation (julienledem via hashutosh)
+
+  HCAT-172. End-to-end test framework for HCatalog (daijyc via hashutosh)
+
+  HCAT-158. Update HAR support to work with Hadoop 205 (thw via hashutosh)
+
+  HCAT-111. Issues with install instructions and release notes in release candidate (gates via hashutosh)
+
+  HCAT-103. Update documentation after rpm changes per HCATALOG-63 (khorgath via hashutosh)
+
+  HCAT-99. HCatalog V2 Docs (chandec via hashutosh)  
+
+  HCAT-84. Incorrect or missing SVN property settings (sebb via hashutosh)  
+
+  HCAT-97. Make test harness work with secure cluster (hashutosh)
+
+  HCAT-94. Handle the job tracker tokens properly in har jobs (khorgath via hashutosh)
+
+  HCAT-43. hcat.sh does not pick up hcatalog.jar correctly (macyang via hashutosh)
+  
+  HCAT-91. hcat client not setting the config properly (hashutosh)
+
+  HCAT-67. Utilities for system testing (hashutosh)
+ 
+  HCAT-64. Refactor HCatTableInfo, JobInfo and OutputJobInfo (toffer via gates)
+
+  HCAT-118. HIVE_CONF_DIR needs to be set to run hive (khorgath)
+
+  HCAT-101. storage driver and hbase build scripts (toffer via khorgath)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+  HCAT-254. Fix storage-drives build.xml (hashutosh via khorgath)
+
+  HCAT-232. Dynamic Partitioning broken: keys set to HIVE_DEFAULT_PARTITION (mithun via gates)
+
+  HCAT-229. bin/hcat should put hcatalog.jar into classpath (daiky via gates)
+
+  HCAT-234. bin/hcat need to add hbase-site.xml in classpath (daijy via toffer)
+
+  HCAT-212. hcat trunk version should be updated (hashutosh)
+
+  HCAT-230. Remove log4j compilation dependencies (enis via hashutosh)
+
+  HCAT-227. NPE on HBaseInputStorageDriver when table contains a CF that's never been successfully written to (toffer via hashutosh)
+
+  HCAT-224. hcatalog e2e tests have the hive version hard coded we should read that from the hive build.properties (Arpit Gupta via hashutosh)
+
+  HCAT-225. Fix trunk compile issue, method signature change in thrift client. (hashutosh via toffer)
+
+  HCAT-216. we should source hcat-env.sh in hcat-config before we determine where hadoop is (arpitgupta via khorgath)
+
+  HCAT-213. determine HIVE_CONF_DIR in hive-config.sh based on rpm or tar ball installs (arpitgupta via khorgath)
+
+  HCAT-214. HCat commandline does not set location for config dir correctly (khorgath)
+
+  HCAT-197. data generator for e2e assumes hadoop tarball installation (arpitgupta via khorgath)  
+
+  HCAT-199. HCatOutputCommitter::cleanupJob() fails : Unable to connect to metastore. (mithun via khorgath)
+
+  HCAT-197. data generator for e2e assumes hadoop tarball installation (arpitgupta via hashutosh)  
+
+  HCAT-202. ant clean target is failing (thw via hashutosh)
+
+  HCAT-200. e2e test build.xml does not work with rpms (arpitgupta via khorgath)
+
+  HCAT-198. A few issues keep e2e tests from running in an automated environment (gates)
+
+  HCAT-197. Data generator for e2e assumes hadoop tarball installation (daijy via khorgath)
+
+  HCAT-196. Remove dependency on pig.jar for hcatalog server (daijy via khorgath)
+
+  HCAT-195. New storage-drivers directory not picked up in src-release target (gates via khorgath)
+
+  HCAT-171. HBaseBulkOutputStorageDriver should work with secured hadoop (toffer via khorgath)
+
+  HCAT-170. HBaseBulkOSD fails to launch ImportSequenceFile because of missing jars in dist cache (toffer via khorgath)
+
+  HCAT-176. Class not found exception when running TestPigStorageDriver (daijy via khorgath)
+
+  HCAT-175. HCat fail to build on trunk (daijy via khorgath)
+
+  HCAT-173. Make StorerInfo class public (toffer via khorgath)
+
+  HCAT-169. Creating a table with HCatStorageHandler does not correctly store the hcat.isd and hcat.osd names (avandana via toffer)
+
+  HCAT-160. HBaseDirectOutputStorageDriver outputVersion isn't consitent within the same MR job (toffer via hashutosh)
+
+  HCAT-155. HBase bulkOSD requires value to be Put rather than HCatRecord (toffer via hashutosh) 
+
+  HCAT-157. HBaseOutputFormat assumes hbase table name is hcat table name (toffer via hashutosh) 
+ 
+  HCAT-154. HBase bulkOSD and directOSD return inconsistent path for getOutputLocation() (toffer via hashutosh)
+
+  HCAT-124. null pointer execption on 'use no_such_db' (hashutosh)
+
+  HCAT-125. HCat doesn't support hive's describe database DDL (hashutosh)
+
+  HCAT-159. Build broken by recent Hive changes that move around jar files  part-2 (thw via hashutosh)
+
+  HCAT-159. Build broken by recent Hive changes that move around jar files (gates)
+
+  HCAT-148. Meaningful error message on failure to resolve topic name for partition event (thw via hashutosh)
+
+  HCAT-136. Pig storer for export/import does maintain partition order (n_krishna_kumar via khorgath)
+
+  HCAT-134. Fix hbase build.xml to not affect root package target (khorgath via hashutosh)  
+
+  HCAT-133. HCatOutpFormat always pass url as null while trying to create a metastore client (khorgath via hashutosh)  
+
+  HCAT-117. Harness incorrectly assumes secure mode (khorgath via hashutosh) 
+
+  HCAT-113. rpm name not properly reflecting the version number (gates via hashutosh)
+
+  HCAT-112. install scripts assumes bash shell but don't set it explictly (hashutosh)
+
+  HCAT-100. Change references of hcat.sh to hcat in test harness (hashutosh)
+
+  HCAT-78. Update notice.txt and headers and add Disclaimer.txt (hashutosh and gates via gates)
+
+  HCAT-114. README.txt has duplicate info (ctdean via khorgath)
+
+  HCAT-115. Superfluous warning on fresh install (ctdean via khorgath)
+
+Release 0.2.0 - October 2, 2011
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+    HCAT-42. Storing across partitions(Dynamic Partitioning) from HCatStorer/HCatOutputFormat (khorgath)
+ 
+    HCAT-46. Send a message on a message bus when a partition is marked done (hashutosh via macyang)
+
+    HCAT-2. Send a message on a message bus when events occur in Metastore (hashutosh)
+  
+    HCAT-16. Add InputFormat/OutputFormat for handling exported tables/partitions.
+    (Krishna Kumar via macyang)
+    
+  IMPROVEMENTS
+    HCAT-153. More comprehensive documentation for notification
+
+    HCAT-150. Updated documentation specifying the need to call HCatOutputFormat.setSchema() (chandec via toffer)
+
+    HCAT-107. Better documentation for "hive.metastore.warehouse.dir" config (chandec via toffer) 
+
+    HCAT-66. HCatalog 0.2.0 Documentation (chandec via hashutosh)
+
+    HCAT-54. Javadoc is not being built as part of HCatalog docs (hashutosh) 
+
+    HCAT-35. HCatalog fails to compile with Pig 0.9 (hashutosh)
+
+    HCAT-47. Topic prefix for the message bus should be configurable (hashutosh)
+
+    HCAT-39. Lazily create connection for Message bus (hashutosh)
+
+    HCAT-44. Add a releaseaudit target to build.xml (gates)
+
+    HCAT-40. Remove dependencies from the HCatalog client jar (macyang)
+
+    HCAT-37. Misc. build.xml changes (macyang via hashutosh)
+  
+    HCAT-27. Start and stop scripts for the server (gates)
+
+    HCAT-21. Install documenation and script (gates)
+
+    HCAT-34. Add ant target for server side classes (hashutosh)
+    
+    HCAT-33. minor changes to the test target in build.xml (macyang via hashutosh)
+ 
+    HCAT-30. Need changes.txt (Jakob Homan via hashutosh)
+  
+    HCAT-19. Enable and add decorators for the export/import cli commands 
+    for authorization and permission setting. (Krishna Kumar via macyang)
+
+    HCAT-18. Refactor TestRCFileInputStorageDriver. (Jakob Homan via hashutosh)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+    HCAT-110. Fix source target (khorgath via hashutosh)
+
+    HCAT-53. HCatLoader, HCatStorer, HCatInputFormat, and HCatOutputFormat assume Hadoop 
+             running in secure mode (hashutosh)
+ 
+    HCAT-57. Remove usage of deprecated methods (hashutosh)
+   
+    HCAT-59. Assimilate new changes in listener interface (hashutosh)
+    
+    HCAT-55. HCatalog distribution missing a few required jars (gates)
+
+    HCAT-52. No message is sent on message bus in case partition keys are uppercase (hashutosh)
+
+    HCAT-45. HCatalog release tar ball source code has problems (gates)
+
+    HCAT-41. Changes to hcat.sh in HCATALOG-20 broke the -e option (gates)
+
+    HCAT-12. Get trunk to build. (hashutosh)
+
+    HCAT-17. Shouldn't be able to add an HCatFieldSchema with the same name as 
+    existing field. (Jakob Homan via gates)
+
+    HCAT-28. Trunk test not compiling: Upstream Hive changes broke TestPermsGrp.
+    (Jakob Homan via hashutosh)
+
+    HCAT-15. Replace all occurrences of 'howl' with hcat/hcatalog. 
+    (Jakob Homan via macyang)
+
+Release 0.1 - Never released
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+    HCAT-1. Upload initial code to HCatalog (gates)
+
+    HCAT-4. Get the build working for HCatalog. (gates)
+
+    HCAT-9. Get a beginning HCatalog website up. (gates)
+
+  IMPROVEMENTS
+
+    HCAT-29. Remove Yahoo copyright from documentation (Jakob Homan via hashutosh)
+  
+  OPTIMIZATIONS
+
+  BUG FIXES
+    HCAT-7. Ivy fetch of CDH Hadoop versions does not work properly. (gates)
+
+    HCAT-6. Unit test TestPermsInheritance fails. (hashutosh)

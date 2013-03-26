@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="Apache Forrest" name="Generator">
+<meta name="Forrest-version" content="0.9">
+<meta name="Forrest-skin-name" content="pelt">
+<title>GET status </title>
+<link type="text/css" href="skin/basic.css" rel="stylesheet">
+<link media="screen" type="text/css" href="skin/screen.css" rel="stylesheet">
+<link media="print" type="text/css" href="skin/print.css" rel="stylesheet">
+<link type="text/css" href="skin/profile.css" rel="stylesheet">
+<script src="skin/getBlank.js" language="javascript" type="text/javascript"></script><script src="skin/getMenu.js" language="javascript" type="text/javascript"></script><script src="skin/fontsize.js" language="javascript" type="text/javascript"></script>
+<link rel="shortcut icon" href="">
+</head>
+<body onload="init()">
+<script type="text/javascript">ndeSetTextSize();</script>
+<div id="top">
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+<script src="skin/breadcrumbs.js" language="JavaScript" type="text/javascript"></script>
+</div>
+<!--+
+    |header
+    +-->
+<div class="header">
+<!--+
+    |start group logo
+    +-->
+<div class="grouplogo">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat.jpg" title=""></a>
+</div>
+<!--+
+    |end group logo
+    +-->
+<!--+
+    |start Project Logo
+    +-->
+<div class="projectlogoA1">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat-box.jpg" title="A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queryies."></a>
+</div>
+<!--+
+    |end Project Logo
+    +-->
+<!--+
+    |start Tabs
+    +-->
+<ul id="tabs">
+<li class="current">
+<a class="selected" href="index.html">HCatalog 0.5.0 Documentation</a>
+</li>
+</ul>
+<!--+
+    |end Tabs
+    +-->
+</div>
+</div>
+<div id="main">
+<div id="publishedStrip">
+<!--+
+    |start Subtabs
+    +-->
+<div id="level2tabs"></div>
+<!--+
+    |end Endtabs
+    +-->
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+
+             &nbsp;
+           </div>
+<!--+
+    |start Menu, mainarea
+    +-->
+<!--+
+    |start Menu
+    +-->
+<div id="menu">
+<div onclick="SwitchMenu('menu_selected_1.1', 'skin/')" id="menu_selected_1.1Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">HCatalog</div>
+<div id="menu_selected_1.1" class="selectedmenuitemgroup" style="display: block;">
+<div class="menuitem">
+<a href="index.html">Overview</a>
+</div>
+<div class="menuitem">
+<a href="install.html">Installation From Tarball</a>
+</div>
+<div class="menuitem">
+<a href="loadstore.html">Load &amp; Store Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="inputoutput.html">Input &amp; Output Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="readerwriter.html">Reader &amp; Writer Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="cli.html">Command Line Interface</a>
+</div>
+<div class="menuitem">
+<a href="supportedformats.html">Storage Formats</a>
+</div>
+<div class="menuitem">
+<a href="dynpartition.html">Dynamic Partitioning</a>
+</div>
+<div class="menuitem">
+<a href="notification.html">Notification</a>
+</div>
+<div class="menuitem">
+<a href="authorization.html">Authorization</a>
+</div>
+<div onclick="SwitchMenu('menu_selected_1.1.11', 'skin/')" id="menu_selected_1.1.11Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">WebHCat</div>
+<div id="menu_selected_1.1.11" class="selectedmenuitemgroup" style="display: block;">
+<div class="menuitem">
+<a href="rest.html">Overview</a>
+</div>
+<div class="menuitem">
+<a href="rest_server_install.html">Installation</a>
+</div>
+<div class="menuitem">
+<a href="configuration.html">Configuration</a>
+</div>
+<div onclick="SwitchMenu('menu_selected_1.1.11.4', 'skin/')" id="menu_selected_1.1.11.4Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">Reference</div>
+<div id="menu_selected_1.1.11.4" class="selectedmenuitemgroup" style="display: block;">
+<div class="menuitem">
+<a href="resources.html">Resource List</a>
+</div>
+<div class="menuitem">
+<a href="responsetypes.html">:version</a>
+</div>
+<div class="menupage">
+<div class="menupagetitle">status</div>
+</div>
+<div class="menuitem">
+<a href="versions.html">version</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11.4.5', 'skin/')" id="menu_1.1.11.4.5Title" class="menutitle">ddl</div>
+<div id="menu_1.1.11.4.5" class="menuitemgroup">
+<div class="menuitem">
+<a href="ddlsummary.html">ddl (summary)</a>
+</div>
+<div class="menuitem">
+<a href="ddl.html">ddl</a>
+</div>
+<div class="menuitem">
+<a href="listdbs.html">database</a>
+</div>
+<div class="menuitem">
+<a href="descdb.html">:db (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createdb.html">:db (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletedb.html">:db (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listtables.html">table</a>
+</div>
+<div class="menuitem">
+<a href="desctable.html">:table (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createtable.html">:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="renametable.html">:table (POST)</a>
+</div>
+<div class="menuitem">
+<a href="deletetable.html">:table (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="createtablelike.html">like/:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listpartitions.html">partition</a>
+</div>
+<div class="menuitem">
+<a href="descpartition.html">:partition (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createpartition.html">:partition (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletepartition.html">:partition (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listcolumns.html">column</a>
+</div>
+<div class="menuitem">
+<a href="desccolumn.html">:column (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createcolumn.html">:column (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listproperties.html">property</a>
+</div>
+<div class="menuitem">
+<a href="descproperty.html">:property (GET)</a>
+</div>
+<div class="menuitem">
+<a href="addproperty.html">:property (PUT)</a>
+</div>
+</div>
+<div class="menuitem">
+<a href="mapreducestreaming.html">mapreduce/streaming</a>
+</div>
+<div class="menuitem">
+<a href="mapreducejar.html">mapreduce/jar</a>
+</div>
+<div class="menuitem">
+<a href="pig.html">pig</a>
+</div>
+<div class="menuitem">
+<a href="hive.html">hive</a>
+</div>
+<div class="menuitem">
+<a href="queuelist.html">queue</a>
+</div>
+<div class="menuitem">
+<a href="queue.html">:jobid (GET)</a>
+</div>
+<div class="menuitem">
+<a href="queuedelete.html">:jobid (DELETE)</a>
+</div>
+</div>
+</div>
+<div class="menuitem">
+<a href="api/index.html">API Docs</a>
+</div>
+</div>
+<div id="credit"></div>
+<div id="roundbottom">
+<img style="display: none" class="corner" height="15" width="15" alt="" src="skin/images/rc-b-l-15-1body-2menu-3menu.png"></div>
+<!--+
+  |alternative credits
+  +-->
+<div id="credit2"></div>
+</div>
+<!--+
+    |end Menu
+    +-->
+<!--+
+    |start content
+    +-->
+<div id="content">
+<div title="Portable Document Format" class="pdflink">
+<a class="dida" href="status.pdf"><img alt="PDF -icon" src="skin/images/pdfdoc.gif" class="skin"><br>
+        PDF</a>
+</div>
+<h1>GET status </h1>
+<div id="front-matter">
+<div id="minitoc-area">
+<ul class="minitoc">
+<li>
+<a href="#Description">Description</a>
+</li>
+<li>
+<a href="#URL">URL</a>
+</li>
+<li>
+<a href="#Parameters">Parameters</a>
+</li>
+<li>
+<a href="#Results">Results</a>
+</li>
+<li>
+<a href="#Example">Example</a>
+</li>
+</ul>
+</div>
+</div>
+  
+<a name="Description"></a>
+<h2 class="h3">Description</h2>
+<div class="section">
+<p>Returns the current status of the Templeton server.
+       Useful for heartbeat monitoring.</p>
+</div>
+
+  
+<a name="URL"></a>
+<h2 class="h3">URL</h2>
+<div class="section">
+<p>
+<span class="codefrag">http://</span>www.myserver.com<span class="codefrag">/templeton/v1/status</span>
+</p>
+</div>
+
+  
+<a name="Parameters"></a>
+<h2 class="h3">Parameters</h2>
+<div class="section">
+<p>Only the <a href="index.html#Standard+Parameters">standard parameters</a>
+       are accepted.</p>
+</div>
+
+  
+<a name="Results"></a>
+<h2 class="h3">Results</h2>
+<div class="section">
+<table class="ForrestTable" cellspacing="1" cellpadding="4">
+    
+<tr>
+<th colspan="1" rowspan="1">Name</th><th colspan="1" rowspan="1">Description</th>
+</tr>
+
+    
+<tr>
+<td colspan="1" rowspan="1"><strong>status</strong></td>
+        <td colspan="1" rowspan="1">"ok" if the Templeton server was contacted.</td>
+    
+</tr>
+
+    
+<tr>
+<td colspan="1" rowspan="1"><strong>version</strong></td>
+        <td colspan="1" rowspan="1">String containing the version number similar to "v1".</td>
+    
+</tr>
+    
+</table>
+</div>
+
+  
+<a name="Example"></a>
+<h2 class="h3">Example</h2>
+<div class="section">
+<p>
+<strong>Curl Command</strong>
+</p>
+<pre class="code">
+% curl -s 'http://localhost:50111/templeton/v1/status'
+</pre>
+<p>
+<strong>JSON Output</strong>
+</p>
+<pre class="code">
+{
+ "status": "ok",
+ "version": "v1"
+}
+</pre>
+</div>
+ 
+</div>
+<!--+
+    |end content
+    +-->
+<div class="clearboth">&nbsp;</div>
+</div>
+<div id="footer">
+<!--+
+    |start bottomstrip
+    +-->
+<div class="lastmodified">
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<div class="copyright">
+        Copyright &copy;
+         2012-2013 <a href="http://www.apache.org/licenses/">The Apache Software Foundation</a>
+</div>
+<!--+
+    |end bottomstrip
+    +-->
+</div>
+</body>
+</html>

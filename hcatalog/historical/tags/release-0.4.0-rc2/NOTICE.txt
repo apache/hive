@@ -1,0 +1,33 @@
+Apache HCatalog
+Copyright 2012 The Apache Software Foundation
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
+
+This product includes ANTLR (http://www.antlr.org/),
+Copyright (c) 2003-2008, Terrence Parr.
+
+This product includes StringTemplate (http://www.stringtemplate.org/),
+Copyright (c) 2008, Terrence Parr.
+
+This product includes ASM (http://asm.ow2.org/),
+Copyright (c) 2000-2005 INRIA, France Telecom.
+
+This product includes org.json (http://www.json.org/java/index.html),
+Copyright (c) 2002 JSON.org
+
+This product includes SLF4J (http://www.slf4j.org/),
+Copyright (c) 2004-2008 QOS.ch
+
+This product includes Jline (http://jline.sourceforge.net/)
+Copyright (c) 2002-2006, Marc Prud'hommeaux <mwp1@cornell.edu>
+All rights reserved.
+
+This product includes DataNucleus (http://www.datanucleus.org/)
+Copyright 2008-2008 DataNucleus
+
+This product includes Guava (http://code.google.com/p/guava-libraries/)
+Copyright (C) 2006 Google Inc.
+
+This product includes JavaEWAH (http://code.google.com/p/javaewah/)
+Copyright (C) 2011 Google Inc.
