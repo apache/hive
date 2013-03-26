@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -273,17 +273,14 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       for (Byte alias : order) {
         ArrayList<ObjectInspector> rcOIs = new ArrayList<ObjectInspector>();
         rcOIs.addAll(joinValuesObjectInspectors[alias]);
-        // for each alias, add object inspector for boolean as the last element
+        // for each alias, add object inspector for short as the last element
         rcOIs.add(
-            PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+            PrimitiveObjectInspectorFactory.writableShortObjectInspector);
         rowContainerObjectInspectors[alias] = rcOIs;
       }
       rowContainerStandardObjectInspectors =
         JoinUtil.getStandardObjectInspectors(rowContainerObjectInspectors,NOTSKIPBIGTABLE, tagLen);
     }
-
-
-
 
     dummyObj = new Object[numAliases];
     dummyObjVectors = new RowContainer[numAliases];
@@ -309,7 +306,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         // add whether the row is filtered or not
         // this value does not matter for the dummyObj
         // because the join values are already null
-        nr.add(new ByteWritable());
+        nr.add(new ShortWritable());
       }
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
@@ -324,7 +321,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       // e.g., the output columns does not contains the input table
       RowContainer rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],
-          alias, joinCacheSize,spillTableDesc, conf, !hasFilter(pos), reporter);
+          alias, joinCacheSize, spillTableDesc, conf, !hasFilter(pos), reporter);
       storage[pos] = rc;
 
       pos++;
@@ -861,7 +858,7 @@ transient boolean newGroupStarted = false;
   // returns filter result of left object by filters associated with right alias
   private boolean isLeftFiltered(int left, int right, List<Object> leftObj) {
     if (joinValues[order[left]].size() < leftObj.size()) {
-      ByteWritable filter = (ByteWritable) leftObj.get(leftObj.size() - 1);
+      ShortWritable filter = (ShortWritable) leftObj.get(leftObj.size() - 1);
       return JoinUtil.isFiltered(filter.get(), right);
     }
     return false;
@@ -870,7 +867,7 @@ transient boolean newGroupStarted = false;
   // returns filter result of right object by filters associated with left alias
   private boolean isRightFiltered(int left, int right, List<Object> rightObj) {
     if (joinValues[order[right]].size() < rightObj.size()) {
-      ByteWritable filter = (ByteWritable) rightObj.get(rightObj.size() - 1);
+      ShortWritable filter = (ShortWritable) rightObj.get(rightObj.size() - 1);
       return JoinUtil.isFiltered(filter.get(), left);
     }
     return false;
@@ -879,7 +876,8 @@ transient boolean newGroupStarted = false;
   // returns object has any filtered tag
   private boolean hasAnyFiltered(int alias, List<Object> row) {
     return row == dummyObj[alias] ||
-        hasFilter(alias) && JoinUtil.hasAnyFiltered(((ByteWritable) row.get(row.size() - 1)).get());
+        hasFilter(alias) &&
+        JoinUtil.hasAnyFiltered(((ShortWritable) row.get(row.size() - 1)).get());
   }
 
   protected final boolean hasFilter(int alias) {

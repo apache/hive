@@ -439,7 +439,7 @@ public class MapJoinProcessor implements Transform {
       }
       if (filterMap != null && filterMap[pos] != null && pos != mapJoinPos) {
         ExprNodeColumnDesc isFilterDesc = new ExprNodeColumnDesc(TypeInfoFactory
-            .getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME), "filter", "filter", false);
+            .getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME), "filter", "filter", false);
         valueFilteredCols.add(isFilterDesc);
       }
 
