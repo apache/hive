@@ -776,7 +776,18 @@ public class QTestUtil {
   }
 
   public int executeClient(String tname) {
-    return cliDriver.processLine(qMap.get(tname));
+    String commands = qMap.get(tname);
+    StringBuilder newCommands = new StringBuilder(commands.length());
+    int lastMatchEnd = 0;
+    Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    while (commentMatcher.find()) {
+      newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
+      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
+      lastMatchEnd = commentMatcher.end();
+    }
+    newCommands.append(commands.substring(lastMatchEnd, commands.length()));
+    commands = newCommands.toString();
+    return cliDriver.processLine(commands);
   }
 
   public boolean shouldBeSkipped(String tname) {
