@@ -231,7 +231,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         if (filterMap != null && filterMap[alias] != null) {
           // for each alias, add object inspector for filter tag as the last element
           rcOIs = new ArrayList<ObjectInspector>(rcOIs);
-          rcOIs.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+          rcOIs.add(PrimitiveObjectInspectorFactory.writableShortObjectInspector);
         }
         rowContainerObjectInspectors[alias] = rcOIs;
       }

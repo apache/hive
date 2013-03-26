@@ -6580,8 +6580,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
       // todo 8 way could be not enough number
-      if (node.getLeftAliases().length + node.getRightAliases().length + 1 >= 8) {
-        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_8);
+      if (node.getLeftAliases().length + node.getRightAliases().length + 1 >= 32) {
+        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_32);
         return false;
       }
     }
