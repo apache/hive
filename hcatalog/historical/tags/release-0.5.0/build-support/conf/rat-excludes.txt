@@ -1,7 +1,0 @@
-build
-boolean.rcfile
-complex.rcfile
-numbers.rcfile
-numbers.txt
-nums.txt
-rat-excludes.txt
