@@ -51,11 +51,13 @@ POSTHOOK: Output: default@alter_part_protect_mode@year=1996/month=10
 POSTHOOK: Output: default@alter_part_protect_mode@year=1996/month=12
 PREHOOK: query: select * from alter_part_protect_mode where year = '1996'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_part_protect_mode
 PREHOOK: Input: default@alter_part_protect_mode@year=1996/month=10
 PREHOOK: Input: default@alter_part_protect_mode@year=1996/month=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter_part_protect_mode where year = '1996'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Input: default@alter_part_protect_mode@year=1996/month=10
 POSTHOOK: Input: default@alter_part_protect_mode@year=1996/month=12
 #### A masked pattern was here ####
@@ -91,10 +93,12 @@ POSTHOOK: Input: default@alter_part_protect_mode@year=1995/month=09
 POSTHOOK: Output: default@alter_part_protect_mode@year=1995/month=09
 PREHOOK: query: select * from alter_part_protect_mode where year = '1995'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_part_protect_mode
 PREHOOK: Input: default@alter_part_protect_mode@year=1995/month=09
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter_part_protect_mode where year = '1995'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Input: default@alter_part_protect_mode@year=1995/month=09
 #### A masked pattern was here ####
 1	11	1995	09

@@ -252,10 +252,12 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c83 EXPRESSION []
 POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 PREHOOK: query: select * from T2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
 PREHOOK: Input: default@t2@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: query: select * from T2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t2@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
@@ -381,10 +383,12 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 5	name	NULL	2	kavin	NULL	9	c	8	0	0	7	1	2	0	3	2	NULL	1	NULL	3	2	0	0	5	10	2010-04-17
 PREHOOK: query: select * from T1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: query: select * from T1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
@@ -510,10 +514,12 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 5	1	1	1	0	0	4	2010-04-17
 PREHOOK: query: select * from T3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
 PREHOOK: Input: default@t3@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: query: select * from T3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t3@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
@@ -639,10 +645,12 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 4	5	0	2010-04-17
 PREHOOK: query: select * from T4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
 PREHOOK: Input: default@t4@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: query: select * from T4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t4@ds=2010-04-17
 #### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []

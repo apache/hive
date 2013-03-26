@@ -35,11 +35,13 @@ POSTHOOK: Output: default@alter_part_offline@year=1996/month=10
 POSTHOOK: Output: default@alter_part_offline@year=1996/month=12
 PREHOOK: query: select * from alter_part_offline where year = '1996'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_part_offline
 PREHOOK: Input: default@alter_part_offline@year=1996/month=10
 PREHOOK: Input: default@alter_part_offline@year=1996/month=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter_part_offline where year = '1996'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_part_offline
 POSTHOOK: Input: default@alter_part_offline@year=1996/month=10
 POSTHOOK: Input: default@alter_part_offline@year=1996/month=12
 #### A masked pattern was here ####
