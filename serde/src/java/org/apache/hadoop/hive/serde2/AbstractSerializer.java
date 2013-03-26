@@ -25,14 +25,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
 /**
- * HiveSerializer is used to serialize data to a Hadoop Writable object. The
- * serialize In addition to the interface below, all implementations are assume
- * to have a ctor that takes a single 'Table' object as argument.
- * All serializers should extend the abstract class AbstractSerializer, and eventually
- * Serializer interface should be removed
+ * Abstract class for implementing Serializer. The abstract class has been created, so that
+ * new methods can be added in the underlying interface, Serializer, and only implementations
+ * that need those methods overwrite it.
  */
-@Deprecated
-public interface Serializer {
+public abstract class AbstractSerializer implements Serializer {
 
   /**
    * Initialize the HiveSerializer.
@@ -43,13 +40,13 @@ public interface Serializer {
    *          table properties
    * @throws SerDeException
    */
-  void initialize(Configuration conf, Properties tbl) throws SerDeException;
+  public abstract void initialize(Configuration conf, Properties tbl) throws SerDeException;
 
   /**
    * Returns the Writable class that would be returned by the serialize method.
    * This is used to initialize SequenceFile header.
    */
-  Class<? extends Writable> getSerializedClass();
+  public abstract Class<? extends Writable> getSerializedClass();
 
   /**
    * Serialize an object by navigating inside the Object with the
@@ -58,10 +55,11 @@ public interface Serializer {
    * wants to keep a copy of the Writable, the client needs to clone the
    * returned value.
    */
-  Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException;
+  public abstract Writable serialize(Object obj, ObjectInspector objInspector)
+      throws SerDeException;
 
   /**
    * Returns statistics collected when serializing
    */
-  SerDeStats getSerDeStats();
+  public abstract SerDeStats getSerDeStats();
 }

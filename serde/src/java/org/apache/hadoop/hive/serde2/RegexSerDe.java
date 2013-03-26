@@ -57,7 +57,7 @@ import org.apache.hadoop.io.Writable;
  * writableStringObjectInspector. We should switch to that when we have a UTF-8
  * based Regex library.
  */
-public class RegexSerDe implements SerDe {
+public class RegexSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(RegexSerDe.class.getName());
 
@@ -249,6 +249,7 @@ public class RegexSerDe implements SerDe {
           "Regex SerDe doesn't support the serialize() method");
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

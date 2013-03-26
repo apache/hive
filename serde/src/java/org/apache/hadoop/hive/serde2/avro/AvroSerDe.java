@@ -17,24 +17,24 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
 
-import java.util.List;
-import java.util.Properties;
-
 /**
  * Read or write Avro data from Hive.
  */
-public class AvroSerDe implements SerDe {
+public class AvroSerDe extends AbstractSerDe {
   private static final Log LOG = LogFactory.getLog(AvroSerDe.class);
   private ObjectInspector oi;
   private List<String> columnNames;
@@ -48,8 +48,9 @@ public class AvroSerDe implements SerDe {
   @Override
   public void initialize(Configuration configuration, Properties properties) throws SerDeException {
     // Reset member variables so we don't get in a half-constructed state
-    if(schema != null)
+    if(schema != null) {
       LOG.info("Resetting already initialized AvroSerDe");
+    }
 
     schema = null;
     oi = null;
@@ -80,13 +81,17 @@ public class AvroSerDe implements SerDe {
 
   @Override
   public Writable serialize(Object o, ObjectInspector objectInspector) throws SerDeException {
-    if(badSchema) throw new BadSchemaException();
+    if(badSchema) {
+      throw new BadSchemaException();
+    }
     return getSerializer().serialize(o, objectInspector, columnNames, columnTypes, schema);
   }
 
   @Override
   public Object deserialize(Writable writable) throws SerDeException {
-    if(badSchema) throw new BadSchemaException();
+    if(badSchema) {
+      throw new BadSchemaException();
+    }
     return getDeserializer().deserialize(columnNames, columnTypes, writable, schema);
   }
 
@@ -102,13 +107,17 @@ public class AvroSerDe implements SerDe {
   }
 
   private AvroDeserializer getDeserializer() {
-    if(avroDeserializer == null) avroDeserializer = new AvroDeserializer();
+    if(avroDeserializer == null) {
+      avroDeserializer = new AvroDeserializer();
+    }
 
     return avroDeserializer;
   }
 
   private AvroSerializer getSerializer() {
-    if(avroSerializer == null) avroSerializer = new AvroSerializer();
+    if(avroSerializer == null) {
+      avroSerializer = new AvroSerializer();
+    }
 
     return avroSerializer;
   }
