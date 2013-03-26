@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.serde2.columnar;
 
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
-public abstract class ColumnarSerDeBase implements SerDe {
+public abstract class ColumnarSerDeBase extends AbstractSerDe {
 
   // The object for storing row data
   ColumnarStructBase cachedLazyStruct;

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import java.io.ByteArrayInputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -28,8 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -50,7 +49,7 @@ import org.apache.thrift.transport.TIOStreamTransport;
  * DynamicSerDe.
  *
  */
-public class DynamicSerDe implements SerDe, Serializable {
+public class DynamicSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(DynamicSerDe.class.getName());
 

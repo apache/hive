@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.serde2.thrift;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.AbstractDeserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -32,13 +32,14 @@ import org.apache.thrift.protocol.TProtocolFactory;
  * ThriftDeserializer.
  *
  */
-public class ThriftDeserializer implements Deserializer {
+public class ThriftDeserializer extends AbstractDeserializer {
 
   private ThriftByteStreamTypedSerDe tsd;
 
   public ThriftDeserializer() {
   }
 
+  @Override
   public void initialize(Configuration job, Properties tbl)
       throws SerDeException {
     try {
@@ -68,14 +69,17 @@ public class ThriftDeserializer implements Deserializer {
     }
   }
 
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     return tsd.deserialize(field);
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return tsd.getObjectInspector();
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Writable;
  * TestSerDe.
  *
  */
-public class TestSerDe implements SerDe {
+public class TestSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(TestSerDe.class.getName());
 
@@ -83,6 +83,7 @@ public class TestSerDe implements SerDe {
     separator = DefaultSeparator;
   }
 
+  @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
     separator = DefaultSeparator;
     String altSep = tbl.getProperty("testserde.default.serialization.format");
@@ -133,6 +134,7 @@ public class TestSerDe implements SerDe {
 
   ColumnSet deserializeCache = new ColumnSet();
 
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     String row = null;
     if (field instanceof BytesWritable) {
@@ -159,16 +161,19 @@ public class TestSerDe implements SerDe {
     }
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
   }
 
+  @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
   }
 
   Text serializeCache = new Text();
 
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
@@ -198,6 +203,7 @@ public class TestSerDe implements SerDe {
     return serializeCache;
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

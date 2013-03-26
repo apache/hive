@@ -25,20 +25,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
 /**
- * HiveDeserializer is used to deserialize the data from hadoop Writable to a
- * custom java object that can be of any type that the developer wants.
- *
- * HiveDeserializer also provides the ObjectInspector which can be used to
- * inspect the internal structure of the object (that is returned by deserialize
- * function).
- * All deserializers should extend the abstract class AbstractDeserializer, and eventually
- * Deserializer interface should be removed
+ * Abstract class for implementing SerDe. The abstract class has been created, so that
+ * new methods can be added in the underlying interface, SerDe, and only implementations
+ * that need those methods overwrite it.
  */
-@Deprecated
-public interface Deserializer {
+public abstract class AbstractSerDe implements SerDe {
 
   /**
-   * Initialize the HiveDeserializer.
+   * Initialize the HiveSerializer.
    *
    * @param conf
    *          System properties
@@ -46,29 +40,45 @@ public interface Deserializer {
    *          table properties
    * @throws SerDeException
    */
-  void initialize(Configuration conf, Properties tbl) throws SerDeException;
+  public abstract void initialize(Configuration conf, Properties tbl) throws SerDeException;
+
+  /**
+   * Returns the Writable class that would be returned by the serialize method.
+   * This is used to initialize SequenceFile header.
+   */
+  public abstract Class<? extends Writable> getSerializedClass();
+
+  /**
+   * Serialize an object by navigating inside the Object with the
+   * ObjectInspector. In most cases, the return value of this function will be
+   * constant since the function will reuse the Writable object. If the client
+   * wants to keep a copy of the Writable, the client needs to clone the
+   * returned value.
+   */
+  public abstract Writable serialize(Object obj, ObjectInspector objInspector)
+      throws SerDeException;
+
+  /**
+   * Returns statistics collected when serializing
+   */
+  public abstract SerDeStats getSerDeStats();
 
   /**
    * Deserialize an object out of a Writable blob. In most cases, the return
    * value of this function will be constant since the function will reuse the
    * returned object. If the client wants to keep a copy of the object, the
-   * client needs to clone the returnDeserializered value by calling
+   * client needs to clone the returned value by calling
    * ObjectInspectorUtils.getStandardObject().
    *
    * @param blob
    *          The Writable object containing a serialized object
    * @return A Java object representing the contents in the blob.
    */
-  Object deserialize(Writable blob) throws SerDeException;
+  public abstract Object deserialize(Writable blob) throws SerDeException;
 
   /**
    * Get the object inspector that can be used to navigate through the internal
    * structure of the Object returned from deserialize(...).
    */
-  ObjectInspector getObjectInspector() throws SerDeException;
-
-  /**
-   * Returns statistics collected when serializing
-   */
-  SerDeStats getSerDeStats();
+  public abstract ObjectInspector getObjectInspector() throws SerDeException;
 }

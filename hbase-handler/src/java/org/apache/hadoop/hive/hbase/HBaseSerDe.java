@@ -31,6 +31,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -58,7 +59,7 @@ import org.apache.hadoop.io.Writable;
  * HBaseSerDe can be used to serialize object into an HBase table and
  * deserialize objects from an HBase table.
  */
-public class HBaseSerDe implements SerDe {
+public class HBaseSerDe extends AbstractSerDe {
 
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
@@ -546,10 +547,11 @@ public class HBaseSerDe implements SerDe {
         throw new SerDeException("HBase row key cannot be NULL");
       }
 
-      if(putTimestamp >= 0)
+      if(putTimestamp >= 0) {
         put = new Put(key,putTimestamp);
-      else
+      } else {
         put = new Put(key);
+      }
 
       // Serialize each field
       for (int i = 0; i < fields.size(); i++) {
