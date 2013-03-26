@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>Command Line Interface</title>
+  </header>
+  <body>
+
+<!-- ==================================================================== -->
+<section>
+	<title>Set Up</title>
+<p>The HCatalog command line interface (CLI) can be invoked as <code>hcat</code>. </p>
+
+
+<p><strong>Authentication</strong></p>
+<table>
+	<tr>
+	<td><p>If a failure results in a message like "2010-11-03 16:17:28,225 WARN hive.metastore ... - Unable to connect metastore with URI thrift://..." in /tmp/&lt;username&gt;/hive.log, then make sure you have run "kinit &lt;username&gt;@FOO.COM" to get a kerberos ticket and to be able to authenticate to the HCatalog server. </p></td>
+	</tr>
+</table>
+<p>If other errors occur while using the HCatalog CLI, more detailed messages (if any) are written to /tmp/&lt;username&gt;/hive.log. </p>
+</section>
+
+<section>
+<title>HCatalog CLI</title>
+
+<p>The HCatalog CLI supports these command line options:</p>
+<ul>
+<li><strong>-g</strong>: Usage is -g mygroup .... This indicates to HCatalog that table that needs to be created must have group as "mygroup" </li>
+<li><strong>-p</strong>: Usage is -p rwxr-xr-x .... This indicates to HCatalog that table that needs to be created must have permissions as "rwxr-xr-x" </li>
+<li><strong>-f</strong>: Usage is -f myscript.hcatalog .... This indicates to hcatalog that myscript.hcatalog is a file which contains DDL commands it needs to execute. </li>
+<li><strong>-e</strong>: Usage is -e 'create table mytable(a int);' .... This indicates to HCatalog to treat the following string as DDL command and execute it. </li>
+</ul>
+<p></p>	
+<p>Note the following:</p>
+<ul>
+<li>The <strong>-g</strong> and <strong>-p</strong> options are not mandatory. 
+</li>
+<li>Only one of the <strong>-e</strong> or <strong>-f</strong> option can be provided, not both. 
+</li>
+<li>The order of options is immaterial; you can specify the options in any order. 
+</li>
+<li>If no option is provided, then a usage message is printed: 
+<source>
+Usage: hcat  { -e "&lt;query&gt;" | -f "&lt;filepath&gt;" } [-g "&lt;group&gt;" ] [-p "&lt;perms&gt;"]
+</source>
+</li>
+</ul>
+<p></p>
+<p><strong>Assumptions</strong></p>
+<p>When using the HCatalog CLI, you cannot specify a permission string without read permissions for owner, such as -wxrwxr-x. If such a permission setting is desired, you can use the octal version instead, which in this case would be 375. Also, any other kind of permission string where the owner has read permissions (for example r-x------ or r--r--r--) will work fine.</p>
+
+
+	
+</section>
+
+<!-- ==================================================================== -->
+<section>
+	<title>HCatalog DDL</title>
+	
+<p>HCatalog supports a subset of the <a href="http://wiki.apache.org/hadoop/Hive/LanguageManual/DDL">Hive Data Definition Language</a>. For those commands that are supported, any variances are noted below.</p>	
+
+<section>
+	<title>Create/Drop/Alter Table</title>
+<p><strong>CREATE TABLE</strong></p>	
+
+<p>The STORED AS clause in Hive is:</p>
+<source>
+[STORED AS file_format]
+file_format:
+  : SEQUENCEFILE
+  | TEXTFILE
+  | RCFILE     
+  | INPUTFORMAT input_format_classname OUTPUTFORMAT output_format_classname
+</source>
+
+<p>The STORED AS clause in HCatalog is:</p>	
+<source>
+[STORED AS file_format]
+file_format:
+  : RCFILE     
+  | INPUTFORMAT input_format_classname OUTPUTFORMAT output_format_classname 
+                   INPUTDRIVER input_driver_classname OUTPUTDRIVER output_driver_classname
+</source>
+
+<p>Note the following:</p>	
+<ul>
+<li>CREATE TABLE command must contain a "STORED AS" clause; if it doesn't it will result in an exception containing message "STORED AS specification is either incomplete or incorrect."  <br></br> <br></br>
+<table>
+	<tr>
+	<td><p>In this release, HCatalog supports only reading PigStorage formated text files and only writing RCFile formatted files. Therefore, for this release, the command must contain a "STORED AS" clause and either use RCFILE as the file format or specify org.apache.hadoop.hive.ql.io.RCFileInputFormat and org.apache.hadoop.hive.ql.io.RCFileOutputFormat as INPUTFORMAT and OUTPUTFORMAT respectively. </p></td>
+	</tr>
+</table>
+<br></br>
+</li>
+<li>For partitioned tables, partition columns can only be of type String. 
+</li>
+<li>CLUSTERED BY clause is not supported. If provided error message will contain "Operation not supported. HCatalog doesn't allow Clustered By in create table." 
+</li>
+</ul>
+<p></p>
+<p><strong>CREATE TABLE AS SELECT</strong></p>
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>	
+<p><strong>CREATE TABLE LIKE</strong></p>
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>	
+<p><strong>DROP TABLE</strong></p>
+<p>Supported. Behavior the same as Hive.</p>	
+
+
+<!-- ==================================================================== -->
+<p><strong>ALTER TABLE</strong></p>
+<source>
+ALTER TABLE table_name ADD partition_spec [ LOCATION 'location1' ] partition_spec [ LOCATION 'location2' ] ...
+ partition_spec:
+  : PARTITION (partition_col = partition_col_value, partition_col = partiton_col_value, ...)
+</source>
+<p>Note the following:</p>	
+<ul>
+<li>Allowed only if TABLE table_name was created using HCatalog. Else, throws an exception containing error message "Operation not supported. Partitions can be added only in a table created through HCatalog. It seems table tablename was not created through HCatalog" 
+</li>
+</ul>
+<p></p>
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->	
+<p><strong>ALTER TABLE FILE FORMAT</strong></p>
+<source>
+ALTER TABLE table_name SET FILEFORMAT file_format 
+</source>
+<p>Note the following:</p>	
+<ul>
+<li>Here file_format must be same as the one described above in CREATE TABLE. Else, throw an exception "Operation not supported. Not a valid file format." </li>
+<li>CLUSTERED BY clause is not supported. If provided will result in an exception "Operation not supported." </li>
+</ul>
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->	
+<p><strong>ALTER TABLE Change Column Name/Type/Position/Comment </strong></p>
+<source>
+ALTER TABLE table_name CHANGE [COLUMN] col_old_name col_new_name column_type [COMMENT col_comment] [FIRST|AFTER column_name]
+</source>
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->	
+<p><strong>ALTER TABLE Add/Replace Columns</strong></p>
+<source>
+ALTER TABLE table_name ADD|REPLACE COLUMNS (col_name data_type [COMMENT col_comment], ...)
+</source>
+<p>Note the following:</p>	
+<ul>
+<li>ADD Columns is allowed. Behavior same as of Hive. </li>
+<li>Replace column is not supported. Throws an exception with message "Operation Not Supported". </li>
+</ul>
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->	
+<p><strong>ALTER TABLE TOUCH</strong></p>
+<source>
+ALTER TABLE table_name TOUCH;
+ALTER TABLE table_name TOUCH PARTITION partition_spec;
+</source>
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>	
+</section>
+
+<!-- ==================================================================== -->
+<section>
+	<title>Create/Drop/Alter View</title>
+<p><strong>CREATE VIEW</strong></p>	
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>		
+	
+<p><strong>DROP VIEW</strong></p>	
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>			
+
+<p><strong>ALTER VIEW</strong></p>	
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>			
+</section>
+
+<!-- ==================================================================== -->
+<section>
+	<title>Show/Describe </title>
+	
+<p><strong>SHOW TABLES</strong></p>
+<p>Supported. Behavior same as Hive.</p>
+
+<p><strong>SHOW PARTITIONS</strong></p>
+<p>Not supported. Throws an exception with message "Operation Not Supported". </p>	
+
+<p><strong>SHOW FUNCTIONS</strong></p>
+<p>Supported. Behavior same as Hive.</p>	
+
+<p><strong>DESCRIBE</strong></p>
+<p>Supported. Behavior same as Hive.</p>
+</section>
+	
+	<!-- ==================================================================== -->
+<section>
+	<title>Other Commands</title>
+	<p>Any command not listed above is NOT supported and throws an exception with message "Operation Not Supported". </p>
+</section>
+
+</section>
+
+
+
+  </body>
+</document>

@@ -1,0 +1,645 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="Apache Forrest" name="Generator">
+<meta name="Forrest-version" content="0.9">
+<meta name="Forrest-skin-name" content="pelt">
+<title>Installation from Tarball</title>
+<link type="text/css" href="skin/basic.css" rel="stylesheet">
+<link media="screen" type="text/css" href="skin/screen.css" rel="stylesheet">
+<link media="print" type="text/css" href="skin/print.css" rel="stylesheet">
+<link type="text/css" href="skin/profile.css" rel="stylesheet">
+<script src="skin/getBlank.js" language="javascript" type="text/javascript"></script><script src="skin/getMenu.js" language="javascript" type="text/javascript"></script><script src="skin/fontsize.js" language="javascript" type="text/javascript"></script>
+<link rel="shortcut icon" href="">
+</head>
+<body onload="init()">
+<script type="text/javascript">ndeSetTextSize();</script>
+<div id="top">
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+<script src="skin/breadcrumbs.js" language="JavaScript" type="text/javascript"></script>
+</div>
+<!--+
+    |header
+    +-->
+<div class="header">
+<!--+
+    |start group logo
+    +-->
+<div class="grouplogo">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat.jpg" title=""></a>
+</div>
+<!--+
+    |end group logo
+    +-->
+<!--+
+    |start Project Logo
+    +-->
+<div class="projectlogoA1">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat-box.jpg" title="A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queryies."></a>
+</div>
+<!--+
+    |end Project Logo
+    +-->
+<!--+
+    |start Tabs
+    +-->
+<ul id="tabs">
+<li class="current">
+<a class="selected" href="index.html">HCatalog 0.5.0 Documentation</a>
+</li>
+</ul>
+<!--+
+    |end Tabs
+    +-->
+</div>
+</div>
+<div id="main">
+<div id="publishedStrip">
+<!--+
+    |start Subtabs
+    +-->
+<div id="level2tabs"></div>
+<!--+
+    |end Endtabs
+    +-->
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+
+             &nbsp;
+           </div>
+<!--+
+    |start Menu, mainarea
+    +-->
+<!--+
+    |start Menu
+    +-->
+<div id="menu">
+<div onclick="SwitchMenu('menu_selected_1.1', 'skin/')" id="menu_selected_1.1Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">HCatalog</div>
+<div id="menu_selected_1.1" class="selectedmenuitemgroup" style="display: block;">
+<div class="menuitem">
+<a href="index.html">Overview</a>
+</div>
+<div class="menupage">
+<div class="menupagetitle">Installation From Tarball</div>
+</div>
+<div class="menuitem">
+<a href="loadstore.html">Load &amp; Store Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="inputoutput.html">Input &amp; Output Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="readerwriter.html">Reader &amp; Writer Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="cli.html">Command Line Interface</a>
+</div>
+<div class="menuitem">
+<a href="supportedformats.html">Storage Formats</a>
+</div>
+<div class="menuitem">
+<a href="dynpartition.html">Dynamic Partitioning</a>
+</div>
+<div class="menuitem">
+<a href="notification.html">Notification</a>
+</div>
+<div class="menuitem">
+<a href="authorization.html">Authorization</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11', 'skin/')" id="menu_1.1.11Title" class="menutitle">WebHCat</div>
+<div id="menu_1.1.11" class="menuitemgroup">
+<div class="menuitem">
+<a href="rest.html">Overview</a>
+</div>
+<div class="menuitem">
+<a href="rest_server_install.html">Installation</a>
+</div>
+<div class="menuitem">
+<a href="configuration.html">Configuration</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11.4', 'skin/')" id="menu_1.1.11.4Title" class="menutitle">Reference</div>
+<div id="menu_1.1.11.4" class="menuitemgroup">
+<div class="menuitem">
+<a href="resources.html">Resource List</a>
+</div>
+<div class="menuitem">
+<a href="responsetypes.html">:version</a>
+</div>
+<div class="menuitem">
+<a href="status.html">status</a>
+</div>
+<div class="menuitem">
+<a href="versions.html">version</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11.4.5', 'skin/')" id="menu_1.1.11.4.5Title" class="menutitle">ddl</div>
+<div id="menu_1.1.11.4.5" class="menuitemgroup">
+<div class="menuitem">
+<a href="ddlsummary.html">ddl (summary)</a>
+</div>
+<div class="menuitem">
+<a href="ddl.html">ddl</a>
+</div>
+<div class="menuitem">
+<a href="listdbs.html">database</a>
+</div>
+<div class="menuitem">
+<a href="descdb.html">:db (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createdb.html">:db (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletedb.html">:db (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listtables.html">table</a>
+</div>
+<div class="menuitem">
+<a href="desctable.html">:table (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createtable.html">:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="renametable.html">:table (POST)</a>
+</div>
+<div class="menuitem">
+<a href="deletetable.html">:table (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="createtablelike.html">like/:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listpartitions.html">partition</a>
+</div>
+<div class="menuitem">
+<a href="descpartition.html">:partition (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createpartition.html">:partition (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletepartition.html">:partition (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listcolumns.html">column</a>
+</div>
+<div class="menuitem">
+<a href="desccolumn.html">:column (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createcolumn.html">:column (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listproperties.html">property</a>
+</div>
+<div class="menuitem">
+<a href="descproperty.html">:property (GET)</a>
+</div>
+<div class="menuitem">
+<a href="addproperty.html">:property (PUT)</a>
+</div>
+</div>
+<div class="menuitem">
+<a href="mapreducestreaming.html">mapreduce/streaming</a>
+</div>
+<div class="menuitem">
+<a href="mapreducejar.html">mapreduce/jar</a>
+</div>
+<div class="menuitem">
+<a href="pig.html">pig</a>
+</div>
+<div class="menuitem">
+<a href="hive.html">hive</a>
+</div>
+<div class="menuitem">
+<a href="queuelist.html">queue</a>
+</div>
+<div class="menuitem">
+<a href="queue.html">:jobid (GET)</a>
+</div>
+<div class="menuitem">
+<a href="queuedelete.html">:jobid (DELETE)</a>
+</div>
+</div>
+</div>
+<div class="menuitem">
+<a href="api/index.html">API Docs</a>
+</div>
+</div>
+<div id="credit"></div>
+<div id="roundbottom">
+<img style="display: none" class="corner" height="15" width="15" alt="" src="skin/images/rc-b-l-15-1body-2menu-3menu.png"></div>
+<!--+
+  |alternative credits
+  +-->
+<div id="credit2"></div>
+</div>
+<!--+
+    |end Menu
+    +-->
+<!--+
+    |start content
+    +-->
+<div id="content">
+<div title="Portable Document Format" class="pdflink">
+<a class="dida" href="install.pdf"><img alt="PDF -icon" src="skin/images/pdfdoc.gif" class="skin"><br>
+        PDF</a>
+</div>
+<h1>Installation from Tarball</h1>
+<div id="front-matter">
+<div id="minitoc-area">
+<ul class="minitoc">
+<li>
+<a href="#Server+Installation+from+Source">Server Installation from Source</a>
+</li>
+<li>
+<a href="#Starting+the+Server">Starting the Server</a>
+</li>
+<li>
+<a href="#Logging">Logging</a>
+</li>
+<li>
+<a href="#Stopping+the+Server">Stopping the Server</a>
+</li>
+<li>
+<a href="#Client+Installation">Client Installation</a>
+</li>
+</ul>
+</div>
+</div>
+
+  
+<a name="Server+Installation+from+Source"></a>
+<h2 class="h3">Server Installation from Source</h2>
+<div class="section">
+<p>
+<strong>Prerequisites</strong>
+</p>
+<ul>
+        
+<li>machine to build the installation tar on</li>
+        
+<li>machine on which the server can be installed &mdash; this should have
+        access to the Hadoop cluster in question, and be accessible from
+        the machines you launch jobs from</li>
+        
+<li>an RDBMS &mdash; we recommend MySQL and provide instructions for it</li>
+        
+<li>Hadoop cluster</li>
+        
+<li>Unix user that the server will run as, and, if you are running your
+          cluster in secure mode, an associated Kerberos service principal and keytabs.</li>
+        
+<li>Apache Ant 1.8 or greater. Version 1.7.x is not supported.</li>
+    
+</ul>
+<p>Throughout these instructions when you see a word in <em>italics</em> it
+    indicates a place where you should replace the word with a locally 
+    appropriate value such as a hostname or password.</p>
+<p>
+<strong>Building a tarball </strong>
+</p>
+<p>If you downloaded HCatalog from Apache or another site as a source release,
+    you will need to first build a tarball to install.  You can tell if you have
+    a source release by looking at the name of the object you downloaded.  If
+    it is named hcatalog-src-0.5.0-incubating.tar.gz (notice the
+    <strong>src</strong> in the name) then you have a source release.</p>
+<p>If you do not already have Apache Ant installed on your machine, you 
+    will need to obtain it.  You can get it from the <a href="http://ant.apache.org/">
+    Apache Ant website</a>.  Once you download it, you will need to unpack it
+    somewhere on your machine.  The directory where you unpack it will be referred
+    to as <em>ant_home</em> in this document.</p>
+<p>If you do not already have Apache Forrest installed on your machine, you 
+    will need to obtain it.  You can get it from the <a href="http://forrest.apache.org/">
+    Apache Forrest website</a>.  Once you download it, you will need to unpack 
+    it somewhere on your machine.  The directory where you unpack it will be referred
+    to as <em>forrest_home</em> in this document.</p>
+<p>To produce a tarball from this do the following:</p>
+<p>Create a directory to expand the source release in.  Copy the source
+    release to that directory and unpack it.</p>
+<p>
+<span class="codefrag">mkdir /tmp/hcat_source_release</span>
+</p>
+<p>
+<span class="codefrag">cp hcatalog-src-0.5.0-incubating.tar.gz /tmp/hcat_source_release</span>
+</p>
+<p>
+<span class="codefrag">cd /tmp/hcat_source_release</span>
+</p>
+<p>
+<span class="codefrag">tar xzf hcatalog-src-0.5.0-incubating.tar.gz</span>
+</p>
+<p>Change directories into the unpacked source release and build the
+    installation tarball.</p>
+<p>
+<span class="codefrag">cd hcatalog-src-0.5.0-incubating</span>
+</p>
+<p>
+<em>ant_home</em><span class="codefrag">/bin/ant -Dhcatalog.version=0.5.0
+    -Dforrest.home=</span><em>forrest_home</em><span class="codefrag"> tar </span>
+</p>
+<p>The tarball for installation should now be at
+    <span class="codefrag">build/hcatalog-0.5.0.tar.gz</span>
+</p>
+<p>
+<strong>Database Setup</strong>
+</p>
+<p>If you do not already have Hive installed with MySQL, the following will
+    walk you through how to do so.  If you have already set this up, you can skip
+    this step.</p>
+<p>Select a machine to install the database on.  This need not be the same
+    machine as the Thrift server, which we will set up later.  For large
+    clusters we recommend that they not be the same machine.  For the 
+    purposes of these instructions we will refer to this machine as
+    <em>hivedb.acme.com</em>
+</p>
+<p>Install MySQL server on <em>hivedb.acme.com</em>.  You can obtain
+    packages for MySQL from <a href="http://www.mysql.com/downloads/">MySQL's
+    download site</a>.  We have developed and tested with versions 5.1.46
+    and 5.1.48.  We suggest you use these versions or later.
+    Once you have MySQL up and running, use the <span class="codefrag">mysql</span> command line
+    tool to add the <span class="codefrag">hive</span> user and <span class="codefrag">hivemetastoredb</span>
+    database.  You will need to pick a password for your <span class="codefrag">hive</span>
+    user, and replace <em>dbpassword</em> in the following commands with it.</p>
+<p>
+<span class="codefrag">mysql -u root</span>
+</p>
+<p>
+<span class="codefrag">mysql&gt; CREATE USER 'hive'@'</span><em>hivedb.acme.com</em><span class="codefrag">' IDENTIFIED BY '</span><em>dbpassword</em><span class="codefrag">';</span>
+</p>
+<p>
+<span class="codefrag">mysql&gt; CREATE DATABASE hivemetastoredb DEFAULT CHARACTER SET latin1 DEFAULT COLLATE latin1_swedish_ci;</span>
+</p>
+<p>
+<span class="codefrag">mysql&gt; GRANT ALL PRIVILEGES ON hivemetastoredb.* TO 'hive'@'</span><em>hivedb.acme.com</em><span class="codefrag">' WITH GRANT OPTION;</span>
+</p>
+<p>
+<span class="codefrag">mysql&gt; flush privileges;</span>
+</p>
+<p>
+<span class="codefrag">mysql&gt; quit;</span>
+</p>
+<p>Use the database installation script found in the Hive package to create the
+    database.  <span class="codefrag">hive_home</span> in the line below refers to the directory
+    where you have installed Hive.  If you are using Hive rpms, then this will
+    be <span class="codefrag">/usr/lib/hive</span>.</p>
+<p>
+<span class="codefrag">mysql -u hive -D hivemetastoredb -h</span><em>hivedb.acme.com</em><span class="codefrag"> -p &lt; </span><em>hive_home</em><span class="codefrag">/scripts/metastore/upgrade/mysql/hive-schema-0.10.0.mysql.sql</span>
+</p>
+<p>
+<strong>Thrift Server Setup</strong>
+</p>
+<p>If you do not already have Hive running a metastore server using Thrift,
+    you can use the following instructions to setup and run one.  You may skip
+    this step if you already are using a Hive metastore server.</p>
+<p>Select a machine to install your Thrift server on.  For smaller and test
+    installations this can be the same machine as the database.  For the
+    purposes of these instructions we will refer to this machine as
+    <em>hcatsvr.acme.com</em>.</p>
+<p>If you have not already done so, install Hive 0.9 on this machine.  You
+    can use the
+    <a href="http://hive.apache.org/releases.html">binary distributions</a> 
+    provided by Hive or rpms available from
+    <a href="http://incubator.apache.org/bigtop/">Apache Bigtop</a>.  If you use
+    the Apache Hive binary distribution, select a directory, henceforth 
+    referred to as <span class="codefrag">hive_home</span>, and untar the distribution there.
+    If you use the rpms, <span class="codefrag">hive_home</span> will be
+    <span class="codefrag">/usr/lib/hive</span>.</p>
+<p>Install the MySQL Java connector libraries on <em>hcatsvr.acme.com</em>.
+    You can obtain these from
+    <a href="http://www.mysql.com/downloads/connector/j/5.1.html">MySQL's
+    download site</a>.</p>
+<p>Select a user to run the Thrift server as.  This user should not be a
+    human user, and must be able to act as a proxy for other users.  We suggest
+    the name "hive" for the user.  Throughout the rest of this documentation 
+    we will refer to this user as <em>hive</em>.  If necessary, add the user to 
+    <em>hcatsvr.acme.com</em>.</p>
+<p>Select a <em>root</em> directory for your installation of HCatalog.  This 
+    directory must be owned by the <em>hive</em> user.  We recommend
+    <span class="codefrag">/usr/local/hive</span>.  If necessary, create the directory.  You will
+    need to be the <em>hive</em> user for the operations described in the remainder
+    of this Thrift Server Setup section.</p>
+<p>Copy the HCatalog installation tarball into a temporary directory, and untar
+    it.  Then change directories into the new distribution and run the HCatalog
+    server installation script.  You will need to know the directory you chose
+    as <em>root</em> and the
+    directory you installed the MySQL Java connector libraries into (referred
+    to in the command below as <em>dbroot</em>).  You will also need your
+    <em>hadoop_home</em>, the directory where you have Hadoop installed, and 
+    the port number you wish HCatalog to operate on which you will use to set
+    <em>portnum</em>.</p>
+<p>
+<span class="codefrag">tar zxf hcatalog-0.5.0.tar.gz</span>
+</p>
+<p>
+<span class="codefrag">cd hcatalog-0.5.0</span>
+</p>
+<p>
+<span class="codefrag">share/hcatalog/scripts/hcat_server_install.sh -r </span><em>root</em><span class="codefrag"> -d </span><em>dbroot</em><span class="codefrag"> -h </span><em>hadoop_home</em><span class="codefrag"> -p </span><em>portnum</em>
+</p>
+<p>Now you need to edit your <em>hive_home</em><span class="codefrag">/conf/hive-site.xml</span> file.
+    Open this file in your favorite text editor.  The following table shows the
+    values you need to configure.</p>
+<table class="ForrestTable" cellspacing="1" cellpadding="4">
+        
+<tr>
+            
+<th colspan="1" rowspan="1">Parameter</th>
+            <th colspan="1" rowspan="1">Value to Set it to</th>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.local</td>
+            <td colspan="1" rowspan="1">false</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">javax.jdo.option.ConnectionURL</td>
+            <td colspan="1" rowspan="1">jdbc:mysql://<em>hostname</em>/hivemetastoredb?createDatabaseIfNotExist=true where <em>hostname</em> is the name of the machine you installed MySQL on.</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">javax.jdo.option.ConnectionDriverName</td>
+            <td colspan="1" rowspan="1">com.mysql.jdbc.Driver</td>
+        
+</tr>
+
+        
+<tr>
+            
+<td colspan="1" rowspan="1">javax.jdo.option.ConnectionUserName</td>
+            <td colspan="1" rowspan="1">hive</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">javax.jdo.option.ConnectionPassword</td>
+            <td colspan="1" rowspan="1"><em>dbpassword</em> value you used in setting up the MySQL server
+            above.</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.semantic.analyzer.factory.impl</td>
+            <td colspan="1" rowspan="1">org.apache.hcatalog.cli.HCatSemanticAnalyzerFactory</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.warehouse.dir</td>
+            <td colspan="1" rowspan="1">The directory can be a URI or an absolute file path. If it is an absolute file path, it will be resolved to a URI by the metastore:
+            <p>-- If default hdfs was specified in core-site.xml, path resolves to HDFS location. </p>
+            
+<p>-- Otherwise, path is resolved as local file: URI.</p>
+            
+<p>This setting becomes effective when creating new tables (it takes precedence over default DBS.DB_LOCATION_URI at the time of table creation).</p>
+            
+<p>You only need to set this if you have not yet configured Hive to run on your system.</p>
+            
+</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.uris</td>
+            <td colspan="1" rowspan="1">thrift://<em>hostname</em>:<em>portnum</em> where <em>hostname</em> is the name of the machine hosting the Thrift server, and <em>portnum</em> is the port number
+            used above in the installation script.</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.execute.setugi</td>
+            <td colspan="1" rowspan="1">true</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.sasl.enabled</td>
+            <td colspan="1" rowspan="1">Set to true if you are using Kerberos security with your Hadoop
+            cluster, false otherwise.</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.kerberos.keytab.file</td>
+            <td colspan="1" rowspan="1">The path to the Kerberos keytab file containing the metastore
+            Thrift server's service principal.  Only required if you set
+            hive.metastore.sasl.enabled above to true.</td>
+        
+</tr>
+        
+<tr>
+            
+<td colspan="1" rowspan="1">hive.metastore.kerberos.principal</td>
+            <td colspan="1" rowspan="1">The service principal for the metastore Thrift server.  You can
+            reference your host as _HOST and it will be replaced with your
+            actual hostname.  Only required if you set
+            hive.metastore.sasl.enabled above to true.</td>
+        
+</tr>
+    
+</table>
+<p>You can now proceed to starting the server.</p>
+</div>
+
+  
+<a name="Starting+the+Server"></a>
+<h2 class="h3">Starting the Server</h2>
+<div class="section">
+<p>To start your server, HCatalog needs to know where Hive is installed.
+    This is communicated by setting the environment variable <span class="codefrag">HIVE_HOME</span>
+    to the location you installed Hive.  Start the HCatalog server by switching directories to
+    <em>root</em> and invoking
+    "<span class="codefrag">HIVE_HOME=</span><em>hive_home</em><span class="codefrag"> sbin/hcat_server.sh start</span>".</p>
+</div>
+
+  
+<a name="Logging"></a>
+<h2 class="h3">Logging</h2>
+<div class="section">
+<p>Server activity logs are located in
+    <em>root</em><span class="codefrag">/var/log/hcat_server</span>.  Logging configuration is located at
+    <em>root</em><span class="codefrag">/conf/log4j.properties</span>.  Server logging uses
+    <span class="codefrag">DailyRollingFileAppender</span> by default. It will generate a new
+    file per day and does not expire old log files automatically.</p>
+</div>
+
+  
+<a name="Stopping+the+Server"></a>
+<h2 class="h3">Stopping the Server</h2>
+<div class="section">
+<p>To stop the HCatalog server, change directories to the <em>root</em>
+    directory and invoke 
+    "<span class="codefrag">HIVE_HOME=</span><em>hive_home</em><span class="codefrag"> sbin/hcat_server.sh stop</span>".</p>
+</div>
+
+  
+<a name="Client+Installation"></a>
+<h2 class="h3">Client Installation</h2>
+<div class="section">
+<p>Select a <em>root</em> directory for your installation of HCatalog client.
+    We recommend <span class="codefrag">/usr/local/hcat</span>.  If necessary, create the directory.</p>
+<p>Copy the HCatalog installation tarball into a temporary directory, and untar
+    it.</p>
+<p>
+<span class="codefrag">tar zxf hcatalog-0.5.0.tar.gz</span>
+</p>
+<p>Now you need to edit your <em>hive_home</em><span class="codefrag">/conf/hive-site.xml</span> file.
+    You can use the same file as on the server <strong>except the value of 
+    </strong><span class="codefrag">javax.jdo.option.ConnectionPasswordh</span><strong> should be
+    removed</strong>.  This avoids having the password available in plain text on
+    all of your clients.</p>
+<p>The HCatalog command line interface (CLI) can now be invoked as
+    <span class="codefrag">HIVE_HOME=</span><em>hive_home root</em><span class="codefrag">/bin/hcat</span>.</p>
+</div>
+
+  
+</div>
+<!--+
+    |end content
+    +-->
+<div class="clearboth">&nbsp;</div>
+</div>
+<div id="footer">
+<!--+
+    |start bottomstrip
+    +-->
+<div class="lastmodified">
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<div class="copyright">
+        Copyright &copy;
+         2012-2013 <a href="http://www.apache.org/licenses/">The Apache Software Foundation</a>
+</div>
+<!--+
+    |end bottomstrip
+    +-->
+</div>
+</body>
+</html>

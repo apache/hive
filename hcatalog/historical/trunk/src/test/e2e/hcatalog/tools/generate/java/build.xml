@@ -1,0 +1,74 @@
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project name="Hive-Data-Generator" default="generator-jar">
+
+    <property name="generator.jarfile" value="hive-gen.jar"/>
+    <property name="generator.build.dir" value="${basedir}/build"/>
+    <property name="generator.src.dir" value="${basedir}/org"/>
+
+
+    <path id="generator-classpath">
+        <fileset file="${hive.serde.jarfile}"/>
+        <fileset file="${hive.ql.jarfile}"/>
+        <pathelement path="${hadoop.core.jarfile}" />
+    </path>
+
+    <target name="init">
+        <mkdir dir="${generator.build.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${generator.build.dir}"/>
+        <delete file="${generator.jarfile}"/>
+    </target>
+
+    <target name="generator-compile"
+            depends="init, serde.jar.check, ql.jar.check, hadoop.jar.check">
+        <echo>*** Compiling UDFs ***</echo>
+        <javac srcdir="${generator.src.dir}" destdir="${generator.build.dir}" debug="on" includeantruntime="false"
+               includes="**/*.java">
+            <classpath refid="generator-classpath"/>
+        </javac>
+    </target>
+
+    <target name="generator-jar" depends="generator-compile">
+        <echo>*** Creating UDF jar ***</echo>
+        <jar duplicate="preserve" jarfile="${generator.jarfile}">
+            <fileset dir="build"/>
+        </jar>
+    </target>
+
+    <target name="serde.jar.check" unless="hive.serde.jarfile">
+        <fail message="'hive.serde.jarfile' is not defined.
+		Please pass -Dhive.serde.jarfile=&lt;Hive serde jar to use&gt; to Ant on the command-line."/>
+    </target>
+
+    <target name="ql.jar.check" unless="hive.ql.jarfile">
+        <fail message="'hive.ql.jarfile' is not defined.
+		Please pass -Dhive.ql.jarfile=&lt;Hive ql jar to use&gt; to Ant on the command-line."/>
+    </target>
+
+    <target name="hadoop.jar.check" unless="hadoop.core.jarfile">
+        <fail message="'hadoop.core.jarfile' is not defined.
+		Please pass -Dhadoop.core.jarfile=&lt;Hadoop core jar to use&gt; to Ant on the command-line."/>
+    </target>
+
+
+</project>

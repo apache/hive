@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!--
+Forrest site.xml
+
+This file contains an outline of the site's information content.  It is used to:
+- Generate the website menus (though these can be overridden - see docs)
+- Provide semantic, location-independent aliases for internal 'site:' URIs, eg
+<link href="site:changes"> links to changes.html (or ../changes.html if in
+  subdir).
+- Provide aliases for external URLs in the external-refs section.  Eg, <link
+  href="ext:cocoon"> links to http://cocoon.apache.org/ 
+
+See http://forrest.apache.org/docs/linking.html for more info
+-->
+<!-- The label attribute of the outer "site" element will only show 
+  in the linkmap (linkmap.html).
+  Use elements project-name and group-name in skinconfig to change name of 
+  your site or project that is usually shown at the top of page.
+  No matter what you configure for the href attribute, Forrest will
+  always use index.html when you request http://yourHost/
+  See FAQ: "How can I use a start-up-page other than index.html?"
+-->
+<site label="HCatalog" href="" xmlns="http://apache.org/forrest/linkmap/1.0" tab="">
+
+  <docs label="HCatalog"> 
+    <index label="Overview" href="index.html" />
+    <index label="Installation From Tarball" href="install.html" />
+    <index label="Load &amp; Store Interfaces" href="loadstore.html" />
+    <index label="Input &amp; Output Interfaces" href="inputoutput.html" />
+    <index label="Reader &amp; Writer Interfaces" href="readerwriter.html" />
+    <index label="Command Line Interface" href="cli.html" />
+    <index label="Storage Formats" href="supportedformats.html" />
+    <index label="Dynamic Partitioning" href="dynpartition.html" />
+    <index label="Notification" href="notification.html" />
+    <index label="Authorization" href="authorization.html" />
+    <index label="WebHCat">
+      <index label="Overview" href="rest.html" />
+      <index label="Installation" href="rest_server_install.html" />
+      <index label="Configuration" href="configuration.html" />
+      <index label="Reference">
+        <index label="Resource List" href="resources.html" />
+        <index label=":version" href="responsetypes.html" />
+        <index label="status" href="status.html" />
+        <index label="version" href="versions.html" />
+        <index label="ddl">
+          <index label="ddl (summary)" href="ddlsummary.html" />
+          <index label="ddl" href="ddl.html" />
+          <index label="database" href="listdbs.html" />
+          <index label=":db (GET)" href="descdb.html" />
+          <index label=":db (PUT)" href="createdb.html" />
+          <index label=":db (DELETE)" href="deletedb.html" />
+          <index label="table" href="listtables.html" />
+          <index label=":table (GET)" href="desctable.html" />
+          <index label=":table (PUT)" href="createtable.html" />
+          <index label=":table (POST)" href="renametable.html" />
+          <index label=":table (DELETE)" href="deletetable.html" />
+          <index label="like/:table (PUT)" href="createtablelike.html" />
+          <index label="partition" href="listpartitions.html" />
+          <index label=":partition (GET)" href="descpartition.html" />
+          <index label=":partition (PUT)" href="createpartition.html" />
+          <index label=":partition (DELETE)" href="deletepartition.html" />
+          <index label="column" href="listcolumns.html" />
+          <index label=":column (GET)" href="desccolumn.html" />
+          <index label=":column (PUT)" href="createcolumn.html" />
+          <index label="property" href="listproperties.html" />
+          <index label=":property (GET)" href="descproperty.html" />
+          <index label=":property (PUT)" href="addproperty.html" />
+        </index>
+        <index label="mapreduce/streaming" href="mapreducestreaming.html" />
+        <index label="mapreduce/jar" href="mapreducejar.html" />
+        <index label="pig" href="pig.html" />
+        <index label="hive" href="hive.html" />
+        <index label="queue" href="queuelist.html" />
+        <index label=":jobid (GET)" href="queue.html" />
+        <index label=":jobid (DELETE)" href="queuedelete.html" />
+      </index>
+    </index>
+
+    <api   label="API Docs" href="api/index.html"/>
+  </docs>  
+
+</site>

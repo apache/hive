@@ -1,0 +1,46 @@
+These notes are for HCatalog 0.2.0 release.
+
+Highlights
+==========
+
+This is the initial relase of Apache HCatalog.  It provides read and write capability for Pig and Hadoop, and read capability for Hive.
+
+System Requirements
+===================
+
+1. Java 1.6.x or newer, preferably from Sun. Set JAVA_HOME to the root of your
+   Java installation
+2. Ant build tool, version 1.8 or higher:  http://ant.apache.org - to build
+   source only
+3. This release is compatible with Hadoop 0.20.x with security.  Currently this
+   is available from the 0.20.204 branch of Apache Hadoop
+4. This release is compatible with Pig 0.8.1 and Pig 0.9.1.
+5. This release is compatible with Hive 0.7.1.
+
+Trying the Release
+==================
+1. Download hcatalog-src-0.2.0-incubating.tar.gz
+2. Unpack the file: tar -xzvpf hcatalog-src-0.2.0-incubating.tar.gz
+3. Move into the installation directory: cd hcatalog-0.2.0-incubating
+4. Run "umask 0022 && ant jar test -Dhcatalog.version=0.2.0" to run unit tests.
+5. Run ant tar -Dforrest.home=/path/to/forrest/install -Dhcatalog.version=0.2.0
+   to build installable tarball.
+6. cd build
+7. Move hcatalog-0.2.0.tar.gz to somewhere you have write permissions (e.g. /home/me/hcat-insall)
+8. cd to your tar-ball location (e.g. cd /home/me/hcat-install)
+9. Untar hcatalog-0.2.0.tar.gz: tar -xvzpf hcatalog-0.2.0.tar.gz
+10. Move into hcatalog-0.2.0
+11. Install the hcatalog server by running share/hcatalog/scripts/hcat_server_install.sh
+    You may find instructions in share/doc/hcatalog/install.html useful
+12. Export HADOOP_HOME and HADOOP_CONF_DIR to appropriate values.
+13. Run share/hcatalog/scripts/hcat_server_start.sh to start the hcatalog server.
+14. To use the command line interface use bin/hcat
+15. To use with Hadoop MapReduce jobs, use the HCatInputFormat and
+    HCatOutputFormat classes.
+16. To use with Pig, use the HCatLoader and HCatStorer classes.
+
+Relevant Documentation
+======================
+See http://incubator.apache.org/hcatalog/docs/r0.2.0
+These notes are for HCatalog 0.2.0 release.
+

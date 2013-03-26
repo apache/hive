@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>RPM Installation</title>
+  </header>
+  <body>
+
+  <section>
+    <title>Server Installation</title>
+
+    <p><strong>Prerequisites</strong></p>
+    <ul>
+        <li>Machine on which the server can be installed - this should have
+        access to the hadoop cluster and to a mysql db</li>
+        <li>MySQL db</li>
+        <li>Hadoop cluster</li>
+        <li>In a secure environment, Unix user that the server will run as, and an associated kerberos
+        service principal and keytabs.</li>
+        <li> <em>hcatalog</em>. &amp; <em>hcatalog-server</em> .rpm packages.</li>
+    </ul>
+
+    <p>Throughout these instructions when you see a word in <em>italics</em> it
+    indicates a place where you should replace the word with a 
+    appropriate value such as a hostname or password.</p>
+
+    <p><strong>Thrift Server Install</strong></p>
+
+    <p>Select a machine to install your Thrift server on.  For smaller and test
+    installations this can be the same machine as the database, which we will 
+    set up later.  For the purposes of these instructions we will refer to this 
+    machine as <em>hcatsvr.acme.com</em>.</p>
+
+    <p>RPM installation will create a headless user named "hcat" on the server machine if it doesn't 
+       exist. Server will run as this user.</p>
+
+    <p>Download the MySQL Java connector libraries on <em>hcatsvr.acme.com</em>.
+     in some directory. We will refer to this directory as dbroot. You can obtain these from
+    <a href="http://www.mysql.com/downloads/connector/j/5.1.html">MySQL's
+    download site</a>.</p>
+
+    <p>If using an rpm, install appropriate rpms:</p>
+
+    <p><code>rpm -ivh hcatalog-</code><em>version</em><code>.rpm hcatalog-server-</code><em>version</em><code>.rpm</code></p>
+
+    <p><strong>Database Setup</strong></p>
+
+    <p>Select a machine to install the database on.  This need not be the same
+    machine as the Thrift server.  For large
+    clusters we recommend that they not be the same machine.  For the 
+    purposes of these instructions we will refer to this machine as
+    <em>hcatdb.acme.com</em></p>
+
+    <p>Install MySQL server on <em>hcatdb.acme.com</em>.  You can obtain
+    packages for MySQL from <a href="http://www.mysql.com/downloads/">MySQL's
+    download site</a>.  We have developed and tested with versions 5.1.46
+    and 5.1.48.  We suggest you use these versions or later.
+    Once you have MySQL up and running, use the <code>mysql</code> command line
+    tool to add the <code>hive</code> user and <code>hivemetastoredb</code>
+    database.  You will need to pick a password for your <code>hive</code>
+    user, and replace <em>dbpassword</em> in the following commands with it.</p>
+
+    <p><code>mysql -u root -h hcatdb.acme.com -p </code></p>
+    <p><code>mysql> CREATE USER 'hive'@'</code><em>hcatdb.acme.com</em><code>' IDENTIFIED BY '</code><em>dbpassword</em><code>';</code></p>
+    <p><code>mysql> CREATE DATABASE hivemetastoredb DEFAULT CHARACTER SET latin1 DEFAULT COLLATE latin1_swedish_ci;</code></p>
+    <p><code>mysql> GRANT ALL PRIVILEGES ON hivemetastoredb.* TO 'hive'@'</code><em>hcatdb.acme.com</em><code>' WITH GRANT OPTION;</code></p>
+    <p><code>mysql> flush privileges;</code></p>
+    <p><code>mysql> quit;</code></p>
+    <p><code>mysql -u hive -D hivemetastoredb -h</code><em>hcatdb.acme.com</em><code> -p &lt; /usr/share/hcatalog/scripts/hive-schema-0.7.0.mysql.sql</code></p>
+
+    <p><strong>Thrift server config</strong></p>
+    <p>Now you need to edit your <code>/etc/hcatalog/hive-site.xml</code> file.
+    Open this file in your favorite text editor.  The following table shows the
+    values you need to configure.</p>
+
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value to Set it to</th>
+        </tr>
+        <tr>
+            <td>javax.jdo.option.ConnectionURL</td>
+            <td>In the JDBC connection string, change DBHOSTNAME to the name 
+            of the machine you put the MySQL server on.</td>
+        </tr>
+        <tr>
+            <td>javax.jdo.option.ConnectionPassword</td>
+            <td><em>dbpassword</em> value you used in setting up the MySQL server
+            above</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.warehouse.dir</td>
+            <td>The directory can be a URI or an absolute file path. If it is an absolute file path, it will be resolved to a URI by the metastore:
+            <p>-- If default hdfs was specified in core-site.xml, path resolves to HDFS location. </p>
+            <p>-- Otherwise, path is resolved as local file: URI.</p>
+            <p>This setting becomes effective when creating new tables (takes precedence over default DBS.DB_LOCATION_URI at time of table creation).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>hive.metastore.uris</td>
+            <td>You need to set the hostname to your Thrift
+            server.  Replace <em>SVRHOST</em> with the name of the
+            machine you are installing the Thrift server on. </td>
+        </tr>
+        <tr>
+            <td>hive.metastore.sasl.enabled</td>
+            <td>Set to false by default.  Set to true if its a secure environment.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.kerberos.keytab.file</td>
+            <td>The path to the Kerberos keytab file containg the metastore
+            thrift server's service principal. Need to set only in secure enviroment.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.kerberos.principal</td>
+            <td>The service principal for the metastore thrift server.  You can
+            reference your host as _HOST and it will be replaced with
+            actual hostname. Need to set only in secure environment.</td>
+        </tr>
+    </table>
+
+    <p>You can now procede to starting the server.</p>
+  </section>
+
+  <section>
+    <title>Starting the Server</title>
+            
+    <p><code>sudo service start hcatalog-server</code></p>
+ </section>
+
+  <section>
+    <title>Logging</title>
+
+    <p>Server activity logs and gc logs are located in
+    <code>/var/log/hcat_server</code>.  Logging configuration is located at
+    <code>/etc/hcatalog/log4j.properties</code>.  Server logging uses
+    <code>DailyRollingFileAppender</code> by default. It will generate a new
+    file per day and does not expire old log files automatically.</p>
+
+  </section>
+
+  <section>
+    <title>Stopping the Server</title>
+<p><code>sudo service stop hcatalog-server</code></p>
+
+
+  </section>
+
+  <section>
+    <title>Client Installation</title>
+
+    <p><code>rpm -ivh hcatalog-</code><em>version</em><code>.rpm</code></p>
+
+    <p>Now you need to edit your <code>/etc/hcatalog/hive-site.xml</code> file.
+    Open this file in your favorite text editor.  The following table shows the
+    values you need to configure.   These common values should match the values set on
+    the HCatalog server.  Do <strong>NOT</strong> copy the configuration file
+    from your server installation as that contains the password to your
+    database, which you should not distribute to your clients.</p>
+
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value to Set it to</th>
+        </tr>
+        <tr>
+            <td>hive.metastore.warehouse.dir</td>
+            <td>The directory can be a URI or an absolute file path. If it is an absolute file path, it will be resolved to a URI by the metastore:
+            <p>-- If default hdfs was specified in core-site.xml, path resolves to HDFS location. </p>
+            <p>-- Otherwise, path is resolved as local file: URI.</p>
+            <p>This setting becomes effective when creating new tables (takes precedence over default DBS.DB_LOCATION_URI at time of table creation).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>hive.metastore.uris</td>
+            <td>You need to set the hostname wish your Thrift
+            server to use by replacing <em>SVRHOST</em> with the name of the
+            machine you are installing the Thrift server on. </td>
+        </tr>
+
+        <tr>
+            <td>hive.metastore.sasl.enabled</td>
+            <td>Set to false by default.  Set to true if its a secure environment.</td>
+        </tr>
+        <tr>
+            <td>hive.metastore.kerberos.principal</td>
+            <td>The service principal for the metastore thrift server.  You can
+            reference your host as _HOST and it will be replaced with
+            actual hostname. Need to set only in secure environment.</td>
+        </tr>
+    </table>
+
+    <p>The HCatalog command line interface (CLI) can now be invoked as
+    <code>/bin/hcat</code>.</p>
+
+  </section>
+
+  </body>
+</document>

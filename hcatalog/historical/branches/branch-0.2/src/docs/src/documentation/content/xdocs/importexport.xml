@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>Import and Export Commands</title>
+  </header>
+  <body>
+
+ <!-- ==================================================================== --> 
+  <section>
+  <title>Overview</title>
+  <p>The HCatalog IMPORT and EXPORT commands enable you to:</p>
+  <ul>
+  <li>Extract the data and the metadata associated with a table in HCatalog as a stand-alone package so that these can be transferred across HCatalog instances.</li>
+  <li>Create the data and metadata associated with a table in a setup where there is no HCatalog metastore. </li>
+  <li>Import the data and the metadata into an existing HCatalog instance. </li>
+  <li>Use the exported package as input to both pig and mapreduce jobs. </li>
+  </ul>
+  <p></p>
+  <p>The output location of the exported dataset is a directory that has the following structure:</p>
+  <ul>
+  <li>A _metadata file that contains the metadata of the table, and if the table is partitioned, for all the exported partitions.</li>
+  <li>A subdirectory hierarchy for each exported partition (or just one "data" subdirectory, in case of a non-partitioned table) that contains the data files of the table/partitions. </li>
+  </ul>
+  <p></p>
+  <p>Note that this directory structure can be created using the EXPORT as well as HCatEximOuptutFormat for MapReduce or HCatPigStorer for Pig. And the data can be consumed using the IMPORT command as well as HCatEximInputFormat for MapReduce or HCatPigLoader for Pig. </p>
+  </section>
+
+<!-- ==================================================================== -->
+<section>
+	<title>Export Command</title>
+	<p>Exports a table to a specified location.</p> 
+		
+	<section>
+	<title>Syntax</title>
+	<table>
+        <tr>
+            <td>
+               <p>EXPORT TABLE tablename [PARTITION (partcol1=val1, partcol2=val2, ...)] TO 'filepath'</p>
+            </td>
+        </tr>
+    </table>
+	</section>
+	
+    <section>
+	<title>Terms</title>
+	   <table>
+        <tr>
+            <td>
+               <p>TABLE tablename</p>
+            </td>
+            <td>
+               <p>The table to be exported. The table can be a simple table or a partitioned table.</p>
+               <p>If the table is partitioned, you can specify a specific partition of the table by specifying values for all of the partitioning columns or specifying a subset of the partitions of the table by specifying a subset of the partition column/value specifications. In this case, the conditions are implicitly ANDed to filter the partitions to be exported.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               <p>PARTITION (partcol=val ...)</p>
+            </td>
+            <td>
+               <p>The partition column/value specifications.</p>
+            </td>
+        </tr>         
+        <tr>
+            <td>
+               <p>TO 'filepath'</p>
+            </td>
+            <td>
+               <p>The filepath (in single quotes) designating the location for the exported table. The file path can be:</p>
+               <ul>
+               <li>a relative path ('project/data1') </li>
+               <li>an absolute path ('/user/hcat/project/data1') </li>
+               <li>a full URI with scheme and, optionally, an authority ('hdfs://namenode:9000/user/hcat/project/data1') </li>
+               </ul>
+            </td>
+        </tr> 
+   </table>
+</section>
+	
+	<section>
+	<title>Usage</title>
+	<p>The EXPORT command exports a table's data and metadata to the specified location. Because the command actually <strong>copies</strong> the files defined for the table/partions, you should be aware of the following:</p>
+	<ul>
+	<li>No record level filtering, ordering, etc. is done as part of the export. </li>
+    <li>Since HCatalog only does file-level copies, the data is not transformed in anyway while performing the export/import. </li>
+    <li>You, the user, are responsible for ensuring that the correct binaries are available in the target environment (compatible serde classes, hcat storage drivers, etc.).</li>
+	</ul>
+	<p>Also, note the following:</p>
+	<ul>
+	<li>The data and the metadata for the table to be exported should exist.</li>
+	<li>The target location must not exist or must be an empty directory. </li>
+	<li>You must have access as per the hcat access control mechanisms. </li>
+	<li>You should have write access to the target location. </li>
+	<li>Currently only hdfs is supported in production mode for the target filesystem. pfile can also be used for testing purposes. </li>
+	</ul>
+	</section>
+	
+    <section>
+	<title>Examples</title>
+	<p>The examples assume the following tables:</p>
+	<ul>
+	<li>dept - non partitioned </li>
+    <li>empl - partitioned on emp_country, emp_state, has four partitions ("us"/"ka", "us"/"tn", "in"/"ka", "in"/"tn") </li>
+	</ul>
+	<p></p>
+	<p><strong>Example 1</strong></p>
+<source>
+EXPORT TABLE dept TO 'exports/dept'; 
+</source>
+	<p>This example exports the entire table to the target location. The table and the exported copy are now independent; any further changes to the table (data or metadata) do not impact the exported copy. The exported copy can be manipulated/deleted w/o any effect on the table.</p>
+	<ul>
+	<li>output directoryg: exports/dept </li>
+	<li>_metadata - the metadata file </li>
+	<li>data - a directory which now contains all the data files </li>
+	</ul>
+
+	<p></p>
+	<p><strong>Example 2</strong></p>
+<source>
+EXPORT TABLE empl TO 'exports/empl'; 
+</source>
+<p>This example exports the entire table including all the partitions' data/metadata to the target location.</p>
+<ul>
+<li>output directory: exports/empl </li>
+<li>_metadata - the metadata file with info on the table as well as the four partitions below </li>
+<li>emp_country=in/emp_state=ka - a directory which now contains all the data files for in/ka partition </li>
+<li>emp_country=in/emp_state=tn - a directory which now contains all the data files for in/tn partition</li>
+<li>emp_country=us/emp_state=ka - a directory which now contains all the data files for us/ka partition </li>
+<li>emp_country=us/emp_state=tn - a directory which now contains all the data files for us/tn partition</li>
+</ul>
+
+	<p></p>
+	<p><strong>Example 3</strong></p>
+<source>
+EXPORT TABLE empl PARTITION (emp_country='in') TO 'exports/empl-in'; 
+</source>	
+<p>This example exports a subset of the partitions - those which have country = in - to the target location. </p>
+<ul>
+<li>output directory: exports/empl </li>
+<li>_metadata - the metadata file with info on the table as well as the two partitions below </li>
+<li>emp_country=in/emp_state=ka - a directory which now contains all the data files for in/ka partition </li>
+<li>emp_country=in/emp_state=tn - a directory which now contains all the data files for in/tn partition </li>
+</ul>
+	
+	<p></p>
+	<p><strong>Example 4</strong></p>
+<source>
+EXPORT TABLE empl PARTITION (emp_country='in', emp_state='tn') TO 'exports/empl-in';
+</source>
+<p>This example exports a single partition - that which has country = in, state = tn - to the target location. </p>
+<ul>
+<li>output directory: exports/empl </li>
+<li>_metadata - the metadata file with info on the table as well as the partitions below </li>
+<li>emp_country=in/emp_state=tn - a directory which now contains all the data files for in/tn partition</li>
+</ul>
+	</section>
+	
+</section>    
+ 
+ <!-- ==================================================================== -->
+<section>
+	<title>Import Command</title>
+	<p>Imports a table from a specified location.</p> 
+	
+		<section>
+	<title>Syntax</title>
+	<table>
+        <tr>
+            <td>
+               <p>IMPORT [[EXTERNAL] TABLE tablename [PARTITION (partcol1=val1, partcol2=val2, ...)]] FROM 'filepath' [LOCATION 'tablepath']</p>
+            </td>
+        </tr>
+    </table>
+	</section>
+		
+    <section>
+	<title>Terms</title>
+	   <table>
+	    <tr>
+            <td>
+               <p>EXTERNAL</p>
+            </td>
+            <td>
+               <p>Indicates that the imported table is an external table.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               <p>TABLE tablename</p>
+            </td>
+            <td>
+               <p>The target to be imported, either a table or a partition.</p>
+               <p>If the table is partitioned, you can specify a specific partition of the table by specifying values for all of the partitioning columns, or specify all the (exported) partitions by not specifying any of the partition parameters in the command. </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+               <p>PARTITION (partcol=val ...)</p>
+            </td>
+            <td>
+               <p>The partition column/value specifications.</p>
+            </td>
+        </tr>         
+        <tr>
+            <td>
+               <p>FROM 'filepath'</p>
+            </td>
+            <td>
+               <p>The filepath (in single quotes) designating the source location the table will be copied from. The file path can be:</p>
+               <ul>
+               <li>a relative path ('project/data1') </li>
+               <li>an absolute path ('/user/hcat/project/data1') </li>
+               <li>a full URI with scheme and, optionally, an authority ('hdfs://namenode:9000/user/hcat/project/data1') </li>
+               </ul>
+            </td>
+        </tr> 
+        <tr>
+            <td>
+               <p>LOCATION 'tablepath'</p>
+            </td>
+            <td>
+               <p>(optional) The tablepath (in single quotes) designating the target location the table will be copied to.</p>
+               <p>If not specified, then:</p>
+               <ul>
+				 <li>For managed tables, the default location of the table within the warehouse/database directory structure is used. </li>
+				 <li>For external tables, the data is imported in-place; that is, no copying takes place.</li>
+			   </ul>
+            </td>
+        </tr> 
+   </table>
+</section>
+	
+	<section>
+	<title>Usage</title>
+	<p>The IMPORT command imports a table's data and metadata from the specified location. The table can be a managed table (data and metadata are both removed on drop table/partition) or an external table (only metadata is removed on drop table/partition). For more information, see Hive's <a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-Create%2FDropTable">Create/Drop Table</a>.</p>
+	
+	<p>Because the command actually <strong>copies</strong> the files defined for the table/partions, you should be aware of the following:</p>
+	<ul>
+	<li>No record level filtering is performed, ordering, etc. is done as part of the import. </li>
+	<li>Since HCatalog only does file-level copies, the data is not transformed in anyway while performing the export/import. </li>
+	<li>You, the user, are responsible for ensuring that the correct binaries are available in the target environment (compatible serde classes, hcat storage drivers, etc.).</li>
+	</ul>
+	<p>Also, note the following:</p>
+	<ul>
+	<li>The filepath should contain the files as created by the export command, or by HCatEximOutputFormat, or by pig HCatEximStorer. </li>
+	<li>Currently only hdfs is supported in production mode for the filesystem. pfile can be used for testing purposes. </li>
+    <li>The target table may or may not exist prior to the import. If it does exist, it should be compatible with the imported table/command.
+           <ul>
+           <li>The column schema and the partitioning schema should match. If partitioned, there should not be any existing partitions with the same specs as the imported partitions. </li>
+           <li>The target table/partition should be empty. </li>
+           <li>External/Location checks: 
+           <ul>
+           <li>The original table type is ignored on import. You specify the required table type as part of the command. </li>
+           <li>For non-partitioned tables, the new table location as specified by the command should match the existing table location. </li>
+           <li>For partitioned tables, the table type (external/managed) should match. </li>
+           <li>For non-partitioned tables imported as external table, you will be asked to the drop the existing table first. </li>        
+           </ul>
+           </li>
+           <li>The HCatalog storage driver specification should match. </li>
+           <li>The serde, sort and bucket specs should match. </li>
+           </ul>
+     </li>      
+	<li>You must have access rights as per the hcat access control mechanisms. </li>
+	<li>You should have read access to the source location. </li>
+	</ul>
+	</section>
+	
+    <section>
+	<title>Examples</title>
+	<p>The examples assume the following tables:</p>
+	<ul>
+	<li>dept - non partitioned </li>
+    <li>empl - partitioned on emp_country, emp_state, has four partitions ("us"/"ka", "us"/"tn", "in"/"ka", "in"/"tn") </li>
+	</ul>
+	<p></p>
+	<p><strong>Example 1</strong></p>
+<source>
+IMPORT FROM 'exports/dept'; 
+</source>
+<p>This example imports the table as a managed target table, default location. The metadata is stored in the metastore and the table's data files in the warehouse location of the current database.</p>
+	<p></p>
+	<p><strong>Example 2</strong></p>
+<source>
+IMPORT TABLE renamed_name FROM 'exports/dept';
+</source>
+<p>This example imports the table as a managed target table, default location. The imported table is given a new name.</p>
+	
+	<p></p>
+	<p><strong>Example 3</strong></p>
+<source>
+IMPORT EXTERNAL TABLE name FROM 'exports/dept'; 
+</source>
+<p>This example imports the table as an external target table, imported in-place. The metadata is copied to the metastore. </p>	
+	
+	<p></p>
+	<p><strong>Example 4</strong></p>
+<source>
+IMPORT EXTERNAL TABLE name FROM 'exports/dept' LOCATION 'tablestore/dept';
+</source>
+<p>This example imports the table as an external target table, imported to another location. The metadata is copied to the metastore.</p>
+	
+	<p></p>
+	<p><strong>Example 5</strong></p>
+<source>
+IMPORT TABLE name FROM 'exports/dept' LOCATION 'tablestore/dept'; 	
+</source>
+<p>This example imports the table as a managed target table, non-default location. The metadata is copied to the metastore. </p>
+	
+	<p></p>
+	<p><strong>Example 6</strong></p>
+<source>
+IMPORT TABLE empl FROM 'exports/empl'; 	
+</source>
+<p>This example imports all the exported partitions since the source was a partitioned table.</p>
+	
+	<p></p>
+	<p><strong>Example 7</strong></p>
+<source>
+IMPORT TABLE empl PARTITION (emp_country='in', emp_state='tn') FROM 'exports/empl'; 
+</source>
+<p>This example imports only the specified partition. </p>
+</section>	
+	
+</section>   
+ 
+  <!-- ==================================================================== -->
+<section>
+	<title>Usage with MapReduce</title>
+	<p>HCatEximOutputFormat and HCatEximInputFormat can be used in Hadoop environments where there is no HCatalog instance available. HCatEximOutputFormat can be used to create an 'exported table' dataset, which later can be imported into a HCatalog instance. It can also be later read via HCatEximInputFormat or HCatEximLoader. </p> 
+
+<section>	
+<title>HCatEximOutputFormat </title>
+<source>
+  public static void setOutput(Job job, String dbname, String tablename, String location,
+      HCatSchema partitionSchema, List&lt;String&gt; partitionValues, HCatSchema columnSchema) throws HCatException;
+
+  public static void setOutput(Job job, String dbname, String tablename, String location,
+          HCatSchema partitionSchema,
+          List&lt;String&gt; partitionValues,
+          HCatSchema columnSchema,
+          String isdname, String osdname,
+          String ifname, String ofname,
+          String serializationLib) throws HCatException;
+</source>
+<p>The user can specify the parameters of the table to be created by means of the setOutput method. The metadata and the data files are created in the specified location. </p>
+<p>The target location must be empty and the user must have write access.</p>
+</section>   
+
+<section>	
+<title>HCatEximInputFormat </title>
+<source>
+  public static List&lt;HCatSchema&gt; setInput(Job job,
+      String location,
+      Map&lt;String, String&gt; partitionFilter) throws IOException;
+
+  public static void setOutputSchema(Job job, HCatSchema hcatSchema) throws IOException;
+</source>
+<p>The user specifies the data collection location and optionally a filter for the partitions to be loaded via the setInput method. Optionally, the user can also specify the projection columns via the setOutputSchema method. </p>
+<p>The source location should have the correct layout as for a exported table, and the user should have read access. </p>
+</section>  
+	
+</section>   
+
+  <!-- ==================================================================== -->
+<section>
+	<title>Usage with Pig</title>
+	<p>HCatEximStorer and HCatEximLoader can be used in hadoop/pig environments where there is no HCatalog instance available. HCatEximStorer can be used to create an 'exported table' dataset, which later can be imported into a HCatalog instance. It can also be later read via HCatEximInputFormat or HCatEximLoader. </p> 
+	
+<section>
+<title>HCatEximStorer </title>
+<source>
+  public HCatEximStorer(String outputLocation) 
+      throws FrontendException, ParseException;
+  public HCatEximStorer(String outputLocation, String partitionSpec) 
+      throws FrontendException, ParseException;
+  public HCatEximStorer(String outputLocation, String partitionSpec, String schema)
+      throws FrontendException, ParseException;
+</source>
+
+<p>The HCatEximStorer is initialized with the output location for the exported table. Optionally the user can specify the partition specification for the data, plus rename the schema elements as part of the storer. </p>
+<p>The rest of the storer semantics use the same design as HCatStorer.</p>
+
+<p><strong>Example</strong></p>
+<source>
+A = LOAD 'empdata' USING PigStorage(',') 
+    AS (emp_id:int,emp_name:chararray,emp_dob:chararray,emp_sex:chararray,emp_country:chararray,emp_state:chararray);
+INTN = FILTER A BY emp_country == 'IN' AND emp_state == 'TN';
+INKA = FILTER A BY emp_country == 'IN' AND emp_state == 'KA';
+USTN = FILTER A BY emp_country == 'US' AND emp_state == 'TN';
+USKA = FILTER A BY emp_country == 'US' AND emp_state == 'KA';
+STORE INTN INTO 'default.employee' USING org.apache.HCatalog.pig.HCatEximStorer('exim/pigout/employee', 'emp_country=in,emp_state=tn');
+STORE INKA INTO 'default.employee' USING org.apache.HCatalog.pig.HCatEximStorer('exim/pigout/employee', 'emp_country=in,emp_state=ka');
+STORE USTN INTO 'default.employee' USING org.apache.HCatalog.pig.HCatEximStorer('exim/pigout/employee', 'emp_country=us,emp_state=tn');
+STORE USKA INTO 'default.employee' USING org.apache.HCatalog.pig.HCatEximStorer('exim/pigout/employee', 'emp_country=us,emp_state=ka');
+</source>
+</section>
+	
+
+<section>
+<title>HCatEximLoader </title>
+<source>
+public HCatEximLoader();
+</source>
+<p>The HCatEximLoader is passed the location of the exported table as usual by the LOAD statement. The loader loads the metadata and data as required from the location. Note that partition filtering is not done efficiently when eximloader is used; the filtering is done at the record level rather than at the file level. </p>
+<p>The rest of the loader semantics use the same design as HCatLoader.</p>
+<p><strong>Example</strong></p>
+<source>
+A = LOAD 'exim/pigout/employee' USING org.apache.HCatalog.pig.HCatEximLoader();
+dump A;
+</source>
+</section>	
+
+</section>
+
+  <!-- ==================================================================== -->
+<section>
+<title>Use Cases</title>
+<p><strong>Use Case 1</strong></p> 
+<p>Transfer data between different HCatalog/hadoop instances, with no renaming of tables.</p>
+<ul>
+<li>Instance A - HCatalog: export table A into 'locationA'; </li>
+<li>Hadoop: distcp hdfs://locationA hdfs://locationB </li>
+<li>Instance B - HCatalog: import from 'locationB'; </li>
+</ul>
+	
+<p></p>
+<p><strong>Use Case 2</strong></p> 
+<p>Transfer data to a hadoop instance which does not have HCatalog and process it there.</p>
+<ul>
+<li>Instance A - HCatalog: export table A into 'locationA'; </li>
+<li>Hadoop: distcp hdfs://locationA hdfs://locationB </li>
+<li>Instance B - Map/Reduce job example 
+</li>
+</ul>
+<source>
+    //job setup
+    ...
+    HCatEximInputFormat.setInput(job, "hdfs://locationB", partitionSpec);
+    job.setInputFormatClass(HCatEximInputFormat.class);
+    ...
+
+    //map setup
+    protected void setup(Context context) throws IOException, InterruptedException {
+      super.setup(context);
+       ...
+       recordSchema = HCatBaseInputFormat.getTableSchema(context);
+       ...
+    }
+
+    //map task
+    public void map(LongWritable key, HCatRecord value, Context context) throws IOException,
+        InterruptedException {
+        ...
+        String colValue = value.getString("emp_name", recordSchema);
+        ...
+    }
+</source>
+
+<ul>
+<li>Instance B - Pig example 
+</li>
+</ul>
+<source>
+   ...
+   A = LOAD '/user/krishnak/pig-exports/employee-nonpartn' USING org.apache.HCatalog.pig.HCatEximLoader();
+   ...
+</source>
+	
+	
+<p></p>	
+<p><strong>Use Case 3</strong></p> 
+<p>Create an exported dataset in a hadoop instance which does not have HCatalog and then import into HCatalog in a different instance.</p>
+<ul>
+<li>Instance A - Map/Reduce job example </li>
+</ul>
+<source>
+    //job setup
+    ...
+    List&lt;HCatFieldSchema&gt; columns = new ArrayList&lt;HCatFieldSchema&gt;();
+    columns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("emp_id",
+        Constants.INT_TYPE_NAME, "")));
+    ...
+    List&lt;HCatFieldSchema&gt; partKeys = new ArrayList&lt;HCatFieldSchema&gt;();
+    partKeys.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("emp_country",
+        Constants.STRING_TYPE_NAME, "")));
+    partKeys.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("emp_state",
+        Constants.STRING_TYPE_NAME, "")));
+    HCatSchema partitionSchema = new HCatSchema(partKeys);
+    List&lt;String&gt; partitionVals = new ArrayList&lt;String&gt;();
+    partitionVals.add(...);
+    partitionVals.add(...);
+    ...
+    HCatEximOutputFormat.setOutput(job, "default", "employee", "hdfs:/user/krishnak/exim/employee",
+        partitionSchema, partitionVals, new HCatSchema(columns));
+    job.setOutputFormatClass(HCatEximOutputFormat.class);
+    ...
+
+    //map setup
+    protected void setup(Context context) throws IOException, InterruptedException {
+      super.setup(context);
+       ...
+       recordSchema = HCatEximOutputFormat.getTableSchema(context);
+       ...
+    }
+
+    //map task
+    public void map(LongWritable key, HCatRecord value, Context context) throws IOException,
+        InterruptedException {
+        ...
+        HCatRecord record = new DefaultHCatRecord(recordSchema.size());
+        record.setInteger("emp_id", recordSchema, Integer.valueOf(cols[0]));
+        record.setString("emp_name", recordSchema, cols[1]);
+        ...
+        context.write(key, record);
+        ...
+    }
+</source>
+
+
+<ul>
+<li>Instance A - Pig example </li>
+</ul>
+<source>
+   ...
+STORE INTN INTO 'default.employee' 
+   USING org.apache.HCatalog.pig.HCatEximStorer('/user/krishnak/pig-exports/employee', 'emp_country=IN,emp_state=TN');
+   ...
+</source>
+
+<ul>
+<li>Hadoop: distcp hdfs://locationA hdfs://locationB </li>
+<li>Instance B - HCatalog: import from 'locationB'; </li>
+</ul>
+</section>
+
+  </body>
+</document>

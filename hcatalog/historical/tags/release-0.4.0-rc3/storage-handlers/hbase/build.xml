@@ -1,0 +1,335 @@
+<?xml version="1.0"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<project name="hbase-storage-handler" default="jar" xmlns:ivy="antlib:org.apache.ivy.ant" >
+    <!--
+    ================================================================================
+    Import File
+    ================================================================================
+    -->
+    <import file="../../build-common.xml"/>
+
+    <!--
+    ================================================================================
+    Properties and Classpaths Section
+    ================================================================================
+    -->
+    <!-- name and version -->
+    <property name="handler.version" value="0.1.0"/>
+    <property name="handler.jar" value="${ant.project.name}-${handler.version}.jar"/>
+    <property name="final.name" value="${ant.project.name}-${handler.version}" />
+    <property name="hcatalog.dir" value="${basedir}/../../" />
+
+    <!-- hive properties -->
+    <property name="hive.root" value="${hcatalog.dir}/hive/external"/>
+
+    <!-- build properties -->
+    <property name="lib.dir" value="${basedir}/lib/" />
+    <property name="src.dir"  location="${basedir}/src/java"/>
+    <property name="docs.src" value="${basedir}/src/docs"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="build.classes" value="${build.dir}/classes" />
+    <property name="build.docs" value="${build.dir}/docs" />
+    <property name="build.javadoc" value="${build.docs}/api" />
+    <property name="dist.dir" value="${build.dir}/${final.name}" />
+
+    <!-- javac properties -->
+    <property name="build.encoding" value="UTF8" />
+    <property name="excludes" value=""/>
+    <property name="javac.debug" value="on" />
+    <property name="javac.optimize" value="on" />
+    <property name="javac.deprecation" value="off" />
+    <property name="javac.version" value="1.6" />
+    <property name="javac.args" value="" />
+
+    <!-- test properties -->
+    <property name="test.src.dir" value="${basedir}/src/test" />
+    <property name="test.build.dir" value="${build.dir}/test" />
+    <property name="test.build.classes" value="${test.build.dir}/classes" />
+    <property name="test.log.dir" value="${test.build.dir}/logs" />
+    <property name="test.tmp.dir" value="${test.build.dir}/temp" />
+    <property name="test.data.dir" value="${test.build.dir}/data" />
+    <property name="test.timeout" value="2700000" />
+    <property name="test.junit.output.format" value="plain" />
+    <property name="test.all.file" value="${test.src.dir}/all-tests"/>
+    <property name="test.exclude.file" value="${test.src.dir}/excluded-tests"/>
+    <property name="test.output" value="no"/>
+    <property name="hive.conf.dir" value="${hive.root}/conf"/>
+
+    <!-- ivy properteis set here -->
+    <property name="ivy.repo.dir" value="${user.home}/ivyrepo" />
+    <property name="ivy.dir" location="../../ivy" />
+    <loadproperties srcfile="${ivy.dir}/libraries.properties"/>
+    <property name="asfrepo" value="https://repository.apache.org"/>
+    <property name="asfsnapshotrepo" value="${asfrepo}/content/repositories/snapshots"/>
+    <property name="mvnrepo" value="http://repo2.maven.org/maven2"/>
+    <property name="asfstagingrepo" value="${asfrepo}/service/local/staging/deploy/maven2"/>
+    <property name="ivy.jar" location="${ivy.dir}/ivy-${ivy.version}.jar"/>
+    <property name="ant_task.jar" location="${ivy.dir}/maven-ant-tasks-${ant-task.version}.jar"/>
+    <property name="ant_task_repo_url"
+              value="${mvnrepo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar"/>
+    <property name="ivy_repo_url" value="${mvnrepo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
+    <property name="ivysettings.xml" location="${ivy.dir}/ivysettings.xml" />
+    <property name="build.ivy.dir" location="${build.dir}/ivy" />
+    <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib" />
+    <property name="ivy.lib.dir" location="${build.ivy.lib.dir}/${ant.project.name}"/>
+    <property name="build.ivy.report.dir" location="${build.ivy.dir}/report" />
+
+    <!-- rats properties -->
+    <property name="rat.reporting.classname" value="rat.Report"/>
+
+    <!--this is the naming policy for artifacts we want pulled down-->
+    <property name="ivy.artifact.retrieve.pattern" value="${ant.project.name}/[artifact]-[revision](-[classifier]).[ext]"/>
+
+    <!-- Classpaths for various builds -->
+    <path id="classpath">
+        <fileset dir="${ivy.lib.dir}" includes="*.jar"/>
+        <fileset dir="${hcatalog.dir}/build/hcatalog" includes=" *.jar"/>
+        <path refid="common.classpath"/>
+    </path>
+
+    <path id="test.classpath">
+        <pathelement location="${test.build.classes}" />
+        <pathelement location="${build.classes}" />
+        <pathelement location="conf"/>
+        <fileset dir="${ivy.lib.dir}" includes="*.jar"/>
+        <fileset dir="${hcatalog.dir}/build/hcatalog" includes=" *.jar"/>
+    </path>
+
+    <!--
+    ================================================================================
+    Ivy Section
+    ================================================================================
+    -->
+    <!-- Ivy goop stolen directly from Pig's build.xml -->
+    <target name="ivy-init-dirs">
+        <mkdir dir="${build.ivy.dir}" />
+        <mkdir dir="${build.ivy.lib.dir}" />
+        <mkdir dir="${build.ivy.report.dir}" />
+    </target>
+
+    <target name="ivy-probe-antlib">
+        <condition property="ivy.found">
+            <typefound uri="antlib:org.apache.ivy.ant" name="cleancache"/>
+        </condition>
+    </target>
+
+    <target name="ivy-download" description="To download ivy" unless="offline">
+        <get src="${ivy_repo_url}" dest="${ivy.jar}" usetimestamp="true"/>
+    </target>
+
+    <!--
+       To avoid Ivy leaking things across big projects, always load Ivy in the same classloader.
+       Also note how we skip loading Ivy if it is already there, just to make sure all is well.
+    -->
+    <target name="ivy-init-antlib" depends="ivy-download,ivy-init-dirs,ivy-probe-antlib" unless="ivy.found">
+        <typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader">
+            <classpath>
+                <pathelement location="${ivy.jar}"/>
+            </classpath>
+        </typedef>
+        <fail>
+            <condition >
+                <not>
+                    <typefound uri="antlib:org.apache.ivy.ant" name="cleancache"/>
+                </not>
+            </condition>
+            You need Apache Ivy 2.0 or later from http://ant.apache.org/
+            It could not be loaded from ${ivy_repo_url}
+        </fail>
+    </target>
+
+    <target name="ivy-init" depends="ivy-init-antlib" >
+        <!--Configure Ivy by reading in the settings file
+            If anyone has already read in a settings file into this settings ID, it gets priority
+        -->
+        <ivy:configure settingsid="${ant.project.name}.ivy.settings"
+                       file="${ivysettings.xml}" override='false'/>
+    </target>
+
+    <target name="ivy-compile" depends="ivy-init" description="Resolve, Retrieve Ivy-managed artifacts for compile configuration">
+        <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="common"/>
+        <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+                      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="common"/>
+        <ivy:cachepath pathid="compile.classpath" conf="common"/>
+        <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="default"/>
+        <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+                      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+                      conf="default"/>
+        <ivy:cachepath pathid="compile.classpath" conf="default"/>
+    </target>
+
+    <target name="ivy-releaseaudit" depends="ivy-init" description="Resolve, Retrieve Ivy-managed artifacts for releaseaudit configuration">
+        <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="releaseaudit"/>
+        <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+                      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="releaseaudit"/>
+        <ivy:cachepath pathid="releaseaudit.classpath" conf="releaseaudit"/>
+    </target>
+
+    <target name="init" depends="ivy-compile" >
+        <mkdir dir="${dist.dir}" />
+        <mkdir dir="${build.classes}" />
+        <mkdir dir="${test.build.classes}" />
+    </target>
+    <!--
+    ================================================================================
+    Main Build and Jar Section
+    ================================================================================
+    -->
+    <!-- Compile src files -->
+    <target name="compile-src" depends="init">
+        <javac encoding="${build.encoding}" srcdir="${src.dir}:${basedir}/src/gen-java" excludes="${excludes}"
+               includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}"
+               optimize="${javac.optimize}" target="${javac.version}"
+               source="${javac.version}" deprecation="${javac.deprecation}"
+               includeantruntime="false">
+            <compilerarg line="${javac.args}"/>
+            <classpath refid="classpath" />
+        </javac>
+    </target>
+
+    <!-- Build the jar -->
+    <target name="jar" depends="compile-src">
+        <jar jarfile="${build.dir}/${ant.project.name}/${handler.jar}" basedir="${build.classes}"/>
+    </target>
+
+    <!--
+    ================================================================================
+    Test Section
+    ================================================================================
+    -->
+    <!-- Build test files -->
+    <target name="compile-test" depends="jar">
+        <javac encoding="${build.encoding}" srcdir="${test.src.dir}" excludes="${excludes}"
+               includes="**/*.java" destdir="${test.build.classes}" debug="${javac.debug}"
+               optimize="${javac.optimize}" target="${javac.version}"
+               source="${javac.version}" deprecation="${javac.deprecation}"
+               includeantruntime="false">
+            <compilerarg line="${javac.args}"/>
+            <classpath refid="test.classpath" />
+        </javac>
+    </target>
+
+    <!-- Run the unit tests -->
+    <target name="test" depends="compile-test">
+        <sequential>
+            <delete dir="${test.log.dir}"/>
+	        <delete dir="${test.tmp.dir}" />
+            <delete dir="${test.data.dir}" />
+            <mkdir dir="${test.log.dir}"/>
+	        <mkdir dir="${test.tmp.dir}" />
+            <mkdir dir="${test.data.dir}" />
+	        <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
+                   fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
+                   errorProperty="tests.failed" failureProperty="tests.failed">
+                <classpath>
+                    <pathelement location="${test.build.classes}" />
+                    <pathelement location="." />
+                    <path refid="test.classpath"/>
+                </classpath>
+                <formatter type="${test.junit.output.format}" />
+                <!-- If the user has not defined a particular test to run, run them all -->
+                <batchtest fork="yes" todir="${test.log.dir}" unless="testcase">
+                    <fileset dir="src/test">
+                        <patternset>
+                            <includesfile name="${test.all.file}"/>
+                            <excludesfile name="${test.exclude.file}"/>
+                        </patternset>
+                    </fileset>
+                    <fileset dir="src/test" includes="**/lock/*Test.java"/>
+                </batchtest>
+                <!-- Run one test case.  To use this define -Dtestcase=X on the command line -->
+                <batchtest fork="yes" todir="${test.log.dir}" if="testcase">
+                    <fileset dir="src/test" includes="**/${testcase}.java"/>
+                </batchtest>
+                <assertions>
+                    <enable />
+                </assertions>
+            </junit>
+            <fail if="tests.failed">Tests failed!</fail>
+        </sequential>
+    </target>
+
+    <!--
+    ================================================================================
+    Clean Section
+    ================================================================================
+    -->
+
+    <!-- Clean up  -->
+    <target name="clean" description="Cleanup build artifacts">
+        <delete dir="${build.dir}" />
+    </target>
+
+    <!--
+    ================================================================================
+    Docs Section
+    ================================================================================
+    -->
+    <target name="docs" depends="javadoc">
+    </target>
+
+    <target name="javadoc" depends="jar" description="Create documentation">
+        <mkdir dir="${build.javadoc}" />
+        <javadoc packagenames="org.apache.hcatalog.*" destdir="${build.javadoc}" author="true" version="true" use="true"
+        windowtitle="HCatalog ${hcatalog.version} API" doctitle="HCatalog ${hcatalog.version} API" sourcepath="${src.dir}:${basedir}/src/gen-java">
+            <!--<packageset dir="${src.dir}" /> -->
+            <classpath>
+                <path refid="classpath" />
+            </classpath>
+            <group title="hcatalog" packages="org.apache.hcatalog.*" />
+        </javadoc>
+    </target>
+
+
+    <!--
+    ===============================================================================
+    Distribution Section
+    ===============================================================================
+    -->
+    <target name="package" depends="jar, docs" description="Create an HCatalog release">
+        <mkdir dir="${dist.dir}" />
+        <mkdir dir="${dist.dir}/lib" />
+        <mkdir dir="${dist.dir}/docs" />
+
+        <copy todir="${dist.dir}/lib" includeEmptyDirs="false">
+            <fileset dir="${lib.dir}" erroronmissingdir="false" />
+            <fileset dir="${build.dir}/${ant.project.name}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+
+
+        <copy todir="${dist.dir}/docs">
+            <fileset dir="${build.docs}" />
+        </copy>
+
+        <antcall target="package-to-handlers"/>
+    </target>
+
+    <target name="package-to-handlers" if="dist.handlers.dir">
+        <mkdir dir="${dist.handlers.dir}/hbase"/>
+        <copy todir="${dist.handlers.dir}/hbase" includeEmptyDirs="true">
+            <fileset dir="${dist.dir}">
+              <include name="**/lib/hbase-storage-handler-*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+</project>

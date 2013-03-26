@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<project name="storage-handlers" default="jar" xmlns:ivy="antlib:org.apache.ivy.ant" >
+    <!-- Used to pass calls to storage handlers. -->
+    <target name="template">
+        <condition property="dist.handlers.dir" value="${dist.handlers.dir}">
+            <isset property="dist.handlers.dir"/>
+        </condition>
+        <!-- add storage handlers here -->
+        <echo>Executing storage-handler &quot;${target}&quot; for hbase</echo>
+        <ant target="${target}" dir="hbase" inheritAll="false" useNativeBasedir="true"/>
+    </target>
+
+
+    <target name="jar">
+        <echo>Generating all handlers</echo>
+        <antcall target="template">
+            <param name="target" value="jar"/>
+        </antcall>
+    </target>
+
+    <target name="test">
+        <echo>Testing all handlers</echo>
+        <antcall target="template">
+            <param name="target" value="test"/>
+        </antcall>
+    </target>
+
+    <target name="clean">
+        <echo>Cleaning all handlers</echo>
+        <antcall target="template">
+            <param name="target" value="clean"/>
+        </antcall>
+    </target>
+
+    <target name="package">
+        <echo>Package all handlers</echo>
+        <antcall target="template">
+            <param name="target" value="package"/>
+        </antcall>
+    </target>
+</project>

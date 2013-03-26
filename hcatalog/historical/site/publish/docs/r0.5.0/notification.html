@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="Apache Forrest" name="Generator">
+<meta name="Forrest-version" content="0.9">
+<meta name="Forrest-skin-name" content="pelt">
+<title>Notification</title>
+<link type="text/css" href="skin/basic.css" rel="stylesheet">
+<link media="screen" type="text/css" href="skin/screen.css" rel="stylesheet">
+<link media="print" type="text/css" href="skin/print.css" rel="stylesheet">
+<link type="text/css" href="skin/profile.css" rel="stylesheet">
+<script src="skin/getBlank.js" language="javascript" type="text/javascript"></script><script src="skin/getMenu.js" language="javascript" type="text/javascript"></script><script src="skin/fontsize.js" language="javascript" type="text/javascript"></script>
+<link rel="shortcut icon" href="">
+</head>
+<body onload="init()">
+<script type="text/javascript">ndeSetTextSize();</script>
+<div id="top">
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+<script src="skin/breadcrumbs.js" language="JavaScript" type="text/javascript"></script>
+</div>
+<!--+
+    |header
+    +-->
+<div class="header">
+<!--+
+    |start group logo
+    +-->
+<div class="grouplogo">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat.jpg" title=""></a>
+</div>
+<!--+
+    |end group logo
+    +-->
+<!--+
+    |start Project Logo
+    +-->
+<div class="projectlogoA1">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat-box.jpg" title="A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queryies."></a>
+</div>
+<!--+
+    |end Project Logo
+    +-->
+<!--+
+    |start Tabs
+    +-->
+<ul id="tabs">
+<li class="current">
+<a class="selected" href="index.html">HCatalog 0.5.0 Documentation</a>
+</li>
+</ul>
+<!--+
+    |end Tabs
+    +-->
+</div>
+</div>
+<div id="main">
+<div id="publishedStrip">
+<!--+
+    |start Subtabs
+    +-->
+<div id="level2tabs"></div>
+<!--+
+    |end Endtabs
+    +-->
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+
+             &nbsp;
+           </div>
+<!--+
+    |start Menu, mainarea
+    +-->
+<!--+
+    |start Menu
+    +-->
+<div id="menu">
+<div onclick="SwitchMenu('menu_selected_1.1', 'skin/')" id="menu_selected_1.1Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">HCatalog</div>
+<div id="menu_selected_1.1" class="selectedmenuitemgroup" style="display: block;">
+<div class="menuitem">
+<a href="index.html">Overview</a>
+</div>
+<div class="menuitem">
+<a href="install.html">Installation From Tarball</a>
+</div>
+<div class="menuitem">
+<a href="loadstore.html">Load &amp; Store Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="inputoutput.html">Input &amp; Output Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="readerwriter.html">Reader &amp; Writer Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="cli.html">Command Line Interface</a>
+</div>
+<div class="menuitem">
+<a href="supportedformats.html">Storage Formats</a>
+</div>
+<div class="menuitem">
+<a href="dynpartition.html">Dynamic Partitioning</a>
+</div>
+<div class="menupage">
+<div class="menupagetitle">Notification</div>
+</div>
+<div class="menuitem">
+<a href="authorization.html">Authorization</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11', 'skin/')" id="menu_1.1.11Title" class="menutitle">WebHCat</div>
+<div id="menu_1.1.11" class="menuitemgroup">
+<div class="menuitem">
+<a href="rest.html">Overview</a>
+</div>
+<div class="menuitem">
+<a href="rest_server_install.html">Installation</a>
+</div>
+<div class="menuitem">
+<a href="configuration.html">Configuration</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11.4', 'skin/')" id="menu_1.1.11.4Title" class="menutitle">Reference</div>
+<div id="menu_1.1.11.4" class="menuitemgroup">
+<div class="menuitem">
+<a href="resources.html">Resource List</a>
+</div>
+<div class="menuitem">
+<a href="responsetypes.html">:version</a>
+</div>
+<div class="menuitem">
+<a href="status.html">status</a>
+</div>
+<div class="menuitem">
+<a href="versions.html">version</a>
+</div>
+<div onclick="SwitchMenu('menu_1.1.11.4.5', 'skin/')" id="menu_1.1.11.4.5Title" class="menutitle">ddl</div>
+<div id="menu_1.1.11.4.5" class="menuitemgroup">
+<div class="menuitem">
+<a href="ddlsummary.html">ddl (summary)</a>
+</div>
+<div class="menuitem">
+<a href="ddl.html">ddl</a>
+</div>
+<div class="menuitem">
+<a href="listdbs.html">database</a>
+</div>
+<div class="menuitem">
+<a href="descdb.html">:db (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createdb.html">:db (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletedb.html">:db (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listtables.html">table</a>
+</div>
+<div class="menuitem">
+<a href="desctable.html">:table (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createtable.html">:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="renametable.html">:table (POST)</a>
+</div>
+<div class="menuitem">
+<a href="deletetable.html">:table (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="createtablelike.html">like/:table (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listpartitions.html">partition</a>
+</div>
+<div class="menuitem">
+<a href="descpartition.html">:partition (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createpartition.html">:partition (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="deletepartition.html">:partition (DELETE)</a>
+</div>
+<div class="menuitem">
+<a href="listcolumns.html">column</a>
+</div>
+<div class="menuitem">
+<a href="desccolumn.html">:column (GET)</a>
+</div>
+<div class="menuitem">
+<a href="createcolumn.html">:column (PUT)</a>
+</div>
+<div class="menuitem">
+<a href="listproperties.html">property</a>
+</div>
+<div class="menuitem">
+<a href="descproperty.html">:property (GET)</a>
+</div>
+<div class="menuitem">
+<a href="addproperty.html">:property (PUT)</a>
+</div>
+</div>
+<div class="menuitem">
+<a href="mapreducestreaming.html">mapreduce/streaming</a>
+</div>
+<div class="menuitem">
+<a href="mapreducejar.html">mapreduce/jar</a>
+</div>
+<div class="menuitem">
+<a href="pig.html">pig</a>
+</div>
+<div class="menuitem">
+<a href="hive.html">hive</a>
+</div>
+<div class="menuitem">
+<a href="queuelist.html">queue</a>
+</div>
+<div class="menuitem">
+<a href="queue.html">:jobid (GET)</a>
+</div>
+<div class="menuitem">
+<a href="queuedelete.html">:jobid (DELETE)</a>
+</div>
+</div>
+</div>
+<div class="menuitem">
+<a href="api/index.html">API Docs</a>
+</div>
+</div>
+<div id="credit"></div>
+<div id="roundbottom">
+<img style="display: none" class="corner" height="15" width="15" alt="" src="skin/images/rc-b-l-15-1body-2menu-3menu.png"></div>
+<!--+
+  |alternative credits
+  +-->
+<div id="credit2"></div>
+</div>
+<!--+
+    |end Menu
+    +-->
+<!--+
+    |start content
+    +-->
+<div id="content">
+<div title="Portable Document Format" class="pdflink">
+<a class="dida" href="notification.pdf"><img alt="PDF -icon" src="skin/images/pdfdoc.gif" class="skin"><br>
+        PDF</a>
+</div>
+<h1>Notification</h1>
+<div id="front-matter">
+<div id="minitoc-area">
+<ul class="minitoc">
+<li>
+<a href="#Notification+for+a+New+Partition">Notification for a New Partition</a>
+</li>
+<li>
+<a href="#Notification+for+a+Set+of+Partitions">Notification for a Set of Partitions</a>
+</li>
+<li>
+<a href="#Server+Configuration">Server Configuration</a>
+<ul class="minitoc">
+<li>
+<a href="#Enable+JMS+Notifications">Enable JMS Notifications</a>
+</li>
+<li>
+<a href="#Topic+Names">Topic Names</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+  
+ 
+<p>Since version 0.2, HCatalog provides notifications for certain events happening in the system. This way applications such as Oozie can wait for those events and schedule the work that depends on them. The current version of HCatalog supports two kinds of events: </p>
+
+<ul>
+
+<li>Notification when a new partition is added</li>
+
+<li>Notification when a set of partitions is added</li>
+
+</ul>
+
+
+<p>No additional work is required to send a notification when a new partition is added: the existing addPartition call will send the notification message.</p>
+
+<!-- ==================================================================== -->
+
+<a name="Notification+for+a+New+Partition"></a>
+<h2 class="h3">Notification for a New Partition</h2>
+<div class="section">
+<p>To receive notification that a new partition has been added, you need to follow these three steps.</p>
+<ol>
+  
+<li>To start receiving messages, create a connection to a message bus as shown here:
+<pre class="code">
+ConnectionFactory connFac = new ActiveMQConnectionFactory(amqurl);
+Connection conn = connFac.createConnection();
+conn.start();
+</pre>
+  
+</li>
+
+  
+<li>Subscribe to a topic you are interested in. When subscribing on a message bus, you need to subscribe to a particular topic to receive the messages that are being delivered on that topic.
+  <ul>
+    
+<li>The topic name corresponding to a particular table is stored in table properties and can be retrieved using the following piece of code:
+<pre class="code">
+HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
+String topicName = msc.getTable("mydb",
+                   "myTbl").getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
+</pre>
+    
+</li>
+
+    
+<li>Use the topic name to subscribe to a topic as follows:
+<pre class="code">
+Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+Destination hcatTopic = session.createTopic(topicName);
+MessageConsumer consumer = session.createConsumer(hcatTopic);
+consumer.setMessageListener(this);
+</pre>
+    
+</li>
+  
+</ul>
+  
+</li>
+
+  
+<li>To start receiving messages you need to implement the JMS interface <span class="codefrag">MessageListener</span>, which, in turn, will make you implement the method <span class="codefrag">onMessage(Message msg)</span>. This method will be called whenever a new message arrives on the message bus. The message contains a partition object representing the corresponding partition, which can be retrieved as shown here:
+<pre class="code">
+@Override
+public void onMessage(Message msg) {
+  // We are interested in only add_partition events on this table.
+  // So, check message type first.
+  if(msg.getStringProperty(HCatConstants.HCAT_EVENT).equals(HCatConstants.HCAT_ADD_PARTITION_EVENT)){
+       Object obj = (((ObjectMessage)msg).getObject());
+  }
+}
+</pre>
+  
+</li>
+
+</ol>
+<p>You need to have a JMS jar in your classpath to make this work. Additionally, you need to have a JMS provider&rsquo;s jar in your classpath. HCatalog is tested with ActiveMQ as a JMS provider, although any JMS provider can be used. ActiveMQ can be obtained from: <a href="http://activemq.apache.org/activemq-550-release.html">http://activemq.apache.org/activemq-550-release.html</a>.</p>
+</div>
+
+<!-- ==================================================================== -->
+
+<a name="Notification+for+a+Set+of+Partitions"></a>
+<h2 class="h3">Notification for a Set of Partitions</h2>
+<div class="section">
+<p>Sometimes you need to wait until a collection of partitions is finished before proceeding with another operation. For example, you may want to start processing after all partitions for a day are done. However, HCatalog has no notion of collections or hierarchies of partitions. To support this, HCatalog allows data writers to signal when they are finished writing a collection of partitions. Data readers may wait for this signal before beginning to read.</p>
+<p>The example code below illustrates how to send a notification when a set of partitions has been added.</p>
+<p>To signal, a data writer does this:</p>
+<pre class="code">
+HiveMetaStoreClient msc = new HiveMetaStoreClient(conf);
+
+// Create a map, specifying partition key names and values
+Map&lt;String,String&gt; partMap = new HashMap&lt;String, String&gt;();
+partMap.put("date","20110711");
+partMap.put("country","*");
+
+// Mark the partition as "done"
+msc.markPartitionForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+</pre>
+<p>To receive this notification, the consumer needs to do the following:</p>
+<ol>
+
+<li>Repeat steps one and two from above to establish the connection to the notification system and to subscribe to the topic.</li>
+
+<li>Receive the notification as shown in this example:
+<pre class="code">
+HiveMetaStoreClient msc = new HiveMetaStoreClient(conf);
+
+// Create a map, specifying partition key names and values
+Map&lt;String,String&gt; partMap = new HashMap&lt;String, String&gt;();
+partMap.put("date","20110711");
+partMap.put("country","*");
+
+// Mark the partition as "done"
+msc.markPartitionForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+</pre>
+
+</li>
+
+</ol>
+<p>If the consumer has registered with the message bus and is currently live, it will get the callback from the message bus once the producer marks the partition as "done".  Alternatively, the consumer can ask explicitly for a particular partition from the metastore. The following code illustrates the usage from a consumer's perspective:</p>
+<pre class="code">
+// Enquire to metastore whether a particular partition has been marked or not.
+boolean marked = msc.isPartitionMarkedForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+
+// Or register to a message bus and get asynchronous callback.
+ConnectionFactory connFac = new ActiveMQConnectionFactory(amqurl);
+Connection conn = connFac.createConnection();
+conn.start();
+Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+Destination hcatTopic = session.createTopic(topic);
+MessageConsumer consumer = session.createConsumer(hcatTopic);
+consumer.setMessageListener(this);
+
+
+public void onMessage(Message msg) {
+
+                                
+  MapMessage mapMsg = (MapMessage)msg;
+  Enumeration&lt;String&gt; keys = mapMsg.getMapNames();
+  
+  // Enumerate over all keys. This will print key-value pairs specifying the  
+  // particular partition 44which was marked done. In this case, it will print:
+  // date : 20110711
+  // country: *
+
+  while(keys.hasMoreElements()){
+    String key = keys.nextElement();
+    System.out.println(key + " : " + mapMsg.getString(key));
+  }
+  System.out.println("Message: "+msg);
+</pre>
+</div>
+
+<!-- ==================================================================== -->
+
+<a name="Server+Configuration"></a>
+<h2 class="h3">Server Configuration</h2>
+<div class="section">
+<p>To enable notification, you need to configure the server (see below). </p>
+<p>To disable notification, you need to leave <span class="codefrag">hive.metastore.event.listeners</span> blank or remove it from <span class="codefrag">hive-site.xml.</span>
+</p>
+<a name="Enable+JMS+Notifications"></a>
+<h3 class="h4">Enable JMS Notifications</h3>
+<p>You need to make (add/modify) the following changes to the hive-site.xml file of your HCatalog server to turn on notifications.</p>
+<pre class="code">
+&lt;property&gt;
+&lt;name&gt;hive.metastore.event.expiry.duration&lt;/name&gt;
+&lt;value&gt;300L&lt;/value&gt;
+&lt;description&gt;Duration after which events expire from events table (in seconds)&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;hive.metastore.event.clean.freq&lt;/name&gt;
+&lt;value&gt;360L&lt;/value&gt;
+&lt;description&gt;Frequency at which timer task runs to purge expired events in metastore (in seconds).&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.brokerurl&lt;/name&gt;
+&lt;value&gt;tcp://localhost:61616&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.username&lt;/name&gt;
+&lt;value&gt;&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.password&lt;/name&gt;
+&lt;value&gt;&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+</pre>
+<p>For the server to start with support for notifications, the following must be in the classpath:</p>
+<p>&nbsp;&nbsp; (a) activemq jar </p>
+<p>&nbsp;&nbsp; (b) jndi.properties file with properties suitably configured for notifications</p>
+<p>Then, follow these guidelines to set up your environment:</p>
+<ol>
+
+<li>The HCatalog server start script is $<em>YOUR_HCAT_SERVER</em>/share/hcatalog/scripts/hcat_server_start.sh.</li>
+
+<li>This script expects classpath to be set by the AUX_CLASSPATH environment variable.</li>
+
+<li>Therefore set AUX_CLASSPATH to satisfy (a) and (b) above.</li>
+
+<li>The jndi.properties file is located at $<em>YOUR_HCAT_SERVER</em>/etc/hcatalog/jndi.properties.</li>
+
+<li>You need to uncomment and set the following properties in the jndi.properties file:
+<ul>
+
+<li>java.naming.factory.initial = org.apache.activemq.jndi.ActiveMQInitialContextFactory</li>
+
+<li>java.naming.provider.url = tcp://localhost:61616 &nbsp;&nbsp; (This is the ActiveMQ URL in your setup.)
+</li>
+
+</ul>
+
+</li>
+
+</ol>
+<a name="Topic+Names"></a>
+<h3 class="h4">Topic Names</h3>
+<p>If tables are created while the server is configured for notifications, a default topic name is automatically set as a table property. To use notifications with tables created previously (either in other HCatalog installations or prior to enabling notifications in the current installation) you will have to manually set a topic name. For example:</p>
+<pre class="code">
+$<em>YOUR_HCAT_CLIENT_HOME</em>/bin/hcat -e "ALTER TABLE access SET hcat.msgbus.topic.name=$TOPIC_NAME"
+</pre>
+<p>You then need to configure your ActiveMQ Consumer(s) to listen for messages on the topic you gave in $TOPIC_NAME. A good default policy is TOPIC_NAME = "$database.$table" (that is a literal dot).</p>
+</div>
+    
+  
+</div>
+<!--+
+    |end content
+    +-->
+<div class="clearboth">&nbsp;</div>
+</div>
+<div id="footer">
+<!--+
+    |start bottomstrip
+    +-->
+<div class="lastmodified">
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<div class="copyright">
+        Copyright &copy;
+         2012-2013 <a href="http://www.apache.org/licenses/">The Apache Software Foundation</a>
+</div>
+<!--+
+    |end bottomstrip
+    +-->
+</div>
+</body>
+</html>

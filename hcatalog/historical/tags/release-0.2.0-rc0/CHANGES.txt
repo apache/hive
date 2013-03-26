@@ -1,0 +1,129 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Apache HCatalog Change Log
+
+Release 0.2.0 - Sept-2011
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+    HCAT-63. RPM package integration with Hadoop (khorgath via hashutosh) 
+
+    HCAT-42. Storing across partitions(Dynamic Partitioning) from HCatStorer/HCatOutputFormat (khorgath)
+ 
+    HCAT-46. Send a message on a message bus when a partition is marked done (hashutosh via macyang)
+
+    HCAT-3. Send a message on a message bus when events occur in Metastore (hashutosh)
+  
+    HCAT-16. Add InputFormat/OutputFormat for handling exported tables/partitions.
+    (Krishna Kumar via macyang)
+    
+  IMPROVEMENTS
+    HCAT-94. Handle the job tracker tokens properly in har jobs (khorgath via hashutosh)   
+ 
+    HCAT-43. hcat.sh does not pick up hcatalog.jar correctly (macyang via hashutosh) 
+
+    HCAT-91. hcat client not setting the config properly (hashutosh)
+
+    HCAT-66. HCatalog 0.2.0 Documentation (chandec via hashutosh)
+
+    HCAT-54. Javadoc is not being built as part of HCatalog docs (hashutosh) 
+
+    HCAT-35. HCatalog fails to compile with Pig 0.9 (hashutosh)
+
+    HCAT-47. Topic prefix for the message bus should be configurable (hashutosh)
+
+    HCAT-39. Lazily create connection for Message bus (hashutosh)
+
+    HCAT-44. Add a releaseaudit target to build.xml (gates)
+
+    HCAT-40. Remove dependencies from the HCatalog client jar (macyang)
+
+    HCAT-37. Misc. build.xml changes (macyang via hashutosh)
+  
+    HCAT-27. Start and stop scripts for the server (gates)
+
+    HCAT-21. Install documenation and script (gates)
+
+    HCAT-34. Add ant target for server side classes (hashutosh)
+    
+    HCAT-33. minor changes to the test target in build.xml (macyang via hashutosh)
+ 
+    HCAT-30. Need changes.txt (Jakob Homan via hashutosh)
+  
+    HCAT-19. Enable and add decorators for the export/import cli commands 
+    for authorization and permission setting. (Krishna Kumar via macyang)
+
+    HCAT-18. Refactor TestRCFileInputStorageDriver. (Jakob Homan via hashutosh)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+    HCAT-110. Fix source target (khorgath via hashutosh)    
+
+    HCAT-78. Update notice.txt and headers and add Disclaimer.txt (hashutosh and gates via gates)
+
+    HCAT-77. building javadocs has a couple of warnings from faulty param names (khorgath via gates)
+
+    HCAT-53. HCatLoader, HCatStorer, HCatInputFormat, and HCatOutputFormat assume Hadoop running in secure mode (hashutosh via gates)
+
+    HCAT-57. Remove usage of deprecated methods (hashutosh)
+   
+    HCAT-59. Assimilate new changes in listener interface (hashutosh)
+    
+    HCAT-55. HCatalog distribution missing a few required jars (gates)
+
+    HCAT-52. No message is sent on message bus in case partition keys are uppercase (hashutosh)
+
+    HCAT-45. HCatalog release tar ball source code has problems (gates)
+
+    HCAT-41. Changes to hcat.sh in HCATALOG-20 broke the -e option (gates)
+
+    HCAT-12. Get trunk to build. (hashutosh)
+
+    HCAT-17. Shouldn't be able to add an HCatFieldSchema with the same name as 
+    existing field. (Jakob Homan via gates)
+
+    HCAT-28. Trunk test not compiling: Upstream Hive changes broke TestPermsGrp.
+    (Jakob Homan via hashutosh)
+
+    HCAT-15. Replace all occurrences of 'howl' with hcat/hcatalog. 
+    (Jakob Homan via macyang)
+
+Release 0.1 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+    HCAT-1. Upload initial code to HCatalog (gates)
+
+    HCAT-4. Get the build working for HCatalog. (gates)
+
+    HCAT-9. Get a beginning HCatalog website up. (gates)
+
+  IMPROVEMENTS
+
+    HCAT-29. Remove Yahoo copyright from documentation (Jakob Homan via hashutosh)
+  
+  OPTIMIZATIONS
+
+  BUG FIXES
+    HCAT-7. Ivy fetch of CDH Hadoop versions does not work properly. (gates)
+
+    HCAT-6. Unit test TestPermsInheritance fails. (hashutosh)

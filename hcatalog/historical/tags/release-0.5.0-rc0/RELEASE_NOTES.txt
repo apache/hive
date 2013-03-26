@@ -1,0 +1,60 @@
+These notes are for HCatalog 0.5.0 release.
+
+Highlights
+==========
+ 
+HCatalog is a table management and storage management layer for Hadoop that
+enables users with different data processing tools – Pig, MapReduce, and Hive,
+to easily share data on the grid. HCatalog’s table abstraction presents users
+with a relational view of data in the Hadoop distributed file system (HDFS)
+and ensures that users need not worry about where or in what format their data
+is stored – RCFile format, text files, sequence files.
+
+System Requirements
+===================
+
+1. Java 1.6.x or newer, preferably from Sun. Set JAVA_HOME to the root of your
+   Java installation
+2. Ant build tool, version 1.8 or higher:  http://ant.apache.org - to build
+   source only
+3. This release is compatible with Hadoop 1.0.3.
+4. This release is compatible with Pig 0.8.1, Pig 0.9.1, and 0.9.2.
+5. This release is compatible with Hive 0.10.0
+
+Trying the Release
+==================
+1. Download hcatalog-src-0.5.0-incubating.tar.gz
+2. Follow the directions at
+   http://incubator.apache.org/hcatalog/docs/r0.5.0/install.html
+3. If you are upgrading from a previous HCatalog release, please note
+   the Hive dependency has been updated to 0.10.0. Please see the Hive
+   upgrade documentation as appropriate for your current Hive version.
+
+Relevant Documentation
+======================
+See http://incubator.apache.org/hcatalog/docs/r0.5.0
+These notes are for HCatalog 0.5.0 release.
+
+Changes Since Last Release
+==========================
+
+Major changes since the last release include:
+  - HCatalog is now published in the Apache Maven repository.
+  - New web services API to HCatalog: webhcat
+  - Major notifications update
+  - Build has been updated to provide per-submodule artifacts.
+  - Improved pig adapter support.
+  - Updated to Hive 0.10.0.
+  - Many improvements and bug fixes.
+
+For a full list of changes see CHANGES.txt located in the same directory as this file.
+
+Backward Incompatibilities
+==========================
+- HCatalog no longer publishes a monolithic jar with all classes. Instead,
+  per-submodule jars are published. This allows users to pull in just the
+  needed dependencies when integrating HCatalog with their system.
+
+Notes
+=====
+HBase integration with HCatalog is experimental and not yet ready for production use.
