@@ -264,5 +264,3 @@ POSTHOOK: Lineage: dest1.c6 SIMPLE [(src)src3.FieldSchema(name:value, type:strin
 NULL	NULL	20	val_20	NULL	NULL
 NULL	NULL	24	val_24	NULL	NULL
 NULL	NULL	24	val_24	NULL	NULL
-NULL	NULL	24	val_24	NULL	NULL
-NULL	NULL	24	val_24	NULL	NULL
