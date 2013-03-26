@@ -220,24 +220,20 @@ public class JoinUtil {
   /**
    * Return the value as a standard object. StandardObject can be inspected by a
    * standard ObjectInspector.
+   * If it would be tagged by filter, reserve one more slot for that.
    */
   public static ArrayList<Object> computeValues(Object row,
-      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      int[] filterMap) throws HiveException {
+      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI, boolean hasFilter)
+      throws HiveException {
 
     // Compute the values
-    ArrayList<Object> nr = new ArrayList<Object>(valueFields.size());
+    int reserve = hasFilter ? valueFields.size() + 1 : valueFields.size();
+    ArrayList<Object> nr = new ArrayList<Object>(reserve);
     for (int i = 0; i < valueFields.size(); i++) {
       nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
           .evaluate(row), valueFieldsOI.get(i),
           ObjectInspectorCopyOption.WRITABLE));
     }
-    if (filterMap != null) {
-      // add whether the row is filtered or not.
-      nr.add(new ShortWritable(isFiltered(row, filters, filtersOI, filterMap)));
-    }
-
     return nr;
   }
 
