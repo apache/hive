@@ -47,6 +47,8 @@ public class StatsWork implements Serializable {
 
   private boolean isNoScanAnalyzeCommand = false;
 
+  private boolean isPartialScanAnalyzeCommand = false;
+
   public StatsWork() {
   }
 
@@ -123,5 +125,19 @@ public class StatsWork implements Serializable {
    */
   public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
     this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @return the isPartialScanAnalyzeCommand
+   */
+  public boolean isPartialScanAnalyzeCommand() {
+    return isPartialScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
+   */
+  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
+    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 }

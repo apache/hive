@@ -19,16 +19,23 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -96,13 +103,18 @@ public class GenMRTableScan1 implements NodeProcessor {
             ctx.getRootTasks().add(currTask);
           }
 
-          //        ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
+          // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
           // The plan consists of a StatsTask only.
           if (parseInfo.isNoScanAnalyzeCommand()) {
             statsTask.setParentTasks(null);
             statsWork.setNoScanAnalyzeCommand(true);
             ctx.getRootTasks().remove(currTask);
             ctx.getRootTasks().add(statsTask);
+          }
+
+          // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
+          if (parseInfo.isPartialScanAnalyzeCommand()) {
+            handlePartialScanCommand(op, ctx, parseCtx, currTask, parseInfo, statsWork, statsTask);
           }
 
           currWork.setGatheringStats(true);
@@ -137,6 +149,66 @@ public class GenMRTableScan1 implements NodeProcessor {
     }
     assert false;
     return null;
+  }
+
+  /**
+   * handle partial scan command.
+   *
+   * It is composed of PartialScanTask followed by StatsTask .
+   * @param op
+   * @param ctx
+   * @param parseCtx
+   * @param currTask
+   * @param parseInfo
+   * @param statsWork
+   * @param statsTask
+   * @throws SemanticException
+   */
+  private void handlePartialScanCommand(TableScanOperator op, GenMRProcContext ctx,
+      ParseContext parseCtx,
+      Task<? extends Serializable> currTask, QBParseInfo parseInfo, StatsWork statsWork,
+      Task<StatsWork> statsTask) throws SemanticException {
+    String aggregationKey = op.getConf().getStatsAggPrefix();
+    List<String> inputPaths = new ArrayList<String>();
+    switch (parseInfo.getTableSpec().specType) {
+    case TABLE_ONLY:
+      inputPaths.add(parseInfo.getTableSpec().tableHandle.getPath().toString());
+      break;
+    case STATIC_PARTITION:
+      Partition part = parseInfo.getTableSpec().partHandle;
+      try {
+        aggregationKey += Warehouse.makePartPath(part.getSpec());
+      } catch (MetaException e) {
+        throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
+            part.getPartitionPath().toString() + e.getMessage()));
+      }
+      inputPaths.add(part.getPartitionPath().toString());
+      break;
+    default:
+      assert false;
+    }
+
+    // scan work
+    PartialScanWork scanWork = new PartialScanWork(inputPaths);
+    scanWork.setMapperCannotSpanPartns(true);
+    scanWork.setAggKey(aggregationKey);
+
+    // stats work
+    statsWork.setPartialScanAnalyzeCommand(true);
+
+    // partial scan task
+    DriverContext driverCxt = new DriverContext();
+    Task<PartialScanWork> psTask = TaskFactory.get(scanWork, parseCtx.getConf());
+    psTask.initialize(parseCtx.getConf(), null, driverCxt);
+    psTask.setWork(scanWork);
+
+    // task dependency
+    ctx.getRootTasks().remove(currTask);
+    ctx.getRootTasks().add(psTask);
+    psTask.addDependentTask(statsTask);
+    List<Task<? extends Serializable>> parentTasks = new ArrayList<Task<? extends Serializable>>();
+    parentTasks.add(psTask);
+    statsTask.setParentTasks(parentTasks);
   }
 
 }

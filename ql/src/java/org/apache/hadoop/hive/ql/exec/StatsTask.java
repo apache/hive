@@ -392,6 +392,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           if (statsAggregator != null) {
             updateStats(collectableStats, newPartStats, statsAggregator,
                 parameters, partitionID, atomic);
+            statsAggregator.cleanUp(partitionID);
           } else {
             for (String statType : collectableStats) {
               // The collectable stats for the aggregator needs to be cleared.
@@ -440,10 +441,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           tPart.setParameters(parameters);
           String tableFullName = table.getDbName() + "." + table.getTableName();
           db.alterPartition(tableFullName, new Partition(table, tPart));
-
-          if (statsAggregator != null) {
-            statsAggregator.cleanUp(partitionID);
-          }
 
           console.printInfo("Partition " + tableFullName + partn.getSpec() +
               " stats: [" + newPartStats.toString() + ']');

@@ -606,6 +606,7 @@ public class HiveConf extends Configuration {
     // higher compute cost.
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
     HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 200),
+    HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
