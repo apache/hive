@@ -506,6 +506,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     super(conf);
     // check if it is no scan. grammar prevents coexit noscan/columns
     super.processNoScanCommand(tree);
+    // check if it is partial scan. grammar prevents coexit partialscan/columns
+    super.processPartialScanCommand(tree);
     /* Rewrite only analyze table <> column <> compute statistics; Don't rewrite analyze table
      * command - table stats are collected by the table scan operator and is not rewritten to
      * an aggregation.
