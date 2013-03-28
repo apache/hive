@@ -187,7 +187,7 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
         && 0 == LazyUtils
         .compare(bytes.getData(), startPosition[index], elementLength,
         nullSequence.getBytes(), 0, nullSequence.getLength())) {
-      return null;
+      return arrayElements[index] = null;
     }
     arrayElements[index] = LazyFactory
         .createLazyObject(oi.getListElementObjectInspector());
