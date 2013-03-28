@@ -501,6 +501,8 @@ public class PTFDesc extends AbstractOperatorDesc
     public void setDirection(Direction direction) {
       this.direction = direction;
     }
+
+    public abstract int getAmt();
   }
 
   public static class RangeBoundaryDef extends BoundaryDef {
@@ -516,6 +518,7 @@ public class PTFDesc extends AbstractOperatorDesc
       return getAmt() - rb.getAmt();
     }
 
+    @Override
     public int getAmt() {
       return amt;
     }
@@ -535,6 +538,9 @@ public class PTFDesc extends AbstractOperatorDesc
     public Direction getDirection() {
       return Direction.CURRENT;
     }
+
+    @Override
+    public int getAmt() { return 0; }
   }
 
   public static class ValueBoundaryDef extends BoundaryDef
@@ -571,6 +577,7 @@ public class PTFDesc extends AbstractOperatorDesc
       return expressionDef == null ? null : expressionDef.getOI();
     }
 
+    @Override
     public int getAmt() {
       return amt;
     }

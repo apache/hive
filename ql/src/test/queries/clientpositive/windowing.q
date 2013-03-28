@@ -93,8 +93,7 @@ select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s1
-from part 
-having p_size > 5 
+from part  
 ; 
 
 -- 10. testHavingWithWindowingCondRankNoGBY
@@ -138,40 +137,37 @@ window w1 as (distribute by p_mfgr rows between 2 preceding and 2 following);
 
 -- 15. testExpressions
 select  p_mfgr,p_name, p_size,  
-rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as r,  
-dense_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as dr, 
-cume_dist() over(distribute by p_mfgr sort by p_mfgr, p_name ) as cud, 
-percent_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as pr, 
-ntile(3) over(distribute by p_mfgr sort by p_mfgr, p_name ) as nt, 
-count(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as ca, 
-avg(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as avg, 
-stddev(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as st, 
-first_value(p_size % 5) over(distribute by p_mfgr sort by p_mfgr, p_name ) as fv, 
-last_value(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as lv, 
-first_value(p_size, true) over w1  as fvW1
+rank() over(distribute by p_mfgr sort by p_mfgr) as r,  
+dense_rank() over(distribute by p_mfgr sort by p_mfgr) as dr, 
+cume_dist() over(distribute by p_mfgr sort by p_mfgr) as cud, 
+percent_rank() over(distribute by p_mfgr sort by p_mfgr) as pr, 
+ntile(3) over(distribute by p_mfgr sort by p_mfgr) as nt, 
+count(p_size) over(distribute by p_mfgr sort by p_mfgr) as ca, 
+avg(p_size) over(distribute by p_mfgr sort by p_mfgr) as avg, 
+stddev(p_size) over(distribute by p_mfgr sort by p_mfgr) as st, 
+first_value(p_size % 5) over(distribute by p_mfgr sort by p_mfgr) as fv, 
+last_value(p_size) over(distribute by p_mfgr sort by p_mfgr) as lv, 
+first_value(p_size) over w1  as fvW1
 from part 
-having p_size > 5 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 -- 16. testMultipleWindows
 select  p_mfgr,p_name, p_size,  
-  rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as r, 
-  dense_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as dr, 
-cume_dist() over(distribute by p_mfgr sort by p_mfgr, p_name ) as cud, 
+  rank() over(distribute by p_mfgr sort by p_mfgr) as r, 
+  dense_rank() over(distribute by p_mfgr sort by p_mfgr) as dr, 
+cume_dist() over(distribute by p_mfgr sort by p_mfgr) as cud, 
 sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 preceding and current row) as s2, 
-first_value(p_size, true) over w1  as fv1
+sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2, 
+first_value(p_size) over w1  as fv1
 from part 
-having p_size > 5 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 -- 17. testCountStar
 select  p_mfgr,p_name, p_size,
-count(*) over(distribute by p_mfgr sort by p_mfgr, p_name ) as c, 
-count(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as ca, 
-first_value(p_size, true) over w1  as fvW1
+count(*) over(distribute by p_mfgr sort by p_mfgr ) as c, 
+count(p_size) over(distribute by p_mfgr sort by p_mfgr) as ca, 
+first_value(p_size) over w1  as fvW1
 from part 
-having p_size > 5 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 -- 18. testUDAFs
@@ -208,7 +204,7 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 select  p_mfgr,p_name, p_size, 
 histogram_numeric(p_retailprice, 5) over w1 as hist, 
 percentile(p_partkey, 0.5) over w1 as per,
-row_number() over(distribute by p_mfgr sort by p_mfgr, p_name ) as rn
+row_number() over(distribute by p_mfgr sort by p_mfgr) as rn
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
@@ -276,20 +272,18 @@ dense_rank() over(distribute by p_mfgr sort by p_name ) as dr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s
 INSERT OVERWRITE TABLE part_2 
 select  p_mfgr,p_name, p_size,  
-rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as r, 
-dense_rank() over(distribute by p_mfgr sort by p_mfgr, p_name ) as dr, 
-cume_dist() over(distribute by p_mfgr sort by p_mfgr, p_name ) as cud, 
+rank() over(distribute by p_mfgr sort by p_mfgr) as r, 
+dense_rank() over(distribute by p_mfgr sort by p_mfgr) as dr, 
+cume_dist() over(distribute by p_mfgr sort by p_mfgr) as cud, 
 sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 preceding and current row) as s2, 
-first_value(p_size, true) over w1  as fv1
-having p_size > 5 
+sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2, 
+first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
 INSERT OVERWRITE TABLE part_3 
 select  p_mfgr,p_name, p_size,  
-count(*) over(distribute by p_mfgr sort by p_mfgr, p_name ) as c, 
-count(p_size) over(distribute by p_mfgr sort by p_mfgr, p_name ) as ca, 
-first_value(p_size, true) over w1  as fv
-having p_size > 5 
+count(*) over(distribute by p_mfgr sort by p_mfgr) as c, 
+count(p_size) over(distribute by p_mfgr sort by p_mfgr) as ca, 
+first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 select * from part_1;
@@ -310,8 +304,8 @@ having p_size > 0
 	 
 -- 27. testMultipleRangeWindows
 select  p_mfgr,p_name, p_size, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between p_size 10 preceding and current row) as s2, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_size range between current row and p_size 10 following )  as s1
+sum(p_size) over (distribute by p_mfgr sort by p_size range between 10 preceding and current row) as s2, 
+sum(p_size) over (distribute by p_mfgr sort by p_size range between current row and 10 following )  as s1
 from part  
 window w1 as (rows between 2 preceding and 2 following);
 
@@ -397,7 +391,7 @@ from part;
 select p_mfgr, p_name, p_size,
 sum(p_retailprice) over (partition by p_mfgr, p_name order by p_mfgr, p_name rows between unbounded preceding and current row) as s1,
 min(p_retailprice) over (distribute by p_mfgr, p_name sort by p_mfgr, p_name rows between unbounded preceding and current row) as s2,
-max(p_retailprice) over (cluster by p_mfgr, p_name ) as s3
+max(p_retailprice) over (partition by p_mfgr, p_name order by p_name) as s3
 from part;
 
 -- 39. testUDFOnOrderCols
@@ -412,7 +406,7 @@ select p_mfgr, p_name, p_size,
 
 -- 41. testNoBetweenForRange
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_name range unbounded preceding) as s1
+    sum(p_retailprice) over (distribute by p_mfgr sort by p_size range unbounded preceding) as s1
      from part ;
 
 -- 42. testUnboundedFollowingForRows
@@ -422,7 +416,7 @@ select p_mfgr, p_name, p_size,
 
 -- 43. testUnboundedFollowingForRange
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_name range between current row and unbounded following) as s1
+    sum(p_retailprice) over (distribute by p_mfgr sort by p_size range between current row and unbounded following) as s1
     from part ;
         
 -- 44. testOverNoPartitionSingleAggregate

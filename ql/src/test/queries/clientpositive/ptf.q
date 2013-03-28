@@ -58,7 +58,6 @@ from noop(on part
           partition by p_mfgr 
           order by p_name 
           ) 
-having p_size > 0 
 ;
 
 -- 6. testSWQAndPTFAndGBy
@@ -199,12 +198,11 @@ dense_rank() over (distribute by p_mfgr sort by p_name) as dr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
 sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name range between p_size 5 preceding and current row) as s2, 
+sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
 cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
 first_value(p_size, true) over w1  as fv1
-having p_size > 5 
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 select * from part_4;

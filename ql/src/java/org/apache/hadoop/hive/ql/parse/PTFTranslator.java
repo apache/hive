@@ -450,10 +450,21 @@ public class PTFTranslator {
       String desc = spec.toString();
 
       WindowFrameDef wdwFrame = translate(spec.getName(), inpShape, wdwSpec);
-      if (!wFnInfo.isSupportsWindow() && wdwFrame != null)
+      if (!wFnInfo.isSupportsWindow() )
       {
-        throw new SemanticException(String.format("Function %s doesn't support windowing",
-            desc));
+        BoundarySpec start = wdwSpec.getWindowFrame().getStart();
+        if ( start.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT ) {
+          throw new SemanticException(
+          String.format("Expecting left window frame boundary for " +
+              "function %s to be unbounded. Found : %d", desc, start.getAmt())
+              );
+        }
+        BoundarySpec end = wdwSpec.getWindowFrame().getEnd();
+        if ( end.getAmt() != BoundarySpec.UNBOUNDED_AMOUNT ) {
+          throw new SemanticException(
+              String.format("Expecting right window frame boundary for " +
+              "function %s to be unbounded. Found : %d", desc, start.getAmt()));
+        }
       }
       def.setWindowFrame(wdwFrame);
     }
@@ -477,14 +488,6 @@ public class PTFTranslator {
       return;
     }
     PartitionDef partDef = translate(def.getRawInputShape(), spec.getPartition());
-
-    if ( spec.getOrder() == null ) {
-      spec.setOrder(new OrderSpec());
-    }
-    if ( !spec.getOrder().isPrefixedBy(spec.getPartition()) ) {
-      spec.getOrder().prefixBy(spec.getPartition());
-    }
-
     OrderDef orderDef = translate(def.getRawInputShape(), spec.getOrder(), partDef);
     def.setPartition(partDef);
     def.setOrder(orderDef);
@@ -544,6 +547,10 @@ public class PTFTranslator {
       PartitionDef partitionDef) throws SemanticException {
 
     OrderDef def = new OrderDef();
+    if (null == spec) {
+      return def;
+    }
+
     for (OrderExpression oExpr : spec.getExpressions())
     {
       OrderExpressionDef oexpDef = translate(inpShape, oExpr);
@@ -670,7 +677,9 @@ public class PTFTranslator {
     if (!OI.getCategory().equals(Category.PRIMITIVE))
     {
       throw new SemanticException(
-          "Value Boundary expression must be of primitve type");
+          String.format(
+              "Value Boundary expression must be of primitve type. Found: %s",
+              OI.getTypeName()));
     }
 
     PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) OI;
@@ -686,6 +695,7 @@ public class PTFTranslator {
     case SHORT:
     case DECIMAL:
     case TIMESTAMP:
+    case STRING:
       break;
     default:
       throw new SemanticException(

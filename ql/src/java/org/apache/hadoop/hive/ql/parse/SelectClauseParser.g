@@ -188,33 +188,33 @@ window_range_expression
 @init { gParent.msgs.push("window_range_expression"); }
 @after { gParent.msgs.pop(); } 
 :
- KW_ROWS KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWRANGE ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
- KW_ROWS KW_BETWEEN s=rowsboundary KW_AND end=rowsboundary -> ^(TOK_WINDOWRANGE $s $end)
-;
-
-rowsboundary 
-@init { gParent.msgs.push("rowsboundary"); }
-@after { gParent.msgs.pop(); } 
-:
-  KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
-  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
-  Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
+ KW_ROWS sb=window_frame_start_boundary -> ^(TOK_WINDOWRANGE $sb) |
+ KW_ROWS KW_BETWEEN s=window_frame_boundary KW_AND end=window_frame_boundary -> ^(TOK_WINDOWRANGE $s $end)
 ;
 
 window_value_expression 
 @init { gParent.msgs.push("window_value_expression"); }
 @after { gParent.msgs.pop(); } 
 :
- KW_RANGE KW_UNBOUNDED KW_PRECEDING -> ^(TOK_WINDOWVALUES ^(KW_PRECEDING KW_UNBOUNDED) ^(KW_CURRENT)) |
- KW_RANGE KW_BETWEEN s=valuesboundary KW_AND end=valuesboundary -> ^(TOK_WINDOWVALUES $s $end)
+ KW_RANGE sb=window_frame_start_boundary -> ^(TOK_WINDOWVALUES $sb) |
+ KW_RANGE KW_BETWEEN s=window_frame_boundary KW_AND end=window_frame_boundary -> ^(TOK_WINDOWVALUES $s $end)
 ;
 
-valuesboundary 
-@init { gParent.msgs.push("valuesboundary"); }
+window_frame_start_boundary 
+@init { gParent.msgs.push("windowframestartboundary"); }
+@after { gParent.msgs.pop(); } 
+:
+  KW_UNBOUNDED KW_PRECEDING  -> ^(KW_PRECEDING KW_UNBOUNDED) | 
+  KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
+  Number KW_PRECEDING -> ^(KW_PRECEDING Number)
+;
+
+window_frame_boundary 
+@init { gParent.msgs.push("windowframeboundary"); }
 @after { gParent.msgs.pop(); } 
 :
   KW_UNBOUNDED (r=KW_PRECEDING|r=KW_FOLLOWING)  -> ^($r KW_UNBOUNDED) | 
   KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
-  rowExp=expression rngExp=Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d $rowExp $rngExp)
+  Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
 ;   
 

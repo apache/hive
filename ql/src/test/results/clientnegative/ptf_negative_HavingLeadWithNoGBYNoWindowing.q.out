@@ -33,4 +33,4 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-FAILED: SemanticException 6:23 Query has no windowing or group by clause: Unsupported place for having. Error encountered near token 'p_size'
+FAILED: SemanticException HAVING specified without GROUP BY

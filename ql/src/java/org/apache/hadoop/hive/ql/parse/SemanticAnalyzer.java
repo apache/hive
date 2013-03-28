@@ -931,31 +931,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_HAVING:
-        boolean hasLLArgs = false;
-        TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-        CheckLeadLagInSelectExprs checkLLFunctions =
-            new CheckLeadLagInSelectExprs(qb, ctx_1.dest);
-        tw.visit(ast, HiveParser.TOK_FUNCTION, checkLLFunctions);
-        if ( checkLLFunctions.isError() ) {
-          throw new SemanticException(generateErrorMessage(ast,
-              checkLLFunctions.getErrString()));
-        }
-        hasLLArgs = checkLLFunctions.hasLeadLagExprs();
-
-        // if QB has WindowingClauses and no GroupBy clause
-        // - associate Having with qb.windowingSpec.
-        if (qb.hasWindowingSpec(ctx_1.dest) && qbp.getGroupByForClause(ctx_1.dest) == null)
-        {
-          handleWindowingHavingClause(qb, ctx_1, ast);
-        } else if(hasLLArgs){
-          throw new SemanticException(generateErrorMessage(ast,
-              "Query has no windowing or group by clause: " +
-              "Unsupported place for having"));
-        } else{
-          qbp.setHavingExprForClause(ctx_1.dest, ast);
-          qbp.addAggregationExprsForClause(ctx_1.dest,
-              doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
-        }
+        qbp.setHavingExprForClause(ctx_1.dest, ast);
+        qbp.addAggregationExprsForClause(ctx_1.dest,
+            doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
         break;
 
       case HiveParser.KW_WINDOW:
@@ -10060,11 +10038,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void handleWindowingHavingClause(QB qb, Phase1Ctx ctx_1, ASTNode node) {
-    WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
-    spec.setFilterExpr((ASTNode)node.getChild(0));
-  }
-
   private PartitionSpec processPartitionSpec(ASTNode node) {
     PartitionSpec pSpec = new PartitionSpec();
     int exprCnt = node.getChildCount();
@@ -10178,7 +10151,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     spec.addWindowSpec(nameNode.getText(), ws);
   }
 
-  private WindowSpec processWindowSpec(ASTNode node) {
+  private WindowSpec processWindowSpec(ASTNode node) throws SemanticException {
     String sourceId = null;
     PartitionSpec partition = null;
     OrderSpec order = null;
@@ -10228,38 +10201,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return ws;
   }
 
-  private WindowFrameSpec processWindowFrame(ASTNode node) {
+  private WindowFrameSpec processWindowFrame(ASTNode node) throws SemanticException {
     int type = node.getType();
     BoundarySpec start = null, end = null;
 
-    switch(type)
-    {
-    case HiveParser.TOK_WINDOWRANGE:
-      start = processRangeBoundary((ASTNode) node.getChild(0));
-      end = processRangeBoundary((ASTNode) node.getChild(1));
-      break;
-    case HiveParser.TOK_WINDOWVALUES:
-      start = processValueBoundary((ASTNode) node.getChild(0));
-      end = processValueBoundary((ASTNode) node.getChild(1));
-      break;
+    /*
+     * A WindowFrame may contain just the Start Boundary or in the
+     * between style of expressing a WindowFrame both boundaries
+     * are specified.
+     */
+    start = processBoundary(type, (ASTNode) node.getChild(0));
+    if ( node.getChildCount() > 1 ) {
+      end = processBoundary(type, (ASTNode) node.getChild(1));
     }
 
     return new WindowFrameSpec(start, end);
   }
 
-  private BoundarySpec processRangeBoundary(ASTNode node) {
-    RangeBoundarySpec rbs = new RangeBoundarySpec();
-    BoundarySpec bs = rbs;
+  private BoundarySpec processBoundary(int frameType, ASTNode node)  throws SemanticException {
+    BoundarySpec bs = frameType == HiveParser.TOK_WINDOWRANGE ?
+        new RangeBoundarySpec() : new ValueBoundarySpec();
     int type = node.getType();
     boolean hasAmt = true;
 
     switch(type)
     {
     case HiveParser.KW_PRECEDING:
-      rbs.setDirection(Direction.PRECEDING);
+      bs.setDirection(Direction.PRECEDING);
       break;
     case HiveParser.KW_FOLLOWING:
-      rbs.setDirection(Direction.FOLLOWING);
+      bs.setDirection(Direction.FOLLOWING);
       break;
     case HiveParser.KW_CURRENT:
       bs = new CurrentRowSpec();
@@ -10272,46 +10243,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode amtNode = (ASTNode) node.getChild(0);
       if ( amtNode.getType() == HiveParser.KW_UNBOUNDED)
       {
-        rbs.setAmt(BoundarySpec.UNBOUNDED_AMOUNT);
+        bs.setAmt(BoundarySpec.UNBOUNDED_AMOUNT);
       }
       else
       {
-        rbs.setAmt(Integer.parseInt(amtNode.getText()));
+        int amt = Integer.parseInt(amtNode.getText());
+        if ( amt < 0 ) {
+          throw new SemanticException(
+              "Window Frame Boundary Amount must be a +ve integer, amount provide is: " + amt);
+        }
+        bs.setAmt(amt);
       }
     }
 
-    return bs;
-  }
-
-  private BoundarySpec processValueBoundary(ASTNode node) {
-    BoundarySpec bs = null;
-    int type = node.getType();
-
-    switch(type)
-    {
-    case HiveParser.KW_PRECEDING:
-      if (node.getChildCount() == 2) {
-        bs = new ValueBoundarySpec(Direction.PRECEDING,
-            (ASTNode) node.getChild(0),
-            Integer.parseInt(node.getChild(1).getText()));
-      }
-      else{
-        bs = new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT);
-      }
-      break;
-    case HiveParser.KW_FOLLOWING:
-      if (node.getChildCount() == 2) {
-        bs = new ValueBoundarySpec(Direction.FOLLOWING,
-            (ASTNode) node.getChild(0),
-            Integer.parseInt(node.getChild(1).getText()));
-      } else {
-        bs = new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT);
-      }
-      break;
-    case HiveParser.KW_CURRENT:
-      bs = new CurrentRowSpec();
-      break;
-    }
     return bs;
   }
 
@@ -10453,6 +10397,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (PTFExpressionDef colDef : partColList) {
       partCols.add(colDef.getExprNode());
+      orderCols.add(colDef.getExprNode());
+      orderString.append('+');
     }
 
     /*
@@ -10657,8 +10603,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
 
   Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
+    wSpec.validateAndMakeEffective();
     WindowingComponentizer groups = new WindowingComponentizer(wSpec);
-    wSpec.fillInWindowingSpecs();
     RowResolver rr = opParseCtx.get(input).getRowResolver();
 
     while(groups.hasNext() ) {
@@ -10693,15 +10639,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (PartitionExpression partCol : partColList) {
       ExprNodeDesc partExpr = genExprNodeDesc(partCol.getExpression(), inputRR);
       partCols.add(partExpr);
+      orderCols.add(partExpr);
+      orderString.append('+');
     }
 
     ArrayList<OrderExpression> orderColList = spec.getQueryOrderSpec() == null ?
         new ArrayList<PTFInvocationSpec.OrderExpression>() :
           spec.getQueryOrderSpec().getExpressions();
-    ArrayList<OrderExpression> combinedOrderList =
-        PTFTranslator.addPartitionExpressionsToOrderList(partColList, orderColList);
-    for (int i = 0; i < combinedOrderList.size(); i++) {
-      OrderExpression orderCol = combinedOrderList.get(i);
+    for (int i = 0; i < orderColList.size(); i++) {
+      OrderExpression orderCol = orderColList.get(i);
       org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = orderCol.getOrder();
       if (order.name().equals("ASC")) {
         orderString.append('+');

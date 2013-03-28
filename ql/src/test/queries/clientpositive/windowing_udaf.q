@@ -25,4 +25,4 @@ select s, avg(i) over (partition by t, b) from over10k limit 100;
 
 select max(i) over w from over10k window w as (partition by f) limit 100;
 
-select s, avg(d) over (partition by t order by f, b) from over10k limit 100;
+select s, avg(d) over (partition by t order by f) from over10k limit 100;

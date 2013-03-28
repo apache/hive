@@ -26,16 +26,16 @@ import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.CurrentRowDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.RangeBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -84,10 +84,11 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
 
     WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
+    Order order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
 
     for(WindowFunctionDef wFn : wTFnDef.getWindowFunctions())
     {
-      boolean processWindow = wFn.getWindowFrame() != null;
+      boolean processWindow = processWindow(wFn);
       pItr.reset();
       if ( !processWindow )
       {
@@ -115,7 +116,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       }
       else
       {
-        oColumns.add(executeFnwithWindow(getQueryDef(), wFn, iPart));
+        oColumns.add(executeFnwithWindow(getQueryDef(), wFn, iPart, order));
       }
     }
 
@@ -142,6 +143,18 @@ public class WindowingTableFunction extends TableFunctionEvaluator
 
       outP.append(oRow);
     }
+  }
+
+  private boolean processWindow(WindowFunctionDef wFn) {
+    WindowFrameDef frame = wFn.getWindowFrame();
+    if ( frame == null ) {
+      return false;
+    }
+    if ( frame.getStart().getAmt() == BoundarySpec.UNBOUNDED_AMOUNT &&
+        frame.getEnd().getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+      return false;
+    }
+    return true;
   }
 
   public static class WindowingTableFunctionResolver extends TableFunctionResolver
@@ -212,26 +225,32 @@ public class WindowingTableFunction extends TableFunctionEvaluator
 
   }
 
-  static ArrayList<Object> executeFnwithWindow(PTFDesc ptfDesc, WindowFunctionDef wFnDef, PTFPartition iPart)
+  ArrayList<Object> executeFnwithWindow(PTFDesc ptfDesc,
+      WindowFunctionDef wFnDef,
+      PTFPartition iPart,
+      Order order)
     throws HiveException
   {
     ArrayList<Object> vals = new ArrayList<Object>();
 
     GenericUDAFEvaluator fEval = wFnDef.getWFnEval();
-    Object[] args = new Object[wFnDef.getArgs().size()];
+
+    Object[] args = new Object[wFnDef.getArgs() == null ? 0 : wFnDef.getArgs().size()];
     for(int i=0; i < iPart.size(); i++)
     {
       AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
-      Range rng = getRange(wFnDef, i, iPart);
+      Range rng = getRange(wFnDef, i, iPart, order);
       PTFPartitionIterator<Object> rItr = rng.iterator();
       PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
       while(rItr.hasNext())
       {
         Object row = rItr.next();
         int j = 0;
-        for(PTFExpressionDef arg : wFnDef.getArgs())
-        {
-          args[j++] = arg.getExprEvaluator().evaluate(row);
+        if ( wFnDef.getArgs() != null ) {
+          for(PTFExpressionDef arg : wFnDef.getArgs())
+          {
+            args[j++] = arg.getExprEvaluator().evaluate(row);
+          }
         }
         fEval.aggregate(aggBuffer, args);
       }
@@ -242,43 +261,79 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     return vals;
   }
 
-  static Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p) throws HiveException
+  Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p, Order order) throws HiveException
   {
     BoundaryDef startB = wFnDef.getWindowFrame().getStart();
     BoundaryDef endB = wFnDef.getWindowFrame().getEnd();
+    boolean rowFrame = true;
 
-    int start = getIndex(startB, currRow, p, false);
-    int end = getIndex(endB, currRow, p, true);
+    if ( startB instanceof ValueBoundaryDef || endB instanceof ValueBoundaryDef) {
+      rowFrame = false;
+    }
 
+    int start, end;
+
+    if (rowFrame) {
+      start = getRowBoundaryStart(startB, currRow);
+      end = getRowBoundaryEnd(endB, currRow, p);
+    }
+    else {
+      ValueBoundaryScanner vbs;
+      if ( startB instanceof ValueBoundaryDef ) {
+        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)startB, order);
+      }
+      else {
+        vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)endB, order);
+      }
+      vbs.reset(startB);
+      start =  vbs.computeStart(currRow, p);
+      vbs.reset(endB);
+      end =  vbs.computeEnd(currRow, p);
+    }
+    start = start < 0 ? 0 : start;
+    end = end > p.size() ? p.size() : end;
     return new Range(start, end, p);
   }
 
-  static int getIndex(BoundaryDef bDef, int currRow, PTFPartition p, boolean end) throws HiveException
-  {
-    if ( bDef instanceof CurrentRowDef)
-    {
-      return currRow + (end ? 1 : 0);
-    }
-    else if ( bDef instanceof RangeBoundaryDef)
-    {
-      RangeBoundaryDef rbDef = (RangeBoundaryDef) bDef;
-      int amt = rbDef.getAmt();
-
-      if ( amt == BoundarySpec.UNBOUNDED_AMOUNT )
-      {
-        return rbDef.getDirection() == Direction.PRECEDING ? 0 : p.size();
+  int getRowBoundaryStart(BoundaryDef b, int currRow) throws HiveException {
+    Direction d = b.getDirection();
+    int amt = b.getAmt();
+    switch(d) {
+    case PRECEDING:
+      if (amt == BoundarySpec.UNBOUNDED_AMOUNT) {
+        return 0;
       }
+      else {
+        return currRow - amt;
+      }
+    case CURRENT:
+      return currRow;
+    case FOLLOWING:
+      return currRow + amt;
+    }
+    throw new HiveException("Unknown Start Boundary Direction: " + d);
+  }
 
-      amt = rbDef.getDirection() == Direction.PRECEDING ?  -amt : amt;
-      int idx = currRow + amt;
-      idx = idx < 0 ? 0 : (idx > p.size() ? p.size() : idx);
-      return idx + (end && idx < p.size() ? 1 : 0);
+  int getRowBoundaryEnd(BoundaryDef b, int currRow, PTFPartition p) throws HiveException {
+    Direction d = b.getDirection();
+    int amt = b.getAmt();
+    switch(d) {
+    case PRECEDING:
+      if ( amt == 0 ) {
+        return currRow + 1;
+      }
+      return currRow - amt;
+    case CURRENT:
+      return currRow + 1;
+    case FOLLOWING:
+      if (amt == BoundarySpec.UNBOUNDED_AMOUNT) {
+        return p.size();
+      }
+      else {
+        return currRow + amt + 1;
+      }
     }
-    else
-    {
-      ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner((ValueBoundaryDef)bDef);
-      return vbs.computeBoundaryRange(currRow, p);
-    }
+    throw new HiveException("Unknown End Boundary Direction: " + d);
   }
 
   static class Range
@@ -307,91 +362,362 @@ public class WindowingTableFunction extends TableFunctionEvaluator
    */
   static abstract class ValueBoundaryScanner
   {
-    ValueBoundaryDef bndDef;
+    BoundaryDef bndDef;
+    Order order;
+    PTFExpressionDef expressionDef;
 
-    public ValueBoundaryScanner(ValueBoundaryDef bndDef)
+    public ValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
     {
+      this.bndDef = bndDef;
+      this.order = order;
+      this.expressionDef = expressionDef;
+    }
+
+    public void reset(BoundaryDef bndDef) {
       this.bndDef = bndDef;
     }
 
     /*
-     * return the other end of the Boundary
-     * - when scanning backwards: go back until you reach a row where the
-     * startingValue - rowValue >= amt
-     * - when scanning forward:  go forward go back until you reach a row where the
-     *  rowValue - startingValue >= amt
+|  Use | Boundary1.type | Boundary1. amt | Sort Key | Order | Behavior                          |
+| Case |                |                |          |       |                                   |
+|------+----------------+----------------+----------+-------+-----------------------------------|
+|   1. | PRECEDING      | UNB            | ANY      | ANY   | start = 0                         |
+|   2. | PRECEDING      | unsigned int   | NULL     | ASC   | start = 0                         |
+|   3. |                |                |          | DESC  | scan backwards to row R2          |
+|      |                |                |          |       | such that R2.sk is not null       |
+|      |                |                |          |       | start = R2.idx + 1                |
+|   4. | PRECEDING      | unsigned int   | not NULL | DESC  | scan backwards until row R2       |
+|      |                |                |          |       | such that R2.sk - R.sk > amt      |
+|      |                |                |          |       | start = R2.idx + 1                |
+|   5. | PRECEDING      | unsigned int   | not NULL | ASC   | scan backward until row R2        |
+|      |                |                |          |       | such that R.sk - R2.sk > bnd1.amt |
+|      |                |                |          |       | start = R2.idx + 1                |
+|   6. | CURRENT ROW    |                | NULL     | ANY   | scan backwards until row R2       |
+|      |                |                |          |       | such that R2.sk is not null       |
+|      |                |                |          |       | start = R2.idx + 1                |
+|   7. | CURRENT ROW    |                | not NULL | ANY   | scan backwards until row R2       |
+|      |                |                |          |       | such R2.sk != R.sk                |
+|      |                |                |          |       | start = R2.idx + 1                |
+|   8. | FOLLOWING      | UNB            | ANY      | ANY   | Error                             |
+|   9. | FOLLOWING      | unsigned int   | NULL     | DESC  | start = partition.size            |
+|  10. |                |                |          | ASC   | scan forward until R2             |
+|      |                |                |          |       | such that R2.sk is not null       |
+|      |                |                |          |       | start = R2.idx                    |
+|  11. | FOLLOWING      | unsigned int   | not NULL | DESC  | scan forward until row R2         |
+|      |                |                |          |       | such that R.sk - R2.sk > amt      |
+|      |                |                |          |       | start = R2.idx                    |
+|  12. |                |                |          | ASC   | scan forward until row R2         |
+|      |                |                |          |       | such that R2.sk - R.sk > amt      |
+|------+----------------+----------------+----------+-------+-----------------------------------|
      */
-    public int computeBoundaryRange(int rowIdx, PTFPartition p) throws HiveException
-    {
+    protected int computeStart(int rowIdx, PTFPartition p) throws HiveException {
+      switch(bndDef.getDirection()) {
+      case PRECEDING:
+        return computeStartPreceding(rowIdx, p);
+      case CURRENT:
+        return computeStartCurrentRow(rowIdx, p);
+      case FOLLOWING:
+        default:
+          return computeStartFollowing(rowIdx, p);
+      }
+    }
+
+    /*
+     *
+     */
+    protected int computeStartPreceding(int rowIdx, PTFPartition p) throws HiveException {
+      int amt = bndDef.getAmt();
+      // Use Case 1.
+      if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
+        return 0;
+      }
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      if ( sortKey == null ) {
+        // Use Case 2.
+        if ( order == Order.ASC ) {
+          return 0;
+        }
+        else { // Use Case 3.
+          while ( sortKey == null && rowIdx >= 0 ) {
+            --rowIdx;
+            if ( rowIdx >= 0 ) {
+              sortKey = computeValue(p.getAt(rowIdx));
+            }
+          }
+          return rowIdx+1;
+        }
+      }
+
+      Object rowVal = sortKey;
       int r = rowIdx;
-      Object rowValue = computeValue(p.getAt(r));
+
+      // Use Case 4.
+      if ( order == Order.DESC ) {
+        while (r >= 0 && !isGreater(rowVal, sortKey, amt) ) {
+          r--;
+          if ( r >= 0 ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r + 1;
+      }
+      else { // Use Case 5.
+        while (r >= 0 && !isGreater(sortKey, rowVal, amt) ) {
+          r--;
+          if ( r >= 0 ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r + 1;
+      }
+    }
+
+    protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      // Use Case 6.
+      if ( sortKey == null ) {
+        while ( sortKey == null && rowIdx >= 0 ) {
+          --rowIdx;
+          if ( rowIdx >= 0 ) {
+            sortKey = computeValue(p.getAt(rowIdx));
+          }
+        }
+        return rowIdx+1;
+      }
+
+      Object rowVal = sortKey;
+      int r = rowIdx;
+
+      // Use Case 7.
+      while (r >= 0 && isEqual(rowVal, sortKey) ) {
+        r--;
+        if ( r >= 0 ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r + 1;
+    }
+
+    protected int computeStartFollowing(int rowIdx, PTFPartition p) throws HiveException {
+      int amt = bndDef.getAmt();
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      Object rowVal = sortKey;
+      int r = rowIdx;
+
+      if ( sortKey == null ) {
+        // Use Case 9.
+        if ( order == Order.DESC) {
+          return p.size();
+        }
+        else { // Use Case 10.
+          while (r < p.size() && rowVal == null ) {
+            r++;
+            if ( r < p.size() ) {
+              rowVal = computeValue(p.getAt(r));
+            }
+          }
+          return r;
+        }
+      }
+
+      // Use Case 11.
+      if ( order == Order.DESC) {
+        while (r < p.size() && !isGreater(sortKey, rowVal, amt) ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
+      }
+      else { // Use Case 12.
+        while (r < p.size() && !isGreater(rowVal, sortKey, amt) ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
+      }
+    }
+
+    /*
+|  Use | Boundary2.type | Boundary2.amt | Sort Key | Order | Behavior                          |
+| Case |                |               |          |       |                                   |
+|------+----------------+---------------+----------+-------+-----------------------------------|
+|   1. | PRECEDING      | UNB           | ANY      | ANY   | Error                             |
+|   2. | PRECEDING      | unsigned int  | NULL     | DESC  | end = partition.size()            |
+|   3. |                |               |          | ASC   | end = 0                           |
+|   4. | PRECEDING      | unsigned int  | not null | DESC  | scan backward until row R2        |
+|      |                |               |          |       | such that R2.sk - R.sk > bnd.amt  |
+|      |                |               |          |       | end = R2.idx + 1                  |
+|   5. | PRECEDING      | unsigned int  | not null | ASC   | scan backward until row R2        |
+|      |                |               |          |       | such that R.sk -  R2.sk > bnd.amt |
+|      |                |               |          |       | end = R2.idx + 1                  |
+|   6. | CURRENT ROW    |               | NULL     | ANY   | scan forward until row R2         |
+|      |                |               |          |       | such that R2.sk is not null       |
+|      |                |               |          |       | end = R2.idx                      |
+|   7. | CURRENT ROW    |               | not null | ANY   | scan forward until row R2         |
+|      |                |               |          |       | such that R2.sk != R.sk           |
+|      |                |               |          |       | end = R2.idx                      |
+|   8. | FOLLOWING      | UNB           | ANY      | ANY   | end = partition.size()            |
+|   9. | FOLLOWING      | unsigned int  | NULL     | DESC  | end = partition.size()            |
+|  10. |                |               |          | ASC   | scan forward until row R2         |
+|      |                |               |          |       | such that R2.sk is not null       |
+|      |                |               |          |       | end = R2.idx                      |
+|  11. | FOLLOWING      | unsigned int  | not NULL | DESC  | scan forward until row R2         |
+|      |                |               |          |       | such R.sk - R2.sk > bnd.amt       |
+|      |                |               |          |       | end = R2.idx                      |
+|  12. |                |               |          | ASC   | scan forward until row R2         |
+|      |                |               |          |       | such R2.sk - R2.sk > bnd.amt      |
+|      |                |               |          |       | end = R2.idx                      |
+|------+----------------+---------------+----------+-------+-----------------------------------|
+     */
+    protected int computeEnd(int rowIdx, PTFPartition p) throws HiveException {
+      switch(bndDef.getDirection()) {
+      case PRECEDING:
+        return computeEndPreceding(rowIdx, p);
+      case CURRENT:
+        return computeEndCurrentRow(rowIdx, p);
+      case FOLLOWING:
+        default:
+          return computeEndFollowing(rowIdx, p);
+      }
+    }
+
+    protected int computeEndPreceding(int rowIdx, PTFPartition p) throws HiveException {
+      int amt = bndDef.getAmt();
+      // Use Case 1.
+      // amt == UNBOUNDED, is caught during translation
+
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      if ( sortKey == null ) {
+        // Use Case 2.
+        if ( order == Order.DESC ) {
+          return p.size();
+        }
+        else { // Use Case 3.
+          return 0;
+        }
+      }
+
+      Object rowVal = sortKey;
+      int r = rowIdx;
+
+      // Use Case 4.
+      if ( order == Order.DESC ) {
+        while (r >= 0 && !isGreater(rowVal, sortKey, amt) ) {
+          r--;
+          if ( r >= 0 ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r + 1;
+      }
+      else { // Use Case 5.
+        while (r >= 0 && !isGreater(sortKey, rowVal, amt) ) {
+          r--;
+          if ( r >= 0 ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r + 1;
+      }
+    }
+
+    protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      // Use Case 6.
+      if ( sortKey == null ) {
+        while ( sortKey == null && rowIdx < p.size() ) {
+          ++rowIdx;
+          if ( rowIdx < p.size() ) {
+            sortKey = computeValue(p.getAt(rowIdx));
+          }
+        }
+        return rowIdx;
+      }
+
+      Object rowVal = sortKey;
+      int r = rowIdx;
+
+      // Use Case 7.
+      while (r < p.size() && isEqual(sortKey, rowVal) ) {
+        r++;
+        if ( r < p.size() ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r;
+    }
+
+    protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
       int amt = bndDef.getAmt();
 
-      if ( amt == BoundarySpec.UNBOUNDED_AMOUNT )
-      {
-        return bndDef.getDirection() == Direction.PRECEDING ? 0 : p.size();
+      // Use Case 8.
+      if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
+        return p.size();
+      }
+      Object sortKey = computeValue(p.getAt(rowIdx));
+
+      Object rowVal = sortKey;
+      int r = rowIdx;
+
+      if ( sortKey == null ) {
+        // Use Case 9.
+        if ( order == Order.DESC) {
+          return p.size();
+        }
+        else { // Use Case 10.
+          while (r < p.size() && rowVal == null ) {
+            r++;
+            if ( r < p.size() ) {
+              rowVal = computeValue(p.getAt(r));
+            }
+          }
+          return r;
+        }
       }
 
-      Direction d = bndDef.getDirection();
-      boolean scanNext = rowValue != null;
-      while ( scanNext )
-      {
-        if ( d == Direction.PRECEDING ) {
-          r = r - 1;
+      // Use Case 11.
+      if ( order == Order.DESC) {
+        while (r < p.size() && !isGreater(sortKey, rowVal, amt) ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
         }
-        else {
-          r = r + 1;
-        }
-
-        if ( r < 0 || r >= p.size() )
-        {
-          scanNext = false;
-          break;
-        }
-
-        Object currVal = computeValue(p.getAt(r));
-        if ( currVal == null )
-        {
-          scanNext = false;
-          break;
-        }
-
-        switch(d)
-        {
-        case PRECEDING:
-          scanNext = !isGreater(rowValue, currVal, amt);
-        break;
-        case FOLLOWING:
-          scanNext = !isGreater(currVal, rowValue, amt);
-        case CURRENT:
-        default:
-          break;
-        }
+        return r;
       }
-      /*
-       * if moving backwards, then r is at a row that failed the range test. So incr r, so that
-       * Range starts from a row where the test succeeds.
-       * Whereas when moving forward, leave r as is; because the Range's end value should be the
-       * row idx not in the Range.
-       */
-      if ( d == Direction.PRECEDING ) {
-        r = r + 1;
+      else { // Use Case 12.
+        while (r < p.size() && !isGreater(rowVal, sortKey, amt) ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
       }
-      r = r < 0 ? 0 : (r >= p.size() ? p.size() : r);
-      return r;
     }
 
     public Object computeValue(Object row) throws HiveException
     {
-      Object o = bndDef.getExprEvaluator().evaluate(row);
-      return ObjectInspectorUtils.copyToStandardObject(o, bndDef.getOI());
+      Object o = expressionDef.getExprEvaluator().evaluate(row);
+      return ObjectInspectorUtils.copyToStandardObject(o, expressionDef.getOI());
     }
 
     public abstract boolean isGreater(Object v1, Object v2, int amt);
 
+    public abstract boolean isEqual(Object v1, Object v2);
+
 
     @SuppressWarnings("incomplete-switch")
-    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef)
+    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef, Order order) throws HiveException
     {
       PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) vbDef.getOI();
       switch(pOI.getPrimitiveCategory())
@@ -401,48 +727,100 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       case LONG:
       case SHORT:
       case TIMESTAMP:
-        return new LongValueBoundaryScanner(vbDef);
+        return new LongValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
       case DOUBLE:
       case FLOAT:
-        return new DoubleValueBoundaryScanner(vbDef);
+        return new DoubleValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
+      case STRING:
+        return new StringValueBoundaryScanner(vbDef, order, vbDef.getExpressionDef());
       }
-      return null;
+      throw new HiveException(
+          String.format("Internal Error: attempt to setup a Window for datatype %s",
+              pOI.getPrimitiveCategory()));
     }
   }
 
   public static class LongValueBoundaryScanner extends ValueBoundaryScanner
   {
-    public LongValueBoundaryScanner(ValueBoundaryDef bndDef)
+    public LongValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
     {
-      super(bndDef);
+      super(bndDef,order,expressionDef);
     }
 
     @Override
     public boolean isGreater(Object v1, Object v2, int amt)
     {
       long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
-          (PrimitiveObjectInspector) bndDef.getOI());
+          (PrimitiveObjectInspector) expressionDef.getOI());
       long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
-          (PrimitiveObjectInspector) bndDef.getOI());
-      return (l1 -l2) >= amt;
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return (l1 -l2) > amt;
+    }
+
+    @Override
+    public boolean isEqual(Object v1, Object v2)
+    {
+      long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return l1 == l2;
     }
   }
 
   public static class DoubleValueBoundaryScanner extends ValueBoundaryScanner
   {
-    public DoubleValueBoundaryScanner(ValueBoundaryDef bndDef)
+    public DoubleValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
     {
-      super(bndDef);
+      super(bndDef,order,expressionDef);
     }
 
     @Override
     public boolean isGreater(Object v1, Object v2, int amt)
     {
       double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
-          (PrimitiveObjectInspector) bndDef.getOI());
+          (PrimitiveObjectInspector) expressionDef.getOI());
       double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
-          (PrimitiveObjectInspector) bndDef.getOI());
-      return (d1 -d2) >= amt;
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return (d1 -d2) > amt;
+    }
+
+    @Override
+    public boolean isEqual(Object v1, Object v2)
+    {
+      double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return d1 == d2;
+    }
+  }
+
+  public static class StringValueBoundaryScanner extends ValueBoundaryScanner
+  {
+    public StringValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
+    {
+      super(bndDef,order,expressionDef);
+    }
+
+    @Override
+    public boolean isGreater(Object v1, Object v2, int amt)
+    {
+      String s1 = PrimitiveObjectInspectorUtils.getString(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      String s2 = PrimitiveObjectInspectorUtils.getString(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+    }
+
+    @Override
+    public boolean isEqual(Object v1, Object v2)
+    {
+      String s1 = PrimitiveObjectInspectorUtils.getString(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      String s2 = PrimitiveObjectInspectorUtils.getString(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return (s1 == null && s2 == null) || s1.equals(s2);
     }
   }
 

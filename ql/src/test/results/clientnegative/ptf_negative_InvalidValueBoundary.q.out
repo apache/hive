@@ -11,7 +11,8 @@ PREHOOK: query: CREATE TABLE part(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment STRING,
+    p_complex array<int>
 )
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE part( 
@@ -23,15 +24,10 @@ POSTHOOK: query: CREATE TABLE part(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment STRING,
+    p_complex array<int>
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-PREHOOK: type: LOAD
-PREHOOK: Output: default@part
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@part
 FAILED: SemanticException Failed to breakup Windowing invocations into Groups. At least 1 group must only depend on input columns. Also check for circular dependencies.
-Underlying error: Primitve type STRING not supported in Value Boundary expression
+Underlying error: Value Boundary expression must be of primitve type. Found: array<int>

@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.antlr.runtime.CommonToken;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
@@ -139,32 +141,43 @@ public class WindowingSpec {
   }
 
   /*
-   * Rules for Partitoning are:
-   * | has Part | has Order | has Window | note                  |
-   * |----------+-----------+------------+-----------------------|
-   * | y        | y         | y          | everything specified  |
-   * | y        | y         | n          | no window             |
-   * | y        | n         | y          | order = partition     |
-   * | y        | n         | n          | same as above         |
-   * | n        | y         | y          | partition on constant |
-   * | n        | y         | n          | same as above         |
-   * | n        | n         | y          | same as above, o = p  |
-   * | n        | n         | n          | the over() case       |
+   * Apply the rules in the Spec. to fill in any missing pieces of every Window Specification,
+   * also validate that the effective Specification is valid. The rules applied are:
+   * - For Wdw Specs that refer to Window Defns, inherit missing components.
+   * - A Window Spec with no Parition Spec, is Partitioned on a Constant(number 0)
+   * - For missing Wdw Frames or for Frames with only a Start Boundary, completely specify them
+   *   by the rules in {@link effectiveWindowFrame}
+   * - Validate the effective Window Frames with the rules in {@link validateWindowFrame}
+   * - If there is no Order, then add the Partition expressions as the Order.
    */
-  public void fillInWindowingSpecs() throws SemanticException {
-    if ( getWindowExpressions() != null ) {
-      for(WindowExpressionSpec expr : getWindowExpressions()) {
-        if ( expr instanceof WindowFunctionSpec) {
-          WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
-          WindowSpec wdwSpec = wFn.getWindowSpec();
-          if ( wdwSpec != null ) {
-            ArrayList<String> sources = new ArrayList<String>();
-            fillInWindowSpec(wdwSpec.getSourceId(), wdwSpec, sources);
-          }
-          wFn.setWindowSpec(applyContantPartition(wdwSpec));
-          wFn.getWindowSpec().prefixOrderByPartitionSpec();
-        }
+  public void validateAndMakeEffective() throws SemanticException {
+    for(WindowExpressionSpec expr : getWindowExpressions()) {
+      WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
+      WindowSpec wdwSpec = wFn.getWindowSpec();
+
+      // 1. For Wdw Specs that refer to Window Defns, inherit missing components
+      if ( wdwSpec != null ) {
+        ArrayList<String> sources = new ArrayList<String>();
+        fillInWindowSpec(wdwSpec.getSourceId(), wdwSpec, sources);
       }
+
+      if ( wdwSpec == null ) {
+        wdwSpec = new WindowSpec();
+        wFn.setWindowSpec(wdwSpec);
+      }
+
+      // 2. A Window Spec with no Parition Spec, is Partitioned on a Constant(number 0)
+      applyContantPartition(wdwSpec);
+
+      // 3. For missing Wdw Frames or for Frames with only a Start Boundary, completely
+      //    specify them by the rules in {@link effectiveWindowFrame}
+      effectiveWindowFrame(wFn, wdwSpec);
+
+      // 4. Validate the effective Window Frames with the rules in {@link validateWindowFrame}
+      validateWindowFrame(wdwSpec);
+
+      // 5. If there is no Order, then add the Partition expressions as the Order.
+      wdwSpec.ensureOrderSpec();
     }
   }
 
@@ -205,8 +218,7 @@ public class WindowingSpec {
     }
   }
 
-  private WindowSpec applyContantPartition(WindowSpec wdwSpec) {
-    wdwSpec = wdwSpec == null ? new WindowSpec() : wdwSpec;
+  private void applyContantPartition(WindowSpec wdwSpec) {
     PartitionSpec partSpec = wdwSpec.getPartition();
     if ( partSpec == null ) {
       partSpec = new PartitionSpec();
@@ -215,7 +227,78 @@ public class WindowingSpec {
       partSpec.addExpression(partExpr);
       wdwSpec.setPartition(partSpec);
     }
-    return wdwSpec;
+  }
+
+  /*
+   * - A Window Frame that has only the /start/boundary, then it is interpreted as:
+         BETWEEN <start boundary> AND CURRENT ROW
+   * - A Window Specification with an Order Specification and no Window
+   *   Frame is interpreted as:
+         ROW BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+   * - A Window Specification with no Order and no Window Frame is interpreted as:
+         ROW BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+   */
+  private void effectiveWindowFrame(WindowFunctionSpec wFn, WindowSpec wdwSpec) {
+
+    WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn.getName());
+    boolean supportsWindowing = wFnInfo == null ? true : wFnInfo.isSupportsWindow();
+    WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
+    OrderSpec orderSpec = wdwSpec.getOrder();
+    if ( wFrame == null ) {
+      if (!supportsWindowing ) {
+        wFrame = new WindowFrameSpec(
+            new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT),
+            new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT)
+            );
+      }
+      else if ( orderSpec == null ) {
+        wFrame = new WindowFrameSpec(
+            new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT),
+            new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT)
+            );
+      }
+      else {
+        wFrame = new WindowFrameSpec(
+            new ValueBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT),
+            new CurrentRowSpec()
+            );
+      }
+      wdwSpec.setWindowFrame(wFrame);
+    }
+    else if ( wFrame.getEnd() == null ) {
+      wFrame.setEnd(new CurrentRowSpec());
+    }
+  }
+
+  private void validateWindowFrame(WindowSpec wdwSpec) throws SemanticException {
+    WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
+    BoundarySpec start = wFrame.getStart();
+    BoundarySpec end = wFrame.getEnd();
+
+    if ( start.getDirection() == Direction.FOLLOWING &&
+        start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+      throw new SemanticException("Start of a WindowFrame cannot be UNBOUNDED FOLLOWING");
+    }
+
+    if ( end.getDirection() == Direction.PRECEDING &&
+        start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+      throw new SemanticException("End of a WindowFrame cannot be UNBOUNDED PRECEDING");
+    }
+
+    validateValueBoundary(wFrame.getStart(), wdwSpec.getOrder());
+    validateValueBoundary(wFrame.getEnd(), wdwSpec.getOrder());
+  }
+
+  private void validateValueBoundary(BoundarySpec bs, OrderSpec order) throws SemanticException {
+    if ( bs instanceof ValueBoundarySpec ) {
+      ValueBoundarySpec vbs = (ValueBoundarySpec) bs;
+      if ( order != null ) {
+        if ( order.getExpressions().size() > 1 ) {
+          throw new SemanticException("Range based Window Frame can have only 1 Sort Key");
+        }
+      }
+      vbs.setExpression(order.getExpressions().get(0).getExpression());
+    }
   }
 
   /*
@@ -388,13 +471,20 @@ public class WindowingSpec {
       partitioning = partitioning == null ? new PartitioningSpec() : partitioning;
       partitioning.setOrderSpec(orderSpec);
     }
-
-    protected void prefixOrderByPartitionSpec() {
+    /*
+     * When there is no Order specified, we add the Partition expressions as
+     * Order expressions. This is an implementation artifact. For UDAFS that
+     * imply order (like rank, dense_rank) depend on the Order Expressions to
+     * work. Internally we pass the Order Expressions as Args to these functions.
+     * We could change the translation so that the Functions are setup with
+     * Partition expressions when the OrderSpec is null; but for now we are setting up
+     * an OrderSpec that copies the Partition expressions.
+     */
+    protected void ensureOrderSpec() {
       if ( getOrder() == null ) {
-        setOrder(new OrderSpec());
-      }
-      if ( !getOrder().isPrefixedBy(getPartition()) ) {
-        getOrder().prefixBy(getPartition());
+        OrderSpec order = new OrderSpec();
+        order.prefixBy(getPartition());
+        setOrder(order);
       }
     }
   };
@@ -417,6 +507,11 @@ public class WindowingSpec {
       super();
       this.start = start;
       this.end = end;
+    }
+
+    public WindowFrameSpec(BoundarySpec start)
+    {
+      this(start, null);
     }
 
     public BoundarySpec getStart()
@@ -468,7 +563,9 @@ public class WindowingSpec {
     public static int UNBOUNDED_AMOUNT = Integer.MAX_VALUE;
 
     public abstract Direction getDirection();
-
+    public abstract void setDirection(Direction dir);
+    public abstract void setAmt(int amt);
+    public abstract int getAmt();
   }
 
   public static class RangeBoundarySpec extends BoundarySpec
@@ -493,16 +590,19 @@ public class WindowingSpec {
       return direction;
     }
 
+    @Override
     public void setDirection(Direction direction)
     {
       this.direction = direction;
     }
 
+    @Override
     public int getAmt()
     {
       return amt;
     }
 
+    @Override
     public void setAmt(int amt)
     {
       this.amt = amt;
@@ -543,11 +643,18 @@ public class WindowingSpec {
       return Direction.CURRENT;
     }
 
+    @Override
+    public void setDirection(Direction dir) {}
+    @Override
+    public void setAmt(int amt) {}
+
     public int compareTo(BoundarySpec other)
     {
       return getDirection().compareTo(other.getDirection());
     }
 
+    @Override
+    public int getAmt() {return 0;}
   }
 
   public static class ValueBoundarySpec extends BoundarySpec
@@ -559,12 +666,10 @@ public class WindowingSpec {
     public ValueBoundarySpec() {
     }
 
-    public ValueBoundarySpec(Direction direction, ASTNode expression,
-        int amt)
+    public ValueBoundarySpec(Direction direction, int amt)
     {
       super();
       this.direction = direction;
-      this.expression = (ASTNode) expression;
       this.amt = amt;
     }
 
@@ -574,6 +679,7 @@ public class WindowingSpec {
       return direction;
     }
 
+    @Override
     public void setDirection(Direction direction)
     {
       this.direction = direction;
@@ -589,11 +695,13 @@ public class WindowingSpec {
       this.expression = expression;
     }
 
+    @Override
     public int getAmt()
     {
       return amt;
     }
 
+    @Override
     public void setAmt(int amt)
     {
       this.amt = amt;

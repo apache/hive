@@ -79,38 +79,38 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond azure blanched chiffon midnight	23
 PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
-sum(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as s,
-min(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as mi,
-max(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as ma,
-avg(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as av 
+sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
+min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
+max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
+avg(p_retailprice) over(partition by p_mfgr order by p_mfgr) as av 
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
 select p_mfgr,p_name, p_retailprice,  
-sum(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as s,
-min(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as mi,
-max(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as ma,
-avg(p_retailprice) over(distribute by p_mfgr sort by p_mfgr, p_name) as av 
+sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
+min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
+max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
+avg(p_retailprice) over(partition by p_mfgr order by p_mfgr) as av 
 from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.730000000001	1173.15	1753.76	1458.2883333333336
-Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.730000000001	1173.15	1753.76	1458.2883333333336
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8749.730000000001	1173.15	1753.76	1458.2883333333336
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	8749.730000000001	1173.15	1753.76	1458.2883333333336
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	8749.730000000001	1173.15	1753.76	1458.2883333333336
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	8749.730000000001	1173.15	1753.76	1458.2883333333336
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	8749.73	1173.15	1753.76	1458.2883333333332
 Manufacturer#2	almond antique violet chocolate turquoise	1690.68	8923.62	1690.68	2031.98	1784.7240000000002
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	8923.62	1690.68	2031.98	1784.7240000000002
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8923.62	1690.68	2031.98	1784.7240000000002
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	8923.62	1690.68	2031.98	1784.7240000000002
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1701.6	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#3	almond antique metallic orange dim	1410.39	7532.61	1190.27	1922.98	1506.522
 Manufacturer#3	almond antique chartreuse khaki white	1671.68	7532.61	1190.27	1922.98	1506.522
 Manufacturer#3	almond antique forest lavender goldenrod	1190.27	7532.61	1190.27	1922.98	1506.522
-Manufacturer#3	almond antique metallic orange dim	1410.39	7532.61	1190.27	1922.98	1506.522
 Manufacturer#3	almond antique misty red olive	1922.98	7532.61	1190.27	1922.98	1506.522
 Manufacturer#3	almond antique olive coral navajo	1337.29	7532.61	1190.27	1922.98	1506.522
 Manufacturer#4	almond antique gainsboro frosted violet	1620.67	7337.620000000001	1206.26	1844.92	1467.5240000000001

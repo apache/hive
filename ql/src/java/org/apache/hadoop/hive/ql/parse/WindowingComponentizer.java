@@ -50,7 +50,6 @@ public class WindowingComponentizer {
     super();
     this.originalSpec = originalSpec;
     groups = new LinkedHashMap<PartitioningSpec, WindowingSpec>();
-    originalSpec.fillInWindowingSpecs();
     groupFunctions();
   }
 

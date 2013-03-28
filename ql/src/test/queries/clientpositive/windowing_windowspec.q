@@ -27,8 +27,6 @@ select s, avg(f) over (partition by bin order by s rows between current row and 
 
 select s, avg(d) over (partition by t order by ts desc rows between 5 preceding and 5 following) from over10k limit 100;
 
-select s, avg(f) over (partition by bo order by bin range between unbounded preceding and current row) from over10k limit 100;
-
 select s, sum(i) over() from over10k limit 100;
 
 select f, sum(f) over (order by f range between unbounded preceding and current row) from over10k limit 100;
