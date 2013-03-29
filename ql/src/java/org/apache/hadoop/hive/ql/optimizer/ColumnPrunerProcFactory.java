@@ -253,10 +253,6 @@ public final class ColumnPrunerProcFactory {
            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
          }
        }
-       if(tDef.getHavingExpression() != null){
-         ExprNodeDesc exprNode = tDef.getHavingExpression().getExprNode();
-         Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
-       }
     }
 
     private List<String> getLowerCasePrunedCols(List<String> prunedCols){

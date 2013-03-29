@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
  */
 public class WindowingSpec {
   HashMap<String, WindowExpressionSpec> aliasToWdwExpr;
-  ASTNode filterExpr;
   HashMap<String, WindowSpec> windowSpecs;
   ArrayList<WindowExpressionSpec> windowExpressions;
 
@@ -96,14 +95,6 @@ public class WindowingSpec {
 
   public void setAliasToWdwExpr(HashMap<String, WindowExpressionSpec> aliasToWdwExpr) {
     this.aliasToWdwExpr = aliasToWdwExpr;
-  }
-
-  public ASTNode getFilterExpr() {
-    return filterExpr;
-  }
-
-  public void setFilterExpr(ASTNode filterExpr) {
-    this.filterExpr = filterExpr;
   }
 
   public HashMap<String, WindowSpec> getWindowSpecs() {

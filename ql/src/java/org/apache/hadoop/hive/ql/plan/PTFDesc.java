@@ -215,7 +215,6 @@ public class PTFDesc extends AbstractOperatorDesc
   }
 
   public static class WindowTableFunctionDef extends PartitionedTableFunctionDef {
-    PTFExpressionDef havingExpression;
     ArrayList<WindowExpressionDef> windowExpressions;
     ArrayList<WindowFunctionDef> windowFunctions;
     /*
@@ -226,12 +225,6 @@ public class PTFDesc extends AbstractOperatorDesc
      */
     ShapeDetails outputFromWdwFnProcessing;
 
-    public PTFExpressionDef getHavingExpression() {
-      return havingExpression;
-    }
-    public void setHavingExpression(PTFExpressionDef havingExpression) {
-      this.havingExpression = havingExpression;
-    }
     public ArrayList<WindowExpressionDef> getWindowExpressions() {
       return windowExpressions;
     }

@@ -42,13 +42,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 public class PTFOperator extends Operator<PTFDesc> implements Serializable
 {
@@ -330,19 +327,11 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
     int numWdwExprs = wdwExprs == null ? 0 : wdwExprs.size();
     Object[] output = new Object[numCols];
 
-    PTFExpressionDef havingExpr = wTFnDef.getHavingExpression();
-    boolean applyHaving = havingExpr != null;
-    Converter hvgConverter = !applyHaving ? null
-        : ObjectInspectorConverters
-            .getConverter(
-                havingExpr.getOI(),
-                PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
-    ExprNodeEvaluator havingCondEval = !applyHaving ? null : havingExpr.getExprEvaluator();
     /*
      * If this Windowing invocation has no Window Expressions and doesn't need to be filtered,
      * we can just forward the row in the oPart partition.
      */
-    boolean forwardRowsUntouched = !applyHaving && (wdwExprs == null || wdwExprs.size() == 0 );
+    boolean forwardRowsUntouched = (wdwExprs == null || wdwExprs.size() == 0 );
 
     PTFPartitionIterator<Object> pItr = oPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(conf, pItr);
@@ -358,17 +347,6 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
       if ( forwardRowsUntouched ) {
         forward(oRow, outputObjInspector);
         continue;
-      }
-
-      if (applyHaving)
-      {
-        Object hvgCond = null;
-        hvgCond = havingCondEval.evaluate(oRow);
-        hvgCond = hvgConverter.convert(hvgCond);
-        if (!((Boolean) hvgCond).booleanValue())
-        {
-          continue;
-        }
       }
 
       /*

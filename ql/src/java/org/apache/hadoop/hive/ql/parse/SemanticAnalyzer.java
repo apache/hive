@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -71,7 +70,6 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -177,8 +175,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -195,7 +191,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -8597,8 +8592,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // up with later.
     Operator sinkOp = genPlan(qb);
 
-    dumpOperatorChain(sinkOp, null);
-
     resultSchema =
         convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
 
@@ -9949,65 +9942,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-
-  private static class CheckLeadLagInSelectExprs implements ContextVisitor
-  {
-    QB qb;
-    String dest;
-    boolean hasLeadLagExprs = false;
-    boolean error = false;
-    String errString;
-
-    private CheckLeadLagInSelectExprs(QB qb, String dest) {
-      this.qb = qb;
-      this.dest = dest;
-    }
-
-    void reset() {
-      hasLeadLagExprs = false;
-      error = false;
-      errString = null;
-    }
-
-    @Override
-    public void visit(Object t, Object parent, int childIndex, Map labels)
-    {
-      error = false; errString = null;
-      ASTNode function = (ASTNode) t;
-      WindowingSpec wSpec = qb.getWindowingSpec(dest);
-
-      HashMap<String, ASTNode> windowingExprs =
-          qb.getParseInfo().getWindowingExprsForClause(dest);
-
-      /*
-       * reference to a Windowing Fns is allowed in Windowing Exprs.
-       */
-      if ( windowingExprs != null && windowingExprs.containsKey(function.toStringTree())) {
-        return;
-      }
-
-      String fnName = function.getChild(0).getText().toLowerCase();
-      if (fnName.equals(FunctionRegistry.LEAD_FUNC_NAME)
-          || fnName.equals(FunctionRegistry.LAG_FUNC_NAME))
-      {
-        hasLeadLagExprs = true;
-      }
-    }
-
-    public boolean hasLeadLagExprs() {
-      return hasLeadLagExprs;
-    }
-
-    protected boolean isError() {
-      return error;
-    }
-
-    protected String getErrString() {
-      return errString;
-    }
-  }
-
-
   /*
    * - Invoked during Phase1 when a TOK_SELECT is encountered.
    * - Select tree form is: ^(TOK_SELECT ^(TOK_SELECTEXPR...) ^(TOK_SELECTEXPR...) ...)
@@ -10620,8 +10554,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rr = ptfOpRR;
     }
 
-    dumpOperatorChain(input, null);
-
     return input;
   }
 
@@ -10787,153 +10719,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return selSpec;
-  }
-
-  // debug methods
-  void dumpOperatorChain(Operator sinkOp, PTFDesc ptfDesc) {
-    Stack<Operator> stack = new Stack<Operator>();
-    Operator op = sinkOp;
-    while(op != null ) {
-      stack.push(op);
-      List<Operator> parentOps =op.getParentOperators();
-      if (parentOps != null ) {
-        op = parentOps.get(0);
-      }
-      else {
-        op = null;
-      }
-    }
-
-    int opNum = 1;
-    StringBuilder buf = new StringBuilder();
-    while(!stack.isEmpty()) {
-      op = stack.pop();
-      buf.append("\n").append(opNum).append(".");
-      buf.append(op.getName());
-      buf.append(" :\n");
-      RowResolver rr = opParseCtx.get(op).getRowResolver();
-      dumpRowResolver(buf, rr);
-      if ( op instanceof PTFOperator && ptfDesc != null ) {
-        /*
-         * 1/21 hb: this is no longer correct; in a chain containing multiple PTFOps,
-         * every PTFOp dump prints the info from the
-         * last PTFDef
-         */
-        dump(buf, ptfDesc);
-      }
-      opNum++;
-    }
-    LOG.info(buf);
-  }
-
-  static void dumpRowResolver(StringBuilder buf, RowResolver rr) {
-    buf.append("RowResolver::\n");
-    buf.append("\tcolumns:[");
-    boolean first = true;
-    for(ColumnInfo cInfo : rr.getRowSchema().getSignature()) {
-      String tabalias = cInfo.getTabAlias();
-      String cname = cInfo.getInternalName();
-      if (!first) {
-        buf.append(", ");
-      } else {
-        first = false;
-      }
-      buf.append(tabalias != null ? tabalias : "<null>");
-      buf.append(".");
-      buf.append(cname);
-    }
-    buf.append("]\n");
-    buf.append("\tAliases:[");
-    for(Map.Entry<String, LinkedHashMap<String, ColumnInfo>> entry : rr.getRslvMap().entrySet() ) {
-      String tabalias = entry.getKey();
-      buf.append("\n\t\t");
-      buf.append(tabalias != null ? tabalias : "<null>");
-      buf.append(":[");
-      LinkedHashMap<String, ColumnInfo> colAliases = entry.getValue();
-      first = true;
-      for(Map.Entry<String, ColumnInfo> column: colAliases.entrySet()) {
-        if (!first) {
-          buf.append(", ");
-        } else {
-          first = false;
-        }
-        buf.append(column.getKey()).append(" -> ").append(column.getValue().getInternalName());
-      }
-    }
-    buf.append("\n\t]\n");
-    buf.append("\tcolumns mapped to expressions:[");
-    first = true;
-    for(Map.Entry<String, ASTNode> exprs : rr.getExpressionMap().entrySet()) {
-      if (!first) {
-        buf.append(", ");
-      } else {
-        first = false;
-      }
-      buf.append("\n\t\t");
-      buf.append(exprs.getKey());
-      buf.append(" -> ");
-      buf.append(exprs.getValue().toStringTree());
-    }
-    buf.append("\n\t]\n");
-  }
-
-  private static void dump(StringBuilder buf, PTFDesc ptfDesc) {
-    Stack<PTFInputDef> ptfChain = new Stack<PTFInputDef>();
-    PTFInputDef currentDef = ptfDesc.getFuncDef();
-    while(currentDef != null ) {
-      ptfChain.push(currentDef);
-      currentDef = currentDef.getInput();
-    }
-
-    while(!ptfChain.isEmpty() ) {
-      PTFInputDef iDef = ptfChain.pop();
-      if ( iDef instanceof PTFQueryInputDef ) {
-        dump(buf, (PTFQueryInputDef) iDef);
-      }else {
-        dump(buf, (PartitionedTableFunctionDef) iDef);
-      }
-    }
-
-  }
-
-  private static void dump(StringBuilder buf, PartitionedTableFunctionDef tFnDef) {
-    buf.append("\n").append(tFnDef.getName()).append(":");
-    dump(buf, (PTFInputDef)tFnDef);
-    TableFunctionEvaluator tFn = tFnDef.getTFunction();
-
-    if ( tFn.isTransformsRawInput() ) {
-      buf.append("\nEvaluator RawInput ObjectInspector:[");
-      dump(buf, tFn.getRawInputOI());
-      buf.append("]");
-    }
-
-    buf.append("\nEvaluator Output ObjectInspector:[");
-    dump(buf, tFn.getOutputOI());
-    buf.append("]");
-
-  }
-  private static void dump(StringBuilder buf, PTFQueryInputDef htblDef) {
-    buf.append("\n").append(htblDef.getDestination()).append(":");
-    dump(buf, (PTFInputDef)htblDef);
-  }
-
-  private static void dump(StringBuilder buf, PTFInputDef qInDef) {
-    StructObjectInspector OI = (StructObjectInspector) qInDef.getOutputShape().getOI();
-    buf.append("\nDef ObjectInspector:[");
-    dump(buf, OI);
-    buf.append("]\nSerDe:").append(qInDef.getOutputShape().getSerde().getClass().getName());
-  }
-
-  private static void dump(StringBuilder buf, StructObjectInspector OI) {
-    boolean first = true;
-    for(StructField field : OI.getAllStructFieldRefs() ) {
-      if (!first) {
-        buf.append(", ");
-      } else {
-        first = false;
-      }
-      buf.append(field.getFieldName());
-    }
   }
 
 }

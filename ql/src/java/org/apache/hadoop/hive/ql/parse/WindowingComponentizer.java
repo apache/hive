@@ -85,12 +85,6 @@ public class WindowingComponentizer {
         PTFTranslator t = new PTFTranslator();
         t.translate(wSpec, semAly, hCfg, inputRR, unparseT);
         groups.remove(entry.getKey());
-        /*
-         * add the filter expression to the last WindowSpec.
-         */
-        if (groups.isEmpty()) {
-          wSpec.setFilterExpr(originalSpec.getFilterExpr());
-        }
         return wSpec;
       } catch (SemanticException se) {
         originalException = se;

@@ -261,27 +261,13 @@ public class PTFTranslator {
       wdwTFnDef.setOutputShape(copyShape(wdwOutShape));
     }
 
-    /*
-     * translate having
-     */
-    if ( wdwSpec.getFilterExpr() != null ) {
-      PTFExpressionDef hvEDef;
-      try {
-        hvEDef = buildExpressionDef(wdwOutShape, wdwSpec.getFilterExpr());
-        wdwTFnDef.setHavingExpression(hvEDef);
-      }
-      catch(HiveException he) {
-        throw new SemanticException(he);
-      }
-    }
-
     tFn.setupOutputOI();
 
     /*
-     * If we have windowExpressions or having then we convert to Std. Object to process;
+     * If we have windowExpressions then we convert to Std. Object to process;
      * we just stream these rows; no need to put in an output Partition.
      */
-    if ( windowExpressions.size() > 0 || wdwSpec.getFilterExpr() != null ) {
+    if ( windowExpressions.size() > 0 ) {
       StructObjectInspector oi = (StructObjectInspector)
           ObjectInspectorUtils.getStandardObjectInspector(wdwTFnDef.getOutputShape().getOI());
       wdwTFnDef.getOutputShape().setOI(oi);

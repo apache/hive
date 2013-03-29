@@ -158,10 +158,6 @@ public class PTFDeserializer {
       }
     }
 
-    if ( def.getHavingExpression() != null ) {
-      initialize(def.getHavingExpression(), inpShape);
-    }
-
     /*
      * 4. give Evaluator chance to setup for Output execution; setup Output shape.
      */
@@ -169,10 +165,10 @@ public class PTFDeserializer {
     tResolver.initializeOutputOI();
 
     /*
-     * If we have windowExpressions or having then we convert to Std. Object to process;
+     * If we have windowExpressions then we convert to Std. Object to process;
      * we just stream these rows; no need to put in an output Partition.
      */
-    if ( def.getWindowExpressions().size() > 0 || def.getHavingExpression() != null ) {
+    if ( def.getWindowExpressions().size() > 0  ) {
       StructObjectInspector oi = (StructObjectInspector)
           ObjectInspectorUtils.getStandardObjectInspector(def.getOutputShape().getOI());
       def.getOutputShape().setOI(oi);
