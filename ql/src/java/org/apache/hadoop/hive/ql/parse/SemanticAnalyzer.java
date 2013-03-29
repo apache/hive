@@ -8527,10 +8527,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setTableAccessInfo(tableAccessAnalyzer.analyzeTableAccess());
     }
 
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("\n" + Operator.toString(pCtx.getTopOps().values()));
+    }
+
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
     optm.initialize(conf);
     pCtx = optm.optimize();
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("\n" + Operator.toString(pCtx.getTopOps().values()));
+    }
 
     // Generate column access stats if required - wait until column pruning takes place
     // during optimization
