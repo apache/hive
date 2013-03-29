@@ -53,3 +53,7 @@ select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from ove
 select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100;
 select s, si, d, si - lag(d, 3) over (partition by b order by si) from over10k limit 100;
 select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100;
+
+select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part;
+
+select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;

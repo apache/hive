@@ -594,3 +594,71 @@ ulysses garcia	fred
 irene falkner	fred
 holly robinson	fred
 yuri white	fred
+PREHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1753.76
+Manufacturer#1	1632.66
+Manufacturer#1	1602.59
+Manufacturer#1	1173.15
+Manufacturer#1	1173.15
+Manufacturer#1	1414.42
+Manufacturer#2	1800.7
+Manufacturer#2	1690.68
+Manufacturer#2	2031.98
+Manufacturer#2	1698.66
+Manufacturer#2	1701.6
+Manufacturer#3	1922.98
+Manufacturer#3	1410.39
+Manufacturer#3	1671.68
+Manufacturer#3	1190.27
+Manufacturer#3	1337.29
+Manufacturer#4	1844.92
+Manufacturer#4	1375.42
+Manufacturer#4	1620.67
+Manufacturer#4	1206.26
+Manufacturer#4	1290.35
+Manufacturer#5	1018.1
+Manufacturer#5	1464.48
+Manufacturer#5	1789.69
+Manufacturer#5	1788.73
+Manufacturer#5	1611.66
+PREHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	1753.76
+Manufacturer#1	1693.21
+Manufacturer#1	1663.0033333333333
+Manufacturer#1	1540.54
+Manufacturer#1	1467.062
+Manufacturer#1	1458.2883333333332
+Manufacturer#2	1800.7
+Manufacturer#2	1745.69
+Manufacturer#2	1841.1200000000001
+Manufacturer#2	1805.505
+Manufacturer#2	1784.7240000000002
+Manufacturer#3	1922.98
+Manufacturer#3	1666.685
+Manufacturer#3	1668.3500000000001
+Manufacturer#3	1548.83
+Manufacturer#3	1506.522
+Manufacturer#4	1844.92
+Manufacturer#4	1610.17
+Manufacturer#4	1613.67
+Manufacturer#4	1511.8175
+Manufacturer#4	1467.5240000000001
+Manufacturer#5	1018.1
+Manufacturer#5	1241.29
+Manufacturer#5	1424.0900000000001
+Manufacturer#5	1515.25
+Manufacturer#5	1534.532
