@@ -474,7 +474,6 @@
       <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
       <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
-      <fileset file="${build.dir.hive}/hcatalog/hive-hcatalog-${version}.jar"/>
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
       <fileset dir="${build.dir.hive}/ivy/lib/default">
@@ -510,6 +509,14 @@
     <chmod perm="ugo+x" type="file" parallel="false">
       <fileset dir="${target.bin.dir}"/>
     </chmod>
+
+    <!-- Package the hcat stuff and pull it up into Hive's build dir -->
+    <ant antfile="${hive.root}/hcatalog/build.xml" target="package"
+        inheritAll="false"/>
+    <mkdir dir="${build.dir.hive}/hcatalog"/>
+    <copy todir="${build.dir.hive}/hcatalog">
+        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${version}"/>
+    </copy>
 
     <!-- special case because builtins compilation depends on packaging
          up everything else first -->
@@ -758,6 +765,9 @@
           <exclude name="bin/**"/>
           <exclude name="docs/**"/>
           <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/hcatalog" mode="755" prefix="${bin.final.name}"
+                    excludes="${vcs.excludes}">
         </tarfileset>
       </param.listofitems>
     </macro_tar>
