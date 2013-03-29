@@ -43,7 +43,7 @@ imposed on others.
     <!-- Ensure files contain the Apache source file headers -->
     <!-- http://www.apache.org/legal/src-headers.html -->
     <module name="RegexpHeader">
-        <property name="headerFile" value="build-support/checkstyle/apache_header.txt"/>
+        <property name="headerFile" value="${path.to.basedir}/build-support/checkstyle/apache_header.txt"/>
         <property name="multiLines" value="1,2,3,4"/>
     </module>
 

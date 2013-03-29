@@ -33,6 +33,7 @@
       <fileset dir="${basedir}">
           <exclude name="**/build/**"/>
           <exclude name=".idea/**"/>
+          <exclude name="historical/**"/>
           <exclude name="build-support/checkstyle/apache_header.txt"/>
           <exclude name="build-support/conf/rat-excludes.txt"/>
           <exclude name="license/*-LICENSE.txt"/>

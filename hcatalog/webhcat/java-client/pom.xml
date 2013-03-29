@@ -24,16 +24,16 @@
     <parent>
         <groupId>org.apache.hcatalog</groupId>
         <artifactId>hcatalog</artifactId>
-        <version>0.6.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>0.11.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.hcatalog</groupId>
-    <artifactId>hcatalog-pig-adapter</artifactId>
+    <artifactId>webhcat-java-client</artifactId>
     <packaging>jar</packaging>
-    <version>0.6.0-SNAPSHOT</version>
-    <name>hcatalog-pig-adapter</name>
+    <version>0.11.0-SNAPSHOT</version>
+    <name>webhcat-java-client</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>
