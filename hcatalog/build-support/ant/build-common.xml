@@ -61,6 +61,12 @@
     <delete dir="${build.dir}"/>
   </target>
 
+  <target name="clean-test">
+    <echo message="${ant.project.name}"/>
+    <delete dir="${test.dir}"/>
+  </target>
+
+
   <!--
        Empty target, override in subproject to do any additional
        specific resource compilation in subprojects.
