@@ -95,6 +95,20 @@ public class TestLazyArrayMapStruct extends TestCase {
       assertNull((b.getListElementObject(5)));
       assertEquals(5, b.getList().size());
 
+      // -- HIVE-4149
+      b = (LazyArray) LazyFactory.createLazyObject(oi);
+
+      data = new byte[] {'a', '\t', '\\', 'N'};
+      TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+      assertEquals(new Text("a"), ((LazyString) b.getListElementObject(0)).getWritableObject());
+      assertNull(b.getListElementObject(1));
+
+      data = new byte[] {'\\', 'N', '\t', 'a'};
+      TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
+      assertNull(b.getListElementObject(0));
+      assertNull(b.getListElementObject(0));  // twice (returns not cleaned cache)
+      assertEquals(new Text("a"), ((LazyString) b.getListElementObject(1)).getWritableObject());
+
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

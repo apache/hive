@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project xmlns:artifact="artifact:org.apache.maven.artifact.ant">
+
+    <macrodef name="_sign">
+        <attribute name="inputFile"/>
+        <sequential>
+            <echo>Signing @{inputFile}</echo>
+            <delete file="@{inputFile}.asc"/>
+            <exec executable="gpg">
+                <arg value="--armor"/>
+                <arg value="--output"/>
+                <arg value="@{inputFile}.asc"/>
+                <arg value="--passphrase"/>
+                <arg value="${gpg.passphrase}"/>
+                <arg value="--detach-sig"/>
+                <arg value="@{inputFile}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="mvn-init" unless="mvn-init.complete">
+        <echo message="${ant.project.name}"/>
+        <get src="${mvnrepo}/org/apache/maven/maven-ant-tasks/${maven-ant-tasks.version}/maven-ant-tasks-${maven-ant-tasks.version}.jar"
+             dest="${path.to.basedir}/build/maven-ant-tasks-${maven-ant-tasks.version}.jar"
+             usetimestamp="true"
+             skipexisting="true"/>
+        <taskdef resource="org/apache/maven/artifact/ant/antlib.xml"
+                 uri="artifact:org.apache.maven.artifact.ant"
+                 classpath="${path.to.basedir}/build/maven-ant-tasks-${maven-ant-tasks.version}.jar"/>
+        <artifact:pom id="mvn.pom" file="pom.xml">
+            <profile id="${_mvn.hadoop.profile}"/>
+        </artifact:pom>
+        <property name="mvn-init.complete" value="true"/>
+    </target>
+
+    <target name="_check-mvn-dependencies" unless="mvn-dependencies.complete">
+        <available property="mvn-dependencies.complete"
+                   file="${build.dir}/lib/.mvn-dependencies.complete"/>
+    </target>
+
+    <target name="mvn-dependencies"
+            depends="mvn-init,_check-mvn-dependencies"
+            unless="mvn-dependencies.complete">
+        <echo message="${ant.project.name}"/>
+
+        <artifact:dependencies pathId="mvn.compile.classpath"
+          scopes="compile" pomRefId="mvn.pom">
+            <localRepository path="${mvn.local.repo}"/>
+        </artifact:dependencies>
+        <mkdir dir="${build.dir}/lib/compile"/>
+        <copy todir="${build.dir}/lib/compile">
+            <path refid="mvn.compile.classpath"/>
+        </copy>
+
+        <artifact:dependencies pathId="mvn.provided.classpath"
+          scopes="provided" pomRefId="mvn.pom">
+            <localRepository path="${mvn.local.repo}"/>
+        </artifact:dependencies>
+        <mkdir dir="${build.dir}/lib/provided"/>
+        <copy todir="${build.dir}/lib/provided">
+            <path refid="mvn.provided.classpath"/>
+        </copy>
+
+        <artifact:dependencies pathId="mvn.test.classpath"
+          scopes="compile, test" pomRefId="mvn.pom">
+            <localRepository path="${mvn.local.repo}"/>
+        </artifact:dependencies>
+        <mkdir dir="${build.dir}/lib/test"/>
+        <copy todir="${build.dir}/lib/test">
+            <path refid="mvn.test.classpath"/>
+        </copy>
+
+        <touch file="${build.dir}/lib/.mvn-dependencies.complete"/>
+    </target>
+
+    <target name="mvn-deploy" depends="mvn-init" description="Deploy artifacts to a Maven repository.">
+        <echo message="${ant.project.name}"/>
+        <artifact:deploy file="${build.dir}/${ant.project.name}-${hcatalog.version}.jar"
+          pomRefId="mvn.pom">
+            <remoteRepository id="${mvn.deploy.repo.id}" url="${mvn.deploy.repo.url}"/>
+        </artifact:deploy>
+    </target>
+
+    <target name="mvn-deploy-signed" depends="mvn-init"
+            description="Sign and deploy artifacts to a Maven repository.">
+        <echo message="${ant.project.name}"/>
+        <_sign inputFile="${build.dir}/${ant.project.name}-${hcatalog.version}.jar"/>
+        <_sign inputFile="${pom.file}"/>
+        <artifact:deploy file="${build.dir}/${ant.project.name}-${hcatalog.version}.jar"
+          pomRefId="mvn.pom">
+            <attach file="${build.dir}/${ant.project.name}-${hcatalog.version}.jar.asc" type="jar.asc"/>
+            <attach file="${pom.file}.asc" type="pom.asc"/>
+            <remoteRepository id="${mvn.deploy.repo.id}" url="${mvn.deploy.repo.url}"/>
+        </artifact:deploy>
+    </target>
+
+</project>

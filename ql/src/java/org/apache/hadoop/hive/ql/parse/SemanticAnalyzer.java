@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -257,8 +258,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
-  // flag to skip scan during analyze ... compute statistics
+  // flag for no scan during analyze ... compute statistics
   protected boolean noscan = false;
+
+  //flag for partial scan during analyze ... compute statistics
+  protected boolean partialscan = false;
 
   private static class Phase1Ctx {
     String dest;
@@ -953,6 +957,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
         qb.getParseInfo().setNoScanAnalyzeCommand(this.noscan);
+        qb.getParseInfo().setPartialScanAnalyzeCommand(this.partialscan);
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
@@ -1134,6 +1139,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   "Cannot get partitions for " + ts.partSpec), e);
             }
           }
+          // validate partial scan command
+          QBParseInfo qbpi = qb.getParseInfo();
+          if (qbpi.isPartialScanAnalyzeCommand()) {
+            Class<? extends InputFormat> inputFormatClass = null;
+            switch (ts.specType) {
+            case TABLE_ONLY:
+              inputFormatClass = ts.tableHandle.getInputFormatClass();
+              break;
+            case STATIC_PARTITION:
+              inputFormatClass = ts.partHandle.getInputFormatClass();
+              break;
+            default:
+              assert false;
+            }
+            // throw a HiveException for non-rcfile.
+            if (!inputFormatClass.equals(RCFileInputFormat.class)) {
+              throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE.getMsg());
+            }
+          }
+
           qb.getParseInfo().addTableSpec(alias, ts);
         }
       }
@@ -6178,18 +6203,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private List<String> getMapSideJoinTables(QB qb) {
     List<String> cols = new ArrayList<String>();
+
+
     ASTNode hints = qb.getParseInfo().getHints();
     for (int pos = 0; pos < hints.getChildCount(); pos++) {
       ASTNode hint = (ASTNode) hints.getChild(pos);
       if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
-        ASTNode hintTblNames = (ASTNode) hint.getChild(1);
-        int numCh = hintTblNames.getChildCount();
-        for (int tblPos = 0; tblPos < numCh; tblPos++) {
-          String tblName = ((ASTNode) hintTblNames.getChild(tblPos)).getText()
-              .toLowerCase();
-          if (!cols.contains(tblName)) {
-            cols.add(tblName);
+        // the user has specified to ignore mapjoin hint
+        if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)) {
+          ASTNode hintTblNames = (ASTNode) hint.getChild(1);
+          int numCh = hintTblNames.getChildCount();
+          for (int tblPos = 0; tblPos < numCh; tblPos++) {
+            String tblName = ((ASTNode) hintTblNames.getChild(tblPos)).getText()
+                .toLowerCase();
+            if (!cols.contains(tblName)) {
+              cols.add(tblName);
+            }
           }
+        }
+        else {
+          queryProperties.setMapJoinRemoved(true);
         }
       }
     }
@@ -6674,8 +6707,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
       // todo 8 way could be not enough number
-      if (node.getRightAliases().length + node.getRightAliases().length + 1 >= 8) {
-        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_8);
+      if (node.getLeftAliases().length + node.getRightAliases().length + 1 >= 32) {
+        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_32);
         return false;
       }
     }
@@ -9618,6 +9651,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * process analyze ... partial command
+   *
+   * separate it from noscan command process so that it provides us flexibility
+   *
+   * @param tree
+   * @throws SemanticException
+   */
+  protected void processPartialScanCommand (ASTNode tree) throws SemanticException {
+    // check if it is partial scan command
+    this.checkPartialScan(tree);
+
+    //validate partial scan
+    if (this.partialscan) {
+      validateAnalyzePartialscan(tree);
+    }
+  }
+
+  /**
    * process analyze ... noscan command
    * @param tree
    * @throws SemanticException
@@ -9658,6 +9709,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Validate partialscan command
+   *
+   * @param tree
+   * @throws SemanticException
+   */
+  private void validateAnalyzePartialscan(ASTNode tree) throws SemanticException {
+    // since it is partialscan, it is true table name in command
+    String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
+    Table tbl;
+    try {
+      tbl = db.getTable(tableName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    /* partialscan uses hdfs apis to retrieve such information from Namenode.      */
+    /* But that will be specific to hdfs. Through storagehandler mechanism,   */
+    /* storage of table could be on any storage system: hbase, cassandra etc. */
+    /* A nice error message should be given to user. */
+    if (tbl.isNonNative()) {
+      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_NON_NATIVE.getMsg(tbl
+          .getTableName()));
+    }
+
+    /**
+     * Partial scan doesn't support external table.
+     */
+    if(tbl.getTableType().equals(TableType.EXTERNAL_TABLE)) {
+      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_EXTERNAL_TABLE.getMsg(tbl
+          .getTableName()));
+    }
+
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER.getMsg());
+    }
+  }
+
+  /**
    * It will check if this is analyze ... compute statistics noscan
    * @param tree
    */
@@ -9671,6 +9759,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           child1 = (ASTNode) tree.getChild(1);
           if (child1.getToken().getType() == HiveParser.KW_NOSCAN) {
             this.noscan = true;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * It will check if this is analyze ... compute statistics partialscan
+   * @param tree
+   */
+  private void checkPartialScan(ASTNode tree) {
+    if (tree.getChildCount() > 1) {
+      ASTNode child0 = (ASTNode) tree.getChild(0);
+      ASTNode child1;
+      if (child0.getToken().getType() == HiveParser.TOK_TAB) {
+        child0 = (ASTNode) child0.getChild(0);
+        if (child0.getToken().getType() == HiveParser.TOK_TABNAME) {
+          child1 = (ASTNode) tree.getChild(1);
+          if (child1.getToken().getType() == HiveParser.KW_PARTIALSCAN) {
+            this.partialscan = true;
           }
         }
       }

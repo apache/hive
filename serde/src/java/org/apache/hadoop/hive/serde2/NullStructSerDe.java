@@ -32,7 +32,7 @@ import org.apache.hadoop.io.Writable;
  * Placeholder SerDe for cases where neither serialization nor deserialization is needed
  *
  */
-public class NullStructSerDe implements SerDe {
+public class NullStructSerDe extends AbstractSerDe {
 
   class NullStructField implements StructField {
     @Override

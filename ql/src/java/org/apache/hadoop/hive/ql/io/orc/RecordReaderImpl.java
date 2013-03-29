@@ -17,6 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -29,15 +38,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 class RecordReaderImpl implements RecordReader {
   private final FSDataInputStream file;
@@ -686,7 +686,13 @@ class RecordReaderImpl implements RecordReader {
         } else {
           length = dictionaryBuffer.size() - offset;
         }
-        dictionaryBuffer.setText(result, offset, length);
+        // If the column is just empty strings, the size will be zero, so the buffer will be null,
+        // in that case just return result as it will default to empty
+        if (dictionaryBuffer != null) {
+          dictionaryBuffer.setText(result, offset, length);
+        } else {
+          result.clear();
+        }
       }
       return result;
     }

@@ -45,6 +45,7 @@ public class QueryProperties {
 
   boolean hasDistributeBy = false;
   boolean hasClusterBy = false;
+  boolean mapJoinRemoved = false;
 
   public boolean hasJoin() {
     return hasJoin;
@@ -124,5 +125,13 @@ public class QueryProperties {
 
   public void setHasWindowing(boolean hasWindowing) {
     this.hasWindowing = hasWindowing;
+  }
+
+  public boolean isMapJoinRemoved() {
+    return mapJoinRemoved;
+  }
+
+  public void setMapJoinRemoved(boolean mapJoinRemoved) {
+    this.mapJoinRemoved = mapJoinRemoved;
   }
 }

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>Notification</title>
+  </header>
+  <body>
+  
+ <p>Since version 0.2, HCatalog provides notifications for certain events happening in the system. This way applications such as Oozie can wait for those events and schedule the work that depends on them. The current version of HCatalog supports two kinds of events: </p>
+<ul>
+<li>Notification when a new partition is added</li>
+<li>Notification when a set of partitions is added</li>
+</ul>
+
+<p>No additional work is required to send a notification when a new partition is added: the existing addPartition call will send the notification message.</p>
+
+<!-- ==================================================================== -->
+<section>
+<title>Notification for a New Partition</title>
+
+<p>To receive notification that a new partition has been added, you need to follow these three steps.</p>
+ 
+<ol>
+  <li>To start receiving messages, create a connection to a message bus as shown here:
+<source>
+ConnectionFactory connFac = new ActiveMQConnectionFactory(amqurl);
+Connection conn = connFac.createConnection();
+conn.start();
+</source>
+  </li>
+
+  <li>Subscribe to a topic you are interested in. When subscribing on a message bus, you need to subscribe to a particular topic to receive the messages that are being delivered on that topic.
+  <ul>
+    <li>The topic name corresponding to a particular table is stored in table properties and can be retrieved using the following piece of code:
+<source>
+HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
+String topicName = msc.getTable("mydb",
+                   "myTbl").getParameters().get(HCatConstants.HCAT_MSGBUS_TOPIC_NAME);
+</source>
+    </li>
+
+    <li>Use the topic name to subscribe to a topic as follows:
+<source>
+Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+Destination hcatTopic = session.createTopic(topicName);
+MessageConsumer consumer = session.createConsumer(hcatTopic);
+consumer.setMessageListener(this);
+</source>
+    </li>
+  </ul>
+  </li>
+
+  <li>To start receiving messages you need to implement the JMS interface <code>MessageListener</code>, which, in turn, will make you implement the method <code>onMessage(Message msg)</code>. This method will be called whenever a new message arrives on the message bus. The message contains a partition object representing the corresponding partition, which can be retrieved as shown here:
+<source>
+@Override
+public void onMessage(Message msg) {
+  // We are interested in only add_partition events on this table.
+  // So, check message type first.
+  if(msg.getStringProperty(HCatConstants.HCAT_EVENT).equals(HCatConstants.HCAT_ADD_PARTITION_EVENT)){
+       Object obj = (((ObjectMessage)msg).getObject());
+  }
+}
+</source>
+  </li>
+</ol>
+
+  <p>You need to have a JMS jar in your classpath to make this work. Additionally, you need to have a JMS provider’s jar in your classpath. HCatalog is tested with ActiveMQ as a JMS provider, although any JMS provider can be used. ActiveMQ can be obtained from: <a href="http://activemq.apache.org/activemq-550-release.html">http://activemq.apache.org/activemq-550-release.html</a>.</p>
+</section>
+
+<!-- ==================================================================== -->
+<section>
+<title>Notification for a Set of Partitions</title>
+
+<p>Sometimes you need to wait until a collection of partitions is finished before proceeding with another operation. For example, you may want to start processing after all partitions for a day are done. However, HCatalog has no notion of collections or hierarchies of partitions. To support this, HCatalog allows data writers to signal when they are finished writing a collection of partitions. Data readers may wait for this signal before beginning to read.</p>
+
+<p>The example code below illustrates how to send a notification when a set of partitions has been added.</p>
+
+<p>To signal, a data writer does this:</p>
+
+<source>
+HiveMetaStoreClient msc = new HiveMetaStoreClient(conf);
+
+// Create a map, specifying partition key names and values
+Map&lt;String,String&gt; partMap = new HashMap&lt;String, String&gt;();
+partMap.put("date","20110711");
+partMap.put("country","*");
+
+// Mark the partition as "done"
+msc.markPartitionForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+</source>
+
+<p>To receive this notification, the consumer needs to do the following:</p>
+<ol>
+<li>Repeat steps one and two from above to establish the connection to the notification system and to subscribe to the topic.</li>
+<li>Receive the notification as shown in this example:
+<source>
+HiveMetaStoreClient msc = new HiveMetaStoreClient(conf);
+
+// Create a map, specifying partition key names and values
+Map&lt;String,String&gt; partMap = new HashMap&lt;String, String&gt;();
+partMap.put("date","20110711");
+partMap.put("country","*");
+
+// Mark the partition as "done"
+msc.markPartitionForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+</source>
+</li>
+</ol>
+
+
+
+<p>If the consumer has registered with the message bus and is currently live, it will get the callback from the message bus once the producer marks the partition as "done".  Alternatively, the consumer can ask explicitly for a particular partition from the metastore. The following code illustrates the usage from a consumer's perspective:</p>
+
+<source>
+// Enquire to metastore whether a particular partition has been marked or not.
+boolean marked = msc.isPartitionMarkedForEvent("mydb", "mytbl", partMap, PartitionEventType.LOAD_DONE);
+
+// Or register to a message bus and get asynchronous callback.
+ConnectionFactory connFac = new ActiveMQConnectionFactory(amqurl);
+Connection conn = connFac.createConnection();
+conn.start();
+Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
+Destination hcatTopic = session.createTopic(topic);
+MessageConsumer consumer = session.createConsumer(hcatTopic);
+consumer.setMessageListener(this);
+
+
+public void onMessage(Message msg) {
+
+                                
+  MapMessage mapMsg = (MapMessage)msg;
+  Enumeration&lt;String&gt; keys = mapMsg.getMapNames();
+  
+  // Enumerate over all keys. This will print key-value pairs specifying the  
+  // particular partition 44which was marked done. In this case, it will print:
+  // date : 20110711
+  // country: *
+
+  while(keys.hasMoreElements()){
+    String key = keys.nextElement();
+    System.out.println(key + " : " + mapMsg.getString(key));
+  }
+  System.out.println("Message: "+msg);
+</source>
+
+</section>
+
+<!-- ==================================================================== -->
+<section>
+	<title>Server Configuration</title>
+	<p>To enable notification, you need to configure the server (see below). </p>
+	<p>To disable notification, you need to leave <code>hive.metastore.event.listeners</code> blank or remove it from <code>hive-site.xml.</code></p>
+
+  <section>
+      <title>Enable JMS Notifications</title>
+
+<p>You need to make (add/modify) the following changes to the hive-site.xml file of your HCatalog server to turn on notifications.</p>
+
+<source>
+&lt;property&gt;
+&lt;name&gt;hive.metastore.event.expiry.duration&lt;/name&gt;
+&lt;value&gt;300L&lt;/value&gt;
+&lt;description&gt;Duration after which events expire from events table (in seconds)&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;hive.metastore.event.clean.freq&lt;/name&gt;
+&lt;value&gt;360L&lt;/value&gt;
+&lt;description&gt;Frequency at which timer task runs to purge expired events in metastore (in seconds).&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.brokerurl&lt;/name&gt;
+&lt;value&gt;tcp://localhost:61616&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.username&lt;/name&gt;
+&lt;value&gt;&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+&lt;name&gt;msgbus.password&lt;/name&gt;
+&lt;value&gt;&lt;/value&gt;
+&lt;description&gt;&lt;/description&gt;
+&lt;/property&gt;
+</source>
+
+<p>For the server to start with support for notifications, the following must be in the classpath:</p>
+<p>&nbsp;&nbsp; (a) activemq jar </p>
+<p>&nbsp;&nbsp; (b) jndi.properties file with properties suitably configured for notifications</p>
+
+<p>Then, follow these guidelines to set up your environment:</p>
+<ol>
+<li>The HCatalog server start script is $<em>YOUR_HCAT_SERVER</em>/share/hcatalog/scripts/hcat_server_start.sh.</li>
+<li>This script expects classpath to be set by the AUX_CLASSPATH environment variable.</li>
+<li>Therefore set AUX_CLASSPATH to satisfy (a) and (b) above.</li>
+<li>The jndi.properties file is located at $<em>YOUR_HCAT_SERVER</em>/etc/hcatalog/jndi.properties.</li>
+<li>You need to uncomment and set the following properties in the jndi.properties file:
+<ul>
+<li>java.naming.factory.initial = org.apache.activemq.jndi.ActiveMQInitialContextFactory</li>
+<li>java.naming.provider.url = tcp://localhost:61616 &nbsp;&nbsp; (This is the ActiveMQ URL in your setup.)
+</li>
+</ul>
+</li>
+</ol>
+</section>
+
+<section>
+    <title>Topic Names</title>
+<p>If tables are created while the server is configured for notifications, a default topic name is automatically set as a table property. To use notifications with tables created previously (either in other HCatalog installations or prior to enabling notifications in the current installation) you will have to manually set a topic name. For example:</p>
+<source>
+$<em>YOUR_HCAT_CLIENT_HOME</em>/bin/hcat -e "ALTER TABLE access SET hcat.msgbus.topic.name=$TOPIC_NAME"
+</source>
+	
+<p>You then need to configure your ActiveMQ Consumer(s) to listen for messages on the topic you gave in $TOPIC_NAME. A good default policy is TOPIC_NAME = "$database.$table" (that is a literal dot).</p>
+
+</section>
+</section>
+    
+  </body>
+</document>

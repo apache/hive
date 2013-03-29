@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+  <info organisation="org.apache.hcatalog" module="${ant.project.name}" revision="${hcatalog.version}">
+    <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="http://hive.apache.org">
+        Apache HCatalog
+    </description>
+  </info>
+  <configurations>
+    <conf name="default" extends="master,runtime"/>
+    <conf name="master" description="contains the artifact but no dependencies"/>
+    <conf name="runtime" extends="compile" description="runtime but not the artifact" />
+    <conf name="common" visibility="private" 
+        extends="runtime"
+        description="artifacts needed to compile/test the application"/>
+    <conf name="test" visibility="private" extends="runtime"/>
+    <conf name="package" visibility="private" extends="master"/>
+    <conf name="releaseaudit" visibility="private"/>
+    <conf name="compile" extends="hadoop${hadoopversion}" visibility="private" description="compile artifacts"/>
+    <conf name="hadoop20" visibility="private"/>
+    <conf name="hadoop20S" visibility="private"/>
+    <conf name="hadoop23" visibility="private"/>
+  </configurations>
+  <dependencies>
+    <dependency org="org.apache.pig" name="pig" rev="${pig.version}"
+        conf="hadoop20,hadoop23->default" />
+
+    <!-- Hadoop 0.23 dependencies. Used both for shims and for building against Hadoop 0.23. -->
+    <dependency org="org.apache.hadoop" name="hadoop-common"
+                rev="${hadoop23.version}"
+                conf="hadoop23->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
+                rev="${hadoop23.version}"
+                conf="hadoop23->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-archives"
+                rev="${hadoop23.version}"
+                conf="hadoop23->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-hdfs"
+                rev="${hadoop23.version}"
+                conf="hadoop23->default">
+      <artifact name="hadoop-hdfs" ext="jar" />
+      <artifact name="hadoop-hdfs" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
+    <!-- Hadoop 0.20 shim dependencies. Used for building 0.20 shims. -->
+    <dependency org="org.apache.hadoop" name="hadoop-core"
+                rev="${hadoop20.version}"
+                conf="hadoop20->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-tools"
+                rev="${hadoop20.version}"
+                conf="hadoop20->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-test"
+                rev="${hadoop20.version}"
+                conf="hadoop20->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
+    <conflict manager="all" />
+  </dependencies>
+</ivy-module>

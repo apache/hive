@@ -1,0 +1,258 @@
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <properties>
+      <activemq.version>5.5.0</activemq.version>
+      <commons-exec.version>1.1</commons-exec.version>
+      <commons-io.version>2.4</commons-io.version>
+      <guava.version>11.0.2</guava.version>
+      <hadoop20.version>1.0.3</hadoop20.version>
+      <hadoop23.version>2.0.3-alpha</hadoop23.version>
+      <hbase.version>0.94.5</hbase.version>
+      <hcatalog.version>${project.version}</hcatalog.version>
+      <hive.version>0.11.0-SNAPSHOT</hive.version>
+      <jackson.version>1.9.2</jackson.version>
+      <jersey.version>1.14</jersey.version>
+      <jetty.webhcat.version>7.6.0.v20120127</jetty.webhcat.version>
+      <jms.version>1.1</jms.version>
+      <pig.version>0.10.1</pig.version>
+      <slf4j.version>1.6.1</slf4j.version>
+      <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
+      <zookeeper.version>3.4.3</zookeeper.version>
+      <metrics-core.version>2.1.2</metrics-core.version>
+  </properties>
+
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>11</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.hcatalog</groupId>
+  <artifactId>hcatalog</artifactId>
+  <version>0.6.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>hadoop20</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-tools</artifactId>
+          <version>${hadoop20.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-test</artifactId>
+          <version>${hadoop20.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.pig</groupId>
+          <artifactId>pig</artifactId>
+          <version>${pig.version}</version>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hadoop23</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-archives</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop23.version}</version>
+          <classifier>tests</classifier>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-core</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <version>${hadoop23.version}</version>
+          <classifier>tests</classifier>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-tests</artifactId>
+          <version>${hadoop23.version}</version>
+          <classifier>tests</classifier>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-app</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop23.version}</version>
+          <classifier>tests</classifier>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-hs</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-minicluster</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.pig</groupId>
+          <artifactId>pig</artifactId>
+          <version>${pig.version}</version>
+          <classifier>h2</classifier>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
+  <modules>
+    <module>core</module>
+    <module>hcatalog-pig-adapter</module>
+    <module>server-extensions</module>
+    <module>webhcat/java-client</module>
+    <module>webhcat/svr</module>
+    <module>storage-handlers/hbase</module>
+  </modules>
+
+  <repositories>
+    <!-- This is necessary for hive-metastore dependencies. -->
+    <repository>
+      <id>datanucleus</id>
+      <name>datanucleus maven repository</name>
+      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
+
+    <!-- A transitive dependency defines this repo in its pom, however, the repo
+       has moved and causes dependency resolutions for 'asm:asm:pom:3.1'. Here we
+       disable the repo as we prefer to use central anyway. -->
+    <repository>
+      <id>glassfish-repository</id>
+      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>glassfish-repo-archive</id>
+      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+  </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.8.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.puppycrawl.tools</groupId>
+          <artifactId>checkstyle</artifactId>
+          <version>5.5</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>com.google.collections</groupId>
+              <artifactId>google-collections</artifactId>
+            </exclusion>
+          </exclusions>
+      </dependency>
+    </dependencies>
+
+</project>

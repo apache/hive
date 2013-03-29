@@ -224,6 +224,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
         } catch (SQLRecoverableException e) {
           // need to start from scratch (connection)
           if (failures >= maxRetries) {
+            LOG.error("Error during clean-up after " + maxRetries + " retries. " + e);
             return false;
           }
           // close the current connection

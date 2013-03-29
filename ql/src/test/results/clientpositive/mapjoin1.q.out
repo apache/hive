@@ -222,15 +222,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	238	val_238
-NULL	NULL	238	val_238
 86	val_86	86	val_86
-NULL	NULL	311	val_311
-NULL	NULL	311	val_311
 NULL	NULL	311	val_311
 27	val_27	27	val_27
 NULL	NULL	165	val_165
-NULL	NULL	165	val_165
 NULL	NULL	409	val_409
+NULL	NULL	255	val_255
+NULL	NULL	278	val_278
+98	val_98	98	val_98
+98	val_98	98	val_98
 PREHOOK: query: -- field filter on outer join
 EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
@@ -345,7 +345,7 @@ NULL	NULL	86	{"key":"86","value":"val_86"}
 311	val_311	311	{"key":"311","value":"val_311"}
 NULL	NULL	27	{"key":"27","value":"val_27"}
 NULL	NULL	165	{"key":"165","value":"val_165"}
-NULL	NULL	165	{"key":"165","value":"val_165"}
+409	val_409	409	{"key":"409","value":"val_409"}
 409	val_409	409	{"key":"409","value":"val_409"}
 PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10

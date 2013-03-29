@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 abstract public class AbstractBucketJoinProc implements NodeProcessor {
   private static final Log LOG =
-    LogFactory.getLog(AbstractBucketJoinProc.class.getName());
+      LogFactory.getLog(AbstractBucketJoinProc.class.getName());
 
   protected ParseContext pGraphContext;
 
@@ -75,10 +75,10 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
   @Override
   abstract public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-    Object... nodeOutputs) throws SemanticException;
+      Object... nodeOutputs) throws SemanticException;
 
-  private static List<String> getOnePartitionBucketFileNames(
-    URI location, ParseContext pGraphContext) throws SemanticException {
+  private static List<String> getBucketFilePathsOfPartition(
+      URI location, ParseContext pGraphContext) throws SemanticException {
     List<String> fileNames = new ArrayList<String>();
     try {
       FileSystem fs = FileSystem.get(location, pGraphContext.getConf());
@@ -94,32 +94,35 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     return fileNames;
   }
 
+  // This function checks whether all bucketing columns are also in join keys and are in same order
   private boolean checkBucketColumns(List<String> bucketColumns,
-    List<String> keys,
-    Integer[] orders) {
-    if (keys == null || bucketColumns == null || bucketColumns.isEmpty()) {
+      List<String> joinKeys,
+      Integer[] joinKeyOrders) {
+    if (joinKeys == null || bucketColumns == null || bucketColumns.isEmpty()) {
       return false;
     }
-    for (int i = 0; i < keys.size(); i++) {
-      int index = bucketColumns.indexOf(keys.get(i));
-      if (orders[i] != null && orders[i] != index) {
+    for (int i = 0; i < joinKeys.size(); i++) {
+      int index = bucketColumns.indexOf(joinKeys.get(i));
+      if (joinKeyOrders[i] != null && joinKeyOrders[i] != index) {
         return false;
       }
-      orders[i] = index;
+      joinKeyOrders[i] = index;
     }
 
     // Check if the join columns contains all bucket columns.
     // If a table is bucketized on column B, but the join key is A and B,
     // it is easy to see joining on different buckets yield empty results.
-    return keys.containsAll(bucketColumns);
+    return joinKeys.containsAll(bucketColumns);
   }
 
-  private boolean checkBucketNumberAgainstBigTable(
-    Map<String, List<Integer>> aliasToBucketNumber, int bucketNumberInPart) {
-    for (List<Integer> bucketNums : aliasToBucketNumber.values()) {
+  private boolean checkNumberOfBucketsAgainstBigTable(
+      Map<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition,
+      int numberOfBucketsInPartitionOfBigTable) {
+    for (List<Integer> bucketNums : tblAliasToNumberOfBucketsInEachPartition.values()) {
       for (int nxt : bucketNums) {
-        boolean ok = (nxt >= bucketNumberInPart) ? nxt % bucketNumberInPart == 0
-          : bucketNumberInPart % nxt == 0;
+        boolean ok = (nxt >= numberOfBucketsInPartitionOfBigTable) ? nxt
+            % numberOfBucketsInPartitionOfBigTable == 0
+            : numberOfBucketsInPartitionOfBigTable % nxt == 0;
         if (!ok) {
           return false;
         }
@@ -129,9 +132,9 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   }
 
   protected boolean canConvertMapJoinToBucketMapJoin(
-    MapJoinOperator mapJoinOp,
-    ParseContext pGraphContext,
-    BucketJoinProcCtx context) throws SemanticException {
+      MapJoinOperator mapJoinOp,
+      ParseContext pGraphContext,
+      BucketJoinProcCtx context) throws SemanticException {
 
     QBJoinTree joinCtx = this.pGraphContext.getMapJoinContext().get(mapJoinOp);
     if (joinCtx == null) {
@@ -171,12 +174,12 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     Map<Byte, List<ExprNodeDesc>> keysMap = mapJoinOp.getConf().getKeys();
 
     return checkConvertBucketMapJoin(
-      pGraphContext,
-      context,
-      joinCtx,
-      keysMap,
-      baseBigAlias,
-      joinAliases);
+        pGraphContext,
+        context,
+        joinCtx,
+        keysMap,
+        baseBigAlias,
+        joinAliases);
   }
 
   /*
@@ -188,17 +191,17 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
    * d. The number of buckets in the big table can be divided by no of buckets in small tables.
    */
   protected boolean checkConvertBucketMapJoin(
-    ParseContext pGraphContext,
-    BucketJoinProcCtx context,
-    QBJoinTree joinCtx,
-    Map<Byte, List<ExprNodeDesc>> keysMap,
-    String baseBigAlias,
-    List<String> joinAliases) throws SemanticException {
+      ParseContext pGraphContext,
+      BucketJoinProcCtx context,
+      QBJoinTree joinCtx,
+      Map<Byte, List<ExprNodeDesc>> keysMap,
+      String baseBigAlias,
+      List<String> joinAliases) throws SemanticException {
 
-    LinkedHashMap<String, List<Integer>> aliasToPartitionBucketNumberMapping =
-      new LinkedHashMap<String, List<Integer>>();
-    LinkedHashMap<String, List<List<String>>> aliasToPartitionBucketFileNamesMapping =
-      new LinkedHashMap<String, List<List<String>>>();
+    LinkedHashMap<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition =
+        new LinkedHashMap<String, List<Integer>>();
+    LinkedHashMap<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition =
+        new LinkedHashMap<String, List<List<String>>>();
 
     HashMap<String, Operator<? extends OperatorDesc>> topOps = pGraphContext.getTopOps();
     Map<TableScanOperator, Table> topToTable = pGraphContext.getTopToTable();
@@ -206,15 +209,16 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     // (partition to bucket file names) and (partition to bucket number) for
     // the big table;
     LinkedHashMap<Partition, List<String>> bigTblPartsToBucketFileNames =
-      new LinkedHashMap<Partition, List<String>>();
+        new LinkedHashMap<Partition, List<String>>();
     LinkedHashMap<Partition, Integer> bigTblPartsToBucketNumber =
-      new LinkedHashMap<Partition, Integer>();
+        new LinkedHashMap<Partition, Integer>();
 
-    Integer[] orders = null; // accessing order of join cols to bucket cols, should be same
+    Integer[] joinKeyOrder = null; // accessing order of join cols to bucket cols, should be same
     boolean bigTablePartitioned = true;
     for (int index = 0; index < joinAliases.size(); index++) {
       String alias = joinAliases.get(index);
       Operator<? extends OperatorDesc> topOp = joinCtx.getAliasToOpInfo().get(alias);
+      // The alias may not be present in case of a sub-query
       if (topOp == null) {
         return false;
       }
@@ -225,6 +229,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       int oldKeySize = keys.size();
       TableScanOperator tso = TableAccessAnalyzer.genRootTableScan(topOp, keys);
       if (tso == null) {
+        // We cannot get to root TableScan operator, likely because there is a join or group-by
+        // between topOp and root TableScan operator. We don't handle that case, and simply return
         return false;
       }
 
@@ -256,8 +262,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         return false;
       }
 
-      if (orders == null) {
-        orders = new Integer[keys.size()];
+      if (joinKeyOrder == null) {
+        joinKeyOrder = new Integer[keys.size()];
       }
 
       Table tbl = topToTable.get(tso);
@@ -267,9 +273,9 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
           prunedParts = pGraphContext.getOpToPartList().get(tso);
           if (prunedParts == null) {
             prunedParts =
-              PartitionPruner.prune(tbl, pGraphContext.getOpToPartPruner().get(tso),
-                                    pGraphContext.getConf(), alias,
-                                    pGraphContext.getPrunedPartitions());
+                PartitionPruner.prune(tbl, pGraphContext.getOpToPartPruner().get(tso),
+                    pGraphContext.getConf(), alias,
+                    pGraphContext.getPrunedPartitions());
             pGraphContext.getOpToPartList().put(tso, prunedParts);
           }
         } catch (HiveException e) {
@@ -282,27 +288,27 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
         if (partitions.isEmpty()) {
           if (!alias.equals(baseBigAlias)) {
-            aliasToPartitionBucketNumberMapping.put(alias, Arrays.<Integer>asList());
-            aliasToPartitionBucketFileNamesMapping.put(alias, new ArrayList<List<String>>());
+            tblAliasToNumberOfBucketsInEachPartition.put(alias, Arrays.<Integer> asList());
+            tblAliasToBucketedFilePathsInEachPartition.put(alias, new ArrayList<List<String>>());
           }
         } else {
           List<Integer> buckets = new ArrayList<Integer>();
           List<List<String>> files = new ArrayList<List<String>>();
           for (Partition p : partitions) {
-            if (!checkBucketColumns(p.getBucketCols(), keys, orders)) {
+            if (!checkBucketColumns(p.getBucketCols(), keys, joinKeyOrder)) {
               return false;
             }
             List<String> fileNames =
-              getOnePartitionBucketFileNames(p.getDataLocation(), pGraphContext);
+                getBucketFilePathsOfPartition(p.getDataLocation(), pGraphContext);
             // The number of files for the table should be same as number of buckets.
             int bucketCount = p.getBucketCount();
 
             if (fileNames.size() != bucketCount) {
               String msg = "The number of buckets for table " +
-                tbl.getTableName() + " partition " + p.getName() + " is " +
-                p.getBucketCount() + ", whereas the number of files is " + fileNames.size();
+                  tbl.getTableName() + " partition " + p.getName() + " is " +
+                  p.getBucketCount() + ", whereas the number of files is " + fileNames.size();
               throw new SemanticException(
-                ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
+                  ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
             }
 
             if (alias.equals(baseBigAlias)) {
@@ -314,25 +320,25 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
             }
           }
           if (!alias.equals(baseBigAlias)) {
-            aliasToPartitionBucketNumberMapping.put(alias, buckets);
-            aliasToPartitionBucketFileNamesMapping.put(alias, files);
+            tblAliasToNumberOfBucketsInEachPartition.put(alias, buckets);
+            tblAliasToBucketedFilePathsInEachPartition.put(alias, files);
           }
         }
       } else {
-        if (!checkBucketColumns(tbl.getBucketCols(), keys, orders)) {
+        if (!checkBucketColumns(tbl.getBucketCols(), keys, joinKeyOrder)) {
           return false;
         }
         List<String> fileNames =
-          getOnePartitionBucketFileNames(tbl.getDataLocation(), pGraphContext);
+            getBucketFilePathsOfPartition(tbl.getDataLocation(), pGraphContext);
         Integer num = new Integer(tbl.getNumBuckets());
 
         // The number of files for the table should be same as number of buckets.
         if (fileNames.size() != num) {
           String msg = "The number of buckets for table " +
-            tbl.getTableName() + " is " + tbl.getNumBuckets() +
-            ", whereas the number of files is " + fileNames.size();
+              tbl.getTableName() + " is " + tbl.getNumBuckets() +
+              ", whereas the number of files is " + fileNames.size();
           throw new SemanticException(
-            ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
+              ErrorMsg.BUCKETED_TABLE_METADATA_INCORRECT.getMsg(msg));
         }
 
         if (alias.equals(baseBigAlias)) {
@@ -340,8 +346,8 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
           bigTblPartsToBucketNumber.put(null, tbl.getNumBuckets());
           bigTablePartitioned = false;
         } else {
-          aliasToPartitionBucketNumberMapping.put(alias, Arrays.asList(num));
-          aliasToPartitionBucketFileNamesMapping.put(alias, Arrays.asList(fileNames));
+          tblAliasToNumberOfBucketsInEachPartition.put(alias, Arrays.asList(num));
+          tblAliasToBucketedFilePathsInEachPartition.put(alias, Arrays.asList(fileNames));
         }
       }
     }
@@ -349,14 +355,16 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
     // All tables or partitions are bucketed, and their bucket number is
     // stored in 'bucketNumbers', we need to check if the number of buckets in
     // the big table can be divided by no of buckets in small tables.
-    for (Integer bucketNumber : bigTblPartsToBucketNumber.values()) {
-      if (!checkBucketNumberAgainstBigTable(aliasToPartitionBucketNumberMapping, bucketNumber)) {
+    for (Integer numBucketsInPartitionOfBigTable : bigTblPartsToBucketNumber.values()) {
+      if (!checkNumberOfBucketsAgainstBigTable(
+          tblAliasToNumberOfBucketsInEachPartition, numBucketsInPartitionOfBigTable)) {
         return false;
       }
     }
 
-    context.setAliasToPartitionBucketNumberMapping(aliasToPartitionBucketNumberMapping);
-    context.setAliasToPartitionBucketFileNamesMapping(aliasToPartitionBucketFileNamesMapping);
+    context.setTblAliasToNumberOfBucketsInEachPartition(tblAliasToNumberOfBucketsInEachPartition);
+    context.setTblAliasToBucketedFilePathsInEachPartition(
+        tblAliasToBucketedFilePathsInEachPartition);
     context.setBigTblPartsToBucketFileNames(bigTblPartsToBucketFileNames);
     context.setBigTblPartsToBucketNumber(bigTblPartsToBucketNumber);
     context.setJoinAliases(joinAliases);
@@ -372,24 +380,24 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
    * enhanced to keep the big table bucket -> small table buckets mapping.
    */
   protected void convertMapJoinToBucketMapJoin(
-    MapJoinOperator mapJoinOp,
-    BucketJoinProcCtx context) throws SemanticException {
+      MapJoinOperator mapJoinOp,
+      BucketJoinProcCtx context) throws SemanticException {
     MapJoinDesc desc = mapJoinOp.getConf();
 
     Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
-      new LinkedHashMap<String, Map<String, List<String>>>();
+        new LinkedHashMap<String, Map<String, List<String>>>();
 
-    Map<String, List<Integer>> aliasToPartitionBucketNumberMapping =
-      context.getAliasToPartitionBucketNumberMapping();
+    Map<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition =
+        context.getTblAliasToNumberOfBucketsInEachPartition();
 
-    Map<String, List<List<String>>> aliasToPartitionBucketFileNamesMapping =
-      context.getAliasToPartitionBucketFileNamesMapping();
+    Map<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition =
+        context.getTblAliasToBucketedFilePathsInEachPartition();
 
     Map<Partition, List<String>> bigTblPartsToBucketFileNames =
-      context.getBigTblPartsToBucketFileNames();
+        context.getBigTblPartsToBucketFileNames();
 
     Map<Partition, Integer> bigTblPartsToBucketNumber =
-      context.getBigTblPartsToBucketNumber();
+        context.getBigTblPartsToBucketNumber();
 
     List<String> joinAliases = context.getJoinAliases();
     String baseBigAlias = context.getBaseBigAlias();
@@ -406,28 +414,33 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       if (alias.equals(baseBigAlias)) {
         continue;
       }
-      for (List<String> names : aliasToPartitionBucketFileNamesMapping.get(alias)) {
+      for (List<String> names : tblAliasToBucketedFilePathsInEachPartition.get(alias)) {
         Collections.sort(names);
       }
-      List<Integer> smallTblBucketNums = aliasToPartitionBucketNumberMapping.get(alias);
-      List<List<String>> smallTblFilesList = aliasToPartitionBucketFileNamesMapping.get(alias);
+      List<Integer> smallTblBucketNums = tblAliasToNumberOfBucketsInEachPartition.get(alias);
+      List<List<String>> smallTblFilesList = tblAliasToBucketedFilePathsInEachPartition.get(alias);
 
-      Map<String, List<String>> mapping = new LinkedHashMap<String, List<String>>();
-      aliasBucketFileNameMapping.put(alias, mapping);
+      Map<String, List<String>> mappingBigTableBucketFileNameToSmallTableBucketFileNames =
+          new LinkedHashMap<String, List<String>>();
+      aliasBucketFileNameMapping.put(alias,
+          mappingBigTableBucketFileNameToSmallTableBucketFileNames);
 
       // for each bucket file in big table, get the corresponding bucket file
       // name in the small table.
       // more than 1 partition in the big table, do the mapping for each partition
       Iterator<Entry<Partition, List<String>>> bigTblPartToBucketNames =
-        bigTblPartsToBucketFileNames.entrySet().iterator();
+          bigTblPartsToBucketFileNames.entrySet().iterator();
       Iterator<Entry<Partition, Integer>> bigTblPartToBucketNum = bigTblPartsToBucketNumber
-        .entrySet().iterator();
+          .entrySet().iterator();
       while (bigTblPartToBucketNames.hasNext()) {
         assert bigTblPartToBucketNum.hasNext();
         int bigTblBucketNum = bigTblPartToBucketNum.next().getValue();
         List<String> bigTblBucketNameList = bigTblPartToBucketNames.next().getValue();
-        fillMapping(smallTblBucketNums, smallTblFilesList,
-          mapping, bigTblBucketNum, bigTblBucketNameList, desc.getBigTableBucketNumMapping());
+        fillMappingBigTableBucketFileNameToSmallTableBucketFileNames(smallTblBucketNums,
+            smallTblFilesList,
+            mappingBigTableBucketFileNameToSmallTableBucketFileNames, bigTblBucketNum,
+            bigTblBucketNameList,
+            desc.getBigTableBucketNumMapping());
       }
     }
     desc.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
@@ -462,16 +475,16 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
   }
 
   // called for each partition of big table and populates mapping for each file in the partition
-  private static void fillMapping(
-    List<Integer> smallTblBucketNums,
-    List<List<String>> smallTblFilesList,
-    Map<String, List<String>> mapping,
-    int bigTblBucketNum, List<String> bigTblBucketNameList,
-    Map<String, Integer> bucketFileNameMapping) {
+  private static void fillMappingBigTableBucketFileNameToSmallTableBucketFileNames(
+      List<Integer> smallTblBucketNums,
+      List<List<String>> smallTblFilesList,
+      Map<String, List<String>> bigTableBucketFileNameToSmallTableBucketFileNames,
+      int bigTblBucketNum, List<String> bigTblBucketNameList,
+      Map<String, Integer> bucketFileNameMapping) {
 
     for (int bindex = 0; bindex < bigTblBucketNameList.size(); bindex++) {
       ArrayList<String> resultFileNames = new ArrayList<String>();
-      for (int sindex = 0 ; sindex < smallTblBucketNums.size(); sindex++) {
+      for (int sindex = 0; sindex < smallTblBucketNums.size(); sindex++) {
         int smallTblBucketNum = smallTblBucketNums.get(sindex);
         List<String> smallTblFileNames = smallTblFilesList.get(sindex);
         if (bigTblBucketNum >= smallTblBucketNum) {
@@ -489,7 +502,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         }
       }
       String inputBigTBLBucket = bigTblBucketNameList.get(bindex);
-      mapping.put(inputBigTBLBucket, resultFileNames);
+      bigTableBucketFileNameToSmallTableBucketFileNames.put(inputBigTBLBucket, resultFileNames);
       bucketFileNameMapping.put(inputBigTBLBucket, bindex);
     }
   }

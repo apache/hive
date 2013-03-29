@@ -33,7 +33,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  * TypedSerDe.
  *
  */
-public abstract class TypedSerDe implements SerDe {
+public abstract class TypedSerDe extends AbstractSerDe {
 
   protected Type objectType;
   protected Class<?> objectClass;
@@ -52,6 +52,7 @@ public abstract class TypedSerDe implements SerDe {
 
   protected Object deserializeCache;
 
+  @Override
   public Object deserialize(Writable blob) throws SerDeException {
     if (deserializeCache == null) {
       return ReflectionUtils.newInstance(objectClass, null);
@@ -61,6 +62,7 @@ public abstract class TypedSerDe implements SerDe {
     }
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return ObjectInspectorFactory.getReflectionObjectInspector(objectType,
         getObjectInspectorOptions());
@@ -70,18 +72,22 @@ public abstract class TypedSerDe implements SerDe {
     return ObjectInspectorFactory.ObjectInspectorOptions.JAVA;
   }
 
+  @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
     // do nothing
   }
 
+  @Override
   public Class<? extends Writable> getSerializedClass() {
     return BytesWritable.class;
   }
 
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     throw new RuntimeException("not supported");
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

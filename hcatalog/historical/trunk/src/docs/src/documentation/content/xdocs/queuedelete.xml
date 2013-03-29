@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  <header>
+    <title>DELETE queue/:jobid </title>
+  </header>
+
+  <body>
+  <section>
+   <title>Description</title>
+    <p>Kill a job given its job ID.
+     Substitute ":jobid" with the job ID received when the job was created.</p>
+  </section>
+
+  <section>
+   <title>URL</title>
+    <p><code>http://</code>www.myserver.com<code>/templeton/v1/queue/</code>:jobid<code></code></p>
+  </section>
+
+  <section>
+   <title>Parameters</title>
+    <table>
+    <tr><th>Name</th><th>Description</th><th>Required?</th><th>Default</th></tr>
+
+    <tr><td><strong>:jobid</strong></td>
+        <td>The job ID to delete. This is the ID received when the job
+         job was created.</td>
+        <td>Required</td>
+        <td>None</td>
+    </tr>
+    </table>
+  </section>
+
+  <section>
+   <title>Results</title>
+    <table>
+    <tr><th>Name</th><th>Description</th></tr>
+    <tr><td><strong>status</strong></td>
+        <td>A JSON object containing the job status information.
+            See the Hadoop documentation
+            (<a href="http://hadoop.apache.org/common/docs/stable/api/org/apache/hadoop/mapred/JobStatus.html">Class
+            JobStatus</a>) for more information.</td>
+    </tr>
+
+    <tr><td><strong>profile</strong></td>
+        <td>A JSON object containing the job profile information.
+             See the Hadoop documentation
+            (<a href="http://hadoop.apache.org/common/docs/stable/api/org/apache/hadoop/mapred/JobProfile.html">Class
+            JobProfile</a>) for more information.
+</td>
+    </tr>
+
+    <tr><td><strong>id</strong></td>
+        <td>The job ID.</td>
+    </tr>
+
+    <tr><td><strong>parentId</strong></td>
+        <td>The parent job ID.</td>
+    </tr>
+
+    <tr><td><strong>percentComplete</strong></td>
+        <td>The job completion percentage, for example "75% complete".</td>
+    </tr>
+
+    <tr><td><strong>exitValue</strong></td>
+        <td>The job's exit value.</td>
+    </tr>
+
+    <tr><td><strong>user</strong></td>
+        <td>User name of the job creator.</td>
+    </tr>
+
+    <tr><td><strong>callback</strong></td>
+        <td>The callback URL, if any.</td>
+    </tr>
+
+    <tr><td><strong>completed</strong></td>
+        <td>A string representing completed status, for example "done".</td>
+    </tr>
+
+    </table>
+ </section>
+
+
+  <section>
+   <title>Example</title>
+
+   <p><strong>Curl Command</strong></p>
+<source>
+% curl -s -X DELETE 'http://localhost:50111/templeton/v1/queue/job_201111111311_0009?user.name=ctdean'
+</source>
+
+   <p><strong>JSON Output</strong></p>
+<source>
+{
+ "status": {
+            "startTime": 1321047216471,
+            "username": "ctdean",
+            "jobID": {
+                      "jtIdentifier": "201111111311",
+                      "id": 9
+                     },
+            "jobACLs": {
+                       },
+            "schedulingInfo": "NA",
+            "failureInfo": "NA",
+            "jobId": "job_201111111311_0009",
+            "jobPriority": "NORMAL",
+            "runState": 1,
+            "jobComplete": false
+           },
+ "profile": {
+             "url": "http://localhost:50030/jobdetails.jsp?jobid=job_201111111311_0009",
+             "user": "ctdean",
+             "jobID": {
+                       "jtIdentifier": "201111111311",
+                       "id": 9
+                      },
+             "queueName": "default",
+             "jobFile": "hdfs://localhost:9000/tmp/hadoop-ctdean/mapred/staging/ctdean/.staging/job_201111111311_0009/job.xml",
+             "jobName": "streamjob3322518350676530377.jar",
+             "jobId": "job_201111111311_0009"
+            }
+ "id": "job_201111111311_0009",
+ "parentId": "job_201111111311_0008",
+ "percentComplete": "10% complete",
+ "exitValue": 0,
+ "user": "ctdean",
+ "callback": null,
+ "completed": "false"
+}
+</source>
+<p><strong>Note:</strong> The job is not immediately deleted, therefore the
+   information returned may not reflect deletion, as in our example.
+   Use <a href="queue.html"><code>GET queue/:jobid</code></a>
+   to monitor the job and confirm that it is eventually deleted.</p>
+  </section>
+ </body>
+</document>

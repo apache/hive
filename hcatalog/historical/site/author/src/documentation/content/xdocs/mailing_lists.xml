@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" 
+          "http://forrest.apache.org/dtd/document-v20.dtd">
+
+<document>
+  
+  <header>
+    <title>Apache HCatalog Mailing Lists</title>
+  </header>
+  
+  <body>
+    <section>
+      <title>General</title>
+
+      <p>For discussion relevant to Hadoop and related projects please subscribe to the
+      <a href="http://hadoop.apache.org/mailing_lists.html">Hadoop general mailing list</a>.</p>
+    </section>
+  
+    <section>
+      <title>Users</title>
+
+      <p>If you use HCatalog, please subscribe to the HCatalog user mailing list.</p>
+
+      <p>
+        The HCatalog user mailing list is :
+        <a href="mailto:hcatalog-user@incubator.apache.org">hcatalog-user@incubator.apache.org</a>.
+      </p>      
+      <ul>
+        <li><a href="mailto:hcatalog-user-subscribe@incubator.apache.org">Subscribe to List</a></li>
+        <li><a href="mailto:hcatalog-user-unsubscribe@incubator.apache.org">Unsubscribe from List</a></li>
+        <li>Search List Archive on <a href="http://www.mail-archive.com/hcatalog-user%40incubator.apache.org/">The Mail Archive</a></li>
+        <li><a href="http://mail-archives.apache.org/mod_mbox/incubator-hcatalog-user/">View List Archive</a> (<a href="http://incubator.apache.org/mail/hcatalog-user/">Raw files</a>)</li>
+      </ul>
+      <note>In order to post to the list, it is necessary to first subscribe to it.</note>
+    </section>
+  
+    <section>
+      <title>Developers</title>
+
+      <p>If you'd like to contribute to HCatalog, please subscribe to the
+      HCatalog developer mailing list.</p>
+
+      <p>
+        The HCatalog developer mailing list is :
+        <a href="mailto:hcatalog-dev@incubator.apache.org">hcatalog-dev@incubator.apache.org</a>.
+      </p>      
+      <ul>
+        <li><a href="mailto:hcatalog-dev-subscribe@incubator.apache.org">Subscribe to List</a></li>
+        <li><a href="mailto:hcatalog-dev-unsubscribe@incubator.apache.org">Unsubscribe from List</a></li>
+        <li>Search List Archive on <a href="http://www.mail-archive.com/hcatalog-dev%40incubator.apache.org/">The Mail Archive</a></li>
+        <li><a href="http://mail-archives.apache.org/mod_mbox/incubator-hcatalog-dev/">View List Archive</a> (<a href="http://incubator.apache.org/mail/hcatalog-dev/">Raw files</a>)</li>
+      </ul>
+      <note>In order to post to the list, it is necessary to first subscribe to it.</note>
+    </section>
+  
+    <section>
+      <title>Commits</title>
+
+      <p>If you'd like to see changes made in HCatalog's <a
+      href="version_control.html">version control system</a>
+      then subscribe to the HCatalog commit mailing list.</p>
+
+      <ul>
+        <li><a href="mailto:hcatalog-commits-subscribe@incubator.apache.org">Subscribe to List</a></li>
+        <li><a href="mailto:hcatalog-commits-unsubscribe@incubator.apache.org">Unsubscribe from List</a></li>
+        <li>Search List Archive on <a href="http://www.mail-archive.com/hcatalog-commits%40incubator.apache.org/">The Mail Archive</a></li>        
+        <li><a href="http://mail-archives.apache.org/mod_mbox/incubator-hcatalog-commits/">View List Archive</a> (<a href="http://incubator.apache.org/mail/hcatalog-commits/">Raw files</a>)</li>
+      </ul>
+    </section>
+  
+  </body>
+  
+</document>

@@ -757,10 +757,12 @@ POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.Fiel
 ds=1
 PREHOOK: query: select * from stats_partitioned where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_partitioned
 PREHOOK: Input: default@stats_partitioned@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from stats_partitioned where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_partitioned
 POSTHOOK: Input: default@stats_partitioned@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2324,10 +2326,12 @@ POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.Fiel
 ds=1
 PREHOOK: query: select * from stats_partitioned where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_partitioned
 PREHOOK: Input: default@stats_partitioned@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from stats_partitioned where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_partitioned
 POSTHOOK: Input: default@stats_partitioned@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

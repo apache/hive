@@ -616,10 +616,12 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 199	val_199
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mi3
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi3
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -1919,10 +1921,12 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 199	val_199
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mi3
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi3
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

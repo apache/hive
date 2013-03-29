@@ -28,8 +28,10 @@ import org.apache.hadoop.io.Writable;
  * HiveSerializer is used to serialize data to a Hadoop Writable object. The
  * serialize In addition to the interface below, all implementations are assume
  * to have a ctor that takes a single 'Table' object as argument.
- *
+ * All serializers should extend the abstract class AbstractSerializer, and eventually
+ * Serializer interface should be removed
  */
+@Deprecated
 public interface Serializer {
 
   /**

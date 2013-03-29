@@ -1143,6 +1143,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       outputFormat = RCFILE_OUTPUT;
       serde = COLUMNAR_SERDE;
       break;
+    case HiveParser.TOK_TBLORCFILE:
+      inputFormat = ORCFILE_INPUT;
+      outputFormat = ORCFILE_OUTPUT;
+      serde = ORCFILE_SERDE;
+      break;
     case HiveParser.TOK_FILEFORMAT_GENERIC:
       handleGenericFileFormat(child);
       break;
@@ -2987,6 +2992,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         result = true;
         break;
       case HiveParser.TinyintLiteral:
+        result = true;
+        break;
+      case HiveParser.DecimalLiteral:
         result = true;
         break;
       case HiveParser.CharSetName:

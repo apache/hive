@@ -1,0 +1,195 @@
+PREHOOK: query: DROP TABLE orc_create
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_create
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+   STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+   STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: DESCRIBE FORMATTED orc_create
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE orc_create
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create
+PREHOOK: Output: default@orc_create
+POSTHOOK: query: DROP TABLE orc_create
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: DESCRIBE FORMATTED orc_create
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE orc_create SET FILEFORMAT ORC
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@orc_create
+PREHOOK: Output: default@orc_create
+POSTHOOK: query: ALTER TABLE orc_create SET FILEFORMAT ORC
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: DESCRIBE FORMATTED orc_create
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE orc_create
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create
+PREHOOK: Output: default@orc_create
+POSTHOOK: query: DROP TABLE orc_create
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create
+PREHOOK: query: DESCRIBE FORMATTED orc_create
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE orc_create
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create
+PREHOOK: Output: default@orc_create
+POSTHOOK: query: DROP TABLE orc_create
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: default@orc_create

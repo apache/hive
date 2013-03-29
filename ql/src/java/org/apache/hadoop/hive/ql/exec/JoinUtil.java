@@ -35,15 +35,15 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -203,7 +203,7 @@ public class JoinUtil {
     if (filterMap != null) {
       nr = new Object[valueFields.size()+1];
       // add whether the row is filtered or not.
-      nr[valueFields.size()] = new ByteWritable(isFiltered(row, filters, filtersOI, filterMap));
+      nr[valueFields.size()] = new ShortWritable(isFiltered(row, filters, filtersOI, filterMap));
     }else{
       nr = new Object[valueFields.size()];
     }
@@ -220,37 +220,40 @@ public class JoinUtil {
   /**
    * Return the value as a standard object. StandardObject can be inspected by a
    * standard ObjectInspector.
+   * If it would be tagged by filter, reserve one more slot for that.
    */
   public static ArrayList<Object> computeValues(Object row,
-      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      int[] filterMap) throws HiveException {
+      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI, boolean hasFilter)
+      throws HiveException {
 
     // Compute the values
-    ArrayList<Object> nr = new ArrayList<Object>(valueFields.size());
+    int reserve = hasFilter ? valueFields.size() + 1 : valueFields.size();
+    ArrayList<Object> nr = new ArrayList<Object>(reserve);
     for (int i = 0; i < valueFields.size(); i++) {
       nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
           .evaluate(row), valueFieldsOI.get(i),
           ObjectInspectorCopyOption.WRITABLE));
     }
-    if (filterMap != null) {
-      // add whether the row is filtered or not.
-      nr.add(new ByteWritable(isFiltered(row, filters, filtersOI, filterMap)));
-    }
-
     return nr;
   }
 
-  private static final byte[] MASKS = new byte[]
-      {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, (byte) 0x80};
+  private static final short[] MASKS;
+  static {
+    int num = 32;
+    MASKS = new short[num];
+    MASKS[0] = 1;
+    for (int idx = 1; idx < num; idx++) {
+      MASKS[idx] = (short)(2 * MASKS[idx-1]);
+    }
+  }
 
   /**
    * Returns true if the row does not pass through filters.
    */
-  protected static byte isFiltered(Object row, List<ExprNodeEvaluator> filters,
+  protected static short isFiltered(Object row, List<ExprNodeEvaluator> filters,
       List<ObjectInspector> ois, int[] filterMap) throws HiveException {
     // apply join filters on the row.
-    byte ret = 0;
+    short ret = 0;
     int j = 0;
     for (int i = 0; i < filterMap.length; i += 2) {
       int tag = filterMap[i];
@@ -274,11 +277,11 @@ public class JoinUtil {
     return ret;
   }
 
-  protected static boolean isFiltered(byte filter, int tag) {
+  protected static boolean isFiltered(short filter, int tag) {
     return (filter & MASKS[tag]) != 0;
   }
 
-  protected static boolean hasAnyFiltered(byte tag) {
+  protected static boolean hasAnyFiltered(short tag) {
     return tag != 0;
   }
 
@@ -330,7 +333,7 @@ public class JoinUtil {
       if (!noFilter) {
         colNames.append("filtered");
         colNames.append(',');
-        colTypes.append(TypeInfoFactory.byteTypeInfo.getTypeName());
+        colTypes.append(TypeInfoFactory.shortTypeInfo.getTypeName());
         colTypes.append(',');
       }
       // remove the last ','

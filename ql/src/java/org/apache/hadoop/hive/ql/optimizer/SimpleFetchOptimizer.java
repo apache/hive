@@ -217,7 +217,9 @@ public class SimpleFetchOptimizer implements Transform {
         listP.add(partition.getPartitionPath().toString());
         partP.add(Utilities.getPartitionDesc(partition));
       }
-      TableDesc table = Utilities.getTableDesc(partsList.getSourceTable());
+      Table sourceTable = partsList.getSourceTable();
+      inputs.add(new ReadEntity(sourceTable));
+      TableDesc table = Utilities.getTableDesc(sourceTable);
       FetchWork work = new FetchWork(listP, partP, table);
       if (!work.getPartDesc().isEmpty()) {
         PartitionDesc part0 = work.getPartDesc().get(0);

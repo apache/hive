@@ -785,6 +785,12 @@
 </property>
 
 <property>
+  <name>hive.ignore.mapjoin.hint</name>
+  <value>true</value>
+  <description>Ignore the mapjoin hint</description>
+</property>
+
+<property>
   <name>hive.mapjoin.localtask.max.memory.usage</name>
   <value>0.90</value>
   <description>This number means how much memory the local task can take to hold the key/value into in-memory hash table; If the local task's memory usage is more than this number, the local task will be abort by themself. It means the data of small table is too large to be hold in the memory.</description>
@@ -810,7 +816,7 @@
 
 <property>
   <name>hive.auto.convert.join.noconditionaltask</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file 
     size. If this paramater is on, and the sum of size for n-1 of the tables/partitions for a n-way join is smaller than the
     specified size, the join is directly converted to a mapjoin (there is no conditional task).

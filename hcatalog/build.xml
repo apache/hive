@@ -26,5 +26,6 @@
   -->
 
   <!-- temporarily override the test target to prevent build failures -->
+  <!-- small change -->
   <target name="test"/>
 </project>

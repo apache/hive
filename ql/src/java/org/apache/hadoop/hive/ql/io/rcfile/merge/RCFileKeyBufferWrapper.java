@@ -62,4 +62,8 @@ public class RCFileKeyBufferWrapper implements
     return this.keyBuffer.compareTo(o.keyBuffer);
   }
 
+  public KeyBuffer getKeyBuffer() {
+    return keyBuffer;
+  }
+
 }

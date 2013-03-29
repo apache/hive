@@ -25,10 +25,12 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from partition_test_partitioned where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from partition_test_partitioned where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -75,10 +77,12 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src
 476	val_238
 PREHOOK: query: select * from partition_test_partitioned where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from partition_test_partitioned where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -131,11 +135,13 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src
 194	val_97
 PREHOOK: query: select * from partition_test_partitioned where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=1
 PREHOOK: Input: default@partition_test_partitioned@dt=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from partition_test_partitioned where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=1
 POSTHOOK: Input: default@partition_test_partitioned@dt=2
 #### A masked pattern was here ####
@@ -191,12 +197,14 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value2 SIMPLE [(sr
 400	val_200	val_200
 PREHOOK: query: select * from partition_test_partitioned where dt is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
 PREHOOK: Input: default@partition_test_partitioned@dt=1
 PREHOOK: Input: default@partition_test_partitioned@dt=2
 PREHOOK: Input: default@partition_test_partitioned@dt=3
 #### A masked pattern was here ####
 POSTHOOK: query: select * from partition_test_partitioned where dt is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
 POSTHOOK: Input: default@partition_test_partitioned@dt=1
 POSTHOOK: Input: default@partition_test_partitioned@dt=2
 POSTHOOK: Input: default@partition_test_partitioned@dt=3

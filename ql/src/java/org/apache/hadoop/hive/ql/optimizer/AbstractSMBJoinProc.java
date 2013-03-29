@@ -88,12 +88,14 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     // Check whether the mapjoin is a bucketed mapjoin.
     // The above can be ascertained by checking the big table bucket -> small table buckets
     // mapping in the mapjoin descriptor.
+    // First check if this map-join operator is already a BucketMapJoin or not. If not give up
+    // we are only trying to convert a BucketMapJoin to sort-BucketMapJoin.
     if (mapJoinOp.getConf().getAliasBucketFileNameMapping() == null
       || mapJoinOp.getConf().getAliasBucketFileNameMapping().size() == 0) {
       return false;
     }
 
-    boolean tableSorted = true;
+    boolean tableEligibleForBucketedSortMergeJoin = true;
     QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext()
       .get(mapJoinOp);
     if (joinCxt == null) {
@@ -111,8 +113,8 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     List<Order> sortColumnsFirstTable = new ArrayList<Order>();
 
     for (int pos = 0; pos < srcs.length; pos++) {
-      tableSorted = tableSorted
-        && isTableSorted(smbJoinContext,
+      tableEligibleForBucketedSortMergeJoin = tableEligibleForBucketedSortMergeJoin
+        && isEligibleForBucketSortMergeJoin(smbJoinContext,
              pGraphContext,
              mapJoinOp.getConf().getKeys().get((byte) pos),
              joinCxt,
@@ -120,7 +122,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
              pos,
              sortColumnsFirstTable);
     }
-    if (!tableSorted) {
+    if (!tableEligibleForBucketedSortMergeJoin) {
       // this is a mapjoin but not suited for a sort merge bucket map join. check outer joins
       MapJoinProcessor.checkMapJoin(mapJoinOp.getConf().getPosBigTable(),
             mapJoinOp.getConf().getConds());
@@ -233,7 +235,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
    * @return
    * @throws SemanticException
    */
-  private boolean isTableSorted(
+  private boolean isEligibleForBucketSortMergeJoin(
     SortBucketJoinProcCtx smbJoinContext,
     ParseContext pctx,
     List<ExprNodeDesc> keys,
@@ -392,7 +394,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     SortBucketJoinProcCtx smbJoinContext,
     ParseContext pGraphContext) throws SemanticException {
 
-    boolean tableSorted = true;
+    boolean tableEligibleForBucketedSortMergeJoin = true;
     QBJoinTree joinCtx = pGraphContext.getJoinContext().get(joinOperator);
 
     if (joinCtx == null) {
@@ -407,8 +409,8 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     List<Order> sortColumnsFirstTable = new ArrayList<Order>();
 
     for (int pos = 0; pos < srcs.length; pos++) {
-      tableSorted = tableSorted &&
-        isTableSorted(smbJoinContext,
+      tableEligibleForBucketedSortMergeJoin = tableEligibleForBucketedSortMergeJoin &&
+        isEligibleForBucketSortMergeJoin(smbJoinContext,
                       pGraphContext,
                       smbJoinContext.getKeyExprMap().get((byte)pos),
                       joinCtx,

@@ -190,11 +190,13 @@ ds=2010-03-03/hr=22
 ds=2010-03-03/hr=33
 PREHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part13
 PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
 PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part13
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
 #### A masked pattern was here ####

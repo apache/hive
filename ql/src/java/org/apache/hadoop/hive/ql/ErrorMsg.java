@@ -236,8 +236,8 @@ public enum ErrorMsg {
     "Fix the metadata or don't use bucketed mapjoin, by setting " +
     "hive.enforce.bucketmapjoin to false."),
 
-  JOINNODE_OUTERJOIN_MORETHAN_8(10142, "Single join node containing outer join(s) " +
-      "cannot have more than 8 aliases"),
+  JOINNODE_OUTERJOIN_MORETHAN_32(10142, "Single join node containing outer join(s) " +
+      "cannot have more than 32 aliases"),
 
   INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
 
@@ -327,6 +327,17 @@ public enum ErrorMsg {
 
   ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for "
       + "a non-native table"),
+
+  ANALYZE_TABLE_PARTIALSCAN_NON_NATIVE(10229, "ANALYZE TABLE PARTIALSCAN cannot be used for "
+      + "a non-native table"),
+  ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE(10230, "ANALYZE TABLE PARTIALSCAN doesn't "
+      + "support non-RCfile. "),
+  ANALYZE_TABLE_PARTIALSCAN_EXTERNAL_TABLE(10231, "ANALYZE TABLE PARTIALSCAN "
+      + "doesn't support external table: "),
+  ANALYZE_TABLE_PARTIALSCAN_AGGKEY(10232, "Analyze partialscan command "
+            + "fails to construct aggregation for the partition "),
+  ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
+            "if hive.stats.autogather is set to false"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
