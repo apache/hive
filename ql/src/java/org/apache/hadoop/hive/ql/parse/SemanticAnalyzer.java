@@ -9128,8 +9128,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        List<String> tables = db.getTablesByPattern(tableName);
-        if (tables != null && tables.size() > 0) { // table exists
+        Table table = db.getTable(tableName, false); // use getTable(final String tableName, boolean
+                                                     // throwException) which doesn't throw
+                                                     // exception but null if table doesn't exist
+        if (table != null) { // table exists
           return null;
         }
       } catch (HiveException e) {
