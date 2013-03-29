@@ -48,67 +48,67 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
 bob ichabod	1
-yuri thompson	1
-fred zipper	1
-luke king	1
-luke steinbeck	3
-quinn miller	1
-calvin van buren	2
+yuri thompson	2
+luke steinbeck	1
+fred zipper	2
+luke king	3
+calvin van buren	1
+quinn miller	2
 holly steinbeck	1
 david davidson	1
-calvin thompson	1
-calvin quirinius	2
-holly thompson	1
-nick zipper	1
-david ovid	3
-victor robinson	1
-victor steinbeck	2
+calvin quirinius	1
+calvin thompson	2
+david ovid	1
+nick zipper	2
+holly thompson	3
+victor steinbeck	1
+victor robinson	2
 zach ovid	1
 ulysses zipper	1
-luke falkner	1
-irene thompson	2
+irene thompson	1
+luke falkner	2
 yuri johnson	1
-gabriella robinson	1
-ulysses falkner	2
+ulysses falkner	1
+gabriella robinson	2
 alice robinson	1
-priscilla xylophone	1
-mike underhill	1
-david laertes	2
+priscilla xylophone	2
+david laertes	1
+mike underhill	2
 victor van buren	1
 holly falkner	1
 priscilla falkner	1
 luke zipper	1
 ethan ovid	2
-mike steinbeck	1
-alice quirinius	2
-calvin white	3
+alice quirinius	1
+calvin white	2
+mike steinbeck	3
 nick young	1
 wendy polk	2
 irene miller	3
-yuri davidson	1
-ethan ellison	2
+ethan ellison	1
+yuri davidson	2
 zach hernandez	1
 wendy miller	1
 katie underhill	1
 irene zipper	1
 holly allen	1
-quinn brown	1
+quinn brown	2
 calvin ovid	1
-nick miller	1
-zach robinson	2
+zach robinson	1
+nick miller	2
 mike allen	1
-zach miller	1
-yuri van buren	1
-priscilla young	3
-victor xylophone	1
-sarah falkner	2
+priscilla young	1
+yuri van buren	2
+zach miller	3
+sarah falkner	1
+victor xylophone	2
 rachel ichabod	1
 calvin ovid	1
 alice robinson	2
 calvin ovid	1
-luke laertes	1
-david hernandez	1
-alice ovid	3
+alice ovid	1
+david hernandez	2
+luke laertes	3
 luke quirinius	1
 oscar white	1
 zach falkner	1
@@ -118,12 +118,12 @@ xavier polk	1
 wendy ichabod	1
 rachel ovid	1
 wendy allen	1
-mike brown	1
-luke brown	2
-oscar ichabod	3
+luke brown	1
+oscar ichabod	2
+mike brown	3
 xavier garcia	1
-yuri brown	1
-bob xylophone	2
+bob xylophone	1
+yuri brown	2
 ethan quirinius	1
 luke davidson	2
 zach davidson	1
@@ -137,8 +137,8 @@ bob carson	3
 sarah robinson	1
 david king	1
 oscar davidson	1
-victor hernandez	1
-wendy polk	2
+wendy polk	1
+victor hernandez	2
 david ellison	1
 ulysses johnson	1
 jessica ovid	1
@@ -155,106 +155,106 @@ POSTHOOK: query: select s, dense_rank() over (partition by ts order by i desc) f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-tom carson	1
-zach allen	1
-calvin young	2
-rachel quirinius	3
-jessica polk	3
-xavier carson	4
-katie robinson	5
-ulysses garcia	6
-yuri brown	7
-holly thompson	7
-luke king	7
-xavier carson	8
-oscar white	8
-sarah ovid	9
-quinn miller	9
-mike white	10
-luke xylophone	10
-mike xylophone	10
-ulysses polk	10
-gabriella king	10
-bob young	11
-quinn brown	11
-calvin steinbeck	11
-victor hernandez	12
-fred underhill	12
-rachel robinson	13
-katie brown	14
-wendy thompson	14
-zach xylophone	14
-ulysses hernandez	14
-victor xylophone	15
-priscilla hernandez	16
-oscar carson	17
-alice nixon	18
-holly xylophone	19
-priscilla garcia	19
-jessica brown	20
-luke thompson	20
-fred polk	20
-gabriella davidson	21
-alice polk	21
-gabriella nixon	22
-mike ellison	22
-zach van buren	23
-ethan allen	24
-priscilla hernandez	25
-irene brown	25
-bob carson	26
-sarah carson	26
-calvin king	26
-zach xylophone	27
-quinn van buren	27
-gabriella zipper	28
-tom quirinius	29
-quinn allen	29
-rachel ichabod	30
-holly ichabod	30
-rachel garcia	30
-ethan ichabod	30
-katie king	30
-jessica ovid	31
-fred miller	31
-ulysses carson	31
-yuri brown	31
-priscilla falkner	31
-bob ovid	32
-ethan davidson	32
-holly allen	33
-wendy garcia	33
-wendy falkner	33
-katie ovid	34
-katie brown	34
-nick ellison	35
-ulysses allen	36
-priscilla robinson	36
-rachel young	36
-xavier carson	37
-bob falkner	38
-zach ovid	38
-rachel ellison	38
-luke robinson	39
-victor young	39
-xavier carson	39
-fred hernandez	39
-irene falkner	39
-jessica johnson	40
-katie davidson	41
-mike laertes	42
-holly steinbeck	43
-calvin underhill	44
-rachel ovid	45
-jessica davidson	45
-calvin johnson	45
-calvin johnson	45
-irene ichabod	46
-yuri johnson	47
-priscilla quirinius	47
-jessica brown	48
-yuri ichabod	48
-gabriella van buren	49
+jessica polk	1
+calvin steinbeck	2
+katie king	3
+rachel garcia	3
+bob ovid	4
+mike laertes	5
+gabriella xylophone	6
+sarah falkner	7
+jessica laertes	8
+tom johnson	9
+calvin brown	10
+yuri allen	11
+calvin laertes	12
+nick carson	13
+david falkner	14
+victor ellison	15
+luke zipper	16
+gabriella van buren	17
+fred nixon	18
+priscilla zipper	19
+katie white	19
+fred zipper	20
+wendy steinbeck	21
+victor van buren	21
+oscar brown	22
+rachel thompson	23
+luke king	1
+holly thompson	1
+luke xylophone	2
+rachel robinson	3
+wendy thompson	4
+priscilla hernandez	5
+fred polk	6
+irene brown	7
+rachel young	8
+bob falkner	9
+katie davidson	10
+rachel ovid	11
+jessica brown	12
+holly falkner	13
+sarah van buren	14
+yuri hernandez	15
+zach young	16
+calvin carson	17
+bob king	18
+calvin nixon	19
+gabriella johnson	20
+xavier johnson	20
+ethan young	21
+jessica brown	22
+jessica nixon	23
+fred king	23
+ulysses johnson	23
+wendy johnson	24
+oscar davidson	25
+nick ellison	26
+luke steinbeck	27
+jessica robinson	28
+priscilla brown	29
+gabriella underhill	29
+gabriella steinbeck	30
+luke thompson	31
+alice miller	32
+oscar van buren	32
+yuri brown	33
+rachel ovid	34
+katie xylophone	35
+quinn ovid	36
+priscilla zipper	37
+victor underhill	38
+ulysses xylophone	38
+quinn allen	39
+katie zipper	40
+calvin white	41
+ethan ovid	42
+xavier davidson	43
+oscar carson	1
+priscilla garcia	2
+priscilla hernandez	3
+bob carson	4
+quinn van buren	5
+rachel ichabod	6
+ethan ichabod	6
+jessica ovid	7
+ulysses carson	7
+holly allen	8
+wendy falkner	8
+rachel ellison	9
+jessica johnson	10
+rachel ichabod	11
+wendy underhill	12
+sarah falkner	13
+tom hernandez	14
+jessica thompson	15
+alice underhill	16
+ethan nixon	16
+priscilla polk	17
+victor hernandez	18
+holly nixon	19
+priscilla thompson	20
 PREHOOK: query: select s, cume_dist() over (partition by bo order by b) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
@@ -503,16 +503,16 @@ where rnk =  1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
-2013-03-01 09:11:58.136070307	38.43	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
 PREHOOK: query: select ts, dec, rnk
 from
   (select ts, dec,
@@ -541,16 +541,16 @@ where dec = 89.5 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
-2013-03-01 09:11:58.136070312	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
 PREHOOK: query: select ts, dec, rnk
 from
   (select ts, dec,
@@ -581,13 +581,13 @@ where rnk = 1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
-2013-03-01 09:11:58.136070307	52.01	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	79.99	1
