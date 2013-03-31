@@ -87,7 +87,7 @@ public class UDFHour extends UDF {
     }
 
     calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.HOUR));
+    result.set(calendar.get(Calendar.HOUR_OF_DAY));
     return result;
   }
 
