@@ -52,6 +52,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
@@ -98,6 +99,43 @@ public class Hadoop20Shims implements HadoopShims {
    */
   public void setTmpFiles(String prop, String files) {
     // gone in 20+
+  }
+
+
+  /**
+   * Returns a shim to wrap MiniMrCluster
+   */
+  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
+                                     String nameNode, int numDir) throws IOException {
+    return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
+  }
+
+  /**
+   * Shim for MiniMrCluster
+   */
+  public class MiniMrShim implements HadoopShims.MiniMrShim {
+
+    private final MiniMRCluster mr;
+
+    public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
+        String nameNode, int numDir) throws IOException {
+      this.mr = new MiniMRCluster(numberOfTaskTrackers, nameNode, numDir);
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      return mr.getJobTrackerPort();
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      mr.shutdown();
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      setJobLauncherRpcAddress(conf, "localhost:" + mr.getJobTrackerPort());
+    }
   }
 
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,

@@ -81,7 +81,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    */
   protected transient List<ExprNodeEvaluator>[] joinFilters;
 
-  protected transient int[][] filterMap;
+  protected transient int[][] filterMaps;
 
   protected transient int numAliases; // number of aliases
   /**
@@ -121,16 +121,18 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     SerDe serde;
     TableDesc tblDesc;
     Configuration conf;
+    boolean hasFilter;
 
     /**
      * @param standardOI
      * @param serde
      */
     public HashTableSinkObjectCtx(ObjectInspector standardOI, SerDe serde, TableDesc tblDesc,
-        Configuration conf) {
+        boolean hasFilter, Configuration conf) {
       this.standardOI = standardOI;
       this.serde = serde;
       this.tblDesc = tblDesc;
+      this.hasFilter = hasFilter;
       this.conf = conf;
     }
 
@@ -150,6 +152,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     public TableDesc getTblDesc() {
       return tblDesc;
+    }
+
+    public boolean hasFilterTag() {
+      return hasFilter;
     }
 
     public Configuration getConf() {
@@ -193,7 +199,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     totalSz = 0;
 
     noOuterJoin = conf.isNoOuterJoin();
-    filterMap = conf.getFilterMap();
+    filterMaps = conf.getFilterMap();
 
     int tagLen = conf.getTagLength();
 
@@ -228,10 +234,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
           continue;
         }
         List<ObjectInspector> rcOIs = joinValuesObjectInspectors[alias];
-        if (filterMap != null && filterMap[alias] != null) {
+        if (filterMaps != null && filterMaps[alias] != null) {
           // for each alias, add object inspector for filter tag as the last element
           rcOIs = new ArrayList<ObjectInspector>(rcOIs);
-          rcOIs.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+          rcOIs.add(PrimitiveObjectInspectorFactory.writableShortObjectInspector);
         }
         rowContainerObjectInspectors[alias] = rcOIs;
       }
@@ -298,9 +304,12 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     MapJoinMetaData.clear();
     MapJoinMetaData.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
         ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
-            ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, hconf));
+            ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, false, hconf));
   }
 
+  private boolean hasFilter(int alias) {
+    return filterMaps != null && filterMaps[alias] != null;
+  }
   /*
    * This operator only process small tables Read the key/value pairs Load them into hashtable
    */
@@ -320,9 +329,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
           joinKeysObjectInspectors[alias]);
 
       Object[] value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
-          joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors
-              [alias], filterMap == null ? null : filterMap[alias]);
-
+          joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
+          filterMaps == null ? null : filterMaps[alias]);
 
       HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables[alias];
 
@@ -382,8 +390,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     StandardStructObjectInspector standardOI = ObjectInspectorFactory
         .getStandardStructObjectInspector(newNames, newFields);
 
-    MapJoinMetaData.put(Integer.valueOf(metadataValueTag[tag]), new HashTableSinkObjectCtx(
-        standardOI, valueSerDe, valueTableDesc, hconf));
+    int alias = Integer.valueOf(metadataValueTag[tag]);
+    MapJoinMetaData.put(alias, new HashTableSinkObjectCtx(
+        standardOI, valueSerDe, valueTableDesc, hasFilter(alias), hconf));
   }
 
   @Override

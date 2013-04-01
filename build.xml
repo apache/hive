@@ -136,6 +136,7 @@
     <pathelement location="${build.dir.hive}/common/classes"/>
     <pathelement location="${build.dir.hive}/serde/classes"/>
     <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/hcatalog/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
     <pathelement location="${build.dir.hive}/beeline/classes"/>
@@ -509,6 +510,14 @@
       <fileset dir="${target.bin.dir}"/>
     </chmod>
 
+    <!-- Package the hcat stuff and pull it up into Hive's build dir -->
+    <ant antfile="${hive.root}/hcatalog/build.xml" target="package"
+        inheritAll="false"/>
+    <mkdir dir="${build.dir.hive}/hcatalog"/>
+    <copy todir="${build.dir.hive}/hcatalog">
+        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${version}"/>
+    </copy>
+
     <!-- special case because builtins compilation depends on packaging
          up everything else first -->
     <ant antfile="${hive.root}/builtins/build.xml" target="package"
@@ -666,6 +675,7 @@
       <packageset dir="metastore/src/test"/>
       <packageset dir="metastore/src/gen/thrift/gen-javabean"/>
       <packageset dir="metastore/src/model"/>
+      <packageset dir="hcatalog/src/java"/>
       <packageset dir="cli/src/java"/>
       <packageset dir="beeline/src/java"/>
       <packageset dir="ql/src/java"/>
@@ -755,6 +765,9 @@
           <exclude name="bin/**"/>
           <exclude name="docs/**"/>
           <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/hcatalog" mode="755" prefix="${bin.final.name}"
+                    excludes="${vcs.excludes}">
         </tarfileset>
       </param.listofitems>
     </macro_tar>
@@ -949,6 +962,7 @@
       <sourcePath path="${hive.root}/hwi" />
       <sourcePath path="${hive.root}/jdbc" />
       <sourcePath path="${hive.root}/metastore" />
+      <sourcePath path="${hive.root}/hcatalog" />
       <sourcePath path="${hive.root}/odbc" />
       <sourcePath path="${hive.root}/pdk" />
       <sourcePath path="${hive.root}/ql" />
@@ -965,6 +979,7 @@
       <class location="${build.dir.hive}/hwi/classes" />
       <class location="${build.dir.hive}/jdbc/classes" />
       <class location="${build.dir.hive}/metastore/classes" />
+      <class location="${build.dir.hive}/hcatalog/classes" />
       <class location="${build.dir.hive}/pdk/classes" />
       <class location="${build.dir.hive}/ql/classes" />
       <class location="${build.dir.hive}/serde/classes" />
@@ -1066,6 +1081,8 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
           todir="${mvn.jar.dir}" />
+    <copy file="${build.dir.hive}/hcatalog/hive-hcatalog-${version}.jar"
+          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/ql/hive-exec-${version}.jar"
@@ -1098,6 +1115,8 @@
           tofile="${mvn.pom.dir}/hive-jdbc-${version}.pom" />
     <copy file="${build.dir.hive}/metastore/pom.xml"
           tofile="${mvn.pom.dir}/hive-metastore-${version}.pom" />
+    <copy file="${build.dir.hive}/hcatalog/pom.xml"
+          tofile="${mvn.pom.dir}/hive-hcatalog-${version}.pom" />
     <copy file="${build.dir.hive}/pdk/pom.xml"
           tofile="${mvn.pom.dir}/hive-pdk-${version}.pom" />
     <copy file="${build.dir.hive}/ql/pom.xml"
@@ -1215,6 +1234,9 @@
       <param name="hive.project" value="metastore" />
     </antcall>
     <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="hcatalog" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
       <param name="hive.project" value="pdk" />
     </antcall>
     <antcall target="maven-publish-artifact">
@@ -1250,6 +1272,8 @@
         </exec>
       </sequential>
     </macrodef>
+
+    <!-- hive-anttasks -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-anttasks-${version}.jar"
         output.file="${mvn.jar.dir}/hive-anttasks-${version}.jar.asc"
@@ -1258,6 +1282,8 @@
         input.file="${mvn.pom.dir}/hive-anttasks-${version}.pom"
         output.file="${mvn.pom.dir}/hive-anttasks-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-beeline -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-beeline-${version}.jar"
         output.file="${mvn.jar.dir}/hive-beeline-${version}.jar.asc"
@@ -1266,6 +1292,8 @@
         input.file="${mvn.pom.dir}/hive-beeline-${version}.pom"
         output.file="${mvn.pom.dir}/hive-beeline-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-cli -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-cli-${version}.jar"
         output.file="${mvn.jar.dir}/hive-cli-${version}.jar.asc"
@@ -1274,6 +1302,8 @@
         input.file="${mvn.pom.dir}/hive-cli-${version}.pom"
         output.file="${mvn.pom.dir}/hive-cli-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-common -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-common-${version}.jar"
         output.file="${mvn.jar.dir}/hive-common-${version}.jar.asc"
@@ -1282,6 +1312,8 @@
         input.file="${mvn.pom.dir}/hive-common-${version}.pom"
         output.file="${mvn.pom.dir}/hive-common-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-contrib -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-contrib-${version}.jar"
         output.file="${mvn.jar.dir}/hive-contrib-${version}.jar.asc"
@@ -1290,6 +1322,8 @@
         input.file="${mvn.pom.dir}/hive-contrib-${version}.pom"
         output.file="${mvn.pom.dir}/hive-contrib-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-exec -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-exec-${version}.jar"
         output.file="${mvn.jar.dir}/hive-exec-${version}.jar.asc"
@@ -1298,6 +1332,8 @@
         input.file="${mvn.pom.dir}/hive-exec-${version}.pom"
         output.file="${mvn.pom.dir}/hive-exec-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-hbase-handler -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-hbase-handler-${version}.jar"
         output.file="${mvn.jar.dir}/hive-hbase-handler-${version}.jar.asc"
@@ -1306,6 +1342,8 @@
         input.file="${mvn.pom.dir}/hive-hbase-handler-${version}.pom"
         output.file="${mvn.pom.dir}/hive-hbase-handler-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-hwi -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-hwi-${version}.jar"
         output.file="${mvn.jar.dir}/hive-hwi-${version}.jar.asc"
@@ -1314,6 +1352,8 @@
         input.file="${mvn.pom.dir}/hive-hwi-${version}.pom"
         output.file="${mvn.pom.dir}/hive-hwi-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-jdbc -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-jdbc-${version}.jar"
         output.file="${mvn.jar.dir}/hive-jdbc-${version}.jar.asc"
@@ -1322,22 +1362,38 @@
         input.file="${mvn.pom.dir}/hive-jdbc-${version}.pom"
         output.file="${mvn.pom.dir}/hive-jdbc-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-metastore -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-metastore-${version}.jar"
         output.file="${mvn.jar.dir}/hive-metastore-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
-        input.file="${mvn.pom.dir}/hive-metastore-${version}.pom"
-        output.file="${mvn.pom.dir}/hive-metastore-${version}.pom.asc"
+        input.file="${mvn.jar.dir}/hive-metastore-${version}.pom"
+        output.file="${mvn.jar.dir}/hive-metastore-${version}.pom.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-hcatalog -->
+    <sign-artifact
+        input.file="${mvn.pom.dir}/hive-hcatalog-${version}.jar"
+        output.file="${mvn.pom.dir}/hive-hcatalog-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
-        input.file="${mvn.jar.dir}/hive-pdk-${version}.jar"
-        output.file="${mvn.jar.dir}/hive-pdk-${version}.jar.asc"
+        input.file="${mvn.pom.dir}/hive-hcatalog-${version}.pom"
+        output.file="${mvn.pom.dir}/hive-hcatalog-${version}.pom.asc"
+        gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-pdk -->
+    <sign-artifact
+        input.file="${mvn.pom.dir}/hive-pdk-${version}.jar"
+        output.file="${mvn.pom.dir}/hive-pdk-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
         input.file="${mvn.pom.dir}/hive-pdk-${version}.pom"
         output.file="${mvn.pom.dir}/hive-pdk-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-serde -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-serde-${version}.jar"
         output.file="${mvn.jar.dir}/hive-serde-${version}.jar.asc"
@@ -1346,6 +1402,8 @@
         input.file="${mvn.pom.dir}/hive-serde-${version}.pom"
         output.file="${mvn.pom.dir}/hive-serde-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-service -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-service-${version}.jar"
         output.file="${mvn.jar.dir}/hive-service-${version}.jar.asc"
@@ -1354,6 +1412,8 @@
         input.file="${mvn.pom.dir}/hive-service-${version}.pom"
         output.file="${mvn.pom.dir}/hive-service-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
+
+    <!-- hive-shims -->
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-shims-${version}.jar"
         output.file="${mvn.jar.dir}/hive-shims-${version}.jar.asc"

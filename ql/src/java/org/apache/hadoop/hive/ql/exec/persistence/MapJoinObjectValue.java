@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Writable;
@@ -40,7 +41,7 @@ public class MapJoinObjectValue implements Externalizable {
   protected transient int metadataTag;
   protected transient MapJoinRowContainer<Object[]> obj;
 
-
+  protected transient byte aliasFilter = (byte) 0xff;
 
   public MapJoinObjectValue() {
 
@@ -53,6 +54,10 @@ public class MapJoinObjectValue implements Externalizable {
   public MapJoinObjectValue(int metadataTag, MapJoinRowContainer<Object[]> obj) {
     this.metadataTag = metadataTag;
     this.obj = obj;
+  }
+
+  public byte getAliasFilter() {
+    return aliasFilter;
   }
 
   @Override
@@ -86,7 +91,6 @@ public class MapJoinObjectValue implements Externalizable {
       // get the tableDesc from the map stored in the mapjoin operator
       HashTableSinkObjectCtx ctx = MapJoinMetaData.get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
-
       MapJoinRowContainer<Object[]> res = new MapJoinRowContainer<Object[]>();
       if (sz > 0) {
         int numCols = in.readInt();
@@ -102,7 +106,11 @@ public class MapJoinObjectValue implements Externalizable {
             if (memObj == null) {
               res.add(new ArrayList<Object>(0).toArray());
             } else {
-              res.add(memObj.toArray());
+              Object[] array = memObj.toArray();
+              res.add(array);
+              if (ctx.hasFilterTag()) {
+                aliasFilter &= ((ShortWritable)array[array.length - 1]).get();
+              }
             }
           }
         } else {

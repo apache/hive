@@ -115,10 +115,12 @@ minFileSize:11
 #### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee
 PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
 #### A masked pattern was here ####
 POSTHOOK: query: select * from exim_employee
 POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee
 POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
 #### A masked pattern was here ####
 1	in	ka

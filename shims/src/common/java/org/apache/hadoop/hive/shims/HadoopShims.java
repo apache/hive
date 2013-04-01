@@ -113,6 +113,21 @@ public interface HadoopShims {
   long getAccessTime(FileStatus file);
 
   /**
+   * Returns a shim to wrap MiniMrCluster
+   */
+  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
+                                     String nameNode, int numDir) throws IOException;
+
+  /**
+   * Shim for MiniMrCluster
+   */
+  public interface MiniMrShim {
+    public int getJobTrackerPort() throws UnsupportedOperationException;
+    public void shutdown() throws IOException;
+    public void setupConfiguration(Configuration conf);
+  }
+
+  /**
    * Returns a shim to wrap MiniDFSCluster. This is necessary since this class
    * was moved from org.apache.hadoop.dfs to org.apache.hadoop.hdfs
    */

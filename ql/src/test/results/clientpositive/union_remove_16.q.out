@@ -121,23 +121,14 @@ STAGE PLANS:
                   expr: '2'
                   type: string
             outputColumnNames: _col0, _col1, _col2
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: string
-              outputColumnNames: _col0, _col1, _col2
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                  name: default.outputtbl1
 
   Stage: Stage-6
     Conditional Operator
@@ -223,23 +214,14 @@ STAGE PLANS:
                   expr: '1'
                   type: string
             outputColumnNames: _col0, _col1, _col2
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: string
-              outputColumnNames: _col0, _col1, _col2
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                    name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                  name: default.outputtbl1
 
 
 PREHOOK: query: insert overwrite table outputTbl1 partition (ds)
@@ -317,10 +299,12 @@ ds=1
 ds=2
 PREHOOK: query: select * from outputTbl1 where ds = '1' order by key, values
 PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from outputTbl1 where ds = '1' order by key, values
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
@@ -334,10 +318,12 @@ POSTHOOK: Lineage: outputtbl1 PARTITION(ds=2).values EXPRESSION [(inputtbl1)inpu
 8	2	1
 PREHOOK: query: select * from outputTbl1 where ds = '2' order by key, values
 PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from outputTbl1 where ds = '2' order by key, values
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1 PARTITION(ds=1).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]

@@ -26,10 +26,11 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
+    <dependency org="org.antlr" name="antlr" rev="${antlr.version}" transitive="false"/>
+    <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}" transitive="false"/>
+    <dependency org="org.antlr" name="ST4" rev="${ST4.version}" transitive="false"/><!-- manually added (antlr dep), bad POM -->
     <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
                 conf="compile->default" />
-    <dependency org="org.antlr" name="antlr" rev="${antlr.version}"/>
-    <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}"/>
     <dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
       <exclude module="commons-pool" />
       <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>

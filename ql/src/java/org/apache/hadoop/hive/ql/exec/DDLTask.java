@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -165,6 +164,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ToolRunner;
+import org.stringtemplate.v4.ST;
 
 /**
  * DDLTask implementation.
@@ -1948,17 +1948,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 0;
       }
 
-      StringTemplate createTab_stmt = new StringTemplate("CREATE $" + EXTERNAL + "$ TABLE " +
+      ST createTab_stmt = new ST("CREATE <" + EXTERNAL + "> TABLE " +
           tableName + "(\n" +
-          "$" + LIST_COLUMNS + "$)\n" +
-          "$" + TBL_COMMENT + "$\n" +
-          "$" + LIST_PARTITIONS + "$\n" +
-          "$" + SORT_BUCKET + "$\n" +
-          "$" + ROW_FORMAT + "$\n" +
+          "<" + LIST_COLUMNS + ">)\n" +
+          "<" + TBL_COMMENT + ">\n" +
+          "<" + LIST_PARTITIONS + ">\n" +
+          "<" + SORT_BUCKET + ">\n" +
+          "<" + ROW_FORMAT + ">\n" +
           "LOCATION\n" +
-          "$" + TBL_LOCATION + "$\n" +
+          "<" + TBL_LOCATION + ">\n" +
           "TBLPROPERTIES (\n" +
-          "$" + TBL_PROPERTIES + "$)\n");
+          "<" + TBL_PROPERTIES + ">)\n");
 
       // For cases where the table is external
       String tbl_external = "";
@@ -2115,16 +2115,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl_properties += StringUtils.join(realProps, ", \n");
       }
 
-      createTab_stmt.setAttribute(EXTERNAL, tbl_external);
-      createTab_stmt.setAttribute(LIST_COLUMNS, tbl_columns);
-      createTab_stmt.setAttribute(TBL_COMMENT, tbl_comment);
-      createTab_stmt.setAttribute(LIST_PARTITIONS, tbl_partitions);
-      createTab_stmt.setAttribute(SORT_BUCKET, tbl_sort_bucket);
-      createTab_stmt.setAttribute(ROW_FORMAT, tbl_row_format);
-      createTab_stmt.setAttribute(TBL_LOCATION, tbl_location);
-      createTab_stmt.setAttribute(TBL_PROPERTIES, tbl_properties);
+      createTab_stmt.add(EXTERNAL, tbl_external);
+      createTab_stmt.add(LIST_COLUMNS, tbl_columns);
+      createTab_stmt.add(TBL_COMMENT, tbl_comment);
+      createTab_stmt.add(LIST_PARTITIONS, tbl_partitions);
+      createTab_stmt.add(SORT_BUCKET, tbl_sort_bucket);
+      createTab_stmt.add(ROW_FORMAT, tbl_row_format);
+      createTab_stmt.add(TBL_LOCATION, tbl_location);
+      createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
-      outStream.writeBytes(createTab_stmt.toString());
+      outStream.writeBytes(createTab_stmt.render());
       ((FSDataOutputStream) outStream).close();
       outStream = null;
     } catch (FileNotFoundException e) {
@@ -3955,20 +3955,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table table = db.getTable(tableName, true);
 
-    FsShell fshell = new FsShell(conf);
     try {
+      // this is not transactional
       for (Path location : getLocations(db, table, partSpec)) {
-        fshell.run(new String[]{"-rmr", location.toString()});
-        location.getFileSystem(conf).mkdirs(location);
+        FileSystem fs = location.getFileSystem(conf);
+        fs.delete(location, true);
+        fs.mkdirs(location);
       }
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
-      try {
-        fshell.close();
-      } catch (IOException e) {
-        // ignore
-      }
     }
     return 0;
   }

@@ -175,6 +175,7 @@ TOK_TABLEROWFORMATFIELD;
 TOK_TABLEROWFORMATCOLLITEMS;
 TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
+TOK_TBLORCFILE;
 TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
@@ -1145,6 +1146,7 @@ fileFormat
     : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
     | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
+    | KW_ORCFILE -> ^(TOK_TBLORCFILE)
     | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
@@ -1187,7 +1189,7 @@ descStatement
 analyzeStatement
 @init { msgs.push("analyze statement"); }
 @after { msgs.pop(); }
-    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (KW_FOR KW_COLUMNS statsColumnName=columnNameList))? -> ^(TOK_ANALYZE $parttype $noscan? $statsColumnName?)
+    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (partialscan=KW_PARTIALSCAN) | (KW_FOR KW_COLUMNS statsColumnName=columnNameList))? -> ^(TOK_ANALYZE $parttype $noscan? $partialscan? $statsColumnName?)
     ;
 
 showStatement
@@ -1562,6 +1564,7 @@ tableFileFormat
       KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
       | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
       | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
+      | KW_STORED KW_AS KW_ORCFILE -> TOK_TBLORCFILE
       | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral

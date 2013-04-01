@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
@@ -104,33 +103,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
    */
   public void setTmpFiles(String prop, String files) {
     // gone in 20+
-  }
-
-  public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
-      int numDataNodes,
-      boolean format,
-      String[] racks) throws IOException {
-    return new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
-  }
-
-  /**
-   * MiniDFSShim.
-   *
-   */
-  public class MiniDFSShim implements HadoopShims.MiniDFSShim {
-    private final MiniDFSCluster cluster;
-
-    public MiniDFSShim(MiniDFSCluster cluster) {
-      this.cluster = cluster;
-    }
-
-    public FileSystem getFileSystem() throws IOException {
-      return cluster.getFileSystem();
-    }
-
-    public void shutdown() {
-      cluster.shutdown();
-    }
   }
 
   /**

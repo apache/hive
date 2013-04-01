@@ -1,7 +1,9 @@
 set hive.auto.convert.join = true;
 set hive.mapjoin.localtask.max.memory.usage = 0.0001;
 set hive.mapjoin.check.memory.rows = 2;
+set hive.auto.convert.join.noconditionaltask = false;
 
+-- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 
 FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)

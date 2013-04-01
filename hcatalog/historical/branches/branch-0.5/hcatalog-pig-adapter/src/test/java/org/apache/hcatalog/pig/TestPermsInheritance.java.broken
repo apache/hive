@@ -1,0 +1,135 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+-->There are two pieces of code that sets directory permissions.
+-->One that sets the UMask which only woks for dfs filesystem.
+-->And the other change the permission of directories after they are created.
+-->I removed that since it is not secure and just add more load on the namenode.
+-->We should push this test to e2e to verify what actually runs in production.
+
+package org.apache.hcatalog.pig;
+
+import java.io.IOException;
+
+import junit.framework.TestCase;
+
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hcatalog.ExitException;
+import org.apache.hcatalog.NoExitSecurityManager;
+import org.apache.hcatalog.cli.HCatCli;
+import org.apache.hcatalog.pig.HCatStorer;
+import org.apache.pig.ExecType;
+import org.apache.pig.PigServer;
+import org.apache.pig.impl.util.UDFContext;
+import org.apache.thrift.TException;
+
+public class TestPermsInheritance extends TestCase {
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    securityManager = System.getSecurityManager();
+    System.setSecurityManager(new NoExitSecurityManager());
+    msc = new HiveMetaStoreClient(conf);
+    msc.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"testNoPartTbl", true,true);
+    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+    msc.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,"testPartTbl", true,true);
+    pig = new PigServer(ExecType.LOCAL, conf.getAllProperties());
+    UDFContext.getUDFContext().setClientSystemProps();
+  }
+
+  private HiveMetaStoreClient msc;
+  private SecurityManager securityManager;
+  private PigServer pig;
+
+  @Override
+  protected void tearDown() throws Exception {
+    super.tearDown();
+    System.setSecurityManager(securityManager);
+  }
+
+  private final HiveConf conf = new HiveConf(this.getClass());
+
+  public void testNoPartTbl() throws IOException, MetaException, UnknownTableException, TException, NoSuchObjectException, HiveException{
+
+    try{
+      HCatCli.main(new String[]{"-e","create table testNoPartTbl (line string) stored as RCFILE", "-p","rwx-wx---"});
+    }
+    catch(Exception e){
+      assertTrue(e instanceof ExitException);
+      assertEquals(((ExitException)e).getStatus(), 0);
+    }
+    Warehouse wh = new Warehouse(conf);
+    Path dfsPath = wh.getTablePath(Hive.get(conf).getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME), "testNoPartTbl");
+    FileSystem fs = dfsPath.getFileSystem(conf);
+    assertEquals(fs.getFileStatus(dfsPath).getPermission(),FsPermission.valueOf("drwx-wx---"));
+
+    pig.setBatchOn();
+    pig.registerQuery("A  = load 'build.xml' as (line:chararray);");
+    pig.registerQuery("store A into 'testNoPartTbl' using "+HCatStorer.class.getName()+"();");
+    pig.executeBatch();
+    FileStatus[] status = fs.listStatus(dfsPath,hiddenFileFilter);
+
+    assertEquals(status.length, 1);
+    assertEquals(FsPermission.valueOf("drwx-wx---"),status[0].getPermission());
+
+    try{
+      HCatCli.main(new String[]{"-e","create table testPartTbl (line string)  partitioned by (a string) stored as RCFILE", "-p","rwx-wx--x"});
+    }
+    catch(Exception e){
+      assertTrue(e instanceof ExitException);
+      assertEquals(((ExitException)e).getStatus(), 0);
+    }
+
+    dfsPath = wh.getTablePath(Hive.get(conf).getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME), "testPartTbl");
+    assertEquals(fs.getFileStatus(dfsPath).getPermission(),FsPermission.valueOf("drwx-wx--x"));
+
+    pig.setBatchOn();
+    pig.registerQuery("A  = load 'build.xml' as (line:chararray);");
+    pig.registerQuery("store A into 'testPartTbl' using "+HCatStorer.class.getName()+"('a=part');");
+    pig.executeBatch();
+
+    Path partPath = new Path(dfsPath,"a=part");
+    assertEquals(FsPermission.valueOf("drwx-wx--x"),fs.getFileStatus(partPath).getPermission());
+    status = fs.listStatus(partPath,hiddenFileFilter);
+    assertEquals(status.length, 1);
+    assertEquals(FsPermission.valueOf("drwx-wx--x"),status[0].getPermission());
+  }
+
+  private static final PathFilter hiddenFileFilter = new PathFilter(){
+    public boolean accept(Path p){
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    }
+  };
+}

@@ -38,6 +38,10 @@ while [ $# -gt 0 ]; do
       SERVICE=rcfilecat
       shift
       ;;
+    --orcfiledump)
+      SERVICE=orcfiledump
+      shift
+      ;;
     --help)
       HELP=_help
       shift

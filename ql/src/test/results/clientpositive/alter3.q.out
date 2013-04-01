@@ -30,10 +30,12 @@ POSTHOOK: Output: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from alter3 where pcol1='test_part:' and pcol2='test_part:'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3
 PREHOOK: Input: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter3 where pcol1='test_part:' and pcol2='test_part:'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3
 POSTHOOK: Input: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -91,10 +93,12 @@ pcol2               	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_renamed
 PREHOOK: Input: default@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: query: select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_renamed
 POSTHOOK: Input: default@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -258,10 +262,12 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMP
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part:' AND pcol2='test_part:'
 PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3
 PREHOOK: Input: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part:' AND pcol2='test_part:'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3
 POSTHOOK: Input: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -327,10 +333,12 @@ pcol2               	string              	None
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:'
 PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3_renamed
 PREHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3_renamed
 POSTHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]

@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="Apache Forrest" name="Generator">
+<meta name="Forrest-version" content="0.9">
+<meta name="Forrest-skin-name" content="pelt">
+<title>Overview </title>
+<link type="text/css" href="skin/basic.css" rel="stylesheet">
+<link media="screen" type="text/css" href="skin/screen.css" rel="stylesheet">
+<link media="print" type="text/css" href="skin/print.css" rel="stylesheet">
+<link type="text/css" href="skin/profile.css" rel="stylesheet">
+<script src="skin/getBlank.js" language="javascript" type="text/javascript"></script><script src="skin/getMenu.js" language="javascript" type="text/javascript"></script><script src="skin/fontsize.js" language="javascript" type="text/javascript"></script>
+<link rel="shortcut icon" href="">
+</head>
+<body onload="init()">
+<script type="text/javascript">ndeSetTextSize();</script>
+<div id="top">
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+<script src="skin/breadcrumbs.js" language="JavaScript" type="text/javascript"></script>
+</div>
+<!--+
+    |header
+    +-->
+<div class="header">
+<!--+
+    |start group logo
+    +-->
+<div class="grouplogo">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat.jpg" title=""></a>
+</div>
+<!--+
+    |end group logo
+    +-->
+<!--+
+    |start Project Logo
+    +-->
+<div class="projectlogoA1">
+<a href=""><img class="logoImage" alt="HCatalog" src="images/hcat-box.jpg" title="A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queryies."></a>
+</div>
+<!--+
+    |end Project Logo
+    +-->
+<!--+
+    |start Tabs
+    +-->
+<ul id="tabs">
+<li class="current">
+<a class="selected" href="index.html">HCatalog 0.4.0 Documentation</a>
+</li>
+</ul>
+<!--+
+    |end Tabs
+    +-->
+</div>
+</div>
+<div id="main">
+<div id="publishedStrip">
+<!--+
+    |start Subtabs
+    +-->
+<div id="level2tabs"></div>
+<!--+
+    |end Endtabs
+    +-->
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<!--+
+    |breadtrail
+    +-->
+<div class="breadtrail">
+
+             &nbsp;
+           </div>
+<!--+
+    |start Menu, mainarea
+    +-->
+<!--+
+    |start Menu
+    +-->
+<div id="menu">
+<div onclick="SwitchMenu('menu_selected_1.1', 'skin/')" id="menu_selected_1.1Title" class="menutitle" style="background-image: url('skin/images/chapter_open.gif');">HCatalog</div>
+<div id="menu_selected_1.1" class="selectedmenuitemgroup" style="display: block;">
+<div class="menupage">
+<div class="menupagetitle">Overview</div>
+</div>
+<div class="menuitem">
+<a href="install.html">Installation From Tarball</a>
+</div>
+<div class="menuitem">
+<a href="loadstore.html">Load &amp; Store Interfaces</a>
+</div>
+<div class="menuitem">
+<a href="inputoutput.html">Input &amp; Output Interfaces </a>
+</div>
+<div class="menuitem">
+<a href="cli.html">Command Line Interface </a>
+</div>
+<div class="menuitem">
+<a href="supportedformats.html">Storage Formats</a>
+</div>
+<div class="menuitem">
+<a href="dynpartition.html">Dynamic Partitioning</a>
+</div>
+<div class="menuitem">
+<a href="notification.html">Notification</a>
+</div>
+<div class="menuitem">
+<a href="api/index.html">API Docs</a>
+</div>
+</div>
+<div id="credit"></div>
+<div id="roundbottom">
+<img style="display: none" class="corner" height="15" width="15" alt="" src="skin/images/rc-b-l-15-1body-2menu-3menu.png"></div>
+<!--+
+  |alternative credits
+  +-->
+<div id="credit2"></div>
+</div>
+<!--+
+    |end Menu
+    +-->
+<!--+
+    |start content
+    +-->
+<div id="content">
+<div title="Portable Document Format" class="pdflink">
+<a class="dida" href="index.pdf"><img alt="PDF -icon" src="skin/images/pdfdoc.gif" class="skin"><br>
+        PDF</a>
+</div>
+<h1>Overview </h1>
+<div id="front-matter">
+<div id="minitoc-area">
+<ul class="minitoc">
+<li>
+<a href="#HCatalog">HCatalog </a>
+</li>
+<li>
+<a href="#HCatalog+Architecture">HCatalog Architecture</a>
+<ul class="minitoc">
+<li>
+<a href="#Interfaces">Interfaces</a>
+</li>
+<li>
+<a href="#Data+Model">Data Model</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#Data+Flow+Example">Data Flow Example</a>
+</li>
+</ul>
+</div>
+</div>
+   
+<a name="HCatalog"></a>
+<h2 class="h3">HCatalog </h2>
+<div class="section">
+<p>HCatalog is a table and storage management layer for Hadoop that enables users with different data processing tools &ndash; Pig, MapReduce, and Hive &ndash; to more easily read and write data on the grid. HCatalog&rsquo;s table abstraction presents users with a relational view of data in the Hadoop distributed file system (HDFS) and ensures that users need not worry about where or in what format their data is stored &ndash; RCFile format, text files, or sequence files. </p>
+<p>HCatalog supports reading and writing files in any format for which a SerDe can be written. By default, HCatalog supports RCFile, CSV, JSON, and sequence file formats. To use a custom format, you must provide the InputFormat, OutputFormat, and SerDe.</p>
+<p></p>
+<div style="text-align: center;">
+<img class="figure" alt="HCatalog Product" src="images/hcat-product.jpg"></div>
+</div>
+      
+      
+      
+<a name="HCatalog+Architecture"></a>
+<h2 class="h3">HCatalog Architecture</h2>
+<div class="section">
+<p>HCatalog is built on top of the Hive metastore and incorporates components from the Hive DDL. HCatalog provides read and write interfaces for Pig and MapReduce and uses
+      Hive's command line interface for issuing data definition and metadata exploration commands.</p>
+<p></p>
+<a name="Interfaces"></a>
+<h3 class="h4">Interfaces</h3>
+<p>The HCatalog interface for Pig &ndash; HCatLoader and HCatStorer &ndash; is an implementation of the Pig load and store interfaces. HCatLoader accepts a table to read data from; you can indicate which partitions to scan by immediately following the load statement with a partition filter statement. HCatStorer accepts a table to write to and optionally a specification of partition keys to create a new partition. You can write to a single partition by specifying the partition key(s) and value(s) in the STORE clause; and you can write to multiple partitions if the partition key(s) are columns in the data being stored. HCatLoader and HCatStorer are implemented on top of HCatInputFormat and HCatOutputFormat, respectively (see <a href="loadstore.html">HCatalog Load and Store</a>).</p>
+<p>The HCatalog interface for MapReduce &ndash; HCatInputFormat and HCatOutputFormat &ndash; is an implementation of Hadoop InputFormat and OutputFormat. HCatInputFormat accepts a table to read data from and optionally a selection predicate to indicate which partitions to scan. HCatOutputFormat accepts a table to write to and optionally a specification of partition keys to create a new partition. You can write to a single partition by specifying the partition key(s) and value(s) in the setOutput method; and you can write to multiple partitions if the partition key(s) are columns in the data being stored. (See <a href="inputoutput.html">HCatalog Input and Output</a>.)</p>
+<p>Note: There is no Hive-specific interface. Since HCatalog uses Hive's metastore, Hive can read data in HCatalog directly.</p>
+<p>Data is defined using HCatalog's command line interface (CLI). The HCatalog CLI supports all Hive DDL that does not require MapReduce to execute, allowing users to create, alter, drop tables, etc. (Unsupported Hive DDL includes import/export, CREATE TABLE AS SELECT, ALTER TABLE options REBUILD and CONCATENATE, and ANALYZE TABLE ... COMPUTE STATISTICS.) The CLI also supports the data exploration part of the Hive command line, such as SHOW TABLES, DESCRIBE TABLE, etc. (see the <a href="cli.html">HCatalog Command Line Interface</a>).</p>
+<a name="Data+Model"></a>
+<h3 class="h4">Data Model</h3>
+<p>HCatalog presents a relational view of data. Data is stored in tables and these tables can be placed in databases. Tables can also be hash partitioned on one or more keys; that is, for a given value of a key (or set of keys) there will be one partition that contains all rows with that value (or set of values). For example, if a table is partitioned on date and there are three days of data in the table, there will be three partitions in the table. New partitions can be added to a table, and partitions can be dropped from a table. Partitioned tables have no partitions at create time. Unpartitioned tables effectively have one default partition that must be created at table creation time. There is no guaranteed read consistency when a partition is dropped.</p>
+<p>Partitions contain records. Once a partition is created records cannot be added to it, removed from it, or updated in it. Partitions are multi-dimensional and not hierarchical. Records are divided into columns. Columns have a name and a datatype. HCatalog supports the same datatypes as Hive (see <a href="loadstore.html">HCatalog Load and Store</a>). </p>
+</div>
+     
+  
+<a name="Data+Flow+Example"></a>
+<h2 class="h3">Data Flow Example</h2>
+<div class="section">
+<p>This simple data flow example shows how HCatalog can help grid users share and access data.</p>
+<p>
+<strong>First</strong> Joe in data acquisition uses distcp to get data onto the grid.</p>
+<pre class="code">
+hadoop distcp file:///file.dat hdfs://data/rawevents/20100819/data
+
+hcat "alter table rawevents add partition (ds='20100819') location 'hdfs://data/rawevents/20100819/data'"
+</pre>
+<p>
+<strong>Second</strong> Sally in data processing uses Pig to cleanse and prepare the data.</p>
+<p>Without HCatalog, Sally must be manually informed by Joe when data is available, or poll on HDFS.</p>
+<pre class="code">
+A = load '/data/rawevents/20100819/data' as (alpha:int, beta:chararray, &hellip;);
+B = filter A by bot_finder(zeta) = 0;
+&hellip;
+store Z into 'data/processedevents/20100819/data';
+</pre>
+<p>With HCatalog, HCatalog will send a JMS message that data is available. The Pig job can then be started.</p>
+<pre class="code">
+A = load 'rawevents' using HCatLoader();
+B = filter A by date = '20100819' and by bot_finder(zeta) = 0;
+&hellip;
+store Z into 'processedevents' using HCatStorer("date=20100819");
+</pre>
+<p>
+<strong>Third</strong> Robert in client management uses Hive to analyze his clients' results.</p>
+<p>Without HCatalog, Robert must alter the table to add the required partition. </p>
+<pre class="code">
+alter table processedevents add partition 20100819 hdfs://data/processedevents/20100819/data
+
+select advertiser_id, count(clicks)
+from processedevents
+where date = '20100819' 
+group by advertiser_id;
+</pre>
+<p>With HCatalog, Robert does not need to modify the table structure.</p>
+<pre class="code">
+select advertiser_id, count(clicks)
+from processedevents
+where date = &lsquo;20100819&rsquo; 
+group by advertiser_id;
+</pre>
+</div>
+  
+  
+  
+</div>
+<!--+
+    |end content
+    +-->
+<div class="clearboth">&nbsp;</div>
+</div>
+<div id="footer">
+<!--+
+    |start bottomstrip
+    +-->
+<div class="lastmodified">
+<script type="text/javascript"><!--
+document.write("Last Published: " + document.lastModified);
+//  --></script>
+</div>
+<div class="copyright">
+        Copyright &copy;
+         2011-2012 <a href="http://www.apache.org/licenses/">The Apache Software Foundation</a>
+</div>
+<div id="logos">
+<a href="http://forrest.apache.org/"><img border="0" title="Built with Apache Forrest" alt="Built with Apache Forrest - logo" src="images/built-with-forrest-button.png" style="width: 88px;height: 31px;"></a>
+</div>
+<!--+
+    |end bottomstrip
+    +-->
+</div>
+</body>
+</html>

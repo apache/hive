@@ -22,10 +22,12 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)s
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from texternal where insertdate='2008-01-01'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@texternal
 PREHOOK: Input: default@texternal@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: query: select * from texternal where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@texternal
 POSTHOOK: Input: default@texternal@insertdate=2008-01-01
 #### A masked pattern was here ####
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -57,6 +57,8 @@ public class QBParseInfo {
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isInsertToTable;  // used for insert overwrite command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
+  private boolean isPartialScanAnalyzeCommand; // used for the analyze command (statistics)
+                                               // (partialscan)
 
   private final HashMap<String, tableSpec> tableSpecs; // used for statistics
 
@@ -576,5 +578,19 @@ public class QBParseInfo {
    */
   public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
     this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @return the isPartialScanAnalyzeCommand
+   */
+  public boolean isPartialScanAnalyzeCommand() {
+    return isPartialScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
+   */
+  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
+    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 }

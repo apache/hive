@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="shims" default="jar">
+    <property name="hcatalog.home" value="${basedir}/.." />
+    <property file="${hcatalog.home}/build.properties" />
+    <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
+    <!--<property name="mvnrepo" value="http://repo2.maven.org/maven2"/>-->
+
+    <property name="shims.include" value="20,23"/>
+    <!-- sources and hadoop version for each shim -->
+    <property name="shims.0.20.sources" value="${basedir}/src/20/java" />
+    <property name="shims.0.23.sources" value="${basedir}/src/23/java" />
+    <property name="shims.0.20.hadoop.ivy.dir" value="${build.ivy.lib.dir}/hadoop20" />
+    <property name="shims.0.23.hadoop.ivy.dir" value="${build.ivy.lib.dir}/hadoop23" />
+
+    <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision](-[classifier]).[ext]" />
+
+    <target name="jar" depends="compile">
+        <echo message="Project: ${ant.project.name}"/>
+        <echo message="Building shim jars ${basedir}" />
+        <echo message="Building shim jars ${hcatalog.home}" />
+    </target>
+
+    <target name="compile" depends="init,ivy-retrieve">
+        <echo message="Project: ${ant.project.name}"/>
+        <!--
+        <for param="shimName" list="${shims.include}">
+            <sequential>
+                <echo>Building shims @{shimName}</echo>
+                <echo message="${hadoop.version}" />
+                <antcall target="build_shims" inheritRefs="false" inheritAll="false">
+                    <param name="hadoop.version.ant-internal" value="${shims.@{shimName}.version}" />
+                    <param name="sources" value="${shims.@{shimName}.sources}" />
+                    <param name="hadoop.ivy.dir" value="${shims.@{shimName}.hadoop.ivy.dir}" />
+                    <param name="shim.name" value="@{shimName}" />
+                </antcall>
+            </sequential>
+        </for>
+        -->
+        <antcall target="build-shims" inheritRefs="false" inheritAll="false">
+            <param name="hadoop.version.ant-internal" value="20" />
+            <param name="sources" value="${shims.0.20.sources}" />
+            <param name="hadoop.ivy.dir" value="${shims.0.20.hadoop.ivy.dir}" />
+            <param name="shim.name" value="20" />
+        </antcall>
+        <antcall target="build-shims" inheritRefs="false" inheritAll="false">
+            <param name="hadoop.version.ant-internal" value="23" />
+            <param name="sources" value="${shims.0.23.sources}" />
+            <param name="hadoop.ivy.dir" value="${shims.0.23.hadoop.ivy.dir}" />
+            <param name="shim.name" value="23" />
+        </antcall>
+    </target>
+
+    <target name="build-shims">
+        <echo message="Project: ${ant.project.name}"/>
+
+        <antcall target="ivy-retrieve-hadoop-shim" inheritRefs="false" inheritAll="false">
+            <param name="ivy.hadoop.shim.conf" value="hadoop${shim.name}" />
+        </antcall>
+
+        <path id="shims.classpath">
+            <fileset dir="${hadoop.ivy.dir}" includes="*.jar" />
+        </path>
+
+        <javac
+            encoding="${build.encoding}"
+            includes="**/*.java"
+            destdir="${build.classes}"
+            debug="${javac.debug}"
+            deprecation="${javac.deprecation}"
+            srcdir="${sources}"
+            includeantruntime="false">
+            <compilerarg line="${javac.args} ${javac.args.warnings}" />
+            <classpath refid="shims.classpath"/>
+        </javac>
+    </target>
+
+    <target name="init">
+        <echo message="Project: ${ant.project.name}"/>
+    </target>
+
+    <target name="ivy-retrieve">
+        <echo message="Project: ${ant.project.name}"/>
+    </target>
+
+    <target name="ivy-init-settings">
+        <!--Configure Ivy by reading in the settings file
+            If anyone has already read in a settings file into this settings ID, it gets priority
+        -->
+        <echo message="Project: ${ant.project.name}"/>
+        <ivy:settings id="${ant.project.name}.ivy.settings" file="${ivysettings.xml}"/>
+    </target>
+
+    <target name="ivy-resolve-hadoop-shim" depends="ivy-init-settings" unless="offline">
+        <echo message="Project: ${ant.project.name}"/>
+        <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
+            conf="${ivy.hadoop.shim.conf}" log="${ivyresolvelog}"/>
+    </target>
+
+    <target name="ivy-retrieve-hadoop-shim" depends="ivy-resolve-hadoop-shim"
+        description="Retrieve Ivy-managed artifacts">
+        <echo message="Project: ${ant.project.name}"/>
+        <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+            pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+            log="${ivyresolvelog}" conf="${ivy.hadoop.shim.conf}"/>
+    </target>
+</project>

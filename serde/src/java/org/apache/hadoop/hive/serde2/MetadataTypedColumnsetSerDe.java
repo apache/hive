@@ -30,10 +30,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.MetadataListStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Writable;
  * MetadataTypedColumnsetSerDe.
  *
  */
-public class MetadataTypedColumnsetSerDe implements SerDe {
+public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory
       .getLog(MetadataTypedColumnsetSerDe.class.getName());
@@ -95,6 +95,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     return defaultVal;
   }
 
+  @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
     String altSep = tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT);
     separator = getByteValue(altSep, DefaultSeparator);
@@ -167,6 +168,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
 
   ColumnSet deserializeCache = new ColumnSet();
 
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     String row = null;
     if (field instanceof BytesWritable) {
@@ -193,16 +195,19 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     }
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
   }
 
+  @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
   }
 
   Text serializeCache = new Text();
 
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
@@ -232,6 +237,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     return serializeCache;
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

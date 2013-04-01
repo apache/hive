@@ -40,8 +40,8 @@ public class BucketJoinProcCtx implements NodeProcessorCtx {
   // The set of join operators which can be converted to a bucketed map join
   private Set<JoinOperator> convertedJoinOps = new HashSet<JoinOperator>();
 
-  private Map<String, List<Integer>> aliasToPartitionBucketNumberMapping;
-  private Map<String, List<List<String>>> aliasToPartitionBucketFileNamesMapping;
+  private Map<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition;
+  private Map<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition;
   private Map<Partition, List<String>> bigTblPartsToBucketFileNames;
   private Map<Partition, Integer> bigTblPartsToBucketNumber;
   private List<String> joinAliases;
@@ -72,12 +72,12 @@ public class BucketJoinProcCtx implements NodeProcessorCtx {
     this.convertedJoinOps = setOfConvertedJoins;
   }
 
-  public Map<String, List<Integer>> getAliasToPartitionBucketNumberMapping() {
-    return aliasToPartitionBucketNumberMapping;
+  public Map<String, List<Integer>> getTblAliasToNumberOfBucketsInEachPartition() {
+    return tblAliasToNumberOfBucketsInEachPartition;
   }
 
-  public Map<String, List<List<String>>> getAliasToPartitionBucketFileNamesMapping() {
-    return aliasToPartitionBucketFileNamesMapping;
+  public Map<String, List<List<String>>> getTblAliasToBucketedFilePathsInEachPartition() {
+    return tblAliasToBucketedFilePathsInEachPartition;
   }
 
   public Map<Partition, List<String>> getBigTblPartsToBucketFileNames() {
@@ -88,14 +88,14 @@ public class BucketJoinProcCtx implements NodeProcessorCtx {
     return bigTblPartsToBucketNumber;
   }
 
-  public void setAliasToPartitionBucketNumberMapping(
-    Map<String, List<Integer>> aliasToPartitionBucketNumberMapping) {
-    this.aliasToPartitionBucketNumberMapping = aliasToPartitionBucketNumberMapping;
+  public void setTblAliasToNumberOfBucketsInEachPartition(
+    Map<String, List<Integer>> tblAliasToNumberOfBucketsInEachPartition) {
+    this.tblAliasToNumberOfBucketsInEachPartition = tblAliasToNumberOfBucketsInEachPartition;
   }
 
-  public void setAliasToPartitionBucketFileNamesMapping(
-    Map<String, List<List<String>>> aliasToPartitionBucketFileNamesMapping) {
-    this.aliasToPartitionBucketFileNamesMapping = aliasToPartitionBucketFileNamesMapping;
+  public void setTblAliasToBucketedFilePathsInEachPartition(
+    Map<String, List<List<String>>> tblAliasToBucketedFilePathsInEachPartition) {
+    this.tblAliasToBucketedFilePathsInEachPartition = tblAliasToBucketedFilePathsInEachPartition;
   }
 
   public void setBigTblPartsToBucketFileNames(

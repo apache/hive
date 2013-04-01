@@ -91,38 +91,17 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
-                    expr: 1
-                    type: int
+                    expr: UDFToLong(1)
+                    type: bigint
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: UDFToString(_col1)
-                      type: string
-                outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: UDFToLong(_col1)
-                          type: bigint
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                          name: default.outputtbl1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                    name: default.outputtbl1
 
   Stage: Stage-6
     Conditional Operator
@@ -200,31 +179,17 @@ STAGE PLANS:
                 expressions:
                       expr: _col0
                       type: string
-                      expr: _col5
-                      type: string
+                      expr: UDFToLong(_col5)
+                      type: bigint
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: UDFToLong(_col1)
-                          type: bigint
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                          name: default.outputtbl1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                      name: default.outputtbl1
       Local Work:
         Map Reduce Local Work
 
@@ -270,31 +235,17 @@ STAGE PLANS:
                 expressions:
                       expr: _col0
                       type: string
-                      expr: _col5
-                      type: string
+                      expr: UDFToLong(_col5)
+                      type: bigint
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: UDFToLong(_col1)
-                          type: bigint
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                          name: default.outputtbl1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                      name: default.outputtbl1
       Local Work:
         Map Reduce Local Work
 
@@ -344,31 +295,17 @@ STAGE PLANS:
             expressions:
                   expr: _col0
                   type: string
-                  expr: _col5
-                  type: string
+                  expr: UDFToLong(_col5)
+                  type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: UDFToLong(_col1)
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                      name: default.outputtbl1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                  name: default.outputtbl1
 
 
 PREHOOK: query: insert overwrite table outputTbl1

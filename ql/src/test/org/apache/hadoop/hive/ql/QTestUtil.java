@@ -46,7 +46,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -79,7 +78,6 @@ import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -117,7 +115,7 @@ public class QTestUtil {
   private FileSystem fs;
   protected final boolean overWrite;
   private CliDriver cliDriver;
-  private MiniMRCluster mr = null;
+  private HadoopShims.MiniMrShim mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private boolean miniMr = false;
   private String hadoopVer = null;
@@ -222,6 +220,9 @@ public class QTestUtil {
     if (miniMr) {
       assert dfs != null;
       assert mr != null;
+
+      mr.setupConfiguration(conf);
+
       // set fs.default.name to the uri of mini-dfs
       String dfsUriString = getHdfsUriString(dfs.getFileSystem().getUri().toString());
       conf.setVar(HiveConf.ConfVars.HADOOPFS, dfsUriString);
@@ -229,25 +230,6 @@ public class QTestUtil {
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfsUriString,
                             "/build/ql/test/data/warehouse/")).toString());
-      int port = 0;
-
-      try {
-        // Hadoop20 MiniMRCluster will return a proper port.
-        // Hadoop23 MiniMRCluster does not implement this method so use the default RM port.
-        port = mr.getJobTrackerPort();
-      } catch (UnsupportedOperationException e) {
-        String address =
-            StringUtils.substringAfterLast(conf.get("yarn.resourcemanager.address"), ":");
-
-        if (StringUtils.isBlank(address)) {
-          throw new IllegalArgumentException("Invalid YARN resource manager port.");
-        }
-
-        port = Integer.parseInt(address);
-      }
-
-      ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf,
-              "localhost:" + port);
     }
   }
 
@@ -299,7 +281,7 @@ public class QTestUtil {
     if (miniMr) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
       FileSystem fs = dfs.getFileSystem();
-      mr = new MiniMRCluster(4, getHdfsUriString(fs.getUri().toString()), 1);
+      mr = ShimLoader.getHadoopShims().getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
     }
 
     initConf();
@@ -374,7 +356,7 @@ public class QTestUtil {
   private boolean checkNeedsSort(String fileName, String query) {
     Pattern pattern = Pattern.compile("-- SORT_BEFORE_DIFF");
     Matcher matcher = pattern.matcher(query);
-    
+
     if (matcher.find()) {
       return true;
     }
@@ -794,7 +776,18 @@ public class QTestUtil {
   }
 
   public int executeClient(String tname) {
-    return cliDriver.processLine(qMap.get(tname));
+    String commands = qMap.get(tname);
+    StringBuilder newCommands = new StringBuilder(commands.length());
+    int lastMatchEnd = 0;
+    Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    while (commentMatcher.find()) {
+      newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
+      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
+      lastMatchEnd = commentMatcher.end();
+    }
+    newCommands.append(commands.substring(lastMatchEnd, commands.length()));
+    commands = newCommands.toString();
+    return cliDriver.processLine(commands);
   }
 
   public boolean shouldBeSkipped(String tname) {
@@ -840,7 +833,7 @@ public class QTestUtil {
     outfd.write(e.getMessage());
     outfd.close();
 
-    int exitVal = executeDiffCommand(outf.getPath(), expf, false, 
+    int exitVal = executeDiffCommand(outf.getPath(), expf, false,
                                      qSortSet.contains(qf.getName()));
     if (exitVal != 0 && overWrite) {
       exitVal = overwriteResults(outf.getPath(), expf);
@@ -1061,7 +1054,7 @@ public class QTestUtil {
       ) throws Exception {
 
     int result = 0;
-    
+
     if (sortResults) {
       // sort will try to open the output file in write mode on windows. We need to
       // close it first.
@@ -1140,18 +1133,18 @@ public class QTestUtil {
   private static int executeCmd(String[] args, String outFile, String errFile) throws Exception {
     System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(args, ' '));
 
-    PrintStream out = outFile == null ? 
-      SessionState.getConsole().getChildOutStream() : 
+    PrintStream out = outFile == null ?
+      SessionState.getConsole().getChildOutStream() :
       new PrintStream(new FileOutputStream(outFile), true);
-    PrintStream err = errFile == null ? 
-      SessionState.getConsole().getChildErrStream() : 
+    PrintStream err = errFile == null ?
+      SessionState.getConsole().getChildErrStream() :
       new PrintStream(new FileOutputStream(errFile), true);
 
     Process executor = Runtime.getRuntime().exec(args);
 
     StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, err);
     StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, out);
-    
+
     outPrinter.start();
     errPrinter.start();
 

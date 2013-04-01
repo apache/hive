@@ -86,6 +86,7 @@
       <pathelement location="${build.dir.hive}/hwi/test/classes"/>
       <pathelement location="${build.dir.hive}/jdbc/test/classes"/>
       <pathelement location="${build.dir.hive}/metastore/test/classes"/>
+      <pathelement location="${build.dir.hive}/hcatalog/test/classes"/>
       <pathelement location="${build.dir.hive}/ql/test/classes"/>
       <pathelement location="${build.dir.hive}/serde/test/classes"/>
       <pathelement location="${build.dir.hive}/service/test/classes"/>
@@ -197,6 +198,7 @@
     <pathelement location="${build.dir.hive}/common/classes"/>
     <pathelement location="${build.dir.hive}/serde/classes"/>
     <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/hcatalog/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/beeline/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
@@ -461,14 +463,14 @@
       <sysproperty key="java.net.preferIPv4Stack" value="${java.net.preferIPv4Stack}"/>
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
       <sysproperty key="test.concurrency.num.threads" value="${test.concurrency.num.threads}"/>
-      <jvmarg line="${jvm.args}"/>
+      <jvmarg line="${junit.jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
                  includes="**/${test.include}.class"
-                 excludes="**/TestSerDe.class,**/TestHiveMetaStore.class,**/*$*.class,${test.junit.exclude}" />
+                 excludes="**/TestSerDe.class,**/TestHiveMetaStore.class,**/TestBeeLineDriver.class,**/TestHiveServer2Concurrency.class,**/*$*.class,${test.junit.exclude}" />
       </batchtest>
       <batchtest todir="${test.build.dir}" if="testcase">
         <fileset dir="${test.build.classes}" includes="**/${testcase}.class"/>

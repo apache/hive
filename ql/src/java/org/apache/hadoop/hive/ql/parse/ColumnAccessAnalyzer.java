@@ -43,7 +43,7 @@ public class ColumnAccessAnalyzer {
     Map<TableScanOperator, Table> topOps = pGraphContext.getTopToTable();
     for (TableScanOperator op : topOps.keySet()) {
       Table table = topOps.get(op);
-      String tableName = table.getTableName();
+      String tableName = table.getCompleteName();
       List<FieldSchema> tableCols = table.getAllCols();
       for (int i : op.getNeededColumnIDs()) {
         columnAccessInfo.add(tableName, tableCols.get(i).getName());

@@ -223,6 +223,9 @@ public class HiveConf extends Configuration {
     // not specified
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true),
 
+    // ignore the mapjoin hint
+    HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null
@@ -484,7 +487,7 @@ public class HiveConf extends Configuration {
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
-    HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", false),
+    HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true),
     HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD("hive.auto.convert.join.noconditionaltask.size",
         10000000L),
     HIVESKEWJOINKEY("hive.skewjoin.key", 100000),
@@ -603,6 +606,7 @@ public class HiveConf extends Configuration {
     // higher compute cost.
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
     HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 200),
+    HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
