@@ -102,6 +102,7 @@ public class FetchOperator implements Serializable {
   private transient Path currPath;
   private transient StructObjectInspector objectInspector;
   private transient StructObjectInspector rowObjectInspector;
+  private transient ObjectInspector partitionedTableOI;
   private transient Object[] row;
 
   public FetchOperator() {
@@ -400,7 +401,7 @@ public class FetchOperator implements Serializable {
 
       ObjectInspector outputOI = ObjectInspectorConverters.getConvertedOI(
           serde.getObjectInspector(),
-          tblSerde.getObjectInspector());
+          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI);
 
       partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
           serde.getObjectInspector(), outputOI);
@@ -610,14 +611,22 @@ public class FetchOperator implements Serializable {
       Deserializer tblSerde = partition.getTableDesc().getDeserializerClass().newInstance();
       tblSerde.initialize(job, partition.getTableDesc().getProperties());
 
-      Deserializer partSerde = partition.getDeserializerClass().newInstance();
-      partSerde.initialize(job, partition.getProperties());
+      partitionedTableOI = null;
+      ObjectInspector tableOI = tblSerde.getObjectInspector();
 
-      ObjectInspector partitionOI = ObjectInspectorConverters.getConvertedOI(
-          partSerde.getObjectInspector(),
-          tblSerde.getObjectInspector());
+      // Get the OI corresponding to all the partitions
+      for (PartitionDesc listPart : listParts) {
+        partition = listPart;
+        Deserializer partSerde = listPart.getDeserializerClass().newInstance();
+        partSerde.initialize(job, listPart.getProperties());
 
-      return getRowInspectorFromPartition(partition, partitionOI);
+        partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
+            partSerde.getObjectInspector(), tableOI);
+        if (!partitionedTableOI.equals(tableOI)) {
+          break;
+        }
+      }
+      return getRowInspectorFromPartition(partition, partitionedTableOI);
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
