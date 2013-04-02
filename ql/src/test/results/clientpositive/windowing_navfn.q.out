@@ -1,0 +1,581 @@
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select s, row_number() over (partition by d order by dec) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, row_number() over (partition by d order by dec) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+calvin miller	1
+yuri laertes	1
+wendy quirinius	2
+holly polk	3
+nick steinbeck	1
+tom young	1
+priscilla quirinius	2
+katie brown	3
+xavier robinson	1
+gabriella quirinius	2
+katie falkner	3
+ethan carson	1
+victor johnson	2
+zach white	1
+jessica white	2
+jessica king	3
+victor davidson	1
+quinn falkner	2
+holly falkner	3
+holly young	1
+xavier steinbeck	1
+nick robinson	2
+irene king	1
+quinn zipper	1
+priscilla miller	1
+yuri miller	2
+wendy zipper	3
+zach steinbeck	1
+fred nixon	1
+katie brown	1
+nick davidson	1
+gabriella davidson	1
+zach carson	2
+wendy king	1
+tom xylophone	2
+holly hernandez	3
+jessica quirinius	4
+gabriella brown	1
+quinn johnson	2
+yuri zipper	3
+david robinson	1
+mike nixon	2
+rachel davidson	1
+gabriella white	2
+yuri garcia	1
+yuri zipper	2
+katie hernandez	1
+alice king	2
+jessica steinbeck	3
+quinn davidson	1
+katie ovid	2
+priscilla young	3
+quinn van buren	4
+victor steinbeck	5
+gabriella brown	1
+zach laertes	1
+jessica ichabod	2
+ethan miller	1
+irene carson	2
+priscilla zipper	3
+irene falkner	4
+tom robinson	5
+katie polk	1
+xavier laertes	2
+sarah davidson	3
+nick white	4
+nick polk	1
+alice ichabod	2
+luke brown	1
+wendy allen	2
+gabriella robinson	3
+holly steinbeck	1
+calvin ichabod	2
+holly van buren	1
+tom nixon	2
+gabriella carson	3
+mike brown	1
+katie laertes	2
+zach garcia	1
+oscar nixon	2
+tom polk	1
+mike allen	1
+alice johnson	1
+yuri young	1
+holly robinson	2
+priscilla thompson	3
+rachel carson	1
+gabriella laertes	1
+victor brown	2
+holly allen	1
+bob carson	2
+rachel carson	1
+fred nixon	2
+priscilla brown	1
+alice nixon	2
+victor falkner	1
+david garcia	1
+holly hernandez	2
+tom white	3
+rachel ellison	1
+PREHOOK: query: select i, lead(s) over (partition by bin order by d desc) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d desc) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+65551	sarah steinbeck
+65575	holly underhill
+65779	yuri thompson
+65603	irene brown
+65700	alice ovid
+65761	zach polk
+65662	bob king
+65646	irene garcia
+65683	sarah underhill
+65732	bob underhill
+65683	david robinson
+65680	irene nixon
+65771	david young
+65698	ulysses johnson
+65776	priscilla nixon
+65677	jessica thompson
+65575	jessica ovid
+65546	irene zipper
+65689	nick king
+65732	katie laertes
+65559	bob quirinius
+65572	alice davidson
+65690	bob zipper
+65659	yuri ellison
+65536	ulysses garcia
+65762	mike hernandez
+65537	david laertes
+65720	tom johnson
+65536	wendy brown
+65728	alice steinbeck
+65599	ethan brown
+65598	gabriella zipper
+65738	oscar king
+65550	katie falkner
+65621	sarah hernandez
+65540	mike allen
+65646	sarah thompson
+65716	fred laertes
+65603	ulysses underhill
+65745	zach davidson
+65791	katie garcia
+65661	quinn carson
+65644	katie laertes
+65745	mike garcia
+65669	bob carson
+65775	irene van buren
+65589	sarah young
+65758	quinn nixon
+65677	wendy ichabod
+65725	ethan thompson
+65768	sarah king
+65784	irene polk
+65670	holly king
+65759	irene young
+65679	nick laertes
+65740	wendy nixon
+65746	holly van buren
+65572	xavier johnson
+65607	irene van buren
+65671	alice king
+65538	katie van buren
+65649	tom quirinius
+65540	quinn white
+65660	zach ellison
+65692	alice quirinius
+65577	ethan hernandez
+65553	calvin robinson
+65758	mike garcia
+65692	ethan nixon
+65766	mike ichabod
+65571	irene johnson
+65568	yuri xylophone
+65667	nick ellison
+65691	ethan brown
+65791	quinn ovid
+65573	zach thompson
+65551	alice garcia
+65759	ulysses king
+65732	gabriella laertes
+65609	bob garcia
+65585	priscilla robinson
+65640	xavier ellison
+65647	fred zipper
+65735	quinn polk
+65625	victor robinson
+65746	bob steinbeck
+65617	katie allen
+65658	quinn davidson
+65659	victor allen
+65707	alice falkner
+65775	zach nixon
+65752	tom polk
+65700	nick brown
+65587	bob van buren
+65661	katie polk
+65680	rachel polk
+65634	rachel king
+65756	xavier ichabod
+65783	luke garcia
+65650	tom carson
+PREHOOK: query: select i, lag(dec) over (partition by i order by s) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select i, lag(dec) over (partition by i order by s) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+65536	NULL
+65536	31.09
+65536	1.33
+65536	86.04
+65536	52.78
+65536	93.68
+65536	98.42
+65536	0.93
+65536	83.48
+65536	75.7
+65536	88.04
+65536	94.09
+65536	33.45
+65536	44.41
+65536	22.15
+65536	20.5
+65536	58.86
+65536	30.91
+65536	74.47
+65536	11.31
+65536	59.67
+65536	63.08
+65536	5.53
+65536	95.99
+65536	59.58
+65536	32.68
+65536	16.85
+65536	4.34
+65536	28.49
+65536	80.26
+65536	35.07
+65536	95.88
+65536	30.6
+65536	46.97
+65536	58.8
+65536	5.72
+65536	29.27
+65536	62.25
+65536	45.25
+65536	85.25
+65536	30.25
+65536	65.17
+65536	1.05
+65536	39.32
+65536	32.03
+65537	NULL
+65537	14.48
+65537	95.64
+65537	4.49
+65537	11.87
+65537	89.52
+65537	56.83
+65537	99.34
+65537	7.72
+65537	94.52
+65537	35.86
+65537	47.75
+65537	1.12
+65537	52.9
+65537	53.92
+65537	43.45
+65537	7.52
+65537	91.35
+65537	56.13
+65537	51.91
+65537	81.04
+65537	19.44
+65537	8.63
+65537	29.01
+65537	56.48
+65537	83.21
+65537	56.52
+65537	36.6
+65537	59.7
+65537	80.14
+65537	66.3
+65537	94.87
+65537	40.92
+65537	25.2
+65537	7.36
+65538	NULL
+65538	53.35
+65538	54.64
+65538	76.67
+65538	15.17
+65538	1.2
+65538	13.71
+65538	81.59
+65538	43.33
+65538	30.27
+65538	8.91
+65538	95.81
+65538	92.44
+65538	98.11
+65538	18.02
+65538	78.41
+65538	35.14
+65538	9.53
+65538	48.61
+65538	2.03
+PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+calvin miller	99
+holly polk	83
+wendy quirinius	-3
+yuri laertes	115
+nick steinbeck	21
+tom young	34
+katie brown	66
+priscilla quirinius	67
+gabriella quirinius	37
+katie falkner	118
+xavier robinson	47
+ethan carson	105
+victor johnson	19
+jessica white	29
+zach white	99
+jessica king	-3
+victor davidson	83
+holly falkner	110
+quinn falkner	33
+holly young	82
+nick robinson	106
+xavier steinbeck	8
+irene king	66
+quinn zipper	14
+priscilla miller	61
+yuri miller	7
+wendy zipper	1
+zach steinbeck	124
+fred nixon	91
+katie brown	104
+nick davidson	74
+gabriella davidson	112
+zach carson	109
+wendy king	78
+jessica quirinius	22
+holly hernandez	35
+tom xylophone	30
+quinn johnson	117
+yuri zipper	-1
+gabriella brown	92
+david robinson	103
+mike nixon	96
+gabriella white	6
+rachel davidson	7
+yuri garcia	121
+yuri zipper	92
+jessica steinbeck	86
+katie hernandez	57
+alice king	26
+victor steinbeck	87
+katie ovid	4
+priscilla young	71
+quinn van buren	18
+quinn davidson	93
+gabriella brown	-3
+zach laertes	124
+jessica ichabod	86
+irene falkner	49
+ethan miller	72
+irene carson	26
+priscilla zipper	37
+tom robinson	33
+sarah davidson	86
+katie polk	62
+nick white	8
+xavier laertes	17
+alice ichabod	18
+nick polk	52
+luke brown	47
+wendy allen	16
+gabriella robinson	6
+calvin ichabod	-3
+holly steinbeck	25
+gabriella carson	39
+holly van buren	19
+tom nixon	45
+katie laertes	-1
+mike brown	3
+oscar nixon	65
+zach garcia	29
+tom polk	93
+mike allen	115
+alice johnson	17
+holly robinson	43
+yuri young	24
+priscilla thompson	9
+rachel carson	24
+victor brown	34
+gabriella laertes	18
+bob carson	6
+holly allen	63
+fred nixon	111
+rachel carson	89
+alice nixon	48
+priscilla brown	68
+victor falkner	81
+tom white	43
+holly hernandez	4
+david garcia	101
+rachel ellison	51
+PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	alice allen
+alice allen	alice allen
+alice allen	alice allen
+alice allen	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice carson	alice allen
+alice carson	alice allen
+alice carson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice nixon	alice allen
+alice nixon	alice allen
+alice nixon	alice allen

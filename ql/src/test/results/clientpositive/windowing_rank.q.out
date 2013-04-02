@@ -1,0 +1,593 @@
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select s, rank() over (partition by f order by t) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, rank() over (partition by f order by t) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+bob ichabod	1
+yuri thompson	2
+luke steinbeck	1
+fred zipper	2
+luke king	3
+calvin van buren	1
+quinn miller	2
+holly steinbeck	1
+david davidson	1
+calvin quirinius	1
+calvin thompson	2
+david ovid	1
+nick zipper	2
+holly thompson	3
+victor steinbeck	1
+victor robinson	2
+zach ovid	1
+ulysses zipper	1
+irene thompson	1
+luke falkner	2
+yuri johnson	1
+ulysses falkner	1
+gabriella robinson	2
+alice robinson	1
+priscilla xylophone	2
+david laertes	1
+mike underhill	2
+victor van buren	1
+holly falkner	1
+priscilla falkner	1
+luke zipper	1
+ethan ovid	2
+alice quirinius	1
+calvin white	2
+mike steinbeck	3
+nick young	1
+wendy polk	2
+irene miller	3
+ethan ellison	1
+yuri davidson	2
+zach hernandez	1
+wendy miller	1
+katie underhill	1
+irene zipper	1
+holly allen	1
+quinn brown	2
+calvin ovid	1
+zach robinson	1
+nick miller	2
+mike allen	1
+priscilla young	1
+yuri van buren	2
+zach miller	3
+sarah falkner	1
+victor xylophone	2
+rachel ichabod	1
+calvin ovid	1
+alice robinson	2
+calvin ovid	1
+alice ovid	1
+david hernandez	2
+luke laertes	3
+luke quirinius	1
+oscar white	1
+zach falkner	1
+rachel thompson	1
+priscilla king	1
+xavier polk	1
+wendy ichabod	1
+rachel ovid	1
+wendy allen	1
+luke brown	1
+oscar ichabod	2
+mike brown	3
+xavier garcia	1
+bob xylophone	1
+yuri brown	2
+ethan quirinius	1
+luke davidson	2
+zach davidson	1
+irene miller	1
+wendy king	1
+bob zipper	1
+sarah thompson	1
+bob laertes	1
+xavier allen	2
+bob carson	3
+sarah robinson	1
+david king	1
+oscar davidson	1
+wendy polk	1
+victor hernandez	2
+david ellison	1
+ulysses johnson	1
+jessica ovid	1
+bob king	1
+ulysses garcia	1
+irene falkner	1
+holly robinson	1
+yuri white	1
+PREHOOK: query: select s, dense_rank() over (partition by ts order by i desc) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, dense_rank() over (partition by ts order by i desc) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+jessica polk	1
+calvin steinbeck	2
+katie king	3
+rachel garcia	3
+bob ovid	4
+mike laertes	5
+gabriella xylophone	6
+sarah falkner	7
+jessica laertes	8
+tom johnson	9
+calvin brown	10
+yuri allen	11
+calvin laertes	12
+nick carson	13
+david falkner	14
+victor ellison	15
+luke zipper	16
+gabriella van buren	17
+fred nixon	18
+priscilla zipper	19
+katie white	19
+fred zipper	20
+wendy steinbeck	21
+victor van buren	21
+oscar brown	22
+rachel thompson	23
+luke king	1
+holly thompson	1
+luke xylophone	2
+rachel robinson	3
+wendy thompson	4
+priscilla hernandez	5
+fred polk	6
+irene brown	7
+rachel young	8
+bob falkner	9
+katie davidson	10
+rachel ovid	11
+jessica brown	12
+holly falkner	13
+sarah van buren	14
+yuri hernandez	15
+zach young	16
+calvin carson	17
+bob king	18
+calvin nixon	19
+gabriella johnson	20
+xavier johnson	20
+ethan young	21
+jessica brown	22
+jessica nixon	23
+fred king	23
+ulysses johnson	23
+wendy johnson	24
+oscar davidson	25
+nick ellison	26
+luke steinbeck	27
+jessica robinson	28
+priscilla brown	29
+gabriella underhill	29
+gabriella steinbeck	30
+luke thompson	31
+alice miller	32
+oscar van buren	32
+yuri brown	33
+rachel ovid	34
+katie xylophone	35
+quinn ovid	36
+priscilla zipper	37
+victor underhill	38
+ulysses xylophone	38
+quinn allen	39
+katie zipper	40
+calvin white	41
+ethan ovid	42
+xavier davidson	43
+oscar carson	1
+priscilla garcia	2
+priscilla hernandez	3
+bob carson	4
+quinn van buren	5
+rachel ichabod	6
+ethan ichabod	6
+jessica ovid	7
+ulysses carson	7
+holly allen	8
+wendy falkner	8
+rachel ellison	9
+jessica johnson	10
+rachel ichabod	11
+wendy underhill	12
+sarah falkner	13
+tom hernandez	14
+jessica thompson	15
+alice underhill	16
+ethan nixon	16
+priscilla polk	17
+victor hernandez	18
+holly nixon	19
+priscilla thompson	20
+PREHOOK: query: select s, cume_dist() over (partition by bo order by b) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, cume_dist() over (partition by bo order by b) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+holly allen	2.0112630732099757E-4
+wendy falkner	2.0112630732099757E-4
+david ovid	2.0112630732099757E-4
+victor garcia	2.0112630732099757E-4
+katie xylophone	2.0112630732099757E-4
+ulysses xylophone	2.0112630732099757E-4
+nick steinbeck	2.0112630732099757E-4
+ethan ellison	2.0112630732099757E-4
+nick quirinius	2.0112630732099757E-4
+irene garcia	2.0112630732099757E-4
+mike xylophone	2.0112630732099757E-4
+victor xylophone	2.0112630732099757E-4
+jessica steinbeck	2.0112630732099757E-4
+irene van buren	2.0112630732099757E-4
+quinn steinbeck	2.0112630732099757E-4
+calvin allen	2.0112630732099757E-4
+david zipper	2.0112630732099757E-4
+sarah miller	2.0112630732099757E-4
+ulysses nixon	2.0112630732099757E-4
+ulysses ichabod	2.0112630732099757E-4
+yuri nixon	2.0112630732099757E-4
+tom hernandez	2.0112630732099757E-4
+rachel thompson	2.0112630732099757E-4
+katie xylophone	0.004827031375703942
+oscar quirinius	0.004827031375703942
+rachel davidson	0.004827031375703942
+sarah van buren	0.004827031375703942
+ulysses allen	0.004827031375703942
+bob king	0.004827031375703942
+bob johnson	0.004827031375703942
+calvin van buren	0.004827031375703942
+tom king	0.004827031375703942
+zach young	0.004827031375703942
+zach allen	0.004827031375703942
+mike steinbeck	0.004827031375703942
+wendy ellison	0.004827031375703942
+gabriella robinson	0.004827031375703942
+xavier davidson	0.007642799678197908
+jessica miller	0.007642799678197908
+mike steinbeck	0.007642799678197908
+alice falkner	0.007642799678197908
+irene nixon	0.007642799678197908
+jessica brown	0.007642799678197908
+ethan ovid	0.007642799678197908
+ulysses king	0.007642799678197908
+gabriella davidson	0.007642799678197908
+jessica quirinius	0.007642799678197908
+luke falkner	0.007642799678197908
+luke robinson	0.007642799678197908
+priscilla hernandez	0.007642799678197908
+mike van buren	0.007642799678197908
+ulysses robinson	0.007642799678197908
+bob underhill	0.007642799678197908
+bob ovid	0.007642799678197908
+tom polk	0.007642799678197908
+gabriella garcia	0.007642799678197908
+wendy allen	0.011464199517296863
+victor robinson	0.011464199517296863
+calvin nixon	0.011464199517296863
+wendy nixon	0.011464199517296863
+mike falkner	0.011464199517296863
+nick falkner	0.011464199517296863
+priscilla nixon	0.011464199517296863
+david davidson	0.011464199517296863
+bob underhill	0.011464199517296863
+oscar laertes	0.011464199517296863
+oscar miller	0.011464199517296863
+priscilla xylophone	0.011464199517296863
+jessica robinson	0.011464199517296863
+quinn miller	0.011464199517296863
+yuri ellison	0.011464199517296863
+holly falkner	0.011464199517296863
+oscar thompson	0.011464199517296863
+irene laertes	0.011464199517296863
+alice hernandez	0.011464199517296863
+luke johnson	0.015285599356395816
+fred carson	0.015285599356395816
+nick allen	0.015285599356395816
+nick ellison	0.015285599356395816
+priscilla laertes	0.015285599356395816
+priscilla underhill	0.015285599356395816
+calvin nixon	0.015285599356395816
+oscar king	0.015285599356395816
+katie polk	0.015285599356395816
+irene king	0.015285599356395816
+jessica davidson	0.015285599356395816
+victor steinbeck	0.015285599356395816
+priscilla young	0.015285599356395816
+katie polk	0.015285599356395816
+holly davidson	0.015285599356395816
+wendy miller	0.015285599356395816
+zach johnson	0.01850362027353178
+mike falkner	0.01850362027353178
+victor zipper	0.01850362027353178
+wendy king	0.01850362027353178
+fred ellison	0.01850362027353178
+mike hernandez	0.01850362027353178
+xavier allen	0.01850362027353178
+zach zipper	0.01850362027353178
+ethan laertes	0.01850362027353178
+PREHOOK: query: select s, percent_rank() over (partition by dec order by f) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, percent_rank() over (partition by dec order by f) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+wendy king	0.0
+calvin robinson	1.0
+mike steinbeck	0.0
+calvin hernandez	0.0
+sarah king	1.0
+yuri ellison	0.0
+victor king	0.0
+alice ovid	0.0
+ethan steinbeck	0.5
+mike steinbeck	1.0
+gabriella young	0.0
+jessica johnson	0.0
+holly king	0.5
+tom young	1.0
+victor falkner	0.0
+ethan polk	0.0
+oscar miller	0.0
+ethan quirinius	0.0
+fred hernandez	0.0
+david steinbeck	1.0
+wendy xylophone	0.0
+luke laertes	0.0
+alice quirinius	1.0
+calvin ovid	0.0
+holly allen	0.0
+tom brown	1.0
+wendy ovid	0.0
+mike brown	0.0
+alice polk	0.0
+alice zipper	0.0
+sarah quirinius	1.0
+luke underhill	0.0
+victor white	0.5
+holly xylophone	1.0
+oscar quirinius	0.0
+ethan davidson	0.0
+ethan allen	0.0
+wendy underhill	0.5
+irene xylophone	1.0
+ulysses steinbeck	0.0
+mike hernandez	1.0
+irene brown	0.0
+priscilla brown	0.0
+calvin johnson	1.0
+sarah xylophone	0.0
+yuri underhill	0.5
+ethan nixon	1.0
+calvin hernandez	0.0
+yuri underhill	0.0
+holly allen	1.0
+victor laertes	0.0
+ethan underhill	0.0
+irene steinbeck	1.0
+mike van buren	0.0
+xavier allen	0.5
+sarah xylophone	1.0
+luke van buren	0.0
+gabriella xylophone	0.0
+gabriella ellison	0.0
+luke falkner	0.0
+priscilla garcia	0.0
+ethan quirinius	0.3333333333333333
+alice xylophone	0.6666666666666666
+ethan underhill	1.0
+tom white	0.0
+alice johnson	0.0
+priscilla zipper	0.0
+tom laertes	0.5
+zach laertes	1.0
+xavier miller	0.0
+yuri ovid	0.0
+david steinbeck	0.0
+wendy underhill	0.0
+priscilla xylophone	0.0
+nick hernandez	0.0
+luke steinbeck	0.0
+oscar davidson	0.0
+sarah allen	0.0
+katie steinbeck	0.0
+oscar ovid	1.0
+yuri ellison	0.0
+rachel quirinius	0.0
+irene van buren	0.0
+victor ichabod	0.0
+quinn miller	0.0
+luke allen	0.0
+xavier laertes	0.0
+wendy miller	0.0
+victor brown	0.0
+tom thompson	0.0
+david brown	1.0
+zach quirinius	0.0
+oscar king	1.0
+david nixon	0.0
+ethan white	0.0
+ethan polk	0.0
+ulysses steinbeck	0.0
+victor van buren	0.3333333333333333
+sarah carson	0.6666666666666666
+priscilla nixon	1.0
+PREHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
+
+select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where rnk =  1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
+
+select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where rnk =  1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+2013-03-01 09:11:58.70307	34.22	1
+PREHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where dec = 89.5 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+            ) joined
+  ) ranked
+where dec = 89.5 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+2013-03-01 09:11:58.703124	89.5	1
+PREHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+             where other.t < 10
+            ) joined
+  ) ranked
+where rnk = 1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select ts, dec, rnk
+from
+  (select ts, dec,
+          rank() over (partition by ts)  as rnk
+          from
+            (select other.ts, other.dec
+             from over10k other
+             join over10k on (other.b = over10k.b)
+             where other.t < 10
+            ) joined
+  ) ranked
+where rnk = 1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	53.25	1
+2013-03-01 09:11:58.70307	79.99	1

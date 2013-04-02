@@ -1,0 +1,136 @@
+PREHOOK: query: DROP TABLE part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- data setup
+CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@part
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
+PREHOOK: type: LOAD
+PREHOOK: Output: default@part
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@part
+PREHOOK: query: -- 1. testNoPTFNoWindowing
+select p_mfgr, p_name, p_size
+from part
+distribute by p_mfgr
+sort by p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 1. testNoPTFNoWindowing
+select p_mfgr, p_name, p_size
+from part
+distribute by p_mfgr
+sort by p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#5	almond antique blue firebrick mint	31
+Manufacturer#1	almond antique burnished rose metallic	2
+Manufacturer#1	almond antique burnished rose metallic	2
+Manufacturer#3	almond antique chartreuse khaki white	17
+Manufacturer#1	almond antique chartreuse lavender yellow	34
+Manufacturer#3	almond antique forest lavender goldenrod	14
+Manufacturer#4	almond antique gainsboro frosted violet	10
+Manufacturer#5	almond antique medium spring khaki	6
+Manufacturer#3	almond antique metallic orange dim	19
+Manufacturer#3	almond antique misty red olive	1
+Manufacturer#3	almond antique olive coral navajo	45
+Manufacturer#1	almond antique salmon chartreuse burlywood	6
+Manufacturer#5	almond antique sky peru orange	2
+Manufacturer#2	almond antique violet chocolate turquoise	14
+Manufacturer#4	almond antique violet mint lemon	39
+Manufacturer#2	almond antique violet turquoise frosted	40
+Manufacturer#1	almond aquamarine burnished black steel	28
+Manufacturer#5	almond aquamarine dodger light gainsboro	46
+Manufacturer#4	almond aquamarine floral ivory bisque	27
+Manufacturer#2	almond aquamarine midnight light salmon	2
+Manufacturer#1	almond aquamarine pink moccasin thistle	42
+Manufacturer#2	almond aquamarine rose maroon antique	25
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
+Manufacturer#4	almond aquamarine yellow dodger mint	7
+Manufacturer#4	almond azure aquamarine papaya violet	12
+Manufacturer#5	almond azure blanched chiffon midnight	23
+PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
+select p_mfgr,p_name, p_retailprice,  
+sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
+min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
+max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
+avg(p_retailprice) over(partition by p_mfgr order by p_mfgr) as av 
+from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
+select p_mfgr,p_name, p_retailprice,  
+sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
+min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
+max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
+avg(p_retailprice) over(partition by p_mfgr order by p_mfgr) as av 
+from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	8749.73	1173.15	1753.76	1458.2883333333332
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1701.6	8923.62	1690.68	2031.98	1784.7240000000002
+Manufacturer#3	almond antique metallic orange dim	1410.39	7532.61	1190.27	1922.98	1506.522
+Manufacturer#3	almond antique chartreuse khaki white	1671.68	7532.61	1190.27	1922.98	1506.522
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	7532.61	1190.27	1922.98	1506.522
+Manufacturer#3	almond antique misty red olive	1922.98	7532.61	1190.27	1922.98	1506.522
+Manufacturer#3	almond antique olive coral navajo	1337.29	7532.61	1190.27	1922.98	1506.522
+Manufacturer#4	almond antique gainsboro frosted violet	1620.67	7337.620000000001	1206.26	1844.92	1467.5240000000001
+Manufacturer#4	almond antique violet mint lemon	1375.42	7337.620000000001	1206.26	1844.92	1467.5240000000001
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	7337.620000000001	1206.26	1844.92	1467.5240000000001
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	7337.620000000001	1206.26	1844.92	1467.5240000000001
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	7337.620000000001	1206.26	1844.92	1467.5240000000001
+Manufacturer#5	almond antique blue firebrick mint	1789.69	7672.66	1018.1	1789.69	1534.532
+Manufacturer#5	almond antique medium spring khaki	1611.66	7672.66	1018.1	1789.69	1534.532
+Manufacturer#5	almond antique sky peru orange	1788.73	7672.66	1018.1	1789.69	1534.532
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	7672.66	1018.1	1789.69	1534.532
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	7672.66	1018.1	1789.69	1534.532
+PREHOOK: query: -- 3. testConstExprInSelect
+select 'tst1' as key, count(1) as value from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3. testConstExprInSelect
+select 'tst1' as key, count(1) as value from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+tst1	26

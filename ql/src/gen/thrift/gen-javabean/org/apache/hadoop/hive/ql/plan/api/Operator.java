@@ -810,7 +810,7 @@ public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fie
                 for (int _i25 = 0; _i25 < _map24.size; ++_i25)
                 {
                   String _key26; // required
-                  String _val27; // optional
+                  String _val27; // required
                   _key26 = iprot.readString();
                   _val27 = iprot.readString();
                   struct.operatorAttributes.put(_key26, _val27);
@@ -830,7 +830,7 @@ public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fie
                 for (int _i29 = 0; _i29 < _map28.size; ++_i29)
                 {
                   String _key30; // required
-                  long _val31; // optional
+                  long _val31; // required
                   _key30 = iprot.readString();
                   _val31 = iprot.readI64();
                   struct.operatorCounters.put(_key30, _val31);
@@ -1003,7 +1003,7 @@ public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fie
           for (int _i37 = 0; _i37 < _map36.size; ++_i37)
           {
             String _key38; // required
-            String _val39; // optional
+            String _val39; // required
             _key38 = iprot.readString();
             _val39 = iprot.readString();
             struct.operatorAttributes.put(_key38, _val39);
@@ -1018,7 +1018,7 @@ public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fie
           for (int _i41 = 0; _i41 < _map40.size; ++_i41)
           {
             String _key42; // required
-            long _val43; // optional
+            long _val43; // required
             _key42 = iprot.readString();
             _val43 = iprot.readI64();
             struct.operatorCounters.put(_key42, _val43);

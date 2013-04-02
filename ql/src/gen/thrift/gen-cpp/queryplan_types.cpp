@@ -48,7 +48,8 @@ int _kOperatorTypeValues[] = {
   OperatorType::LATERALVIEWJOIN,
   OperatorType::LATERALVIEWFORWARD,
   OperatorType::HASHTABLESINK,
-  OperatorType::HASHTABLEDUMMY
+  OperatorType::HASHTABLEDUMMY,
+  OperatorType::PTF
 };
 const char* _kOperatorTypeNames[] = {
   "JOIN",
@@ -68,9 +69,10 @@ const char* _kOperatorTypeNames[] = {
   "LATERALVIEWJOIN",
   "LATERALVIEWFORWARD",
   "HASHTABLESINK",
-  "HASHTABLEDUMMY"
+  "HASHTABLEDUMMY",
+  "PTF"
 };
-const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(18, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(19, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTaskTypeValues[] = {
   TaskType::MAP,

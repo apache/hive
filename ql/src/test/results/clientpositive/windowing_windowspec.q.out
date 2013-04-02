@@ -1,0 +1,797 @@
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           dec decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select s, sum(b) over (partition by i order by si rows unbounded preceding) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, sum(b) over (partition by i order by si rows unbounded preceding) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+bob robinson	4294967349
+irene johnson	8589934809
+david nixon	12884902300
+holly white	17179869620
+sarah thompson	21474836919
+david johnson	25769804409
+gabriella garcia	30064771840
+nick davidson	34359739370
+ethan underhill	38654706880
+ethan johnson	42949674237
+ethan ovid	47244641665
+ulysses polk	51539609149
+rachel xylophone	55834576466
+priscilla young	60129543807
+zach hernandez	64424511119
+wendy polk	68719478445
+priscilla garcia	73014445793
+oscar allen	77309413101
+priscilla xylophone	81604380561
+oscar garcia	85899348058
+sarah thompson	90194315396
+oscar ovid	94489282904
+luke allen	98784250367
+fred miller	103079217857
+rachel brown	107374185306
+alice ichabod	111669152747
+alice robinson	115964120223
+victor johnson	120259087607
+priscilla white	124554055096
+calvin thompson	128849022432
+rachel ichabod	133143989766
+mike quirinius	137438957244
+gabriella underhill	141733924551
+david laertes	146028891982
+katie ellison	150323859357
+fred miller	154618826769
+xavier davidson	158913794163
+oscar ichabod	163208761567
+tom steinbeck	167503728932
+tom johnson	171798696363
+david nixon	176093663744
+zach allen	180388631253
+yuri ellison	184683598766
+oscar steinbeck	188978566217
+mike white	193273533646
+david xylophone	4294967419
+oscar carson	8589934879
+alice ellison	12884902325
+nick davidson	17179869787
+mike hernandez	21474837308
+sarah ichabod	25769804857
+zach ichabod	30064772276
+zach ovid	34359739647
+yuri garcia	38654707087
+zach nixon	42949674516
+nick carson	47244641852
+mike garcia	51539609271
+wendy van buren	55834576685
+luke nixon	60129544135
+priscilla white	64424511540
+gabriella ichabod	68719478979
+xavier underhill	73014446393
+zach falkner	77309413898
+holly laertes	81604381346
+calvin brown	85899348783
+yuri quirinius	90194316225
+yuri white	94489283634
+katie robinson	98784251053
+katie thompson	103079218409
+oscar robinson	107374185735
+jessica hernandez	111669153271
+ulysses falkner	115964120819
+holly quirinius	120259088349
+fred van buren	124554055812
+victor xylophone	128849023352
+bob carson	133143990798
+ethan white	137438958291
+wendy garcia	141733925665
+fred johnson	146028893128
+sarah falkner	150323860576
+gabriella johnson	4294967496
+yuri brown	8589935023
+xavier davidson	12884902564
+katie nixon	17179870081
+calvin allen	21474837415
+mike brown	25769804757
+zach van buren	30064772179
+tom polk	34359739577
+alice ichabod	38654707028
+holly thompson	42949674367
+oscar white	47244641792
+priscilla xylophone	51539609245
+nick quirinius	55834576730
+ulysses davidson	60129544067
+gabriella nixon	64424511395
+rachel young	68719478910
+sarah ichabod	73014446396
+ulysses robinson	77309413900
+quinn laertes	81604381239
+luke white	85899348560
+PREHOOK: query: select s, sum(f) over (partition by d order by i rows unbounded preceding) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, sum(f) over (partition by d order by i rows unbounded preceding) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+calvin miller	8.390000343322754
+wendy quirinius	25.5
+holly polk	30.789999961853027
+yuri laertes	68.38000011444092
+nick steinbeck	79.23999786376953
+katie brown	60.0
+priscilla quirinius	137.83999633789062
+tom young	186.33999633789062
+xavier robinson	87.91000366210938
+katie falkner	139.4800033569336
+gabriella quirinius	153.84000301361084
+ethan carson	40.90999984741211
+victor johnson	100.0
+zach white	46.54999923706055
+jessica white	78.0099983215332
+jessica king	170.71999740600586
+holly falkner	97.3499984741211
+victor davidson	157.06999969482422
+quinn falkner	255.95999908447266
+holly young	19.110000610351562
+nick robinson	13.329999923706055
+xavier steinbeck	48.53999900817871
+irene king	30.469999313354492
+quinn zipper	90.04000091552734
+wendy zipper	77.44000244140625
+priscilla miller	92.8000020980835
+yuri miller	153.5600004196167
+zach steinbeck	9.069999694824219
+fred nixon	50.08000183105469
+katie brown	13.300000190734863
+nick davidson	87.05000305175781
+gabriella davidson	3.940000057220459
+zach carson	70.88999700546265
+holly hernandez	48.52000045776367
+jessica quirinius	90.18000030517578
+tom xylophone	166.11000061035156
+wendy king	184.76000022888184
+yuri zipper	70.7699966430664
+gabriella brown	155.5999984741211
+quinn johnson	205.75
+david robinson	64.79000091552734
+mike nixon	153.7300033569336
+rachel davidson	96.70999908447266
+gabriella white	98.12999904155731
+yuri garcia	9.880000114440918
+yuri zipper	104.01999950408936
+katie hernandez	67.55999755859375
+jessica steinbeck	93.24999809265137
+alice king	178.9699993133545
+quinn davidson	95.11000061035156
+quinn van buren	177.91000366210938
+priscilla young	239.6400032043457
+katie ovid	279.6400032043457
+victor steinbeck	309.6400032043457
+gabriella brown	80.6500015258789
+jessica ichabod	96.54000091552734
+zach laertes	104.50000095367432
+tom robinson	89.36000061035156
+irene carson	150.43000030517578
+irene falkner	171.17000007629395
+priscilla zipper	241.14000129699707
+ethan miller	290.75000190734863
+nick white	58.25
+xavier laertes	119.95999908447266
+katie polk	158.64999771118164
+sarah davidson	161.30999779701233
+nick polk	98.29000091552734
+alice ichabod	130.97999954223633
+luke brown	0.6200000047683716
+gabriella robinson	90.71999847888947
+wendy allen	116.34999763965607
+calvin ichabod	29.059999465942383
+holly steinbeck	98.4799976348877
+gabriella carson	38.09000015258789
+tom nixon	123.11999893188477
+holly van buren	191.92999649047852
+mike brown	88.22000122070312
+katie laertes	163.97000122070312
+oscar nixon	24.020000457763672
+zach garcia	101.61999893188477
+tom polk	76.98999786376953
+mike allen	96.44999694824219
+alice johnson	1.090000033378601
+priscilla thompson	84.91999816894531
+yuri young	142.52999877929688
+holly robinson	168.73999786376953
+rachel carson	80.98999786376953
+victor brown	39.15999984741211
+gabriella laertes	78.97999954223633
+holly allen	44.56999969482422
+bob carson	68.71999931335449
+rachel carson	81.55000305175781
+fred nixon	119.60000228881836
+alice nixon	49.130001068115234
+priscilla brown	123.57999801635742
+victor falkner	42.4900016784668
+tom white	37.630001068115234
+david garcia	104.90999984741211
+holly hernandez	154.0
+rachel ellison	10.600000381469727
+PREHOOK: query: select s, sum(f) over (partition by ts order by b range between current row and unbounded following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, sum(f) over (partition by ts order by b range between current row and unbounded following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+sarah falkner	1276.850001335144
+mike laertes	1236.3100004196167
+katie white	1194.7100019454956
+priscilla zipper	1194.7100019454956
+fred zipper	1081.7100057601929
+yuri allen	997.0000066757202
+fred nixon	982.220006942749
+wendy steinbeck	953.5300064086914
+nick carson	888.5700073242188
+calvin laertes	797.2100067138672
+jessica polk	766.0400066375732
+calvin brown	671.0000057220459
+david falkner	660.1100053787231
+calvin steinbeck	621.760006904602
+katie king	583.1500062942505
+jessica laertes	490.19000720977783
+rachel thompson	475.6500072479248
+gabriella van buren	475.6500072479248
+victor ellison	309.64000511169434
+gabriella xylophone	263.56000328063965
+oscar brown	260.3900032043457
+luke zipper	231.1700038909912
+tom johnson	176.81000328063965
+rachel garcia	158.96000289916992
+victor van buren	102.02000427246094
+bob ovid	20.610000610351562
+priscilla hernandez	2368.430002987385
+quinn ovid	2316.340002834797
+yuri brown	2253.3100040555
+katie zipper	2235.730004131794
+irene brown	2198.4100044369698
+nick ellison	2163.0900047421455
+jessica robinson	2152.4700048565865
+fred polk	2152.4700048565865
+gabriella johnson	2087.890006840229
+wendy johnson	2058.1800077557564
+jessica brown	1974.2000043988228
+katie xylophone	1895.150001347065
+priscilla zipper	1809.5999982953072
+luke thompson	1762.7599981427193
+rachel ovid	1733.689998447895
+holly thompson	1729.9599984288216
+xavier davidson	1729.9599984288216
+ethan young	1671.4599993824959
+ulysses xylophone	1583.52999907732
+wendy thompson	1568.829999268055
+katie davidson	1553.869999229908
+victor underhill	1472.4599955677986
+calvin carson	1407.9099925160408
+rachel ovid	1331.7799952626228
+zach young	1275.3299944996834
+rachel robinson	1231.0299952626228
+calvin nixon	1210.019995033741
+yuri hernandez	1210.019995033741
+quinn allen	1121.3799956440926
+luke xylophone	1089.439995110035
+ulysses johnson	1032.6799967885017
+jessica nixon	948.4699977040291
+luke steinbeck	868.0399973988533
+rachel young	773.7700007557869
+gabriella steinbeck	724.8800013661385
+oscar davidson	686.3800013661385
+alice miller	685.5500013828278
+bob king	640.8900015354156
+fred king	628.0600016117096
+xavier johnson	628.0600016117096
+gabriella underhill	543.2200031280518
+ethan ovid	454.290002822876
+luke king	435.19000244140625
+jessica brown	366.5699996948242
+bob falkner	334.7299995422363
+oscar van buren	334.7299995422363
+sarah van buren	173.4000015258789
+calvin white	119.31000137329102
+priscilla brown	69.03000259399414
+holly falkner	26.950000762939453
+bob carson	1607.950005441904
+oscar carson	1607.1600054204464
+rachel polk	1514.8300035893917
+sarah falkner	1485.8200033605099
+yuri garcia	1446.5200041234493
+ethan nixon	1423.2500036656857
+victor hernandez	1385.3000029027462
+nick king	1385.3000029027462
+quinn van buren	1385.3000029027462
+victor hernandez	1193.4799989163876
+rachel ichabod	1168.349999755621
+holly allen	1115.910001128912
+priscilla garcia	1115.5500011146069
+rachel davidson	1035.5300044715405
+priscilla thompson	954.2400035560131
+wendy brown	900.140005081892
+alice underhill	811.3100032508373
+holly nixon	785.4000034034252
+jessica thompson	754.9300040900707
+rachel ichabod	698.2300033271313
+wendy falkner	697.7500033378601
+wendy miller	635.6600031852722
+wendy underhill	634.3900032043457
+calvin white	609.0500030517578
+PREHOOK: query: select s, avg(f) over (partition by bin order by s rows between current row and 5 following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, avg(f) over (partition by bin order by s rows between current row and 5 following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice davidson	48.39166768391927
+alice davidson	46.76333427429199
+alice falkner	46.43333371480306
+alice falkner	46.9966672261556
+alice garcia	50.778334299723305
+alice hernandez	58.11500040690104
+alice king	56.846666971842446
+alice king	48.9350004196167
+alice nixon	42.5600004196167
+alice ovid	41.2383337020874
+alice polk	40.97999986012777
+alice quirinius	39.10666688283285
+alice steinbeck	38.64833370844523
+alice steinbeck	45.453333695729576
+alice xylophone	45.72333383560181
+bob allen	49.850000858306885
+bob carson	47.93000078201294
+bob davidson	50.72666724522909
+bob garcia	54.31500085194906
+bob ichabod	53.10500113169352
+bob king	54.813334147135414
+bob nixon	46.69166692097982
+bob quirinius	40.1850004196167
+bob robinson	40.178333600362144
+bob steinbeck	41.888333320617676
+bob thompson	45.609999656677246
+bob underhill	54.843332608540855
+bob underhill	67.28666655222575
+bob van buren	78.15333302815755
+bob white	77.08833312988281
+bob zipper	77.79500007629395
+calvin falkner	73.87833340962727
+calvin johnson	64.13000043233235
+calvin king	59.62166659037272
+calvin miller	54.65000025431315
+calvin robinson	45.6850004196167
+calvin young	47.97666708628336
+david falkner	53.101667722066246
+david falkner	46.96000130971273
+david garcia	38.215001265207924
+david laertes	31.49333429336548
+david robinson	29.42000087102254
+david robinson	20.826667308807373
+david underhill	18.201666673024494
+david underhill	25.678333441416424
+david underhill	35.02333323160807
+david young	33.43166661262512
+david young	44.64500037829081
+david young	52.74333373705546
+ethan brown	48.8166671593984
+ethan brown	54.74000064531962
+ethan brown	51.29333392779032
+ethan carson	61.7383337020874
+ethan carson	61.09500026702881
+ethan ellison	63.83333365122477
+ethan falkner	71.36666742960612
+ethan hernandez	64.01333363850911
+ethan hernandez	63.31000073750814
+ethan king	61.715000788370766
+ethan miller	62.758334477742515
+ethan nixon	59.5483341217041
+ethan nixon	52.14833354949951
+ethan polk	54.858333905537926
+ethan thompson	48.25166702270508
+ethan thompson	51.20000076293945
+ethan underhill	38.90000009536743
+ethan underhill	35.8683336575826
+ethan xylophone	33.24166711171468
+ethan zipper	38.02166716257731
+fred davidson	40.61000061035156
+fred ellison	42.13666661580404
+fred laertes	48.21500031153361
+fred ovid	50.3050004641215
+fred robinson	51.78000036875407
+fred underhill	39.080000162124634
+fred zipper	42.42166670163473
+gabriella ellison	29.853333711624146
+gabriella king	33.516666332880654
+gabriella laertes	33.8649996916453
+gabriella miller	31.606666326522827
+gabriella steinbeck	31.81166632970174
+gabriella underhill	32.311666329701744
+gabriella van buren	37.053332805633545
+gabriella van buren	32.42833344141642
+gabriella young	38.19166707992554
+gabriella zipper	45.965000788370766
+holly brown	49.75166734059652
+holly carson	53.02666759490967
+holly king	61.99000072479248
+holly king	71.15833377838135
+holly laertes	59.49499988555908
+holly nixon	51.66999959945679
+holly polk	47.653333028157554
+holly polk	43.83499972025553
+holly quirinius	28.495000183582306
+holly robinson	17.7650000055631
+holly steinbeck	15.870000024636587
+holly underhill	17.810000081857044
+holly underhill	17.54666676123937
+holly van buren	24.124999662240345
+PREHOOK: query: select s, avg(d) over (partition by t order by ts desc rows between 5 preceding and 5 following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, avg(d) over (partition by t order by ts desc rows between 5 preceding and 5 following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	26.85166666666667
+priscilla zipper	26.47857142857143
+oscar miller	29.321250000000003
+jessica johnson	31.596666666666668
+rachel davidson	30.332
+mike xylophone	30.16
+victor robinson	30.48909090909091
+david falkner	30.072727272727274
+alice falkner	31.735454545454548
+victor thompson	34.666363636363634
+irene underhill	30.888181818181817
+calvin white	28.08545454545454
+wendy robinson	30.245454545454546
+luke ichabod	30.201818181818183
+mike allen	26.28818181818182
+sarah zipper	24.572727272727274
+gabriella brown	23.074545454545458
+sarah robinson	21.203636363636367
+oscar garcia	20.433636363636367
+bob falkner	16.83454545454546
+jessica king	14.047272727272725
+rachel thompson	16.774545454545454
+holly polk	20.42727272727273
+wendy quirinius	17.714545454545455
+holly nixon	13.49909090909091
+bob ellison	17.05818181818182
+ulysses steinbeck	21.513636363636365
+yuri xylophone	24.372727272727275
+ulysses carson	27.01090909090909
+zach thompson	27.95909090909091
+david hernandez	31.309090909090912
+tom steinbeck	34.02454545454546
+priscilla laertes	32.46454545454546
+alice king	32.71636363636364
+jessica miller	31.975454545454546
+quinn polk	34.85454545454546
+holly steinbeck	34.307272727272725
+bob ichabod	32.709999999999994
+fred ellison	31.74272727272727
+quinn ellison	31.06363636363636
+priscilla quirinius	31.685454545454547
+ulysses robinson	27.94363636363636
+alice davidson	24.37
+holly underhill	24.76
+tom polk	21.314545454545456
+mike king	23.95909090909091
+calvin ichabod	21.58909090909091
+luke king	20.710000000000004
+bob johnson	20.000000000000004
+bob van buren	20.19
+jessica white	19.713636363636365
+ulysses ellison	18.872727272727275
+xavier garcia	18.97
+zach young	21.62272727272727
+wendy xylophone	21.697272727272725
+mike polk	24.85545454545455
+david garcia	23.35363636363636
+ulysses quirinius	24.449999999999992
+bob underhill	23.74272727272727
+tom hernandez	22.682727272727274
+luke young	22.7
+bob underhill	20.69
+victor hernandez	22.755454545454544
+sarah miller	25.623636363636365
+victor allen	24.8
+xavier ovid	22.758181818181818
+nick robinson	19.535454545454545
+alice king	19.842727272727274
+katie ichabod	19.493636363636366
+ethan underhill	17.997272727272726
+david carson	17.12272727272727
+victor xylophone	16.85545454545455
+oscar johnson	17.233636363636364
+alice xylophone	15.209090909090913
+bob polk	13.514545454545454
+sarah xylophone	15.072727272727274
+oscar johnson	15.853636363636365
+tom hernandez	19.042727272727276
+irene ellison	19.905454545454543
+mike white	20.50181818181818
+irene young	22.430000000000003
+nick nixon	24.43
+ethan steinbeck	23.576666666666668
+luke garcia	25.168750000000003
+holly thompson	27.551428571428573
+oscar davidson	29.75666666666667
+zach johnson	28.561666666666667
+alice nixon	25.732857142857142
+sarah van buren	23.74
+rachel thompson	24.32222222222222
+jessica white	26.415999999999997
+rachel polk	26.687272727272724
+fred ichabod	27.236363636363635
+irene ichabod	24.90909090909091
+fred polk	25.44181818181818
+quinn carson	23.25909090909091
+sarah allen	22.62727272727273
+jessica steinbeck	24.30636363636364
+ethan nixon	25.035454545454545
+jessica zipper	25.474545454545456
+PREHOOK: query: select s, sum(i) over() from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, sum(i) over() from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+bob davidson	656584379
+alice zipper	656584379
+katie davidson	656584379
+xavier quirinius	656584379
+nick robinson	656584379
+tom hernandez	656584379
+ulysses hernandez	656584379
+priscilla ichabod	656584379
+quinn van buren	656584379
+luke laertes	656584379
+xavier polk	656584379
+zach falkner	656584379
+quinn davidson	656584379
+priscilla van buren	656584379
+fred king	656584379
+calvin ellison	656584379
+sarah garcia	656584379
+zach young	656584379
+david underhill	656584379
+yuri carson	656584379
+ulysses laertes	656584379
+jessica thompson	656584379
+sarah johnson	656584379
+zach ovid	656584379
+victor nixon	656584379
+sarah ellison	656584379
+xavier davidson	656584379
+fred steinbeck	656584379
+tom robinson	656584379
+victor allen	656584379
+luke allen	656584379
+fred zipper	656584379
+alice nixon	656584379
+irene van buren	656584379
+alice laertes	656584379
+quinn davidson	656584379
+rachel ellison	656584379
+tom van buren	656584379
+luke zipper	656584379
+mike carson	656584379
+jessica ellison	656584379
+bob brown	656584379
+zach thompson	656584379
+holly ichabod	656584379
+david polk	656584379
+holly falkner	656584379
+wendy van buren	656584379
+tom falkner	656584379
+xavier thompson	656584379
+fred johnson	656584379
+victor steinbeck	656584379
+irene thompson	656584379
+calvin brown	656584379
+irene underhill	656584379
+calvin davidson	656584379
+luke xylophone	656584379
+fred ichabod	656584379
+victor davidson	656584379
+bob xylophone	656584379
+oscar white	656584379
+irene laertes	656584379
+tom polk	656584379
+calvin garcia	656584379
+mike king	656584379
+ulysses underhill	656584379
+katie hernandez	656584379
+katie miller	656584379
+luke allen	656584379
+nick laertes	656584379
+holly underhill	656584379
+irene falkner	656584379
+oscar quirinius	656584379
+nick allen	656584379
+xavier ichabod	656584379
+zach xylophone	656584379
+jessica zipper	656584379
+alice allen	656584379
+jessica johnson	656584379
+fred steinbeck	656584379
+wendy ovid	656584379
+wendy king	656584379
+holly hernandez	656584379
+mike white	656584379
+priscilla johnson	656584379
+gabriella ovid	656584379
+victor xylophone	656584379
+alice laertes	656584379
+ulysses xylophone	656584379
+yuri nixon	656584379
+xavier johnson	656584379
+fred miller	656584379
+luke garcia	656584379
+oscar ovid	656584379
+calvin falkner	656584379
+luke ellison	656584379
+rachel allen	656584379
+oscar king	656584379
+calvin hernandez	656584379
+nick ichabod	656584379
+bob ovid	656584379
+PREHOOK: query: select f, sum(f) over (order by f range between unbounded preceding and current row) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select f, sum(f) over (order by f range between unbounded preceding and current row) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+0.01	0.019999999552965164
+0.01	0.019999999552965164
+0.02	0.07999999821186066
+0.02	0.07999999821186066
+0.02	0.07999999821186066
+0.03	0.13999999687075615
+0.03	0.13999999687075615
+0.04	0.17999999597668648
+0.05	0.22999999672174454
+0.07	0.369999997317791
+0.07	0.369999997317791
+0.08	0.609999991953373
+0.08	0.609999991953373
+0.08	0.609999991953373
+0.09	0.7899999991059303
+0.09	0.7899999991059303
+0.1	0.8900000005960464
+0.11	1.0
+0.12	1.239999994635582
+0.12	1.239999994635582
+0.13	1.3699999898672104
+0.14	1.6499999910593033
+0.14	1.6499999910593033
+0.15	1.9500000029802322
+0.15	1.9500000029802322
+0.16	2.269999995827675
+0.16	2.269999995827675
+0.17	2.439999997615814
+0.18	2.6200000047683716
+0.19	2.810000002384186
+0.2	3.2100000083446503
+0.2	3.2100000083446503
+0.23	3.9000000208616257
+0.23	3.9000000208616257
+0.23	3.9000000208616257
+0.27	4.710000053048134
+0.27	4.710000053048134
+0.27	4.710000053048134
+0.28	5.27000005543232
+0.28	5.27000005543232
+0.29	5.560000047087669
+0.31	5.870000049471855
+0.32	6.190000042319298
+0.35	6.540000036358833
+0.36	7.260000064969063
+0.36	7.260000064969063
+0.37	7.630000069737434
+0.39	8.410000041127205
+0.39	8.410000041127205
+0.42	8.830000028014183
+0.43	10.120000049471855
+0.43	10.120000049471855
+0.43	10.120000049471855
+0.44	11.000000044703484
+0.44	11.000000044703484
+0.48	11.480000033974648
+0.5	12.480000033974648
+0.5	12.480000033974648
+0.51	12.990000024437904
+0.52	14.549999967217445
+0.52	14.549999967217445
+0.52	14.549999967217445
+0.53	15.079999938607216
+0.54	15.619999960064888
+0.55	16.169999971985817
+0.56	16.729999974370003
+0.57	17.299999967217445
+0.58	17.879999950528145
+0.59	18.4699999243021
+0.6	19.06999994814396
+0.61	19.679999962449074
+0.62	21.53999997675419
+0.62	21.53999997675419
+0.62	21.53999997675419
+0.67	22.20999999344349
+0.68	23.570000007748604
+0.68	23.570000007748604
+0.69	24.950000002980232
+0.69	24.950000002980232
+0.71	25.65999998152256
+0.75	26.40999998152256
+0.76	27.169999971985817
+0.77	27.93999995291233
+0.78	28.7199999243021
+0.79	31.089999988675117
+0.79	31.089999988675117
+0.79	31.089999988675117
+0.8	31.890000000596046
+0.82	32.70999999344349
+0.83	33.53999997675419
+0.84	35.2199999243021
+0.84	35.2199999243021
+0.85	36.06999994814396
+0.87	36.93999995291233
+0.88	37.81999994814396
+0.89	38.709999933838844
+0.9	39.609999909996986
+0.91	40.51999993622303
+0.92	41.43999995291233
+0.93	42.36999996006489

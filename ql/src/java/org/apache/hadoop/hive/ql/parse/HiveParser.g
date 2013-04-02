@@ -288,6 +288,12 @@ TOK_SKEWED_LOCATIONS;
 TOK_SKEWED_LOCATION_LIST;
 TOK_SKEWED_LOCATION_MAP;
 TOK_STOREDASDIRS;
+TOK_PARTITIONINGSPEC;
+TOK_PTBLFUNCTION;
+TOK_WINDOWDEF;
+TOK_WINDOWSPEC;
+TOK_WINDOWVALUES;
+TOK_WINDOWRANGE;
 TOK_IGNOREPROTECTION;
 }
 
@@ -1792,9 +1798,10 @@ regular_body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?))
+                     distributeByClause? sortByClause? window_clause? limitClause?))
    |
    selectStatement
    ;
@@ -1810,9 +1817,10 @@ selectStatement
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?))
+                     distributeByClause? sortByClause? window_clause? limitClause?))
    ;
 
 
@@ -1827,9 +1835,10 @@ body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_INSERT insertClause?
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? limitClause?)
    |
    selectClause
    whereClause?
@@ -1839,9 +1848,10 @@ body
    clusterByClause?
    distributeByClause?
    sortByClause?
+   window_clause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? limitClause?)
    ;
 
 insertClause
