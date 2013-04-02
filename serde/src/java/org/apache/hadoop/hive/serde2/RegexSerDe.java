@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +50,7 @@ import org.apache.hadoop.io.Writable;
  * but has more than expected groups, the additional groups are just ignored.
  *
  * NOTE: Regex SerDe supports primitive column types such as TINYINT, SMALLINT,
- * INT, BIGINT, FLOAT, DOUBLE, STRING and BOOLEAN
+ * INT, BIGINT, FLOAT, DOUBLE, STRING, BOOLEAN and DECIMAL
  *
  *
  * NOTE: This implementation uses javaStringObjectInspector for STRING. A
@@ -133,6 +134,8 @@ public class RegexSerDe extends AbstractSerDe {
        columnOIs.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
       } else if (typeName.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+      } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaBigDecimalObjectInspector);
       } else {
          throw new SerDeException(getClass().getName()
          + " doesn't allow column [" + c + "] named "
@@ -225,7 +228,11 @@ public class RegexSerDe extends AbstractSerDe {
         } else if (typeName.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
           Boolean b;
           b = Boolean.valueOf(t);
-          row.set(c,b);
+          row.set(c, b);
+        } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+          BigDecimal bd;
+          bd = new BigDecimal(t);
+          row.set(c, bd);
         }
       } catch (RuntimeException e) {
          partialMatchedRowsCount++;
