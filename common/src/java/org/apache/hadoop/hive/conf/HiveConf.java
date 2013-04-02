@@ -760,6 +760,12 @@ public class HiveConf extends Configuration {
 
     // Whether to show the unquoted partition names in query results.
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false),
+
+    // ptf partition constants
+    HIVE_PTF_PARTITION_PERSISTENCE_CLASS("hive.ptf.partition.persistence",
+      "org.apache.hadoop.hive.ql.exec.PTFPersistence$PartitionedByteBasedList"),
+    HIVE_PTF_PARTITION_PERSISTENT_SIZE("hive.ptf.partition.persistence.memsize", 
+      (int) Math.pow(2, (5 + 10 + 10)) ), // 32MB
     ;
 
     public final String varname;

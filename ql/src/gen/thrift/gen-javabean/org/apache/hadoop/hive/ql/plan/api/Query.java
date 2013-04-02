@@ -983,7 +983,7 @@ public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, jav
                 for (int _i101 = 0; _i101 < _map100.size; ++_i101)
                 {
                   String _key102; // required
-                  String _val103; // optional
+                  String _val103; // required
                   _key102 = iprot.readString();
                   _val103 = iprot.readString();
                   struct.queryAttributes.put(_key102, _val103);
@@ -1003,7 +1003,7 @@ public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, jav
                 for (int _i105 = 0; _i105 < _map104.size; ++_i105)
                 {
                   String _key106; // required
-                  long _val107; // optional
+                  long _val107; // required
                   _key106 = iprot.readString();
                   _val107 = iprot.readI64();
                   struct.queryCounters.put(_key106, _val107);
@@ -1239,7 +1239,7 @@ public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, jav
           for (int _i118 = 0; _i118 < _map117.size; ++_i118)
           {
             String _key119; // required
-            String _val120; // optional
+            String _val120; // required
             _key119 = iprot.readString();
             _val120 = iprot.readString();
             struct.queryAttributes.put(_key119, _val120);
@@ -1254,7 +1254,7 @@ public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, jav
           for (int _i122 = 0; _i122 < _map121.size; ++_i122)
           {
             String _key123; // required
-            long _val124; // optional
+            long _val124; // required
             _key123 = iprot.readString();
             _val124 = iprot.readI64();
             struct.queryCounters.put(_key123, _val124);

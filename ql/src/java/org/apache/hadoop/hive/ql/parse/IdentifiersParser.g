@@ -124,7 +124,18 @@ clusterByClause
     |
     KW_CLUSTER KW_BY
     expression
-    ( COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
+    ( (COMMA)=>COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
+    ;
+
+partitionByClause
+@init  { gParent.msgs.push("partition by clause"); }
+@after { gParent.msgs.pop(); }
+    :
+    KW_PARTITION KW_BY
+    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
+    |
+    KW_PARTITION KW_BY
+    expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
 distributeByClause
@@ -135,7 +146,7 @@ distributeByClause
     LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_DISTRIBUTEBY expression+)
     |
     KW_DISTRIBUTE KW_BY
-    expression (COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
+    expression ((COMMA)=> COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
 sortByClause
@@ -148,7 +159,7 @@ sortByClause
     |
     KW_SORT KW_BY
     columnRefOrder
-    ( COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
+    ( (COMMA)=> COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
     ;
 
 // fun(par1, par2, par3)

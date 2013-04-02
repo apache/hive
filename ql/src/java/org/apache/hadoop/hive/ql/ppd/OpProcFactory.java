@@ -846,6 +846,10 @@ public final class OpProcFactory {
     return new DefaultPPD();
   }
 
+  public static NodeProcessor getPTFProc() {
+    return new ScriptPPD();
+  }
+
   public static NodeProcessor getSCRProc() {
     return new ScriptPPD();
   }

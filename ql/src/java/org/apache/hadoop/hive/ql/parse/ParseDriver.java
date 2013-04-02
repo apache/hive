@@ -203,4 +203,44 @@ public class ParseDriver {
 
     return (ASTNode) r.getTree();
   }
+
+
+  /*
+   * parse a String as a Select List. This allows table functions to be passed expression Strings
+   * that are translated in
+   * the context they define at invocation time. Currently used by NPath to allow users to specify
+   * what output they want.
+   * NPath allows expressions n 'tpath' a column that represents the matched set of rows. This
+   * column doesn't exist in
+   * the input schema and hence the Result Expression cannot be analyzed by the regular Hive
+   * translation process.
+   */
+  public ASTNode parseSelect(String command, Context ctx) throws ParseException {
+    LOG.info("Parsing command: " + command);
+
+    HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    if (ctx != null) {
+      ctx.setTokenRewriteStream(tokens);
+    }
+    HiveParser parser = new HiveParser(tokens);
+    parser.setTreeAdaptor(adaptor);
+    HiveParser_SelectClauseParser.selectClause_return r = null;
+    try {
+      r = parser.selectClause();
+    } catch (RecognitionException e) {
+      e.printStackTrace();
+      throw new ParseException(parser.errors);
+    }
+
+    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
+      LOG.info("Parse Completed");
+    } else if (lexer.getErrors().size() != 0) {
+      throw new ParseException(lexer.getErrors());
+    } else {
+      throw new ParseException(parser.errors);
+    }
+
+    return (ASTNode) r.getTree();
+  }
 }
