@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,21 +120,22 @@ public final class CubeFactTable extends AbstractCubeTable {
     if (fmt != null) {
       Calendar cal = Calendar.getInstance();
       cal.setTime(fromDate);
-      List<String> summaries = new ArrayList<String>();
+      List<String> partitions = new ArrayList<String>();
       Date dt = cal.getTime();
       while (dt.compareTo(toDate) < 0) {
-        summaries.add(new SimpleDateFormat(fmt).format(cal.getTime()));
+        String part = new SimpleDateFormat(fmt).format(cal.getTime());
+        System.out.println("Adding partition:" + part + " for table:" + getName());
+        partitions.add(part);
         cal.add(interval.calendarField(), 1);
         dt = cal.getTime();
       }
-      return summaries;
+      return partitions;
     } else {
       return null;
     }
   }
 
-  public static UpdatePeriod maxIntervalInRange(Date from, Date to,
-      Set<UpdatePeriod> updatePeriods) {
+  public UpdatePeriod maxIntervalInRange(Date from, Date to) {
     long diff = to.getTime() - from.getTime();
     if (diff < UpdatePeriod.MIN_INTERVAL) {
       return null;
@@ -141,6 +143,10 @@ public final class CubeFactTable extends AbstractCubeTable {
     UpdatePeriod max = null;
     long minratio = diff / UpdatePeriod.MIN_INTERVAL;
 
+    Set<UpdatePeriod> updatePeriods = new HashSet<UpdatePeriod>();
+    for (List<UpdatePeriod> value : storageUpdatePeriods.values()) {
+      updatePeriods.addAll(value);
+    }
     for (UpdatePeriod i : updatePeriods) {
       long tmpratio = diff / i.weight();
       if (tmpratio == 0) {

@@ -411,33 +411,41 @@ public class CubeMetastoreClient {
     return isFactTable(tbl);
   }
 
-  private boolean isFactTable(Table tbl) {
+   boolean isFactTable(Table tbl) {
     String tableType = tbl.getParameters().get(
         MetastoreConstants.TABLE_TYPE_KEY);
-    return CubeTableType.FACT.equals(tableType);
+    return CubeTableType.FACT.name().equals(tableType);
   }
 
-  private boolean isFactTableForCube(Table tbl, Cube cube) {
+  boolean isFactTableForCube(Table tbl, Cube cube) {
     if (isFactTable(tbl)) {
       String cubeName = tbl.getParameters().get(
           MetastoreUtil.getFactCubeNameKey(tbl.getTableName()));
-      return cube.getName().equals(cubeName);
+      return cubeName.equalsIgnoreCase(cube.getName());
     }
     return false;
   }
 
   public boolean isDimensionTable(String tableName) throws HiveException {
     Table tbl = getTable(tableName);
+    return isDimensionTable(tbl);
+  }
+
+  boolean isDimensionTable(Table tbl) throws HiveException {
     String tableType = tbl.getParameters().get(
         MetastoreConstants.TABLE_TYPE_KEY);
-    return CubeTableType.DIMENSION.equals(tableType);
+    return CubeTableType.DIMENSION.name().equals(tableType);
   }
 
   public boolean isCube(String tableName) throws HiveException {
     Table tbl = getTable(tableName);
+    return isCube(tbl);
+  }
+
+  boolean isCube(Table tbl) throws HiveException {
     String tableType = tbl.getParameters().get(
         MetastoreConstants.TABLE_TYPE_KEY);
-    return CubeTableType.CUBE.equals(tableType);
+    return CubeTableType.CUBE.name().equals(tableType);
   }
 
   public CubeFactTable getFactTable(String tableName) throws HiveException {
@@ -455,8 +463,7 @@ public class CubeMetastoreClient {
   public CubeDimensionTable getDimensionTable(String tableName)
       throws HiveException {
     Table tbl = getTable(tableName);
-    if (CubeTableType.DIMENSION.equals(tbl.getParameters().get(
-        MetastoreConstants.TABLE_TYPE_KEY))) {
+    if (isDimensionTable(tableName)) {
       return new CubeDimensionTable(tbl);
     }
     return null;
@@ -464,8 +471,7 @@ public class CubeMetastoreClient {
 
   public Cube getCube(String tableName) throws HiveException {
     Table tbl = getTable(tableName);
-    if (CubeTableType.CUBE.equals(tbl.getParameters().get(
-        MetastoreConstants.TABLE_TYPE_KEY))) {
+    if (isCube(tableName)) {
       return new Cube(tbl);
     }
     return null;

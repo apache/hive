@@ -18,6 +18,7 @@ import org.apache.hadoop.hive.ql.cube.metadata.Cube;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeDimensionTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMetastoreClient;
+import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
@@ -38,21 +39,22 @@ public class CubeQueryContext {
   private String fromDateRaw;
   private String toDateRaw;
   private Cube cube;
-  private Set<CubeDimensionTable> dimensions = new HashSet<CubeDimensionTable>();
-  private Set<CubeFactTable> candidateFactTables = new HashSet<CubeFactTable>();
+  protected Set<CubeDimensionTable> dimensions = new HashSet<CubeDimensionTable>();
+  protected Set<CubeFactTable> candidateFactTables = new HashSet<CubeFactTable>();
   private final Map<String, List<String>> tblToColumns = new HashMap<String, List<String>>();
   private Date timeFrom;
   private Date timeTo;
   private String clauseName = null;
   private Map<String, List<String>> partitionCols;
+  private Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap;
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
     this.ast = ast;
     this.qb = qb;
     this.conf = conf;
-    //extractTimeRange();
-    //extractMetaTables();
+    extractMetaTables();
+    extractTimeRange();
   }
 
   public CubeQueryContext(CubeQueryContext other) {
@@ -91,6 +93,10 @@ public class CubeQueryContext {
           dimensions.add(client.getDimensionTable(tblName));
         }
       }
+      if (cube == null && dimensions.size() == 0) {
+        throw new SemanticException("Neither cube nor dimensions accessed");
+      }
+      candidateFactTables.addAll(client.getAllFactTables(cube));
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -109,7 +115,7 @@ public class CubeQueryContext {
     // Time range should be direct child of where condition
     // TOK_WHERE.TOK_FUNCTION.Identifier Or, it should be right hand child of
     // AND condition TOK_WHERE.KW_AND.TOK_FUNCTION.Identifier
-    ASTNode whereTree = qb.getParseInfo().getWhrForClause(clauseName);
+    ASTNode whereTree = qb.getParseInfo().getWhrForClause(getClause());
     if (whereTree == null || whereTree.getChildCount() < 1) {
       throw new SemanticException("No filter specified");
     }
@@ -145,6 +151,8 @@ public class CubeQueryContext {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+    System.out.println("timeFrom:" + timeFrom);
+    System.out.println("timeTo:" + timeTo);
   }
 
 /*  private void extractColumns() {
@@ -430,8 +438,40 @@ public class CubeQueryContext {
     }
   }
 
-  public String toHQL() {
-    // TODO Auto-generated method stub
+  public ASTNode getSelectTree() {
+    return qb.getParseInfo().getSelForClause(getClause());
+  }
+
+  public ASTNode getWhereTree() {
+    return qb.getParseInfo().getWhrForClause(getClause());
+  }
+
+  public ASTNode getGroupbyTree() {
+    return qb.getParseInfo().getGroupByForClause(getClause());
+  }
+
+  public ASTNode getHavingTree() {
+    return qb.getParseInfo().getHavingForClause(getClause());
+  }
+
+  public ASTNode getJoinTree() {
+    return qb.getParseInfo().getJoinExpr();
+  }
+
+  public ASTNode getOrderbyTree() {
+    return qb.getParseInfo().getOrderByForClause(getClause());
+  }
+
+  public String toHQL() throws SemanticException {
     return null;
+  }
+
+  public Map<CubeFactTable, Map<UpdatePeriod, List<String>>> getFactPartitionMap() {
+    return factPartitionMap;
+  }
+
+  public void setFactPartitionMap(Map<CubeFactTable,
+      Map<UpdatePeriod, List<String>>> factPartitionMap) {
+    this.factPartitionMap = factPartitionMap;
   }
 }

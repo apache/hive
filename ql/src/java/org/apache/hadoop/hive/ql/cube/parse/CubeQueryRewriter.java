@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -40,12 +41,12 @@ public class CubeQueryRewriter {
     phase2Rewriters.add(new LeastDimensionResolver(conf));
   }
 
-  public CubeQueryContext rewritePhase1(String cubeql)
+  public CubeQueryContext rewritePhase1(ASTNode astnode)
       throws SemanticException, ParseException {
     CubeQueryContext ctx;
       CubeSemanticAnalyzer analyzer =  new CubeSemanticAnalyzer(
           new HiveConf(conf, HiveConf.class));
-      analyzer.analyzeInternal(HQLParser.parseHQL(cubeql));
+      analyzer.analyzeInternal(astnode);
       ctx = analyzer.getQueryContext();
       rewrite(phase1Rewriters, ctx);
     return ctx;
@@ -68,7 +69,7 @@ public class CubeQueryRewriter {
   }
 
   public static void main(String[] args) throws SemanticException, ParseException {
-    CubeQueryRewriter writer = new CubeQueryRewriter(new Configuration());
-    writer.rewritePhase1("select * from cube");
+   // CubeQueryRewriter writer = new CubeQueryRewriter(new Configuration());
+   // writer.rewritePhase1("select * from cube");
   }
 }

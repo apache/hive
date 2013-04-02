@@ -1,12 +1,19 @@
 package org.apache.hadoop.hive.ql.cube.processors;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.cube.parse.CubeQueryContext;
 import org.apache.hadoop.hive.ql.cube.parse.CubeQueryRewriter;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class CubeDriver extends Driver {
 
@@ -18,16 +25,14 @@ public class CubeDriver extends Driver {
     super();
   }
 
+  public static String CUBE_QUERY_PFX = "CUBE ";
+  private Context ctx;
+
   @Override
   public int compile(String command) {
-    // compile the cube query and rewrite it to HQL query
-    CubeQueryRewriter rewriter = new CubeQueryRewriter(getConf());
-    CubeQueryContext finalQuery;
+    String query;
     try {
-      // 1. rewrite query to get summary tables and joins
-      CubeQueryContext phase1Query = rewriter.rewritePhase1(command);
-      finalQuery = rewriter.rewritePhase2(phase1Query,
-          getSupportedStorages(getConf()));
+      query = compileCubeQuery(command.substring(CUBE_QUERY_PFX.length()));
     } catch (Exception e) {
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
       errorMessage = "FAILED: " + e.getClass().getSimpleName();
@@ -41,7 +46,23 @@ public class CubeDriver extends Driver {
       return error.getErrorCode();
 
     }
-    return super.compile(finalQuery.toHQL());
+    return super.compile(query);
+  }
+
+  String compileCubeQuery(String query)
+      throws SemanticException, ParseException, IOException {
+    System.out.println("Query :" + query);
+    ctx = new Context(getConf());
+    ParseDriver pd = new ParseDriver();
+    ASTNode tree = pd.parse(query, ctx);
+    tree = ParseUtils.findRootNonNullToken(tree);
+    // compile the cube query and rewrite it to HQL query
+    CubeQueryRewriter rewriter = new CubeQueryRewriter(getConf());
+    // 1. rewrite query to get summary tables and joins
+    CubeQueryContext phase1Query = rewriter.rewritePhase1(tree);
+    CubeQueryContext finalQuery = rewriter.rewritePhase2(phase1Query,
+        getSupportedStorages(getConf()));
+    return finalQuery.toHQL();
   }
 
   private List<String> getSupportedStorages(HiveConf conf) {

@@ -7,7 +7,7 @@ public enum UpdatePeriod implements Named {
   SECONDLY (Calendar.SECOND, 1000, "yyyy-MM-dd-HH-mm-ss"),
   MINUTELY (Calendar.MINUTE, 60 * SECONDLY.weight(), "yyyy-MM-dd-HH-mm"),
   HOURLY (Calendar.HOUR_OF_DAY, 60 * MINUTELY.weight(), "yyyy-MM-dd-HH"),
-  DAILY (Calendar.DATE, 24 * HOURLY.weight(), "yyyy-MM-DD"),
+  DAILY (Calendar.DATE, 24 * HOURLY.weight(), "yyyy-MM-dd"),
   WEEKLY (Calendar.WEEK_OF_YEAR, 7 * DAILY.weight(), "yyyy-'W'ww-u"),
   MONTHLY (Calendar.MONTH, 30 * DAILY.weight(), "yyyy-MM"),
   //QUARTERLY (Calendar.MONTH, 3 * MONTHLY.weight(), "YYYY-MM"),

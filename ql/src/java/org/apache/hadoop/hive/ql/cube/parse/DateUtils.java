@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.log4j.Logger;
 
@@ -46,11 +47,36 @@ public class DateUtils {
 
   public static final Pattern RELDATE_VALIDATOR = Pattern.compile(RELDATE_VALIDATOR_STR, Pattern.CASE_INSENSITIVE);
 
-  public static final String ABSDATE_FMT = "dd-MMM-yyyy HH:mm:ss,SSS Z";
+  public static String YEAR_FMT = "[0-9]{4}";
+  public static String MONTH_FMT = YEAR_FMT + "-[0-9]{2}";
+  public static String DAY_FMT = MONTH_FMT + "-[0-9]{2}";
+  public static String HOUR_FMT = DAY_FMT + " [0-9]{2}";
+  public static String MINUTE_FMT = HOUR_FMT + ":[0-9]{2}";
+  public static String SECOND_FMT = MINUTE_FMT + ":[0-9]{2}";
+  public static final String ABSDATE_FMT = "yyyy-MM-dd HH:mm:ss,SSS";
   public static final SimpleDateFormat ABSDATE_PARSER = new SimpleDateFormat(ABSDATE_FMT);
 
   public static String formatDate(Date dt) {
     return ABSDATE_PARSER.format(dt);
+  }
+
+  public static String getAbsDateFormatString(String str) {
+    if (str.matches(YEAR_FMT)) {
+      return str + "-01-01 00:00:00,000";
+    } else if (str.matches(MONTH_FMT)) {
+      return str + "-01 00:00:00,000";
+    } else if (str.matches(DAY_FMT)) {
+      return str + " 00:00:00,000";
+    } else if (str.matches(HOUR_FMT)) {
+      return str + ":00:00,000";
+    } else if (str.matches(MINUTE_FMT)) {
+      return str + ":00,000";
+    } else if (str.matches(SECOND_FMT)) {
+      return str + ",000";
+    } else if (str.matches(ABSDATE_FMT)) {
+      return str;
+    }
+    throw new IllegalArgumentException("Unsupported formatting for date" + str);
   }
 
   public static Date resolveDate(String str, Date now) throws HiveException {
@@ -58,10 +84,12 @@ public class DateUtils {
       return resolveRelativeDate(str, now);
     } else {
       try {
-        return ABSDATE_PARSER.parse(str);
+        return ABSDATE_PARSER.parse(getAbsDateFormatString(str));
       } catch (ParseException e) {
-        LOG.error("Invalid date format. expected only " + ABSDATE_FMT + " date provided:" + str, e);
-        throw new HiveException("Date parsing error. expected format " + ABSDATE_FMT
+        LOG.error("Invalid date format. expected only " + ABSDATE_FMT
+            + " date provided:" + str, e);
+        throw new HiveException("Date parsing error. expected format "
+            + ABSDATE_FMT
             + ", date provided: " + str
             + ", failed because: " + e.getMessage());
       }
@@ -119,5 +147,76 @@ public class DateUtils {
     }
 
     return calendar.getTime();
+  }
+
+  public static Date getCeilDate(Date fromDate, UpdatePeriod interval) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(fromDate);
+    boolean hasFraction = false;
+    switch (interval) {
+    case YEARLY :
+      if (cal.get(Calendar.MONTH) != 1) {
+        hasFraction = true;
+        break;
+      }
+    case MONTHLY :
+      if (cal.get(Calendar.DAY_OF_MONTH) != 1) {
+        hasFraction = true;
+        break;
+      }
+    case WEEKLY :
+      if (cal.get(Calendar.DAY_OF_WEEK) != 1) {
+        hasFraction = true;
+        break;
+      }
+    case DAILY :
+      if (cal.get(Calendar.HOUR_OF_DAY) != 0) {
+        hasFraction = true;
+        break;
+      }
+    case HOURLY :
+      if (cal.get(Calendar.MINUTE) != 0) {
+        hasFraction = true;
+        break;
+      }
+    case MINUTELY :
+      if (cal.get(Calendar.SECOND) != 0) {
+        hasFraction = true;
+        break;
+      }
+    case SECONDLY :
+      if (cal.get(Calendar.MILLISECOND) != 0) {
+        hasFraction = true;
+        break;
+      }
+    }
+
+    if (hasFraction) {
+      cal.roll(interval.calendarField(), true);
+      return getFloorDate(cal.getTime(), interval);
+    } else {
+      return fromDate;
+    }
+  }
+
+  public static Date getFloorDate(Date toDate, UpdatePeriod interval) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(toDate);
+    switch (interval) {
+    case YEARLY :
+      cal.set(Calendar.MONTH, 1);
+    case MONTHLY :
+      cal.set(Calendar.DAY_OF_MONTH, 1);
+    case WEEKLY :
+      cal.set(Calendar.DAY_OF_WEEK, 1);
+    case DAILY :
+      cal.set(Calendar.HOUR_OF_DAY, 0);
+    case HOURLY :
+      cal.set(Calendar.MINUTE, 0);
+    case MINUTELY :
+      cal.set(Calendar.SECOND, 0);
+    case SECONDLY :
+    }
+    return cal.getTime();
   }
 }
