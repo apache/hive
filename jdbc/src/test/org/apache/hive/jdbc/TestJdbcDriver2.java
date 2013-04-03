@@ -145,7 +145,8 @@ public class TestJdbcDriver2 extends TestCase {
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
         + " c16 array<struct<m:map<string,string>,n:int>>,"
         + " c17 timestamp, "
-        + " c18 decimal) comment'" + dataTypeTableComment
+        + " c18 decimal, "
+        + " c19 binary) comment'" + dataTypeTableComment
             +"' partitioned by (dt STRING)");
 
     stmt.execute("load data local inpath '"
@@ -408,6 +409,9 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(null, res.getString(14));
     assertEquals(null, res.getString(15));
     assertEquals(null, res.getString(16));
+    assertEquals(null, res.getString(17));
+    assertEquals(null, res.getString(18));
+    assertEquals(null, res.getString(19));
 
     // row 2
     assertTrue(res.next());
@@ -430,6 +434,7 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(null, res.getString(17));
     assertEquals(null, res.getTimestamp(17));
     assertEquals(null, res.getBigDecimal(18));
+    assertEquals(null, res.getString(19));
 
     // row 3
     assertTrue(res.next());
@@ -452,6 +457,7 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals("2012-04-22 09:00:00.123456789", res.getString(17));
     assertEquals("2012-04-22 09:00:00.123456789", res.getTimestamp(17).toString());
     assertEquals("123456789.0123456", res.getBigDecimal(18).toString());
+    assertEquals("abcd", res.getString(19));
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));

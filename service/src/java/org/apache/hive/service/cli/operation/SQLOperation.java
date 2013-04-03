@@ -198,10 +198,16 @@ public class SQLOperation extends ExecuteStatementOperation {
   private static Object convertLazyToJava(Object o, ObjectInspector oi) {
     Object obj = ObjectInspectorUtils.copyToStandardObject(o, oi, ObjectInspectorCopyOption.JAVA);
 
+    if (obj == null) {
+      return obj;
+    }
+    if(oi.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
+      return new String((byte[])obj);
+    }
     // for now, expose non-primitive as a string
     // TODO: expose non-primitive as a structured object while maintaining JDBC compliance
-    if (obj != null && oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      obj = obj.toString();
+    if (oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      return obj.toString();
     }
 
     return obj;
