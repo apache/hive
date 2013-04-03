@@ -656,7 +656,7 @@ public class TestOrcFile {
     assertEquals(true, rows.hasNext());
     row = (OrcStruct) rows.next(null);
     inspector = reader.getObjectInspector();
-    assertEquals("struct<time:timestamp,union:union{int, string}>",
+    assertEquals("struct<time:timestamp,union:uniontype<int,string>>",
         inspector.getTypeName());
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
         row.getFieldValue(0));
