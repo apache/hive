@@ -32,6 +32,10 @@ public class RowSchema implements Serializable {
   public RowSchema() {
   }
 
+  public RowSchema(RowSchema that) {
+    this.signature = (ArrayList<ColumnInfo>) that.signature.clone();
+  }
+
   public RowSchema(ArrayList<ColumnInfo> signature) {
     this.signature = signature;
   }
