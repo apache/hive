@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
@@ -253,9 +255,29 @@ public final class OperatorFactory {
    * Returns an operator given the conf and a list of parent operators.
    */
   public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
+      RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap, Operator... oplist) {
+    Operator<T> ret = getAndMakeChild(conf, rwsch, oplist);
+    ret.setColumnExprMap(colExprMap);    
+    return (ret);
+  }
+
+  /**
+   * Returns an operator given the conf and a list of parent operators.
+   */
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
       RowSchema rwsch, List<Operator<? extends OperatorDesc>> oplist) {
     Operator<T> ret = getAndMakeChild(conf, oplist);
     ret.setSchema(rwsch);
+    return (ret);
+  }
+
+ /**
+   * Returns an operator given the conf and a list of parent operators.
+   */
+  public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
+      RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap, List<Operator<? extends OperatorDesc>> oplist) {
+    Operator<T> ret = getAndMakeChild(conf, rwsch, oplist);
+    ret.setColumnExprMap(colExprMap);
     return (ret);
   }
 
