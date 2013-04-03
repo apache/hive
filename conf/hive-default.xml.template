@@ -933,6 +933,16 @@
 </property>
 
 <property>
+  <name>hive.optimize.bucketingsorting</name>
+  <value>true</value>
+  <description>If hive.enforce.bucketing or hive.enforce.sorting is true, dont create a reducer for enforcing
+    bucketing/sorting for queries of the form: 
+    insert overwrite table T2 select * from T1;
+    where T1 and T2 are bucketed/sorted by the same keys into the same number of buckets.
+  </description>
+</property>
+
+<property>
   <name>hive.enforce.sortmergebucketmapjoin</name>
   <value>false</value>
   <description>If the user asked for sort-merge bucketed map-side join, and it cannot be performed,

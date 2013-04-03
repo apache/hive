@@ -384,11 +384,10 @@ public class Partition implements Serializable {
   }
 
   /**
-   * mapping from bucket number to bucket path
+   * get all paths for this partition in a sorted manner
    */
-  // TODO: add test case and clean it up
   @SuppressWarnings("nls")
-  public Path getBucketPath(int bucketNum) {
+  public FileStatus[] getSortedPaths() {
     try {
       // Previously, this got the filesystem of the Table, which could be
       // different from the filesystem of the partition.
@@ -407,11 +406,23 @@ public class Partition implements Serializable {
       if (srcs.length == 0) {
         return null;
       }
-      return srcs[bucketNum].getPath();
+      return srcs;
     } catch (Exception e) {
-      throw new RuntimeException("Cannot get bucket path for bucket "
-          + bucketNum, e);
+      throw new RuntimeException("Cannot get path ", e);
     }
+  }
+
+  /**
+   * mapping from bucket number to bucket path
+   */
+  // TODO: add test case and clean it up
+  @SuppressWarnings("nls")
+  public Path getBucketPath(int bucketNum) {
+    FileStatus srcs[] = getSortedPaths();
+    if (srcs == null) {
+      return null;
+    }
+    return srcs[bucketNum].getPath();
   }
 
   @SuppressWarnings("nls")
