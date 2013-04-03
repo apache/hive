@@ -513,6 +513,7 @@ public class HiveConf extends Configuration {
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
     HIVEENFORCESORTING("hive.enforce.sorting", false),
+    HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true),
     HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
     HIVEENFORCESORTMERGEBUCKETMAPJOIN("hive.enforce.sortmergebucketmapjoin", false),
     HIVEENFORCEBUCKETMAPJOIN("hive.enforce.bucketmapjoin", false),

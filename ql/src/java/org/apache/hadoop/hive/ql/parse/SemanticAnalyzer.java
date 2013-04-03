@@ -223,6 +223,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<JoinOperator, QBJoinTree> joinContext;
   private Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
+  private final Map<FileSinkOperator, Table> fsopToTable;
+  private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private QB qb;
   private ASTNode ast;
   private int destTableId;
@@ -284,6 +286,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
     smbMapJoinContext = new HashMap<SMBMapJoinOperator, QBJoinTree>();
     topToTable = new HashMap<TableScanOperator, Table>();
+    fsopToTable = new HashMap<FileSinkOperator, Table>();
+    reduceSinkOperatorsAddedByEnforceBucketingSorting = new ArrayList<ReduceSinkOperator>();
     destTableId = 1;
     uCtx = null;
     listMapJoinOpsNoReducer = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
@@ -342,11 +346,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
-        topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable, loadTableWork,
+        topSelOps, opParseCtx, joinContext, smbMapJoinContext, topToTable,
+        fsopToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
-        opToPartToSkewedPruner, viewAliasToInput);
+        opToPartToSkewedPruner, viewAliasToInput,
+        reduceSinkOperatorsAddedByEnforceBucketingSorting);
   }
 
   @SuppressWarnings("nls")
@@ -5262,6 +5268,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           + dest_path + " row schema: " + inputRR.toString());
     }
 
+    fsopToTable.put((FileSinkOperator) output, dest_tab);
     return output;
   }
 
@@ -5669,6 +5676,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             partitionCols, order.toString(), numReducers),
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
     interim.setColumnExprMap(colExprMap);
+    reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator) interim);
 
     // Add the extract operator to get the value fields
     RowResolver out_rwsch = new RowResolver();
@@ -5691,6 +5699,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("Created ReduceSink Plan for table: " + tab.getTableName() +
           " row schema: " + out_rwsch.toString());
     }
+
     return output;
 
   }
@@ -8646,11 +8655,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, smbMapJoinContext,
-        topToTable,
+        topToTable, fsopToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
-        opToPartToSkewedPruner, viewAliasToInput);
+        opToPartToSkewedPruner, viewAliasToInput,
+        reduceSinkOperatorsAddedByEnforceBucketingSorting);
 
     // Generate table access stats if required
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_TABLEKEYS) == true) {

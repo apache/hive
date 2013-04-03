@@ -90,6 +90,10 @@ public class Optimizer {
       transformations.add(new SortedMergeBucketMapJoinOptimizer());
     }
 
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEBUCKETINGSORTING)) {
+      transformations.add(new BucketingSortingReduceSinkOptimizer());
+    }
+
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {

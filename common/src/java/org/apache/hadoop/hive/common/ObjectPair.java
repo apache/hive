@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
+
+
 public class ObjectPair<F, S> {
   private F first;
   private S second;
@@ -43,5 +45,25 @@ public class ObjectPair<F, S> {
 
   public void setSecond(S second) {
     this.second = second;
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null) {
+      return false;
+    }
+    if (that instanceof ObjectPair) {
+      return this.equals((ObjectPair<F, S>)that);
+    }
+    return false;
+  }
+
+  public boolean equals(ObjectPair<F, S> that) {
+    if (that == null) {
+      return false;
+    }
+
+    return this.getFirst().equals(that.getFirst()) &&
+        this.getSecond().equals(that.getSecond());
   }
 }
