@@ -116,17 +116,17 @@ final class OrcUnion implements UnionObject {
 
     @Override
     public String getTypeName() {
-      StringBuilder builder = new StringBuilder("union{");
+      StringBuilder builder = new StringBuilder("uniontype<");
       boolean first = true;
       for(ObjectInspector child: children) {
         if (first) {
           first = false;
         } else {
-          builder.append(", ");
+          builder.append(",");
         }
         builder.append(child.getTypeName());
       }
-      builder.append("}");
+      builder.append(">");
       return builder.toString();
     }
 
