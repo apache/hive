@@ -40,7 +40,7 @@ FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-55555.0	55555.0	55555.0	55555.0	55555.0	55560.0	55600.0	56000.0	60000.0	100000.0	0.0	0.0	0.0
+55555	55555.0	55555.0	55555.0	55555.0	55560.0	55600.0	56000.0	60000.0	100000.0	0.0	0.0	0.0
 PREHOOK: query: SELECT
   round(125.315), round(125.315, 0),
   round(125.315, 1), round(125.315, 2), round(125.315, 3), round(125.315, 4),
