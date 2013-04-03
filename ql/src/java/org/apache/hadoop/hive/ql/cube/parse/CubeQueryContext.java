@@ -46,7 +46,7 @@ public class CubeQueryContext {
   private Date timeTo;
   private String clauseName = null;
   private Map<String, List<String>> partitionCols;
-  private Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap;
+  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap;
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
@@ -68,6 +68,7 @@ public class CubeQueryContext {
     this.timeFrom = other.timeFrom;
     this.timeTo = other.timeTo;
     this.partitionCols = other.partitionCols;
+    this.factPartitionMap = other.factPartitionMap;
   }
 
   private QB cloneqb() {

@@ -46,8 +46,10 @@ public class TestCubeDriver {
   public void testSimpleQuery2() throws Exception {
     Calendar cal = Calendar.getInstance();
     Date now = cal.getTime();
+    System.out.println("Test now:" + now);
     cal.add(Calendar.DAY_OF_MONTH, -2);
     Date twodaysBack = cal.getTime();
+    System.out.println("Test twodaysBack:" + twodaysBack);
     System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" + getDateUptoHours(now));
     String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)

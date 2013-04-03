@@ -192,7 +192,7 @@ public class DateUtils {
     }
 
     if (hasFraction) {
-      cal.roll(interval.calendarField(), true);
+      cal.add(interval.calendarField(), 1);
       return getFloorDate(cal.getTime(), interval);
     } else {
       return fromDate;

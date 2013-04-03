@@ -46,6 +46,7 @@ public class PartitionResolver implements ContextRewriter {
   void getPartitions(CubeFactTable fact, Date fromDate, Date toDate,
       Map<UpdatePeriod, List<String>> partitionColMap)
           throws SemanticException {
+    System.out.println("getPartitions fromDate:" + fromDate + " toDate:" + toDate);
     if (fromDate.equals(toDate) || fromDate.after(toDate)) {
       return;
     }
