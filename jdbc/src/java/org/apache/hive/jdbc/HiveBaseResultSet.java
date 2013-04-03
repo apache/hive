@@ -439,6 +439,15 @@ public abstract class HiveBaseResultSet implements ResultSet {
     return null;
   }
 
+  private byte[] getBinaryValue(TStringValue tString) {
+    if (tString.isSetValue()) {
+      wasNull = false;
+      return tString.getValue().getBytes();
+    }
+    wasNull = true;
+    return null;
+  }
+
   private BigDecimal getBigDecimalValue(TStringValue tStringValue) {
     if (tStringValue.isSetValue()) {
       wasNull = false;
@@ -480,6 +489,8 @@ public abstract class HiveBaseResultSet implements ResultSet {
       return getDoubleValue(tColumnValue.getDoubleVal());
     case STRING_TYPE:
       return getStringValue(tColumnValue.getStringVal());
+    case BINARY_TYPE:
+      return getBinaryValue(tColumnValue.getStringVal());
     case TIMESTAMP_TYPE:
       return getTimestampValue(tColumnValue.getStringVal());
     case DECIMAL_TYPE:
@@ -587,6 +598,9 @@ public abstract class HiveBaseResultSet implements ResultSet {
     Object value = getColumnValue(columnIndex);
     if (wasNull) {
       return null;
+    }
+    if (value instanceof byte[]){
+      return new String((byte[])value);
     }
     return value.toString();
   }
