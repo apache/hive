@@ -6533,8 +6533,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinTree.setStreamAliases(streamAliases);
   }
 
-  private void mergeJoins(QB qb, QBJoinTree parent, QBJoinTree node,
-      QBJoinTree target, int pos) {
+  /**
+   * Merges node to target
+   */
+  private void mergeJoins(QB qb, QBJoinTree node, QBJoinTree target, int pos) {
     String[] nodeRightAliases = node.getRightAliases();
     String[] trgtRightAliases = target.getRightAliases();
     String[] rightAliases = new String[nodeRightAliases.length
@@ -6617,12 +6619,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (node.getFiltersForPushing().get(0).size() != 0) {
       ArrayList<ASTNode> filterPos = filter.get(pos);
       filterPos.addAll(node.getFiltersForPushing().get(0));
-    }
-
-    if (qb.getQbJoinTree() == node) {
-      qb.setQbJoinTree(node.getJoinSrc());
-    } else {
-      parent.setJoinSrc(node.getJoinSrc());
     }
 
     if (node.getNoOuterJoin() && target.getNoOuterJoin()) {
@@ -6709,49 +6705,81 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return res;
   }
 
-  private boolean mergeJoinNodes(QB qb, QBJoinTree parent, QBJoinTree node,
-      QBJoinTree target) {
-    if (target == null) {
-      return false;
+  // try merge join tree from inner most source
+  // (it was merged from outer most to inner, which could be invalid)
+  //
+  // in a join tree ((A-B)-C)-D where C is not mergeable with A-B,
+  // D can be merged with A-B into single join If and only if C and D has same join type
+  // In this case, A-B-D join will be executed first and ABD-C join will be executed in next
+  private void mergeJoinTree(QB qb) {
+    QBJoinTree tree = qb.getQbJoinTree();
+    if (tree.getJoinSrc() == null) {
+      return;
     }
-    if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
-      // todo 8 way could be not enough number
-      if (node.getLeftAliases().length + node.getRightAliases().length + 1 >= 32) {
-        LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_32);
-        return false;
+    // make array with QBJoinTree : outer most(0) --> inner most(n)
+    List<QBJoinTree> trees = new ArrayList<QBJoinTree>();
+    for (;tree != null; tree = tree.getJoinSrc()) {
+      trees.add(tree);
+    }
+    // merging from 'target'(inner) to 'node'(outer)
+    for (int i = trees.size() - 1; i >= 0; i--) {
+      QBJoinTree target = trees.get(i);
+      if (target == null) {
+        continue;
+      }
+      JoinType prevType = null;   // save join type
+      for (int j = i - 1; j >= 0; j--) {
+        QBJoinTree node = trees.get(j);
+        if (node == null) {
+          continue;
+        }
+        JoinType currType = getType(node.getJoinCond());
+        if (prevType != null && prevType != currType) {
+          break;
+        }
+        int pos = findMergePos(node, target);
+        if (pos >= 0) {
+          // for outer joins, it should not exceed 16 aliases (short type)
+          if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
+            if (node.getRightAliases().length + target.getRightAliases().length + 1 > 16) {
+              LOG.info(ErrorMsg.JOINNODE_OUTERJOIN_MORETHAN_16);
+              continue;
+            }
+          }
+          mergeJoins(qb, node, target, pos);
+          trees.set(j, null);
+          continue; // continue merging with next alias
+        }
+        if (prevType == null) {
+          prevType = currType;
+        }
       }
     }
-    int res = findMergePos(node, target);
-    if (res != -1) {
-      mergeJoins(qb, parent, node, target, res);
-      return true;
+    // reconstruct join tree
+    QBJoinTree current = null;
+    for (int i = 0; i < trees.size(); i++) {
+      QBJoinTree target = trees.get(i);
+      if (target == null) {
+        continue;
+      }
+      if (current == null) {
+        qb.setQbJoinTree(current = target);
+      } else {
+        current.setJoinSrc(target);
+        current = target;
+      }
     }
-
-    return mergeJoinNodes(qb, parent, node, target.getJoinSrc());
   }
 
-  private void mergeJoinTree(QB qb) {
-    QBJoinTree root = qb.getQbJoinTree();
-    QBJoinTree parent = null;
-    while (root != null) {
-      boolean merged = mergeJoinNodes(qb, parent, root, root.getJoinSrc());
-
-      if (parent == null) {
-        if (merged) {
-          root = qb.getQbJoinTree();
-        } else {
-          parent = root;
-          root = root.getJoinSrc();
-        }
-      } else {
-        if (merged) {
-          root = root.getJoinSrc();
-        } else {
-          parent = parent.getJoinSrc();
-          root = parent.getJoinSrc();
-        }
+  // Join types should be all the same for merging (or returns null)
+  private JoinType getType(JoinCond[] conds) {
+    JoinType type = conds[0].getJoinType();
+    for (int k = 1; k < conds.length; k++) {
+      if (type != conds[k].getJoinType()) {
+        return null;
       }
     }
+    return type;
   }
 
   private Operator insertSelectAllPlanForGroupBy(Operator input)
