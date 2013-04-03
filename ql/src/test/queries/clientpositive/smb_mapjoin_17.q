@@ -99,3 +99,27 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key;
+
+-- outer join with max 16 aliases
+EXPLAIN
+SELECT a.*
+FROM test_table1 a
+LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+LEFT OUTER JOIN test_table4 i ON a.key = i.key
+LEFT OUTER JOIN test_table5 j ON a.key = j.key
+LEFT OUTER JOIN test_table6 k ON a.key = k.key
+LEFT OUTER JOIN test_table7 l ON a.key = l.key
+LEFT OUTER JOIN test_table8 m ON a.key = m.key
+LEFT OUTER JOIN test_table7 n ON a.key = n.key
+LEFT OUTER JOIN test_table8 o ON a.key = o.key
+LEFT OUTER JOIN test_table4 p ON a.key = p.key
+LEFT OUTER JOIN test_table5 q ON a.key = q.key
+LEFT OUTER JOIN test_table6 r ON a.key = r.key
+LEFT OUTER JOIN test_table7 s ON a.key = s.key
+LEFT OUTER JOIN test_table8 t ON a.key = t.key;

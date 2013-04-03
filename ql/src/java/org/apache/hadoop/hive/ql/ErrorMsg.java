@@ -236,8 +236,8 @@ public enum ErrorMsg {
     "Fix the metadata or don't use bucketed mapjoin, by setting " +
     "hive.enforce.bucketmapjoin to false."),
 
-  JOINNODE_OUTERJOIN_MORETHAN_32(10142, "Single join node containing outer join(s) " +
-      "cannot have more than 32 aliases"),
+  JOINNODE_OUTERJOIN_MORETHAN_16(10142, "Single join node containing outer join(s) " +
+      "cannot have more than 16 aliases"),
 
   INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
 
