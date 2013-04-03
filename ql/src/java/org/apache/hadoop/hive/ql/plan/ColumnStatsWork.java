@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+
 /**
  * ColumnStats Work.
  *
@@ -29,6 +31,8 @@ public class ColumnStatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchWork fWork;
   private ColumnStatsDesc colStats;
+  private static final int LIMIT = -1;
+
 
   public ColumnStatsWork() {
   }
@@ -61,4 +65,21 @@ public class ColumnStatsWork implements Serializable {
   public void setColStats(ColumnStatsDesc colStats) {
     this.colStats = colStats;
   }
+
+  public ListSinkOperator getSink() {
+    return fWork.getSink();
+  }
+
+  public void initializeForFetch() {
+    fWork.initializeForFetch();
+  }
+
+  public int getLeastNumRows() {
+    return fWork.getLeastNumRows();
+  }
+
+  public static int getLimit() {
+    return LIMIT;
+  }
+
 }
