@@ -247,6 +247,24 @@
       </patternset>
     </unzip>
 
+    <unzip 
+      src="${build.ivy.lib.dir}/default/protobuf-java-${protobuf.version}.jar" 
+      dest="${build.dir.hive}/protobuf-java/classes">
+      <patternset>
+        <exclude name="META-INF"/>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
+
+    <unzip 
+      src="${build.ivy.lib.dir}/default/snappy-${snappy.version}.jar" 
+      dest="${build.dir.hive}/snappy/classes">
+      <patternset>
+        <exclude name="META-INF"/>
+        <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
+
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
@@ -260,6 +278,10 @@
       <fileset dir="${build.dir.hive}/shims/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/javaewah/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/javolution/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/protobuf-java/classes" 
+               includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/snappy/classes" 
+               includes="**/*.class"/>
       <manifest>
         <!-- Not putting these in their own manifest section, since that inserts
              a new-line, which breaks the reading of the attributes. -->
