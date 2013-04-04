@@ -423,6 +423,7 @@ public class HiveConf extends Configuration {
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.5),
     HIVEMULTIGROUPBYSINGLEREDUCER("hive.multigroupby.singlereducer", true),
     HIVE_MAP_GROUPBY_SORT("hive.map.groupby.sorted", false),
+    HIVE_MAP_GROUPBY_SORT_TESTMODE("hive.map.groupby.sorted.testmode", false),
     HIVE_GROUPBY_ORDERBY_POSITION_ALIAS("hive.groupby.orderby.position.alias", false),
     HIVE_NEW_JOB_GROUPING_SET_CARDINALITY("hive.new.job.grouping.set.cardinality", 30),
 
@@ -765,7 +766,7 @@ public class HiveConf extends Configuration {
     // ptf partition constants
     HIVE_PTF_PARTITION_PERSISTENCE_CLASS("hive.ptf.partition.persistence",
       "org.apache.hadoop.hive.ql.exec.PTFPersistence$PartitionedByteBasedList"),
-    HIVE_PTF_PARTITION_PERSISTENT_SIZE("hive.ptf.partition.persistence.memsize", 
+    HIVE_PTF_PARTITION_PERSISTENT_SIZE("hive.ptf.partition.persistence.memsize",
       (int) Math.pow(2, (5 + 10 + 10)) ), // 32MB
     ;
 
