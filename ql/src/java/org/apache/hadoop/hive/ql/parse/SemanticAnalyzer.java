@@ -7505,17 +7505,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     RowResolver rowResolver = new RowResolver();
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+
     List<String> colName = new ArrayList<String>();
     for (int i = 0; i < columns.size(); i++) {
       String name = getColumnInternalName(i);
-      rowResolver.put(origInputAlias, name, new ColumnInfo(name, columns.get(i)
-          .getTypeInfo(), "", false));
+      ColumnInfo col = new ColumnInfo(name, columns.get(i)
+          .getTypeInfo(), "", false);
+      rowResolver.put(origInputAlias, name, col);
       colName.add(name);
+      columnExprMap.put(name, columns.get(i));
     }
 
     Operator<SelectDesc> newInputOp = OperatorFactory.getAndMakeChild(
         new SelectDesc(columns, colName), new RowSchema(rowResolver.getColumnInfos()),
-        origInputOp);
+        columnExprMap, origInputOp);
     return putOpInsertMap(newInputOp, rowResolver);
   }
 
