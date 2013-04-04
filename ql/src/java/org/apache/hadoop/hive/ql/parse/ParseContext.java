@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -113,6 +114,7 @@ public class ParseContext {
   private List<Task<? extends Serializable>> rootTasks;
 
   private FetchTask fetchTask;
+  private QueryProperties queryProperties;
 
   public ParseContext() {
   }
@@ -180,7 +182,8 @@ public class ParseContext {
       HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks,
       Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner,
       Map<String, ReadEntity> viewAliasToInput,
-      List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting) {
+      List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
+      QueryProperties queryProperties) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -212,6 +215,7 @@ public class ParseContext {
     this.viewAliasToInput = viewAliasToInput;
     this.reduceSinkOperatorsAddedByEnforceBucketingSorting =
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
+    this.queryProperties = queryProperties;
   }
 
   /**
@@ -622,5 +626,13 @@ public class ParseContext {
 
   public Map<String, ReadEntity> getViewAliasToInput() {
     return viewAliasToInput;
+  }
+
+  public QueryProperties getQueryProperties() {
+    return queryProperties;
+  }
+
+  public void setQueryProperties(QueryProperties queryProperties) {
+    this.queryProperties = queryProperties;
   }
 }

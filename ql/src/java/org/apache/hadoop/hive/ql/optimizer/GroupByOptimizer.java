@@ -178,7 +178,7 @@ public class GroupByOptimizer implements Transform {
       // Dont remove the operator for distincts
       if (useMapperSort && !groupByOp.getConf().isDistinct() &&
           (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
-        convertGroupByMapSideSortedGroupBy(groupByOp, depth);
+        convertGroupByMapSideSortedGroupBy(hiveConf, groupByOp, depth);
       }
       else if ((match == GroupByOptimizerSortMatch.PARTIAL_MATCH) ||
           (match == GroupByOptimizerSortMatch.COMPLETE_MATCH)) {
@@ -455,7 +455,14 @@ public class GroupByOptimizer implements Transform {
 
     // Convert the group by to a map-side group by
     // The operators specified by depth and removed from the tree.
-    protected void convertGroupByMapSideSortedGroupBy(GroupByOperator groupByOp, int depth) {
+    protected void convertGroupByMapSideSortedGroupBy(
+        HiveConf conf, GroupByOperator groupByOp, int depth) {
+      // In test mode, dont change the query plan. However, setup a query property
+      pGraphContext.getQueryProperties().setHasMapGroupBy(true);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT_TESTMODE)) {
+        return;
+      }
+
       if (groupByOp.removeChildren(depth)) {
         // Use bucketized hive input format - that makes sure that one mapper reads the entire file
         groupByOp.setUseBucketizedHiveInputFormat(true);
