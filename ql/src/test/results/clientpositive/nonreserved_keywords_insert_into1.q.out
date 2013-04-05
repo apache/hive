@@ -2,9 +2,9 @@ PREHOOK: query: DROP TABLE insert
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE insert
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE insert (from INT, as STRING)
+PREHOOK: query: CREATE TABLE insert (key INT, as STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE insert (from INT, as STRING)
+POSTHOOK: query: CREATE TABLE insert (key INT, as STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@insert
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
@@ -84,7 +84,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(hash)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (hash) FROM insert
 ) t
@@ -98,14 +98,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 10226524244
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME insert))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 100)))
 
@@ -180,8 +180,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(sum)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (sum) FROM insert
 ) t
@@ -196,8 +196,8 @@ POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 20453048488
 PREHOOK: query: SELECT COUNT(*) FROM insert
 PREHOOK: type: QUERY
@@ -209,8 +209,8 @@ POSTHOOK: Input: default@insert
 #### A masked pattern was here ####
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 200
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
@@ -218,8 +218,8 @@ POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert SELECT * FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME insert))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 10)))
 
@@ -295,9 +295,9 @@ POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT SUM(HASH(add)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (add) FROM insert
 ) t
@@ -313,9 +313,9 @@ POSTHOOK: Input: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 -826625916
 PREHOOK: query: DROP TABLE insert
 PREHOOK: type: DROPTABLE
@@ -328,6 +328,6 @@ POSTHOOK: Output: default@insert
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert.as SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: insert.from EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
