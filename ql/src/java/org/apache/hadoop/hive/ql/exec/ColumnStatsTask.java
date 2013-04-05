@@ -61,6 +61,8 @@ import org.apache.hadoop.util.StringUtils;
 public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchOperator ftOp;
+  private int totalRows;
+  private int numRows = 0;
   private static transient final Log LOG = LogFactory.getLog(ColumnStatsTask.class);
 
   public ColumnStatsTask() {
@@ -70,6 +72,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
+    work.initializeForFetch();
     try {
       JobConf job = new JobConf(conf, ExecDriver.class);
       ftOp = new FetchOperator(work.getfWork(), job);
@@ -294,14 +297,16 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       e.printStackTrace();
     }
 
-    // Construct a column statistics object from the result
-    ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
+    if (io != null) {
+      // Construct a column statistics object from the result
+      ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
 
-    // Persist the column statistics object to the metastore
-    try {
-      db.updatePartitionColumnStatistics(colStats);
-    } catch (Exception e) {
-      e.printStackTrace();
+      // Persist the column statistics object to the metastore
+      try {
+        db.updatePartitionColumnStatistics(colStats);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
     return 0;
   }
@@ -317,14 +322,16 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       e.printStackTrace();
     }
 
-    // Construct a column statistics object from the result
-    ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
+    if (io != null) {
+      // Construct a column statistics object from the result
+      ColumnStatistics colStats = constructColumnStatsFromPackedRow(io.oi, io.o);
 
-    // Persist the column statistics object to the metastore
-    try {
-      db.updateTableColumnStatistics(colStats);
-    } catch (Exception e) {
-      e.printStackTrace();
+      // Persist the column statistics object to the metastore
+      try {
+        db.updateTableColumnStatistics(colStats);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
     return 0;
   }
@@ -344,10 +351,25 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   }
 
   private InspectableObject fetchColumnStats() throws IOException, CommandNeedRetryException {
+    InspectableObject io = null;
+
     try {
-      InspectableObject io = ftOp.getNextRow();
-      if (io == null) {
-        throw new CommandNeedRetryException();
+      int rowsRet = work.getLeastNumRows();
+      if (rowsRet <= 0) {
+        rowsRet = ColumnStatsWork.getLimit() >= 0 ?
+            Math.min(ColumnStatsWork.getLimit() - totalRows, 1) : 1;
+      }
+      if (rowsRet <= 0) {
+        ftOp.clearFetchContext();
+        return null;
+      }
+      while (numRows < rowsRet) {
+        if ((io = ftOp.getNextRow()) == null) {
+          if (work.getLeastNumRows() > 0) {
+            throw new CommandNeedRetryException();
+          }
+        }
+        numRows++;
       }
       return io;
     } catch (CommandNeedRetryException e) {

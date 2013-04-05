@@ -132,6 +132,8 @@ public class Utils {
       return Types.TIMESTAMP;
     } else if ("decimal".equalsIgnoreCase(type)) {
       return Types.DECIMAL;
+    } else if ("binary".equalsIgnoreCase(type)) {
+      return Types.BINARY;
     } else if (type.startsWith("map<")) {
       return Types.VARCHAR;
     } else if (type.startsWith("array<")) {

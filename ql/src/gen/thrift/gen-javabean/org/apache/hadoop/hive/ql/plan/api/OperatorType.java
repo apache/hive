@@ -29,7 +29,8 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   LATERALVIEWJOIN(14),
   LATERALVIEWFORWARD(15),
   HASHTABLESINK(16),
-  HASHTABLEDUMMY(17);
+  HASHTABLEDUMMY(17),
+  PTF(18);
 
   private final int value;
 
@@ -86,6 +87,8 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return HASHTABLESINK;
       case 17:
         return HASHTABLEDUMMY;
+      case 18:
+        return PTF;
       default:
         return null;
     }

@@ -1,1 +1,1 @@
-Parse Error: line 2:60 missing EOF at '(' near 'substr'
+Parse Error: line 2:45 cannot recognize input near 'DISTINCT' 'substr' '(' in select expression

@@ -1,6 +1,7 @@
 set hive.stats.autogather=false;
 set hive.optimize.union.remove=true;
 set hive.mapred.supports.subdirectories=true;
+set hive.auto.convert.join=true;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
@@ -31,7 +32,7 @@ SELECT * FROM
 (
 select key, count(1) as values from inputTbl1 group by key
 union all
-select /*+ mapjoin(a) */ a.key as key, b.val as values
+select a.key as key, b.val as values
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 
@@ -40,7 +41,7 @@ SELECT * FROM
 (
 select key, count(1) as values from inputTbl1 group by key
 union all
-select /*+ mapjoin(a) */ a.key as key, b.val as values
+select a.key as key, b.val as values
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 

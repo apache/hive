@@ -37,6 +37,8 @@ public class QueryProperties {
   boolean hasOrderBy = false;
   boolean hasSortBy = false;
   boolean hasJoinFollowedByGroupBy = false;
+  boolean hasPTF = false;
+  boolean hasWindowing = false;
 
   // does the query have a using clause
   boolean usesScript = false;
@@ -44,6 +46,7 @@ public class QueryProperties {
   boolean hasDistributeBy = false;
   boolean hasClusterBy = false;
   boolean mapJoinRemoved = false;
+  boolean hasMapGroupBy = false;
 
   public boolean hasJoin() {
     return hasJoin;
@@ -109,11 +112,35 @@ public class QueryProperties {
     this.hasClusterBy = hasClusterBy;
   }
 
+  public boolean hasPTF() {
+    return hasPTF;
+  }
+
+  public void setHasPTF(boolean hasPTF) {
+    this.hasPTF = hasPTF;
+  }
+
+  public boolean hasWindowing() {
+    return hasWindowing;
+  }
+
+  public void setHasWindowing(boolean hasWindowing) {
+    this.hasWindowing = hasWindowing;
+  }
+
   public boolean isMapJoinRemoved() {
     return mapJoinRemoved;
   }
 
   public void setMapJoinRemoved(boolean mapJoinRemoved) {
     this.mapJoinRemoved = mapJoinRemoved;
+  }
+
+  public boolean isHasMapGroupBy() {
+    return hasMapGroupBy;
+  }
+
+  public void setHasMapGroupBy(boolean hasMapGroupBy) {
+    this.hasMapGroupBy = hasMapGroupBy;
   }
 }

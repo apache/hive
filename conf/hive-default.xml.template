@@ -534,6 +534,15 @@
 </property>
 
 <property>
+  <name>hive.map.groupby.sorted.testmode</name>
+  <value>false</value>
+  <description>If the bucketing/sorting properties of the table exactly match the grouping key, whether to
+    perform the group by in the mapper by using BucketizedHiveInputFormat. If the test mode is set, the plan
+    is not converted, but a query property is set to denote the same.
+  </description>
+</property>
+
+<property>
   <name>hive.new.job.grouping.set.cardinality</name>
   <value>30</value>
   <description>
@@ -930,6 +939,16 @@
   <name>hive.enforce.sorting</name>
   <value>false</value>
   <description>Whether sorting is enforced. If true, while inserting into the table, sorting is enforced. </description>
+</property>
+
+<property>
+  <name>hive.optimize.bucketingsorting</name>
+  <value>true</value>
+  <description>If hive.enforce.bucketing or hive.enforce.sorting is true, dont create a reducer for enforcing
+    bucketing/sorting for queries of the form: 
+    insert overwrite table T2 select * from T1;
+    where T1 and T2 are bucketed/sorted by the same keys into the same number of buckets.
+  </description>
 </property>
 
 <property>

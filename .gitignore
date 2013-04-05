@@ -9,3 +9,8 @@ build-eclipse
 *~
 metastore_db
 common/src/gen
+.idea
+*.iml
+*.ipr
+*.iws
+

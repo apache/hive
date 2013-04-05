@@ -18,19 +18,23 @@
 package org.apache.hadoop.hive.ql.optimizer.unionproc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
@@ -187,8 +191,15 @@ public final class UnionProcFactory {
           for (int p = 0; p < numParents; p++) {
             OperatorDesc cloneDesc = (OperatorDesc)originalOp.getConf().clone();
 
+            RowSchema origSchema = originalOp.getSchema();
+            Map<String, ExprNodeDesc> origColExprMap = originalOp.getColumnExprMap();
+
             Operator<? extends OperatorDesc> cloneOp =
-              OperatorFactory.getAndMakeChild(cloneDesc, originalOp.getSchema(), parents.get(p));
+              OperatorFactory.getAndMakeChild(
+                cloneDesc, 
+                origSchema == null ? null : new RowSchema(origSchema), 
+                origColExprMap == null ? null : new HashMap(origColExprMap), 
+                parents.get(p));
             parents.set(p, cloneOp);
           }
         }

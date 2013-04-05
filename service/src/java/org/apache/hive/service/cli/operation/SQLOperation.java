@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -198,12 +199,17 @@ public class SQLOperation extends ExecuteStatementOperation {
   private static Object convertLazyToJava(Object o, ObjectInspector oi) {
     Object obj = ObjectInspectorUtils.copyToStandardObject(o, oi, ObjectInspectorCopyOption.JAVA);
 
+    if (obj == null) {
+      return null;
+    }
+    if(oi.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
+      return new String((byte[])obj);
+    }
     // for now, expose non-primitive as a string
     // TODO: expose non-primitive as a structured object while maintaining JDBC compliance
-    if (obj != null && oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      obj = obj.toString();
+    if (oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      return SerDeUtils.getJSONString(o, oi); 
     }
-
     return obj;
   }
 

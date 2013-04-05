@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 public class PrunedPartitionList {
 
   // source table
-  private Table source;
+  private final Table source;
 
   // confirmed partitions - satisfy the partition criteria
   private Set<Partition> confirmedPartns;
@@ -44,7 +44,7 @@ public class PrunedPartitionList {
 
   /**
    * @param confirmedPartns
-   *          confirmed paritions
+   *          confirmed partitions
    * @param unknownPartns
    *          unknown partitions
    */
@@ -62,7 +62,7 @@ public class PrunedPartitionList {
 
   /**
    * get confirmed partitions.
-   * 
+   *
    * @return confirmedPartns confirmed paritions
    */
   public Set<Partition> getConfirmedPartns() {
@@ -71,7 +71,7 @@ public class PrunedPartitionList {
 
   /**
    * get unknown partitions.
-   * 
+   *
    * @return unknownPartns unknown paritions
    */
   public Set<Partition> getUnknownPartns() {
@@ -80,7 +80,7 @@ public class PrunedPartitionList {
 
   /**
    * get denied partitions.
-   * 
+   *
    * @return deniedPartns denied paritions
    */
   public Set<Partition> getDeniedPartns() {
@@ -99,7 +99,7 @@ public class PrunedPartitionList {
 
   /**
    * set confirmed partitions.
-   * 
+   *
    * @param confirmedPartns
    *          confirmed paritions
    */
@@ -109,7 +109,7 @@ public class PrunedPartitionList {
 
   /**
    * set unknown partitions.
-   * 
+   *
    * @param unknownPartns
    *          unknown partitions
    */

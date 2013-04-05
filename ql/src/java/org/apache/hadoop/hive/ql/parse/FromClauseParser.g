@@ -139,7 +139,7 @@ fromSource
 @init { gParent.msgs.push("from source"); }
 @after { gParent.msgs.pop(); }
     :
-    (tableSource | subQuerySource) (lateralView^)*
+    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource) (lateralView^)*
     ;
 
 tableBucketSample
@@ -201,6 +201,38 @@ subQuerySource
     :
     LPAREN queryStatementExpression RPAREN identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
     ;
+
+//---------------------- Rules for parsing PTF clauses -----------------------------
+partitioningSpec
+@init { gParent.msgs.push("partitioningSpec clause"); }
+@after { gParent.msgs.pop(); } 
+   :
+   partitionByClause orderByClause? -> ^(TOK_PARTITIONINGSPEC partitionByClause orderByClause?) |
+   orderByClause -> ^(TOK_PARTITIONINGSPEC orderByClause) |
+   distributeByClause sortByClause? -> ^(TOK_PARTITIONINGSPEC distributeByClause sortByClause?) |
+   sortByClause -> ^(TOK_PARTITIONINGSPEC sortByClause) |
+   clusterByClause -> ^(TOK_PARTITIONINGSPEC clusterByClause)
+   ;
+
+partitionTableFunctionSource
+@init { gParent.msgs.push("partitionTableFunctionSource clause"); }
+@after { gParent.msgs.pop(); } 
+   :
+   subQuerySource |
+   tableSource |
+   partitionedTableFunction
+   ;
+
+partitionedTableFunction
+@init { gParent.msgs.push("ptf clause"); }
+@after { gParent.msgs.pop(); } 
+   :
+   name=Identifier
+   LPAREN KW_ON ptfsrc=partitionTableFunctionSource partitioningSpec?
+     ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)? 
+   RPAREN alias=Identifier?
+   ->   ^(TOK_PTBLFUNCTION $name $alias? partitionTableFunctionSource partitioningSpec? expression*)
+   ; 
 
 //----------------------- Rules for parsing whereClause -----------------------------
 // where a=b and ...

@@ -23,3 +23,16 @@ analyze table UserVisits_web_text_none compute statistics for columns sourceIP, 
 
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
 
+CREATE TABLE empty_tab(
+   a int,
+   b double,
+   c string, 
+   d boolean,
+   e binary)
+row format delimited fields terminated by '|'  stored as textfile;
+
+explain 
+analyze table empty_tab compute statistics for columns a,b,c,d,e;
+
+analyze table empty_tab compute statistics for columns a,b,c,d,e;
+

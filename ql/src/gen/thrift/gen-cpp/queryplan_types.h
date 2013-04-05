@@ -53,7 +53,8 @@ struct OperatorType {
     LATERALVIEWJOIN = 14,
     LATERALVIEWFORWARD = 15,
     HASHTABLESINK = 16,
-    HASHTABLEDUMMY = 17
+    HASHTABLEDUMMY = 17,
+    PTF = 18
   };
 };
 

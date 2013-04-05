@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
@@ -149,6 +150,29 @@ public final class ObjectInspectorConverters {
     }
   }
 
+  // Return the settable equivalent object inspector for primitive categories
+  // For eg: for table T containing partitions p1 and p2 (possibly different
+  // from the table T), return the settable inspector for T. The inspector for
+  // T is settable recursively i.e all the nested fields are also settable.
+  private static ObjectInspector getSettableConvertedOI(
+      ObjectInspector inputOI) {
+    switch (inputOI.getCategory()) {
+    case PRIMITIVE:
+      PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
+      return PrimitiveObjectInspectorFactory.
+          getPrimitiveWritableObjectInspector(primInputOI.getPrimitiveCategory());
+    case STRUCT:
+      return inputOI;
+    case LIST:
+      return inputOI;
+    case MAP:
+      return inputOI;
+    default:
+      throw new RuntimeException("Hive internal error: desired OI of "
+          + inputOI.getTypeName() + " not supported yet.");
+    }
+  }
+
   public static ObjectInspector getConvertedOI(
       ObjectInspector inputOI,
       ObjectInspector outputOI) {
@@ -173,7 +197,8 @@ public final class ObjectInspectorConverters {
 
         for (StructField listField : listFields) {
           structFieldNames.add(listField.getFieldName());
-          structFieldObjectInspectors.add(listField.getFieldObjectInspector());
+          structFieldObjectInspectors.add(
+              getSettableConvertedOI(listField.getFieldObjectInspector()));
         }
 
         StandardStructObjectInspector structStandardOutputOI = ObjectInspectorFactory

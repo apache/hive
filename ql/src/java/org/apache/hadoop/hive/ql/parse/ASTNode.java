@@ -37,10 +37,6 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   public ASTNode() {
   }
 
-  public ASTNode(ASTNode copy){
-    super(copy);
-  }
-
   /**
    * Constructor.
    *
@@ -49,6 +45,16 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    */
   public ASTNode(Token t) {
     super(t);
+  }
+
+  public ASTNode(ASTNode node) {
+    super(node);
+    this.origin = node.origin;
+  }
+
+  @Override
+  public Tree dupNode() {
+    return new ASTNode(this);
   }
 
   /*
@@ -93,12 +99,6 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    */
   public void setOrigin(ASTNodeOrigin origin) {
     this.origin = origin;
-  }
-
-  @Override
-  public Tree dupNode() {
-
-    return new ASTNode(this);
   }
 
   public String dump() {

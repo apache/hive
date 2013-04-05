@@ -78,8 +78,8 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
-                    expr: 2
-                    type: int
+                    expr: UDFToLong(2)
+                    type: bigint
               outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
@@ -168,8 +168,8 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
-                    expr: 1
-                    type: int
+                    expr: UDFToLong(1)
+                    type: bigint
               outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false

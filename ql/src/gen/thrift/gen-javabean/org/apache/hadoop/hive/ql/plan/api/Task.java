@@ -996,7 +996,7 @@ public class Task implements org.apache.thrift.TBase<Task, Task._Fields>, java.i
                 for (int _i45 = 0; _i45 < _map44.size; ++_i45)
                 {
                   String _key46; // required
-                  String _val47; // optional
+                  String _val47; // required
                   _key46 = iprot.readString();
                   _val47 = iprot.readString();
                   struct.taskAttributes.put(_key46, _val47);
@@ -1016,7 +1016,7 @@ public class Task implements org.apache.thrift.TBase<Task, Task._Fields>, java.i
                 for (int _i49 = 0; _i49 < _map48.size; ++_i49)
                 {
                   String _key50; // required
-                  long _val51; // optional
+                  long _val51; // required
                   _key50 = iprot.readString();
                   _val51 = iprot.readI64();
                   struct.taskCounters.put(_key50, _val51);
@@ -1256,7 +1256,7 @@ public class Task implements org.apache.thrift.TBase<Task, Task._Fields>, java.i
           for (int _i62 = 0; _i62 < _map61.size; ++_i62)
           {
             String _key63; // required
-            String _val64; // optional
+            String _val64; // required
             _key63 = iprot.readString();
             _val64 = iprot.readString();
             struct.taskAttributes.put(_key63, _val64);
@@ -1271,7 +1271,7 @@ public class Task implements org.apache.thrift.TBase<Task, Task._Fields>, java.i
           for (int _i66 = 0; _i66 < _map65.size; ++_i66)
           {
             String _key67; // required
-            long _val68; // optional
+            long _val68; // required
             _key67 = iprot.readString();
             _val68 = iprot.readI64();
             struct.taskCounters.put(_key67, _val68);

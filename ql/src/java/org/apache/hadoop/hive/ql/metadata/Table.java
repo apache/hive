@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -31,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -924,5 +926,31 @@ public class Table implements Serializable {
   public List<Index> getAllIndexes(short max) throws HiveException {
     Hive hive = Hive.get();
     return hive.getIndexes(getTTable().getDbName(), getTTable().getTableName(), max);
+  }
+
+  @SuppressWarnings("nls")
+  public FileStatus[] getSortedPaths() {
+    try {
+      // Previously, this got the filesystem of the Table, which could be
+      // different from the filesystem of the partition.
+      FileSystem fs = FileSystem.get(getPath().toUri(), Hive.get()
+          .getConf());
+      String pathPattern = getPath().toString();
+      if (getNumBuckets() > 0) {
+        pathPattern = pathPattern + "/*";
+      }
+      LOG.info("Path pattern = " + pathPattern);
+      FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
+      Arrays.sort(srcs);
+      for (FileStatus src : srcs) {
+        LOG.info("Got file: " + src.getPath());
+      }
+      if (srcs.length == 0) {
+        return null;
+      }
+      return srcs;
+    } catch (Exception e) {
+      throw new RuntimeException("Cannot get path ", e);
+    }
   }
 };

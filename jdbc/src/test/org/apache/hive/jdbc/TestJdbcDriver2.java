@@ -145,7 +145,8 @@ public class TestJdbcDriver2 extends TestCase {
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
         + " c16 array<struct<m:map<string,string>,n:int>>,"
         + " c17 timestamp, "
-        + " c18 decimal) comment'" + dataTypeTableComment
+        + " c18 decimal, "
+        + " c19 binary) comment'" + dataTypeTableComment
             +"' partitioned by (dt STRING)");
 
     stmt.execute("load data local inpath '"
@@ -408,6 +409,9 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(null, res.getString(14));
     assertEquals(null, res.getString(15));
     assertEquals(null, res.getString(16));
+    assertEquals(null, res.getString(17));
+    assertEquals(null, res.getString(18));
+    assertEquals(null, res.getString(19));
 
     // row 2
     assertTrue(res.next());
@@ -418,18 +422,19 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals("[]", res.getString(5));
     assertEquals("{}", res.getString(6));
     assertEquals("{}", res.getString(7));
-    assertEquals("[null, null, null]", res.getString(8));
+    assertEquals("{\"r\":null,\"s\":null,\"t\":null}", res.getString(8));
     assertEquals(-1, res.getByte(9));
     assertEquals(-1, res.getShort(10));
     assertEquals(-1.0f, res.getFloat(11));
     assertEquals(-1, res.getLong(12));
     assertEquals("[]", res.getString(13));
     assertEquals("{}", res.getString(14));
-    assertEquals("[null, null]", res.getString(15));
+    assertEquals("{\"r\":null,\"s\":null}", res.getString(15));
     assertEquals("[]", res.getString(16));
     assertEquals(null, res.getString(17));
     assertEquals(null, res.getTimestamp(17));
     assertEquals(null, res.getBigDecimal(18));
+    assertEquals(null, res.getString(19));
 
     // row 3
     assertTrue(res.next());
@@ -437,21 +442,22 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(true, res.getBoolean(2));
     assertEquals(1.1d, res.getDouble(3));
     assertEquals("1", res.getString(4));
-    assertEquals("[1, 2]", res.getString(5));
-    assertEquals("{1=x, 2=y}", res.getString(6));
-    assertEquals("{k=v}", res.getString(7));
-    assertEquals("[a, 9, 2.2]", res.getString(8));
+    assertEquals("[1,2]", res.getString(5));
+    assertEquals("{1:\"x\",2:\"y\"}", res.getString(6));
+    assertEquals("{\"k\":\"v\"}", res.getString(7));
+    assertEquals("{\"r\":\"a\",\"s\":9,\"t\":2.2}", res.getString(8));
     assertEquals(1, res.getByte(9));
     assertEquals(1, res.getShort(10));
     assertEquals(1.0f, res.getFloat(11));
     assertEquals(1, res.getLong(12));
-    assertEquals("[[a, b], [c, d]]", res.getString(13));
-    assertEquals("{1={11=12, 13=14}, 2={21=22}}", res.getString(14));
-    assertEquals("[1, [2, x]]", res.getString(15));
-    assertEquals("[[{}, 1], [{c=d, a=b}, 2]]", res.getString(16));
+    assertEquals("[[\"a\",\"b\"],[\"c\",\"d\"]]", res.getString(13));
+    assertEquals("{1:{11:12,13:14},2:{21:22}}", res.getString(14));
+    assertEquals("{\"r\":1,\"s\":{\"a\":2,\"b\":\"x\"}}", res.getString(15));
+    assertEquals("[{\"m\":{},\"n\":1},{\"m\":{\"a\":\"b\",\"c\":\"d\"},\"n\":2}]", res.getString(16));
     assertEquals("2012-04-22 09:00:00.123456789", res.getString(17));
     assertEquals("2012-04-22 09:00:00.123456789", res.getTimestamp(17).toString());
     assertEquals("123456789.0123456", res.getBigDecimal(18).toString());
+    assertEquals("abcd", res.getString(19));
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
