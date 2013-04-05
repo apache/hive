@@ -18,14 +18,15 @@
 package org.apache.hadoop.hive.ql.profiler;
 
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.MapOperator;
+import org.apache.hadoop.hive.ql.exec.OperatorHookContext;
 
 public class HiveProfilerUtils {
   public static void createTableIfNonExistent(HiveProfilerConnectionInfo info,
@@ -56,5 +57,17 @@ public class HiveProfilerUtils {
       }
     }
     return true;
+  }
+
+  public static String getLevelAnnotatedName(OperatorHookContext opHookContext) {
+    Operator parent = opHookContext.getParentOperator();
+    if (parent != null && parent instanceof MapOperator) {
+      parent = null;
+    }
+    Operator op = opHookContext.getOperator();
+    String parentOpName = parent == null ? "" : parent.getName();
+    String parentOpId = parent == null ? "main()" : parent.getOperatorId();
+    String levelAnnoName = parentOpId + " ==> " + op.getOperatorId();
+    return levelAnnoName;
   }
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorHookContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
@@ -50,7 +51,7 @@ public class HiveProfilerStats {
     Columns.CALL_COUNT
   };
 
-  private Map<String, String> stats = new HashMap<String, String>();
+  private final Map<String, String> stats = new HashMap<String, String>();
 
   long callCount;
   long inclTime;
@@ -58,16 +59,14 @@ public class HiveProfilerStats {
 
   protected HiveProfilerStats(
     OperatorHookContext opHookContext,
-    OperatorHookContext parentOpHookContext,
     long callCount, long wallTime, Configuration conf) {
     this.callCount = callCount;
     this.inclTime = wallTime;
     this.taskId = Utilities.getTaskId(conf);
-    populateStatsMap(opHookContext, parentOpHookContext, conf);
+    populateStatsMap(opHookContext, conf);
   }
 
   private void populateStatsMap(OperatorHookContext opHookContext,
-    OperatorHookContext parentOpHookContext,
     Configuration conf) {
     String queryId =
       conf == null ? "no conf" : HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
@@ -78,17 +77,14 @@ public class HiveProfilerStats {
     stats.put(
       Columns.OPERATOR_ID, opHookContext.getOperatorId());
 
-    String parentOpName = parentOpHookContext == null ? "" : parentOpHookContext.getOperatorName();
+    Operator parent = opHookContext.getParentOperator();
+    String parentOpName = parent == null ? "" : parent.getName();
     stats.put(Columns.PARENT_OPERATOR_NAME, parentOpName);
 
-
-    String parentOpId = parentOpHookContext == null ? "-1" : parentOpHookContext.getOperatorId();
+    String parentOpId = parent == null ? "-1" : parent.getIdentifier();
     stats.put(Columns.PARENT_OPERATOR_ID, parentOpId);
 
-    String levelAnnoOpName = opName + "_" + opHookContext.getOperatorId();
-    String levelAnnoName = parentOpHookContext == null ? "main() ==> " + levelAnnoOpName :
-      parentOpName + "_" +  parentOpId + " ==> " + levelAnnoOpName;
-    stats.put(Columns.LEVEL_ANNO_NAME, levelAnnoName);
+    stats.put(Columns.LEVEL_ANNO_NAME, HiveProfilerUtils.getLevelAnnotatedName(opHookContext));
 
   }
 
