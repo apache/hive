@@ -45,7 +45,7 @@ public class HiveProfilePublisher {
       }
       info.getConnection().close();
       return true;
-    } catch (SQLException e) {
+    } catch (Exception e) {
       LOG.error("Error during JDBC termination. ", e);
       return false;
     }
@@ -100,7 +100,7 @@ public class HiveProfilePublisher {
         };
         PreparedStatement insStmt = info.getInsert(stats);
         Utilities.executeWithRetry(execUpdate, insStmt, info.getWaitWindow(), info.getMaxRetries());
-      } catch (SQLException e) {
+      } catch (Exception e) {
         LOG.error("ERROR during publishing profiling data. ", e);
         return false;
       }

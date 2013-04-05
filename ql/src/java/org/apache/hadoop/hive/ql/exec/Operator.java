@@ -525,7 +525,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (fatalError) {
       return;
     }
-    OperatorHookContext opHookContext = new OperatorHookContext(this, row);
+    OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
     preProcessCounter();
     enterOperatorHooks(opHookContext);
     processOp(row, tag);
@@ -612,7 +612,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
-    closeOperatorHooks(new OperatorHookContext(this, null));
+    closeOperatorHooks(new OperatorHookContext(this));
     // call the operator specific close routine
     closeOp(abort);
 

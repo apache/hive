@@ -110,7 +110,7 @@ public class HiveProfilerStatsAggregator {
           stats.put(levelAnnoName, curStat);
         }
       }
-    } catch (SQLException e) {
+    } catch (Exception e) {
       LOG.error("Error Aggregating Stats", e);
     }
   }
