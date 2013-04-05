@@ -41,7 +41,7 @@ public class UDFOPDivide extends UDF {
   private final DoubleWritable doubleWritable = new DoubleWritable();
   private final BigDecimalWritable bigDecimalWritable = new BigDecimalWritable();
 
-  private final int MAX_SCALE = 65; // max compatible with MySQL
+  public static final int MAX_SCALE = 65; // max compatible with MySQL
 
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
