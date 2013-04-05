@@ -164,4 +164,7 @@ public final class CubeDimensionTable extends AbstractCubeTable {
     return snapshotDumpPeriods.keySet();
   }
 
+  public boolean hasStorageSnapshots(String storage) {
+    return (snapshotDumpPeriods.get(storage) != null);
+  }
 }

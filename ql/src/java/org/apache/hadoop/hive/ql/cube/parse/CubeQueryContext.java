@@ -46,7 +46,8 @@ public class CubeQueryContext {
   private Date timeTo;
   private String clauseName = null;
   private Map<String, List<String>> partitionCols;
-  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap;
+  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
+      new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
@@ -64,6 +65,7 @@ public class CubeQueryContext {
     this.fromDateRaw = other.fromDateRaw;
     this.toDateRaw = other.toDateRaw;
     this.dimensions = other.dimensions;
+    this.cube = other.cube;
     this.candidateFactTables = other.candidateFactTables;
     this.timeFrom = other.timeFrom;
     this.timeTo = other.timeTo;
@@ -74,6 +76,14 @@ public class CubeQueryContext {
   private QB cloneqb() {
     //TODO do deep copy of QB
     return qb;
+  }
+
+  public boolean hasCubeInQuery() {
+    return cube != null;
+  }
+
+  public boolean hasDimensionInQuery() {
+    return dimensions != null && !dimensions.isEmpty();
   }
 
   private void extractMetaTables() throws SemanticException {
@@ -97,7 +107,9 @@ public class CubeQueryContext {
       if (cube == null && dimensions.size() == 0) {
         throw new SemanticException("Neither cube nor dimensions accessed");
       }
-      candidateFactTables.addAll(client.getAllFactTables(cube));
+      if (cube != null) {
+        candidateFactTables.addAll(client.getAllFactTables(cube));
+      }
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -112,6 +124,9 @@ public class CubeQueryContext {
   }
 
   private void extractTimeRange() throws SemanticException {
+    if (cube == null) {
+      return;
+    }
     // get time range -
     // Time range should be direct child of where condition
     // TOK_WHERE.TOK_FUNCTION.Identifier Or, it should be right hand child of
@@ -463,6 +478,13 @@ public class CubeQueryContext {
     return qb.getParseInfo().getOrderByForClause(getClause());
   }
 
+  public ASTNode getFromTree() {
+    return qb.getParseInfo().getSrcForAlias(qb.getTabAliases().iterator().next());
+  }
+
+  public Integer getLimitValue() {
+    return qb.getParseInfo().getDestLimit(getClause());
+  }
   public String toHQL() throws SemanticException {
     return null;
   }
@@ -473,6 +495,6 @@ public class CubeQueryContext {
 
   public void setFactPartitionMap(Map<CubeFactTable,
       Map<UpdatePeriod, List<String>>> factPartitionMap) {
-    this.factPartitionMap = factPartitionMap;
+    this.factPartitionMap.putAll(factPartitionMap);
   }
 }

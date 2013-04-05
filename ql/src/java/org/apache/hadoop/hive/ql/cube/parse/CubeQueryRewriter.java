@@ -39,6 +39,7 @@ public class CubeQueryRewriter {
     phase2Rewriters.add(new StorageTableResolver(conf));
     phase2Rewriters.add(new LeastPartitionResolver(conf));
     phase2Rewriters.add(new LeastDimensionResolver(conf));
+   // phase2Rewriters.add(new WhereConditionRewriter(conf));
   }
 
   public CubeQueryContext rewritePhase1(ASTNode astnode)

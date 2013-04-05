@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.cube.processors;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,7 +67,11 @@ public class CubeDriver extends Driver {
   }
 
   private List<String> getSupportedStorages(HiveConf conf) {
-    // TODO Auto-generated method stub
+    String[] storages = conf.getStrings(
+        HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString());
+    if (storages != null) {
+      return Arrays.asList(storages);
+    }
     return null;
   }
 }

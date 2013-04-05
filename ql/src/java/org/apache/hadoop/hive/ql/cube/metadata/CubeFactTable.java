@@ -167,4 +167,9 @@ public final class CubeFactTable extends AbstractCubeTable {
   public Set<String> getStorages() {
     return storageUpdatePeriods.keySet();
   }
+
+  public String getCubeName() {
+    return cubeName;
+  }
+
 }

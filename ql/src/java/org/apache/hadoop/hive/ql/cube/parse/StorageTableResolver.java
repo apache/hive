@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.cube.metadata.CubeDimensionTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.MetastoreUtil;
 import org.apache.hadoop.hive.ql.cube.metadata.Storage;
@@ -22,6 +23,10 @@ public class StorageTableResolver implements ContextRewriter {
       throws SemanticException {
     CubeQueryContextWithStorage cubeqlStorage =
         (CubeQueryContextWithStorage) cubeql;
+    Map<String, String> storageTableToWhereClause =
+        new HashMap<String, String>();
+
+    // resolve fact tables
     Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factStorageMap =
         new HashMap<CubeFactTable, Map<UpdatePeriod,List<String>>>();
     Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartMap =
@@ -35,13 +40,69 @@ public class StorageTableResolver implements ContextRewriter {
       for (UpdatePeriod updatePeriod : partitionColMap.keySet()) {
         List<String> storageTables = new ArrayList<String>();
         storageTableMap.put(updatePeriod, storageTables);
+        List<String> parts = partitionColMap.get(updatePeriod);
         for (String storage : fact.getStorages()) {
-          storageTables.add(MetastoreUtil.getFactStorageTableName(
-              fact.getName(), updatePeriod, Storage.getPrefix(storage)));
+          if (cubeqlStorage.isStorageSupported(storage)) {
+            String tableName = MetastoreUtil.getFactStorageTableName(
+                fact.getName(), updatePeriod, Storage.getPrefix(storage));
+            storageTables.add(tableName);
+            storageTableToWhereClause.put(tableName,
+                getWherePartClause(fact.getCubeName(), parts));
+          } else {
+            System.out.println("Storage:" + storage + " is not supported");
+          }
         }
       }
     }
     cubeqlStorage.setFactStorageMap(factStorageMap);
+
+    //resolve dimension tables
+    Map<CubeDimensionTable, List<String>> dimStorageMap =
+        new HashMap<CubeDimensionTable, List<String>>();
+    for (CubeDimensionTable dim : cubeql.getDimensionTables()) {
+        List<String> storageTables = new ArrayList<String>();
+        dimStorageMap.put(dim, storageTables);
+        for (String storage : dim.getStorages()) {
+          if (cubeqlStorage.isStorageSupported(storage)) {
+            String tableName = MetastoreUtil.getDimStorageTableName(
+                dim.getName(), Storage.getPrefix(storage));
+            storageTables.add(tableName);
+            if (dim.hasStorageSnapshots(storage)) {
+              storageTableToWhereClause.put(tableName,
+                getWherePartClause(dim.getName(), Storage.getPartitionsForLatest()));
+            }
+          } else {
+            System.out.println("Storage:" + storage + " is not supported");
+          }
+        }
+      }
+    cubeqlStorage.setDimStorageMap(dimStorageMap);
+    cubeqlStorage.setStorageTableToWhereClause(storageTableToWhereClause);
+  }
+
+  private String getWherePartClause(String tableName, List<String> parts) {
+    if (parts.size() == 0) {
+      return "";
+    }
+    StringBuilder partStr = new StringBuilder();
+    for (int i = 0; i < parts.size() - 1; i++) {
+      partStr.append(tableName);
+      partStr.append(".");
+      partStr.append(Storage.getDatePartitionKey());
+      partStr.append(" = '");
+      partStr.append(parts.get(i));
+      partStr.append("'");
+      partStr.append(" OR ");
+    }
+
+    // add the last partition
+    partStr.append(tableName);
+    partStr.append(".");
+    partStr.append(Storage.getDatePartitionKey());
+    partStr.append(" = '");
+    partStr.append(parts.get(parts.size() - 1));
+    partStr.append("'");
+    return partStr.toString();
   }
 
 }

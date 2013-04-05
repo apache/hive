@@ -81,9 +81,16 @@ public abstract class Storage implements Named {
     return latestSpec;
   }
 
+  public static List<String> getPartitionsForLatest() {
+    List<String> parts = new ArrayList<String>();
+    parts.add(StorageConstants.LATEST_PARTITION_VALUE);
+    return parts;
+  }
+
   private static FieldSchema dtPart = new FieldSchema(getDatePartitionKey(),
       serdeConstants.STRING_TYPE_NAME,
       "date partition");
+
   public static FieldSchema getDatePartition() {
     return dtPart;
   }
