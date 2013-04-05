@@ -398,7 +398,7 @@ import java.util.HashMap;
     xlateMap.put("KW_COLLECTION", "COLLECTION");
     xlateMap.put("KW_ITEMS", "ITEMS");
     xlateMap.put("KW_KEYS", "KEYS");
-    xlateMap.put("KW_KEY_TYPE", "$KEY$");
+    xlateMap.put("KW_KEY_TYPE", "\$KEY\$");
     xlateMap.put("KW_LINES", "LINES");
     xlateMap.put("KW_STORED", "STORED");
     xlateMap.put("KW_SEQUENCEFILE", "SEQUENCEFILE");
@@ -426,8 +426,8 @@ import java.util.HashMap;
     xlateMap.put("KW_LIMIT", "LIMIT");
     xlateMap.put("KW_SET", "SET");
     xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
-    xlateMap.put("KW_VALUE_TYPE", "$VALUE$");
-    xlateMap.put("KW_ELEM_TYPE", "$ELEM$");
+    xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
+    xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -452,7 +452,7 @@ import java.util.HashMap;
     xlateMap.put("PLUS", "+");
     xlateMap.put("MINUS", "-");
     xlateMap.put("STAR", "*");
-    xlateMap.put("MOD", "%");
+    xlateMap.put("MOD", "\%");
 
     xlateMap.put("AMPERSAND", "&");
     xlateMap.put("TILDE", "~");
