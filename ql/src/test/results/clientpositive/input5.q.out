@@ -126,6 +126,7 @@ POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
+NULL	NULL
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]
 [1,2,3]	[{"myint":1,"mystring":"1","underscore_int":1}]
 [2,4,6]	[{"myint":4,"mystring":"8","underscore_int":2}]
@@ -136,4 +137,3 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:l
 [7,14,21]	[{"myint":49,"mystring":"343","underscore_int":7}]
 [8,16,24]	[{"myint":64,"mystring":"512","underscore_int":8}]
 [9,18,27]	[{"myint":81,"mystring":"729","underscore_int":9}]
-null	null

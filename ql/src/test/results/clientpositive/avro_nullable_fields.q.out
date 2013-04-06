@@ -171,10 +171,10 @@ string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42
 string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
 string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
 string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	null	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	null	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	null	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
+string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	NULL	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	NULL	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
 string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72	[0,1,2,3,4,5]	[50,51,53]
 string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	null	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	null
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	[50,51,53]
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	NULL

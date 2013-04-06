@@ -181,7 +181,7 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NULL	NULL	null	null	null	A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C		C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
+NULL	NULL	NULL	NULL	NULL	A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C		C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
 PREHOOK: query: -- test UTF-8 substr
 SELECT
   substr("玩", 1),

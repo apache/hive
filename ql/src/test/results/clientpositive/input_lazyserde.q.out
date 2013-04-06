@@ -131,7 +131,7 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 [7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
-null	null	null	0	NULL
+NULL	NULL	NULL	0	NULL
 PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 CLUSTER BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -217,7 +217,7 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 [7,14,21]
 [8,16,24]
 [9,18,27]
-null
+NULL
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1
@@ -283,4 +283,4 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 {"key_7":"value_7"}
 {"key_8":"value_8"}
 {"key_9":"value_9"}
-null
+NULL
