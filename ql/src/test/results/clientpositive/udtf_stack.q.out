@@ -156,7 +156,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 x	[1]
-z	null
+z	NULL
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
