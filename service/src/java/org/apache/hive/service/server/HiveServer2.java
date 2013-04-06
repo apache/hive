@@ -81,6 +81,11 @@ public class HiveServer2 extends CompositeService {
 
     HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
     try {
+      ServerOptionsProcessor oproc = new ServerOptionsProcessor("hiveserver2");
+      if (!oproc.process(args)) {
+        LOG.fatal("Error starting HiveServer2 with given arguments");
+        System.exit(-1);
+      }
       HiveConf hiveConf = new HiveConf();
       HiveServer2 server = new HiveServer2();
       server.init(hiveConf);
