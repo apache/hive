@@ -579,3 +579,15 @@ alice miller	alice allen
 alice nixon	alice allen
 alice nixon	alice allen
 alice nixon	alice allen
+PREHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
+from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
+from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+10	oscar allen	65662	65662
+10	oscar carson	65549	65549

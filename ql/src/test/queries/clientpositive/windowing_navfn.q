@@ -27,4 +27,5 @@ select s, last_value(t) over (partition by d order by f) from over10k limit 100;
 
 select s, first_value(s) over (partition by bo order by s) from over10k limit 100;
 
-
+select t, s, i, last_value(i) over (partition by t order by s) 
+from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10;
