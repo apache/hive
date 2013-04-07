@@ -1018,7 +1018,6 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- 22. testViewAsTableInputWithWindowing
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -1027,7 +1026,6 @@ from part
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@mfgr_price_view
-#### A masked pattern was here ####
 PREHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1
 from mfgr_price_view 
@@ -1067,7 +1065,6 @@ sum(p_retailprice) over w1  as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and current row)
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
@@ -1076,7 +1073,6 @@ from part
 window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and current row)
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@mfgr_brand_price_view
-#### A masked pattern was here ####
 PREHOOK: query: select * from mfgr_brand_price_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mfgr_brand_price_view

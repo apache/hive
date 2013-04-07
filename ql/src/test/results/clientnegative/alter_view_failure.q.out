@@ -4,9 +4,7 @@ POSTHOOK: query: DROP VIEW xxx3
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx3
-#### A masked pattern was here ####
 FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.

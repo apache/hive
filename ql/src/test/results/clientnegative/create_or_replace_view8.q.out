@@ -8,9 +8,7 @@ drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v1
-#### A masked pattern was here ####
 FAILED: SemanticException Recursive view default.v1 detected (cycle: default.v1 -> default.v1).

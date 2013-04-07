@@ -29,44 +29,36 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t
 PREHOOK: query: create view r0 as select * from t
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view r0 as select * from t
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@r0
-#### A masked pattern was here ####
 PREHOOK: query: create view r1 as select * from r0
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
-#### A masked pattern was here ####
 POSTHOOK: query: create view r1 as select * from r0
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@r0
 POSTHOOK: Output: default@r1
-#### A masked pattern was here ####
 PREHOOK: query: create view r2 as select * from r1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
 PREHOOK: Input: default@r1
-#### A masked pattern was here ####
 POSTHOOK: query: create view r2 as select * from r1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@r0
 POSTHOOK: Input: default@r1
 POSTHOOK: Output: default@r2
-#### A masked pattern was here ####
 PREHOOK: query: create view r3 as select * from r2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@r0
 PREHOOK: Input: default@r1
 PREHOOK: Input: default@r2
-#### A masked pattern was here ####
 POSTHOOK: query: create view r3 as select * from r2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@r0
 POSTHOOK: Input: default@r1
 POSTHOOK: Input: default@r2
 POSTHOOK: Output: default@r3
-#### A masked pattern was here ####
 PREHOOK: query: drop view r0
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@r0
