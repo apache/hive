@@ -2,13 +2,11 @@ PREHOOK: query: -- Test SHOW CREATE TABLE on a view name.
 
 CREATE VIEW tmp_copy_src AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- Test SHOW CREATE TABLE on a view name.
 
 CREATE VIEW tmp_copy_src AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@tmp_copy_src
-#### A masked pattern was here ####
 PREHOOK: query: SHOW CREATE TABLE tmp_copy_src
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@tmp_copy_src

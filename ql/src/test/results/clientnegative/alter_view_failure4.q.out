@@ -7,14 +7,12 @@ PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx5
 PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx5
-#### A masked pattern was here ####
 PREHOOK: query: -- should fail:  LOCATION clause is illegal
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS

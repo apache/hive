@@ -4,7 +4,6 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
 AS
 SELECT key, value
@@ -12,7 +11,6 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testViewPart
-#### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW testViewPart 
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS

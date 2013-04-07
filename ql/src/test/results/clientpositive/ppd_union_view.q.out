@@ -145,7 +145,6 @@ on t1_old.keymap = t1_mapping.keymap and
    t1_old.ds = t1_mapping.ds
 ) subq
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view t1 partitioned on (ds) as
 select * from
 (
@@ -157,7 +156,6 @@ on t1_old.keymap = t1_mapping.keymap and
 ) subq
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@t1
-#### A masked pattern was here ####
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-13).key SIMPLE []
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-13).keymap SIMPLE []
 POSTHOOK: Lineage: t1_mapping PARTITION(ds=2011-10-14).key SIMPLE []

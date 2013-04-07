@@ -4,11 +4,9 @@ POSTHOOK: query: DROP VIEW testView
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW testView as SELECT * FROM srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW testView as SELECT * FROM srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testView
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED testView
@@ -43,11 +41,9 @@ View Original Text: 	SELECT * FROM srcpart
 View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
 PREHOOK: query: ALTER VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: ALTER VIEW testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testview
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED testView
@@ -83,7 +79,6 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: ALTER VIEW testView AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
@@ -91,7 +86,6 @@ ORDER BY key, value
 LIMIT 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testview
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED testView
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED testView

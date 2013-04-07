@@ -242,7 +242,6 @@ CREATE VIEW big_view AS SELECT
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- Define a view with long SQL text to test metastore and other limits.
 
 CREATE VIEW big_view AS SELECT 
@@ -484,7 +483,6 @@ CREATE VIEW big_view AS SELECT
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@big_view
-#### A masked pattern was here ####
 PREHOOK: query: SELECT a FROM big_view
 LIMIT 1
 PREHOOK: type: QUERY

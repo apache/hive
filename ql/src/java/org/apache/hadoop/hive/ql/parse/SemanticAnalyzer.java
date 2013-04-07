@@ -7308,7 +7308,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extraMRStep);
         qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
-      curr = genFileSinkPlan(dest, qb, curr);
+      if (!SessionState.get().getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
+        curr = genFileSinkPlan(dest, qb, curr);
+      }
     }
 
     // change curr ops row resolver's tab aliases to query alias if it

@@ -8,9 +8,7 @@ drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 FAILED: SemanticException [Error 10092]: At least one non-partitioning column must be present in view

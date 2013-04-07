@@ -159,12 +159,10 @@ a	1
 PREHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testView
-#### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview

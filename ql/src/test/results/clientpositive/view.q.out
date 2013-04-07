@@ -39,75 +39,59 @@ POSTHOOK: Output: db1@table2
 PREHOOK: query: -- relative reference, no alias
 CREATE VIEW v1 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- relative reference, no alias
 CREATE VIEW v1 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v1
-#### A masked pattern was here ####
 PREHOOK: query: -- relative reference, aliased
 CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- relative reference, aliased
 CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v2
-#### A masked pattern was here ####
 PREHOOK: query: -- relative reference, multiple tables
 CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- relative reference, multiple tables
 CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v3
-#### A masked pattern was here ####
 PREHOOK: query: -- absolute reference, no alias
 CREATE VIEW v4 AS SELECT * FROM db1.table1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- absolute reference, no alias
 CREATE VIEW v4 AS SELECT * FROM db1.table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v4
-#### A masked pattern was here ####
 PREHOOK: query: -- absolute reference, aliased
 CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- absolute reference, aliased
 CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v5
-#### A masked pattern was here ####
 PREHOOK: query: -- absolute reference, multiple tables
 CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- absolute reference, multiple tables
 CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v6
-#### A masked pattern was here ####
 PREHOOK: query: -- relative reference, explicit column
 CREATE VIEW v7 AS SELECT key from table1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- relative reference, explicit column
 CREATE VIEW v7 AS SELECT key from table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v7
-#### A masked pattern was here ####
 PREHOOK: query: -- absolute reference, explicit column
 CREATE VIEW v8 AS SELECT key from db1.table1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- absolute reference, explicit column
 CREATE VIEW v8 AS SELECT key from db1.table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: db1@v8
-#### A masked pattern was here ####
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE db2

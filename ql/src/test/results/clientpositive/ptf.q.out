@@ -766,7 +766,6 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -775,7 +774,6 @@ from part
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@mfgr_price_view
-#### A masked pattern was here ####
 PREHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1
 from noop(on mfgr_price_view 

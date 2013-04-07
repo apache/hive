@@ -4,9 +4,7 @@ POSTHOOK: query: DROP VIEW xxx11
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW xxx11 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx11 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx11
-#### A masked pattern was here ####
 FAILED: SemanticException [Error 10090]: A view cannot be used as target table for LOAD or INSERT
