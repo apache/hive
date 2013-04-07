@@ -10486,6 +10486,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, ExprNodeDesc> colExprMap,
       List<String> outputColumnNames,
       StringBuilder orderString,
+      RowResolver rsOpRR,
       RowResolver extractRR) throws SemanticException {
 
     ArrayList<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
@@ -10515,16 +10516,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       orderCols.add(colDef.getExprNode());
     }
 
-    /*
-     * We add the column to value columns or output column names
-     * only if it is not a virtual column
-     */
     ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
-    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
-        new LinkedHashMap<String[], ColumnInfo>();
+    /*
+     * construct the ReduceSinkRR
+     */
     int pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
-      if (!colInfo.isHiddenVirtualCol()) {
         ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
             .getInternalName(), colInfo.getTabAlias(), colInfo
             .getIsVirtualCol());
@@ -10533,6 +10530,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String outColName = SemanticAnalyzer.getColumnInternalName(pos++);
         outputColumnNames.add(outColName);
 
+        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+        ColumnInfo newColInfo = new ColumnInfo(
+            outColName, colInfo.getType(), alias[0],
+            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+        rsOpRR.put(alias[0], alias[1], newColInfo);
+    }
+
+    /*
+     * construct the ExtractRR
+     */
+    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
+        new LinkedHashMap<String[], ColumnInfo>();
+    pos = 0;
+    for (ColumnInfo colInfo : colInfoList) {
+      if (!colInfo.isHiddenVirtualCol()) {
         String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
         /*
          * if we have already encountered this colInfo internalName.
@@ -10544,7 +10556,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
         ColumnInfo eColInfo = new ColumnInfo(
-            outColName, colInfo.getType(), alias[0],
+            SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
             colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
 
         if ( astNode == null ) {
@@ -10578,6 +10590,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     RowResolver rr = opParseCtx.get(input).getRowResolver();
     PTFDesc ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
+
+    RowResolver rsOpRR = new RowResolver();
     /*
      * Build an RR for the Extract Op from the ResuceSink Op's RR.
      * Why?
@@ -10647,13 +10661,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colExprMap,
           outputColumnNames,
           orderString,
+          rsOpRR,
           extractOpRR);
 
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
           .getReduceSinkDesc(orderCols,
               valueCols, outputColumnNames, false,
               -1, partCols, orderString.toString(), -1),
-          new RowSchema(rr.getColumnInfos()), input), rr);
+          new RowSchema(rsOpRR.getColumnInfos()), input), rsOpRR);
       input.setColumnExprMap(colExprMap);
     }
 
@@ -10775,7 +10790,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getReduceSinkDesc(orderCols,
             valueCols, outputColumnNames, false,
             -1, partCols, orderString.toString(), -1),
-        new RowSchema(inputRR.getColumnInfos()), input), rsNewRR);
+        new RowSchema(rsNewRR.getColumnInfos()), input), rsNewRR);
     input.setColumnExprMap(colExprMap);
 
 
