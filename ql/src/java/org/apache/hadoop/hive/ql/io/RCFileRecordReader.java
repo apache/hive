@@ -19,6 +19,10 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.WeakHashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,6 +34,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * RCFileRecordReader.
@@ -45,20 +51,72 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
   private final long end;
   private boolean more = true;
   protected Configuration conf;
+  private final FileSplit split;
+  private final boolean useCache;
+
+  private static RCFileSyncCache syncCache = new RCFileSyncCache();
+
+  private static final class RCFileSyncEntry {
+    long end;
+    long endSync;
+  }
+
+  private static final class RCFileSyncCache {
+
+    private final Map<String, RCFileSyncEntry> cache;
+
+    public RCFileSyncCache() {
+	cache = Collections.synchronizedMap(new WeakHashMap<String, RCFileSyncEntry>());
+    }
+
+    public void put(FileSplit split, long endSync) {
+      Path path = split.getPath();
+      long end = split.getStart() + split.getLength();       
+      String key = path.toString()+"+"+String.format("%d",end);
+
+      RCFileSyncEntry entry = new RCFileSyncEntry();
+      entry.end = end;
+      entry.endSync = endSync;
+      if(entry.endSync >= entry.end) {
+        cache.put(key, entry);
+      }
+    }
+
+    public long get(FileSplit split) {
+      Path path = split.getPath();
+      long start = split.getStart();
+      String key = path.toString()+"+"+String.format("%d",start);
+      RCFileSyncEntry entry = cache.get(key);
+      if(entry != null) {
+        return entry.endSync;
+      }
+      return -1;
+    }
+  }
 
   public RCFileRecordReader(Configuration conf, FileSplit split)
       throws IOException {
+
     Path path = split.getPath();
     FileSystem fs = path.getFileSystem(conf);
     this.in = new RCFile.Reader(fs, path, conf);
     this.end = split.getStart() + split.getLength();
     this.conf = conf;
+    this.split = split;
+
+    useCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEUSERCFILESYNCCACHE);
 
     if (split.getStart() > in.getPosition()) {
-      in.sync(split.getStart()); // sync to start
+      long oldSync = useCache ? syncCache.get(split) : -1;
+      if(oldSync == -1) {
+        in.sync(split.getStart()); // sync to start
+      } else {
+        in.seek(oldSync);
+      }
     }
 
     this.start = in.getPosition();
+
     more = start < end;
   }
 
@@ -101,12 +159,13 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     }
 
     more = in.next(key);
-    if (!more) {
-      return false;
-    }
 
     long lastSeenSyncPos = in.lastSeenSyncPos();
+
     if (lastSeenSyncPos >= end) {
+      if(useCache) {
+        syncCache.put(split, lastSeenSyncPos);
+      }
       more = false;
       return more;
     }

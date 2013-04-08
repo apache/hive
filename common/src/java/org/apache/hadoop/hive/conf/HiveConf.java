@@ -485,6 +485,7 @@ public class HiveConf extends Configuration {
         "hive.merge.current.job.has.dynamic.partitions", false),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
+    HIVEUSERCFILESYNCCACHE("hive.exec.rcfile.use.sync.cache", true),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
