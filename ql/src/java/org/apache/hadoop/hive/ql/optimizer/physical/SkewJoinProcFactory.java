@@ -52,6 +52,9 @@ public final class SkewJoinProcFactory {
         Object... nodeOutputs) throws SemanticException {
       SkewJoinProcCtx context = (SkewJoinProcCtx) ctx;
       JoinOperator op = (JoinOperator) nd;
+      if (op.getConf().isFixedAsSorted()) {
+        return null;
+      }
       ParseContext parseContext = context.getParseCtx();
       Task<? extends Serializable> currentTsk = context.getCurrentTask();
       GenMRSkewJoinProcessor.processSkewJoin(op, currentTsk, parseContext);

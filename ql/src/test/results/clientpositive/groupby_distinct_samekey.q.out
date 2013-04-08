@@ -1,17 +1,21 @@
-PREHOOK: query: -- This test covers HIVE-2322
+PREHOOK: query: -- This test covers HIVE-2332
 
 create table t1 (int1 int, int2 int, str1 string, str2 string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This test covers HIVE-2322
+POSTHOOK: query: -- This test covers HIVE-2332
 
 create table t1 (int1 int, int2 int, str1 string, str2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
-PREHOOK: query: insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+PREHOOK: query: --disabled RS-dedup for keeping intention of test
+
+insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1
-POSTHOOK: query: insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+POSTHOOK: query: --disabled RS-dedup for keeping intention of test
+
+insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1

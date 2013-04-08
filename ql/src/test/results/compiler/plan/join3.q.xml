@@ -615,26 +615,7 @@
           <void method="add"> 
            <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
             <void property="columnExprMap"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>VALUE._col0</string> 
-               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>key</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src2</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
+             <object class="java.util.HashMap"/> 
             </void> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
@@ -652,7 +633,11 @@
                    <string>src2</string> 
                   </void> 
                   <void property="typeInfo"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                    <void property="typeName"> 
+                     <string>string</string> 
+                    </void> 
+                   </object> 
                   </void> 
                  </object> 
                 </void> 
@@ -902,20 +887,6 @@
                <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>value</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src3</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>VALUE._col0</string> 
-               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>key</string> 
                 </void> 
                 <void property="tabAlias"> 
                  <string>src3</string> 

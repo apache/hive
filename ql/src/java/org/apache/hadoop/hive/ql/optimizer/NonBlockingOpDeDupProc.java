@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -84,8 +83,6 @@ public class NonBlockingOpDeDupProc implements Transform {
 
       // For SEL-SEL(compute) case, move column exprs/names of child to parent.
       if (!cSEL.getConf().isSelStarNoCompute()) {
-        Operator<?> terminal = ExprNodeDescUtils.getSingleParent(pSEL, null);
-
         Set<String> funcOutputs = getFunctionOutputs(
             pSEL.getConf().getOutputColumnNames(), pSEL.getConf().getColList());
 
@@ -93,7 +90,7 @@ public class NonBlockingOpDeDupProc implements Transform {
         if (!funcOutputs.isEmpty() && !checkReferences(sources, funcOutputs)) {
           return null;
         }
-        pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(sources, pSEL, terminal));
+        pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(sources, cSEL, pSEL));
         pSEL.getConf().setOutputColumnNames(cSEL.getConf().getOutputColumnNames());
 
         // updates schema only (this should be the last optimizer modifying operator tree)
