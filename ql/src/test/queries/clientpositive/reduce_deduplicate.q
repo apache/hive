@@ -2,7 +2,8 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing = true;
 set hive.exec.reducers.max = 1;
 set hive.exec.script.trust = true;
-
+set hive.optimize.reducededuplication = true;
+set hive.optimize.reducededuplication.min.reducer = 1;
 
 
 CREATE TABLE bucket5_1(key string, value string) CLUSTERED BY (key) INTO 2 BUCKETS;

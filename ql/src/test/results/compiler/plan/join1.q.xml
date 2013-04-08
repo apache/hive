@@ -486,20 +486,6 @@
                 </void> 
                </object> 
               </void> 
-              <void method="put"> 
-               <string>VALUE._col0</string> 
-               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>key</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src2</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
              </object> 
             </void> 
             <void property="conf"> 

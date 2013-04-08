@@ -256,7 +256,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
 
       // whether it contains common join op; if contains, return this common join op
       JoinOperator joinOp = getJoinOp(currTask);
-      if (joinOp == null) {
+      if (joinOp == null || joinOp.getConf().isFixedAsSorted()) {
         return null;
       }
       currTask.setTaskTag(Task.COMMON_JOIN);
