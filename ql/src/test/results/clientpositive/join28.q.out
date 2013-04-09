@@ -3,9 +3,7 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest_j1
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT subq.key1, z.value
 FROM
@@ -13,9 +11,7 @@ FROM
  FROM src1 x JOIN src y ON (x.key = y.key)) subq
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT subq.key1, z.value
 FROM

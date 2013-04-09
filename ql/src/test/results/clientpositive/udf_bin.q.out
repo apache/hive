@@ -29,13 +29,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	0	101111101011100001101100101
-PREHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
-SELECT bin(-5) FROM src LIMIT 1
+PREHOOK: query: SELECT bin(-5) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
-SELECT bin(-5) FROM src LIMIT 1
+POSTHOOK: query: SELECT bin(-5) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

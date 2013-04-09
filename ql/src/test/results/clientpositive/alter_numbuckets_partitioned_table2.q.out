@@ -1,12 +1,6 @@
-PREHOOK: query: -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
--- the partition metadata is updated as well.
-
-CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Tests that when overwriting a partition in a table after altering the bucketing/sorting metadata
--- the partition metadata is updated as well.
-
-CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tst1
 PREHOOK: query: DESCRIBE FORMATTED tst1
@@ -93,13 +87,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test an unbucketed partition gets converted to bucketed
-ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test an unbucketed partition gets converted to bucketed
-ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -201,13 +193,11 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test an unsorted partition gets converted to sorted
-ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test an unsorted partition gets converted to sorted
-ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -317,13 +307,11 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test changing the bucket columns
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test changing the bucket columns
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -441,13 +429,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test changing the number of buckets
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test changing the number of buckets
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -573,13 +559,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test changing the sort columns
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test changing the sort columns
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -713,13 +697,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test changing the sort order
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test changing the sort order
-ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -861,13 +843,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test a sorted partition gets converted to unsorted
-ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test a sorted partition gets converted to unsorted
-ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
+POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -1017,13 +997,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test a bucketed partition gets converted to unbucketed
-ALTER TABLE tst1 NOT CLUSTERED
+PREHOOK: query: ALTER TABLE tst1 NOT CLUSTERED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test a bucketed partition gets converted to unbucketed
-ALTER TABLE tst1 NOT CLUSTERED
+POSTHOOK: query: ALTER TABLE tst1 NOT CLUSTERED
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1

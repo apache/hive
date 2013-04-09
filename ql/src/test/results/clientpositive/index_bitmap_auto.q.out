@@ -1,24 +1,18 @@
-PREHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
--- without indexing
-SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
--- without indexing
-SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
-PREHOOK: query: -- create indices
-EXPLAIN
+PREHOOK: query: EXPLAIN
 CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
-POSTHOOK: query: -- create indices
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 ABSTRACT SYNTAX TREE:
@@ -119,8 +113,7 @@ POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldS
 POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####
-PREHOOK: query: -- manual indexing
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
 FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
         WHERE key = 0) a
@@ -131,8 +124,7 @@ FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bit
     a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
 EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- manual indexing
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
 FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
         WHERE key = 0) a

@@ -5,25 +5,21 @@ POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds stri
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
 SELECT * from src where key = 0 or key = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1@ds=1
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
 SELECT * from src where key = 0 or key = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1@ds=1
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- The plan is converted to a map-side plan
-EXPLAIN select distinct key from T1
+PREHOOK: query: EXPLAIN select distinct key from T1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan is converted to a map-side plan
-EXPLAIN select distinct key from T1
+POSTHOOK: query: EXPLAIN select distinct key from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -84,14 +80,12 @@ POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
 11
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
+PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
 SELECT * from src where key = 0 or key = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1@ds=2
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
+POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
 SELECT * from src where key = 0 or key = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -100,13 +94,9 @@ POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- The plan is not converted to a map-side, since although the sorting columns and grouping
--- columns match, the user is querying multiple input partitions
-EXPLAIN select distinct key from T1
+PREHOOK: query: EXPLAIN select distinct key from T1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan is not converted to a map-side, since although the sorting columns and grouping
--- columns match, the user is querying multiple input partitions
-EXPLAIN select distinct key from T1
+POSTHOOK: query: EXPLAIN select distinct key from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

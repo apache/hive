@@ -21,12 +21,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1114788.0
-PREHOOK: query: -- const filter on outer join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- const filter on outer join
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -126,12 +124,10 @@ POSTHOOK: Input: default@src
 165	val_165	165	val_165
 165	val_165	165	val_165
 409	val_409	409	val_409
-PREHOOK: query: -- func filter on outer join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- func filter on outer join
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -231,13 +227,11 @@ NULL	NULL	255	val_255
 NULL	NULL	278	val_278
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: -- field filter on outer join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- field filter on outer join
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 POSTHOOK: type: QUERY

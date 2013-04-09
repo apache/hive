@@ -1,7 +1,4 @@
-PREHOOK: query: -- checking that script operator does not cause NPE
--- Derby strangeness is causing the output collector for the Hive Profiler to not get output during DB read 
-
-SELECT TRANSFORM(src.key, src.value)
+PREHOOK: query: SELECT TRANSFORM(src.key, src.value)
        USING 'testgrep' AS (tkey, tvalue)
 FROM src
 PREHOOK: type: QUERY

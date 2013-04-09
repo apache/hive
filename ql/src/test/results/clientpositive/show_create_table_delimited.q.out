@@ -1,13 +1,9 @@
-PREHOOK: query: -- Test SHOW CREATE TABLE on a table with delimiters, stored format, and location.
-
-CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+PREHOOK: query: CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY '|' MAP KEYS TERMINATED BY '\045' LINES TERMINATED BY '\n'
 STORED AS textfile
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test SHOW CREATE TABLE on a table with delimiters, stored format, and location.
-
-CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+POSTHOOK: query: CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY '|' MAP KEYS TERMINATED BY '\045' LINES TERMINATED BY '\n'
 STORED AS textfile
 #### A masked pattern was here ####

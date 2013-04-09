@@ -1,8 +1,6 @@
-PREHOOK: query: -- current
-explain select src.key from src join src src2
+PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- current
-explain select src.key from src join src src2
+POSTHOOK: query: explain select src.key from src join src src2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src) src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)))))
@@ -56,11 +54,9 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- ansi cross join
-explain select src.key from src cross join src src2
+PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ansi cross join
-explain select src.key from src cross join src src2
+POSTHOOK: query: explain select src.key from src cross join src src2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_CROSSJOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src) src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)))))
@@ -114,11 +110,9 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- appending condition is allowed
-explain select src.key from src cross join src src2 on src.key=src2.key
+PREHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- appending condition is allowed
-explain select src.key from src cross join src src2 on src.key=src2.key
+POSTHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_CROSSJOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)))))

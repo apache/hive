@@ -11,9 +11,7 @@ java_method(class,method[,arg1[,arg2..]]) calls method with reflection
 Synonyms: reflect
 Use this UDF to call Java methods by matching the argument signature
 
-PREHOOK: query: -- java_method() is a synonym for reflect()
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.String", "isEmpty"),
        java_method("java.lang.Math", "max", 2, 3),
@@ -23,9 +21,7 @@ SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.Math", "floor", 1.9)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- java_method() is a synonym for reflect()
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.String", "isEmpty"),
        java_method("java.lang.Math", "max", 2, 3),

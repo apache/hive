@@ -1,10 +1,6 @@
-PREHOOK: query: -- Test SHOW CREATE TABLE on a view name.
-
-CREATE VIEW tmp_copy_src AS SELECT * FROM src
+PREHOOK: query: CREATE VIEW tmp_copy_src AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- Test SHOW CREATE TABLE on a view name.
-
-CREATE VIEW tmp_copy_src AS SELECT * FROM src
+POSTHOOK: query: CREATE VIEW tmp_copy_src AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@tmp_copy_src
 PREHOOK: query: SHOW CREATE TABLE tmp_copy_src

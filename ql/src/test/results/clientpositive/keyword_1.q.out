@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-create table test_user (user string, `group` string)
+PREHOOK: query: create table test_user (user string, `group` string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
-create table test_user (user string, `group` string)
+POSTHOOK: query: create table test_user (user string, `group` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_user
 PREHOOK: query: grant select on table test_user to user hive_test

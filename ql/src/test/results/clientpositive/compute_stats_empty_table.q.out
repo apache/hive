@@ -12,13 +12,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_empty
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- compute statistical summary of data
-select compute_stats(a, 16) from tab_empty
+PREHOOK: query: select compute_stats(a, 16) from tab_empty
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_empty
 #### A masked pattern was here ####
-POSTHOOK: query: -- compute statistical summary of data
-select compute_stats(a, 16) from tab_empty
+POSTHOOK: query: select compute_stats(a, 16) from tab_empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_empty
 #### A masked pattern was here ####

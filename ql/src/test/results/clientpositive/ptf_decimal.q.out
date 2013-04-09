@@ -2,8 +2,7 @@ PREHOOK: query: DROP TABLE IF EXISTS part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS part
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE part( 
+PREHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -15,8 +14,7 @@ CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- data setup
-CREATE TABLE part( 
+POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -35,9 +33,7 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-PREHOOK: query: -- 1. aggregate functions with decimal type
-
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c1,
 lag(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c2,
 first_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c3,
@@ -46,9 +42,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. aggregate functions with decimal type
-
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lead(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c1,
 lag(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c2,
 first_value(p_retailprice) over (partition by p_mfgr ORDER BY p_name) as c3,
@@ -83,9 +77,7 @@ Manufacturer#5	1611.66	1788.73	1789.69	1789.69	1611.66
 Manufacturer#5	1788.73	1018.1	1611.66	1789.69	1788.73
 Manufacturer#5	1018.1	1464.48	1788.73	1789.69	1018.1
 Manufacturer#5	1464.48	NULL	1018.1	1789.69	1464.48
-PREHOOK: query: -- 2. ranking functions with decimal type
-
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 row_number() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c1,
 rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c2,
 dense_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c3,
@@ -96,9 +88,7 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2. ranking functions with decimal type
-
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 row_number() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c1,
 rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c2,
 dense_rank() over (PARTITION BY p_mfgr ORDER BY p_retailprice) as c3,
@@ -135,17 +125,13 @@ Manufacturer#5	1464.48	2	2	2	0.25	0.4	2
 Manufacturer#5	1611.66	3	3	3	0.5	0.6	3
 Manufacturer#5	1788.73	4	4	4	0.75	0.8	4
 Manufacturer#5	1789.69	5	5	5	1.0	1.0	5
-PREHOOK: query: -- 3. order by decimal
-
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice) over (partition by p_mfgr ORDER BY p_retailprice desc) as c1
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3. order by decimal
-
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice) over (partition by p_mfgr ORDER BY p_retailprice desc) as c1
 from part
 POSTHOOK: type: QUERY
@@ -177,17 +163,13 @@ Manufacturer#5	1788.73	1789.69
 Manufacturer#5	1611.66	1788.73
 Manufacturer#5	1464.48	1611.66
 Manufacturer#5	1018.1	1464.48
-PREHOOK: query: -- 4. partition by decimal
-
-select p_mfgr, p_retailprice,
+PREHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice) over (partition by p_retailprice) as c1
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- 4. partition by decimal
-
-select p_mfgr, p_retailprice,
+POSTHOOK: query: select p_mfgr, p_retailprice,
 lag(p_retailprice) over (partition by p_retailprice) as c1
 from part
 POSTHOOK: type: QUERY

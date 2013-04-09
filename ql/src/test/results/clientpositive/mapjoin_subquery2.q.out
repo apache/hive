@@ -49,18 +49,14 @@ PREHOOK: Output: default@z
 POSTHOOK: query: load data local inpath '../data/files/z.txt' INTO TABLE z
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@z
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name
 FROM
 (SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 
  FROM y JOIN x ON (x.id = y.id)) subq
  JOIN z ON (subq.key1 = z.id)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name
 FROM
 (SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 

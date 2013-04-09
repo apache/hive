@@ -239,11 +239,9 @@ POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, 
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check partitions
-create view view1 partitioned on (ds, hr) as select * from srcpart
+PREHOOK: query: create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- check partitions
-create view view1 partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

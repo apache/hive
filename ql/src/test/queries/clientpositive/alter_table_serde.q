@@ -10,7 +10,7 @@ describe extended test_table;
 
 drop table test_table;
 
---- test partitioned table
+-- test partitioned table
 create table test_table (id int, query string, name string) partitioned by (dt string);
 
 alter table test_table add partition (dt = '2011');

@@ -1,12 +1,6 @@
-PREHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-
-create table tmptable(key string, value int)
+PREHOOK: query: create table tmptable(key string, value int)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-
-create table tmptable(key string, value int)
+POSTHOOK: query: create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: explain 

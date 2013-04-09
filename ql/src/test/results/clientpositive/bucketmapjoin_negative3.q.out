@@ -106,11 +106,9 @@ PREHOOK: Output: default@test4
 POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test4
-PREHOOK: query: -- should be allowed
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- should be allowed
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME test1) L) (TOK_TABREF (TOK_TABNAME test1) R) (AND (= (. (TOK_TABLE_OR_COL L) key) (. (TOK_TABLE_OR_COL R) key)) (= (. (TOK_TABLE_OR_COL L) value) (. (TOK_TABLE_OR_COL R) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST R))) (TOK_SELEXPR TOK_ALLCOLREF))))
@@ -406,11 +404,9 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- should not apply bucket mapjoin
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
+PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- should not apply bucket mapjoin
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
+POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME test1) L) (TOK_TABREF (TOK_TABNAME test1) R) (= (+ (. (TOK_TABLE_OR_COL L) key) (. (TOK_TABLE_OR_COL L) key)) (. (TOK_TABLE_OR_COL R) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST R))) (TOK_SELEXPR TOK_ALLCOLREF))))

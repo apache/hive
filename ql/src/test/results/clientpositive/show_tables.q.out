@@ -70,11 +70,9 @@ POSTHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 POSTHOOK: type: SHOWTABLES
 shtb_test1
 shtb_test2
-PREHOOK: query: -- SHOW TABLES FROM/IN database
-CREATE DATABASE test_db
+PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- SHOW TABLES FROM/IN database
-CREATE DATABASE test_db
+POSTHOOK: query: CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
@@ -95,11 +93,9 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE baz(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: test_db@baz
-PREHOOK: query: -- SHOW TABLES basic syntax tests
-USE default
+PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: -- SHOW TABLES basic syntax tests
-USE default
+POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: SHOW TABLES FROM test_db
 PREHOOK: type: SHOWTABLES
@@ -151,11 +147,9 @@ PREHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 POSTHOOK: type: SHOWTABLES
-PREHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
-CREATE DATABASE `database`
+PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
-CREATE DATABASE `database`
+POSTHOOK: query: CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE `database`
 PREHOOK: type: SWITCHDATABASE

@@ -1,10 +1,6 @@
-PREHOOK: query: -- see HIVE-4033 earlier a flag named hasVC was not initialized correctly in MapOperator.java, resulting in NPE for following query. order by and limit in the query is not relevant, problem would be evident even without those. They are there to keep .q.out file small and sorted.
-
-explain select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.value limit 3
+PREHOOK: query: explain select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.value limit 3
 PREHOOK: type: QUERY
-POSTHOOK: query: -- see HIVE-4033 earlier a flag named hasVC was not initialized correctly in MapOperator.java, resulting in NPE for following query. order by and limit in the query is not relevant, problem would be evident even without those. They are there to keep .q.out file small and sorted.
-
-explain select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.value limit 3
+POSTHOOK: query: explain select t3.BLOCK__OFFSET__INSIDE__FILE,t3.key,t3.value from src t1 join src t2 on t1.key = t2.key join src t3 on t2.value = t3.value order by t3.value limit 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) t1) (TOK_TABREF (TOK_TABNAME src) t2) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL t2) key))) (TOK_TABREF (TOK_TABNAME src) t3) (= (. (TOK_TABLE_OR_COL t2) value) (. (TOK_TABLE_OR_COL t3) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t3) BLOCK__OFFSET__INSIDE__FILE)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t3) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t3) value))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL t3) value))) (TOK_LIMIT 3)))

@@ -1,10 +1,6 @@
-PREHOOK: query: -- This pattern matches only letters.
-
-CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This pattern matches only letters.
-
-CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part_whitelist_test
 PREHOOK: query: SHOW PARTITIONS part_whitelist_test

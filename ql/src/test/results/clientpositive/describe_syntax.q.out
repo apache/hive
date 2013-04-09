@@ -32,11 +32,9 @@ POSTHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='5')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: db1@t1
 POSTHOOK: Output: db1@t1@ds=4/part=5
-PREHOOK: query: -- describe table
-DESCRIBE t1
+PREHOOK: query: DESCRIBE t1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe table
-DESCRIBE t1
+POSTHOOK: query: DESCRIBE t1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -103,11 +101,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe database.table
-DESCRIBE db1.t1
+PREHOOK: query: DESCRIBE db1.t1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe database.table
-DESCRIBE db1.t1
+POSTHOOK: query: DESCRIBE db1.t1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -174,11 +170,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe table column
-DESCRIBE t1 key1
+PREHOOK: query: DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe table column
-DESCRIBE t1 key1
+POSTHOOK: query: DESCRIBE t1 key1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -197,11 +191,9 @@ POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 key1                	int                 	from deserializer   
-PREHOOK: query: -- describe database.tabe column
-DESCRIBE db1.t1 key1
+PREHOOK: query: DESCRIBE db1.t1 key1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe database.tabe column
-DESCRIBE db1.t1 key1
+POSTHOOK: query: DESCRIBE db1.t1 key1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -220,15 +212,9 @@ POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 key1                	int                 	from deserializer   
-PREHOOK: query: -- describe table.column
--- after first checking t1.key1 for database.table not valid
--- fall back to the old syntax table.column
-DESCRIBE t1.key1
+PREHOOK: query: DESCRIBE t1.key1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe table.column
--- after first checking t1.key1 for database.table not valid
--- fall back to the old syntax table.column
-DESCRIBE t1.key1
+POSTHOOK: query: DESCRIBE t1.key1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -247,11 +233,9 @@ POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 key1                	int                 	from deserializer   
-PREHOOK: query: -- describe table partition
-DESCRIBE t1 PARTITION(ds='4', part='5')
+PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe table partition
-DESCRIBE t1 PARTITION(ds='4', part='5')
+POSTHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -318,11 +302,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe database.table partition
-DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+PREHOOK: query: DESCRIBE db1.t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- describe database.table partition
-DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+POSTHOOK: query: DESCRIBE db1.t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 

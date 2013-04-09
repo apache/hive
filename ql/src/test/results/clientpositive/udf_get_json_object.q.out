@@ -173,13 +173,9 @@ POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1234
-PREHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
-
-CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
-
-CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.c1 SIMPLE []

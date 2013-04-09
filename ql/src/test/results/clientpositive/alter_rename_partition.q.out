@@ -1,8 +1,6 @@
-PREHOOK: query: -- Cleanup
-DROP TABLE alter_rename_partition_src
+PREHOOK: query: DROP TABLE alter_rename_partition_src
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter_rename_partition_src
+POSTHOOK: query: DROP TABLE alter_rename_partition_src
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE alter_rename_partition
 PREHOOK: type: DROPTABLE
@@ -105,13 +103,11 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_p
 4	new_part1:	new_part2:
 5	new_part1:	new_part2:
 6	new_part1:	new_part2:
-PREHOOK: query: -- Cleanup
-DROP TABLE alter_rename_partition_src
+PREHOOK: query: DROP TABLE alter_rename_partition_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_rename_partition_src
 PREHOOK: Output: default@alter_rename_partition_src
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter_rename_partition_src
+POSTHOOK: query: DROP TABLE alter_rename_partition_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_rename_partition_src
 POSTHOOK: Output: default@alter_rename_partition_src
@@ -138,13 +134,9 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter_rename_partition_db
+PREHOOK: query: CREATE DATABASE alter_rename_partition_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter_rename_partition_db
+POSTHOOK: query: CREATE DATABASE alter_rename_partition_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: USE alter_rename_partition_db

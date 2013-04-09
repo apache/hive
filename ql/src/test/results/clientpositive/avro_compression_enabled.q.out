@@ -1,6 +1,4 @@
-PREHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
-
-CREATE TABLE doctors4
+PREHOOK: query: CREATE TABLE doctors4
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -35,9 +33,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
-
-CREATE TABLE doctors4
+POSTHOOK: query: CREATE TABLE doctors4
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS

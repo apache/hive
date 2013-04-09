@@ -48,16 +48,12 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).key EXPRESSION [(s
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- The partition sorting metadata matches but the table metadata does not, sorted merge join should still be used
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The partition sorting metadata matches but the table metadata does not, sorted merge join should still be used
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1'

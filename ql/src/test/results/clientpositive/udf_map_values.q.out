@@ -2,13 +2,9 @@ PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: -- Test map_values() UDF
-
-DESCRIBE FUNCTION map_values
+PREHOOK: query: DESCRIBE FUNCTION map_values
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Test map_values() UDF
-
-DESCRIBE FUNCTION map_values
+POSTHOOK: query: DESCRIBE FUNCTION map_values
 POSTHOOK: type: DESCFUNCTION
 map_values(map) - Returns an unordered array containing the values of the input map.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED map_values
@@ -16,24 +12,20 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED map_values
 POSTHOOK: type: DESCFUNCTION
 map_values(map) - Returns an unordered array containing the values of the input map.
-PREHOOK: query: -- Evaluate function against STRING valued values
-SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
+PREHOOK: query: SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against STRING valued values
-SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
+POSTHOOK: query: SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 ["a","b","c"]
-PREHOOK: query: -- Evaluate function against INT valued keys
-SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
+PREHOOK: query: SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against INT valued keys
-SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
+POSTHOOK: query: SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

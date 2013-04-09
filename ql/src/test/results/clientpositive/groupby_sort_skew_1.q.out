@@ -11,13 +11,11 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
@@ -30,17 +28,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@outputTbl1
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the sorted key
--- addind a order by at the end to make the test results deterministic
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the sorted key
--- addind a order by at the end to make the test results deterministic
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
@@ -379,13 +371,11 @@ POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 POSTHOOK: type: QUERY
@@ -675,13 +665,11 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: -- It should work for sub-queries
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should work for sub-queries
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 POSTHOOK: type: QUERY
@@ -1066,13 +1054,11 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 3	1
 7	1
 8	2
-PREHOOK: query: -- It should work for sub-queries with column aliases
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should work for sub-queries with column aliases
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
 POSTHOOK: type: QUERY
@@ -1479,15 +1465,11 @@ POSTHOOK: Lineage: outputtbl2.key1 EXPRESSION [(t1)t1.FieldSchema(name:key, type
 POSTHOOK: Lineage: outputtbl2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the sorted key
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the sorted key
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 POSTHOOK: type: QUERY
@@ -1869,13 +1851,11 @@ POSTHOOK: Lineage: outputtbl3.key1 SIMPLE []
 POSTHOOK: Lineage: outputtbl3.key2 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- no map-side group by if the group by key contains a constant followed by another column
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by if the group by key contains a constant followed by another column
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
@@ -2211,13 +2191,11 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: -- no map-side group by if the group by key contains a function
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by if the group by key contains a function
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
@@ -2556,21 +2534,13 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 3	4	1
 7	8	1
 8	9	2
-PREHOOK: query: -- it should not matter what follows the group by
--- test various cases
-
--- group by followed by another group by
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key + key, sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
 group by key + key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should not matter what follows the group by
--- test various cases
-
--- group by followed by another group by
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key + key, sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -2924,8 +2894,7 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 6	1
 14	1
 16	2
-PREHOOK: query: -- group by followed by a union
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -2933,8 +2902,7 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT key, count(1) FROM T1 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a union
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -3454,8 +3422,7 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	1
 8	2
 8	2
-PREHOOK: query: -- group by followed by a union where one of the sub-queries is map-side group by
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -3463,8 +3430,7 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT key + key as key, count(1) FROM T1 GROUP BY key + key
 ) subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a union where one of the sub-queries is map-side group by
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -4169,8 +4135,7 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 8	2
 14	1
 16	2
-PREHOOK: query: -- group by followed by a join
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -4178,8 +4143,7 @@ JOIN
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a join
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -4521,16 +4485,14 @@ POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 3	2
 7	2
 8	4
-PREHOOK: query: -- group by followed by a join where one of the sub-queries can be performed in the mapper
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1 GROUP BY key) subq1
 JOIN
 (SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a join where one of the sub-queries can be performed in the mapper
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1 GROUP BY key) subq1
 JOIN
@@ -4983,13 +4945,11 @@ POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
 POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T2 select key, val from T1
+PREHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t2
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T2 select key, val from T1
+POSTHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t2
@@ -5024,13 +4984,11 @@ POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comm
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- no mapside sort group by if the group by is a prefix of the sorted key
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T2 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no mapside sort group by if the group by is a prefix of the sorted key
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T2 GROUP BY key
 POSTHOOK: type: QUERY
@@ -5392,15 +5350,11 @@ POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 3	1
 7	1
 8	2
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
@@ -5920,15 +5874,11 @@ POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comm
 POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys followed by anything
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys followed by anything
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
@@ -6386,15 +6336,13 @@ POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	1	17	2	1
 8	1	18	2	1
 8	1	28	2	1
-PREHOOK: query: -- contants from sub-queries should work fine
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, constant, val, count(1) from 
 (SELECT key, 1 as constant, val from T2)subq
 group by key, constant, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- contants from sub-queries should work fine
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, constant, val, count(1) from 
 (SELECT key, 1 as constant, val from T2)subq
@@ -6907,8 +6855,7 @@ POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: -- multiple levels of contants from sub-queries should work fine
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 select key, constant3, val, count(1) from
 (
@@ -6917,8 +6864,7 @@ SELECT key, constant as constant2, val, 2 as constant3 from
 )subq2
 group by key, constant3, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple levels of contants from sub-queries should work fine
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 select key, constant3, val, count(1) from
 (
@@ -7993,14 +7939,12 @@ POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comm
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: -- multi-table insert with a sub-query
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (select key, val from T2 where key = 8) x
 INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi-table insert with a sub-query
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (select key, val from T2 where key = 8) x
 INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val

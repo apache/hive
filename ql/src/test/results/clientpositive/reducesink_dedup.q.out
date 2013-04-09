@@ -2,8 +2,7 @@ PREHOOK: query: DROP TABLE part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE part
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE part( 
+PREHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -15,8 +14,7 @@ CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- data setup
-CREATE TABLE part( 
+POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,

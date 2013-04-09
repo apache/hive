@@ -1,10 +1,8 @@
-PREHOOK: query: -- HIVE-2901
-select x from (select value as x from src union all select NULL as x from src)a limit 10
+PREHOOK: query: select x from (select value as x from src union all select NULL as x from src)a limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-2901
-select x from (select value as x from src union all select NULL as x from src)a limit 10
+POSTHOOK: query: select x from (select value as x from src union all select NULL as x from src)a limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

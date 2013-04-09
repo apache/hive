@@ -1167,12 +1167,10 @@ POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_pa
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_part_2)b.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_part_2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	0	0
-PREHOOK: query: -- HIVE-3210
-load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: -- HIVE-3210
-load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-09

@@ -1,10 +1,6 @@
-PREHOOK: query: -- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/grouping_sets.txt' INTO TABLE T1
@@ -13,16 +9,14 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/grouping_sets.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- This tests that cubes and rollups work fine inside sub-queries.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This tests that cubes and rollups work fine inside sub-queries.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
@@ -301,18 +295,14 @@ POSTHOOK: Input: default@t1
 2	3	1	2	NULL	2
 2	3	1	2	2	1
 2	3	1	2	3	1
-PREHOOK: query: -- Since 4 grouping sets would be generated for each sub-query, an additional MR job should be created
--- for each of them
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since 4 grouping sets would be generated for each sub-query, an additional MR job should be created
--- for each of them
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join

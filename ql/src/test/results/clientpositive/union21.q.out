@@ -1,6 +1,4 @@
-PREHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
-
-explain
+PREHOOK: query: explain
 SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -15,9 +13,7 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
-
-explain
+POSTHOOK: query: explain
 SELECT key, count(1)
 FROM (
   SELECT '1' as key from src

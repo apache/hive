@@ -2,8 +2,7 @@ PREHOOK: query: DROP TABLE part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE part
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE part( 
+PREHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -15,8 +14,7 @@ CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- data setup
-CREATE TABLE part( 
+POSTHOOK: query: CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -662,11 +660,9 @@ Manufacturer#5	1241.29
 Manufacturer#5	1424.0900000000001
 Manufacturer#5	1515.25
 Manufacturer#5	1534.532
-PREHOOK: query: -- multi table insert test
-create table t1 (a1 int, b1 string)
+PREHOOK: query: create table t1 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- multi table insert test
-create table t1 (a1 int, b1 string)
+POSTHOOK: query: create table t1 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2 (a1 int, b1 string)

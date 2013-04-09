@@ -1529,12 +1529,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-08	2008-04-09
-PREHOOK: query: -- HIVE-3594 URI encoding for temporary path
-alter table TEST2 add partition (ds='01:10:10', hr='01')
+PREHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@test2
-POSTHOOK: query: -- HIVE-3594 URI encoding for temporary path
-alter table TEST2 add partition (ds='01:10:10', hr='01')
+POSTHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@test2
 POSTHOOK: Output: default@test2@ds=01%3A10%3A10/hr=01

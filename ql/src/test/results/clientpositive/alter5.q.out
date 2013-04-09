@@ -1,11 +1,11 @@
 PREHOOK: query: --
--- Added to validate the fix for HIVE-2117 - explicit partition location
+
 --
 
 create table alter5_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: --
--- Added to validate the fix for HIVE-2117 - explicit partition location
+
 --
 
 create table alter5_src ( col1 string ) stored as textfile
@@ -23,15 +23,15 @@ POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter5
 PREHOOK: query: --
--- Here's the interesting bit for HIVE-2117 - partition subdir should be
--- named "parta".
+
+
 --
 alter table alter5 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@alter5
 POSTHOOK: query: --
--- Here's the interesting bit for HIVE-2117 - partition subdir should be
--- named "parta".
+
+
 --
 alter table alter5 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
@@ -94,13 +94,11 @@ dt                  	string              	None
 dt                  	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- Cleanup
-DROP TABLE alter5_src
+PREHOOK: query: DROP TABLE alter5_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter5_src
 PREHOOK: Output: default@alter5_src
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter5_src
+POSTHOOK: query: DROP TABLE alter5_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_src
 POSTHOOK: Output: default@alter5_src
@@ -127,13 +125,9 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter5_db
+PREHOOK: query: CREATE DATABASE alter5_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter5_db
+POSTHOOK: query: CREATE DATABASE alter5_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: USE alter5_db

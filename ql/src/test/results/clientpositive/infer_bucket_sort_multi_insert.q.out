@@ -1,28 +1,16 @@
-PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
--- and populating that information in partitions' metadata.  In particular, those cases
--- where multi insert is used.
-
-CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
--- and populating that information in partitions' metadata.  In particular, those cases
--- where multi insert is used.
-
-CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table
-PREHOOK: query: -- Simple case, neither partition should be bucketed or sorted
-
-FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, value
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT value, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
 PREHOOK: Output: default@test_table@part=2
-POSTHOOK: query: -- Simple case, neither partition should be bucketed or sorted
-
-FROM src
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, value
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT value, key
 POSTHOOK: type: QUERY
@@ -117,18 +105,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The partitions should be bucketed and sorted by different keys
-
-FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT COUNT(*), value GROUP BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
 PREHOOK: Output: default@test_table@part=2
-POSTHOOK: query: -- The partitions should be bucketed and sorted by different keys
-
-FROM src
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT COUNT(*), value GROUP BY value
 POSTHOOK: type: QUERY
@@ -235,18 +219,14 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The first partition should be bucketed and sorted, the second should not
-
-FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
 PREHOOK: Output: default@test_table@part=2
-POSTHOOK: query: -- The first partition should be bucketed and sorted, the second should not
-
-FROM src
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT key, value
 POSTHOOK: type: QUERY
@@ -365,18 +345,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test the multi group by single reducer optimization
--- Both partitions should be bucketed by key
-FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT key, SUM(SUBSTR(value, 5)) GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
 PREHOOK: Output: default@test_table@part=2
-POSTHOOK: query: -- Test the multi group by single reducer optimization
--- Both partitions should be bucketed by key
-FROM src
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table PARTITION (part = '1') SELECT key, COUNT(*) GROUP BY key
 INSERT OVERWRITE TABLE test_table PARTITION (part = '2') SELECT key, SUM(SUBSTR(value, 5)) GROUP BY key
 POSTHOOK: type: QUERY
