@@ -24,22 +24,10 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- a simple query with skew on both the tables on the join key
--- multiple skew values are present for the skewed keys
--- but the skewed values do not overlap.
--- The join values are a superset of the skewed keys.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- a simple query with skew on both the tables on the join key
--- multiple skew values are present for the skewed keys
--- but the skewed values do not overlap.
--- The join values are a superset of the skewed keys.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -257,14 +245,10 @@ POSTHOOK: Input: default@t2
 3	13	3	13
 8	18	8	18
 8	18	8	18
-PREHOOK: query: -- test outer joins also
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test outer joins also
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a LEFT OUTER JOIN T2 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -486,14 +470,10 @@ POSTHOOK: Input: default@t2
 8	28	NULL	NULL
 8	18	8	18
 8	18	8	18
-PREHOOK: query: -- a group by at the end should not change anything
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- a group by at the end should not change anything
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

@@ -1,5 +1,4 @@
-PREHOOK: query: -- Verify that nullable fields properly work
-CREATE TABLE test_serializer(string1 STRING,
+PREHOOK: query: CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
                              tinyint1 TINYINT,
                              smallint1 SMALLINT,
@@ -17,8 +16,7 @@ CREATE TABLE test_serializer(string1 STRING,
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Verify that nullable fields properly work
-CREATE TABLE test_serializer(string1 STRING,
+POSTHOOK: query: CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
                              tinyint1 TINYINT,
                              smallint1 SMALLINT,

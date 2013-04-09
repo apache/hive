@@ -1,8 +1,6 @@
-PREHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
@@ -192,8 +190,7 @@ POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 JOIN test_table3 c ON a.key = c.key
@@ -202,8 +199,7 @@ JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 JOIN test_table3 c ON a.key = c.key
@@ -354,9 +350,7 @@ POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, ty
 POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 4378
-PREHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
--- a single MR job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
 LEFT OUTER JOIN test_table3 c ON a.key = c.key
@@ -365,9 +359,7 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
--- a single MR job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
 LEFT OUTER JOIN test_table3 c ON a.key = c.key
@@ -687,8 +679,7 @@ POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, ty
 POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 13126
-PREHOOK: query: -- outer join with max 16 aliases
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*
 FROM test_table1 a
 LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -711,8 +702,7 @@ LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- outer join with max 16 aliases
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*
 FROM test_table1 a
 LEFT OUTER JOIN test_table2 b ON a.key = b.key

@@ -88,9 +88,7 @@ POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 key                 	string              	None                
-PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
-DROP TEMPORARY FUNCTION test_max
+PREHOOK: query: DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
-POSTHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
-DROP TEMPORARY FUNCTION test_max
+POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION

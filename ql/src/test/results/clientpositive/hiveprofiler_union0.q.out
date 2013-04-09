@@ -7,16 +7,6 @@ SELECT unioninput.*
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-SEL_5 ==> UNION_6: 414
-FIL_10 ==> SEL_5: 414
-TS_0 ==> FIL_9: 500
-TS_3 ==> FIL_10: 500
-UNION_6 ==> SEL_7: 498
-SEL_2 ==> UNION_6: 84
-FIL_9 ==> SEL_2: 84
-main() ==> TS_3: 500
-main() ==> TS_0: 500
-SEL_7 ==> FS_8: 498
 238	val_238
 86	val_86
 311	val_311

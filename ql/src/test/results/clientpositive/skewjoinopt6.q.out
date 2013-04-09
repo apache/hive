@@ -24,20 +24,10 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
--- is common to both the tables. The join key is a subset of the skewed key set:
--- it only contains the first skewed key for both the tables
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
--- is common to both the tables. The join key is a subset of the skewed key set:
--- it only contains the first skewed key for both the tables
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

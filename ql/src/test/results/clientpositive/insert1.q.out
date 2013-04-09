@@ -220,11 +220,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 
-PREHOOK: query: -- HIVE-3465
-create database x
+PREHOOK: query: create database x
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- HIVE-3465
-create database x
+POSTHOOK: query: create database x
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -624,11 +622,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 
-PREHOOK: query: -- HIVE-3676
-CREATE DATABASE db2
+PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- HIVE-3676
-CREATE DATABASE db2
+POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]

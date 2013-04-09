@@ -2,13 +2,9 @@ PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: -- Test printf() UDF
-
-DESCRIBE FUNCTION printf
+PREHOOK: query: DESCRIBE FUNCTION printf
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Test printf() UDF
-
-DESCRIBE FUNCTION printf
+POSTHOOK: query: DESCRIBE FUNCTION printf
 POSTHOOK: type: DESCFUNCTION
 printf(String format, Obj... args) - function that can format strings according to printf-style format strings
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED printf
@@ -57,13 +53,11 @@ STAGE PLANS:
       limit: 1
 
 
-PREHOOK: query: -- Test Primitive Types
-SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1
+PREHOOK: query: SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test Primitive Types
-SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1
+POSTHOOK: query: SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -77,22 +71,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 All Type Test: false, A, 15000, 1.234000e+01, +27183.2401, 2300.41, 32, corret, 0x1.002p8
-PREHOOK: query: -- Test NULL Values
-SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src LIMIT 1
+PREHOOK: query: SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test NULL Values
-SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src LIMIT 1
+POSTHOOK: query: SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Color red, String Null: null, number1 123456, number2 00089, Integer Null: null, hex 0xff, float  3.14 Double Null: null
-PREHOOK: query: -- Test Timestamp
-create table timestamp_udf (t timestamp)
+PREHOOK: query: create table timestamp_udf (t timestamp)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test Timestamp
-create table timestamp_udf (t timestamp)
+POSTHOOK: query: create table timestamp_udf (t timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@timestamp_udf
 PREHOOK: query: from src
@@ -127,14 +117,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_udf
 POSTHOOK: Output: default@timestamp_udf
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
-PREHOOK: query: -- Test Binary
-CREATE TABLE binay_udf(key binary, value int)
+PREHOOK: query: CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test Binary
-CREATE TABLE binay_udf(key binary, value int)
+POSTHOOK: query: CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE

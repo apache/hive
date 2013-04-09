@@ -1,9 +1,7 @@
-PREHOOK: query: -- escaped column names in sort by are not working jira 3267
-explain
+PREHOOK: query: explain
 select key, value from src sort by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- escaped column names in sort by are not working jira 3267
-explain
+POSTHOOK: query: explain
 select key, value from src sort by key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

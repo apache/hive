@@ -1,10 +1,6 @@
-PREHOOK: query: -- Test that CREATE TABLE LIKE commands can take explicit table properties
-
-CREATE TABLE test_table LIKE src TBLPROPERTIES('key'='value')
+PREHOOK: query: CREATE TABLE test_table LIKE src TBLPROPERTIES('key'='value')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test that CREATE TABLE LIKE commands can take explicit table properties
-
-CREATE TABLE test_table LIKE src TBLPROPERTIES('key'='value')
+POSTHOOK: query: CREATE TABLE test_table LIKE src TBLPROPERTIES('key'='value')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table
 PREHOOK: query: DESC FORMATTED test_table
@@ -76,13 +72,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test that CREATE TABLE LIKE commands can take default and explicit table properties
-
-CREATE TABLE test_table2 LIKE src TBLPROPERTIES('key2' = 'value2')
+PREHOOK: query: CREATE TABLE test_table2 LIKE src TBLPROPERTIES('key2' = 'value2')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test that CREATE TABLE LIKE commands can take default and explicit table properties
-
-CREATE TABLE test_table2 LIKE src TBLPROPERTIES('key2' = 'value2')
+POSTHOOK: query: CREATE TABLE test_table2 LIKE src TBLPROPERTIES('key2' = 'value2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table2
 PREHOOK: query: DESC FORMATTED test_table2
@@ -116,13 +108,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test that properties inherited are overwritten by explicitly set ones
-
-CREATE TABLE test_table3 LIKE test_table2 TBLPROPERTIES('key2' = 'value3')
+PREHOOK: query: CREATE TABLE test_table3 LIKE test_table2 TBLPROPERTIES('key2' = 'value3')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test that properties inherited are overwritten by explicitly set ones
-
-CREATE TABLE test_table3 LIKE test_table2 TBLPROPERTIES('key2' = 'value3')
+POSTHOOK: query: CREATE TABLE test_table3 LIKE test_table2 TBLPROPERTIES('key2' = 'value3')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table3
 PREHOOK: query: DESC FORMATTED test_table3

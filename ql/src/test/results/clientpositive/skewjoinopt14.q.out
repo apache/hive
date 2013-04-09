@@ -35,29 +35,13 @@ PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
-PREHOOK: query: -- This test is for skewed join compile time optimization for more than 2 tables.
--- The join key for table 3 is different from the join key used for joining
--- tables 1 and 2. Tables 1 and 3 are skewed. Since one of the join sources for table
--- 3 consist of a sub-query which contains a join, the compile time skew join 
--- optimization is not enabled for table 3, but it is used for the first join between
--- tables 1 and 2
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 select *
 from 
 T1 a join T2 b on a.key = b.key 
 join T3 c on a.val = c.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This test is for skewed join compile time optimization for more than 2 tables.
--- The join key for table 3 is different from the join key used for joining
--- tables 1 and 2. Tables 1 and 3 are skewed. Since one of the join sources for table
--- 3 consist of a sub-query which contains a join, the compile time skew join 
--- optimization is not enabled for table 3, but it is used for the first join between
--- tables 1 and 2
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 select *
 from 
 T1 a join T2 b on a.key = b.key 

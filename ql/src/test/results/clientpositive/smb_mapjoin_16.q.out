@@ -1,8 +1,6 @@
-PREHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
@@ -28,12 +26,10 @@ POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

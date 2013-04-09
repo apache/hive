@@ -1,8 +1,6 @@
-PREHOOK: query: -- TOK_ALLCOLREF
-explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TOK_ALLCOLREF
-explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: query: explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
@@ -84,11 +82,9 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- DOT
-explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- DOT
-explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: query: explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) `[k].*`))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
@@ -164,11 +160,9 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- EXPRESSION
-explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- EXPRESSION
-explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+POSTHOOK: query: explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))

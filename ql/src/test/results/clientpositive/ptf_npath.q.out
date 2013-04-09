@@ -29,8 +29,7 @@ PREHOOK: Output: default@flights_tiny
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: -- 1. basic Npath test
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
         distribute by fl_num 
@@ -42,8 +41,7 @@ from npath(on
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. basic Npath test
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
         distribute by fl_num 
@@ -71,8 +69,7 @@ Washington	7291	2010	10	27	2	[{"origin_city_name":"Washington","dest_city_name":
 Chicago	897	2010	10	20	4	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":20,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
 Chicago	897	2010	10	21	3	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
 Chicago	897	2010	10	22	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
-PREHOOK: query: -- 2. Npath on 1 partition
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
         sort by year, month, day_of_month  
@@ -84,8 +81,7 @@ where fl_num = 1142
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2. Npath on 1 partition
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
         sort by year, month, day_of_month  

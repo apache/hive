@@ -1,12 +1,6 @@
-PREHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are joined on columns with different names
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are joined on columns with different names
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: CREATE TABLE test_table2 (value INT, key STRING) CLUSTERED BY (value) SORTED BY (value ASC) INTO 16 BUCKETS
@@ -54,14 +48,10 @@ POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Join data from 2 tables on their respective sorted columns (one each, with different names) and
--- verify sort merge join is used
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Join data from 2 tables on their respective sorted columns (one each, with different names) and
--- verify sort merge join is used
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -231,14 +221,10 @@ POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, ty
 0	val_0	0	val_0
 0	val_0	0	val_0
 2	val_2	2	val_2
-PREHOOK: query: -- Join data from 2 tables on their respective columns (two each, with the same names but sorted
--- with different priorities) and verify sort merge join is not used
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Join data from 2 tables on their respective columns (two each, with the same names but sorted
--- with different priorities) and verify sort merge join is not used
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

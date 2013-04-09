@@ -1,8 +1,6 @@
-PREHOOK: query: -- negative, references twice for result of funcion
-explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
+PREHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, references twice for result of funcion
-explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
+POSTHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key) 1) nkey) (TOK_SELEXPR (TOK_TABLE_OR_COL value))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL nkey)) (TOK_SELEXPR (+ (TOK_TABLE_OR_COL nkey) 1)))))

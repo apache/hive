@@ -1,8 +1,6 @@
-PREHOOK: query: -- test automatic use of index on different file formats
-CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
-POSTHOOK: query: -- test automatic use of index on different file formats
-CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD

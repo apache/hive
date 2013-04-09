@@ -1,9 +1,7 @@
-PREHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table1
@@ -26,15 +24,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table1@ds=1
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
@@ -253,15 +247,11 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchem
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
 253
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, one of the buckets should be empty
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, one of the buckets should be empty
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
 POSTHOOK: type: QUERY

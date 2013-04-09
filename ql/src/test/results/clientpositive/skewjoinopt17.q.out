@@ -24,22 +24,10 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
--- skewed by one column. Ths join is performed on the first skewed column
--- The skewed value for the jon key is common to both the tables.
--- In this case, the skewed join value is not repeated in the filter.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
--- skewed by one column. Ths join is performed on the first skewed column
--- The skewed value for the jon key is common to both the tables.
--- In this case, the skewed join value is not repeated in the filter.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -287,18 +275,10 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
--- skewed by one column. Ths join is performed on the both the columns
--- In this case, the skewed join value is repeated in the filter.
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- One of the tables is skewed by 2 columns, and the other table is
--- skewed by one column. Ths join is performed on the both the columns
--- In this case, the skewed join value is repeated in the filter.
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

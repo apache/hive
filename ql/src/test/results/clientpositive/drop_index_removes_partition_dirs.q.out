@@ -1,15 +1,9 @@
-PREHOOK: query: -- This test verifies that if a partition exists outside an index table's current location when the
--- index is dropped the partition's location is dropped as well.
-
-CREATE TABLE test_table (key STRING, value STRING)
+PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This test verifies that if a partition exists outside an index table's current location when the
--- index is dropped the partition's location is dropped as well.
-
-CREATE TABLE test_table (key STRING, value STRING)
+POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####

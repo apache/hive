@@ -170,13 +170,11 @@ POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 insertdate=2008-01-02
-PREHOOK: query: -- Cleanup
-DROP TABLE alter2
+PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter2
 PREHOOK: Output: default@alter2
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter2
+POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2
@@ -192,13 +190,9 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: -- Using non-default Database
-
-CREATE DATABASE alter2_db
+PREHOOK: query: CREATE DATABASE alter2_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- Using non-default Database
-
-CREATE DATABASE alter2_db
+POSTHOOK: query: CREATE DATABASE alter2_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE alter2_db
 PREHOOK: type: SWITCHDATABASE

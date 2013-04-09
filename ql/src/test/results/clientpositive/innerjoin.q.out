@@ -1176,11 +1176,9 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 98	val_98
 98	val_98
 98	val_98
-PREHOOK: query: -- verify that INNER is a non-reserved word for backwards compatibility
-create table inner(i int)
+PREHOOK: query: create table inner(i int)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- verify that INNER is a non-reserved word for backwards compatibility
-create table inner(i int)
+POSTHOOK: query: create table inner(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@inner
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]

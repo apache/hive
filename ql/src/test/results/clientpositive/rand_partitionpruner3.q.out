@@ -1,10 +1,6 @@
-PREHOOK: query: -- complex predicates in the where clause
-
-explain extended select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
+PREHOOK: query: explain extended select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- complex predicates in the where clause
-
-explain extended select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
+POSTHOOK: query: explain extended select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))) (TOK_WHERE (and (and (and (< (TOK_FUNCTION rand 1) 0.1) (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08')) (not (or (> (TOK_TABLE_OR_COL key) 50) (< (TOK_TABLE_OR_COL key) 10)))) (like (. (TOK_TABLE_OR_COL a) hr) '%2')))))
@@ -127,11 +123,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 26	val_26	2008-04-08	12
 18	val_18	2008-04-08	12
 37	val_37	2008-04-08	12
-PREHOOK: query: -- without rand for comparison
-explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
+PREHOOK: query: explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- without rand for comparison
-explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
+POSTHOOK: query: explain extended select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))) (TOK_WHERE (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (not (or (> (TOK_TABLE_OR_COL key) 50) (< (TOK_TABLE_OR_COL key) 10)))) (like (. (TOK_TABLE_OR_COL a) hr) '%2')))))

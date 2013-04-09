@@ -1,18 +1,12 @@
-PREHOOK: query: -- HIVE-3464
-
-create table a (key string, value string)
+PREHOOK: query: create table a (key string, value string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- HIVE-3464
-
-create table a (key string, value string)
+POSTHOOK: query: create table a (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@a
-PREHOOK: query: -- (a-b-c-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (a-b-c-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -525,12 +519,10 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- ((a-b-d)-c) (reordered)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ((a-b-d)-c) (reordered)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -1037,12 +1029,10 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- (((a-b)-c)-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (((a-b)-c)-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -1863,12 +1853,10 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: -- ((a-b)-c-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ((a-b)-c-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

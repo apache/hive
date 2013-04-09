@@ -20,11 +20,9 @@ If the same character is present multiple times in the input string, the first o
 For example,
 
 translate('abcdef', 'ada', '192') returns '1bc9ef' replaces 'a' with '1' and 'd' with '9' ignoring the second occurence of 'a' in the from string mapping it to '2'
-PREHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+PREHOOK: query: CREATE TABLE table_input(input STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+POSTHOOK: query: CREATE TABLE table_input(input STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table_input
 PREHOOK: query: CREATE TABLE table_translate(input_string STRING, from_string STRING, to_string STRING)
@@ -53,14 +51,12 @@ POSTHOOK: Lineage: table_input.input SIMPLE []
 POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
-PREHOOK: query: -- Run some queries on constant input parameters
-SELECT  translate('abcd', 'ab', '12'),
+PREHOOK: query: SELECT  translate('abcd', 'ab', '12'),
         translate('abcd', 'abc', '12') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries on constant input parameters
-SELECT  translate('abcd', 'ab', '12'),
+POSTHOOK: query: SELECT  translate('abcd', 'ab', '12'),
         translate('abcd', 'abc', '12') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -70,14 +66,12 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12d
-PREHOOK: query: -- Run some queries where first parameter being a table column while the other two being constants
-SELECT translate(table_input.input, 'ab', '12'),
+PREHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
        translate(table_input.input, 'abc', '12') FROM table_input LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_input
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where first parameter being a table column while the other two being constants
-SELECT translate(table_input.input, 'ab', '12'),
+POSTHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
        translate(table_input.input, 'abc', '12') FROM table_input LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_input
@@ -87,13 +81,11 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12d
-PREHOOK: query: -- Run some queries where all parameters are coming from table columns
-SELECT translate(input_string, from_string, to_string) FROM table_translate LIMIT 1
+PREHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_translate
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where all parameters are coming from table columns
-SELECT translate(input_string, from_string, to_string) FROM table_translate LIMIT 1
+POSTHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_translate
 #### A masked pattern was here ####
@@ -102,16 +94,14 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 1bc
-PREHOOK: query: -- Run some queries where some parameters are NULL
-SELECT translate(NULL, 'ab', '12'),
+PREHOOK: query: SELECT translate(NULL, 'ab', '12'),
        translate('abcd', NULL, '12'),
        translate('abcd', 'ab', NULL),
        translate(NULL, NULL, NULL) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where some parameters are NULL
-SELECT translate(NULL, 'ab', '12'),
+POSTHOOK: query: SELECT translate(NULL, 'ab', '12'),
        translate('abcd', NULL, '12'),
        translate('abcd', 'ab', NULL),
        translate(NULL, NULL, NULL) FROM src LIMIT 1
@@ -123,14 +113,12 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- Run some queries where the same character appears several times in the from string (2nd argument) of the UDF
-SELECT translate('abcd', 'aba', '123'),
+PREHOOK: query: SELECT translate('abcd', 'aba', '123'),
        translate('abcd', 'aba', '12') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where the same character appears several times in the from string (2nd argument) of the UDF
-SELECT translate('abcd', 'aba', '123'),
+POSTHOOK: query: SELECT translate('abcd', 'aba', '123'),
        translate('abcd', 'aba', '12') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -140,13 +128,11 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 12cd	12cd
-PREHOOK: query: -- Run some queries for the ignorant case when the 3rd parameter has more characters than the second one
-SELECT translate('abcd', 'abc', '1234') FROM src LIMIT 1
+PREHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries for the ignorant case when the 3rd parameter has more characters than the second one
-SELECT translate('abcd', 'abc', '1234') FROM src LIMIT 1
+POSTHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -155,13 +141,11 @@ POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
 123d
-PREHOOK: query: -- Test proper function over UTF-8 characters
-SELECT translate('Àbcd', 'À', 'Ã') FROM src LIMIT 1
+PREHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test proper function over UTF-8 characters
-SELECT translate('Àbcd', 'À', 'Ã') FROM src LIMIT 1
+POSTHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

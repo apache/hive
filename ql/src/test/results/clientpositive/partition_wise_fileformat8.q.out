@@ -1,10 +1,6 @@
-PREHOOK: query: -- This tests that a query can span multiple partitions which can not only have different file formats, but
--- also different serdes
-create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- This tests that a query can span multiple partitions which can not only have different file formats, but
--- also different serdes
-create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src

@@ -1,12 +1,6 @@
-PREHOOK: query: -- Tests that when overwriting a partition in a table after altering the serde properties
--- the partition metadata is updated as well.
-
-CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Tests that when overwriting a partition in a table after altering the serde properties
--- the partition metadata is updated as well.
-
-CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tst1
 PREHOOK: query: DESCRIBE FORMATTED tst1
@@ -93,15 +87,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Test altering the serde properties
-
-ALTER TABLE tst1 SET SERDEPROPERTIES ('field.delim' = ',')
+PREHOOK: query: ALTER TABLE tst1 SET SERDEPROPERTIES ('field.delim' = ',')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: -- Test altering the serde properties
-
-ALTER TABLE tst1 SET SERDEPROPERTIES ('field.delim' = ',')
+POSTHOOK: query: ALTER TABLE tst1 SET SERDEPROPERTIES ('field.delim' = ',')
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1

@@ -1,17 +1,13 @@
-PREHOOK: query: -- create testing table.
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+PREHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- create testing table.
-create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
+POSTHOOK: query: create table alter_coltype(key string, value string) partitioned by (dt string, ts string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_coltype
-PREHOOK: query: -- insert and create a partition.
-insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100x/ts=6%3A30pm
-POSTHOOK: query: -- insert and create a partition.
-insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts='6:30pm') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100x/ts=6%3A30pm
@@ -35,14 +31,12 @@ ts                  	string              	None
 	 	 
 dt                  	string              	None                
 ts                  	string              	None                
-PREHOOK: query: -- select with paritition predicate.
-select count(*) from alter_coltype where dt = '100x'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100x'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: -- select with paritition predicate.
-select count(*) from alter_coltype where dt = '100x'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100x'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
@@ -50,24 +44,20 @@ POSTHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 25
-PREHOOK: query: -- alter partition key column data type for dt column.
-alter table alter_coltype partition column (dt int)
+PREHOOK: query: alter table alter_coltype partition column (dt int)
 PREHOOK: type: null
 PREHOOK: Input: default@alter_coltype
-POSTHOOK: query: -- alter partition key column data type for dt column.
-alter table alter_coltype partition column (dt int)
+POSTHOOK: query: alter table alter_coltype partition column (dt int)
 POSTHOOK: type: null
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt=10, ts='3.0') select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt=10, ts='3.0') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=10/ts=3.0
-POSTHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt=10, ts='3.0') select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt=10, ts='3.0') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=10/ts=3.0
@@ -75,14 +65,12 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100x'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100x'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100x'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100x'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
@@ -230,12 +218,10 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 0
-PREHOOK: query: -- alter partition key column data type for ts column.
-alter table alter_coltype partition column (ts double)
+PREHOOK: query: alter table alter_coltype partition column (ts double)
 PREHOOK: type: null
 PREHOOK: Input: default@alter_coltype
-POSTHOOK: query: -- alter partition key column data type for ts column.
-alter table alter_coltype partition column (ts double)
+POSTHOOK: query: alter table alter_coltype partition column (ts double)
 POSTHOOK: type: null
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Output: default@alter_coltype
@@ -243,13 +229,11 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1
+PREHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@alter_coltype@dt=100x/ts=3.0
-POSTHOOK: query: -- load a new partition using new data type.
-insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1
+POSTHOOK: query: insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@alter_coltype@dt=100x/ts=3.0
@@ -259,14 +243,12 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: --  validate partition key column predicate can still work.
-select count(*) from alter_coltype where ts = '6:30pm'
+PREHOOK: query: select count(*) from alter_coltype where ts = '6:30pm'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: --  validate partition key column predicate can still work.
-select count(*) from alter_coltype where ts = '6:30pm'
+POSTHOOK: query: select count(*) from alter_coltype where ts = '6:30pm'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
@@ -403,18 +385,14 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: --  validate partition key column predicate on two different partition column data type 
---  can still work.
-select count(*) from alter_coltype where ts = 3.0 and dt=10
+PREHOOK: query: select count(*) from alter_coltype where ts = 3.0 and dt=10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=10/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: --  validate partition key column predicate on two different partition column data type 
---  can still work.
-select count(*) from alter_coltype where ts = 3.0 and dt=10
+POSTHOOK: query: select count(*) from alter_coltype where ts = 3.0 and dt=10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=10/ts=3.0
@@ -652,16 +630,14 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- query where multiple partition values (of different datatypes) are being selected 
-select key, value, dt, ts from alter_coltype where dt is not null
+PREHOOK: query: select key, value, dt, ts from alter_coltype where dt is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=10/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: -- query where multiple partition values (of different datatypes) are being selected 
-select key, value, dt, ts from alter_coltype where dt is not null
+POSTHOOK: query: select key, value, dt, ts from alter_coltype where dt is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=10/ts=3.0
@@ -975,16 +951,14 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)s
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 50
-PREHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100x' or dt = '10'
+PREHOOK: query: select count(*) from alter_coltype where dt = '100x' or dt = '10'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 PREHOOK: Input: default@alter_coltype@dt=10/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=3.0
 PREHOOK: Input: default@alter_coltype@dt=100x/ts=6%3A30pm
 #### A masked pattern was here ####
-POSTHOOK: query: -- make sure the partition predicate still works. 
-select count(*) from alter_coltype where dt = '100x' or dt = '10'
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100x' or dt = '10'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 POSTHOOK: Input: default@alter_coltype@dt=10/ts=3.0

@@ -1,19 +1,11 @@
-PREHOOK: query: -- Test to ensure that an empty index result is propagated correctly
-
--- Create temp, and populate it with some values in src.
-CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Test to ensure that an empty index result is propagated correctly
-
--- Create temp, and populate it with some values in src.
-CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE temp(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@temp
-PREHOOK: query: -- Build an index on temp.
-CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: query: CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
-POSTHOOK: query: -- Build an index on temp.
-CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: query: CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__temp_temp_index__
 PREHOOK: query: ALTER INDEX temp_index ON temp REBUILD
@@ -27,13 +19,11 @@ POSTHOOK: Output: default@default__temp_temp_index__
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: -- query should not return any values
-SELECT * FROM default__temp_temp_index__ WHERE key = 86
+PREHOOK: query: SELECT * FROM default__temp_temp_index__ WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__temp_temp_index__
 #### A masked pattern was here ####
-POSTHOOK: query: -- query should not return any values
-SELECT * FROM default__temp_temp_index__ WHERE key = 86
+POSTHOOK: query: SELECT * FROM default__temp_temp_index__ WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__
 #### A masked pattern was here ####

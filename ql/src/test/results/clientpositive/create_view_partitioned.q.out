@@ -10,18 +10,14 @@ PREHOOK: query: DROP VIEW vp3
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW vp3
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- test partitioned view definition
--- (underlying table is not actually partitioned)
-CREATE VIEW vp1
+PREHOOK: query: CREATE VIEW vp1
 PARTITIONED ON (value)
 AS
 SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- test partitioned view definition
--- (underlying table is not actually partitioned)
-CREATE VIEW vp1
+POSTHOOK: query: CREATE VIEW vp1
 PARTITIONED ON (value)
 AS
 SELECT key, value
@@ -131,15 +127,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp1
 POSTHOOK: Output: default@vp1@value=val_86
 POSTHOOK: Output: default@vp1@value=val_xyz
-PREHOOK: query: -- should work since we use IF NOT EXISTS
-ALTER VIEW vp1
+PREHOOK: query: ALTER VIEW vp1
 ADD IF NOT EXISTS PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@vp1
 PREHOOK: Output: default@vp1@value=val_xyz
-POSTHOOK: query: -- should work since we use IF NOT EXISTS
-ALTER VIEW vp1
+POSTHOOK: query: ALTER VIEW vp1
 ADD IF NOT EXISTS PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@src
@@ -192,13 +186,11 @@ DROP PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@vp1
 POSTHOOK: Output: default@vp1@value=val_xyz
-PREHOOK: query: -- should work since we use IF EXISTS
-ALTER VIEW vp1
+PREHOOK: query: ALTER VIEW vp1
 DROP IF EXISTS PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@vp1
-POSTHOOK: query: -- should work since we use IF EXISTS
-ALTER VIEW vp1
+POSTHOOK: query: ALTER VIEW vp1
 DROP IF EXISTS PARTITION (value='val_xyz')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@vp1
@@ -207,34 +199,22 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS vp1
 POSTHOOK: type: SHOWPARTITIONS
 value=val_86
-PREHOOK: query: -- Even though no partition predicate is specified in the next query,
--- the WHERE clause inside of the view should satisfy strict mode.
--- In other words, strict only applies to underlying tables
--- (regardless of whether or not the view is partitioned).
-SELECT * FROM vp1
+PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@vp1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Even though no partition predicate is specified in the next query,
--- the WHERE clause inside of the view should satisfy strict mode.
--- In other words, strict only applies to underlying tables
--- (regardless of whether or not the view is partitioned).
-SELECT * FROM vp1
+POSTHOOK: query: SELECT * FROM vp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@vp1
 #### A masked pattern was here ####
 86	val_86
-PREHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
--- but with only a suffix of the partitioning columns
-CREATE VIEW vp2
+PREHOOK: query: CREATE VIEW vp2
 PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
--- but with only a suffix of the partitioning columns
-CREATE VIEW vp2
+POSTHOOK: query: CREATE VIEW vp2
 PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 POSTHOOK: type: CREATEVIEW
@@ -327,18 +307,14 @@ POSTHOOK: Input: default@vp2
 8
 9
 9
-PREHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
--- an imposed column name
-CREATE VIEW vp3(k,v)
+PREHOOK: query: CREATE VIEW vp3(k,v)
 PARTITIONED ON (v)
 AS
 SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
--- an imposed column name
-CREATE VIEW vp3(k,v)
+POSTHOOK: query: CREATE VIEW vp3(k,v)
 PARTITIONED ON (v)
 AS
 SELECT key, value

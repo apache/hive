@@ -3,15 +3,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-PREHOOK: query: -- input pruning, no sample filter
--- default table sample columns
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- input pruning, no sample filter
--- default table sample columns
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY

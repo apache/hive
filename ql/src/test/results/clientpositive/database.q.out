@@ -3,11 +3,9 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- CREATE with comment
-CREATE DATABASE test_db COMMENT 'Hive test database'
+PREHOOK: query: CREATE DATABASE test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- CREATE with comment
-CREATE DATABASE test_db COMMENT 'Hive test database'
+POSTHOOK: query: CREATE DATABASE test_db COMMENT 'Hive test database'
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -15,11 +13,9 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- CREATE INE already exists
-CREATE DATABASE IF NOT EXISTS test_db
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- CREATE INE already exists
-CREATE DATABASE IF NOT EXISTS test_db
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -27,30 +23,24 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- SHOW DATABASES synonym
-SHOW SCHEMAS
+PREHOOK: query: SHOW SCHEMAS
 PREHOOK: type: SHOWDATABASES
-POSTHOOK: query: -- SHOW DATABASES synonym
-SHOW SCHEMAS
+POSTHOOK: query: SHOW SCHEMAS
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- DROP
-DROP DATABASE test_db
+PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- DROP
-DROP DATABASE test_db
+POSTHOOK: query: DROP DATABASE test_db
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- CREATE INE doesn't exist
-CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- CREATE INE doesn't exist
-CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -58,28 +48,22 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- DROP IE exists
-DROP DATABASE IF EXISTS test_db
+PREHOOK: query: DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- DROP IE exists
-DROP DATABASE IF EXISTS test_db
+POSTHOOK: query: DROP DATABASE IF EXISTS test_db
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- DROP IE doesn't exist
-DROP DATABASE IF EXISTS test_db
+PREHOOK: query: DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- DROP IE doesn't exist
-DROP DATABASE IF EXISTS test_db
+POSTHOOK: query: DROP DATABASE IF EXISTS test_db
 POSTHOOK: type: DROPDATABASE
-PREHOOK: query: -- SHOW
-CREATE DATABASE test_db
+PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- SHOW
-CREATE DATABASE test_db
+POSTHOOK: query: CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -87,18 +71,14 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- SHOW pattern
-SHOW DATABASES LIKE 'test*'
+PREHOOK: query: SHOW DATABASES LIKE 'test*'
 PREHOOK: type: SHOWDATABASES
-POSTHOOK: query: -- SHOW pattern
-SHOW DATABASES LIKE 'test*'
+POSTHOOK: query: SHOW DATABASES LIKE 'test*'
 POSTHOOK: type: SHOWDATABASES
 test_db
-PREHOOK: query: -- SHOW pattern
-SHOW DATABASES LIKE '*ef*'
+PREHOOK: query: SHOW DATABASES LIKE '*ef*'
 PREHOOK: type: SHOWDATABASES
-POSTHOOK: query: -- SHOW pattern
-SHOW DATABASES LIKE '*ef*'
+POSTHOOK: query: SHOW DATABASES LIKE '*ef*'
 POSTHOOK: type: SHOWDATABASES
 default
 PREHOOK: query: USE test_db
@@ -111,11 +91,9 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 test_db
-PREHOOK: query: -- CREATE table in non-default DB
-CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- CREATE table in non-default DB
-CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SHOW TABLES
@@ -123,31 +101,25 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 test_table
-PREHOOK: query: -- DESCRIBE table in non-default DB
-DESCRIBE test_table
+PREHOOK: query: DESCRIBE test_table
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- DESCRIBE table in non-default DB
-DESCRIBE test_table
+POSTHOOK: query: DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 col1                	string              	None                
-PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
-DESCRIBE EXTENDED test_table
+PREHOOK: query: DESCRIBE EXTENDED test_table
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
-DESCRIBE EXTENDED test_table
+POSTHOOK: query: DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
 col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- CREATE LIKE in non-default DB
-CREATE TABLE test_table_like LIKE test_table
+PREHOOK: query: CREATE TABLE test_table_like LIKE test_table
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- CREATE LIKE in non-default DB
-CREATE TABLE test_table_like LIKE test_table
+POSTHOOK: query: CREATE TABLE test_table_like LIKE test_table
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: test_db@test_table_like
 PREHOOK: query: SHOW TABLES
@@ -165,13 +137,11 @@ POSTHOOK: type: DESCTABLE
 col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- LOAD and SELECT
-LOAD DATA LOCAL INPATH '../data/files/test.dat'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
 PREHOOK: type: LOAD
 PREHOOK: Output: test_db@test_table
-POSTHOOK: query: -- LOAD and SELECT
-LOAD DATA LOCAL INPATH '../data/files/test.dat'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: test_db@test_table
@@ -189,13 +159,11 @@ POSTHOOK: Input: test_db@test_table
 4
 5
 6
-PREHOOK: query: -- DROP and CREATE w/o LOAD
-DROP TABLE test_table
+PREHOOK: query: DROP TABLE test_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@test_table
 PREHOOK: Output: test_db@test_table
-POSTHOOK: query: -- DROP and CREATE w/o LOAD
-DROP TABLE test_table
+POSTHOOK: query: DROP TABLE test_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db@test_table
 POSTHOOK: Output: test_db@test_table
@@ -223,11 +191,9 @@ POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
 #### A masked pattern was here ####
-PREHOOK: query: -- CREATE table that already exists in DEFAULT
-USE test_db
+PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: -- CREATE table that already exists in DEFAULT
-USE test_db
+POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -271,11 +237,9 @@ POSTHOOK: Input: default@src
 278	val_278
 98	val_98
 484	val_484
-PREHOOK: query: -- DROP DATABASE
-USE test_db
+PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: -- DROP DATABASE
-USE test_db
+POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: DROP TABLE src
 PREHOOK: type: DROPTABLE
@@ -318,11 +282,9 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- DROP EMPTY DATABASE CASCADE
-CREATE DATABASE to_drop_db1
+PREHOOK: query: CREATE DATABASE to_drop_db1
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- DROP EMPTY DATABASE CASCADE
-CREATE DATABASE to_drop_db1
+POSTHOOK: query: CREATE DATABASE to_drop_db1
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -343,11 +305,9 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
-CREATE DATABASE to_drop_db2
+PREHOOK: query: CREATE DATABASE to_drop_db2
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
-CREATE DATABASE to_drop_db2
+POSTHOOK: query: CREATE DATABASE to_drop_db2
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -394,11 +354,9 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
-PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
-CREATE DATABASE to_drop_db3
+PREHOOK: query: CREATE DATABASE to_drop_db3
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
-CREATE DATABASE to_drop_db3
+POSTHOOK: query: CREATE DATABASE to_drop_db3
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
@@ -435,11 +393,9 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
-PREHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
-DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+PREHOOK: query: DROP DATABASE IF EXISTS non_exists_db3 CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
-DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+POSTHOOK: query: DROP DATABASE IF EXISTS non_exists_db3 CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
@@ -448,18 +404,14 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
-PREHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
-DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+PREHOOK: query: DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
-DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+POSTHOOK: query: DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- DROP EMPTY DATABASE RESTRICT
-CREATE DATABASE to_drop_db4
+PREHOOK: query: CREATE DATABASE to_drop_db4
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: -- DROP EMPTY DATABASE RESTRICT
-CREATE DATABASE to_drop_db4
+POSTHOOK: query: CREATE DATABASE to_drop_db4
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
@@ -481,13 +433,13 @@ POSTHOOK: type: SHOWDATABASES
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 default
 PREHOOK: query: --
--- Canonical Name Tests
+
 --
 
 CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: --
--- Canonical Name Tests
+
 --
 
 CREATE DATABASE db1
@@ -498,34 +450,28 @@ PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- CREATE foreign table
-CREATE TABLE db1.src(key STRING, value STRING)
+PREHOOK: query: CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- CREATE foreign table
-CREATE TABLE db1.src(key STRING, value STRING)
+POSTHOOK: query: CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@src
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- LOAD into foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@src
-POSTHOOK: query: -- LOAD into foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@src
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- SELECT from foreign table
-SELECT * FROM db1.src
+PREHOOK: query: SELECT * FROM db1.src
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SELECT from foreign table
-SELECT * FROM db1.src
+POSTHOOK: query: SELECT * FROM db1.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
 #### A masked pattern was here ####
@@ -1030,41 +976,35 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 400	val_400
 200	val_200
 97	val_97
-PREHOOK: query: -- CREATE Partitioned foreign table
-CREATE TABLE db1.srcpart(key STRING, value STRING)
+PREHOOK: query: CREATE TABLE db1.srcpart(key STRING, value STRING)
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- CREATE Partitioned foreign table
-CREATE TABLE db1.srcpart(key STRING, value STRING)
+POSTHOOK: query: CREATE TABLE db1.srcpart(key STRING, value STRING)
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- LOAD data into Partitioned foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@srcpart
-POSTHOOK: query: -- LOAD data into Partitioned foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Output: db1@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- SELECT from Partitioned foreign table
-SELECT key, value FROM db1.srcpart
+PREHOOK: query: SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@srcpart
 PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: -- SELECT from Partitioned foreign table
-SELECT key, value FROM db1.srcpart
+POSTHOOK: query: SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@srcpart
@@ -1155,11 +1095,9 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 37	val_37
 90	val_90
 97	val_97
-PREHOOK: query: -- SELECT JOINed product of two foreign tables
-USE db2
+PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: -- SELECT JOINed product of two foreign tables
-USE db2
+POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
@@ -1212,32 +1150,27 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 66	val_66
 98	val_98
 98	val_98
-PREHOOK: query: -- CREATE TABLE AS SELECT from foreign table
-CREATE TABLE conflict_name AS
+PREHOOK: query: CREATE TABLE conflict_name AS
 SELECT value FROM default.src WHERE key = 66
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: -- CREATE TABLE AS SELECT from foreign table
-CREATE TABLE conflict_name AS
+POSTHOOK: query: CREATE TABLE conflict_name AS
 SELECT value FROM default.src WHERE key = 66
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: db2@conflict_name
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- CREATE foreign table
-CREATE TABLE db1.conflict_name AS
+PREHOOK: query: CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: db1@src
-POSTHOOK: query: -- CREATE foreign table
-CREATE TABLE db1.conflict_name AS
+POSTHOOK: query: CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: db1@src
 POSTHOOK: Output: db1@conflict_name
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-PREHOOK: query: -- query tables with the same names in different DBs
-SELECT * FROM (
+PREHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
   SELECT value FROM conflict_name
@@ -1246,8 +1179,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: db1@conflict_name
 PREHOOK: Input: db2@conflict_name
 #### A masked pattern was here ####
-POSTHOOK: query: -- query tables with the same names in different DBs
-SELECT * FROM (
+POSTHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
   SELECT value FROM conflict_name
@@ -1285,12 +1217,10 @@ POSTHOOK: Input: db2@conflict_name
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
-PREHOOK: query: -- TABLESAMPLES
-CREATE TABLE bucketized_src (key INT, value STRING)
+PREHOOK: query: CREATE TABLE bucketized_src (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- TABLESAMPLES
-CREATE TABLE bucketized_src (key INT, value STRING)
+POSTHOOK: query: CREATE TABLE bucketized_src (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@bucketized_src
@@ -1320,11 +1250,9 @@ POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key,
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 66
-PREHOOK: query: -- CREATE TABLE LIKE
-CREATE TABLE db2.src1 LIKE default.src
+PREHOOK: query: CREATE TABLE db2.src1 LIKE default.src
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- CREATE TABLE LIKE
-CREATE TABLE db2.src1 LIKE default.src
+POSTHOOK: query: CREATE TABLE db2.src1 LIKE default.src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db2@src1
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1350,13 +1278,11 @@ key                 	string              	default
 value               	string              	default             
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- character escaping
-SELECT key FROM `default`.src ORDER BY key LIMIT 1
+PREHOOK: query: SELECT key FROM `default`.src ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- character escaping
-SELECT key FROM `default`.src ORDER BY key LIMIT 1
+POSTHOOK: query: SELECT key FROM `default`.src ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
