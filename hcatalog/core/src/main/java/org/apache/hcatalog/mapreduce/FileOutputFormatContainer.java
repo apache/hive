@@ -19,9 +19,9 @@
 
 package org.apache.hcatalog.mapreduce;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -95,19 +95,24 @@ class FileOutputFormatContainer extends OutputFormatContainer {
         context.getConfiguration().set("mapred.output.value.class",
             sd.getSerializedClass().getName());
 
-        // When Dynamic partitioning is used, the RecordWriter instance initialized here isn't used. Can use null.
-        // (That's because records can't be written until the values of the dynamic partitions are deduced.
-        // By that time, a new local instance of RecordWriter, with the correct output-path, will be constructed.)
-        RecordWriter<WritableComparable<?>, HCatRecord> rw =
-            new FileRecordWriterContainer(
-                HCatBaseOutputFormat.getJobInfo(context).isDynamicPartitioningUsed() ?
-                    null :
-                    getBaseOutputFormat()
-                        .getRecordWriter(null,
-                            new JobConf(context.getConfiguration()),
-                            FileOutputFormat.getUniqueName(new JobConf(context.getConfiguration()), "part"),
-                            InternalUtil.createReporter(context)),
-                context);
+        RecordWriter<WritableComparable<?>, HCatRecord> rw;
+        if (HCatBaseOutputFormat.getJobInfo(context).isDynamicPartitioningUsed()){
+            // When Dynamic partitioning is used, the RecordWriter instance initialized here isn't used. Can use null.
+            // (That's because records can't be written until the values of the dynamic partitions are deduced.
+            // By that time, a new local instance of RecordWriter, with the correct output-path, will be constructed.)
+            rw = new FileRecordWriterContainer((org.apache.hadoop.mapred.RecordWriter)null,context);
+        } else {
+            Path parentDir = new Path(context.getConfiguration().get("mapred.work.output.dir"));
+            Path childPath = new Path(parentDir,FileOutputFormat.getUniqueName(new JobConf(context.getConfiguration()), "part"));
+
+            rw = new FileRecordWriterContainer(
+                      getBaseOutputFormat().getRecordWriter(
+                              parentDir.getFileSystem(context.getConfiguration()),
+                              new JobConf(context.getConfiguration()),
+                              childPath.toString(),
+                              InternalUtil.createReporter(context)),
+                      context);
+        }
         return rw;
     }
 

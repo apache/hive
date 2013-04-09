@@ -46,8 +46,13 @@ public class TestHCatStorerMulti extends TestCase {
     private static final String BASIC_TABLE = "junit_unparted_basic";
     private static final String PARTITIONED_TABLE = "junit_parted_basic";
     private static Driver driver;
-
+    
     private static Map<Integer, Pair<Integer, String>> basicInputData;
+
+    protected String storageFormat() {
+        return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
+            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver')";
+    }
 
     private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
         driver.run("drop table " + tablename);
@@ -59,8 +64,7 @@ public class TestHCatStorerMulti extends TestCase {
         if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
             createTable = createTable + "partitioned by (" + partitionedBy + ") ";
         }
-        createTable = createTable + "stored as RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
-            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver') ";
+        createTable = createTable + "stored as " + storageFormat();
         int retCode = driver.run(createTable).getResponseCode();
         if (retCode != 0) {
             throw new IOException("Failed to create table. [" + createTable + "], return code from hive driver : [" + retCode + "]");
