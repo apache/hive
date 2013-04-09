@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -75,10 +75,6 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     protected static String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
     protected static String tableName = "testHCatMapReduceTable";
 
-    protected String inputFormat = RCFileInputFormat.class.getName();
-    protected String outputFormat = RCFileOutputFormat.class.getName();
-    protected String serdeClass = ColumnarSerDe.class.getName();
-
     private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
     private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
@@ -88,6 +84,18 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
 
     private static FileSystem fs;
 
+    protected String inputFormat() { 
+        return RCFileInputFormat.class.getName();
+    }
+    
+    protected String outputFormat() { 
+        return RCFileOutputFormat.class.getName(); 
+    }
+    
+    protected String serdeClass() { 
+        return ColumnarSerDe.class.getName(); 
+    }
+    
     @BeforeClass
     public static void setUpOneTime() throws Exception {
         fs = new LocalFileSystem();
@@ -142,9 +150,9 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
         sd.getSerdeInfo().setName(tbl.getTableName());
         sd.getSerdeInfo().setParameters(new HashMap<String, String>());
         sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
-        sd.getSerdeInfo().setSerializationLib(serdeClass);
-        sd.setInputFormat(inputFormat);
-        sd.setOutputFormat(outputFormat);
+        sd.getSerdeInfo().setSerializationLib(serdeClass());
+        sd.setInputFormat(inputFormat());
+        sd.setOutputFormat(outputFormat());
 
         Map<String, String> tableParams = new HashMap<String, String>();
         tbl.setParameters(tableParams);

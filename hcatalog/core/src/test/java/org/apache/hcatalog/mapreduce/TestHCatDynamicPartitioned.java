@@ -50,8 +50,8 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     private static List<HCatRecord> writeRecords;
     private static List<HCatFieldSchema> dataColumns;
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatDynamicPartitioned.class);
-    private static final int NUM_RECORDS = 20;
-    private static final int NUM_PARTITIONS = 5;
+    protected static final int NUM_RECORDS = 20;
+    protected static final int NUM_PARTITIONS = 5;
 
     @BeforeClass
     public static void generateInputData() throws Exception {
@@ -60,14 +60,14 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
         generateDataColumns();
     }
 
-    private static void generateDataColumns() throws HCatException {
+    protected static void generateDataColumns() throws HCatException {
         dataColumns = new ArrayList<HCatFieldSchema>();
         dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, "")));
         dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, "")));
         dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, "")));
     }
 
-    private static void generateWriteRecords(int max, int mod, int offset) {
+    protected static void generateWriteRecords(int max, int mod, int offset) {
         writeRecords = new ArrayList<HCatRecord>();
 
         for (int i = 0; i < max; i++) {
