@@ -17,29 +17,29 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import java.math.BigDecimal;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
-import org.apache.hadoop.hive.serde2.lazy.LazyBigDecimal;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyHiveDecimal;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
-public class LazyBigDecimalObjectInspector
-    extends AbstractPrimitiveLazyObjectInspector<BigDecimalWritable>
-    implements BigDecimalObjectInspector {
+public class LazyHiveDecimalObjectInspector
+    extends AbstractPrimitiveLazyObjectInspector<HiveDecimalWritable>
+    implements HiveDecimalObjectInspector {
 
-  protected LazyBigDecimalObjectInspector() {
+  protected LazyHiveDecimalObjectInspector() {
     super(PrimitiveObjectInspectorUtils.decimalTypeEntry);
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyBigDecimal((LazyBigDecimal) o);
+    return o == null ? null : new LazyHiveDecimal((LazyHiveDecimal) o);
   }
 
   @Override
-  public BigDecimal getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((LazyBigDecimal) o).getWritableObject().getBigDecimal();
+  public HiveDecimal getPrimitiveJavaObject(Object o) {
+    return o == null ? null : ((LazyHiveDecimal) o).getWritableObject().getHiveDecimal();
   }
 
 }

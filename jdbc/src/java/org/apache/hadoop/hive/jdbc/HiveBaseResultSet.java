@@ -42,6 +42,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+
 /**
  * Data independed base class which implements the common part of
  * all hive resultsets.
@@ -110,8 +112,11 @@ public abstract class HiveBaseResultSet implements ResultSet{
     if (obj instanceof BigDecimal) {
       return ((BigDecimal) obj);
     }
-    throw new SQLException("Cannot convert column " + columnIndex 
-                           + " to BigDecimal. Found data of type: " 
+    if (obj instanceof HiveDecimal) {
+      return ((HiveDecimal) obj).bigDecimalValue();
+    }
+    throw new SQLException("Cannot convert column " + columnIndex
+                           + " to BigDecimal. Found data of type: "
                            + obj.getClass()+", value: " + obj.toString());
   }
 

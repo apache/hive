@@ -23,14 +23,14 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.BigDecimalConverter;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.HiveDecimalConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 @Description(name = "decimal", value = "_FUNC_(a) - cast a to decimal")
 public class GenericUDFToDecimal extends GenericUDF {
 
   private PrimitiveObjectInspector argumentOI;
-  private BigDecimalConverter bdConverter;
+  private HiveDecimalConverter bdConverter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -46,9 +46,9 @@ public class GenericUDFToDecimal extends GenericUDF {
           "The function DECIMAL takes only primitive types");
     }
 
-    bdConverter = new BigDecimalConverter(argumentOI,
-        PrimitiveObjectInspectorFactory.writableBigDecimalObjectInspector);
-    return PrimitiveObjectInspectorFactory.writableBigDecimalObjectInspector;
+    bdConverter = new HiveDecimalConverter(argumentOI,
+        PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
+    return PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
   }
 
   @Override

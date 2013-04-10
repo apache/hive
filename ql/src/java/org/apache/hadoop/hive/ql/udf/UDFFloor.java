@@ -18,14 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -40,7 +37,7 @@ import org.apache.hadoop.io.LongWritable;
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
 public class UDFFloor extends UDF {
   private final LongWritable result = new LongWritable();
-  private final BigDecimalWritable bdResult = new BigDecimalWritable();
+  private final HiveDecimalWritable bdResult = new HiveDecimalWritable();
 
   public UDFFloor() {
   }
@@ -54,13 +51,13 @@ public class UDFFloor extends UDF {
     }
   }
 
-  public BigDecimalWritable evaluate(BigDecimalWritable i) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable i) {
     if (i == null) {
       return null;
     } else {
-      BigDecimal bd = i.getBigDecimal();
+      HiveDecimal bd = i.getHiveDecimal();
       int origScale = bd.scale();
-      bdResult.set(bd.setScale(0, BigDecimal.ROUND_FLOOR).setScale(origScale));
+      bdResult.set(bd.setScale(0, HiveDecimal.ROUND_FLOOR).setScale(origScale));
       return bdResult;
     }
   }

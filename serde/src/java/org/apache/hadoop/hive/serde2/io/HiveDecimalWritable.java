@@ -20,52 +20,47 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 
-public class BigDecimalWritable implements WritableComparable<BigDecimalWritable> {
+public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritable> {
 
-  static final private Log LOG = LogFactory.getLog(BigDecimalWritable.class);
+  static final private Log LOG = LogFactory.getLog(HiveDecimalWritable.class);
 
   private byte[] internalStorage = new byte[0];
   private int scale;
 
   private final VInt vInt = new VInt(); // reusable integer
 
-  public BigDecimalWritable() {
+  public HiveDecimalWritable() {
   }
 
-  public BigDecimalWritable(byte[] bytes, int scale) {
+  public HiveDecimalWritable(byte[] bytes, int scale) {
     set(bytes, scale);
   }
 
-  public BigDecimalWritable(BigDecimalWritable writable) {
-    set(writable.getBigDecimal());
+  public HiveDecimalWritable(HiveDecimalWritable writable) {
+    set(writable.getHiveDecimal());
   }
 
-  public BigDecimalWritable(BigDecimal value) {
+  public HiveDecimalWritable(HiveDecimal value) {
     set(value);
   }
 
-  public void set(BigDecimal value) {
-    value = value.stripTrailingZeros();
-    if (value.compareTo(BigDecimal.ZERO) == 0) {
-      // Special case for 0, because java doesn't strip zeros correctly on that number.
-      value = BigDecimal.ZERO;
-    }
+  public void set(HiveDecimal value) {
     set(value.unscaledValue().toByteArray(), value.scale());
   }
 
-  public void set(BigDecimalWritable writable) {
-    set(writable.getBigDecimal());
+  public void set(HiveDecimalWritable writable) {
+    set(writable.getHiveDecimal());
   }
 
   public void set(byte[] bytes, int scale) {
@@ -85,8 +80,8 @@ public class BigDecimalWritable implements WritableComparable<BigDecimalWritable
     System.arraycopy(bytes, offset, internalStorage, 0, vInt.value);
   }
 
-  public BigDecimal getBigDecimal() {
-    return new BigDecimal(new BigInteger(internalStorage), scale);
+  public HiveDecimal getHiveDecimal() {
+    return new HiveDecimal(new BigInteger(internalStorage), scale);
   }
 
   @Override
@@ -107,8 +102,8 @@ public class BigDecimalWritable implements WritableComparable<BigDecimalWritable
   }
 
   @Override
-  public int compareTo(BigDecimalWritable that) {
-    return getBigDecimal().compareTo(that.getBigDecimal());
+  public int compareTo(HiveDecimalWritable that) {
+    return getHiveDecimal().compareTo(that.getHiveDecimal());
   }
 
   public void writeToByteStream(Output byteStream) {
@@ -119,25 +114,25 @@ public class BigDecimalWritable implements WritableComparable<BigDecimalWritable
 
   @Override
   public String toString() {
-    return getBigDecimal().toString();
+    return getHiveDecimal().toString();
   }
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof BigDecimalWritable)) {
+    if (other == null || !(other instanceof HiveDecimalWritable)) {
       return false;
     }
-    BigDecimalWritable bdw = (BigDecimalWritable) other;
+    HiveDecimalWritable bdw = (HiveDecimalWritable) other;
 
-    // 'equals' and 'compareTo' are not compatible with BigDecimals. We want 
-    // compareTo which returns true iff the numbers are equal (e.g.: 3.14 is 
-    // the same as 3.140). 'Equals' returns true iff equal and the same scale 
+    // 'equals' and 'compareTo' are not compatible with HiveDecimals. We want
+    // compareTo which returns true iff the numbers are equal (e.g.: 3.14 is
+    // the same as 3.140). 'Equals' returns true iff equal and the same scale
     // is set in the decimals (e.g.: 3.14 is not the same as 3.140)
-    return getBigDecimal().compareTo(bdw.getBigDecimal()) == 0;
+    return getHiveDecimal().compareTo(bdw.getHiveDecimal()) == 0;
   }
 
   @Override
   public int hashCode() {
-    return getBigDecimal().hashCode();
+    return getHiveDecimal().hashCode();
   }
 }

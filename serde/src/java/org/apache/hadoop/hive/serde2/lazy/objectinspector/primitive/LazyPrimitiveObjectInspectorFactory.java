@@ -57,8 +57,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyTimestampObjectInspector();
   public static final LazyBinaryObjectInspector LAZY_BINARY_OBJECT_INSPECTOR =
       new LazyBinaryObjectInspector();
-  public static final LazyBigDecimalObjectInspector LAZY_BIG_DECIMAL_OBJECT_INSPECTOR =
-      new LazyBigDecimalObjectInspector();
+  public static final LazyHiveDecimalObjectInspector LAZY_BIG_DECIMAL_OBJECT_INSPECTOR =
+      new LazyHiveDecimalObjectInspector();
 
   static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
       new HashMap<ArrayList<Object>, LazyStringObjectInspector>();

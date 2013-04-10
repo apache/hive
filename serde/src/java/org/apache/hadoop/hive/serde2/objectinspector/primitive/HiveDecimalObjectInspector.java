@@ -15,28 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.lazybinary;
+package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBigDecimalObjectInspector;
 
-public class LazyBinaryBigDecimal extends
-    LazyBinaryPrimitive<WritableBigDecimalObjectInspector, BigDecimalWritable> {
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-  LazyBinaryBigDecimal(WritableBigDecimalObjectInspector oi) {
-    super(oi);
-    data = new BigDecimalWritable();
-  }
+/**
+ * A DecimalObjectInspector inspects an Object representing a HiveDecimal.
+ */
+public interface HiveDecimalObjectInspector extends PrimitiveObjectInspector {
 
-  LazyBinaryBigDecimal(LazyBinaryBigDecimal copy) {
-    super(copy);
-    data = new BigDecimalWritable(copy.data);
-  }
+  HiveDecimalWritable getPrimitiveWritableObject(Object o);
 
-  @Override
-  public void init(ByteArrayRef bytes, int start, int length) {
-    data.setFromBytes(bytes.getData(), start, length);
-  }
-
+  HiveDecimal getPrimitiveJavaObject(Object o);
 }

@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 
 /**
@@ -35,7 +35,7 @@ public class MyTestClassBigger {
     Float myFloat;
     Double myDouble;
     String myString;
-    BigDecimal myDecimal;
+    HiveDecimal myDecimal;
     MyTestInnerStruct myStruct;
     List<Integer> myList;
     byte[] myBA;
@@ -45,7 +45,7 @@ public class MyTestClassBigger {
     }
 
     public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
-			     Double d, String st, BigDecimal bd, MyTestInnerStruct is, List<Integer> li,
+			     Double d, String st, HiveDecimal bd, MyTestInnerStruct is, List<Integer> li,
 			     byte[] ba, Map<String, List<MyTestInnerStruct>> mp) {
 	myByte = b;
 	myShort = s;

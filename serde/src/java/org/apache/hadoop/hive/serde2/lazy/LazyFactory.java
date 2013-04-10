@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyUnionObjectInspector;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBigDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
@@ -114,7 +114,7 @@ public final class LazyFactory {
     case BINARY:
       return new LazyBinary((LazyBinaryObjectInspector) oi);
     case DECIMAL:
-      return new LazyBigDecimal((LazyBigDecimalObjectInspector) oi);
+      return new LazyHiveDecimal((LazyHiveDecimalObjectInspector) oi);
     default:
       throw new RuntimeException("Internal error: no LazyObject for " + p);
     }

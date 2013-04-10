@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.math.BigDecimal;
-
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -112,19 +111,24 @@ public class UDFOPMod extends UDFBaseNumericOp {
   }
 
   @Override
-  public BigDecimalWritable evaluate(BigDecimalWritable a, BigDecimalWritable b) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
     if ((a == null) || (b == null)) {
       return null;
     }
 
-    BigDecimal av = a.getBigDecimal();
-    BigDecimal bv = b.getBigDecimal();
+    HiveDecimal av = a.getHiveDecimal();
+    HiveDecimal bv = b.getHiveDecimal();
 
-    if (bv.compareTo(BigDecimal.ZERO) == 0) {
+    if (bv.compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     }
 
-    bigDecimalWritable.set(av.remainder(bv));
-    return bigDecimalWritable;
+    try {
+      decimalWritable.set(av.remainder(bv));
+    } catch(NumberFormatException e) {
+      return null;
+    }
+
+    return decimalWritable;
   }
 }

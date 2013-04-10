@@ -17,23 +17,24 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.math.BigDecimal;
-
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 
 /**
- * A SettableDecimalObjectInspector can set a BigDecimal value to an object.
+ * A WritableConstantHiveDecimalObjectInspector is a WritableHiveDecimalObjectInspector
+ * that implements ConstantObjectInspector.
  */
-public interface SettableBigDecimalObjectInspector extends BigDecimalObjectInspector {
+public class WritableConstantHiveDecimalObjectInspector extends WritableHiveDecimalObjectInspector
+    implements ConstantObjectInspector {
 
-  Object set(Object o, byte[] bytes, int scale);
+  private final HiveDecimalWritable value;
 
-  Object set(Object o, BigDecimal t);
+  WritableConstantHiveDecimalObjectInspector(HiveDecimalWritable value) {
+    this.value = value;
+  }
 
-  Object set(Object o, BigDecimalWritable t);
-
-  Object create(byte[] bytes, int scale);
-
-  Object create (BigDecimal t);
-
+  @Override
+  public HiveDecimalWritable getWritableConstantValue() {
+    return value;
+  }
 }
