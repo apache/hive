@@ -17,27 +17,25 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -150,63 +148,85 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
   }
 
-  public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<BigDecimal> {
+  public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
 
     @Override
-    public void doReset(AverageAggregationBuffer<BigDecimal> aggregation) throws HiveException {
+    public void doReset(AverageAggregationBuffer<HiveDecimal> aggregation) throws HiveException {
       aggregation.count = 0;
-      aggregation.sum = BigDecimal.ZERO;
+      aggregation.sum = HiveDecimal.ZERO;
     }
 
     @Override
     protected ObjectInspector getSumFieldJavaObjectInspector() {
-      return PrimitiveObjectInspectorFactory.javaBigDecimalObjectInspector;
+      return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
     }
     @Override
     protected ObjectInspector getSumFieldWritableObjectInspector() {
-      return PrimitiveObjectInspectorFactory.writableBigDecimalObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
     }
 
     @Override
-    protected void doIterate(AverageAggregationBuffer<BigDecimal> aggregation,
+    protected void doIterate(AverageAggregationBuffer<HiveDecimal> aggregation,
         PrimitiveObjectInspector oi, Object parameter) {
-      BigDecimal value = PrimitiveObjectInspectorUtils.getBigDecimal(parameter, oi);
+      HiveDecimal value = PrimitiveObjectInspectorUtils.getHiveDecimal(parameter, oi);
       aggregation.count++;
-      aggregation.sum = aggregation.sum.add(value);
-
+      if (aggregation.sum != null) {
+        try {
+          aggregation.sum = aggregation.sum.add(value);
+        } catch (NumberFormatException e) {
+          aggregation.sum = null;
+        }
+      }
     }
 
     @Override
-    protected void doMerge(AverageAggregationBuffer<BigDecimal> aggregation, Long partialCount,
+    protected void doMerge(AverageAggregationBuffer<HiveDecimal> aggregation, Long partialCount,
         ObjectInspector sumFieldOI, Object partialSum) {
-      BigDecimal value = ((BigDecimalObjectInspector)sumFieldOI).getPrimitiveJavaObject(partialSum);
+      HiveDecimal value = ((HiveDecimalObjectInspector)sumFieldOI).getPrimitiveJavaObject(partialSum);
+      if (value == null) {
+        aggregation.sum = null;
+      }
       aggregation.count += partialCount;
-      aggregation.sum = aggregation.sum.add(value);
+      if (aggregation.sum != null) {
+        try {
+          aggregation.sum = aggregation.sum.add(value);
+        } catch (NumberFormatException e) {
+          aggregation.sum = null;
+        }
+      }
     }
 
     @Override
-    protected void doTerminatePartial(AverageAggregationBuffer<BigDecimal> aggregation) {
-      if(partialResult[1] == null) {
-        partialResult[1] = new BigDecimalWritable(BigDecimal.ZERO);
+    protected void doTerminatePartial(AverageAggregationBuffer<HiveDecimal> aggregation) {
+      if(partialResult[1] == null && aggregation.sum != null) {
+        partialResult[1] = new HiveDecimalWritable(HiveDecimal.ZERO);
       }
       ((LongWritable) partialResult[0]).set(aggregation.count);
-      ((BigDecimalWritable) partialResult[1]).set(aggregation.sum);
+      if (aggregation.sum != null) {
+        ((HiveDecimalWritable) partialResult[1]).set(aggregation.sum);
+      } else {
+        partialResult[1] = null;
+      }
     }
 
     @Override
-    protected Object doTerminate(AverageAggregationBuffer<BigDecimal> aggregation) {
-      if(aggregation.count == 0) {
+    protected Object doTerminate(AverageAggregationBuffer<HiveDecimal> aggregation) {
+      if(aggregation.count == 0 || aggregation.sum == null) {
         return null;
       } else {
-        BigDecimalWritable result = new BigDecimalWritable(BigDecimal.ZERO);
-        result.set(aggregation.sum.divide(new BigDecimal(aggregation.count),
-            UDFOPDivide.MAX_SCALE, RoundingMode.HALF_UP));
+        HiveDecimalWritable result = new HiveDecimalWritable(HiveDecimal.ZERO);
+        try {
+          result.set(aggregation.sum.divide(new HiveDecimal(aggregation.count)));
+        } catch (NumberFormatException e) {
+          result = null;
+        }
         return result;
       }
     }
+
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      AverageAggregationBuffer<BigDecimal> result = new AverageAggregationBuffer<BigDecimal>();
+      AverageAggregationBuffer<HiveDecimal> result = new AverageAggregationBuffer<HiveDecimal>();
       reset(result);
       return result;
     }

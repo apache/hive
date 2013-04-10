@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.math.BigDecimal;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -175,11 +175,11 @@ public class UDFToBoolean extends UDF {
     }
   }
 
-  public BooleanWritable evaluate(BigDecimalWritable i) {
+  public BooleanWritable evaluate(HiveDecimalWritable i) {
     if (i == null) {
       return null;
     } else {
-      booleanWritable.set(BigDecimal.ZERO.compareTo(i.getBigDecimal()) != 0);
+      booleanWritable.set(HiveDecimal.ZERO.compareTo(i.getHiveDecimal()) != 0);
       return booleanWritable;
     }
   }

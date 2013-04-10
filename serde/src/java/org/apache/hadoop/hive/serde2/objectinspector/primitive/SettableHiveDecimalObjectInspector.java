@@ -17,17 +17,23 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.math.BigDecimal;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
- * A DecimalObjectInspector inspects an Object representing a BigDecimal.
+ * A SettableDecimalObjectInspector can set a HiveDecimal value to an object.
  */
-public interface BigDecimalObjectInspector extends PrimitiveObjectInspector {
+public interface SettableHiveDecimalObjectInspector extends HiveDecimalObjectInspector {
 
-  BigDecimalWritable getPrimitiveWritableObject(Object o);
+  Object set(Object o, byte[] bytes, int scale);
 
-  BigDecimal getPrimitiveJavaObject(Object o);
+  Object set(Object o, HiveDecimal t);
+
+  Object set(Object o, HiveDecimalWritable t);
+
+  Object create(byte[] bytes, int scale);
+
+  Object create (HiveDecimal t);
+
 }

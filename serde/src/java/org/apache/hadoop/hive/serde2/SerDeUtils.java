@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -298,7 +298,7 @@ public final class SerDeUtils {
           break;
         }
         case DECIMAL: {
-          sb.append(((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
+          sb.append(((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
           break;
         }
         default:

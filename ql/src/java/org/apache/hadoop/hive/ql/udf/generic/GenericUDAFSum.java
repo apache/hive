@@ -17,16 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.math.BigDecimal;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -70,7 +69,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     case STRING:
       return new GenericUDAFSumDouble();
     case DECIMAL:
-      return new GenericUDAFSumBigDecimal();
+      return new GenericUDAFSumHiveDecimal();
     case BOOLEAN:
     default:
       throw new UDFArgumentTypeException(0,
@@ -80,40 +79,40 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
   }
 
   /**
-   * GenericUDAFSumBigDecimal.
+   * GenericUDAFSumHiveDecimal.
    *
    */
-  public static class GenericUDAFSumBigDecimal extends GenericUDAFEvaluator {
+  public static class GenericUDAFSumHiveDecimal extends GenericUDAFEvaluator {
     private PrimitiveObjectInspector inputOI;
-    private BigDecimalWritable result;
+    private HiveDecimalWritable result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
-      result = new BigDecimalWritable(BigDecimal.ZERO);
+      result = new HiveDecimalWritable(HiveDecimal.ZERO);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      return PrimitiveObjectInspectorFactory.writableBigDecimalObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
     }
 
     /** class for storing decimal sum value. */
-    static class SumBigDecimalAgg implements AggregationBuffer {
+    static class SumHiveDecimalAgg implements AggregationBuffer {
       boolean empty;
-      BigDecimal sum;
+      HiveDecimal sum;
     }
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      SumBigDecimalAgg agg = new SumBigDecimalAgg();
+      SumHiveDecimalAgg agg = new SumHiveDecimalAgg();
       reset(agg);
       return agg;
     }
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      SumBigDecimalAgg bdAgg = (SumBigDecimalAgg) agg;
+      SumHiveDecimalAgg bdAgg = (SumHiveDecimalAgg) agg;
       bdAgg.empty = true;
-      bdAgg.sum = BigDecimal.ZERO;
+      bdAgg.sum = HiveDecimal.ZERO;
     }
 
     boolean warned = false;
@@ -143,17 +142,26 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
-        SumBigDecimalAgg myagg = (SumBigDecimalAgg) agg;
+        SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) agg;
+        if (myagg.sum == null) {
+          return;
+        }
+
         myagg.empty = false;
-        myagg.sum = myagg.sum.add(
-            PrimitiveObjectInspectorUtils.getBigDecimal(partial, inputOI));
+
+        try {
+          myagg.sum = myagg.sum.add(
+            PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
+        } catch (NumberFormatException e) {
+          myagg.sum = null;
+        }
       }
     }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      SumBigDecimalAgg myagg = (SumBigDecimalAgg) agg;
-      if (myagg.empty) {
+      SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) agg;
+      if (myagg.empty || myagg.sum == null) {
         return null;
       }
       result.set(myagg.sum);

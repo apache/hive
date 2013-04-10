@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -135,9 +135,9 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
-  public static BigDecimal getRandBigDecimal(Random r) {
+  public static HiveDecimal getRandHiveDecimal(Random r) {
     StringBuilder sb = new StringBuilder();
-    int l1 = 1+r.nextInt(500), l2 = r.nextInt(500);
+    int l1 = 1+r.nextInt(18), l2 = r.nextInt(19);
 
     if (r.nextBoolean()) {
       sb.append("-");
@@ -149,7 +149,7 @@ public class TestBinarySortableSerDe extends TestCase {
       sb.append(getRandString(r, DECIMAL_CHARS, l2));
     }
 
-    BigDecimal bd = new BigDecimal(sb.toString());
+    HiveDecimal bd = new HiveDecimal(sb.toString());
     return bd;
   }
 
@@ -207,7 +207,7 @@ public class TestBinarySortableSerDe extends TestCase {
         t.myDouble = randField > 5 ? null : Double
             .valueOf(r.nextDouble() * 10 - 5);
         t.myString = randField > 6 ? null : getRandString(r);
-        t.myDecimal = randField > 7 ? null : getRandBigDecimal(r);
+        t.myDecimal = randField > 7 ? null : getRandHiveDecimal(r);
         t.myStruct = randField > 8 ? null : new MyTestInnerStruct(
             r.nextInt(5) - 2, r.nextInt(5) - 2);
         t.myList = randField > 9 ? null : getRandIntegerArray(r);

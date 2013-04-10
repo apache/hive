@@ -17,59 +17,59 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
-public class JavaBigDecimalObjectInspector
-    extends AbstractPrimitiveJavaObjectInspector
-    implements SettableBigDecimalObjectInspector {
+public class WritableHiveDecimalObjectInspector
+    extends AbstractPrimitiveWritableObjectInspector
+    implements SettableHiveDecimalObjectInspector {
 
-  protected JavaBigDecimalObjectInspector() {
+  protected WritableHiveDecimalObjectInspector() {
     super(PrimitiveObjectInspectorUtils.decimalTypeEntry);
   }
 
   @Override
-  public BigDecimalWritable getPrimitiveWritableObject(Object o) {
-    if (o == null) {
-      return null;
-    }
-
-    if (o instanceof String) {
-      o = new BigDecimal((String)o);
-    }
-    return new BigDecimalWritable((BigDecimal) o);
+  public HiveDecimalWritable getPrimitiveWritableObject(Object o) {
+    return o == null ? null : (HiveDecimalWritable) o;
   }
 
   @Override
-  public BigDecimal getPrimitiveJavaObject(Object o) {
-    return o == null ? null : (BigDecimal) o;
+  public HiveDecimal getPrimitiveJavaObject(Object o) {
+    return o == null ? null : ((HiveDecimalWritable) o).getHiveDecimal();
+  }
+
+  @Override
+  public Object copyObject(Object o) {
+    return o == null ? null : new HiveDecimalWritable((HiveDecimalWritable) o);
   }
 
   @Override
   public Object set(Object o, byte[] bytes, int scale) {
-    return new BigDecimal(new BigInteger(bytes), scale);
+    ((HiveDecimalWritable) o).set(bytes, scale);
+    return o;
   }
 
   @Override
-  public Object set(Object o, BigDecimal t) {
-    return t;
+  public Object set(Object o, HiveDecimal t) {
+    ((HiveDecimalWritable) o).set(t);
+    return o;
   }
 
   @Override
-  public Object set(Object o, BigDecimalWritable t) {
-    return t == null ? null : t.getBigDecimal();
+  public Object set(Object o, HiveDecimalWritable t) {
+    ((HiveDecimalWritable) o).set(t);
+    return o;
   }
 
   @Override
   public Object create(byte[] bytes, int scale) {
-    return new BigDecimal(new BigInteger(bytes), scale);
+    return new HiveDecimalWritable(bytes, scale);
   }
 
   @Override
-  public Object create(BigDecimal t) {
-    return t == null ? null : new BigDecimal(t.unscaledValue(), t.scale());
+  public Object create(HiveDecimal t) {
+    return new HiveDecimalWritable(t);
   }
 
 }

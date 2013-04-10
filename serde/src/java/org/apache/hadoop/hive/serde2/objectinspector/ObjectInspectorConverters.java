@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBigDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjectInspector;
@@ -109,9 +109,9 @@ public final class ObjectInspectorConverters {
           inputOI,
           (SettableBinaryObjectInspector)outputOI);
     case DECIMAL:
-      return new PrimitiveObjectInspectorConverter.BigDecimalConverter(
+      return new PrimitiveObjectInspectorConverter.HiveDecimalConverter(
           (PrimitiveObjectInspector) inputOI,
-          (SettableBigDecimalObjectInspector) outputOI);
+          (SettableHiveDecimalObjectInspector) outputOI);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()

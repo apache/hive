@@ -18,9 +18,9 @@
 
 package org.apache.hive.service.cli;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.thrift.TBoolValue;
 import org.apache.hive.service.cli.thrift.TByteValue;
 import org.apache.hive.service.cli.thrift.TColumnValue;
@@ -119,10 +119,10 @@ public class ColumnValue {
     return new ColumnValue(TColumnValue.stringVal(tStringValue));
   }
 
-  public static ColumnValue stringValue(BigDecimal value) {
+  public static ColumnValue stringValue(HiveDecimal value) {
     TStringValue tStrValue = new TStringValue();
     if (value != null) {
-      tStrValue.setValue(((BigDecimal)value).toString());
+      tStrValue.setValue(((HiveDecimal)value).toString());
     }
     return new ColumnValue(TColumnValue.stringVal(tStrValue));
   }
@@ -148,7 +148,7 @@ public class ColumnValue {
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
     case DECIMAL_TYPE:
-      return stringValue(((BigDecimal)value));
+      return stringValue(((HiveDecimal)value));
     case BINARY_TYPE:
     case ARRAY_TYPE:
     case MAP_TYPE:

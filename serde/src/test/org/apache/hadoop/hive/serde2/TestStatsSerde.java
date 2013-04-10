@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Properties;
@@ -27,6 +26,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
@@ -114,7 +114,7 @@ public class TestStatsSerde extends TestCase {
         Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
         String st = randField > 6 ? null : TestBinarySortableSerDe
             .getRandString(r);
-	BigDecimal bd = randField > 8 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+	HiveDecimal bd = randField > 8 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
         MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
             .nextInt(5) - 2, r.nextInt(5) - 2);
         List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe

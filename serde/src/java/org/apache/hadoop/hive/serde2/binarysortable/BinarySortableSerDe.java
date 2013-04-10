@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.binarysortable;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -32,13 +31,14 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -49,12 +49,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -382,8 +382,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case DECIMAL: {
         // See serialization of decimal for explanation (below)
 
-        BigDecimalWritable bdw = (reuse == null ? new BigDecimalWritable() :
-          (BigDecimalWritable) reuse);
+        HiveDecimalWritable bdw = (reuse == null ? new HiveDecimalWritable() :
+          (HiveDecimalWritable) reuse);
 
         int b = buffer.read(invert) - 1;
         assert (b == 1 || b == -1 || b == 0);
@@ -427,7 +427,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
         String digits = new String(decimalBuffer, 0, length, decimalCharSet);
         BigInteger bi = new BigInteger(digits);
-        BigDecimal bd = new BigDecimal(bi).scaleByPowerOfTen(factor-length);
+        HiveDecimal bd = new HiveDecimal(bi).scaleByPowerOfTen(factor-length);
 
         if (!positive) {
           bd = bd.negate();
@@ -688,11 +688,11 @@ public class BinarySortableSerDe extends AbstractSerDe {
         // Factor is -2 (move decimal point 2 positions right)
         // Digits are: 123
 
-        BigDecimalObjectInspector boi = (BigDecimalObjectInspector) poi;
-        BigDecimal dec = boi.getPrimitiveJavaObject(o).stripTrailingZeros();
+        HiveDecimalObjectInspector boi = (HiveDecimalObjectInspector) poi;
+        HiveDecimal dec = boi.getPrimitiveJavaObject(o);
 
         // get the sign of the big decimal
-        int sign = dec.compareTo(BigDecimal.ZERO);
+        int sign = dec.compareTo(HiveDecimal.ZERO);
 
         // we'll encode the absolute value (sign is separate)
         dec = dec.abs();
@@ -788,6 +788,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     }
     buffer.write((byte) 0, invert);
   }
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
