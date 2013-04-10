@@ -194,11 +194,11 @@ PREHOOK: Output: default@serde_regex1
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/kv7.txt" INTO TABLE serde_regex1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@serde_regex1
-PREHOOK: query: SELECT key, value FROM serde_regex1 ORDER BY key
+PREHOOK: query: SELECT key, value FROM serde_regex1 ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM serde_regex1 ORDER BY key
+POSTHOOK: query: SELECT key, value FROM serde_regex1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex1
 #### A masked pattern was here ####
@@ -231,8 +231,8 @@ NULL	0
 2	2
 3.14	3
 3.14	3
-3.14	4
 3.14	3
+3.14	4
 10	10
 20	20
 100	100
