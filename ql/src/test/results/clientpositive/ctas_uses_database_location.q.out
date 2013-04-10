@@ -1,7 +1,15 @@
-PREHOOK: query: CREATE DATABASE db1
+PREHOOK: query: -- Tests that CTAS queries in non-default databases use the location of the database
+-- not the hive.metastore.warehouse.dir for intermediate files (FileSinkOperator output).
+-- If hive.metastore.warehouse.dir were used this would fail because the scheme is invalid.
+
+CREATE DATABASE db1
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: query: -- Tests that CTAS queries in non-default databases use the location of the database
+-- not the hive.metastore.warehouse.dir for intermediate files (FileSinkOperator output).
+-- If hive.metastore.warehouse.dir were used this would fail because the scheme is invalid.
+
+CREATE DATABASE db1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE db1

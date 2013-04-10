@@ -136,10 +136,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view3
 #### A masked pattern was here ####
 VAL_86
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- test EXPLAIN output for CREATE VIEW
+EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- test EXPLAIN output for CREATE VIEW
+EXPLAIN
 CREATE VIEW view0(valoo) AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 ABSTRACT SYNTAX TREE:
@@ -161,10 +163,12 @@ STAGE PLANS:
           original text: SELECT upper(value) FROM src WHERE key=86
 
 
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- make sure EXPLAIN works with a query which references a view
+EXPLAIN
 SELECT * from view2 where key=18
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- make sure EXPLAIN works with a query which references a view
+EXPLAIN
 SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -403,9 +407,13 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table1 (key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: -- use DESCRIBE EXTENDED on a base table and an external table as points
+-- of comparison for view descriptions
+DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table and an external table as points
+-- of comparison for view descriptions
+DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -422,9 +430,13 @@ key                 	string              	default
 value               	string              	default             
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparison for
+-- view descriptions
+DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparison for
+-- view descriptions
+DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -557,10 +569,14 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 	 	 
 key1                	int                 	None                
 key2                	int                 	None                
-PREHOOK: query: CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
+PREHOOK: query: -- verify that column name and comment in DDL portion
+-- overrides column alias in SELECT
+CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
+POSTHOOK: query: -- verify that column name and comment in DDL portion
+-- overrides column alias in SELECT
+CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view6
@@ -573,13 +589,15 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 # col_name            	data_type           	comment             
 	 	 
 valoo               	string              	I cannot spell      
-PREHOOK: query: CREATE VIEW view7 AS
+PREHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
+CREATE VIEW view7 AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view7 AS
+POSTHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
+CREATE VIEW view7 AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
 ORDER BY key, value
@@ -608,12 +626,18 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 87	val_87
 90	val_90
 90	val_90
-PREHOOK: query: SELECT * FROM view7 ORDER BY key DESC, value
+PREHOOK: query: -- top-level ORDER BY should override the one inside the view
+-- (however, the inside ORDER BY should still influence the evaluation
+-- of the limit)
+SELECT * FROM view7 ORDER BY key DESC, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM view7 ORDER BY key DESC, value
+POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
+-- (however, the inside ORDER BY should still influence the evaluation
+-- of the limit)
+SELECT * FROM view7 ORDER BY key DESC, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view7
@@ -629,12 +653,14 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 83	val_83
 83	val_83
 82	val_82
-PREHOOK: query: SELECT * FROM view7 LIMIT 5
+PREHOOK: query: -- top-level LIMIT should override if lower
+SELECT * FROM view7 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM view7 LIMIT 5
+POSTHOOK: query: -- top-level LIMIT should override if lower
+SELECT * FROM view7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view7
@@ -645,12 +671,14 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 83	val_83
 84	val_84
 84	val_84
-PREHOOK: query: SELECT * FROM view7 LIMIT 20
+PREHOOK: query: -- but not if higher
+SELECT * FROM view7 LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM view7 LIMIT 20
+POSTHOOK: query: -- but not if higher
+SELECT * FROM view7 LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@view7
@@ -666,10 +694,12 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 87	val_87
 90	val_90
 90	val_90
-PREHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS
+PREHOOK: query: -- test usage of a function within a view
+CREATE TEMPORARY FUNCTION test_translate AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 PREHOOK: type: CREATEFUNCTION
-POSTHOOK: query: CREATE TEMPORARY FUNCTION test_translate AS
+POSTHOOK: query: -- test usage of a function within a view
+CREATE TEMPORARY FUNCTION test_translate AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -739,18 +769,22 @@ POSTHOOK: Input: default@view8
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 bbc
-PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS
+PREHOOK: query: -- test usage of a UDAF within a view
+CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
-POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS
+POSTHOOK: query: -- test usage of a UDAF within a view
+CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW view9(m) AS
+PREHOOK: query: -- disable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view9(m) AS
+POSTHOOK: query: -- disable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
@@ -821,11 +855,13 @@ POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view9
 POSTHOOK: Output: default@view9
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW view9(m) AS
+PREHOOK: query: -- enable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view9(m) AS
+POSTHOOK: query: -- enable map-side aggregation
+CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
@@ -887,10 +923,12 @@ POSTHOOK: Input: default@view9
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 7
-PREHOOK: query: CREATE VIEW view10 AS
+PREHOOK: query: -- test usage of a subselect within a view
+CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view10 AS
+POSTHOOK: query: -- test usage of a subselect within a view
+CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view10
@@ -949,10 +987,12 @@ POSTHOOK: Input: default@view10
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	val_86
-PREHOOK: query: CREATE TEMPORARY FUNCTION test_explode AS
+PREHOOK: query: -- test usage of a UDTF within a view
+CREATE TEMPORARY FUNCTION test_explode AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode'
 PREHOOK: type: CREATEFUNCTION
-POSTHOOK: query: CREATE TEMPORARY FUNCTION test_explode AS
+POSTHOOK: query: -- test usage of a UDTF within a view
+CREATE TEMPORARY FUNCTION test_explode AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1024,10 +1064,12 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 1
 2
 3
-PREHOOK: query: CREATE VIEW view12 AS
+PREHOOK: query: -- test usage of LATERAL within a view
+CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view12 AS
+POSTHOOK: query: -- test usage of LATERAL within a view
+CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view12
@@ -1090,13 +1132,15 @@ POSTHOOK: Input: default@view12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
-PREHOOK: query: SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+PREHOOK: query: -- test usage of LATERAL with a view as the LHS
+SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@view2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+POSTHOOK: query: -- test usage of LATERAL with a view as the LHS
+SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -1104,11 +1148,13 @@ POSTHOOK: Input: default@view2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
-PREHOOK: query: CREATE VIEW view13 AS
+PREHOOK: query: -- test usage of TABLESAMPLE within a view
+CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view13 AS
+POSTHOOK: query: -- test usage of TABLESAMPLE within a view
+CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 POSTHOOK: type: CREATEVIEW
@@ -1183,7 +1229,8 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 10
 10
 15
-PREHOOK: query: CREATE VIEW view14 AS
+PREHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
+CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
        unionsrc2.key as k2, unionsrc2.value as v2
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -1195,7 +1242,8 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view14 AS
+POSTHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
+CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
        unionsrc2.key as k2, unionsrc2.value as v2
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -1327,12 +1375,14 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 8	val_8	8	val_8
 9	val_9	9	val_9
 tst1	500	tst1	500
-PREHOOK: query: CREATE VIEW view15 AS
+PREHOOK: query: -- test usage of GROUP BY within view
+CREATE VIEW view15 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view15 AS
+POSTHOOK: query: -- test usage of GROUP BY within view
+CREATE VIEW view15 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
@@ -1414,11 +1464,13 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 406	4
 468	4
 489	4
-PREHOOK: query: CREATE VIEW view16 AS
+PREHOOK: query: -- test usage of DISTINCT within view
+CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW view16 AS
+POSTHOOK: query: -- test usage of DISTINCT within view
+CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 POSTHOOK: type: CREATEVIEW
@@ -1493,11 +1545,13 @@ val_11
 val_111
 val_113
 val_114
-PREHOOK: query: DROP TABLE IF EXISTS view16
+PREHOOK: query: -- HIVE-2133:  DROP TABLE IF EXISTS should ignore a matching view name
+DROP TABLE IF EXISTS view16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@view16
 PREHOOK: Output: default@view16
-POSTHOOK: query: DROP TABLE IF EXISTS view16
+POSTHOOK: query: -- HIVE-2133:  DROP TABLE IF EXISTS should ignore a matching view name
+DROP TABLE IF EXISTS view16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@view16
 POSTHOOK: Output: default@view16
@@ -1510,11 +1564,13 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 # col_name            	data_type           	comment             
 	 	 
 value               	string              	None                
-PREHOOK: query: DROP VIEW IF EXISTS table1
+PREHOOK: query: -- Likewise, DROP VIEW IF EXISTS should ignore a matching table name
+DROP VIEW IF EXISTS table1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@table1
 PREHOOK: Output: default@table1
-POSTHOOK: query: DROP VIEW IF EXISTS table1
+POSTHOOK: query: -- Likewise, DROP VIEW IF EXISTS should ignore a matching table name
+DROP VIEW IF EXISTS table1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: default@table1
@@ -1528,11 +1584,19 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 	 	 
 key                 	int                 	None                
 value               	string              	None                
-PREHOOK: query: DROP VIEW view1
+PREHOOK: query: -- this should work since currently we don't track view->table
+-- dependencies for implementing RESTRICT
+
+
+DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
 PREHOOK: Output: default@view1
-POSTHOOK: query: DROP VIEW view1
+POSTHOOK: query: -- this should work since currently we don't track view->table
+-- dependencies for implementing RESTRICT
+
+
+DROP VIEW view1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view1
 POSTHOOK: Output: default@view1

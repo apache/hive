@@ -14,7 +14,10 @@ Example:
   '4'
   > SELECT conv(-10, 16, -10) FROM src LIMIT 1;
   '16'
-PREHOOK: query: SELECT
+PREHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
+
+-- Some simple conversions to test different bases
+SELECT
   conv('4521', 10, 36),
   conv('22', 10, 10),
   conv('110011', 2, 16),
@@ -23,7 +26,10 @@ FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
+
+-- Some simple conversions to test different bases
+SELECT
   conv('4521', 10, 36),
   conv('22', 10, 10),
   conv('110011', 2, 16),
@@ -33,7 +39,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 3HL	22	33	116ED2B2FB4
-PREHOOK: query: SELECT
+PREHOOK: query: -- Test negative numbers. If to_base is positive, the number should be handled
+-- as a two's complement (64-bit)
+SELECT
   conv('-641', 10, -10),
   conv('1011', 2, -16),
   conv('-1', 10, 16),
@@ -42,7 +50,9 @@ FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- Test negative numbers. If to_base is positive, the number should be handled
+-- as a two's complement (64-bit)
+SELECT
   conv('-641', 10, -10),
   conv('1011', 2, -16),
   conv('-1', 10, 16),
@@ -52,7 +62,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 -641	B	FFFFFFFFFFFFFFFF	FFFFFFFFFFFFFFF1
-PREHOOK: query: SELECT
+PREHOOK: query: -- Test overflow. If a number is two large, the result should be -1 (if signed)
+-- or MAX_LONG (if unsigned)
+SELECT
   conv('9223372036854775807', 36, 16),
   conv('9223372036854775807', 36, -16),
   conv('-9223372036854775807', 36, 16),
@@ -61,7 +73,9 @@ FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- Test overflow. If a number is two large, the result should be -1 (if signed)
+-- or MAX_LONG (if unsigned)
+SELECT
   conv('9223372036854775807', 36, 16),
   conv('9223372036854775807', 36, -16),
   conv('-9223372036854775807', 36, 16),
@@ -71,7 +85,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 FFFFFFFFFFFFFFFF	-1	FFFFFFFFFFFFFFFF	-1
-PREHOOK: query: SELECT
+PREHOOK: query: -- Test with invalid input. If one of the bases is invalid, the result should
+-- be NULL. If there is an invalid digit in the number, the longest valid
+-- prefix should be converted.
+SELECT
   conv('123455', 3, 10),
   conv('131', 1, 5),
   conv('515', 5, 100),
@@ -80,7 +97,10 @@ FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- Test with invalid input. If one of the bases is invalid, the result should
+-- be NULL. If there is an invalid digit in the number, the longest valid
+-- prefix should be converted.
+SELECT
   conv('123455', 3, 10),
   conv('131', 1, 5),
   conv('515', 5, 100),
@@ -90,7 +110,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 5	NULL	NULL	NULL
-PREHOOK: query: SELECT
+PREHOOK: query: -- Perform the same tests with number arguments.
+
+SELECT
   conv(4521, 10, 36),
   conv(22, 10, 10),
   conv(110011, 2, 16)
@@ -98,7 +120,9 @@ FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- Perform the same tests with number arguments.
+
+SELECT
   conv(4521, 10, 36),
   conv(22, 10, 10),
   conv(110011, 2, 16)
@@ -164,13 +188,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 5	NULL	NULL	NULL
-PREHOOK: query: SELECT conv(key, 10, 16),
+PREHOOK: query: -- Make sure that state is properly reset.
+
+SELECT conv(key, 10, 16),
        conv(key, 16, 10)
 FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT conv(key, 10, 16),
+POSTHOOK: query: -- Make sure that state is properly reset.
+
+SELECT conv(key, 10, 16),
        conv(key, 16, 10)
 FROM src LIMIT 3
 POSTHOOK: type: QUERY

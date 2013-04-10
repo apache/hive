@@ -34,12 +34,14 @@ POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain
+PREHOOK: query: -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
+explain
 select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The join is being performed as part of sub-query. It should be converted to a sort-merge join
+explain
 select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
@@ -129,7 +131,8 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 22
-PREHOOK: query: explain
+PREHOOK: query: -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
+explain
 select count(*) from
 (
   select key, count(*) from 
@@ -139,7 +142,8 @@ select count(*) from
   group by key
 ) subq2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The join is being performed as part of more than one sub-query. It should be converted to a sort-merge join
+explain
 select count(*) from
 (
   select key, count(*) from 
@@ -293,7 +297,9 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 6
-PREHOOK: query: explain
+PREHOOK: query: -- A join is being performed across different sub-queries, where a join is being performed in each of them.
+-- Each sub-query should be converted to a sort-merge join.
+explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
@@ -311,7 +317,9 @@ join
 on src1.key = src2.key
 order by src1.key, src1.cnt1, src2.cnt1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- A join is being performed across different sub-queries, where a join is being performed in each of them.
+-- Each sub-query should be converted to a sort-merge join.
+explain
 select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from 
@@ -621,14 +629,18 @@ POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 5	9	9
 8	1	1
 9	1	1
-PREHOOK: query: explain
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
@@ -733,7 +745,9 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
-PREHOOK: query: explain
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join, although there is more than one level of sub-query
+explain
 select count(*) from 
   (
   select * from
@@ -745,7 +759,9 @@ select count(*) from
   join tbl2 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters, it should 
+-- be converted to a sort-merge join, although there is more than one level of sub-query
+explain
 select count(*) from 
   (
   select * from
@@ -865,7 +881,9 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
-PREHOOK: query: explain
+PREHOOK: query: -- Both the tables are nested sub-queries i.e more then 1 level of sub-query.
+-- The join should be converted to a sort-merge join
+explain
 select count(*) from 
   (
   select * from
@@ -884,7 +902,9 @@ select count(*) from
   ) subq4
   on subq2.key = subq4.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Both the tables are nested sub-queries i.e more then 1 level of sub-query.
+-- The join should be converted to a sort-merge join
+explain
 select count(*) from 
   (
   select * from
@@ -1023,14 +1043,20 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
-PREHOOK: query: explain
+PREHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters and the join key
+-- is not getting modified, it should be converted to a sort-merge join. Note that the sub-query modifies one 
+-- item, but that is not part of the join key.
+explain
 select count(*) from 
   (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
     join
   (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The subquery itself is being joined. Since the sub-query only contains selects and filters and the join key
+-- is not getting modified, it should be converted to a sort-merge join. Note that the sub-query modifies one 
+-- item, but that is not part of the join key.
+explain
 select count(*) from 
   (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
     join
@@ -1135,14 +1161,18 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
-PREHOOK: query: explain
+PREHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
+-- join should be performed
+explain
 select count(*) from 
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
     join
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
+-- join should be performed
+explain
 select count(*) from 
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
     join
@@ -1278,12 +1308,16 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 22
-PREHOOK: query: explain
+PREHOOK: query: -- One of the tables is a sub-query and the other is not.
+-- It should be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join tbl2 a on subq1.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- One of the tables is a sub-query and the other is not.
+-- It should be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join tbl2 a on subq1.key = a.key
@@ -1382,7 +1416,9 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 20
-PREHOOK: query: explain
+PREHOOK: query: -- There are more than 2 inputs to the join, all of them being sub-queries. 
+-- It should be converted to to a sort-merge join
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
@@ -1392,7 +1428,9 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- There are more than 2 inputs to the join, all of them being sub-queries. 
+-- It should be converted to to a sort-merge join
+explain
 select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
@@ -1509,7 +1547,9 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 56
-PREHOOK: query: explain
+PREHOOK: query: -- The join is being performed on a nested sub-query, and an aggregation is performed after that.
+-- The join should be converted to a sort-merge join
+explain
 select count(*) from (
   select subq2.key as key, subq2.value as value1, b.value as value2 from
   (
@@ -1522,7 +1562,9 @@ select count(*) from (
 join tbl2 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The join is being performed on a nested sub-query, and an aggregation is performed after that.
+-- The join should be converted to a sort-merge join
+explain
 select count(*) from (
   select subq2.key as key, subq2.value as value1, b.value as value2 from
   (
@@ -1663,14 +1705,18 @@ POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain
+PREHOOK: query: -- The join is followed by a multi-table insert. It should be converted to
+-- a sort-merge join
+explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, val1, val2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The join is followed by a multi-table insert. It should be converted to
+-- a sort-merge join
+explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
@@ -2009,14 +2055,18 @@ POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain
+PREHOOK: query: -- The join is followed by a multi-table insert, and one of the inserts involves a reducer.
+-- It should be converted to a sort-merge join
+explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, count(*) group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The join is followed by a multi-table insert, and one of the inserts involves a reducer.
+-- It should be converted to a sort-merge join
+explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1

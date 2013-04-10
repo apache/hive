@@ -5,12 +5,14 @@ POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) P
 CLUSTERED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -27,12 +29,14 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -52,12 +56,14 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).key EXPRESSION [(s
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_2 is bucketed by 'key'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_2 is bucketed by 'key'
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -68,12 +74,16 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).key EXPRESSION [(s
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
+-- and it is also being joined. So, bucketed map-join cannot be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
+-- and it is also being joined. So, bucketed map-join cannot be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
@@ -310,12 +320,16 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2056
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key and a.part = '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key and a.part = '2'
@@ -524,12 +538,16 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).key EXPRESSION [(s
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
@@ -738,12 +756,18 @@ POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).key EXPRESSION [(s
 POSTHOOK: Lineage: srcbucket_mapjoin_part_1 PARTITION(part=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+-- The fact that the table is being bucketed by 'value' does not matter
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
+-- and it is being joined. So, bucketed map-join can be performed
+-- The fact that the table is being bucketed by 'value' does not matter
+EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key

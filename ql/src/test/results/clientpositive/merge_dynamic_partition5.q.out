@@ -1,6 +1,10 @@
-PREHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: query: -- this is to test the case where some dynamic partitions are merged and some are moved
+
+create table srcpart_merge_dp like srcpart
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table srcpart_merge_dp like srcpart
+POSTHOOK: query: -- this is to test the case where some dynamic partitions are merged and some are moved
+
+create table srcpart_merge_dp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpart_merge_dp
 PREHOOK: query: create table srcpart_merge_dp_rc like srcpart

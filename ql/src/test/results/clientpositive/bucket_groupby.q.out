@@ -1180,11 +1180,13 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: drop table clustergroupby
+PREHOOK: query: -- number of buckets cannot be changed, so drop the table
+drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Output: default@clustergroupby
-POSTHOOK: query: drop table clustergroupby
+POSTHOOK: query: -- number of buckets cannot be changed, so drop the table
+drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Output: default@clustergroupby
@@ -1583,11 +1585,13 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 111	1
 113	2
 114	1
-PREHOOK: query: drop table clustergroupby
+PREHOOK: query: -- number of buckets cannot be changed, so drop the table
+drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Output: default@clustergroupby
-POSTHOOK: query: drop table clustergroupby
+POSTHOOK: query: -- number of buckets cannot be changed, so drop the table
+drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Output: default@clustergroupby

@@ -18,11 +18,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
 POSTHOOK: Lineage: test_orc.key SIMPLE []
-PREHOOK: query: SELECT * FROM test_orc
+PREHOOK: query: -- Test reading a column which is just empty strings
+
+SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: -- Test reading a column which is just empty strings
+
+SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####
@@ -47,11 +51,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
 POSTHOOK: Lineage: test_orc.key SIMPLE []
 POSTHOOK: Lineage: test_orc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM test_orc
+PREHOOK: query: -- Test reading a column which has some empty strings
+
+SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: -- Test reading a column which has some empty strings
+
+SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####

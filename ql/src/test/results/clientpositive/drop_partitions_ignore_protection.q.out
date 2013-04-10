@@ -35,11 +35,15 @@ p                   	string              	None
 p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: alter table tbl_protectmode_no_drop drop partition (p='p1') ignore protection
+PREHOOK: query: -- The partition will be dropped, even though we have enabled no_drop
+-- as 'ignore protection' has been specified in the command predicate
+alter table tbl_protectmode_no_drop drop partition (p='p1') ignore protection
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@tbl_protectmode_no_drop
 PREHOOK: Output: default@tbl_protectmode_no_drop@p=p1
-POSTHOOK: query: alter table tbl_protectmode_no_drop drop partition (p='p1') ignore protection
+POSTHOOK: query: -- The partition will be dropped, even though we have enabled no_drop
+-- as 'ignore protection' has been specified in the command predicate
+alter table tbl_protectmode_no_drop drop partition (p='p1') ignore protection
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@tbl_protectmode_no_drop
 POSTHOOK: Output: default@tbl_protectmode_no_drop@p=p1

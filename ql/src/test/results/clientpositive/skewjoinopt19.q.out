@@ -24,10 +24,20 @@ PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- add a test where the skewed key is also the bucketized key
+-- it should not matter, and the compile time skewed join
+-- optimization is performed
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- add a test where the skewed key is also the bucketized key
+-- it should not matter, and the compile time skewed join
+-- optimization is performed
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

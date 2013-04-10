@@ -12,12 +12,14 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1 PAR
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 POSTHOOK: Output: default@t1@ds=1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
+PREHOOK: query: -- perform an insert to make sure there are 2 files
+INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@ds=1
 PREHOOK: Output: default@t1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
+POSTHOOK: query: -- perform an insert to make sure there are 2 files
+INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
@@ -38,10 +40,14 @@ POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(t1)t1.FieldSchema(name:key, t
 POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- The plan is not converted to a map-side, since although the sorting columns and grouping
+-- columns match, the user is querying multiple input partitions
+EXPLAIN
 select key, count(1) from T1 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- The plan is not converted to a map-side, since although the sorting columns and grouping
+-- columns match, the user is querying multiple input partitions
+EXPLAIN
 select key, count(1) from T1 group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]

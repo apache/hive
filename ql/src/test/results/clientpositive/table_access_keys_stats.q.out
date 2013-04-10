@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: -- This test is used for testing the TableAccessAnalyzer
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
@@ -7,7 +9,8 @@ PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-PREHOOK: query: SELECT key, count(1) FROM T1 GROUP BY key
+PREHOOK: query: -- Simple group-by queries
+SELECT key, count(1) FROM T1 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -34,7 +37,8 @@ Keys:key,val
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
+PREHOOK: query: -- With subqueries and column aliases
+SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -60,7 +64,8 @@ Keys:key
 3	1
 7	1
 8	2
-PREHOOK: query: SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
+PREHOOK: query: -- With constants
+SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -101,7 +106,8 @@ Keys:key,val
 7	1	17	2	1
 8	1	18	2	1
 8	1	28	2	1
-PREHOOK: query: SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
+PREHOOK: query: -- no mapping with functions
+SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -125,7 +131,8 @@ Keys:key
 6.0	1
 14.0	1
 16.0	2
-PREHOOK: query: SELECT * FROM (
+PREHOOK: query: -- group by followed by union
+SELECT * FROM (
 SELECT key, count(1) as c FROM T1 GROUP BY key
  UNION ALL
 SELECT key, count(1) as c FROM T1 GROUP BY key
@@ -151,7 +158,8 @@ Keys:key
 3	1
 7	1
 8	2
-PREHOOK: query: SELECT * FROM
+PREHOOK: query: -- group by followed by a join
+SELECT * FROM
 (SELECT key, count(1) as c FROM T1 GROUP BY key) subq1
 JOIN
 (SELECT key, count(1) as c FROM T1 GROUP BY key) subq2
@@ -195,7 +203,8 @@ Keys:key
 7	1	7	17	1
 8	2	8	18	1
 8	2	8	28	1
-PREHOOK: query: SELECT key, constant, val, count(1) from
+PREHOOK: query: -- constants from sub-queries should work fine
+SELECT key, constant, val, count(1) from
 (SELECT key, 1 as constant, val from T1) subq1
 group by key, constant, val
 PREHOOK: type: QUERY
@@ -211,7 +220,8 @@ Keys:key,val
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: SELECT key, constant3, val, count(1) FROM
+PREHOOK: query: -- multiple levels of constants from sub-queries should work fine
+SELECT key, constant3, val, count(1) FROM
 (
   SELECT key, constant AS constant2, val, 2 AS constant3
   FROM
@@ -234,7 +244,8 @@ Keys:key,val
 7	2	17	1
 8	2	18	1
 8	2	28	1
-PREHOOK: query: FROM T1
+PREHOOK: query: -- work with insert overwrite
+FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, count(1) GROUP BY key, 1
 INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key
 PREHOOK: type: QUERY
@@ -249,7 +260,8 @@ Operator:GBY_8
 Table:default@t1
 Keys:key
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- simple joins
+SELECT *
 FROM T1 JOIN T2
 ON T1.key = t2.key
 ORDER BY T1.key ASC, T1.val ASC
@@ -282,7 +294,8 @@ Keys:key,val
 Table:default@t1
 Keys:key,val
 
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * 
+PREHOOK: query: -- map join
+SELECT /*+ MAPJOIN(a) */ * 
 FROM T1 a JOIN T2 b 
 ON a.key = b.key
 PREHOOK: type: QUERY
@@ -301,7 +314,8 @@ Keys:key
 7	17	7	1
 8	18	8	2
 8	28	8	2
-PREHOOK: query: SELECT *
+PREHOOK: query: -- with constant in join condition
+SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
 PREHOOK: type: QUERY
@@ -314,7 +328,8 @@ Keys:key
 Table:default@t1
 Keys:key
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- subqueries
+SELECT *
 FROM 
 (
   SELECT val FROM T1 WHERE key = 5  
@@ -352,7 +367,8 @@ Keys:val
 Table:default@t1
 Keys:val
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- with column aliases in subqueries
+SELECT *
 FROM
 (
   SELECT val as v FROM T1 WHERE key = 5
@@ -372,7 +388,8 @@ Keys:val
 Table:default@t1
 Keys:val
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- with constants in subqueries
+SELECT *
 FROM
 (
   SELECT key, val FROM T1
@@ -392,7 +409,8 @@ Keys:key
 Table:default@t1
 Keys:val,key
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- multiple levels of constants in subqueries
+SELECT *
 FROM
 (
   SELECT key, val from 
@@ -415,7 +433,8 @@ Keys:val,key
 Table:default@t1
 Keys:key
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- no mapping on functions
+SELECT *
 FROM
 (
   SELECT key, val from T1
@@ -429,7 +448,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-PREHOOK: query: SELECT subq1.val, COUNT(*)
+PREHOOK: query: -- join followed by group by
+SELECT subq1.val, COUNT(*)
 FROM
 (
   SELECT key, val FROM T1
@@ -450,7 +470,8 @@ Keys:key
 Table:default@t1
 Keys:val,key
 
-PREHOOK: query: SELECT * 
+PREHOOK: query: -- join followed by union
+SELECT * 
 FROM
 (
   SELECT subq1.val, COUNT(*)
@@ -489,7 +510,8 @@ Keys:val,key
 13.0	1
 17.0	1
 46.0	1
-PREHOOK: query: SELECT *
+PREHOOK: query: -- join followed by join
+SELECT *
 FROM
 (
   SELECT subq1.val as val, COUNT(*)

@@ -1,6 +1,10 @@
-PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+PREHOOK: query: -- Test that the partition pruner does not fail when there is a constant expression in the filter
+
+EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+POSTHOOK: query: -- Test that the partition pruner does not fail when there is a constant expression in the filter
+
+EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR COUNT))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= 'a' 'a')))))

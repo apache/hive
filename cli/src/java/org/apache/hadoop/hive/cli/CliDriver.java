@@ -32,12 +32,12 @@ import java.util.Map;
 import java.util.Set;
 
 import jline.ArgumentCompletor;
-import jline.ArgumentCompletor.AbstractArgumentDelimiter;
-import jline.ArgumentCompletor.ArgumentDelimiter;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import jline.ArgumentCompletor.AbstractArgumentDelimiter;
+import jline.ArgumentCompletor.ArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -398,18 +398,6 @@ public class CliDriver {
       int lastRet = 0, ret = 0;
 
       String command = "";
-      String cmdLine = "";
-      for (String cmd : line.split("\n")) {
-        String[] cmdArr = cmd.split("-- ");
-        if (cmdArr.length > 2) {
-          console.printInfo("Cannot have nested comments");
-          return -2;
-        }
-
-        cmdLine += cmdArr[0] + "\n";
-      }
-      
-      line = cmdLine;
       for (String oneCmd : line.split(";")) {
 
         if (StringUtils.endsWith(oneCmd, "\\")) {
@@ -762,9 +750,6 @@ public class CliDriver {
     while ((line = reader.readLine(curPrompt + "> ")) != null) {
       if (!prefix.equals("")) {
         prefix += '\n';
-      }
-      if (prefix.equals("") && line.startsWith("--")) {
-        continue;
       }
       if (line.trim().endsWith(";") && !line.trim().endsWith("\\;")) {
         line = prefix + line;

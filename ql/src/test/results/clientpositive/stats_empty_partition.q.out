@@ -1,6 +1,12 @@
-PREHOOK: query: create table tmptable(key string, value string) partitioned by (part string)
+PREHOOK: query: -- This test verifies that writing an empty partition succeeds when
+-- hive.stats.reliable is set to true.
+
+create table tmptable(key string, value string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table tmptable(key string, value string) partitioned by (part string)
+POSTHOOK: query: -- This test verifies that writing an empty partition succeeds when
+-- hive.stats.reliable is set to true.
+
+create table tmptable(key string, value string) partitioned by (part string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value'

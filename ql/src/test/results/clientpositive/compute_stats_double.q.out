@@ -3,10 +3,12 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tab_double(a double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tab_double
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/double.txt" INTO TABLE tab_double
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/double.txt" INTO TABLE tab_double
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tab_double
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/double.txt" INTO TABLE tab_double
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/double.txt" INTO TABLE tab_double
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tab_double
 PREHOOK: query: select count(*) from tab_double
@@ -18,11 +20,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_double
 #### A masked pattern was here ####
 16
-PREHOOK: query: select compute_stats(a, 16) from tab_double
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_double
 #### A masked pattern was here ####
-POSTHOOK: query: select compute_stats(a, 16) from tab_double
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_double
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_double
 #### A masked pattern was here ####

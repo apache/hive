@@ -2,7 +2,9 @@ PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: SELECT
+PREHOOK: query: -- this query tests all the udfs provided to work with binary types
+
+SELECT
   key,
   value,
   LENGTH(CAST(src.key AS BINARY)),
@@ -17,7 +19,9 @@ LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT
+POSTHOOK: query: -- this query tests all the udfs provided to work with binary types
+
+SELECT
   key,
   value,
   LENGTH(CAST(src.key AS BINARY)),

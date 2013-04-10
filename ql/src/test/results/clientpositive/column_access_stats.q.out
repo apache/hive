@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: -- This test is used for testing the ColumnAccessAnalyzer
+
+CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
@@ -7,7 +9,8 @@ PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-PREHOOK: query: SELECT key FROM T1 ORDER BY key
+PREHOOK: query: -- Simple select queries
+SELECT key FROM T1 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -43,7 +46,8 @@ PREHOOK: Input: default@t1
 1
 1
 1
-PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
+PREHOOK: query: -- More complicated select queries
+EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
 PREHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL val))))) subq1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
@@ -183,7 +187,8 @@ Columns:key,val
 24.0
 26.0
 36.0
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Work with union
+EXPLAIN
 SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
@@ -385,7 +390,8 @@ Columns:key
 8
 8
 8
-PREHOOK: query: FROM T1
+PREHOOK: query: -- Work with insert overwrite
+FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key
 PREHOOK: type: QUERY
@@ -395,7 +401,8 @@ PREHOOK: Output: default@t3
 Table:default@t1
 Columns:key,val
 
-PREHOOK: query: SELECT *
+PREHOOK: query: -- Simple joins
+SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key
 ORDER BY T1.key, T1.val, T2.key, T2.val
@@ -542,7 +549,8 @@ Columns:key,val
 Table:default@t1
 Columns:key,val
 
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * 
+PREHOOK: query: -- Map join
+SELECT /*+ MAPJOIN(a) */ * 
 FROM T1 a JOIN T2 b 
 ON a.key = b.key
 ORDER BY a.key, a.val, b.key, b.val
@@ -562,7 +570,8 @@ Columns:key,val
 7	17	7	1
 8	18	8	2
 8	28	8	2
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- More joins
+EXPLAIN
 SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
@@ -837,7 +846,8 @@ Columns:key,val
 Table:default@t1
 Columns:key,val
 
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Join followed by join
+EXPLAIN
 SELECT *
 FROM
 (

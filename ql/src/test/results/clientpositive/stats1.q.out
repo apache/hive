@@ -221,10 +221,16 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+PREHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+POSTHOOK: query: -- Load a file into a existing table
+-- Some stats (numFiles, totalSize) should be updated correctly
+-- Some other stats (numRows, rawDataSize) should be cleared
+load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]

@@ -1,6 +1,10 @@
-PREHOOK: query: create table t1 (int1 int, int2 int, str1 string, str2 string)
+PREHOOK: query: -- This test covers HIVE-2332
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table t1 (int1 int, int2 int, str1 string, str2 string)
+POSTHOOK: query: -- This test covers HIVE-2332
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
 PREHOOK: query: --disabled RS-dedup for keeping intention of test

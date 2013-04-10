@@ -9,9 +9,11 @@ PREHOOK: Output: default@tmpt1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE tmpT1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tmpt1
-PREHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+PREHOOK: query: -- testing skew on other data types - int
+CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+POSTHOOK: query: -- testing skew on other data types - int
+CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: INSERT OVERWRITE TABLE T1 SELECT key, val FROM tmpT1
@@ -58,10 +60,22 @@ POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.key EXPRESSION [(tmpt2)tmpt2.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(tmpt2)tmpt2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- The skewed key is a integer column.
+-- Otherwise this test is similar to skewjoinopt1.q
+-- Both the joined tables are skewed, and the joined column
+-- is an integer
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- The skewed key is a integer column.
+-- Otherwise this test is similar to skewjoinopt1.q
+-- Both the joined tables are skewed, and the joined column
+-- is an integer
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
@@ -275,10 +289,14 @@ POSTHOOK: Lineage: t2.val SIMPLE [(tmpt2)tmpt2.FieldSchema(name:val, type:string
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- test outer joins also
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- test outer joins also
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
@@ -494,10 +512,14 @@ NULL	NULL	5	15
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- an aggregation at the end should not change anything
+
+EXPLAIN
 SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- an aggregation at the end should not change anything
+
+EXPLAIN
 SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]

@@ -95,11 +95,15 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 clustered by (key) into 12 buckets
+PREHOOK: query: -- Test changing bucket number
+
+alter table tst1 clustered by (key) into 12 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: alter table tst1 clustered by (key) into 12 buckets
+POSTHOOK: query: -- Test changing bucket number
+
+alter table tst1 clustered by (key) into 12 buckets
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -203,10 +207,14 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 into 4 buckets
+PREHOOK: query: -- Test changing bucket number of (table/partition)
+
+alter table tst1 into 4 buckets
 PREHOOK: type: ALTERTABLE_BUCKETNUM
 PREHOOK: Input: default@tst1
-POSTHOOK: query: alter table tst1 into 4 buckets
+POSTHOOK: query: -- Test changing bucket number of (table/partition)
+
+alter table tst1 into 4 buckets
 POSTHOOK: type: ALTERTABLE_BUCKETNUM
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -399,11 +407,15 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 clustered by (key) sorted by (key asc) into 12 buckets
+PREHOOK: query: -- Test adding sort order
+
+alter table tst1 clustered by (key) sorted by (key asc) into 12 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: alter table tst1 clustered by (key) sorted by (key asc) into 12 buckets
+POSTHOOK: query: -- Test adding sort order
+
+alter table tst1 clustered by (key) sorted by (key asc) into 12 buckets
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -455,11 +467,15 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 clustered by (key) sorted by (value desc) into 12 buckets
+PREHOOK: query: -- Test changing sort order
+
+alter table tst1 clustered by (key) sorted by (value desc) into 12 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: alter table tst1 clustered by (key) sorted by (value desc) into 12 buckets
+POSTHOOK: query: -- Test changing sort order
+
+alter table tst1 clustered by (key) sorted by (value desc) into 12 buckets
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -511,11 +527,15 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 clustered by (value) into 12 buckets
+PREHOOK: query: -- Test removing test order
+
+alter table tst1 clustered by (value) into 12 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: alter table tst1 clustered by (value) into 12 buckets
+POSTHOOK: query: -- Test removing test order
+
+alter table tst1 clustered by (value) into 12 buckets
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1
@@ -567,11 +587,15 @@ Bucket Columns:     	[value]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table tst1 not clustered
+PREHOOK: query: -- Test removing buckets
+
+alter table tst1 not clustered
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@tst1
 PREHOOK: Output: default@tst1
-POSTHOOK: query: alter table tst1 not clustered
+POSTHOOK: query: -- Test removing buckets
+
+alter table tst1 not clustered
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@tst1
 POSTHOOK: Output: default@tst1

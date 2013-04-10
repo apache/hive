@@ -34,7 +34,8 @@ POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain
+PREHOOK: query: -- One of the subqueries contains a union, so it should not be converted to a sort-merge join.
+explain
 select count(*) from 
   (
   select * from
@@ -46,7 +47,8 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- One of the subqueries contains a union, so it should not be converted to a sort-merge join.
+explain
 select count(*) from 
   (
   select * from
@@ -262,14 +264,16 @@ POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 40
-PREHOOK: query: explain
+PREHOOK: query: -- One of the subqueries contains a groupby, so it should not be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- One of the subqueries contains a groupby, so it should not be converted to a sort-merge join.
+explain
 select count(*) from 
   (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
     join

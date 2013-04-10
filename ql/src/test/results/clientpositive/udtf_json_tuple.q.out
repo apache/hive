@@ -571,9 +571,13 @@ POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	1
 2	2
 value2	1
-PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
+PREHOOK: query: -- Verify that json_tuple can handle new lines in JSON values
+
+CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
+POSTHOOK: query: -- Verify that json_tuple can handle new lines in JSON values
+
+CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []

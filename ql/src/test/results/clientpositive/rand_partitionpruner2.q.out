@@ -1,6 +1,10 @@
-PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: query: -- scanning partitioned data
+
+create table tmptable(key string, value string, hr string, ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+POSTHOOK: query: -- scanning partitioned data
+
+create table tmptable(key string, value string, hr string, ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: explain extended 

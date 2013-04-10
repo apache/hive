@@ -16,13 +16,15 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table pokes2 (foo int, bar int, blah int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@pokes2
-PREHOOK: query: explain
+PREHOOK: query: -- Q1: predicate should not be pushed on the right side of a left outer join
+explain
 SELECT a.foo as foo1, b.foo as foo2, b.bar
 FROM pokes a LEFT OUTER JOIN pokes2 b
 ON a.foo=b.foo
 WHERE b.bar=3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Q1: predicate should not be pushed on the right side of a left outer join
+explain
 SELECT a.foo as foo1, b.foo as foo2, b.bar
 FROM pokes a LEFT OUTER JOIN pokes2 b
 ON a.foo=b.foo
@@ -105,14 +107,16 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain
+PREHOOK: query: -- Q2: predicate should not be pushed on the right side of a left outer join
+explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, b.bar
     FROM pokes a LEFT OUTER JOIN pokes2 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Q2: predicate should not be pushed on the right side of a left outer join
+explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, b.bar
     FROM pokes a LEFT OUTER JOIN pokes2 b
@@ -196,14 +200,16 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain
+PREHOOK: query: -- Q3: predicate should be pushed
+explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, a.bar
     FROM pokes a JOIN pokes2 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Q3: predicate should be pushed
+explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, a.bar
     FROM pokes a JOIN pokes2 b
@@ -287,9 +293,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
+PREHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
+explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
+POSTHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
+explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME pokes) c) (TOK_TABREF (TOK_TABNAME pokes) b) (= (. (TOK_TABLE_OR_COL c) foo) (. (TOK_TABLE_OR_COL b) foo)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) foo)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) bar)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) blah))))) c) (TOK_TABREF (TOK_TABNAME pokes) d))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) foo)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL d) bar))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL d) foo) 1) (= (. (TOK_TABLE_OR_COL c) bar) 2)))))

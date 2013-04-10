@@ -31,11 +31,13 @@ key                 	int                 	None
 value               	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE set_bucketing_test
+PREHOOK: query: -- Cleanup
+DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@set_bucketing_test
 PREHOOK: Output: default@set_bucketing_test
-POSTHOOK: query: DROP TABLE set_bucketing_test
+POSTHOOK: query: -- Cleanup
+DROP TABLE set_bucketing_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@set_bucketing_test
 POSTHOOK: Output: default@set_bucketing_test
@@ -51,9 +53,13 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: CREATE DATABASE alter4_db
+PREHOOK: query: -- with non-default Database
+
+CREATE DATABASE alter4_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE alter4_db
+POSTHOOK: query: -- with non-default Database
+
+CREATE DATABASE alter4_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE alter4_db
 PREHOOK: type: SWITCHDATABASE

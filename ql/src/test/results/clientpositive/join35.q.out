@@ -3,7 +3,9 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest_j1
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
+
+EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -13,7 +15,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
+
+EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, x.value, subq1.cnt
 FROM 

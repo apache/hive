@@ -1,6 +1,14 @@
-PREHOOK: query: create table tmptable(key string) partitioned by (part string)
+PREHOOK: query: -- This test verifies writing a query using dynamic partitions
+-- which results in no partitions actually being created with
+-- hive.stats.reliable set to true
+
+create table tmptable(key string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table tmptable(key string) partitioned by (part string)
+POSTHOOK: query: -- This test verifies writing a query using dynamic partitions
+-- which results in no partitions actually being created with
+-- hive.stats.reliable set to true
+
+create table tmptable(key string) partitioned by (part string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: explain insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'

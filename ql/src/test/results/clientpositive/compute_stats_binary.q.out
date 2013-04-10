@@ -3,10 +3,12 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tab_binary(a binary)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tab_binary
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/binary.txt" INTO TABLE tab_binary
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/binary.txt" INTO TABLE tab_binary
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tab_binary
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/binary.txt" INTO TABLE tab_binary
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/binary.txt" INTO TABLE tab_binary
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tab_binary
 PREHOOK: query: select count(*) from tab_binary
@@ -18,11 +20,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_binary
 #### A masked pattern was here ####
 10
-PREHOOK: query: select compute_stats(a, 16) from tab_binary
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_binary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_binary
 #### A masked pattern was here ####
-POSTHOOK: query: select compute_stats(a, 16) from tab_binary
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_binary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_binary
 #### A masked pattern was here ####

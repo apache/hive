@@ -1,12 +1,16 @@
-PREHOOK: query: create table if not exists alter_part_protect_mode(key string, value string ) partitioned by (year string, month string) stored as textfile
+PREHOOK: query: -- Create table
+create table if not exists alter_part_protect_mode(key string, value string ) partitioned by (year string, month string) stored as textfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table if not exists alter_part_protect_mode(key string, value string ) partitioned by (year string, month string) stored as textfile
+POSTHOOK: query: -- Create table
+create table if not exists alter_part_protect_mode(key string, value string ) partitioned by (year string, month string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_part_protect_mode
-PREHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table alter_part_protect_mode partition (year='1996', month='10')
+PREHOOK: query: -- Load data
+load data local inpath '../data/files/T1.txt' overwrite into table alter_part_protect_mode partition (year='1996', month='10')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@alter_part_protect_mode
-POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table alter_part_protect_mode partition (year='1996', month='10')
+POSTHOOK: query: -- Load data
+load data local inpath '../data/files/T1.txt' overwrite into table alter_part_protect_mode partition (year='1996', month='10')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter_part_protect_mode
 POSTHOOK: Output: default@alter_part_protect_mode@year=1996/month=10
@@ -31,12 +35,14 @@ POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into ta
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter_part_protect_mode
 POSTHOOK: Output: default@alter_part_protect_mode@year=1994/month=07
-PREHOOK: query: alter table alter_part_protect_mode partition (year='1996') disable offline
+PREHOOK: query: -- offline
+alter table alter_part_protect_mode partition (year='1996') disable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@alter_part_protect_mode
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=10
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=12
-POSTHOOK: query: alter table alter_part_protect_mode partition (year='1996') disable offline
+POSTHOOK: query: -- offline
+alter table alter_part_protect_mode partition (year='1996') disable offline
 POSTHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Input: default@alter_part_protect_mode@year=1996/month=10
@@ -101,12 +107,14 @@ POSTHOOK: Input: default@alter_part_protect_mode@year=1995/month=09
 7	17	1995	09
 8	18	1995	09
 8	28	1995	09
-PREHOOK: query: alter table alter_part_protect_mode partition (year='1996') enable no_drop
+PREHOOK: query: -- no_drop
+alter table alter_part_protect_mode partition (year='1996') enable no_drop
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@alter_part_protect_mode
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=10
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=12
-POSTHOOK: query: alter table alter_part_protect_mode partition (year='1996') enable no_drop
+POSTHOOK: query: -- no_drop
+alter table alter_part_protect_mode partition (year='1996') enable no_drop
 POSTHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Input: default@alter_part_protect_mode@year=1996/month=10
@@ -147,12 +155,14 @@ POSTHOOK: query: alter table alter_part_protect_mode drop partition (year='1994'
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Output: default@alter_part_protect_mode@year=1994/month=07
-PREHOOK: query: alter table alter_part_protect_mode partition (year='1996') disable no_drop
+PREHOOK: query: -- Cleanup
+alter table alter_part_protect_mode partition (year='1996') disable no_drop
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@alter_part_protect_mode
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=10
 PREHOOK: Output: default@alter_part_protect_mode@year=1996/month=12
-POSTHOOK: query: alter table alter_part_protect_mode partition (year='1996') disable no_drop
+POSTHOOK: query: -- Cleanup
+alter table alter_part_protect_mode partition (year='1996') disable no_drop
 POSTHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: Input: default@alter_part_protect_mode
 POSTHOOK: Input: default@alter_part_protect_mode@year=1996/month=10

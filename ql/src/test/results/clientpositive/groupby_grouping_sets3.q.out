@@ -1,6 +1,14 @@
-PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: -- In this test, 2 files are loaded into table T1. The data contains rows with the same value of a and b,
+-- with different number of rows for a and b in each file. Since bucketizedHiveInputFormat is used, 
+-- this tests that the aggregate function stores the partial aggregate state correctly even if an 
+-- additional MR job is created for processing the grouping sets.
+CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: query: -- In this test, 2 files are loaded into table T1. The data contains rows with the same value of a and b,
+-- with different number of rows for a and b in each file. Since bucketizedHiveInputFormat is used, 
+-- this tests that the aggregate function stores the partial aggregate state correctly even if an 
+-- additional MR job is created for processing the grouping sets.
+CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/grouping_sets1.txt' INTO TABLE T1
@@ -15,10 +23,16 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/grouping_sets2.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- The query below will execute in a single MR job, since 4 rows are generated per input row
+-- (cube of a,b will lead to (a,b), (a, null), (null, b) and (null, null) and 
+-- hive.new.job.grouping.set.cardinality is more than 4.
+EXPLAIN
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- The query below will execute in a single MR job, since 4 rows are generated per input row
+-- (cube of a,b will lead to (a,b), (a, null), (null, b) and (null, null) and 
+-- hive.new.job.grouping.set.cardinality is more than 4.
+EXPLAIN
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -142,10 +156,14 @@ NULL	3	5.0	2
 5	1	2.0	1
 8	NULL	1.0	2
 8	1	1.0	2
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- The query below will execute in 2 MR jobs, since hive.new.job.grouping.set.cardinality is set to 2.
+-- The partial aggregation state should be maintained correctly across MR jobs.
+EXPLAIN
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- The query below will execute in 2 MR jobs, since hive.new.job.grouping.set.cardinality is set to 2.
+-- The partial aggregation state should be maintained correctly across MR jobs.
+EXPLAIN
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

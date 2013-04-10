@@ -9,11 +9,13 @@ POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: query: -- UNSET TABLE PROPERTIES
+ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: query: -- UNSET TABLE PROPERTIES
+ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -27,11 +29,13 @@ c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
+PREHOOK: query: -- UNSET all the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
+POSTHOOK: query: -- UNSET all the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -60,11 +64,13 @@ c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
+PREHOOK: query: -- UNSET a subset of the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
+POSTHOOK: query: -- UNSET a subset of the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -76,11 +82,13 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 #### A masked pattern was here ####
 c	3
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+PREHOOK: query: -- the same property being UNSET multiple times
+ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+POSTHOOK: query: -- the same property being UNSET multiple times
+ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -110,11 +118,13 @@ c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -128,11 +138,13 @@ c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
-PREHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
 PREHOOK: Output: default@testtable
-POSTHOOK: query: ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
@@ -144,9 +156,11 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
-PREHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+PREHOOK: query: -- UNSET VIEW PROPERTIES
+CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: query: -- UNSET VIEW PROPERTIES
+CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@testView
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
@@ -166,11 +180,13 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 propA	100
 propB	200
 #### A masked pattern was here ####
-PREHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
+PREHOOK: query: -- UNSET all the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview
 PREHOOK: Output: default@testview
-POSTHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
+POSTHOOK: query: -- UNSET all the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview
@@ -198,11 +214,13 @@ propA	100
 #### A masked pattern was here ####
 propD	400
 propC	300
-PREHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
+PREHOOK: query: -- UNSET a subset of the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview
 PREHOOK: Output: default@testview
-POSTHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
+POSTHOOK: query: -- UNSET a subset of the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview
@@ -213,11 +231,13 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
 #### A masked pattern was here ####
 propD	400
-PREHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+PREHOOK: query: -- the same property being UNSET multiple times
+ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview
 PREHOOK: Output: default@testview
-POSTHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+POSTHOOK: query: -- the same property being UNSET multiple times
+ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview
@@ -246,11 +266,13 @@ propB	200
 #### A masked pattern was here ####
 propD	400
 propC	300
-PREHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview
 PREHOOK: Output: default@testview
-POSTHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview
@@ -263,11 +285,13 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 propA	100
 propB	200
 #### A masked pattern was here ####
-PREHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview
 PREHOOK: Output: default@testview
-POSTHOOK: query: ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview

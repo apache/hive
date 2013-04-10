@@ -20,12 +20,14 @@ POSTHOOK: query: CREATE TABLE rcfile_merge1b (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@rcfile_merge1b
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Use non block-level merge
+EXPLAIN
     INSERT OVERWRITE TABLE rcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 100) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Use non block-level merge
+EXPLAIN
     INSERT OVERWRITE TABLE rcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 100) as part
         FROM src
@@ -1224,7 +1226,8 @@ POSTHOOK: Lineage: rcfile_merge1b PARTITION(ds=1,part=99).key EXPRESSION [(src)s
 POSTHOOK: Lineage: rcfile_merge1b PARTITION(ds=1,part=99).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1b PARTITION(ds=1,part=9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1b PARTITION(ds=1,part=9).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+PREHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM rcfile_merge1 WHERE ds='1'
 ) t
@@ -1330,7 +1333,8 @@ PREHOOK: Input: default@rcfile_merge1@ds=1/part=97
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=98
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=99
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+POSTHOOK: query: -- Verify
+SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM rcfile_merge1 WHERE ds='1'
 ) t

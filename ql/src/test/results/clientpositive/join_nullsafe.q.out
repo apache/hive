@@ -9,9 +9,11 @@ PREHOOK: Output: default@myinput1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' INTO TABLE myinput1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: query: -- merging
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: -- merging
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)))))
@@ -829,11 +831,13 @@ NULL	NULL	NULL	NULL	NULL	NULL
 NULL	10	10	NULL	NULL	10
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: query: -- outer joins
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: -- outer joins
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
@@ -890,11 +894,13 @@ NULL	35	48	NULL
 10	NULL	NULL	10
 48	NULL	NULL	NULL
 100	100	100	100
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: query: -- map joins
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: query: -- map joins
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
@@ -928,9 +934,11 @@ NULL	35	10	NULL
 NULL	35	48	NULL
 10	NULL	NULL	10
 100	100	100	100
-PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: -- smbs
+CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: -- smbs
+CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smb_input1
 PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS

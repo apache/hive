@@ -1,7 +1,13 @@
-PREHOOK: query: create table if not exists nzhang_part14 (key string) 
+PREHOOK: query: -- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
+create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table if not exists nzhang_part14 (key string) 
+POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
+create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_part14

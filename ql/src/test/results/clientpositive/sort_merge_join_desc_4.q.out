@@ -42,11 +42,17 @@ POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain
+PREHOOK: query: -- The columns of the tables above are sorted in different orders.
+-- So, sort merge join should not be performed
+
+explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- The columns of the tables above are sorted in different orders.
+-- So, sort merge join should not be performed
+
+explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 POSTHOOK: type: QUERY

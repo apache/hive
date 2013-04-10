@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE test_table(
+PREHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -14,7 +16,9 @@ adipiscing tortor. Integer venenatis',
 COMMENT 'table comment
 two lines'
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE test_table(
+POSTHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -31,9 +35,37 @@ COMMENT 'table comment
 two lines'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table
-PREHOOK: query: DESCRIBE PRETTY test_table
+PREHOOK: query: -- There will be an extra tab at the end of each comment line in the output.
+-- This is because DESCRIBE <table_name> command separates the column, type and
+-- comment field using a \t. DESCRIBE PRETTY <table_name> uses spaces instead 
+-- of \t to separate columns. Hive gets confused when it parses the string
+-- table description constructed in MetaDataPrettyFormatUtils, and adds a tab
+-- at the end of each line.
+-- There are three ways to address this:
+-- 1. Pad each row to the full terminal width with extra spaces. 
+-- 2. Assume a maximum tab width of 8, and subtract 2 * 8 spaces from the 
+--    available line width. This approach wastes upto 2 * 8 - 2 columns.
+-- 3. Since the pretty output is meant only for human consumption, do nothing. 
+--    Just add a comment to the unit test file explaining what is happening.
+--    This is the approach chosen.
+
+DESCRIBE PRETTY test_table
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE PRETTY test_table
+POSTHOOK: query: -- There will be an extra tab at the end of each comment line in the output.
+-- This is because DESCRIBE <table_name> command separates the column, type and
+-- comment field using a \t. DESCRIBE PRETTY <table_name> uses spaces instead 
+-- of \t to separate columns. Hive gets confused when it parses the string
+-- table description constructed in MetaDataPrettyFormatUtils, and adds a tab
+-- at the end of each line.
+-- There are three ways to address this:
+-- 1. Pad each row to the full terminal width with extra spaces. 
+-- 2. Assume a maximum tab width of 8, and subtract 2 * 8 spaces from the 
+--    available line width. This approach wastes upto 2 * 8 - 2 columns.
+-- 3. Since the pretty output is meant only for human consumption, do nothing. 
+--    Just add a comment to the unit test file explaining what is happening.
+--    This is the approach chosen.
+
+DESCRIBE PRETTY test_table
 POSTHOOK: type: DESCTABLE
 col_name           data_type     comment	 	 
 	 	 

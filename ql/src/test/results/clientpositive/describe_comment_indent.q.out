@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE test_table(
+PREHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -8,7 +10,9 @@ comment')
 COMMENT 'table comment
 two lines'
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE test_table(
+POSTHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
