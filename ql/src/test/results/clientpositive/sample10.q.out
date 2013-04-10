@@ -1,6 +1,10 @@
-PREHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpartbucket
 PREHOOK: query: insert overwrite table srcpartbucket partition(ds, hr) select * from srcpart where ds is not null and key < 10

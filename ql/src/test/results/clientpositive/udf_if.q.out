@@ -89,14 +89,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	1	1	1	NULL	2
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Type conversions
+EXPLAIN
 SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 1.1) AS COL2,
        IF(FALSE, 1, 'ABC') AS COL3,
        IF(FALSE, 'ABC', 12.3) AS COL4
 FROM src LIMIT 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Type conversions
+EXPLAIN
 SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 1.1) AS COL2,
        IF(FALSE, 1, 'ABC') AS COL3,

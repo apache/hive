@@ -1,7 +1,13 @@
-PREHOOK: query: CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
+PREHOOK: query: -- This tests various union queries which have columns on one side of the query
+-- being of double type and those on the other side another
+
+CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
+POSTHOOK: query: -- This tests various union queries which have columns on one side of the query
+-- being of double type and those on the other side another
+
+CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1
@@ -12,14 +18,16 @@ POSTHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t2
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Test simple union with double
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2) a
 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Test simple union with double
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION ALL
@@ -135,14 +143,16 @@ POSTHOOK: Input: default@t2
 8.0
 9.0
 9.0
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Test union with join on the left
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key FROM t2) a
 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Test union with join on the left
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
@@ -316,14 +326,16 @@ POSTHOOK: Input: default@t2
 8.0
 9.0
 9.0
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Test union with join on the right
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Test union with join on the right
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2
 UNION ALL
@@ -497,14 +509,16 @@ POSTHOOK: Input: default@t2
 8.0
 9.0
 9.0
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Test union with join on the left selecting multiple columns
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Test union with join on the left selecting multiple columns
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
@@ -693,14 +707,16 @@ POSTHOOK: Input: default@t2
 8.0	8.0
 9.0	9.0
 9.0	9
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Test union with join on the right selecting multiple columns
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Test union with join on the right selecting multiple columns
+EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL

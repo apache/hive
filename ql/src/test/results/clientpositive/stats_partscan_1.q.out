@@ -1,8 +1,14 @@
-PREHOOK: query: CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
+PREHOOK: query: -- test analyze table ... compute statistics partialscan
+
+-- 1. prepare data
+CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
+POSTHOOK: query: -- test analyze table ... compute statistics partialscan
+
+-- 1. prepare data
+CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 POSTHOOK: type: CREATETABLE
@@ -77,10 +83,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain
+PREHOOK: query: -- 2. partialscan
+explain
 analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- 2. partialscan
+explain
 analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -126,9 +134,11 @@ POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=11).k
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: -- 3. confirm result
+describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: -- 3. confirm result
+describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart_partial_scan PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

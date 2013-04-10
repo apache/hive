@@ -35,10 +35,20 @@ PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- This test is for validating skewed join compile time optimization for more than
+-- 2 tables. The join key is the same, and so a 3-way join would be performed.
+-- 2 of the 3 tables are skewed on the join key
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- This test is for validating skewed join compile time optimization for more than
+-- 2 tables. The join key is the same, and so a 3-way join would be performed.
+-- 2 of the 3 tables are skewed on the join key
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.*, c.* FROM T1 a JOIN T2 b ON a.key = b.key JOIN T3 c on a.key = c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

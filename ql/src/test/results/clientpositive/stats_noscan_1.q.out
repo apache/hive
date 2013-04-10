@@ -1,6 +1,12 @@
-PREHOOK: query: create table analyze_srcpart like srcpart
+PREHOOK: query: -- test analyze table ... compute statistics noscan
+
+-- 1. test full spec
+create table analyze_srcpart like srcpart
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table analyze_srcpart like srcpart
+POSTHOOK: query: -- test analyze table ... compute statistics noscan
+
+-- 1. test full spec
+create table analyze_srcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@analyze_srcpart
 PREHOOK: query: insert overwrite table analyze_srcpart partition (ds, hr) select * from srcpart where ds is not null
@@ -95,9 +101,11 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: -- confirm result
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: -- confirm result
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -339,9 +347,11 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table analyze_srcpart_partial like srcpart
+PREHOOK: query: -- 2. test partial spec
+create table analyze_srcpart_partial like srcpart
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table analyze_srcpart_partial like srcpart
+POSTHOOK: query: -- 2. test partial spec
+create table analyze_srcpart_partial like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@analyze_srcpart_partial
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -452,9 +462,11 @@ POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=11).key SI
 POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart_partial PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: -- confirm result
+describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: -- confirm result
+describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

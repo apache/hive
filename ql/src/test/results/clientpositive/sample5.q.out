@@ -3,12 +3,14 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: query: -- no input pruning, sample filter
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+POSTHOOK: query: -- no input pruning, sample filter
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -293,12 +295,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket

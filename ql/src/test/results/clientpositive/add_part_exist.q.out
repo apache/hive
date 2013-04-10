@@ -83,9 +83,11 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: CREATE DATABASE add_part_test_db
+PREHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
+CREATE DATABASE add_part_test_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE add_part_test_db
+POSTHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
+CREATE DATABASE add_part_test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE add_part_test_db
 PREHOOK: type: SWITCHDATABASE

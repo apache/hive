@@ -1,5 +1,9 @@
+PREHOOK: query: -- test analyze table compute statistiscs [noscan] on external table 
+-- 1 test table
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- test analyze table compute statistiscs [noscan] on external table 
+-- 1 test table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@anaylyze_external
@@ -109,9 +113,13 @@ POSTHOOK: query: drop table anaylyze_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
-PREHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: query: -- 2 test partition
+-- prepare data
+create table texternal(key string, val string) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+POSTHOOK: query: -- 2 test partition
+-- prepare data
+create table texternal(key string, val string) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@texternal
 #### A masked pattern was here ####
@@ -144,8 +152,10 @@ POSTHOOK: Input: default@texternal@insertdate=2008-01-01
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
+PREHOOK: query: -- create external table
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- create external table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@anaylyze_external
@@ -173,13 +183,15 @@ POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
-PREHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
+PREHOOK: query: -- analyze
+analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 PREHOOK: Output: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external@insertdate=2008-01-01
-POSTHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
+POSTHOOK: query: -- analyze
+analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01

@@ -1,4 +1,5 @@
-PREHOOK: query: CREATE TABLE avro2
+PREHOOK: query: -- verify that we can update the table properties
+CREATE TABLE avro2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -12,7 +13,8 @@ TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
     { "name":"string2", "type":"string" }
   ] }')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE avro2
+POSTHOOK: query: -- verify that we can update the table properties
+CREATE TABLE avro2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS

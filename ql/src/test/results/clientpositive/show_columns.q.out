@@ -37,9 +37,11 @@ POSTHOOK: Input: default@shcol_test
 key                 
 value               
 ds                  
-PREHOOK: query: CREATE DATABASE test_db
+PREHOOK: query: -- SHOW COLUMNS
+CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE test_db
+POSTHOOK: query: -- SHOW COLUMNS
+CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
@@ -50,9 +52,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: test_db@foo
-PREHOOK: query: USE test_db
+PREHOOK: query: -- SHOW COLUMNS basic syntax tests
+USE test_db
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: USE test_db
+POSTHOOK: query: -- SHOW COLUMNS basic syntax tests
+USE test_db
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: SHOW COLUMNS from foo
 PREHOOK: type: SHOWCOLUMNS
@@ -72,9 +76,11 @@ POSTHOOK: Input: test_db@foo
 # col_name            
 
 a                   
-PREHOOK: query: CREATE DATABASE `database`
+PREHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
+CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE `database`
+POSTHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
+CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE `database`
 PREHOOK: type: SWITCHDATABASE

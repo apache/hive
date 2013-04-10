@@ -1,6 +1,12 @@
-PREHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: query: -- this test verifies that the block merge task that can follow a query to generate dynamic
+-- partitions does not produce incorrect results by dropping partitions
+
+create table srcpart_merge_dp like srcpart
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table srcpart_merge_dp like srcpart
+POSTHOOK: query: -- this test verifies that the block merge task that can follow a query to generate dynamic
+-- partitions does not produce incorrect results by dropping partitions
+
+create table srcpart_merge_dp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpart_merge_dp
 PREHOOK: query: create table srcpart_merge_dp_rc like srcpart

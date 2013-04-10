@@ -2,7 +2,8 @@ PREHOOK: query: DROP TABLE part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE part
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE part( 
+PREHOOK: query: -- data setup
+CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -14,7 +15,8 @@ PREHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE part( 
+POSTHOOK: query: -- data setup
+CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -33,14 +35,16 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-PREHOOK: query: select p_mfgr, p_name, p_size
+PREHOOK: query: -- 1. testNoPTFNoWindowing
+select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
 sort by p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_size
+POSTHOOK: query: -- 1. testNoPTFNoWindowing
+select p_mfgr, p_name, p_size
 from part
 distribute by p_mfgr
 sort by p_name
@@ -73,7 +77,8 @@ Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
 Manufacturer#4	almond aquamarine yellow dodger mint	7
 Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: select p_mfgr,p_name, p_retailprice,  
+PREHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
+select p_mfgr,p_name, p_retailprice,  
 sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
 min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
 max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
@@ -82,7 +87,8 @@ from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr,p_name, p_retailprice,  
+POSTHOOK: query: -- 2. testUDAFsNoWindowingNoPTFNoGBY
+select p_mfgr,p_name, p_retailprice,  
 sum(p_retailprice) over(partition by p_mfgr order by p_mfgr) as s,
 min(p_retailprice) over(partition by p_mfgr order by p_mfgr) as mi,
 max(p_retailprice) over(partition by p_mfgr order by p_mfgr) as ma,
@@ -117,11 +123,13 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	7672.66	1018.1	1789.69
 Manufacturer#5	almond antique sky peru orange	1788.73	7672.66	1018.1	1789.69	1534.532
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	7672.66	1018.1	1789.69	1534.532
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	7672.66	1018.1	1789.69	1534.532
-PREHOOK: query: select 'tst1' as key, count(1) as value from part
+PREHOOK: query: -- 3. testConstExprInSelect
+select 'tst1' as key, count(1) as value from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select 'tst1' as key, count(1) as value from part
+POSTHOOK: query: -- 3. testConstExprInSelect
+select 'tst1' as key, count(1) as value from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####

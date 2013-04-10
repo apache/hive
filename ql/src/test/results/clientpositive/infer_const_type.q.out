@@ -112,7 +112,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 127	32767	12345	-12345	906.0	-307.0	1234
-PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
+PREHOOK: query: -- all should return false as all numbers exceeed the largest number 
+-- which could be represented by the corresponding type
+-- and string_col = long_const should return false
+EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
   i   = '2147483648' OR
@@ -120,7 +123,10 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = 'float' OR
   db  = 'double'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
+POSTHOOK: query: -- all should return false as all numbers exceeed the largest number 
+-- which could be represented by the corresponding type
+-- and string_col = long_const should return false
+EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
   i   = '2147483648' OR
@@ -195,12 +201,14 @@ POSTHOOK: query: SELECT * FROM infertypes WHERE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
-PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
+PREHOOK: query: -- for the query like: int_col = double, should return false 
+EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
+POSTHOOK: query: -- for the query like: int_col = double, should return false 
+EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'

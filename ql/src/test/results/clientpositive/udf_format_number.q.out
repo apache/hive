@@ -2,9 +2,13 @@ PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: DESCRIBE FUNCTION format_number
+PREHOOK: query: -- Test format_number() UDF
+
+DESCRIBE FUNCTION format_number
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION format_number
+POSTHOOK: query: -- Test format_number() UDF
+
+DESCRIBE FUNCTION format_number
 POSTHOOK: type: DESCFUNCTION
 format_number(X, D) - Formats the number X to a format like '#,###,###.##', rounded to D decimal places, and returns the result as a string. If D is 0, the result has no decimal point or fractional part. This is supposed to function like MySQL's FORMAT
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED format_number
@@ -76,7 +80,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 12,332.1235	12,332.1000	12,332
-PREHOOK: query: SELECT format_number(0.123456789, 12),
+PREHOOK: query: -- positive numbers
+SELECT format_number(0.123456789, 12),
     format_number(12345678.123456789, 5),
     format_number(1234567.123456789, 7),
     format_number(123456.123456789, 0)
@@ -84,7 +89,8 @@ FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT format_number(0.123456789, 12),
+POSTHOOK: query: -- positive numbers
+SELECT format_number(0.123456789, 12),
     format_number(12345678.123456789, 5),
     format_number(1234567.123456789, 7),
     format_number(123456.123456789, 0)
@@ -93,7 +99,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0.123456789000	12,345,678.12346	1,234,567.1234568	123,456
-PREHOOK: query: SELECT format_number(-123456.123456789, 0),
+PREHOOK: query: -- negative numbers
+SELECT format_number(-123456.123456789, 0),
     format_number(-1234567.123456789, 2),
     format_number(-0.123456789, 15),
     format_number(-12345.123456789, 4)
@@ -101,7 +108,8 @@ FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT format_number(-123456.123456789, 0),
+POSTHOOK: query: -- negative numbers
+SELECT format_number(-123456.123456789, 0),
     format_number(-1234567.123456789, 2),
     format_number(-0.123456789, 15),
     format_number(-12345.123456789, 4)
@@ -110,7 +118,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 -123,456	-1,234,567.12	-0.123456789000000	-12,345.1235
-PREHOOK: query: SELECT format_number(0.0, 4),
+PREHOOK: query: -- zeros
+SELECT format_number(0.0, 4),
     format_number(0.000000, 1),
     format_number(000.0000, 1),
     format_number(00000.0000, 1),
@@ -119,7 +128,8 @@ FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT format_number(0.0, 4),
+POSTHOOK: query: -- zeros
+SELECT format_number(0.0, 4),
     format_number(0.000000, 1),
     format_number(000.0000, 1),
     format_number(00000.0000, 1),
@@ -129,7 +139,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0.0000	0.0	0.0	0.0	-0.0000
-PREHOOK: query: SELECT format_number(0, 0),
+PREHOOK: query: -- integers
+SELECT format_number(0, 0),
     format_number(1, 4),
     format_number(12, 2),
     format_number(123, 5),
@@ -138,7 +149,8 @@ FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT format_number(0, 0),
+POSTHOOK: query: -- integers
+SELECT format_number(0, 0),
     format_number(1, 4),
     format_number(12, 2),
     format_number(123, 5),
@@ -148,7 +160,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0	1.0000	12.00	123.00000	1,234.0000000
-PREHOOK: query: SELECT format_number(-9223372036854775807, 10),
+PREHOOK: query: -- long and double boundary
+-- 9223372036854775807 is LONG_MAX
+-- -9223372036854775807 is one more than LONG_MIN,
+-- due to HIVE-2733, put it here to check LONG_MIN boundary
+-- 4.9E-324 and 1.7976931348623157E308 are Double.MIN_VALUE and Double.MAX_VALUE
+-- check them for Double boundary
+SELECT format_number(-9223372036854775807, 10),
     format_number(9223372036854775807, 20),
     format_number(4.9E-324, 324),
     format_number(1.7976931348623157E308, 308)
@@ -156,7 +174,13 @@ FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT format_number(-9223372036854775807, 10),
+POSTHOOK: query: -- long and double boundary
+-- 9223372036854775807 is LONG_MAX
+-- -9223372036854775807 is one more than LONG_MIN,
+-- due to HIVE-2733, put it here to check LONG_MIN boundary
+-- 4.9E-324 and 1.7976931348623157E308 are Double.MIN_VALUE and Double.MAX_VALUE
+-- check them for Double boundary
+SELECT format_number(-9223372036854775807, 10),
     format_number(9223372036854775807, 20),
     format_number(4.9E-324, 324),
     format_number(1.7976931348623157E308, 308)

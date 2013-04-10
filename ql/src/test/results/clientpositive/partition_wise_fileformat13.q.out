@@ -1,6 +1,8 @@
-PREHOOK: query: create table T1(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: query: -- This tests that the schema can be changed for partitioned tables for binary serde data for joins
+create table T1(key string, value string) partitioned by (dt string) stored as rcfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table T1(key string, value string) partitioned by (dt string) stored as rcfile
+POSTHOOK: query: -- This tests that the schema can be changed for partitioned tables for binary serde data for joins
+create table T1(key string, value string) partitioned by (dt string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: alter table T1 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'

@@ -174,11 +174,13 @@ POSTHOOK: type: DESCTABLE
 a                   	int                 	None                
 b                   	int                 	None                
 c                   	string              	None                
-PREHOOK: query: DROP TABLE alter1
+PREHOOK: query: -- Cleanup
+DROP TABLE alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter1
 PREHOOK: Output: default@alter1
-POSTHOOK: query: DROP TABLE alter1
+POSTHOOK: query: -- Cleanup
+DROP TABLE alter1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter1
 POSTHOOK: Output: default@alter1
@@ -194,9 +196,13 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: CREATE DATABASE alter1_db
+PREHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter1_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE alter1_db
+POSTHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter1_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: USE alter1_db
 PREHOOK: type: SWITCHDATABASE

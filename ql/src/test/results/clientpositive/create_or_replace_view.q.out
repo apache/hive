@@ -39,9 +39,11 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-PREHOOK: query: create or replace view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: query: -- modifying definition of unpartitioned view
+create or replace view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: create or replace view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: -- modifying definition of unpartitioned view
+create or replace view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 PREHOOK: query: alter view v add partition (ds='2008-04-08',hr='11')
@@ -123,9 +125,11 @@ POSTHOOK: query: show partitions v
 POSTHOOK: type: SHOWPARTITIONS
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
-PREHOOK: query: create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
+PREHOOK: query: -- altering partitioned view 1
+create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
+POSTHOOK: query: -- altering partitioned view 1
+create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
@@ -184,9 +188,11 @@ POSTHOOK: query: show partitions v
 POSTHOOK: type: SHOWPARTITIONS
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
-PREHOOK: query: create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+PREHOOK: query: -- altering partitioned view 2
+create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+POSTHOOK: query: -- altering partitioned view 2
+create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
@@ -254,9 +260,11 @@ POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v
-PREHOOK: query: create table srcpart_temp like srcpart
+PREHOOK: query: -- updating to fix view with invalid definition
+create table srcpart_temp like srcpart
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table srcpart_temp like srcpart
+POSTHOOK: query: -- updating to fix view with invalid definition
+create table srcpart_temp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpart_temp
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart_temp
@@ -272,9 +280,11 @@ POSTHOOK: query: drop table srcpart_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_temp
 POSTHOOK: Output: default@srcpart_temp
-PREHOOK: query: create or replace view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: query: -- v is now invalid
+create or replace view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: create or replace view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: -- v is now invalid
+create or replace view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 PREHOOK: query: describe formatted v

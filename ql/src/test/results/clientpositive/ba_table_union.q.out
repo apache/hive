@@ -2,9 +2,11 @@ PREHOOK: query: drop table ba_test
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ba_test
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ba_test (ba_key binary, ba_val binary)
+PREHOOK: query: -- this query tests ba_table1.q + nested queries with multiple operations on binary data types + union on binary types 
+create table ba_test (ba_key binary, ba_val binary)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table ba_test (ba_key binary, ba_val binary)
+POSTHOOK: query: -- this query tests ba_table1.q + nested queries with multiple operations on binary data types + union on binary types 
+create table ba_test (ba_key binary, ba_val binary)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@ba_test
 PREHOOK: query: describe extended ba_test

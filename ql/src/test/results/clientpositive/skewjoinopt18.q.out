@@ -9,9 +9,11 @@ PREHOOK: Output: default@tmpt1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE tmpT1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tmpt1
-PREHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+PREHOOK: query: -- testing skew on other data types - int
+CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+POSTHOOK: query: -- testing skew on other data types - int
+CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: INSERT OVERWRITE TABLE T1 SELECT key, val FROM tmpT1
@@ -24,10 +26,16 @@ POSTHOOK: Input: default@tmpt1
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: query: -- Tke skewed column is same in both the tables, however it is
+-- INT in one of the tables, and STRING in the other table
+
+CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: query: -- Tke skewed column is same in both the tables, however it is
+-- INT in one of the tables, and STRING in the other table
+
+CREATE TABLE T2(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T2
@@ -41,10 +49,20 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- Once HIVE-3445 is fixed, the compile time skew join optimization would be
+-- applicable here. Till the above jira is fixed, it would be performed as a
+-- regular join
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- Once HIVE-3445 is fixed, the compile time skew join optimization would be
+-- applicable here. Till the above jira is fixed, it would be performed as a
+-- regular join
+-- adding a order by at the end to make the results deterministic
+
+EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]

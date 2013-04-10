@@ -37,10 +37,12 @@ PREHOOK: Output: default@gl_src1
 POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src1
-PREHOOK: query: create table gl_tgt as select key from gl_src1 limit 1
+PREHOOK: query: -- need one file
+create table gl_tgt as select key from gl_src1 limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@gl_src1
-POSTHOOK: query: create table gl_tgt as select key from gl_src1 limit 1
+POSTHOOK: query: -- need one file
+create table gl_tgt as select key from gl_src1 limit 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@gl_src1
 POSTHOOK: Output: default@gl_tgt
@@ -53,11 +55,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_tgt
 #### A masked pattern was here ####
 165
-PREHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
+PREHOOK: query: -- need two files
+select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
-POSTHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
+POSTHOOK: query: -- need two files
+select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
@@ -81,11 +85,13 @@ x	["val_11"]
 x	["val_11"]
 x	["val_114"]
 x	["val_114"]
-PREHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
+PREHOOK: query: -- no sufficient files
+select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
+POSTHOOK: query: -- no sufficient files
+select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
@@ -119,11 +125,13 @@ POSTHOOK: Input: default@gl_src1
 26	val_26	["val_26"]
 26	val_26	["val_26"]
 26	val_26	["val_26"]
-PREHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
+PREHOOK: query: -- need all files
+select key from gl_src1 ORDER BY key ASC limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
-POSTHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
+POSTHOOK: query: -- need all files
+select key from gl_src1 ORDER BY key ASC limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
@@ -265,11 +273,13 @@ POSTHOOK: Input: default@gl_src1
 26
 26
 26
-PREHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
+PREHOOK: query: -- not qualified cases
+select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
+POSTHOOK: query: -- not qualified cases
+select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
@@ -1033,11 +1043,13 @@ POSTHOOK: Input: default@gl_src1
 374
 484
 495
-PREHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
+PREHOOK: query: -- complicated queries
+select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
-POSTHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
+POSTHOOK: query: -- complicated queries
+select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
 #### A masked pattern was here ####
@@ -1097,9 +1109,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 375
 485
 496
-PREHOOK: query: create table gl_src2 (key int, value string) stored as textfile
+PREHOOK: query: -- empty table
+create table gl_src2 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table gl_src2 (key int, value string) stored as textfile
+POSTHOOK: query: -- empty table
+create table gl_src2 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@gl_src2
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
@@ -1112,9 +1126,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+PREHOOK: query: -- partition
+create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+POSTHOOK: query: -- partition
+create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@gl_src_part1
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]

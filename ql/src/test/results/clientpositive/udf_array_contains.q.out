@@ -11,21 +11,25 @@ array_contains(array, value) - Returns TRUE if the array contains value.
 Example:
   > SELECT array_contains(array(1, 2, 3), 2) FROM src LIMIT 1;
   true
-PREHOOK: query: SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
+PREHOOK: query: -- evalutes function for array of primitives
+SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
+POSTHOOK: query: -- evalutes function for array of primitives
+SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
+PREHOOK: query: -- evaluates function for nested arrays
+SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
+POSTHOOK: query: -- evaluates function for nested arrays
+SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

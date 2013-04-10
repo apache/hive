@@ -161,9 +161,11 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+PREHOOK: query: -- Test with non-ascii characters. 
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+POSTHOOK: query: -- Test with non-ascii characters. 
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

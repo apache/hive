@@ -1,6 +1,8 @@
-PREHOOK: query: create table smallTbl1(key string, value string)
+PREHOOK: query: -- Join of a big table with 2 small tables on different keys should be performed as a single MR job
+create table smallTbl1(key string, value string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table smallTbl1(key string, value string)
+POSTHOOK: query: -- Join of a big table with 2 small tables on different keys should be performed as a single MR job
+create table smallTbl1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smallTbl1
 PREHOOK: query: insert overwrite table smallTbl1 select * from src where key < 10
@@ -636,7 +638,8 @@ POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1660
-PREHOOK: query: explain
+PREHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job
+explain
 select count(*) FROM
  (
    SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
@@ -651,7 +654,8 @@ select count(*) FROM
  ) secondjoin
  JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job
+explain
 select count(*) FROM
  (
    SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,

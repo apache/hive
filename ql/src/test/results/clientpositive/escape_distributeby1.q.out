@@ -1,7 +1,9 @@
-PREHOOK: query: explain
+PREHOOK: query: -- escaped column names in distribute by by are not working jira 3267
+explain
 select key, value from src distribute by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- escaped column names in distribute by by are not working jira 3267
+explain
 select key, value from src distribute by key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:

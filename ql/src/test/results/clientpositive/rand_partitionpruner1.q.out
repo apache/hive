@@ -1,6 +1,8 @@
-PREHOOK: query: explain extended select * from src where rand(1) < 0.1
+PREHOOK: query: -- scanning un-partitioned data
+explain extended select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from src where rand(1) < 0.1
+POSTHOOK: query: -- scanning un-partitioned data
+explain extended select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_FUNCTION rand 1) 0.1))))

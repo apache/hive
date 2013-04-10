@@ -1,4 +1,5 @@
-PREHOOK: query: CREATE TABLE dest1(mydata STRING)
+PREHOOK: query: -- Create a table with binary output format
+CREATE TABLE dest1(mydata STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
@@ -8,7 +9,8 @@ STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE dest1(mydata STRING)
+POSTHOOK: query: -- Create a table with binary output format
+CREATE TABLE dest1(mydata STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
@@ -19,7 +21,8 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-PREHOOK: query: EXPLAIN EXTENDED
+PREHOOK: query: -- Insert into that table using transform
+EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1
 SELECT TRANSFORM(*)
   USING 'cat'
@@ -32,7 +35,8 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
+POSTHOOK: query: -- Insert into that table using transform
+EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1
 SELECT TRANSFORM(*)
   USING 'cat'
@@ -368,11 +372,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.mydata SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest1
+PREHOOK: query: -- Test the result
+SELECT * FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1
+POSTHOOK: query: -- Test the result
+SELECT * FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####

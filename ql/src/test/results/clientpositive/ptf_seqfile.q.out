@@ -33,7 +33,8 @@ PREHOOK: Output: default@part_seq
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part.seq' overwrite into table part_seq
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part_seq
-PREHOOK: query: select p_mfgr, p_name, p_size, 
+PREHOOK: query: -- testWindowingPTFWithPartSeqFile
+select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
@@ -43,7 +44,8 @@ order by p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_seq
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_size, 
+POSTHOOK: query: -- testWindowingPTFWithPartSeqFile
+select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1

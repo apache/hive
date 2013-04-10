@@ -1,7 +1,11 @@
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_autho_test as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_autho_test as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test
@@ -416,9 +420,11 @@ PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: revoke select on table src_autho_test from role src_role
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: drop role src_role
+PREHOOK: query: -- drop role
+drop role src_role
 PREHOOK: type: DROPROLE
-POSTHOOK: query: drop role src_role
+POSTHOOK: query: -- drop role
+drop role src_role
 POSTHOOK: type: DROPROLE
 PREHOOK: query: drop table src_autho_test
 PREHOOK: type: DROPTABLE

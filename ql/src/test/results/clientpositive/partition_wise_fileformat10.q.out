@@ -1,6 +1,8 @@
-PREHOOK: query: create table prt(key string, value string) partitioned by (dt string)
+PREHOOK: query: -- This tests that the schema can be changed for binary serde data
+create table prt(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table prt(key string, value string) partitioned by (dt string)
+POSTHOOK: query: -- This tests that the schema can be changed for binary serde data
+create table prt(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@prt
 PREHOOK: query: insert overwrite table prt partition(dt='1') select * from src where key = 238

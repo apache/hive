@@ -80,9 +80,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline
 #### A masked pattern was here ####
 random_string	NULL
-PREHOOK: query: explain select * from (select * from src) a where unix_timestamp(a.key) > 10
+PREHOOK: query: -- PPD
+explain select * from (select * from src) a where unix_timestamp(a.key) > 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select * from src) a where unix_timestamp(a.key) > 10
+POSTHOOK: query: -- PPD
+explain select * from (select * from src) a where unix_timestamp(a.key) > 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (> (TOK_FUNCTION unix_timestamp (. (TOK_TABLE_OR_COL a) key)) 10))))

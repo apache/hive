@@ -1,8 +1,10 @@
-PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+PREHOOK: query: -- disable map-side aggregation
+SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+POSTHOOK: query: -- disable map-side aggregation
+SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -106,11 +108,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [26.0,255.5,479.0,491.0]
-PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+PREHOOK: query: -- enable map-side aggregation
+SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
+POSTHOOK: query: -- enable map-side aggregation
+SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

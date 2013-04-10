@@ -2,7 +2,8 @@ PREHOOK: query: DROP TABLE part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE part
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE part( 
+PREHOOK: query: -- data setup
+CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -14,7 +15,8 @@ PREHOOK: query: CREATE TABLE part(
     p_comment STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE part( 
+POSTHOOK: query: -- data setup
+CREATE TABLE part( 
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -33,13 +35,15 @@ PREHOOK: Output: default@part
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part
-PREHOOK: query: select p_size,
+PREHOOK: query: -- 1. testQueryLevelPartitionColsNotInSelect
+select p_size,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_size,
+POSTHOOK: query: -- 1. testQueryLevelPartitionColsNotInSelect
+select p_size,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 POSTHOOK: type: QUERY
@@ -71,13 +75,15 @@ POSTHOOK: Input: default@part
 2	5190.08
 46	6208.18
 23	7672.66
-PREHOOK: query: select p_size,
+PREHOOK: query: -- 2. testWindowPartitionColsNotInSelect
+select p_size,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_size,
+POSTHOOK: query: -- 2. testWindowPartitionColsNotInSelect
+select p_size,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 POSTHOOK: type: QUERY
@@ -109,13 +115,15 @@ POSTHOOK: Input: default@part
 2	5190.08
 46	6208.18
 23	7672.66
-PREHOOK: query: select p_mfgr,
+PREHOOK: query: -- 3. testHavingColNotInSelect
+select p_mfgr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr,
+POSTHOOK: query: -- 3. testHavingColNotInSelect
+select p_mfgr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
 from part
 POSTHOOK: type: QUERY

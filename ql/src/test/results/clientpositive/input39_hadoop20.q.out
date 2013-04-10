@@ -1,6 +1,12 @@
-PREHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+
+create table t1(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+
+create table t1(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1
 PREHOOK: query: create table t2(key string, value string) partitioned by (ds string)

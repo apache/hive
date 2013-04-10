@@ -15,9 +15,11 @@ POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldS
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
+PREHOOK: query: -- automatic indexing
+EXPLAIN SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
+POSTHOOK: query: -- automatic indexing
+EXPLAIN SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]

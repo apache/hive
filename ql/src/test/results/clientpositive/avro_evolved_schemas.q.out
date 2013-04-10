@@ -1,4 +1,5 @@
-PREHOOK: query: CREATE TABLE doctors_with_new_field 
+PREHOOK: query: -- verify that new fields in schema get propagated to table scans
+CREATE TABLE doctors_with_new_field 
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -33,7 +34,8 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE doctors_with_new_field 
+POSTHOOK: query: -- verify that new fields in schema get propagated to table scans
+CREATE TABLE doctors_with_new_field 
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS

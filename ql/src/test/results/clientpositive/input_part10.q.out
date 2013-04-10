@@ -1,4 +1,7 @@
-PREHOOK: query: CREATE TABLE part_special (
+PREHOOK: query: -- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
+CREATE TABLE part_special (
   a STRING,
   b STRING
 ) PARTITIONED BY (
@@ -6,7 +9,10 @@ PREHOOK: query: CREATE TABLE part_special (
   ts STRING
 )
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE part_special (
+POSTHOOK: query: -- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
+CREATE TABLE part_special (
   a STRING,
   b STRING
 ) PARTITIONED BY (

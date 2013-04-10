@@ -152,11 +152,13 @@ pcol1               	string              	None
 pcol2               	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE alter3_src
+PREHOOK: query: -- Cleanup
+DROP TABLE alter3_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter3_src
 PREHOOK: Output: default@alter3_src
-POSTHOOK: query: DROP TABLE alter3_src
+POSTHOOK: query: -- Cleanup
+DROP TABLE alter3_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_src
 POSTHOOK: Output: default@alter3_src
@@ -196,9 +198,13 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: CREATE DATABASE alter3_db
+PREHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter3_db
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: CREATE DATABASE alter3_db
+POSTHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter3_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]

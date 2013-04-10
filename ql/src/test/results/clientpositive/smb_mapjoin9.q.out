@@ -8,13 +8,15 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table hive_test_smb_bucket2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hive_test_smb_bucket2
-PREHOOK: query: explain extended
+PREHOOK: query: -- empty partitions (HIVE-3205)
+explain extended
 SELECT /* + MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
 ON a.key = b.key WHERE a.ds = '2010-10-15' and b.ds='2010-10-15' and  b.key IS NOT NULL
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: -- empty partitions (HIVE-3205)
+explain extended
 SELECT /* + MAPJOIN(b) */ b.key as k1, b.value, b.ds, a.key as k2
 FROM hive_test_smb_bucket1 a JOIN
 hive_test_smb_bucket2 b
