@@ -61,6 +61,6 @@ STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH "../data/files/kv7.txt" INTO TABLE serde_regex1;
 
-SELECT key, value FROM serde_regex1 ORDER BY key;
+SELECT key, value FROM serde_regex1 ORDER BY key, value;
 
 DROP TABLE serde_regex1;
