@@ -10546,34 +10546,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new LinkedHashMap<String[], ColumnInfo>();
     pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
-      if (!colInfo.isHiddenVirtualCol()) {
-        String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-        /*
-         * if we have already encountered this colInfo internalName.
-         * We encounter it again because it must be put for the Having clause.
-         * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
-         */
-        if ( colsAddedByHaving.containsKey(alias)) {
-          continue;
-        }
-        ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
-        ColumnInfo eColInfo = new ColumnInfo(
-            SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
-            colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+      String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+      /*
+       * if we have already encountered this colInfo internalName.
+       * We encounter it again because it must be put for the Having clause.
+       * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
+       */
+      if ( colsAddedByHaving.containsKey(alias)) {
+        continue;
+      }
+      ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
+      ColumnInfo eColInfo = new ColumnInfo(
+          SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
+          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
 
-        if ( astNode == null ) {
-          extractRR.put(alias[0], alias[1], eColInfo);
-        }
-        else {
-          /*
-           * in case having clause refers to this column may have been added twice;
-           * once with the ASTNode.toStringTree as the alias
-           * and then with the real alias.
-           */
-          extractRR.putExpression(astNode, eColInfo);
-          if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
-            colsAddedByHaving.put(alias, eColInfo);
-          }
+      if ( astNode == null ) {
+        extractRR.put(alias[0], alias[1], eColInfo);
+      }
+      else {
+        /*
+         * in case having clause refers to this column may have been added twice;
+         * once with the ASTNode.toStringTree as the alias
+         * and then with the real alias.
+         */
+        extractRR.putExpression(astNode, eColInfo);
+        if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
+          colsAddedByHaving.put(alias, eColInfo);
         }
       }
     }

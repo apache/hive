@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -54,8 +55,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
+@SuppressWarnings("deprecation")
 public class PTFDeserializer {
 
   PTFDesc ptfDesc;
@@ -83,7 +88,7 @@ public class PTFDeserializer {
     while ( !ptfChain.isEmpty() ) {
       currentDef = ptfChain.pop();
       if ( currentDef instanceof PTFQueryInputDef) {
-        initialize((PTFQueryInputDef)currentDef);
+        initialize((PTFQueryInputDef)currentDef, inputOI);
       }
       else if ( currentDef instanceof WindowTableFunctionDef) {
         initializeWindowing((WindowTableFunctionDef)currentDef);
@@ -101,8 +106,6 @@ public class PTFDeserializer {
      * 1. setup resolve, make connections
      */
     TableFunctionEvaluator tEval = def.getTFunction();
-    /*WindowingTableFunctionResolver tResolver = (WindowingTableFunctionResolver)
-        FunctionRegistry.getTableFunctionResolver(def.getName());*/
     WindowingTableFunctionResolver tResolver =
         (WindowingTableFunctionResolver) constructResolver(def.getResolverClassName());
     tResolver.initialize(ptfDesc, def, tEval);
@@ -141,7 +144,7 @@ public class PTFDeserializer {
       StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
           aliases, fieldOIs);
       tResolver.setWdwProcessingOutputOI(wdwOutOI);
-      initialize(def.getOutputFromWdwFnProcessing());
+      initialize(def.getOutputFromWdwFnProcessing(), wdwOutOI);
     }
     else {
       def.setOutputFromWdwFnProcessing(inpShape);
@@ -161,8 +164,8 @@ public class PTFDeserializer {
     /*
      * 4. give Evaluator chance to setup for Output execution; setup Output shape.
      */
-    initialize(def.getOutputShape());
     tResolver.initializeOutputOI();
+    initialize(def.getOutputShape(), tEval.getOutputOI());
 
     /*
      * If we have windowExpressions then we convert to Std. Object to process;
@@ -175,9 +178,9 @@ public class PTFDeserializer {
     }
   }
 
-  protected void initialize(PTFQueryInputDef def) throws HiveException {
+  protected void initialize(PTFQueryInputDef def, StructObjectInspector OI) throws HiveException {
     ShapeDetails outShape = def.getOutputShape();
-    initialize(outShape);
+    initialize(outShape, OI);
   }
 
   protected void initialize(PartitionedTableFunctionDef def) throws HiveException {
@@ -206,7 +209,7 @@ public class PTFDeserializer {
     if (tEval.isTransformsRawInput())
     {
       tResolver.initializeRawInputOI();
-      initialize(def.getRawInputShape());
+      initialize(def.getRawInputShape(), tEval.getRawInputOI());
     }
     else {
       def.setRawInputShape(inpShape);
@@ -218,7 +221,7 @@ public class PTFDeserializer {
      * 4. give Evaluator chance to setup for Output execution; setup Output shape.
      */
     tResolver.initializeOutputOI();
-    initialize(def.getOutputShape());
+    initialize(def.getOutputShape(), tEval.getOutputOI());
   }
 
   static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException
@@ -286,10 +289,11 @@ public class PTFDeserializer {
     return outOI;
   }
 
-  protected void initialize(ShapeDetails shp) throws HiveException {
+  protected void initialize(ShapeDetails shp, StructObjectInspector OI) throws HiveException {
     String serdeClassName = shp.getSerdeClassName();
     Properties serDeProps = new Properties();
-    Map<String, String> serdePropsMap = shp.getSerdeProps();
+    Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
+    addOIPropertiestoSerDePropsMap(OI, serdePropsMap);
     for (String serdeName : serdePropsMap.keySet()) {
       serDeProps.setProperty(serdeName, serdePropsMap.get(serdeName));
     }
@@ -326,6 +330,45 @@ public class PTFDeserializer {
     catch(Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI,
+      Map<String,String> serdePropsMap) {
+
+    if ( serdePropsMap == null ) {
+      return;
+    }
+
+    ArrayList<? extends Object>[] tInfo = getTypeMap(OI);
+
+    ArrayList<String> columnNames = (ArrayList<String>) tInfo[0];
+    ArrayList<TypeInfo> fields = (ArrayList<TypeInfo>) tInfo[1];
+    StringBuilder cNames = new StringBuilder();
+    StringBuilder cTypes = new StringBuilder();
+
+    for (int i = 0; i < fields.size(); i++)
+    {
+      cNames.append(i > 0 ? "," : "");
+      cTypes.append(i > 0 ? "," : "");
+      cNames.append(columnNames.get(i));
+      cTypes.append(fields.get(i).getTypeName());
+    }
+
+    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
+        cNames.toString());
+    serdePropsMap.put(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
+        cTypes.toString());
+  }
+
+  private static ArrayList<? extends Object>[] getTypeMap(
+      StructObjectInspector oi) {
+    StructTypeInfo t = (StructTypeInfo) TypeInfoUtils
+        .getTypeInfoFromObjectInspector(oi);
+    ArrayList<String> fnames = t.getAllStructFieldNames();
+    ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
+    return new ArrayList<?>[]
+    { fnames, fields };
   }
 
 }

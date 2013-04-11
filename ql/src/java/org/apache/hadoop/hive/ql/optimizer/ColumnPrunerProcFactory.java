@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,7 +67,6 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
@@ -79,8 +77,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -163,16 +159,11 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * - Pruning can only be done for Windowing. PTFs are black boxes,
-   * we assume all columns are needed.
+   *   we assume all columns are needed.
    * - add column names referenced in WindowFn args and in WindowFn expressions
-   * to the pruned list of the child Select Op.
-   * - Prune the Column names & types serde properties in each of the Shapes in the PTF Chain:
-   *    - the InputDef's output shape
-   *    - Window Tabl Functions: window output shape & output shape.
-   * - Why is pruning the Column names & types in the serde properties enough?
-   *   - because during runtime we rebuild the OIs using these properties.
+   *   to the pruned list of the child Select Op.
    * - finally we set the prunedColList on the ColumnPrunerContx;
-   * and update the RR & signature on the PTFOp.
+   *   and update the RR & signature on the PTFOp.
    */
   public static class ColumnPrunerPTFProc implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
@@ -194,10 +185,6 @@ public final class ColumnPrunerProcFactory {
       //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
       prunedCols = new ArrayList<String>(prunedCols);
       prunedColumnsList(prunedCols, def);
-      setSerdePropsOfShape(def.getInput().getOutputShape(), prunedCols);
-      setSerdePropsOfShape(def.getOutputFromWdwFnProcessing(), prunedCols);
-      setSerdePropsOfShape(def.getOutputShape(), prunedCols);
-
       RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
       RowResolver newRR = buildPrunedRR(prunedCols, oldRR, sig);
       cppCtx.getPrunedColLists().put(op, prunedInputList(prunedCols, def));
@@ -253,47 +240,6 @@ public final class ColumnPrunerProcFactory {
            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
          }
        }
-    }
-
-    private List<String> getLowerCasePrunedCols(List<String> prunedCols){
-      List<String> lowerCasePrunedCols = new ArrayList<String>();
-      for (String col : prunedCols) {
-        lowerCasePrunedCols.add(col.toLowerCase());
-      }
-      return lowerCasePrunedCols;
-    }
-
-    /*
-     * reconstruct Column names & types list based on the prunedCols list.
-     */
-    private void setSerdePropsOfShape(ShapeDetails shp, List<String> prunedCols) {
-      List<String> columnNames = Arrays.asList(shp.getSerdeProps().get(
-          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS).split(","));
-      List<TypeInfo> columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(shp.getSerdeProps().get(
-              org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
-      /*
-       * fieldNames in OI are lower-cased. So we compare lower cased names for now.
-       */
-      prunedCols = getLowerCasePrunedCols(prunedCols);
-
-      StringBuilder cNames = new StringBuilder();
-      StringBuilder cTypes = new StringBuilder();
-
-      boolean addComma = false;
-      for(int i=0; i < columnNames.size(); i++) {
-        if ( prunedCols.contains(columnNames.get(i)) ) {
-          cNames.append(addComma ? "," : "");
-          cTypes.append(addComma ? "," : "");
-          cNames.append(columnNames.get(i));
-          cTypes.append(columnTypes.get(i));
-          addComma = true;
-        }
-      }
-      shp.getSerdeProps().put(
-          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cNames.toString());
-      shp.getSerdeProps().put(
-          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, cTypes.toString());
     }
 
     /*
