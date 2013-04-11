@@ -27,8 +27,6 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="sqlline" name="sqlline" rev="${sqlline.version}" branch="${sqlline.branch}"
-                transitive="false"/>
     <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
                 conf="compile->default" />
   </dependencies>
