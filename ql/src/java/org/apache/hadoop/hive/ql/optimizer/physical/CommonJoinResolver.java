@@ -234,11 +234,8 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
     }
 
     // create map join task and set big table as bigTablePosition
-    private ObjectPair<MapRedTask, String> convertTaskToMapJoinTask(String xml,
-        int bigTablePosition) throws UnsupportedEncodingException, SemanticException {
-      // deep copy a new mapred work from xml
-      InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      MapredWork newWork = Utilities.deserializeMapRedWork(in, physicalContext.getConf());
+    private ObjectPair<MapRedTask, String> convertTaskToMapJoinTask(MapredWork newWork,
+        int bigTablePosition) throws SemanticException {
       // create a mapred task for this work
       MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
           .getParseContext().getConf());
@@ -369,11 +366,10 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
         String bigTableAlias = null;
         currWork.setOpParseCtxMap(parseCtx.getOpParseCtx());
         currWork.setJoinTree(joinTree);
-        String xml = currWork.toXML();
 
         if (convertJoinMapJoin) {
           // create map join task and set big table as bigTablePosition
-          MapRedTask newTask = convertTaskToMapJoinTask(xml, bigTablePosition).getFirst();
+          MapRedTask newTask = convertTaskToMapJoinTask(currWork, bigTablePosition).getFirst();
 
           newTask.setTaskTag(Task.MAPJOIN_ONLY_NOBACKUP);
           replaceTask(currTask, newTask, physicalContext);
@@ -392,14 +388,19 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
 
         long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
             HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
+        String xml = currWork.toXML();
         for (int i = 0; i < numAliases; i++) {
           // this table cannot be big table
           if (!bigTableCandidates.contains(i)) {
             continue;
           }
 
+          // deep copy a new mapred work from xml
+          InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+          MapredWork newWork = Utilities.deserializeMapRedWork(in, physicalContext.getConf());
+
           // create map join task and set big table as i
-          ObjectPair<MapRedTask, String> newTaskAlias = convertTaskToMapJoinTask(xml, i);
+          ObjectPair<MapRedTask, String> newTaskAlias = convertTaskToMapJoinTask(newWork, i);          
           MapRedTask newTask = newTaskAlias.getFirst();
           bigTableAlias = newTaskAlias.getSecond();
 
@@ -502,10 +503,10 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       currTask.setParentTasks(null);
       if (parentTasks != null) {
         for (Task<? extends Serializable> tsk : parentTasks) {
-          // make new generated task depends on all the parent tasks of current task.
-          tsk.addDependentTask(newTask);
           // remove the current task from its original parent task's dependent task
           tsk.removeDependentTask(currTask);
+          // make new generated task depends on all the parent tasks of current task.
+          tsk.addDependentTask(newTask);
         }
       } else {
         // remove from current root task and add conditional task to root tasks
@@ -518,10 +519,10 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       currTask.setChildTasks(null);
       if (oldChildTasks != null) {
         for (Task<? extends Serializable> tsk : oldChildTasks) {
-          // make new generated task depends on all the parent tasks of current task.
-          newTask.addDependentTask(tsk);
           // remove the current task from its original parent task's dependent task
           tsk.getParentTasks().remove(currTask);
+          // make new generated task depends on all the parent tasks of current task.
+          newTask.addDependentTask(tsk);
         }
       }
     }
