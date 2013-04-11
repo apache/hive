@@ -581,9 +581,9 @@ POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-238	val_238
 484	val_484
+238	val_238
+238	val_238
 PREHOOK: query: -- clean up
 drop table fact_daily
 PREHOOK: type: DROPTABLE

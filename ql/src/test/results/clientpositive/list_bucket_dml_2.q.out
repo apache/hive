@@ -470,8 +470,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-484	val_484	2008-04-08	11
 484	val_484	2008-04-08	12
+484	val_484	2008-04-08	11
 PREHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
 -- but query should succeed for 51 or 51 and val_14
 select * from srcpart where ds = '2008-04-08' and key = '51'
@@ -490,10 +490,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-51	val_51	2008-04-08	11
-51	val_51	2008-04-08	11
 51	val_51	2008-04-08	12
 51	val_51	2008-04-08	12
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	11
 PREHOOK: query: select * from list_bucketing_static_part where key = '51'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@list_bucketing_static_part

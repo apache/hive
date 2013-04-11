@@ -152,16 +152,18 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-495	1
 484	1
+495	1
 PREHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended SELECT x FROM fact_daily WHERE ds='1' and x=484

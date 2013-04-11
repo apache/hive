@@ -168,18 +168,20 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-495	val_484	1
 484	val_484	1
+495	val_484	1
 PREHOOK: query: -- The first subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended select x from (select x from fact_daily where ds = '1') subq where x = 484
@@ -217,28 +219,23 @@ STAGE PLANS:
                       expr: x
                       type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          columns _col0
-                          columns.types int
-                          escape.delim \
-                          serialization.format 1
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types int
+                        escape.delim \
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -344,30 +341,23 @@ STAGE PLANS:
                       expr: y
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
 #### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
+                  NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          columns _col0,_col1
-                          columns.types int:string
-                          escape.delim \
-                          serialization.format 1
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -415,7 +405,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- List Bucketing Query
 select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
@@ -708,30 +697,23 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
+              NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      columns _col0,_col1
-                      columns.types int:bigint
-                      escape.delim \
-                      serialization.format 1
-                TotalFiles: 1
-                GatherStats: false
-                MultiFileSpray: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types int:bigint
+                    escape.delim \
+                    serialization.format 1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
       Truncated Path -> Alias:
         /fact_tz/ds=1/x=484 [subq:fact_daily]
 
