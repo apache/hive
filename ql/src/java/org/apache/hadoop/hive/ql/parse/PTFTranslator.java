@@ -909,7 +909,7 @@ public class PTFTranslator {
   }
 
   @SuppressWarnings({"unchecked"})
-  private static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI,
+  public static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI,
       Map<String,String> serdePropsMap) {
 
     if ( serdePropsMap == null ) {

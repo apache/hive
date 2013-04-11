@@ -37,7 +37,7 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny
@@ -50,27 +50,27 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-Baltimore	1142	2010	10	20	6	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":20,"arr_delay":23.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":105.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":54.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":123.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":49.0,"fl_num":"1142"}]
-Baltimore	1142	2010	10	21	5	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":105.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":54.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":123.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":49.0,"fl_num":"1142"}]
-Baltimore	1142	2010	10	22	4	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":54.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":123.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":49.0,"fl_num":"1142"}]
-Baltimore	1142	2010	10	25	3	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":123.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":49.0,"fl_num":"1142"}]
-Baltimore	1142	2010	10	26	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":123.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":49.0,"fl_num":"1142"}]
-Chicago	1531	2010	10	21	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":53.0,"fl_num":"1531"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":16.0,"fl_num":"1531"}]
-Chicago	1531	2010	10	25	3	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":43.0,"fl_num":"1531"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":29.0,"fl_num":"1531"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":70.0,"fl_num":"1531"}]
-Chicago	1531	2010	10	26	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":29.0,"fl_num":"1531"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":70.0,"fl_num":"1531"}]
-Baltimore	1599	2010	10	21	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":28.0,"fl_num":"1599"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":18.0,"fl_num":"1599"}]
-Baltimore	1599	2010	10	25	3	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":106.0,"fl_num":"1599"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":90.0,"fl_num":"1599"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":92.0,"fl_num":"1599"}]
-Baltimore	1599	2010	10	26	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":26,"arr_delay":90.0,"fl_num":"1599"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":92.0,"fl_num":"1599"}]
-Chicago	361	2010	10	20	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":20,"arr_delay":42.0,"fl_num":"361"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":142.0,"fl_num":"361"}]
-Washington	7291	2010	10	27	2	[{"origin_city_name":"Washington","dest_city_name":"New York","year":2010,"month":10,"day_of_month":27,"arr_delay":26.0,"fl_num":"7291"},{"origin_city_name":"Washington","dest_city_name":"New York","year":2010,"month":10,"day_of_month":28,"arr_delay":45.0,"fl_num":"7291"}]
-Chicago	897	2010	10	20	4	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":20,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
-Chicago	897	2010	10	21	3	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":77.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
-Chicago	897	2010	10	22	2	[{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":24.0,"fl_num":"897"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":24,"arr_delay":113.0,"fl_num":"897"}]
+Baltimore	1142	2010	10	20	6	20
+Baltimore	1142	2010	10	21	5	21
+Baltimore	1142	2010	10	22	4	22
+Baltimore	1142	2010	10	25	3	25
+Baltimore	1142	2010	10	26	2	26
+Chicago	1531	2010	10	21	2	21
+Chicago	1531	2010	10	25	3	25
+Chicago	1531	2010	10	26	2	26
+Baltimore	1599	2010	10	21	2	21
+Baltimore	1599	2010	10	25	3	25
+Baltimore	1599	2010	10	26	2	26
+Chicago	361	2010	10	20	2	20
+Washington	7291	2010	10	27	2	27
+Chicago	897	2010	10	20	4	20
+Chicago	897	2010	10	21	3	21
+Chicago	897	2010	10	22	2	22
 PREHOOK: query: -- 2. Npath on 1 partition
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
@@ -78,7 +78,7 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 where fl_num = 1142
 PREHOOK: type: QUERY
@@ -91,12 +91,12 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 where fl_num = 1142
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-Baltimore	1142	2010	10	21	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":105.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":21,"arr_delay":28.0,"fl_num":"1599"}]
-Baltimore	1142	2010	10	22	2	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":54.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":22,"arr_delay":18.0,"fl_num":"1599"}]
-Baltimore	1142	2010	10	25	3	[{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":92.0,"fl_num":"1142"},{"origin_city_name":"Baltimore","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":106.0,"fl_num":"1599"},{"origin_city_name":"Chicago","dest_city_name":"New York","year":2010,"month":10,"day_of_month":25,"arr_delay":31.0,"fl_num":"361"}]
+Baltimore	1142	2010	10	21	2	21
+Baltimore	1142	2010	10	22	2	22
+Baltimore	1142	2010	10	25	3	25

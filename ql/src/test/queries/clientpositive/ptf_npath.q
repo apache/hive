@@ -20,7 +20,7 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    );       
 
 -- 2. Npath on 1 partition
@@ -30,7 +30,7 @@ from npath(on
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
-    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath as tpath') 
+    arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 where fl_num = 1142;       
    

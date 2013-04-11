@@ -20,16 +20,14 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator;
@@ -56,7 +54,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -90,8 +87,7 @@ public class NPath extends TableFunctionEvaluator
   /*
    * the names of the Columns of the input to NPath. Used to setup the tpath Struct column.
    */
-  private ArrayList<String> inputColumnNames;
-  private ArrayList<String> selectListNames;
+  private HashMap<String,String> inputColumnNamesMap;
 
   @Override
   public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException
@@ -124,20 +120,12 @@ public class NPath extends TableFunctionEvaluator
         message));
   }
 
-  public ArrayList<String> getInputColumnNames() {
-    return inputColumnNames;
+  public HashMap<String,String> getInputColumnNames() {
+    return inputColumnNamesMap;
   }
 
-  public void setInputColumnNames(ArrayList<String> inputColumnNames) {
-    this.inputColumnNames = inputColumnNames;
-  }
-
-  public ArrayList<String> getSelectListNames() {
-    return selectListNames;
-  }
-
-  public void setSelectListNames(ArrayList<String> selectListNames) {
-    this.selectListNames = selectListNames;
+  public void setInputColumnNames(HashMap<String,String> inputColumnNamesMap) {
+    this.inputColumnNamesMap = inputColumnNamesMap;
   }
 
   public static class NPathResolver extends TableFunctionResolver
@@ -204,8 +192,6 @@ public class NPath extends TableFunctionEvaluator
       }
       evaluator.resultExprInfo = resultExprParser.getResultExprInfo();
       StructObjectInspector OI = evaluator.resultExprInfo.resultOI;
-      evaluator.selectListNames = new ArrayList<String>();
-      extractOIColumnNames(resultExprParser.selectListInputOI, evaluator.selectListNames);
 
       setOutputOI(OI);
     }
@@ -356,15 +342,6 @@ public class NPath extends TableFunctionEvaluator
     public ArrayList<String> getOutputColumnNames() {
       NPath evaluator = (NPath) getEvaluator();
       return evaluator.resultExprInfo.getResultExprNames();
-    }
-
-
-
-    private static void extractOIColumnNames(StructObjectInspector OI,
-        ArrayList<String> oiColumnNames) {
-      StructTypeInfo t = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(OI);
-      ArrayList<String> fnames = t.getAllStructFieldNames();
-      oiColumnNames.addAll(fnames);
     }
 
   }
@@ -842,11 +819,9 @@ public class NPath extends TableFunctionEvaluator
       PTFInputDef inpDef) throws SemanticException {
     RowResolver rr = new RowResolver();
     RowResolver inputRR = inpDef.getOutputShape().getRr();
-    boolean inputColNamesKnown = evaluator.inputColumnNames != null;
 
-    if ( !inputColNamesKnown ) {
-      evaluator.inputColumnNames = new ArrayList<String>();
-    }
+    evaluator.inputColumnNamesMap = new HashMap<String,String>();
+    ArrayList<String> inputColumnNames = new ArrayList<String>();
 
     ArrayList<ObjectInspector> inpColOIs = new ArrayList<ObjectInspector>();
 
@@ -862,21 +837,21 @@ public class NPath extends TableFunctionEvaluator
       inExpr = PTFTranslator.getASTNode(inpCInfo, inputRR);
       if ( inExpr != null ) {
         rr.putExpression(inExpr, cInfo);
+        colAlias = inExpr.toStringTree().toLowerCase();
       }
       else {
         colAlias = colAlias == null ? cInfo.getInternalName() : colAlias;
         rr.put(cInfo.getTabAlias(), colAlias, cInfo);
       }
 
-      if ( !inputColNamesKnown ) {
-        evaluator.inputColumnNames.add(colAlias);
-      }
+      evaluator.inputColumnNamesMap.put(cInfo.getInternalName(), colAlias);
+      inputColumnNames.add(colAlias);
       inpColOIs.add(cInfo.getObjectInspector());
     }
 
     StandardListObjectInspector pathAttrOI =
         ObjectInspectorFactory.getStandardListObjectInspector(
-        ObjectInspectorFactory.getStandardStructObjectInspector(evaluator.inputColumnNames,
+        ObjectInspectorFactory.getStandardStructObjectInspector(inputColumnNames,
             inpColOIs));
 
     ColumnInfo pathColumn = new ColumnInfo(PATHATTR_NAME,
@@ -890,21 +865,29 @@ public class NPath extends TableFunctionEvaluator
 
   protected static StructObjectInspector createSelectListOI(NPath evaluator, PTFInputDef inpDef) {
     StructObjectInspector inOI = inpDef.getOutputShape().getOI();
+    ArrayList<String> inputColumnNames = new ArrayList<String>();
+    ArrayList<String> selectListNames = new ArrayList<String>();
     ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
     for(StructField f : inOI.getAllStructFieldRefs()) {
-      fieldOIs.add(f.getFieldObjectInspector());
+      String inputColName = evaluator.inputColumnNamesMap.get(f.getFieldName());
+      if ( inputColName != null ) {
+        inputColumnNames.add(inputColName);
+        selectListNames.add(f.getFieldName());
+        fieldOIs.add(f.getFieldObjectInspector());
+      }
     }
 
     StandardListObjectInspector pathAttrOI =
         ObjectInspectorFactory.getStandardListObjectInspector(
-        ObjectInspectorFactory.getStandardStructObjectInspector(evaluator.inputColumnNames,
+        ObjectInspectorFactory.getStandardStructObjectInspector(inputColumnNames,
             fieldOIs));
 
     ArrayList<ObjectInspector> selectFieldOIs = new ArrayList<ObjectInspector>();
     selectFieldOIs.addAll(fieldOIs);
     selectFieldOIs.add(pathAttrOI);
+    selectListNames.add(NPath.PATHATTR_NAME);
     return ObjectInspectorFactory.getStandardStructObjectInspector(
-        evaluator.selectListNames, selectFieldOIs);
+        selectListNames, selectFieldOIs);
   }
 
   public static Object getSelectListInput(Object currRow, ObjectInspector rowOI,
