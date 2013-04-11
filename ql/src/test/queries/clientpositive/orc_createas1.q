@@ -22,7 +22,7 @@ CREATE TABLE orc_createas1b
 
 EXPLAIN SELECT * FROM orc_createas1b LIMIT 5;
 
-SELECT * FROM orc_createas1b LIMIT 5;
+SELECT * FROM orc_createas1b ORDER BY key LIMIT 5;
 
 EXPLAIN
     CREATE TABLE orc_createas1c

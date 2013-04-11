@@ -199,11 +199,11 @@ STAGE PLANS:
               ListSink
 
 
-PREHOOK: query: SELECT * FROM orc_createas1b LIMIT 5
+PREHOOK: query: SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_createas1b
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM orc_createas1b LIMIT 5
+POSTHOOK: query: SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_createas1b
 #### A masked pattern was here ####
@@ -211,11 +211,11 @@ POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.Field
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
-165	val_165
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
 PREHOOK: query: EXPLAIN
     CREATE TABLE orc_createas1c
     STORED AS ORC AS 
