@@ -969,9 +969,11 @@
 
 <property>
   <name>hive.auto.convert.sortmerge.join.bigtable.selection.policy</name>
-  <value>org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ</value>
+  <value>org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ</value>
   <description>The policy to choose the big table for automatic conversion to sort-merge join.
-    By default, the leftmost table is assigned the big table. Other policies are based on size:
+    By default, the table with the largest partitions is assigned the big table. All policies are:
+    . based on position of the table - the leftmost table is selected
+    org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSMJ.
     . based on total size (all the partitions selected in the query) of the table 
     org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ.
     . based on average size (all the partitions selected in the query) of the table 
