@@ -97,7 +97,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -144,7 +143,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcpart
               numFiles 1
-              numPartitions 4
               numRows 0
               partition_columns ds/hr
               rawDataSize 0
@@ -213,11 +211,13 @@ STAGE PLANS:
 
 PREHOOK: query: insert overwrite table list_bucketing_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08
 POSTHOOK: query: insert overwrite table list_bucketing_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=11
@@ -326,11 +326,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: select count(1) from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -341,11 +343,13 @@ POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=12).va
 1000
 PREHOOK: query: select count(1) from list_bucketing_dynamic_part where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part
 PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from list_bucketing_dynamic_part where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part
 POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -356,11 +360,13 @@ POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=12).va
 1000
 PREHOOK: query: select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -445,7 +451,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_dynamic_part
               numFiles 3
-              numPartitions 2
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -492,7 +497,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.list_bucketing_dynamic_part
               numFiles 3
-              numPartitions 2
               numRows 500
               partition_columns ds/hr
               rawDataSize 5312
@@ -535,11 +539,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part
 PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part
 POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=12
 #### A masked pattern was here ####

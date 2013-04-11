@@ -350,7 +350,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	136                 
-	totalSize           	102                 
+	totalSize           	4096                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -593,7 +593,7 @@ STAGE PLANS:
               serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 102
+              totalSize 4096
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
@@ -613,7 +613,7 @@ STAGE PLANS:
                 serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 10688
+                totalSize 14682
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_dynamic_part
@@ -659,7 +659,7 @@ STAGE PLANS:
                 serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 10688
+                totalSize 14682
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_dynamic_part
@@ -707,8 +707,8 @@ POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).ke
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-484	val_484	2008-04-08	11
 484	val_484	2008-04-08	12
+484	val_484	2008-04-08	11
 PREHOOK: query: -- clean up
 drop table list_bucketing_dynamic_part
 PREHOOK: type: DROPTABLE
