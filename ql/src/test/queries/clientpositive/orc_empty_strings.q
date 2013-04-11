@@ -13,4 +13,4 @@ INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src limit 
 
 -- Test reading a column which has some empty strings
 
-SELECT * FROM test_orc;
+SELECT * FROM test_orc ORDER BY key;
