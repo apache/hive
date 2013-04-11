@@ -36,7 +36,7 @@ public class ReadEntity extends Entity implements Serializable {
   // The inputs will contain V and T (parent: V)
 
   // For views, the entities can be nested - by default, entities are at the top level
-  private Set<ReadEntity> parents = null;
+  private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
 
   /**
    * For serialization only.
@@ -57,7 +57,6 @@ public class ReadEntity extends Entity implements Serializable {
 
   private void initParent(ReadEntity parent) {
     if (parent != null) {
-      this.parents = new HashSet<ReadEntity>();
       this.parents.add(parent);
     }
   }
