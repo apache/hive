@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
@@ -420,6 +421,128 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
   }
 
+  private static final class DecimalStatisticsImpl extends ColumnStatisticsImpl
+      implements DecimalColumnStatistics {
+    private HiveDecimal minimum = null;
+    private HiveDecimal maximum = null;
+    private HiveDecimal sum = HiveDecimal.ZERO;
+
+    DecimalStatisticsImpl() {
+    }
+
+    DecimalStatisticsImpl(OrcProto.ColumnStatistics stats) {
+      super(stats);
+      OrcProto.DecimalStatistics dec = stats.getDecimalStatistics();
+      if (dec.hasMaximum()) {
+        maximum = new HiveDecimal(dec.getMaximum());
+      }
+      if (dec.hasMinimum()) {
+        minimum = new HiveDecimal(dec.getMinimum());
+      }
+      if (dec.hasSum()) {
+        sum = new HiveDecimal(dec.getSum());
+      } else {
+        sum = null;
+      }
+    }
+
+    @Override
+    void reset() {
+      super.reset();
+      minimum = null;
+      maximum = null;
+      sum = HiveDecimal.ZERO;
+    }
+
+    @Override
+    void updateDecimal(HiveDecimal value) {
+      if (minimum == null) {
+        minimum = value;
+        maximum = value;
+      } else if (minimum.compareTo(value) > 0) {
+        minimum = value;
+      } else if (maximum.compareTo(value) < 0) {
+        maximum = value;
+      }
+      if (sum != null) {
+        try {
+          sum = sum.add(value);
+        } catch (NumberFormatException nfe) {
+          sum = null;
+        }
+      }
+    }
+
+    @Override
+    void merge(ColumnStatisticsImpl other) {
+      super.merge(other);
+      DecimalStatisticsImpl dec = (DecimalStatisticsImpl) other;
+      if (minimum == null) {
+        minimum = dec.minimum;
+        maximum = dec.maximum;
+        sum = dec.sum;
+      } else if (dec.minimum != null) {
+        if (minimum.compareTo(dec.minimum) > 0) {
+          minimum = dec.minimum;
+        } else if (maximum.compareTo(dec.maximum) < 0) {
+          maximum = dec.maximum;
+        }
+        if (sum == null || dec.sum == null) {
+          sum = null;
+        } else {
+          sum = sum.add(dec.sum);
+        }
+      }
+    }
+
+    @Override
+    OrcProto.ColumnStatistics.Builder serialize() {
+      OrcProto.ColumnStatistics.Builder result = super.serialize();
+      OrcProto.DecimalStatistics.Builder dec =
+          OrcProto.DecimalStatistics.newBuilder();
+      if (getNumberOfValues() != 0) {
+        dec.setMinimum(minimum.toString());
+        dec.setMaximum(maximum.toString());
+      }
+      if (sum != null) {
+        dec.setSum(sum.toString());
+      }
+      result.setDecimalStatistics(dec);
+      return result;
+    }
+
+    @Override
+    public HiveDecimal getMinimum() {
+      return minimum;
+    }
+
+    @Override
+    public HiveDecimal getMaximum() {
+      return maximum;
+    }
+
+    @Override
+    public HiveDecimal getSum() {
+      return sum;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder(super.toString());
+      if (getNumberOfValues() != 0) {
+        buf.append(" min: ");
+        buf.append(minimum);
+        buf.append(" max: ");
+        buf.append(maximum);
+        if (sum != null) {
+          buf.append(" sum: ");
+          buf.append(sum);
+        }
+      }
+      return buf.toString();
+    }
+  }
+
   private long count = 0;
 
   ColumnStatisticsImpl(OrcProto.ColumnStatistics stats) {
@@ -449,6 +572,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void updateString(String value) {
     throw new UnsupportedOperationException("Can't update string");
+  }
+
+  void updateDecimal(HiveDecimal value) {
+    throw new UnsupportedOperationException("Can't update decimal");
   }
 
   void merge(ColumnStatisticsImpl stats) {
@@ -492,6 +619,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
             return new DoubleStatisticsImpl();
           case STRING:
             return new StringStatisticsImpl();
+          case DECIMAL:
+            return new DecimalStatisticsImpl();
           default:
             return new ColumnStatisticsImpl();
         }
@@ -509,6 +638,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       return new DoubleStatisticsImpl(stats);
     } else if (stats.hasStringStatistics()) {
       return new StringStatisticsImpl(stats);
+    } else if (stats.hasDecimalStatistics()) {
+      return new DecimalStatisticsImpl(stats);
     } else {
       return new ColumnStatisticsImpl(stats);
     }

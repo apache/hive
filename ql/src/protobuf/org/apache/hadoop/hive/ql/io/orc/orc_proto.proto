@@ -21,12 +21,19 @@ message BucketStatistics {
   repeated uint64 count = 1 [packed=true];
 }
 
+message DecimalStatistics {
+  optional string minimum = 1;
+  optional string maximum = 2;
+  optional string sum = 3;
+}
+
 message ColumnStatistics {
   optional uint64 numberOfValues = 1;
   optional IntegerStatistics intStatistics = 2;
   optional DoubleStatistics doubleStatistics = 3;
   optional StringStatistics stringStatistics = 4;
   optional BucketStatistics bucketStatistics = 5;
+  optional DecimalStatistics decimalStatistics = 6;
 }
 
 message RowIndexEntry {
@@ -47,7 +54,7 @@ message Stream {
     LENGTH = 2;
     DICTIONARY_DATA = 3;
     DICTIONARY_COUNT = 4;
-    NANO_DATA = 5;
+    SECONDARY = 5;
     ROW_INDEX = 6;
   }
   required Kind kind = 1;
@@ -85,6 +92,7 @@ message Type {
     MAP = 11;
     STRUCT = 12;
     UNION = 13;
+    DECIMAL = 14;
   }
   required Kind kind = 1;
   repeated uint32 subtypes = 2 [packed=true];
