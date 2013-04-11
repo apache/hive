@@ -246,7 +246,7 @@ public class TestStringRedBlackTree {
     test.test2();
     test.test3();
     TestSerializationUtils serUtils = new TestSerializationUtils();
-    serUtils.TestDoubles();
+    serUtils.testDoubles();
     TestDynamicArray test6 = new TestDynamicArray();
     test6.testByteArray();
     test6.testIntArray();

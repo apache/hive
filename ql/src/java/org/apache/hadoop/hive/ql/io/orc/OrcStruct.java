@@ -337,6 +337,8 @@ final class OrcStruct implements Writable {
             return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
           case TIMESTAMP:
             return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+          case DECIMAL:
+            return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
           default:
             throw new IllegalArgumentException("Unknown primitive type " +
               ((PrimitiveTypeInfo) info).getPrimitiveCategory());
@@ -379,6 +381,8 @@ final class OrcStruct implements Writable {
         return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
       case TIMESTAMP:
         return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+      case DECIMAL:
+        return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
       case STRUCT:
         return new OrcStructInspector(columnId, types);
       case UNION:

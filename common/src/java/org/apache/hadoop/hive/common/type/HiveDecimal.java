@@ -97,6 +97,14 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bd.compareTo(dec.bd);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || obj.getClass() != getClass()) {
+      return false;
+    }
+    return bd.equals(((HiveDecimal) obj).bd);
+  }
+
   public int scale() {
     return bd.scale();
   }

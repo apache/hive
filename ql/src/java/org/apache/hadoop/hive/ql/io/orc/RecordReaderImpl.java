@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -556,7 +557,7 @@ class RecordReaderImpl implements RecordReader {
       data = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA)), true);
       nanos = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
-          OrcProto.Stream.Kind.NANO_DATA)), false);
+          OrcProto.Stream.Kind.SECONDARY)), false);
     }
 
     @Override
@@ -607,6 +608,52 @@ class RecordReaderImpl implements RecordReader {
       items = countNonNulls(items);
       data.skip(items);
       nanos.skip(items);
+    }
+  }
+
+  private static class DecimalTreeReader extends TreeReader{
+    private InStream valueStream;
+    private RunLengthIntegerReader scaleStream;
+
+    DecimalTreeReader(int columnId) {
+      super(columnId);
+    }
+
+    @Override
+    void startStripe(Map<StreamName, InStream> streams,
+                     List<OrcProto.ColumnEncoding> encodings
+    ) throws IOException {
+      super.startStripe(streams, encodings);
+      valueStream = streams.get(new StreamName(columnId,
+          OrcProto.Stream.Kind.DATA));
+      scaleStream = new RunLengthIntegerReader(streams.get(
+          new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true);
+    }
+
+    @Override
+    void seek(PositionProvider[] index) throws IOException {
+      super.seek(index);
+      valueStream.seek(index[columnId]);
+      scaleStream.seek(index[columnId]);
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      super.next(previous);
+      if (valuePresent) {
+        return new HiveDecimal(SerializationUtils.readBigInteger(valueStream),
+            (int) scaleStream.next());
+      }
+      return null;
+    }
+
+    @Override
+    void skipRows(long items) throws IOException {
+      items = countNonNulls(items);
+      for(int i=0; i < items; i++) {
+        SerializationUtils.readBigInteger(valueStream);
+      }
+      scaleStream.skip(items);
     }
   }
 
@@ -1024,6 +1071,8 @@ class RecordReaderImpl implements RecordReader {
         return new BinaryTreeReader(columnId);
       case TIMESTAMP:
         return new TimestampTreeReader(columnId);
+      case DECIMAL:
+        return new DecimalTreeReader(columnId);
       case STRUCT:
         return new StructTreeReader(columnId, types, included);
       case LIST:
