@@ -1,8 +1,8 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
@@ -827,8 +827,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Path -> Sorted Columns:
-#### A masked pattern was here ####
       Truncated Path -> Alias:
         /src [src]
 
@@ -893,8 +891,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Path -> Sorted Columns:
-#### A masked pattern was here ####
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
