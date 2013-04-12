@@ -1005,7 +1005,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
                 for (int _i196 = 0; _i196 < _map195.size; ++_i196)
                 {
                   String _key197; // required
-                  String _val198; // optional
+                  String _val198; // required
                   _key197 = iprot.readString();
                   _val198 = iprot.readString();
                   struct.parameters.put(_key197, _val198);
@@ -1219,7 +1219,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           for (int _i207 = 0; _i207 < _map206.size; ++_i207)
           {
             String _key208; // required
-            String _val209; // optional
+            String _val209; // required
             _key208 = iprot.readString();
             _val209 = iprot.readString();
             struct.parameters.put(_key208, _val209);
