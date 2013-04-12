@@ -90,6 +90,8 @@ public class QBParseInfo {
    */
   private final HashMap<String, ArrayList<ASTNode>> aliasToLateralViews;
 
+  private final HashMap<String, ASTNode> destToLateralView;
+
   /* Order by clause */
   private final HashMap<String, ASTNode> destToOrderby;
   private final HashMap<String, Integer> destToLimit;
@@ -111,6 +113,7 @@ public class QBParseInfo {
     nameToDest = new HashMap<String, ASTNode>();
     nameToSample = new HashMap<String, TableSample>();
     exprToColumnAlias = new HashMap<ASTNode, String>();
+    destToLateralView = new HashMap<String, ASTNode>();
     destToSelExpr = new LinkedHashMap<String, ASTNode>();
     destToWhereExpr = new HashMap<String, ASTNode>();
     destToGroupby = new HashMap<String, ASTNode>();
@@ -552,6 +555,9 @@ public class QBParseInfo {
     return nameToSample;
   }
 
+  public HashMap<String, ASTNode> getDestToLateralView() {
+    return destToLateralView;
+  }
 
   protected static enum ClauseType {
     CLUSTER_BY_CLAUSE,
