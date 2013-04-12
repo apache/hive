@@ -1828,6 +1828,7 @@ body
    :
    insertClause
    selectClause
+   lateralView?
    whereClause?
    groupByClause?
    havingClause?
@@ -1836,11 +1837,12 @@ body
    distributeByClause?
    sortByClause?
    window_clause?
-   limitClause? -> ^(TOK_INSERT insertClause?
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
+   limitClause? -> ^(TOK_INSERT insertClause
+                     selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?)
    |
    selectClause
+   lateralView?
    whereClause?
    groupByClause?
    havingClause?
@@ -1850,7 +1852,7 @@ body
    sortByClause?
    window_clause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
+                     selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?)
    ;
 
