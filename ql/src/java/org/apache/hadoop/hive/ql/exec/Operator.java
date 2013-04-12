@@ -1549,6 +1549,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       start++;
     }
     builder.append(name);
+    start += name.length();
     if (added) {
       if (op.getNumChild() > 0) {
         List<Operator<?>> children = op.getChildOperators();
@@ -1559,7 +1560,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
               builder.append(' ');
             }
           }
-          toString(builder, visited, children.get(i), start += name.length());
+          toString(builder, visited, children.get(i), start);
         }
       }
       return true;
