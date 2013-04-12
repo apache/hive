@@ -25,11 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ExtractOperator;
@@ -37,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -56,6 +54,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
 /**
@@ -64,11 +63,14 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
  * insert overwrite table T1 select * from T2;
  * where T1 and T2 are bucketized/sorted on the same keys, we don't need a reducer to
  * enforce bucketing and sorting.
+ *
+ * It also optimizes queries of the form:
+ * insert overwrite table T1
+ * select * from T1 join T2 on T1.key = T2.key
+ * where T1, T2 and T3 are bucketized/sorted on the same key 'key', we don't need a reducer
+ * to enforce bucketing and sorting
  */
 public class BucketingSortingReduceSinkOptimizer implements Transform {
-
-  private static final Log LOG = LogFactory.getLog(BucketingSortingReduceSinkOptimizer.class
-      .getName());
 
   public BucketingSortingReduceSinkOptimizer() {
   }
@@ -77,7 +79,6 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    HiveConf conf = pctx.getConf();
 
     // process reduce sink added by hive.enforce.bucketing or hive.enforce.sorting
     opRules.put(new RuleRegExp("R1",
@@ -90,7 +91,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
-    // Create a list of topop nodes
+    // Create a list of top nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
@@ -117,7 +118,6 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
    *
    */
   public class BucketSortReduceSinkProcessor implements NodeProcessor {
-
     protected ParseContext pGraphContext;
 
     public BucketSortReduceSinkProcessor(ParseContext pGraphContext) {
@@ -142,28 +142,33 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     }
 
     // Get the sort positions and sort order for the table
-    private List<ObjectPair<Integer, Integer>> getSortPositions(List<Order> tabSortCols,
+    // The sort order contains whether the sorting is happening ascending or descending
+    private ObjectPair<List<Integer>, List<Integer>> getSortPositionsOrder(
+        List<Order> tabSortCols,
         List<FieldSchema> tabCols) {
-      List<ObjectPair<Integer, Integer>> posns = new ArrayList<ObjectPair<Integer, Integer>>();
+      List<Integer> sortPositions = new ArrayList<Integer>();
+      List<Integer> sortOrders = new ArrayList<Integer>();
       for (Order sortCol : tabSortCols) {
         int pos = 0;
         for (FieldSchema tabCol : tabCols) {
           if (sortCol.getCol().equals(tabCol.getName())) {
-            posns.add(new ObjectPair<Integer, Integer>(pos, sortCol.getOrder()));
+            sortPositions.add(pos);
+            sortOrders.add(sortCol.getOrder());
             break;
           }
           pos++;
         }
       }
-      return posns;
+      return new ObjectPair<List<Integer>, List<Integer>>(sortPositions, sortOrders);
     }
 
-    // Return true if the parition is bucketed/sorted by the specified positions
+    // Return true if the partition is bucketed/sorted by the specified positions
     // The number of buckets, the sort order should also match along with the
     // columns which are bucketed/sorted
     private boolean checkPartition(Partition partition,
         List<Integer> bucketPositionsDest,
-        List<ObjectPair<Integer, Integer>> sortPositionsDest,
+        List<Integer> sortPositionsDest,
+        List<Integer> sortOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = partition.getBucketCount();
@@ -173,10 +178,11 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
 
       List<Integer> partnBucketPositions =
           getBucketPositions(partition.getBucketCols(), partition.getTable().getCols());
-      List<ObjectPair<Integer, Integer>> partnSortPositions =
-          getSortPositions(partition.getSortCols(), partition.getTable().getCols());
+      ObjectPair<List<Integer>, List<Integer>> partnSortPositionsOrder =
+          getSortPositionsOrder(partition.getSortCols(), partition.getTable().getCols());
       return bucketPositionsDest.equals(partnBucketPositions) &&
-          sortPositionsDest.equals(partnSortPositions);
+          sortPositionsDest.equals(partnSortPositionsOrder.getFirst()) &&
+          sortOrderDest.equals(partnSortPositionsOrder.getSecond());
     }
 
     // Return true if the table is bucketed/sorted by the specified positions
@@ -184,7 +190,8 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
     // columns which are bucketed/sorted
     private boolean checkTable(Table table,
         List<Integer> bucketPositionsDest,
-        List<ObjectPair<Integer, Integer>> sortPositionsDest,
+        List<Integer> sortPositionsDest,
+        List<Integer> sortOrderDest,
         int numBucketsDest) {
       // The bucketing and sorting positions should exactly match
       int numBuckets = table.getNumBuckets();
@@ -194,12 +201,17 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
 
       List<Integer> tableBucketPositions =
           getBucketPositions(table.getBucketCols(), table.getCols());
-      List<ObjectPair<Integer, Integer>> tableSortPositions =
-          getSortPositions(table.getSortCols(), table.getCols());
+      ObjectPair<List<Integer>, List<Integer>> tableSortPositionsOrder =
+          getSortPositionsOrder(table.getSortCols(), table.getCols());
       return bucketPositionsDest.equals(tableBucketPositions) &&
-          sortPositionsDest.equals(tableSortPositions);
+          sortPositionsDest.equals(tableSortPositionsOrder.getFirst()) &&
+          sortOrderDest.equals(tableSortPositionsOrder.getSecond());
     }
 
+    // Store the bucket path to bucket number mapping in the table scan operator.
+    // Although one mapper per file is used (BucketizedInputHiveInput), it is possible that
+    // any mapper can pick up any file (depending on the size of the files). The bucket number
+    // corresponding to the input file is stored to name the output bucket file appropriately.
     private void storeBucketPathMapping(TableScanOperator tsOp, FileStatus[] srcs) {
       Map<String, Integer> bucketFileNameMapping = new HashMap<String, Integer>();
       for (int pos = 0; pos < srcs.length; pos++) {
@@ -222,12 +234,12 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
       // Store the mapping -> path, bucket number
       // This is needed since for the map-only job, any mapper can process any file.
       // For eg: if mapper 1 is processing the file corresponding to bucket 2, it should
-      // also output the file correspodning to bucket 2 of the output.
+      // also output the file corresponding to bucket 2 of the output.
       storeBucketPathMapping(tsOp, srcs);
     }
 
     // Remove the reduce sink operator
-    // Use bucketized hive input format so that one mapper processes exactly one file
+    // Use BucketizedHiveInputFormat so that one mapper processes exactly one file
     private void removeReduceSink(ReduceSinkOperator rsOp,
         TableScanOperator tsOp,
         FileSinkOperator fsOp) {
@@ -249,6 +261,97 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
         pos++;
       }
       return -1;
+    }
+
+    // The output columns for the destination table should match with the join keys
+    // This is to handle queries of the form:
+    // insert overwrite table T3
+    // select T1.key, T1.key2, UDF(T1.value, T2.value)
+    // from T1 join T2 on T1.key = T2.key and T1.key2 = T2.key2
+    // where T1, T2 and T3 are bucketized/sorted on key and key2
+    // Assuming T1 is the table on which the mapper is run, the following is true:
+    // . The number of buckets for T1 and T3 should be same
+    // . The bucketing/sorting columns for T1, T2 and T3 should be same
+    // . The sort order of T1 should match with the sort order for T3.
+    // . If T1 is partitioned, only a single partition of T1 can be selected.
+    // . The select list should contain with (T1.key, T1.key2) or (T2.key, T2.key2)
+    // . After the join, only selects and filters are allowed.
+    private boolean validateSMBJoinKeys(SMBJoinDesc smbJoinDesc,
+        List<ExprNodeColumnDesc> sourceTableBucketCols,
+        List<ExprNodeColumnDesc> sourceTableSortCols,
+        List<Integer> sortOrder) {
+      // The sort-merge join creates the output sorted and bucketized by the same columns.
+      // This can be relaxed in the future if there is a requirement.
+      if (!sourceTableBucketCols.equals(sourceTableSortCols)) {
+        return false;
+      }
+
+      // Get the total number of columns selected, and for each output column, store the
+      // base table it points to. For
+      // insert overwrite table T3
+      // select T1.key, T1.key2, UDF(T1.value, T2.value)
+      // from T1 join T2 on T1.key = T2.key and T1.key2 = T2.key2
+      // the following arrays are created
+      // [0, 0, 0, 1] --> [T1, T1, T1, T2] (table mapping)
+      // [0, 1, 2, 0] --> [T1.0, T1.1, T1.2, T2.0] (table columns mapping)
+      Byte[] tagOrder = smbJoinDesc.getTagOrder();
+      Map<Byte, List<Integer>> retainList = smbJoinDesc.getRetainList();
+      int totalNumberColumns = 0;
+      for (Byte tag : tagOrder) {
+        totalNumberColumns += retainList.get(tag).size();
+      }
+
+      byte[] columnTableMappings = new byte[totalNumberColumns];
+      int[] columnNumberMappings = new int[totalNumberColumns];
+      int currentColumnPosition = 0;
+      for (Byte tag : tagOrder) {
+        for (int pos = 0; pos < retainList.get(tag).size(); pos++) {
+          columnTableMappings[currentColumnPosition] = tag;
+          columnNumberMappings[currentColumnPosition] = pos;
+          currentColumnPosition++;
+        }
+      }
+
+      // All output columns used for bucketing/sorting of the destination table should
+      // belong to the same input table
+      //   insert overwrite table T3
+      //   select T1.key, T2.key2, UDF(T1.value, T2.value)
+      //   from T1 join T2 on T1.key = T2.key and T1.key2 = T2.key2
+      // is not optimized, whereas the insert is optimized if the select list is either changed to
+      // (T1.key, T1.key2, UDF(T1.value, T2.value)) or (T2.key, T2.key2, UDF(T1.value, T2.value))
+      // Get the input table and make sure the keys match
+      List<String> outputColumnNames = smbJoinDesc.getOutputColumnNames();
+      byte tableTag = -1;
+      int[] columnNumbersExprList = new int[sourceTableBucketCols.size()];
+      int currentColPosition = 0;
+      for (ExprNodeColumnDesc bucketCol : sourceTableBucketCols) {
+        String colName = bucketCol.getColumn();
+        int colNumber = outputColumnNames.indexOf(colName);
+        if (colNumber < 0) {
+          return false;
+        }
+        if (tableTag < 0) {
+          tableTag = columnTableMappings[colNumber];
+        }
+        else if (tableTag != columnTableMappings[colNumber]) {
+          return false;
+        }
+        columnNumbersExprList[currentColPosition++] = columnNumberMappings[colNumber];
+      }
+
+      List<ExprNodeDesc> allExprs = smbJoinDesc.getExprs().get(tableTag);
+      List<ExprNodeDesc> keysSelectedTable = smbJoinDesc.getKeys().get(tableTag);
+      currentColPosition = 0;
+      for (ExprNodeDesc keySelectedTable : keysSelectedTable) {
+        if (!(keySelectedTable instanceof ExprNodeColumnDesc)) {
+          return false;
+        }
+        if (!allExprs.get(columnNumbersExprList[currentColPosition++]).isSame(keySelectedTable)) {
+          return false;
+        }
+      }
+
+      return true;
     }
 
     @Override
@@ -283,14 +386,21 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
       if (destTable == null) {
         return null;
       }
+      int numBucketsDestination = destTable.getNumBuckets();
 
+      // Get the positions for sorted and bucketed columns
+      // For sorted columns, also get the order (ascending/descending) - that should
+      // also match for this to be converted to a map-only job.
       // Get the positions for sorted and bucketed columns
       // For sorted columns, also get the order (ascending/descending) - that should
       // also match for this to be converted to a map-only job.
       List<Integer> bucketPositions =
           getBucketPositions(destTable.getBucketCols(), destTable.getCols());
-      List<ObjectPair<Integer, Integer>> sortPositions =
-          getSortPositions(destTable.getSortCols(), destTable.getCols());
+      ObjectPair<List<Integer>, List<Integer>> sortOrderPositions =
+          getSortPositionsOrder(destTable.getSortCols(), destTable.getCols());
+      List<Integer> sortPositions = sortOrderPositions.getFirst();
+      List<Integer> sortOrder = sortOrderPositions.getSecond();
+      boolean useBucketSortPositions = true;
 
       // Only selects and filters are allowed
       Operator<? extends OperatorDesc> op = rsOp;
@@ -298,119 +408,179 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
       // bucketed/sorted columns for the destination table
       List<ExprNodeColumnDesc> sourceTableBucketCols = new ArrayList<ExprNodeColumnDesc>();
       List<ExprNodeColumnDesc> sourceTableSortCols = new ArrayList<ExprNodeColumnDesc>();
+      op = op.getParentOperators().get(0);
 
       while (true) {
-        if (op.getParentOperators().size() > 1) {
-          return null;
-        }
-
-        op = op.getParentOperators().get(0);
         if (!(op instanceof TableScanOperator) &&
             !(op instanceof FilterOperator) &&
-            !(op instanceof SelectOperator)) {
+            !(op instanceof SelectOperator) &&
+            !(op instanceof SMBMapJoinOperator)) {
           return null;
         }
 
-        // nothing to be done for filters - the output schema does not change.
-        if (op instanceof TableScanOperator) {
-          Table srcTable = pGraphContext.getTopToTable().get(op);
+        if (op instanceof SMBMapJoinOperator) {
+          // Bucketing and sorting keys should exactly match
+          if (!(bucketPositions.equals(sortPositions))) {
+            return null;
+          }
+          SMBMapJoinOperator smbOp = (SMBMapJoinOperator) op;
+          SMBJoinDesc smbJoinDesc = smbOp.getConf();
+          int posBigTable = smbJoinDesc.getPosBigTable();
 
-          // Find the positions of the bucketed columns in the table corresponding
-          // to the select list.
-          // Consider the following scenario:
-          // T1(key, value1, value2) bucketed/sorted by key into 2 buckets
-          // T2(dummy, key, value1, value2) bucketed/sorted by key into 2 buckets
-          // A query like: insert overwrite table T2 select 1, key, value1, value2 from T1
-          // should be optimized.
-
-          // Start with the destination: T2, bucketed/sorted position is [1]
-          // At the source T1, the column corresponding to that position is [key], which
-          // maps to column [0] of T1, which is also bucketed/sorted into the same
-          // number of buckets
-          List<Integer> newBucketPositions = new ArrayList<Integer>();
-          for (int pos = 0; pos < bucketPositions.size(); pos++) {
-            ExprNodeColumnDesc col = sourceTableBucketCols.get(pos);
-            String colName = col.getColumn();
-            int bucketPos = findColumnPosition(srcTable.getCols(), colName);
-            if (bucketPos < 0) {
-              return null;
-            }
-            newBucketPositions.add(bucketPos);
+          // join keys dont match the bucketing keys
+          List<ExprNodeDesc> keysBigTable = smbJoinDesc.getKeys().get((byte) posBigTable);
+          if (keysBigTable.size() != bucketPositions.size()) {
+            return null;
           }
 
-          // Find the positions/order of the sorted columns in the table corresponding
-          // to the select list.
-          List<ObjectPair<Integer, Integer>> newSortPositions =
-              new ArrayList<ObjectPair<Integer, Integer>>();
-          for (int pos = 0; pos < sortPositions.size(); pos++) {
-            ExprNodeColumnDesc col = sourceTableSortCols.get(pos);
-            String colName = col.getColumn();
-            int sortPos = findColumnPosition(srcTable.getCols(), colName);
-            if (sortPos < 0) {
-              return null;
-            }
-            newSortPositions.add(
-                new ObjectPair<Integer, Integer>(sortPos, sortPositions.get(pos).getSecond()));
+          if (!validateSMBJoinKeys(smbJoinDesc, sourceTableBucketCols,
+              sourceTableSortCols, sortOrder)) {
+            return null;
           }
 
+          sourceTableBucketCols.clear();
+          sourceTableSortCols.clear();
+          useBucketSortPositions = false;
 
-          if (srcTable.isPartitioned()) {
-            PrunedPartitionList prunedParts = pGraphContext.getOpToPartList().get(op);
-            List<Partition> partitions = prunedParts.getNotDeniedPartns();
-
-            // Support for dynamic partitions can be added later
-            // The following is not optimized:
-            // insert overwrite table T1(ds='1', hr) select key, value, hr from T2 where ds = '1';
-            // where T1 and T2 are bucketed by the same keys and partitioned by ds. hr
-            if ((partitions == null) || (partitions.isEmpty()) || (partitions.size() > 1)) {
+          for (ExprNodeDesc keyBigTable : keysBigTable) {
+            if (!(keyBigTable instanceof ExprNodeColumnDesc)) {
               return null;
             }
-            for (Partition partition : partitions) {
-              if (!checkPartition(partition, newBucketPositions, newSortPositions,
-                  pGraphContext.getFsopToTable().get(fsOp).getNumBuckets())) {
+            sourceTableBucketCols.add((ExprNodeColumnDesc) keyBigTable);
+            sourceTableSortCols.add((ExprNodeColumnDesc) keyBigTable);
+          }
+
+          // since it is a sort-merge join, only follow the big table
+          op = op.getParentOperators().get(posBigTable);
+        } else {
+          // nothing to be done for filters - the output schema does not change.
+          if (op instanceof TableScanOperator) {
+            assert !useBucketSortPositions;
+            Table srcTable = pGraphContext.getTopToTable().get(op);
+
+            // Find the positions of the bucketed columns in the table corresponding
+            // to the select list.
+            // Consider the following scenario:
+            // T1(key, value1, value2) bucketed/sorted by key into 2 buckets
+            // T2(dummy, key, value1, value2) bucketed/sorted by key into 2 buckets
+            // A query like: insert overwrite table T2 select 1, key, value1, value2 from T1
+            // should be optimized.
+
+            // Start with the destination: T2, bucketed/sorted position is [1]
+            // At the source T1, the column corresponding to that position is [key], which
+            // maps to column [0] of T1, which is also bucketed/sorted into the same
+            // number of buckets
+            List<Integer> newBucketPositions = new ArrayList<Integer>();
+            for (int pos = 0; pos < bucketPositions.size(); pos++) {
+              ExprNodeColumnDesc col = sourceTableBucketCols.get(pos);
+              String colName = col.getColumn();
+              int bucketPos = findColumnPosition(srcTable.getCols(), colName);
+              if (bucketPos < 0) {
                 return null;
+              }
+              newBucketPositions.add(bucketPos);
+            }
+
+            // Find the positions/order of the sorted columns in the table corresponding
+            // to the select list.
+            List<Integer> newSortPositions = new ArrayList<Integer>();
+            for (int pos = 0; pos < sortPositions.size(); pos++) {
+              ExprNodeColumnDesc col = sourceTableSortCols.get(pos);
+              String colName = col.getColumn();
+              int sortPos = findColumnPosition(srcTable.getCols(), colName);
+              if (sortPos < 0) {
+                return null;
+              }
+              newSortPositions.add(sortPos);
+            }
+
+            if (srcTable.isPartitioned()) {
+              PrunedPartitionList prunedParts = pGraphContext.getOpToPartList().get(op);
+              List<Partition> partitions = prunedParts.getNotDeniedPartns();
+
+              // Support for dynamic partitions can be added later
+              // The following is not optimized:
+              // insert overwrite table T1(ds='1', hr) select key, value, hr from T2 where ds = '1';
+              // where T1 and T2 are bucketed by the same keys and partitioned by ds. hr
+              if ((partitions == null) || (partitions.isEmpty()) || (partitions.size() > 1)) {
+                return null;
+              }
+              for (Partition partition : partitions) {
+                if (!checkPartition(partition, newBucketPositions, newSortPositions, sortOrder,
+                    numBucketsDestination)) {
+                  return null;
+                }
+              }
+
+              removeReduceSink(rsOp, (TableScanOperator) op, fsOp,
+                  partitions.get(0).getSortedPaths());
+              return null;
+            }
+            else {
+              if (!checkTable(srcTable, newBucketPositions, newSortPositions, sortOrder,
+                  numBucketsDestination)) {
+                return null;
+              }
+
+              removeReduceSink(rsOp, (TableScanOperator) op, fsOp, srcTable.getSortedPaths());
+              return null;
+            }
+          }
+          // None of the operators is changing the positions
+          else if (op instanceof SelectOperator) {
+            SelectOperator selectOp = (SelectOperator) op;
+            SelectDesc selectDesc = selectOp.getConf();
+
+            // Iterate backwards, from the destination table to the top of the tree
+            // Based on the output column names, get the new columns.
+            if (!useBucketSortPositions) {
+              bucketPositions.clear();
+              sortPositions.clear();
+              List<String> outputColumnNames = selectDesc.getOutputColumnNames();
+
+              for (ExprNodeColumnDesc col : sourceTableBucketCols) {
+                String colName = col.getColumn();
+                int colPos = outputColumnNames.indexOf(colName);
+                if (colPos < 0) {
+                  return null;
+                }
+                bucketPositions.add(colPos);
+              }
+
+              for (ExprNodeColumnDesc col : sourceTableSortCols) {
+                String colName = col.getColumn();
+                int colPos = outputColumnNames.indexOf(colName);
+                if (colPos < 0) {
+                  return null;
+                }
+                sortPositions.add(colPos);
               }
             }
 
-            removeReduceSink(rsOp, (TableScanOperator) op, fsOp,
-                partitions.get(0).getSortedPaths());
-            return null;
-          }
-          else {
-            if (!checkTable(srcTable, newBucketPositions, newSortPositions,
-                pGraphContext.getFsopToTable().get(fsOp).getNumBuckets())) {
-              return null;
+            // There may be multiple selects - chose the one closest to the table
+            sourceTableBucketCols.clear();
+            sourceTableSortCols.clear();
+
+            // Only columns can be selected for both sorted and bucketed positions
+            for (int pos : bucketPositions) {
+              ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
+              if (!(selectColList instanceof ExprNodeColumnDesc)) {
+                return null;
+              }
+              sourceTableBucketCols.add((ExprNodeColumnDesc) selectColList);
             }
 
-            removeReduceSink(rsOp, (TableScanOperator) op, fsOp, srcTable.getSortedPaths());
-            return null;
-          }
-        }
-        // None of the operators is changing the positions
-        else if (op instanceof SelectOperator) {
-          SelectOperator selectOp = (SelectOperator) op;
-          SelectDesc selectDesc = selectOp.getConf();
-
-          // There may be multiple selects - chose the one closest to the table
-          sourceTableBucketCols.clear();
-          sourceTableSortCols.clear();
-
-          // Only columns can be selected for both sorted and bucketed positions
-          for (int pos : bucketPositions) {
-            ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
-            if (!(selectColList instanceof ExprNodeColumnDesc)) {
-              return null;
+            for (int pos : sortPositions) {
+              ExprNodeDesc selectColList = selectDesc.getColList().get(pos);
+              if (!(selectColList instanceof ExprNodeColumnDesc)) {
+                return null;
+              }
+              sourceTableSortCols.add((ExprNodeColumnDesc) selectColList);
             }
-            sourceTableBucketCols.add((ExprNodeColumnDesc) selectColList);
-          }
 
-          for (ObjectPair<Integer, Integer> pos : sortPositions) {
-            ExprNodeDesc selectColList = selectDesc.getColList().get(pos.getFirst());
-            if (!(selectColList instanceof ExprNodeColumnDesc)) {
-              return null;
-            }
-            sourceTableSortCols.add((ExprNodeColumnDesc) selectColList);
+            useBucketSortPositions = false;
           }
+          op = op.getParentOperators().get(0);
         }
       }
     }
