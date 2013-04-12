@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
@@ -1220,8 +1221,8 @@ public class Hive {
           org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
           SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
           /* Construct list bucketing location mappings from sub-directory name. */
-          Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
-              newPartPath, skewedInfo);
+          Map<SkewedValueList, String> skewedColValueLocationMaps =
+            constructListBucketingLocationMap(newPartPath, skewedInfo);
           /* Add list bucketing location mappings. */
           skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
           newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
@@ -1254,7 +1255,8 @@ public class Hive {
  * @throws IOException
  */
 private void walkDirTree(FileStatus fSta, FileSystem fSys,
-    Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
+    Map<SkewedValueList, String> skewedColValueLocationMaps,
+    Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
@@ -1280,7 +1282,7 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
  * @param skewedInfo
  */
 private void constructOneLBLocationMap(FileStatus fSta,
-    Map<List<String>, String> skewedColValueLocationMaps,
+    Map<SkewedValueList, String> skewedColValueLocationMaps,
     Path newPartPath, SkewedInfo skewedInfo) {
   Path lbdPath = fSta.getPath().getParent();
   List<String> skewedValue = new ArrayList<String>();
@@ -1303,7 +1305,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
   if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
-    skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
+    skewedColValueLocationMaps.put(new SkewedValueList(skewedValue), lbdPath.toString());
   }
 }
 
@@ -1316,9 +1318,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws IOException
    * @throws FileNotFoundException
    */
-  private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
+  private Map<SkewedValueList, String> constructListBucketingLocationMap(Path newPartPath,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
-    Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
+    Map<SkewedValueList, String> skewedColValueLocationMaps =
+      new HashMap<SkewedValueList, String>();
     FileSystem fSys = newPartPath.getFileSystem(conf);
     walkDirTree(fSys.getFileStatus(newPartPath), fSys, skewedColValueLocationMaps, newPartPath,
         skewedInfo);

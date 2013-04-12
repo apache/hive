@@ -1423,7 +1423,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
                 for (int _i178 = 0; _i178 < _map177.size; ++_i178)
                 {
                   String _key179; // required
-                  String _val180; // optional
+                  String _val180; // required
                   _key179 = iprot.readString();
                   _val180 = iprot.readString();
                   struct.parameters.put(_key179, _val180);
@@ -1723,7 +1723,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           for (int _i189 = 0; _i189 < _map188.size; ++_i189)
           {
             String _key190; // required
-            String _val191; // optional
+            String _val191; // required
             _key190 = iprot.readString();
             _val191 = iprot.readString();
             struct.parameters.put(_key190, _val191);
