@@ -98,10 +98,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     // in the execution context. This is needed for the following scenario:
     // insert overwrite table T1 select * from T2;
     // where T1 and T2 are sorted/bucketed by the same keys into the same number of buckets
-    // Although one mapper per file is used (bucketizedinputhiveinput), it is possible that
+    // Although one mapper per file is used (BucketizedInputHiveInput), it is possible that
     // any mapper can pick up any file (depending on the size of the files). The bucket number
     // corresponding to the input file is stored to name the output bucket file appropriately.
-    Map<String, Integer> bucketNameMapping = conf != null ? conf.getBucketFileNameMapping() : null;
+    Map<String, Integer> bucketNameMapping =
+        (conf != null) ? conf.getBucketFileNameMapping() : null;
     if ((bucketNameMapping != null) && (!bucketNameMapping.isEmpty())) {
       String currentInputFile = getExecContext().getCurrentInputFile();
       getExecContext().setFileId(Integer.toString(bucketNameMapping.get(

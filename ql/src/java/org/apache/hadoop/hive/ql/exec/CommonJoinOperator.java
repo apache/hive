@@ -385,7 +385,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   // all evaluation should be processed here for valid aliasFilterTags
   //
   // for MapJoin, filter tag is pre-calculated in MapredLocalTask and stored with value.
-  // when reading the hashtable, MapJoinObjectValue calcuates alias filter and provide it to join
+  // when reading the hashtable, MapJoinObjectValue calculates alias filter and provide it to join
   protected ArrayList<Object> getFilteredValue(byte alias, Object row) throws HiveException {
     boolean hasFilter = hasFilter(alias);
     ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues[alias],
