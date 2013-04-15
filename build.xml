@@ -678,6 +678,7 @@
       <packageset dir="hcatalog/src/java"/>
       <packageset dir="cli/src/java"/>
       <packageset dir="beeline/src/java"/>
+      <packageset dir="beeline/src/test"/>
       <packageset dir="ql/src/java"/>
       <packageset dir="ql/src/test"/>
       <packageset dir="ql/src/gen/thrift/gen-javabean"/>
