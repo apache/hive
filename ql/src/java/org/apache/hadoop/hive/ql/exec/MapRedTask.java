@@ -39,10 +39,10 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
-
 /**
  * Extension of ExecDriver:
  * - can optionally spawn a map-reduce task from a separate jvm
@@ -68,6 +68,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
   private transient boolean inputSizeEstimated = false;
   private transient long totalInputFileSize;
   private transient long totalInputNumFiles;
+
+  private Process executor;
 
   public MapRedTask() {
     super();
@@ -118,7 +120,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         if (reason == null) {
           // clone configuration before modifying it on per-task basis
           cloneConf();
-          conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
+          ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf, "local");
           console.printInfo("Selecting local mode for task: " + getId());
           this.setLocalMode(true);
         } else {
@@ -127,8 +129,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
       }
 
-      runningViaChild =
-        "local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT)) ||
+      runningViaChild = ShimLoader.getHadoopShims().isLocalMode(conf) ||
         conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
       if(!runningViaChild) {
@@ -165,8 +166,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
           libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
         }
       }
+
       // Generate the hiveConfArgs after potentially adding the jars
-      String hiveConfArgs = generateCmdLine(conf);
+      String hiveConfArgs = generateCmdLine(conf, ctx);
 
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpFileURI(), "plan.xml");
@@ -210,7 +212,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
       }
 
       LOG.info("Executing: " + cmdLine);
-      Process executor = null;
 
       // Inherit Java system variables
       String hadoopOpts;
@@ -227,7 +228,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       Map<String, String> variables = new HashMap(System.getenv());
       // The user can specify the hadoop memory
 
-      if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
+      if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
         // if we are running in local mode - then the amount of memory used
         // by the child jvm can no longer default to the memory used by the
         // parent jvm
@@ -422,6 +423,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
    * Estimate the number of reducers needed for this job, based on job input,
    * and configuration parameters.
    *
+   * The output of this method should only be used if the output of this
+   * MapRedTask is not being used to populate a bucketed table and the user
+   * has not specified the number of reducers to use.
+   *
    * @return the number of reducers.
    */
   private int estimateNumberOfReducers() throws IOException {
@@ -447,6 +452,30 @@ public class MapRedTask extends ExecDriver implements Serializable {
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
+
+    // If this map reduce job writes final data to a table and bucketing is being inferred,
+    // and the user has configured Hive to do this, make sure the number of reducers is a
+    // power of two
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
+        work.isFinalMapRed() && !work.getBucketedColsByDirectory().isEmpty()) {
+
+      int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
+      int reducersPowerTwo = (int)Math.pow(2, reducersLog);
+
+      // If the original number of reducers was a power of two, use that
+      if (reducersPowerTwo / 2 == reducers) {
+        return reducers;
+      } else if (reducersPowerTwo > maxReducers) {
+        // If the next power of two greater than the original number of reducers is greater
+        // than the max number of reducers, use the preceding power of two, which is strictly
+        // less than the original number of reducers and hence the max
+        reducers = reducersPowerTwo / 2;
+      } else {
+        // Otherwise use the smallest power of two greater than the original number of reducers
+        reducers = reducersPowerTwo;
+      }
+    }
+
     return reducers;
   }
 
@@ -482,8 +511,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
     for (String alias : work.getAliasToWork().keySet()) {
       if (work.getNameToSplitSample().containsKey(alias)) {
         allSample = true;
-        double rate = work.getNameToSplitSample().get(alias).getPercent();
-        if (rate > highestSamplePercentage) {
+        Double rate = work.getNameToSplitSample().get(alias).getPercent();
+        if (rate != null && rate > highestSamplePercentage) {
           highestSamplePercentage = rate;
         }
       } else {
@@ -548,7 +577,16 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   @Override
-  public Operator<? extends Serializable> getReducer() {
+  public Operator<? extends OperatorDesc> getReducer() {
     return getWork().getReducer();
+  }
+
+  @Override
+  public void shutdown() {
+    super.shutdown();
+    if (executor != null) {
+      executor.destroy();
+      executor = null;
+    }
   }
 }

@@ -16,11 +16,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -47,7 +49,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.dest1
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -82,6 +84,25 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
@@ -95,7 +116,7 @@ POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.mapvalue EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -106,7 +127,7 @@ POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.mapvalue EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 0	0	NULL
 2	1	NULL
 4	8	value_2

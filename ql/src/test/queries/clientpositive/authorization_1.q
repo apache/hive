@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 create table src_autho_test as select * from src;
 
 set hive.security.authorization.enabled=true;

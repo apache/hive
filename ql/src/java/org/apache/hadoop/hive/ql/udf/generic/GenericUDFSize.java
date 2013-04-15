@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -50,7 +50,7 @@ public class GenericUDFSize extends GenericUDF {
     Category category = arguments[0].getCategory();
     String typeName = arguments[0].getTypeName();
     if (category != Category.MAP && category != Category.LIST
-        && !typeName.equals(Constants.VOID_TYPE_NAME)) {
+        && !typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
       throw new UDFArgumentTypeException(0, "\""
           + Category.MAP.toString().toLowerCase() + "\" or \""
           + Category.LIST.toString().toLowerCase()
@@ -69,7 +69,7 @@ public class GenericUDFSize extends GenericUDF {
       result.set(((MapObjectInspector) returnOI).getMapSize(data));
     } else if (returnOI.getCategory() == Category.LIST) {
       result.set(((ListObjectInspector) returnOI).getListLength(data));
-    } else if (returnOI.getTypeName().equals(Constants.VOID_TYPE_NAME)) {
+    } else if (returnOI.getTypeName().equals(serdeConstants.VOID_TYPE_NAME)) {
       // null
       result.set(-1);
     }

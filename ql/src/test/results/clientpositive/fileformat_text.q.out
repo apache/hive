@@ -40,8 +40,10 @@ PREHOOK: query: DESCRIBE EXTENDED dest1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED dest1
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: FROM src

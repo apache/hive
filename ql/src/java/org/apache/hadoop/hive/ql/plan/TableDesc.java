@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -54,7 +54,7 @@ public class TableDesc implements Serializable, Cloneable {
         .getOutputFormatSubstitute(class1);
     this.properties = properties;
     serdeClassName = properties
-        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     ;
   }
 
@@ -131,7 +131,7 @@ public class TableDesc implements Serializable, Cloneable {
   @Explain(displayName = "name")
   public String getTableName() {
     return properties
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
+        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME);
   }
 
   @Explain(displayName = "input format")
@@ -146,10 +146,10 @@ public class TableDesc implements Serializable, Cloneable {
 
   public boolean isNonNative() {
     return (properties.getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
       != null);
   }
-  
+
   @Override
   public Object clone() {
     TableDesc ret = new TableDesc();
@@ -168,6 +168,44 @@ public class TableDesc implements Serializable, Cloneable {
     if (jobProperties != null) {
       ret.jobProperties = new LinkedHashMap<String, String>(jobProperties);
     }
+    return ret;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((deserializerClass == null) ? 0 : deserializerClass.hashCode());
+    result = prime * result +
+        ((inputFileFormatClass == null) ? 0 : inputFileFormatClass.hashCode());
+    result = prime * result +
+        ((outputFileFormatClass == null) ? 0 : outputFileFormatClass.hashCode());
+    result = prime * result + ((properties == null) ? 0 : properties.hashCode());
+    result = prime * result + ((serdeClassName == null) ? 0 : serdeClassName.hashCode());
+    result = prime * result + ((jobProperties == null) ? 0 : jobProperties.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof TableDesc)) {
+      return false;
+    }
+
+    TableDesc target = (TableDesc) o;
+    boolean ret = true;
+    ret = ret && (deserializerClass == null ? target.deserializerClass == null :
+      deserializerClass.equals(target.deserializerClass));
+    ret = ret && (inputFileFormatClass == null ? target.inputFileFormatClass == null :
+      inputFileFormatClass.equals(target.inputFileFormatClass));
+    ret = ret && (outputFileFormatClass == null ? target.outputFileFormatClass == null :
+      outputFileFormatClass.equals(target.outputFileFormatClass));
+    ret = ret && (properties == null ? target.properties == null :
+      properties.equals(target.properties));
+    ret = ret && (serdeClassName == null ? target.serdeClassName == null :
+      serdeClassName.equals(target.serdeClassName));
+    ret = ret && (jobProperties == null ? target.jobProperties == null :
+      jobProperties.equals(target.jobProperties));
     return ret;
   }
 }

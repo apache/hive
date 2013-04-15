@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -106,5 +107,20 @@ public class UDFOPMultiply extends UDFBaseNumericOp {
 
     doubleWritable.set(a.get() * b.get());
     return doubleWritable;
+  }
+
+  @Override
+  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+
+    try {
+      decimalWritable.set(a.getHiveDecimal().multiply(b.getHiveDecimal()));
+    } catch (NumberFormatException e) {
+      return null;
+    }
+
+    return decimalWritable;
   }
 }

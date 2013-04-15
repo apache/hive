@@ -36,11 +36,11 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: round(1.0)
-                    type: bigint
+                    type: double
                     expr: round(1.5)
-                    type: bigint
+                    type: double
                     expr: round((- 1.5))
-                    type: bigint
+                    type: double
                     expr: floor(1.0)
                     type: bigint
                     expr: floor(1.5)
@@ -95,4 +95,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-1	2	-2	1	1	-2	1.0	NULL	0.0	1	2	-1	1	0.731057369148862	3	-3	3	-1	-2
+1.0	2.0	-2.0	1	1	-2	1.0	NULL	0.0	1	2	-1	1	0.731057369148862	3	-3	3	-1	-2

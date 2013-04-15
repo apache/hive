@@ -26,10 +26,10 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -42,6 +42,8 @@ import org.apache.hadoop.io.BytesWritable;
  *
  */
 public class TestBinarySortableSerDe extends TestCase {
+
+  private static final String DECIMAL_CHARS = "0123456789";
 
   public static HashMap<String, String> makeHashMap(String... params) {
     HashMap<String, String> r = new HashMap<String, String>();
@@ -64,9 +66,9 @@ public class TestBinarySortableSerDe extends TestCase {
   private SerDe getSerDe(String fieldNames, String fieldTypes, String order)
       throws Throwable {
     Properties schema = new Properties();
-    schema.setProperty(Constants.LIST_COLUMNS, fieldNames);
-    schema.setProperty(Constants.LIST_COLUMN_TYPES, fieldTypes);
-    schema.setProperty(Constants.SERIALIZATION_SORT_ORDER, order);
+    schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
+    schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
+    schema.setProperty(serdeConstants.SERIALIZATION_SORT_ORDER, order);
 
     BinarySortableSerDe serde = new BinarySortableSerDe();
     serde.initialize(new Configuration(), schema);
@@ -133,11 +135,36 @@ public class TestBinarySortableSerDe extends TestCase {
     }
   }
 
+  public static HiveDecimal getRandHiveDecimal(Random r) {
+    StringBuilder sb = new StringBuilder();
+    int l1 = 1+r.nextInt(18), l2 = r.nextInt(19);
+
+    if (r.nextBoolean()) {
+      sb.append("-");
+    }
+
+    sb.append(getRandString(r, DECIMAL_CHARS, l1));
+    if (l2 != 0) {
+      sb.append(".");
+      sb.append(getRandString(r, DECIMAL_CHARS, l2));
+    }
+
+    HiveDecimal bd = new HiveDecimal(sb.toString());
+    return bd;
+  }
+
   public static String getRandString(Random r) {
-    int length = r.nextInt(10);
+    return getRandString(r, null, r.nextInt(10));
+  }
+
+  public static String getRandString(Random r, String characters, int length) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < length; i++) {
-      sb.append((char) (r.nextInt(128)));
+      if (characters == null) {
+        sb.append((char) (r.nextInt(128)));
+      } else {
+        sb.append(characters.charAt(r.nextInt(characters.length())));
+      }
     }
     return sb.toString();
   }
@@ -151,14 +178,12 @@ public class TestBinarySortableSerDe extends TestCase {
     return result;
   }
 
-  public static ByteArrayRef getRandBA(Random r, int len){
+  public static byte[] getRandBA(Random r, int len){
     byte[] bytes = new byte[len];
     for (int j = 0; j < len; j++){
       bytes[j] = Byte.valueOf((byte) r.nextInt());
     }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(bytes);
-    return ba;
+    return bytes;
   }
 
   public void testBinarySortableSerDe() throws Throwable {
@@ -182,9 +207,10 @@ public class TestBinarySortableSerDe extends TestCase {
         t.myDouble = randField > 5 ? null : Double
             .valueOf(r.nextDouble() * 10 - 5);
         t.myString = randField > 6 ? null : getRandString(r);
-        t.myStruct = randField > 7 ? null : new MyTestInnerStruct(
+        t.myDecimal = randField > 7 ? null : getRandHiveDecimal(r);
+        t.myStruct = randField > 8 ? null : new MyTestInnerStruct(
             r.nextInt(5) - 2, r.nextInt(5) - 2);
-        t.myList = randField > 8 ? null : getRandIntegerArray(r);
+        t.myList = randField > 9 ? null : getRandIntegerArray(r);
         t.myBA = getRandBA(r, i);
         rows[i] = t;
       }
@@ -198,9 +224,9 @@ public class TestBinarySortableSerDe extends TestCase {
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
 
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "++++++++++"), true);
+          "+++++++++++"), true);
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "----------"), false);
+          "-----------"), false);
 
       System.out.println("Test testTBinarySortableProtocol passed!");
     } catch (Throwable e) {

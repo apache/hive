@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,7 +37,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -47,13 +50,20 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -90,6 +100,8 @@ public abstract class BaseSemanticAnalyzer {
    * Lineage information for the query.
    */
   protected LineageInfo linfo;
+  protected TableAccessInfo tableAccessInfo;
+  protected ColumnAccessInfo columnAccessInfo;
 
   protected static final String TEXTFILE_INPUT = TextInputFormat.class
       .getName();
@@ -102,6 +114,12 @@ public abstract class BaseSemanticAnalyzer {
   protected static final String RCFILE_INPUT = RCFileInputFormat.class
       .getName();
   protected static final String RCFILE_OUTPUT = RCFileOutputFormat.class
+      .getName();
+  protected static final String ORCFILE_INPUT = OrcInputFormat.class
+      .getName();
+  protected static final String ORCFILE_OUTPUT = OrcOutputFormat.class
+      .getName();
+  protected static final String ORCFILE_SERDE = OrcSerde.class
       .getName();
   protected static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
 
@@ -181,6 +199,12 @@ public abstract class BaseSemanticAnalyzer {
         }
         storageFormat = true;
         break;
+      case HiveParser.TOK_TBLORCFILE:
+        inputFormat = ORCFILE_INPUT;
+        outputFormat = ORCFILE_OUTPUT;
+        shared.serde = ORCFILE_SERDE;
+        storageFormat = true;
+        break;
       case HiveParser.TOK_TABLEFILEFORMAT:
         inputFormat = unescapeSQLString(child.getChild(0).getText());
         outputFormat = unescapeSQLString(child.getChild(1).getText());
@@ -208,6 +232,10 @@ public abstract class BaseSemanticAnalyzer {
           inputFormat = RCFILE_INPUT;
           outputFormat = RCFILE_OUTPUT;
           shared.serde = COLUMNAR_SERDE;
+        } else if ("ORC".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+          inputFormat = ORCFILE_INPUT;
+          outputFormat = ORCFILE_OUTPUT;
+          shared.serde = ORCFILE_SERDE;
         } else {
           inputFormat = TEXTFILE_INPUT;
           outputFormat = TEXTFILE_OUTPUT;
@@ -237,9 +265,17 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
+  public void init() {
+    //no-op
+  }
+
+  public void initCtx(Context ctx) {
+    this.ctx = ctx;
+  }
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
-    this.ctx = ctx;
+    initCtx(ctx);
+    init();
     analyzeInternal(ast);
   }
 
@@ -270,12 +306,8 @@ public abstract class BaseSemanticAnalyzer {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
   }
 
-  public static String stripQuotes(String val) throws SemanticException {
-    if ((val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'')
-        || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
-      val = val.substring(1, val.length() - 1);
-    }
-    return val;
+  public static String stripQuotes(String val) {
+    return PlanUtils.stripQuotes(val);
   }
 
   public static String charSetString(String charSetName, String charSetString)
@@ -312,21 +344,30 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * Get the name from a table node.
-   * @param tableNameNode the table node
-   * @return if DB name is give, db.tab is returned. Otherwise, tab.
+   * Get dequoted name from a table/column node.
+   * @param tableOrColumnNode the table or column node
+   * @return for table node, db.tab or tab. for column node column.
    */
-  public static String getUnescapedName(ASTNode tableNameNode) {
-    if (tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME) {
-      if (tableNameNode.getChildCount() == 2) {
-        String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
-        String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+  public static String getUnescapedName(ASTNode tableOrColumnNode) {
+    return getUnescapedName(tableOrColumnNode, null);
+  }
+
+  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
+    if (tableOrColumnNode.getToken().getType() == HiveParser.TOK_TABNAME) {
+      // table node
+      if (tableOrColumnNode.getChildCount() == 2) {
+        String dbName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
+        String tableName = unescapeIdentifier(tableOrColumnNode.getChild(1).getText());
         return dbName + "." + tableName;
-      } else {
-        return unescapeIdentifier(tableNameNode.getChild(0).getText());
       }
+      String tableName = unescapeIdentifier(tableOrColumnNode.getChild(0).getText());
+      if (currentDatabase != null) {
+        return currentDatabase + "." + tableName;
+      }
+      return tableName;
     }
-    return unescapeIdentifier(tableNameNode.getText());
+    // column node
+    return unescapeIdentifier(tableOrColumnNode.getText());
   }
 
   /**
@@ -379,8 +420,10 @@ public abstract class BaseSemanticAnalyzer {
     for (int propChild = 0; propChild < prop.getChildCount(); propChild++) {
       String key = unescapeSQLString(prop.getChild(propChild).getChild(0)
           .getText());
-      String value = unescapeSQLString(prop.getChild(propChild).getChild(1)
-          .getText());
+      String value = null;
+      if (prop.getChild(propChild).getChild(1) != null) {
+        value = unescapeSQLString(prop.getChild(propChild).getChild(1).getText());
+      }
       mapProp.put(key, value);
     }
   }
@@ -560,10 +603,10 @@ public abstract class BaseSemanticAnalyzer {
       throws SemanticException {
     switch (typeNode.getType()) {
     case HiveParser.TOK_LIST:
-      return Constants.LIST_TYPE_NAME + "<"
+      return serdeConstants.LIST_TYPE_NAME + "<"
           + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ">";
     case HiveParser.TOK_MAP:
-      return Constants.MAP_TYPE_NAME + "<"
+      return serdeConstants.MAP_TYPE_NAME + "<"
           + getTypeStringFromAST((ASTNode) typeNode.getChild(0)) + ","
           + getTypeStringFromAST((ASTNode) typeNode.getChild(1)) + ">";
     case HiveParser.TOK_STRUCT:
@@ -577,7 +620,7 @@ public abstract class BaseSemanticAnalyzer {
 
   private static String getStructTypeStringFromAST(ASTNode typeNode)
       throws SemanticException {
-    String typeStr = Constants.STRUCT_TYPE_NAME + "<";
+    String typeStr = serdeConstants.STRUCT_TYPE_NAME + "<";
     typeNode = (ASTNode) typeNode.getChild(0);
     int children = typeNode.getChildCount();
     if (children <= 0) {
@@ -599,7 +642,7 @@ public abstract class BaseSemanticAnalyzer {
 
   private static String getUnionTypeStringFromAST(ASTNode typeNode)
       throws SemanticException {
-    String typeStr = Constants.UNION_TYPE_NAME + "<";
+    String typeStr = serdeConstants.UNION_TYPE_NAME + "<";
     typeNode = (ASTNode) typeNode.getChild(0);
     int children = typeNode.getChildCount();
     if (children <= 0) {
@@ -790,6 +833,43 @@ public abstract class BaseSemanticAnalyzer {
     this.linfo = linfo;
   }
 
+  /**
+   * Gets the table access information.
+   *
+   * @return TableAccessInfo associated with the query.
+   */
+  public TableAccessInfo getTableAccessInfo() {
+    return tableAccessInfo;
+  }
+
+  /**
+   * Sets the table access information.
+   *
+   * @param taInfo The TableAccessInfo structure that is set in the optimization phase.
+   */
+  public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
+    this.tableAccessInfo = tableAccessInfo;
+  }
+
+  /**
+   * Gets the column access information.
+   *
+   * @return ColumnAccessInfo associated with the query.
+   */
+  public ColumnAccessInfo getColumnAccessInfo() {
+    return columnAccessInfo;
+  }
+
+  /**
+   * Sets the column access information.
+   *
+   * @param columnAccessInfo The ColumnAccessInfo structure that is set immediately after
+   * the optimization phase.
+   */
+  public void setColumnAccessInfo(ColumnAccessInfo columnAccessInfo) {
+    this.columnAccessInfo = columnAccessInfo;
+  }
+
   protected HashMap<String, String> extractPartitionSpecs(Tree partspec)
       throws SemanticException {
     HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
@@ -875,4 +955,150 @@ public abstract class BaseSemanticAnalyzer {
   public QueryProperties getQueryProperties() {
     return queryProperties;
   }
+
+  /**
+   * Construct list bucketing context.
+   *
+   * @param skewedColNames
+   * @param skewedValues
+   * @param skewedColValueLocationMaps
+   * @param isStoredAsSubDirectories
+   * @return
+   */
+  protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
+      List<List<String>> skewedValues, Map<SkewedValueList, String> skewedColValueLocationMaps,
+      boolean isStoredAsSubDirectories, HiveConf conf) {
+    ListBucketingCtx lbCtx = new ListBucketingCtx();
+    lbCtx.setSkewedColNames(skewedColNames);
+    lbCtx.setSkewedColValues(skewedValues);
+    lbCtx.setLbLocationMap(skewedColValueLocationMaps);
+    lbCtx.setStoredAsSubDirectories(isStoredAsSubDirectories);
+    lbCtx.setDefaultKey(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
+    lbCtx.setDefaultDirName(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
+    return lbCtx;
+  }
+
+  /**
+   * Given a ASTNode, return list of values.
+   *
+   * use case:
+   *   create table xyz list bucketed (col1) with skew (1,2,5)
+   *   AST Node is for (1,2,5)
+   * @param ast
+   * @return
+   */
+  protected List<String> getSkewedValueFromASTNode(ASTNode ast) {
+    List<String> colList = new ArrayList<String>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      colList.add(stripQuotes(child.getText()).toLowerCase());
+    }
+    return colList;
+  }
+
+  /**
+   * Retrieve skewed values from ASTNode.
+   *
+   * @param node
+   * @return
+   * @throws SemanticException
+   */
+  protected List<String> getSkewedValuesFromASTNode(Node node) throws SemanticException {
+    List<String> result = null;
+    Tree leafVNode = ((ASTNode) node).getChild(0);
+    if (leafVNode == null) {
+      throw new SemanticException(
+          ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+    } else {
+      ASTNode lVAstNode = (ASTNode) leafVNode;
+      if (lVAstNode.getToken().getType() != HiveParser.TOK_TABCOLVALUE) {
+        throw new SemanticException(
+            ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+      } else {
+        result = new ArrayList<String>(getSkewedValueFromASTNode(lVAstNode));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Analyze list bucket column names
+   *
+   * @param skewedColNames
+   * @param child
+   * @return
+   * @throws SemanticException
+   */
+  protected List<String> analyzeSkewedTablDDLColNames(List<String> skewedColNames, ASTNode child)
+      throws SemanticException {
+  Tree nNode = child.getChild(0);
+    if (nNode == null) {
+      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+    } else {
+      ASTNode nAstNode = (ASTNode) nNode;
+      if (nAstNode.getToken().getType() != HiveParser.TOK_TABCOLNAME) {
+        throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_NAME.getMsg());
+      } else {
+        skewedColNames = getColumnNames(nAstNode);
+      }
+    }
+    return skewedColNames;
+  }
+
+  /**
+   * Handle skewed values in DDL.
+   *
+   * It can be used by both skewed by ... on () and set skewed location ().
+   *
+   * @param skewedValues
+   * @param child
+   * @throws SemanticException
+   */
+  protected void analyzeDDLSkewedValues(List<List<String>> skewedValues, ASTNode child)
+      throws SemanticException {
+  Tree vNode = child.getChild(1);
+    if (vNode == null) {
+      throw new SemanticException(ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+    }
+    ASTNode vAstNode = (ASTNode) vNode;
+    switch (vAstNode.getToken().getType()) {
+      case HiveParser.TOK_TABCOLVALUE:
+        for (String str : getSkewedValueFromASTNode(vAstNode)) {
+          List<String> sList = new ArrayList<String>(Arrays.asList(str));
+          skewedValues.add(sList);
+        }
+        break;
+      case HiveParser.TOK_TABCOLVALUE_PAIR:
+        ArrayList<Node> vLNodes = vAstNode.getChildren();
+        for (Node node : vLNodes) {
+          if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
+            throw new SemanticException(
+                ErrorMsg.SKEWED_TABLE_NO_COLUMN_VALUE.getMsg());
+          } else {
+            skewedValues.add(getSkewedValuesFromASTNode(node));
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * process stored as directories
+   *
+   * @param child
+   * @return
+   */
+  protected boolean analyzeStoredAdDirs(ASTNode child) {
+    boolean storedAsDirs = false;
+    if ((child.getChildCount() == 3)
+        && (((ASTNode) child.getChild(2)).getToken().getType()
+            == HiveParser.TOK_STOREDASDIRS)) {
+      storedAsDirs = true;
+    }
+    return storedAsDirs;
+  }
+
 }

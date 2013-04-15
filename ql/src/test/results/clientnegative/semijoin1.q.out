@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 2:7 Invalid table alias or column reference 'b': (possible column names are: _col0, _col1)
+FAILED: SemanticException [Error 10004]: Line 2:7 Invalid table alias or column reference 'b': (possible column names are: key, value)

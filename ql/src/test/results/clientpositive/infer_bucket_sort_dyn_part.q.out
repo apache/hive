@@ -1,0 +1,886 @@
+PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
+-- and populating that information in partitions' metadata.  In particular, those cases
+-- where dynamic partitioning is used.
+
+CREATE TABLE test_table LIKE srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
+-- and populating that information in partitions' metadata.  In particular, those cases
+-- where dynamic partitioning is used.
+
+CREATE TABLE test_table LIKE srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: ALTER TABLE test_table SET FILEFORMAT RCFILE
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: ALTER TABLE test_table SET FILEFORMAT RCFILE
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: -- Simple case, this should not be bucketed or sorted
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, value, ds, hr FROM srcpart
+WHERE ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_table
+POSTHOOK: query: -- Simple case, this should not be bucketed or sorted
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, value, ds, hr FROM srcpart
+WHERE ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	5293                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	5293                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- This should not be bucketed or sorted since the partition keys are in the set of bucketed
+-- and sorted columns for the output 
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, COUNT(*), ds, hr FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key, ds, hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_table
+POSTHOOK: query: -- This should not be bucketed or sorted since the partition keys are in the set of bucketed
+-- and sorted columns for the output 
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, COUNT(*), ds, hr FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key, ds, hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1342                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1342                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Both partitions should be bucketed and sorted by key
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, value, '2008-04-08', IF (key % 2 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_table
+POSTHOOK: query: -- Both partitions should be bucketed and sorted by key
+
+INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+SELECT key, value, '2008-04-08', IF (key % 2 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	719                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	1                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[Order(col:key, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	722                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	1                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[Order(col:key, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE srcpart_merge_dp LIKE srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_merge_dp
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: CREATE TABLE srcpart_merge_dp_rc LIKE srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE srcpart_merge_dp_rc LIKE srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_merge_dp_rc
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: ALTER TABLE srcpart_merge_dp_rc SET FILEFORMAT RCFILE
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@srcpart_merge_dp_rc
+PREHOOK: Output: default@srcpart_merge_dp_rc
+POSTHOOK: query: ALTER TABLE srcpart_merge_dp_rc SET FILEFORMAT RCFILE
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@srcpart_merge_dp_rc
+POSTHOOK: Output: default@srcpart_merge_dp_rc
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=12)
+PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp PARTITION(ds='2008-04-08', hr=12)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_merge_dp_rc PARTITION (ds = '2008-04-08', hr) 
+SELECT key, value, hr FROM srcpart_merge_dp WHERE ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp
+PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_merge_dp_rc@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_merge_dp_rc PARTITION (ds = '2008-04-08', hr) 
+SELECT key, value, hr FROM srcpart_merge_dp WHERE ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp
+POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_merge_dp_rc@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but some partitions are
+-- merged and some are moved.  Currently neither should be bucketed or sorted, in the future,
+-- (ds='2008-04-08', hr='12') may be bucketed and sorted, (ds='2008-04-08', hr='11') should
+-- definitely not be.
+
+EXPLAIN
+INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but some partitions are
+-- merged and some are moved.  Currently neither should be bucketed or sorted, in the future,
+-- (ds='2008-04-08', hr='12') may be bucketed and sorted, (ds='2008-04-08', hr='11') should
+-- definitely not be.
+
+EXPLAIN
+INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTIONSTAR COUNT) value)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION IF (== (% (TOK_TABLE_OR_COL key) 100) 0) '11' '12')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:srcpart 
+          TableScan
+            alias: srcpart
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count()
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: UDFToString(_col1)
+                  type: string
+                  expr: if(((_col0 % 100) = 0), '11', '12')
+                  type: string
+            outputColumnNames: _col0, _col1, _col2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                  name: default.test_table
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: default.test_table
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Block level merge
+
+  Stage: Stage-5
+    Block level merge
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_table@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
+(SELECT key, COUNT(*) AS value FROM srcpart
+WHERE ds = '2008-04-08'
+GROUP BY key) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	115                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=11).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=12).value EXPRESSION [(srcpart)srcpart.null, ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1427                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

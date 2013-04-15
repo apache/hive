@@ -18,20 +18,89 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.thrift.TException;
 
 public abstract class HiveAuthorizationProviderBase implements
     HiveAuthorizationProvider {
-  
+
+  protected class HiveProxy {
+
+    private final Hive hiveClient;
+    private HMSHandler handler;
+
+    public HiveProxy(Hive hive) {
+      this.hiveClient = hive;
+      this.handler = null;
+    }
+
+    public HiveProxy() {
+      this.hiveClient = null;
+      this.handler = null;
+    }
+
+    public void setHandler(HMSHandler handler){
+      this.handler = handler;
+    }
+
+    public PrincipalPrivilegeSet get_privilege_set(HiveObjectType column, String dbName,
+        String tableName, List<String> partValues, String col, String userName,
+        List<String> groupNames) throws HiveException {
+      if (hiveClient != null) {
+        return hiveClient.get_privilege_set(
+            column, dbName, tableName, partValues, col, userName, groupNames);
+      } else {
+        HiveObjectRef hiveObj = new HiveObjectRef(column, dbName,
+            tableName, partValues, col);
+        try {
+          return handler.get_privilege_set(hiveObj, userName, groupNames);
+        } catch (MetaException e) {
+          throw new HiveException(e);
+        } catch (TException e) {
+          throw new HiveException(e);
+        }
+      }
+    }
+
+    public Database getDatabase(String dbName) throws HiveException {
+      if (hiveClient != null) {
+        return hiveClient.getDatabase(dbName);
+      } else {
+        try {
+          return handler.get_database(dbName);
+        } catch (NoSuchObjectException e) {
+          throw new HiveException(e);
+        } catch (MetaException e) {
+          throw new HiveException(e);
+        }
+      }
+    }
+
+  }
+
+  protected HiveProxy hive_db;
+
   protected HiveAuthenticationProvider authenticator;
 
-  protected Hive hive_db;
-  
   private Configuration conf;
+
+  public static final Log LOG = LogFactory.getLog(
+      HiveAuthorizationProvider.class);
+
 
   public void setConf(Configuration conf) {
     this.conf = conf;
@@ -42,10 +111,6 @@ public abstract class HiveAuthorizationProviderBase implements
     }
   }
 
-  public void init(Configuration conf) throws HiveException {
-    hive_db = Hive.get(new HiveConf(conf, HiveAuthorizationProvider.class));
-  }
-  
   public Configuration getConf() {
     return this.conf;
   }

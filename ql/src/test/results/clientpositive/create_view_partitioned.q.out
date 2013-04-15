@@ -19,7 +19,6 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- test partitioned view definition
 -- (underlying table is not actually partitioned)
 CREATE VIEW vp1
@@ -30,13 +29,19 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp1
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED vp1
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 FROM src	 	 
@@ -227,7 +232,6 @@ CREATE VIEW vp2
 PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
 -- but with only a suffix of the partitioning columns
 CREATE VIEW vp2
@@ -235,7 +239,6 @@ PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp2
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED vp2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED vp2
@@ -274,6 +277,7 @@ View Original Text: 	SELECT * FROM srcpart WHERE key < 10
 View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
 PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -281,6 +285,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@vp2
 POSTHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -290,12 +295,14 @@ POSTHOOK: Output: default@vp2@hr=11
 POSTHOOK: Output: default@vp2@hr=12
 PREHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@vp2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@vp2
@@ -329,7 +336,6 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
 -- an imposed column name
 CREATE VIEW vp3(k,v)
@@ -340,7 +346,6 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp3
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED vp3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED vp3

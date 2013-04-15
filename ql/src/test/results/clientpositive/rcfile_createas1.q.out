@@ -60,12 +60,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-6 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-8 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-8
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -91,7 +93,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                     name: default.rcfile_createas1b
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -106,7 +108,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-6
+  Stage: Stage-8
       Create Table Operator:
         Create Table
           columns: key int, value string, part int
@@ -124,12 +126,22 @@ STAGE PLANS:
   Stage: Stage-3
     Block level merge
 
+  Stage: Stage-5
+    Block level merge
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: CREATE TABLE rcfile_createas1b
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
 POSTHOOK: query: CREATE TABLE rcfile_createas1b
@@ -137,6 +149,7 @@ POSTHOOK: query: CREATE TABLE rcfile_createas1b
         SELECT key, value, PMOD(HASH(key), 50) as part
         FROM rcfile_createas1a
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
 POSTHOOK: Output: default@rcfile_createas1b
@@ -149,6 +162,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_createas1a
 ) t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_createas1a
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
 #### A masked pattern was here ####
@@ -157,6 +171,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     FROM rcfile_createas1a
 ) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_createas1a
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
 #### A masked pattern was here ####

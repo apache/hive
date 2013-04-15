@@ -1,0 +1,19 @@
+Saving all output to "!!{outputDirectory}!!/input28.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input28.q
+>>>  
+>>>  create table tst(a string, b string) partitioned by (d string);
+No rows affected 
+>>>  alter table tst add partition (d='2009-01-01');
+No rows affected 
+>>>  
+>>>  insert overwrite table tst partition(d='2009-01-01') 
+select tst.a, src.value from tst join src ON (tst.a = src.key);
+'a','value'
+No rows selected 
+>>>  
+>>>  select * from tst where tst.d='2009-01-01';
+'a','b','d'
+No rows selected 
+>>>  
+>>>  
+>>>  !record

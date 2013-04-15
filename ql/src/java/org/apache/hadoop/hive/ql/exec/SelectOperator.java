@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -47,7 +47,7 @@ public class SelectOperator extends Operator<SelectDesc> implements
       return;
     }
 
-    ArrayList<ExprNodeDesc> colList = conf.getColList();
+    List<ExprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
       assert (colList.get(i) != null);
@@ -89,11 +89,35 @@ public class SelectOperator extends Operator<SelectDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "SEL";
   }
 
   @Override
   public OperatorType getType() {
     return OperatorType.SELECT;
+  }
+
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
+
+  @Override
+  public boolean columnNamesRowResolvedCanBeObtained() {
+    return true;
+  }
+
+  @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
+
+  @Override
+  public boolean supportUnionRemoveOptimization() {
+    return true;
   }
 }

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.index;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Factory of methods used by {@link RewriteGBUsingIndex}
@@ -204,8 +204,8 @@ public final class RewriteCanApplyProcFactory {
        SelectOperator operator = (SelectOperator)nd;
        canApplyCtx = (RewriteCanApplyCtx)ctx;
 
-       List<Operator<? extends Serializable>> childrenList = operator.getChildOperators();
-       Operator<? extends Serializable> child = childrenList.get(0);
+       List<Operator<? extends OperatorDesc>> childrenList = operator.getChildOperators();
+       Operator<? extends OperatorDesc> child = childrenList.get(0);
        if(child instanceof FileSinkOperator){
          Map<String, String> internalToAlias = new LinkedHashMap<String, String>();
          RowSchema rs = operator.getSchema();

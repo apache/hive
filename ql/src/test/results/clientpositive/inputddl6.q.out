@@ -27,18 +27,32 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
-ds	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6
@@ -60,14 +74,6 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS INPUTDDL6
 POSTHOOK: type: SHOWPARTITIONS
 ds=2008-04-09
-PREHOOK: query: DROP TABLE INPUTDDL6
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@inputddl6
-PREHOOK: Output: default@inputddl6
-POSTHOOK: query: DROP TABLE INPUTDDL6
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@inputddl6
-POSTHOOK: Output: default@inputddl6
 PREHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
@@ -94,3 +100,11 @@ STAGE PLANS:
       limit: -1
 
 
+PREHOOK: query: DROP TABLE INPUTDDL6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inputddl6
+PREHOOK: Output: default@inputddl6
+POSTHOOK: query: DROP TABLE INPUTDDL6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inputddl6
+POSTHOOK: Output: default@inputddl6

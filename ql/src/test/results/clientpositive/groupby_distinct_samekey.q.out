@@ -1,0 +1,263 @@
+PREHOOK: query: -- This test covers HIVE-2332
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This test covers HIVE-2332
+
+create table t1 (int1 int, int2 int, str1 string, str2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: --disabled RS-dedup for keeping intention of test
+
+insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1
+POSTHOOK: query: --disabled RS-dedup for keeping intention of test
+
+insert into table t1 select cast(key as int), cast(key as int), value, value from src where key < 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL int1))))) Q1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL Q1) int1)) (TOK_SELEXPR (TOK_FUNCTIONDI sum (. (TOK_TABLE_OR_COL Q1) int1)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL Q1) int1))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        q1:t1 
+          TableScan
+            alias: t1
+            Select Operator
+              expressions:
+                    expr: int1
+                    type: int
+                    expr: int2
+                    type: int
+                    expr: str1
+                    type: string
+                    expr: str2
+                    type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: int
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: int
+                      expr: _col2
+                      type: string
+                      expr: _col3
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+            outputColumnNames: _col0
+            Group By Operator
+              aggregations:
+                    expr: sum(DISTINCT _col0)
+              bucketGroup: false
+              keys:
+                    expr: _col0
+                    type: int
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: int
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(DISTINCT KEY._col1:0._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col1:0._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: explain select int1, sum(distinct int1) from t1 group by int1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select int1, sum(distinct int1) from t1 group by int1
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL int1)) (TOK_SELEXPR (TOK_FUNCTIONDI sum (TOK_TABLE_OR_COL int1)))) (TOK_GROUPBY (TOK_TABLE_OR_COL int1))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            Select Operator
+              expressions:
+                    expr: int1
+                    type: int
+              outputColumnNames: int1
+              Group By Operator
+                aggregations:
+                      expr: sum(DISTINCT int1)
+                bucketGroup: false
+                keys:
+                      expr: int1
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: int
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(DISTINCT KEY._col1:0._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col1:0._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select Q1.int1, sum(distinct Q1.int1) from (select * from t1 order by int1) Q1 group by Q1.int1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+2	2
+4	4
+5	5
+PREHOOK: query: select int1, sum(distinct int1) from t1 group by int1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select int1, sum(distinct int1) from t1 group by int1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+2	2
+4	4
+5	5
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.int1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -23,18 +23,18 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
+import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.Project;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.Template;
@@ -46,9 +46,28 @@ import org.apache.velocity.runtime.RuntimeConstants;
 
 public class QTestGenTask extends Task {
 
-  public class QFileFilter implements FileFilter {
-  
+  public class IncludeFilter implements FileFilter {
+
+    Set<String> includeOnly;
+    public IncludeFilter(Set<String> includeOnly) {
+      this.includeOnly = includeOnly;
+    }
+
     public boolean accept(File fpath) {
+      return includeOnly == null || includeOnly.contains(fpath.getName());
+    }
+  }
+
+  public class QFileFilter extends IncludeFilter {
+
+    public QFileFilter(Set<String> includeOnly) {
+      super(includeOnly);
+    }
+
+    public boolean accept(File fpath) {
+      if (!super.accept(fpath)) {
+        return false;
+      }
       if (fpath.isDirectory() ||
           !fpath.getName().endsWith(".q")) {
         return false;
@@ -58,8 +77,15 @@ public class QTestGenTask extends Task {
     
   }
   
-  public class DisabledQFileFilter implements FileFilter { 
+  public class DisabledQFileFilter extends IncludeFilter {
+    public DisabledQFileFilter(Set<String> includeOnly) {
+      super(includeOnly);
+    }
+
     public boolean accept(File fpath) {
+      if (!super.accept(fpath)) {
+        return false;
+      }
       return !fpath.isDirectory() && fpath.getName().endsWith(".q.disabled");
     }  
   }
@@ -67,7 +93,8 @@ public class QTestGenTask extends Task {
   public class QFileRegexFilter extends QFileFilter {
     Pattern filterPattern;
     
-    public QFileRegexFilter(String filter) {
+    public QFileRegexFilter(String filter, Set<String> includeOnly) {
+      super(includeOnly);
       filterPattern = Pattern.compile(filter);
     }
     
@@ -81,12 +108,16 @@ public class QTestGenTask extends Task {
   }
 
   private List<String> templatePaths = new ArrayList<String>();
+
+  private String hiveRootDirectory;
   
   private String outputDirectory;
  
   private String queryDirectory;
  
   private String queryFile;
+
+  private String includeQueryFile;
 
   private String excludeQueryFile;
   
@@ -156,6 +187,18 @@ public class QTestGenTask extends Task {
     return template;
   }
 
+  public void setHiveRootDirectory(File hiveRootDirectory) {
+    try {
+      this.hiveRootDirectory = hiveRootDirectory.getCanonicalPath();
+    } catch (IOException ioe) {
+      throw new BuildException(ioe);
+    }
+  }
+
+  public String getHiveRootDirectory() {
+    return hiveRootDirectory;
+  }
+  
   public void setTemplatePath(String templatePath) throws Exception {
     templatePaths.clear();
     for (String relativePath : templatePath.split(",")) {
@@ -212,6 +255,14 @@ public class QTestGenTask extends Task {
     return queryFile;
   }
 
+  public String getIncludeQueryFile() {
+    return includeQueryFile;
+  }
+
+  public void setIncludeQueryFile(String includeQueryFile) {
+    this.includeQueryFile = includeQueryFile;
+  }
+
   public void setExcludeQueryFile(String excludeQueryFile) {
     this.excludeQueryFile = excludeQueryFile;
   }
@@ -258,46 +309,66 @@ public class QTestGenTask extends Task {
       throw new BuildException("No className specified");
     }
 
+    Set<String> includeOnly = null;
+    if (includeQueryFile != null && !includeQueryFile.isEmpty()) {
+      includeOnly = new HashSet<String>(Arrays.asList(includeQueryFile.split(",")));
+    }
+
     List<File> qFiles = new ArrayList<File>();
+    HashMap<String, String> qFilesMap = new HashMap<String, String>();
+    File hiveRootDir = null;
+    File queryDir = null;
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
     
     try {
-      File inpDir = null;
       if (queryDirectory != null) {
-        inpDir = new File(queryDirectory);
+        queryDir = new File(queryDirectory);
       }
 
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma seperated
         for (String qFile : queryFile.split(",")) {
-          if (null != inpDir) {
-            qFiles.add(new File(inpDir, qFile));
+          if (includeOnly != null && !includeOnly.contains(qFile)) {
+            continue;
+          }
+          if (null != queryDir) {
+            qFiles.add(new File(queryDir, qFile));
           } else {
             qFiles.add(new File(qFile));
           }
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
+        qFiles.addAll(Arrays.asList(queryDir.listFiles(
+            new QFileRegexFilter(queryFileRegex, includeOnly))));
       } else if (runDisabled != null && runDisabled.equals("true")) {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter())));        
+        qFiles.addAll(Arrays.asList(queryDir.listFiles(new DisabledQFileFilter(includeOnly))));
       } else {
-        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
+        qFiles.addAll(Arrays.asList(queryDir.listFiles(new QFileFilter(includeOnly))));
       }
 
       if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
         // Exclude specified query files, comma separated
         for (String qFile : excludeQueryFile.split(",")) {
-          if (null != inpDir) {
-            qFiles.remove(new File(inpDir, qFile));
+          if (null != queryDir) {
+            qFiles.remove(new File(queryDir, qFile));
           } else {
             qFiles.remove(new File(qFile));
           }
         }
       }
+
+      hiveRootDir = new File(hiveRootDirectory);
+      if (!hiveRootDir.exists()) {
+        throw new BuildException("Hive Root Directory "
+            + hiveRootDir.getCanonicalPath() + " does not exist");
+      }
       
       Collections.sort(qFiles);
+      for (File qFile : qFiles) {
+        qFilesMap.put(qFile.getName(), getEscapedCanonicalPath(qFile));
+      }
 
       // Make sure the output directory exists, if it doesn't
       // then create it.
@@ -347,9 +418,12 @@ public class QTestGenTask extends Task {
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
       ctx.put("className", className);
+      ctx.put("hiveRootDir", getEscapedCanonicalPath(hiveRootDir));
+      ctx.put("queryDir", getEscapedCanonicalPath(queryDir));
       ctx.put("qfiles", qFiles);
-      ctx.put("resultsDir", resultsDir);
-      ctx.put("logDir", logDir);
+      ctx.put("qfilesMap", qFilesMap);
+      ctx.put("resultsDir", getEscapedCanonicalPath(resultsDir));
+      ctx.put("logDir", getEscapedCanonicalPath(logDir));
       ctx.put("clusterMode", clusterMode);
       ctx.put("hadoopVersion", hadoopVersion);
 
@@ -372,5 +446,18 @@ public class QTestGenTask extends Task {
     } catch(Exception e) {
       throw new BuildException("Generation failed", e);
     }
+  }
+  
+  private static String getEscapedCanonicalPath(File file) throws IOException {
+    if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
+      // Escape the backward slash in CanonicalPath if the unit test runs on windows
+      // e.g. dir.getCanonicalPath() gets the absolute path of local
+      // directory. When we embed it directly in the generated java class it results
+      // in compiler error in windows. Reason : the canonical path contains backward
+      // slashes "C:\temp\etc\" and it is not a valid string in Java
+      // unless we escape the backward slashes.
+      return file.getCanonicalPath().replace("\\", "\\\\");
+    }
+    return file.getCanonicalPath();
   }
 }

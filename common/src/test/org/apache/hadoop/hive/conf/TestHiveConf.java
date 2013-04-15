@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.conf;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 
@@ -32,8 +33,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 public class TestHiveConf extends TestCase {
 
   public void testHiveSitePath() throws Exception {
-    String expectedPath = System.getProperty("test.build.resources") + "/hive-site.xml";
-    assertEquals(expectedPath, new HiveConf().getHiveSitePath());
+    String expectedPath =
+        new Path(System.getProperty("test.build.resources") + "/hive-site.xml").toUri().getPath();
+    assertEquals(expectedPath, new HiveConf().getHiveSiteLocation().getPath());
   }
 
   private void checkHadoopConf(String name, String expectedHadoopVal) throws Exception {
@@ -75,5 +77,11 @@ public class TestHiveConf extends TestCase {
 
     // Test HiveConf property variable substitution in hive-site.xml
     checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.defaultVal);
+  }
+
+  public void testColumnNameMapping() throws Exception {
+    for (int i = 0 ; i < 20 ; i++ ){
+      assertTrue(i == HiveConf.getPositionFromInternalName(HiveConf.getColumnInternalName(i)));
+    }
   }
 }

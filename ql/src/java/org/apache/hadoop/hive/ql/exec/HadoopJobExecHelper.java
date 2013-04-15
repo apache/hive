@@ -26,20 +26,18 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
-import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
-import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.ClientStatsPublisher;
@@ -73,7 +71,9 @@ public class HadoopJobExecHelper {
    */
   private void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     mapProgress = Math.round(rj.mapProgress() * 100);
+    mapProgress = mapProgress == 100 ? (int)Math.floor(rj.mapProgress() * 100) : mapProgress;
     reduceProgress = Math.round(rj.reduceProgress() * 100);
+    reduceProgress = reduceProgress == 100 ? (int)Math.floor(rj.reduceProgress() * 100) : reduceProgress;
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_MAP_PROGRESS", Long.valueOf(mapProgress));
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_REDUCE_PROGRESS", Long.valueOf(reduceProgress));
     if (ctrs == null) {
@@ -104,10 +104,6 @@ public class HadoopJobExecHelper {
    */
   public static String getJobEndMsg(String jobId) {
     return "Ended Job = " + jobId;
-  }
-
-  private String getTaskAttemptLogUrl(String taskTrackerHttpAddress, String taskAttemptId) {
-    return taskTrackerHttpAddress + "/tasklog?taskid=" + taskAttemptId + "&all=true";
   }
 
   public boolean mapStarted() {
@@ -221,7 +217,8 @@ public class HadoopJobExecHelper {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     //DecimalFormat longFormatter = new DecimalFormat("###,###");
     long reportTime = System.currentTimeMillis();
-    long maxReportInterval = 60 * 1000; // One minute
+    long maxReportInterval =
+        HiveConf.getLongVar(job, HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS_INTERVAL);
     boolean fatal = false;
     StringBuilder errMsg = new StringBuilder();
     long pullInterval = HiveConf.getLongVar(job, HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL);
@@ -355,8 +352,10 @@ public class HadoopJobExecHelper {
           ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
           ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
               Keys.TASK_HADOOP_PROGRESS, output);
-          ss.getHiveHistory().progressTask(SessionState.get().getQueryId(), this.task);
-          this.callBackObj.logPlanProgress(ss);
+          if (ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS)) {
+            ss.getHiveHistory().progressTask(SessionState.get().getQueryId(), this.task);
+            this.callBackObj.logPlanProgress(ss);
+          }
         }
         console.printInfo(output);
         lastReport = report;
@@ -422,10 +421,9 @@ public class HadoopJobExecHelper {
    * from StreamJob.java.
    */
   public void jobInfo(RunningJob rj) {
-    if (job.get("mapred.job.tracker", "local").equals("local")) {
+    if (ShimLoader.getHadoopShims().isLocalMode(job)) {
       console.printInfo("Job running in-process (local Hadoop)");
     } else {
-      String hp = job.get("mapred.job.tracker");
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setTaskProperty(SessionState.get().getQueryId(),
             getId(), Keys.TASK_HADOOP_ID, rj.getJobID());
@@ -433,7 +431,7 @@ public class HadoopJobExecHelper {
       console.printInfo(getJobStartMsg(rj.getJobID()) + ", Tracking URL = "
           + rj.getTrackingURL());
       console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
-          + " job  -Dmapred.job.tracker=" + hp + " -kill " + rj.getJobID());
+          + " job  -kill " + rj.getJobID());
     }
   }
 
@@ -468,160 +466,6 @@ public class HadoopJobExecHelper {
     }
   }
 
-  // Used for showJobFailDebugInfo
-  private static class TaskInfo {
-    String jobId;
-    HashSet<String> logUrls;
-
-    public TaskInfo(String jobId) {
-      this.jobId = jobId;
-      logUrls = new HashSet<String>();
-    }
-
-    public void addLogUrl(String logUrl) {
-      logUrls.add(logUrl);
-    }
-
-    public HashSet<String> getLogUrls() {
-      return logUrls;
-    }
-
-    public String getJobId() {
-      return jobId;
-    }
-  }
-
-  @SuppressWarnings("deprecation")
-  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
-    // Mapping from task ID to the number of failures
-    Map<String, Integer> failures = new HashMap<String, Integer>();
-    // Successful task ID's
-    Set<String> successes = new HashSet<String>();
-
-    Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
-
-    int startIndex = 0;
-
-    console.printError("Error during job, obtaining debugging information...");
-    // Loop to get all task completion events because getTaskCompletionEvents
-    // only returns a subset per call
-    while (true) {
-      TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(startIndex);
-
-      if (taskCompletions == null || taskCompletions.length == 0) {
-        break;
-      }
-
-      boolean more = true;
-      boolean firstError = true;
-      for (TaskCompletionEvent t : taskCompletions) {
-        // getTaskJobIDs returns Strings for compatibility with Hadoop versions
-        // without TaskID or TaskAttemptID
-        String[] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(t);
-
-        if (taskJobIds == null) {
-          console.printError("Task attempt info is unavailable in this Hadoop version");
-          more = false;
-          break;
-        }
-
-        // For each task completion event, get the associated task id, job id
-        // and the logs
-        String taskId = taskJobIds[0];
-        String jobId = taskJobIds[1];
-        if (firstError) {
-          console.printError("Examining task ID: " + taskId + " (and more) from job " + jobId);
-          firstError = false;
-        }
-
-        TaskInfo ti = taskIdToInfo.get(taskId);
-        if (ti == null) {
-          ti = new TaskInfo(jobId);
-          taskIdToInfo.put(taskId, ti);
-        }
-        // These tasks should have come from the same job.
-        assert (ti.getJobId() != null && ti.getJobId().equals(jobId));
-        ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
-
-        // If a task failed, then keep track of the total number of failures
-        // for that task (typically, a task gets re-run up to 4 times if it
-        // fails
-
-        if (t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
-          Integer failAttempts = failures.get(taskId);
-          if (failAttempts == null) {
-            failAttempts = Integer.valueOf(0);
-          }
-          failAttempts = Integer.valueOf(failAttempts.intValue() + 1);
-          failures.put(taskId, failAttempts);
-        } else {
-          successes.add(taskId);
-        }
-      }
-      if (!more) {
-        break;
-      }
-      startIndex += taskCompletions.length;
-    }
-    // Remove failures for tasks that succeeded
-    for (String task : successes) {
-      failures.remove(task);
-    }
-
-    if (failures.keySet().size() == 0) {
-      return;
-    }
-
-    // Find the highest failure count
-    int maxFailures = 0;
-    for (Integer failCount : failures.values()) {
-      if (maxFailures < failCount.intValue()) {
-        maxFailures = failCount.intValue();
-      }
-    }
-
-    // Display Error Message for tasks with the highest failure count
-    String jtUrl = JobTrackerURLResolver.getURL(conf);
-
-    for (String task : failures.keySet()) {
-      if (failures.get(task).intValue() == maxFailures) {
-        TaskInfo ti = taskIdToInfo.get(task);
-        String jobId = ti.getJobId();
-        String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
-
-        TaskLogProcessor tlp = new TaskLogProcessor(conf);
-        for (String logUrl : ti.getLogUrls()) {
-          tlp.addTaskAttemptLogUrl(logUrl);
-        }
-
-        List<ErrorAndSolution> errors = tlp.getErrors();
-
-        StringBuilder sb = new StringBuilder();
-        // We use a StringBuilder and then call printError only once as
-        // printError will write to both stderr and the error log file. In
-        // situations where both the stderr and the log file output is
-        // simultaneously output to a single stream, this will look cleaner.
-        sb.append("\n");
-        sb.append("Task with the most failures(" + maxFailures + "): \n");
-        sb.append("-----\n");
-        sb.append("Task ID:\n  " + task + "\n\n");
-        sb.append("URL:\n  " + taskUrl + "\n");
-
-        for (ErrorAndSolution e : errors) {
-          sb.append("\n");
-          sb.append("Possible error:\n  " + e.getError() + "\n\n");
-          sb.append("Solution:\n  " + e.getSolution() + "\n");
-        }
-        sb.append("-----\n");
-
-        console.printError(sb.toString());
-        // Only print out one task because that's good enough for debugging.
-        break;
-      }
-    }
-    return;
-
-  }
 
   public void localJobDebugger(int exitVal, String taskId) {
     StringBuilder sb = new StringBuilder();
@@ -634,7 +478,7 @@ public class HadoopJobExecHelper {
     for (Appender a : Collections.list((Enumeration<Appender>)
           LogManager.getRootLogger().getAllAppenders())) {
       if (a instanceof FileAppender) {
-        console.printError(((FileAppender)a).getFile());
+        console.printError((new Path(((FileAppender)a).getFile())).toUri().getPath());
       }
     }
   }
@@ -687,10 +531,17 @@ public class HadoopJobExecHelper {
     jobInfo(rj);
     MapRedStats mapRedStats = progress(th);
 
+    this.task.taskHandle = th;
     // Not always there is a SessionState. Sometimes ExeDriver is directly invoked
     // for special modes. In that case, SessionState.get() is empty.
     if (SessionState.get() != null) {
       SessionState.get().getLastMapRedStatsList().add(mapRedStats);
+
+      // Computes the skew for all the MapReduce irrespective
+      // of Success or Failure
+      if (this.task.getQueryPlan() != null) {
+        computeReducerTimeStatsPerJob(rj);
+      }
     }
 
     boolean success = mapRedStats.isSuccess();
@@ -712,6 +563,10 @@ public class HadoopJobExecHelper {
           Thread t = new Thread(jd);
           t.start();
           t.join(HiveConf.getIntVar(job, HiveConf.ConfVars.JOB_DEBUG_TIMEOUT));
+          int ec = jd.getErrorCode();
+          if (ec > 0) {
+            returnVal = ec;
+          }
         } catch (InterruptedException e) {
           console.printError("Timed out trying to grab more detailed job failure"
               + " information, please check jobtracker for more info");
@@ -723,6 +578,31 @@ public class HadoopJobExecHelper {
 
     return returnVal;
   }
+
+
+  private void computeReducerTimeStatsPerJob(RunningJob rj) throws IOException {
+    TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(0);
+    List<Integer> reducersRunTimes = new ArrayList<Integer>();
+
+    for (TaskCompletionEvent taskCompletion : taskCompletions) {
+      String[] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(taskCompletion);
+      if (taskJobIds == null) {
+        // Task attempt info is unavailable in this Hadoop version");
+        continue;
+      }
+      String taskId = taskJobIds[0];
+      if (!taskCompletion.isMapTask()) {
+        reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
+      }
+    }
+    // Compute the reducers run time statistics for the job
+    ReducerTimeStatsPerJob reducerTimeStatsPerJob = new ReducerTimeStatsPerJob(reducersRunTimes,
+        new String(this.jobId));
+    // Adding the reducers run time statistics for the job in the QueryPlan
+    this.task.getQueryPlan().getReducerTimeStatsPerJobList().add(reducerTimeStatsPerJob);
+    return;
+  }
+
 
   private Map<String, Double> extractAllCounterValues(Counters counters) {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();

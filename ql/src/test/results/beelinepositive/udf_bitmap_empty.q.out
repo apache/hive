@@ -1,0 +1,12 @@
+Saving all output to "!!{outputDirectory}!!/udf_bitmap_empty.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_bitmap_empty.q
+>>>  select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src limit 1;
+'_c0'
+'true'
+1 row selected 
+>>>  
+>>>  select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src limit 1;
+'_c0'
+'false'
+1 row selected 
+>>>  !record

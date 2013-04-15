@@ -25,6 +25,7 @@ POSTHOOK: type: CREATEINDEX
 POSTHOOK: Output: default@default__srcpart_srcpart_index_proj__
 PREHOOK: query: ALTER INDEX srcpart_index_proj ON srcpart REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -35,6 +36,7 @@ PREHOOK: Output: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=
 PREHOOK: Output: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER INDEX srcpart_index_proj ON srcpart REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -48,10 +50,12 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -59,10 +63,12 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -71,11 +77,13 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -88,9 +96,11 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 100	val_100
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -98,10 +108,12 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -111,10 +123,12 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 100	val_100
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -158,6 +172,7 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER  INDEX srcpart_index_proj ON srcpart REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -168,6 +183,7 @@ PREHOOK: Output: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=
 PREHOOK: Output: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER  INDEX srcpart_index_proj ON srcpart REBUILD
 POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -184,6 +200,7 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=11
@@ -191,6 +208,7 @@ PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT x.* FROM default__srcpart_srcpart_index_proj__ x
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=11
@@ -204,12 +222,14 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_srcpart_index_proj__
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=11
 PREHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@default__srcpart_srcpart_index_proj__@ds=2008-04-09/hr=11
@@ -223,6 +243,7 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -230,6 +251,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -251,6 +273,7 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09
 100	val_100
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -258,6 +281,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11

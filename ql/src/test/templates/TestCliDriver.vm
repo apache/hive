@@ -25,17 +25,11 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-
-
-import org.antlr.runtime.*;
-import org.antlr.runtime.tree.*;
 
 public class $className extends TestCase {
 
@@ -48,7 +42,7 @@ public class $className extends TestCase {
       if ("$clusterMode".equals("miniMR"))
         miniMR = true;
       hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR, hadoopVer);
+      qt = new QTestUtil("$resultsDir", "$logDir", miniMR, hadoopVer);
 
       // do a one time initialization
       qt.cleanUp();
@@ -119,19 +113,26 @@ public class $className extends TestCase {
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
+  #set ($fpath = $qfilesMap.get($fname))
   public void testCliDriver_$tname() throws Exception {
+    runTest("$tname", "$fname", "$fpath");
+  }
+
+#end
+
+  private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
-      System.out.println("Begin query: " + "$fname");
+      System.out.println("Begin query: " + fname);
 
-      qt.addFile("$qf.getCanonicalPath()");
+      qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped("$fname")) {
+      if (qt.shouldBeSkipped(fname)) {
         return;
       }
 
-      qt.cliInit("$fname", false);
-      int ecode = qt.executeClient("$fname");
+      qt.cliInit(fname, false);
+      int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         fail("Client Execution failed with error code = " + ecode + debugHint);
       }
@@ -151,7 +152,7 @@ public class $className extends TestCase {
         }
       }
 
-      ecode = qt.checkCliDriverResults("$fname");
+      ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
         fail("Client execution results failed with error code = " + ecode
             + debugHint);
@@ -160,16 +161,13 @@ public class $className extends TestCase {
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Failed query: " + "$fname");
+      System.out.println("Failed query: " + fname);
       System.out.flush();
       fail("Unexpected exception" + debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.out.println("Done query: " + "$fname" + " elapsedTime=" + elapsedTime/1000 + "s");
+    System.out.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
-
-#end
 }
-

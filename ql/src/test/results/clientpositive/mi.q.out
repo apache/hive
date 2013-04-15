@@ -17,6 +17,7 @@ SELECT key, value, ds, hr
 WHERE ds = '2008-04-08' and hr = '12'
 GROUP BY key, value, ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@nzhang_t1
@@ -30,6 +31,7 @@ SELECT key, value, ds, hr
 WHERE ds = '2008-04-08' and hr = '12'
 GROUP BY key, value, ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_t1@ds=2008-04-08/hr=11
@@ -58,10 +60,12 @@ POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpa
 ds=2008-04-08/hr=12
 PREHOOK: query: select * from nzhang_t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_t1
 PREHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_t1
 POSTHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -570,10 +574,12 @@ POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpa
 97	val_97	2008-04-08	11
 PREHOOK: query: select * from nzhang_t2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_t2
 PREHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_t2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_t2
 POSTHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

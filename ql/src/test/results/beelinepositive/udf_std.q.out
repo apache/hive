@@ -1,0 +1,12 @@
+Saving all output to "!!{outputDirectory}!!/udf_std.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_std.q
+>>>  DESCRIBE FUNCTION std;
+'tab_name'
+'std(x) - Returns the standard deviation of a set of numbers'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED std;
+'tab_name'
+'std(x) - Returns the standard deviation of a set of numbers'
+'Synonyms: stddev_pop, stddev'
+2 rows selected 
+>>>  !record

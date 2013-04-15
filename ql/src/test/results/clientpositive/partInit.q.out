@@ -1,0 +1,41 @@
+PREHOOK: query: CREATE TABLE empty (c INT) PARTITIONED BY (p INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE empty (c INT) PARTITIONED BY (p INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@empty
+PREHOOK: query: SELECT MAX(c) FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(c) FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT MAX(p) FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: ALTER TABLE empty ADD PARTITION (p=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@empty
+POSTHOOK: query: ALTER TABLE empty ADD PARTITION (p=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@empty
+POSTHOOK: Output: default@empty@p=1
+PREHOOK: query: SELECT MAX(p) FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Input: default@empty@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+POSTHOOK: Input: default@empty@p=1
+#### A masked pattern was here ####
+1

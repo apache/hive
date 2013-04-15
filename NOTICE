@@ -22,6 +22,9 @@ Copyright (c) 2002 JSON.org
 This product includes/uses JLine (http://jline.sourceforge.net/),
 Copyright (c) 2002-2006, Marc Prud'hommeaux <mwp1@cornell.edu>.
 
+This product includes/uses SQLLine (http://sqlline.sourceforge.net),
+Copyright (c) 2002, 2003, 2004, 2005 Marc Prud'hommeaux <mwp1@cornell.edu>.
+
 This product includes/uses SLF4J (http://www.slf4j.org/),
 Copyright (c) 2004-2008 QOS.ch
 
@@ -30,3 +33,12 @@ Copyright (c) 2012 Twitter, Inc.
 
 This product includes/uses Glyphicons (http://glyphicons.com/),
 Copyright (c) 2010 - 2012 Jan Kovarík
+
+This product includes DataNucleus (http://www.datanucleus.org/)
+Copyright 2008-2008 DataNucleus
+
+This product includes Guava (http://code.google.com/p/guava-libraries/)
+Copyright (C) 2006 Google Inc.
+
+This product includes JavaEWAH (http://code.google.com/p/javaewah/)
+Copyright (C) 2011 Google Inc.

@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:15 Expression not in GROUP BY key 'key'
+FAILED: SemanticException [Error 10025]: Line 1:15 Expression not in GROUP BY key 'key'

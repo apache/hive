@@ -1,0 +1,127 @@
+Saving all output to "!!{outputDirectory}!!/protectmode2.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/protectmode2.q
+>>>  drop table tbl1;
+No rows affected 
+>>>  
+>>>  create table tbl1 (col string);
+No rows affected 
+>>>  alter table tbl1 enable no_drop cascade;
+No rows affected 
+>>>  desc extended tbl1;
+'col_name','data_type','comment'
+'col','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl1, dbName:protectmode2, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode2.db/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=NO_DROP_CASCADE, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  alter table tbl1 enable no_drop;
+No rows affected 
+>>>  desc extended tbl1;
+'col_name','data_type','comment'
+'col','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl1, dbName:protectmode2, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode2.db/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=NO_DROP,NO_DROP_CASCADE, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  alter table tbl1 disable no_drop cascade;
+No rows affected 
+>>>  desc extended tbl1;
+'col_name','data_type','comment'
+'col','string',''
+'','',''
+'Detailed Table Information','Table(tableName:tbl1, dbName:protectmode2, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/protectmode2.db/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{last_modified_by=!!ELIDED!!, last_modified_time=!!UNIXTIME!!, PROTECT_MODE=NO_DROP, transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  alter table tbl1 disable no_drop;
+No rows affected 
+>>>  
+>>>  drop table tbl1;
+No rows affected 
+>>>  
+>>>  drop table tbl2;
+No rows affected 
+>>>  create table tbl2 (col string) partitioned by (p string);
+No rows affected 
+>>>  alter table tbl2 add partition (p='p1');
+No rows affected 
+>>>  alter table tbl2 add partition (p='p2');
+No rows affected 
+>>>  alter table tbl2 add partition (p='p3');
+No rows affected 
+>>>  alter table tbl2 enable no_drop cascade;
+No rows affected 
+>>>  desc formatted tbl2;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'col                 ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'p                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','protectmode2        ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','NO_DROP_CASCADE     ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/protectmode2.db/tbl2',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','PROTECT_MODE        ','NO_DROP_CASCADE     '
+'','last_modified_by    ','!!{user.name}!!                '
+'','last_modified_time  ','!!UNIXTIME!!          '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+34 rows selected 
+>>>  alter table tbl2 disable no_drop cascade;
+No rows affected 
+>>>  desc formatted tbl2;
+'col_name','data_type','comment'
+'# col_name            ','data_type           ','comment             '
+'','',''
+'col                 ','string              ','None                '
+'','',''
+'# Partition Information','',''
+'# col_name            ','data_type           ','comment             '
+'','',''
+'p                   ','string              ','None                '
+'','',''
+'# Detailed Table Information','',''
+'Database:           ','protectmode2        ',''
+'Owner:              ','!!{user.name}!!                ',''
+'CreateTime:         ','!!TIMESTAMP!!',''
+'LastAccessTime:     ','UNKNOWN             ',''
+'Protect Mode:       ','None                ',''
+'Retention:          ','0                   ',''
+'Location:           ','!!{hive.metastore.warehouse.dir}!!/protectmode2.db/tbl2',''
+'Table Type:         ','MANAGED_TABLE       ',''
+'Table Parameters:','',''
+'','last_modified_by    ','!!{user.name}!!                '
+'','last_modified_time  ','!!UNIXTIME!!          '
+'','transient_lastDdlTime','!!UNIXTIME!!          '
+'','',''
+'# Storage Information','',''
+'SerDe Library:      ','org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',''
+'InputFormat:        ','org.apache.hadoop.mapred.TextInputFormat',''
+'OutputFormat:       ','org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',''
+'Compressed:         ','No                  ',''
+'Num Buckets:        ','-1                  ',''
+'Bucket Columns:     ','[]                  ',''
+'Sort Columns:       ','[]                  ',''
+'Storage Desc Params:','',''
+'','serialization.format','1                   '
+33 rows selected 
+>>>  drop table tbl2;
+No rows affected 
+>>>  !record

@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: ARCHIVE can only be run on partitions
+FAILED: SemanticException [Error 10110]: ARCHIVE can only be run on partitions

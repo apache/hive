@@ -31,11 +31,11 @@ import java.nio.charset.CodingErrorAction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.RCFileRecordReader;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Tool;
@@ -74,6 +74,9 @@ public class RCFileCat implements Tool{
     int recordCount = 0;
     long startT = System.currentTimeMillis();
     boolean verbose = false;
+    boolean columnSizes = false;
+    boolean pretty = false;
+    boolean fileSizes = false;
 
     //get options from arguments
     if (args.length < 1 || args.length > 3) {
@@ -88,6 +91,13 @@ public class RCFileCat implements Tool{
         length = Long.parseLong(arg.substring("--length=".length()));
       } else if (arg.equals("--verbose")) {
         verbose = true;
+      } else if (arg.equals("--column-sizes")) {
+        columnSizes = true;
+      } else if (arg.equals("--column-sizes-pretty")) {
+        columnSizes = true;
+        pretty = true;
+      } else if (arg.equals("--file-sizes")){
+        fileSizes = true;
       } else if (fileName == null){
         fileName = new Path(arg);
       } else {
@@ -111,6 +121,62 @@ public class RCFileCat implements Tool{
     //share the code with RecordReader.
     FileSplit split = new FileSplit(fileName,start, length, new JobConf(conf));
     RCFileRecordReader recordReader = new RCFileRecordReader(conf, split);
+
+    if (columnSizes || fileSizes) {
+      // Print out the un/compressed sizes of each column
+      long[] compressedColumnSizes = null;
+      long[] uncompressedColumnSizes = null;
+      // un/compressed sizes of file and no. of rows
+      long rowNo = 0;
+      long uncompressedFileSize = 0;
+      long compressedFileSize = 0;
+      // Skip from block to block since we only need the header
+      while (recordReader.nextBlock()) {
+        // Get the sizes from the key buffer and aggregate
+        KeyBuffer keyBuffer = recordReader.getKeyBuffer();
+        if (uncompressedColumnSizes == null) {
+          uncompressedColumnSizes = new long[keyBuffer.getColumnNumber()];
+        }
+        if (compressedColumnSizes == null) {
+          compressedColumnSizes = new long[keyBuffer.getColumnNumber()];
+        }
+        for (int i = 0; i < keyBuffer.getColumnNumber(); i++) {
+          uncompressedColumnSizes[i] += keyBuffer.getEachColumnUncompressedValueLen()[i];
+          compressedColumnSizes[i] += keyBuffer.getEachColumnValueLen()[i];
+        }
+        rowNo += keyBuffer.getNumberRows();
+      }
+
+      if (columnSizes && uncompressedColumnSizes != null && compressedColumnSizes != null) {
+        // Print out the sizes, if pretty is set, print it out in a human friendly format,
+        // otherwise print it out as if it were a row
+        for (int i = 0; i < uncompressedColumnSizes.length; i++) {
+          if (pretty) {
+            System.out.println("Column " + i + ": Uncompressed size: " +
+                uncompressedColumnSizes[i] + " Compressed size: " + compressedColumnSizes[i]);
+          } else {
+            System.out.print(i + TAB + uncompressedColumnSizes[i] + TAB +
+                compressedColumnSizes[i] + NEWLINE);
+          }
+        }
+      }
+
+      if (fileSizes) {
+        if (uncompressedColumnSizes != null && compressedColumnSizes != null) {
+          for (int i = 0; i < uncompressedColumnSizes.length; i++) {
+            uncompressedFileSize += uncompressedColumnSizes[i];
+            compressedFileSize += compressedColumnSizes[i];
+          }
+        }
+        System.out.print("File size (uncompressed): " + uncompressedFileSize
+            + ". File size (compressed): " + compressedFileSize + ". Number of rows: " + rowNo
+            + "." + NEWLINE);
+      }
+
+      System.out.flush();
+      return 0;
+    }
+
     LongWritable key = new LongWritable();
     BytesRefArrayWritable value = new BytesRefArrayWritable();
     StringBuilder buf = new StringBuilder(STRING_BUFFER_SIZE); // extra capacity in case we overrun, to avoid resizing
@@ -172,7 +238,8 @@ public class RCFileCat implements Tool{
     this.conf = conf;
   }
 
-  private static String Usage = "RCFileCat [--start=start_offet] [--length=len] [--verbose] fileName";
+  private static String Usage = "RCFileCat [--start=start_offet] [--length=len] [--verbose] " +
+      "[--column-sizes | --column-sizes-pretty] [--file-sizes] fileName";
 
   public static void main(String[] args) {
     try {

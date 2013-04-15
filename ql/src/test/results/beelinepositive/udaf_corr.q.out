@@ -1,0 +1,58 @@
+Saving all output to "!!{outputDirectory}!!/udaf_corr.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udaf_corr.q
+>>>  DROP TABLE covar_tab;
+No rows affected 
+>>>  CREATE TABLE covar_tab (a INT, b INT, c INT) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE 
+INTO TABLE covar_tab;
+No rows affected 
+>>>  
+>>>  DESCRIBE FUNCTION corr;
+'tab_name'
+'corr(x,y) - Returns the Pearson coefficient of correlation'
+'between a set of number pairs'
+2 rows selected 
+>>>  DESCRIBE FUNCTION EXTENDED corr;
+'tab_name'
+'corr(x,y) - Returns the Pearson coefficient of correlation'
+'between a set of number pairs'
+'The function takes as arguments any pair of numeric types and returns a double.'
+'Any pair with a NULL is ignored. If the function is applied to an empty set or'
+'a singleton set, NULL will be returned. Otherwise, it computes the following:'
+'   COVAR_POP(x,y)/(STDDEV_POP(x)*STDDEV_POP(y))'
+'where neither x nor y is null,'
+'COVAR_POP is the population covariance,'
+'and STDDEV_POP is the population standard deviation.'
+9 rows selected 
+>>>  SELECT corr(b, c) FROM covar_tab WHERE a < 1;
+'_c0'
+''
+1 row selected 
+>>>  SELECT corr(b, c) FROM covar_tab WHERE a < 3;
+'_c0'
+''
+1 row selected 
+>>>  SELECT corr(b, c) FROM covar_tab WHERE a = 3;
+'_c0'
+''
+1 row selected 
+>>>  SELECT a, corr(b, c) FROM covar_tab GROUP BY a ORDER BY a;
+'a','_c1'
+'1',''
+'2',''
+'3',''
+'4',''
+'5',''
+'6',''
+6 rows selected 
+>>>  SELECT corr(b, c) FROM covar_tab;
+'_c0'
+'0.6633880657639323'
+1 row selected 
+>>>  
+>>>  DROP TABLE covar_tab;
+No rows affected 
+>>>  !record

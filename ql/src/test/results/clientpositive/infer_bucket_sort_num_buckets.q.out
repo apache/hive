@@ -1,0 +1,225 @@
+PREHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but not all reducers write
+-- all partitions.  The subquery produces rows as follows
+-- key = 0:
+--    0, <value>, 0
+-- key = 1:
+--    0, <value>, 1
+-- key = 2:
+--    1, <value>, 0
+-- This means that by distributing by the first column into two reducers, and using the third
+-- columns as a dynamic partition, the dynamic partition for 0 will get written in both reducers
+-- and the partition for 1 will get written in one reducer.  So hr=0 should be bucketed by key
+-- and hr=1 should not.
+
+EXPLAIN
+INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key2, value, cast(hr as int) FROM
+(SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 2) as hr
+FROM srcpart
+WHERE ds = '2008-04-08') a
+DISTRIBUTE BY key2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but not all reducers write
+-- all partitions.  The subquery produces rows as follows
+-- key = 0:
+--    0, <value>, 0
+-- key = 1:
+--    0, <value>, 1
+-- key = 2:
+--    1, <value>, 0
+-- This means that by distributing by the first column into two reducers, and using the third
+-- columns as a dynamic partition, the dynamic partition for 0 will get written in both reducers
+-- and the partition for 1 will get written in one reducer.  So hr=0 should be bucketed by key
+-- and hr=1 should not.
+
+EXPLAIN
+INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key2, value, cast(hr as int) FROM
+(SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 2) as hr
+FROM srcpart
+WHERE ds = '2008-04-08') a
+DISTRIBUTE BY key2
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION if (< (% (TOK_TABLE_OR_COL key) 3) 2) 0 1) key2) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (% (TOK_TABLE_OR_COL key) 2) hr)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key2)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL hr)))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key2))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:srcpart 
+          TableScan
+            alias: srcpart
+            Select Operator
+              expressions:
+                    expr: if(((key % 3) < 2), 0, 1)
+                    type: int
+                    expr: value
+                    type: string
+                    expr: UDFToInteger((key % 2))
+                    type: int
+              outputColumnNames: _col0, _col1, _col2
+              Reduce Output Operator
+                sort order: 
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: int
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
+                      expr: _col2
+                      type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.test_table
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key2, value, cast(hr as int) FROM
+(SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 3 % 2) as hr
+FROM srcpart
+WHERE ds = '2008-04-08') a
+DISTRIBUTE BY key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_table@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+SELECT key2, value, cast(hr as int) FROM
+(SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 3 % 2) as hr
+FROM srcpart
+WHERE ds = '2008-04-08') a
+DISTRIBUTE BY key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 0]     	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	6558                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 1]     	 
+Database:           	default             	 
+Table:              	test_table          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	3254                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

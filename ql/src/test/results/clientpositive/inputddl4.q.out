@@ -23,27 +23,43 @@ PREHOOK: query: DESCRIBE INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL4
 POSTHOOK: type: DESCTABLE
-viewtime	string	
-userid	int	
-page_url	string	
-referrer_url	string	
-friends	array<bigint>	
-properties	map<string,string>	
-ip	string	IP Address of the User
-ds	string	
-country	string	
+# col_name            	data_type           	comment             
+	 	 
+viewtime            	string              	None                
+userid              	int                 	None                
+page_url            	string              	None                
+referrer_url        	string              	None                
+friends             	array<bigint>       	None                
+properties          	map<string,string>  	None                
+ip                  	string              	IP Address of the User
+ds                  	string              	None                
+country             	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 POSTHOOK: type: DESCTABLE
-viewtime	string	
-userid	int	
-page_url	string	
-referrer_url	string	
-friends	array<bigint>	
-properties	map<string,string>	
-ip	string	IP Address of the User
-ds	string	
-country	string	
+# col_name            	data_type           	comment             
+	 	 
+viewtime            	string              	None                
+userid              	int                 	None                
+page_url            	string              	None                
+referrer_url        	string              	None                
+friends             	array<bigint>       	None                
+properties          	map<string,string>  	None                
+ip                  	string              	IP Address of the User
+ds                  	string              	None                
+country             	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
 	 	 
 #### A masked pattern was here ####

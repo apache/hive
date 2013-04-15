@@ -20,42 +20,44 @@ package org.apache.hadoop.hive.serde2.lazybinary;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 
 /**
  * MyTestClassBigger.
  *
  */
 public class MyTestClassBigger {
-  Byte myByte;
-  Short myShort;
-  Integer myInt;
-  Long myLong;
-  Float myFloat;
-  Double myDouble;
-  String myString;
-  MyTestInnerStruct myStruct;
-  List<Integer> myList;
-  ByteArrayRef myBA;
-  Map<String, List<MyTestInnerStruct>> myMap;
+    Byte myByte;
+    Short myShort;
+    Integer myInt;
+    Long myLong;
+    Float myFloat;
+    Double myDouble;
+    String myString;
+    HiveDecimal myDecimal;
+    MyTestInnerStruct myStruct;
+    List<Integer> myList;
+    byte[] myBA;
+    Map<String, List<MyTestInnerStruct>> myMap;
 
-  public MyTestClassBigger() {
-  }
+    public MyTestClassBigger() {
+    }
 
-  public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
-      Double d, String st, MyTestInnerStruct is, List<Integer> li,
-      ByteArrayRef ba, Map<String, List<MyTestInnerStruct>> mp) {
-    myByte = b;
-    myShort = s;
-    myInt = i;
-    myLong = l;
-    myFloat = f;
-    myDouble = d;
-    myString = st;
-    myStruct = is;
-    myList = li;
-    myBA = ba;
-    myMap = mp;
-  }
+    public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
+			     Double d, String st, HiveDecimal bd, MyTestInnerStruct is, List<Integer> li,
+			     byte[] ba, Map<String, List<MyTestInnerStruct>> mp) {
+	myByte = b;
+	myShort = s;
+	myInt = i;
+	myLong = l;
+	myFloat = f;
+	myDouble = d;
+	myString = st;
+	myDecimal = bd;
+	myStruct = is;
+	myList = li;
+	myBA = ba;
+	myMap = mp;
+    }
 }

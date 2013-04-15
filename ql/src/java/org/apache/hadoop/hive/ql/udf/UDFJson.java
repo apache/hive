@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +29,11 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParser.Feature;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
 
 /**
  * UDFJson.
@@ -58,6 +61,14 @@ public class UDFJson extends UDF {
   private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
   private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  static {
+    // Allows for unescaped ASCII control characters in JSON values
+    JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+  }
+  private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
+  private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
+
   // An LRU cache using a linked hash map
   static class HashCache<K, V> extends LinkedHashMap<K, V> {
 
@@ -80,7 +91,8 @@ public class UDFJson extends UDF {
 
   static Map<String, Object> extractObjectCache = new HashCache<String, Object>();
   static Map<String, String[]> pathExprCache = new HashCache<String, String[]>();
-  static Map<String, ArrayList<String>> indexListCache = new HashCache<String, ArrayList<String>>();
+  static Map<String, ArrayList<String>> indexListCache =
+      new HashCache<String, ArrayList<String>>();
   static Map<String, String> mKeyGroup1Cache = new HashCache<String, String>();
   static Map<String, Boolean> mKeyMatchesCache = new HashCache<String, Boolean>();
 
@@ -115,34 +127,47 @@ public class UDFJson extends UDF {
       return null;
     }
 
-    try {
-      // Cache pathExpr
-      String[] pathExpr = pathExprCache.get(pathString);
-      if (pathExpr == null) {
-        pathExpr = pathString.split("\\.", -1);
-        pathExprCache.put(pathString, pathExpr);
-      }
+    // Cache pathExpr
+    String[] pathExpr = pathExprCache.get(pathString);
+    if (pathExpr == null) {
+      pathExpr = pathString.split("\\.", -1);
+      pathExprCache.put(pathString, pathExpr);
+    }
 
-      if (!pathExpr[0].equalsIgnoreCase("$")) {
-        return null;
-      }
-      // Cache extractObject
-      Object extractObject = extractObjectCache.get(jsonString);
-      if (extractObject == null) {
-        extractObject = new JSONObject(jsonString);
-        extractObjectCache.put(jsonString, extractObject);
-      }
-      for (int i = 1; i < pathExpr.length; i++) {
-        extractObject = extract(extractObject, pathExpr[i]);
-      }
-      result.set(extractObject.toString());
-      return result;
-    } catch (Exception e) {
+    if (!pathExpr[0].equalsIgnoreCase("$")) {
       return null;
     }
+    // Cache extractObject
+    Object extractObject = extractObjectCache.get(jsonString);
+    if (extractObject == null) {
+      try {
+        extractObject = MAPPER.readValue(jsonString, MAP_TYPE);
+      } catch (Exception e) {
+        return null;
+      }
+      extractObjectCache.put(jsonString, extractObject);
+    }
+    for (int i = 1; i < pathExpr.length; i++) {
+      if (extractObject == null) {
+          return null;
+      }
+      extractObject = extract(extractObject, pathExpr[i]);
+    }
+    if (extractObject instanceof Map || extractObject instanceof List) {
+      try {
+        result.set(MAPPER.writeValueAsString(extractObject));
+      } catch (Exception e) {
+        return null;
+      }
+    } else if (extractObject != null) {
+      result.set(extractObject.toString());
+    } else {
+      return null;
+    }
+    return result;
   }
 
-  private Object extract(Object json, String path) throws JSONException {
+  private Object extract(Object json, String path) {
 
     // Cache patternkey.matcher(path).matches()
     Matcher mKey = null;
@@ -185,68 +210,73 @@ public class UDFJson extends UDF {
     return json;
   }
 
-  ArrayList<Object> jsonList = new ArrayList<Object>();
+  List<Object> jsonList = new ArrayList<Object>();
 
-  private Object extract_json_withindex(Object json, ArrayList<String> indexList)
-      throws JSONException {
+  @SuppressWarnings("unchecked")
+  private Object extract_json_withindex(Object json, ArrayList<String> indexList) {
 
     jsonList.clear();
     jsonList.add(json);
     Iterator<String> itr = indexList.iterator();
     while (itr.hasNext()) {
       String index = itr.next();
-      ArrayList<Object> tmp_jsonList = new ArrayList<Object>();
+      List<Object> tmp_jsonList = new ArrayList<Object>();
       if (index.equalsIgnoreCase("*")) {
-        for (int i = 0; i < (jsonList).size(); i++) {
-          try {
-            JSONArray array = (JSONArray) (jsonList).get(i);
-            for (int j = 0; j < array.length(); j++) {
-              tmp_jsonList.add(array.get(j));
+        for (int i = 0; i < jsonList.size(); i++) {
+          Object array = jsonList.get(i);
+          if (array instanceof List) {
+            for (int j = 0; j < ((List<Object>)array).size(); j++) {
+              tmp_jsonList.add(((List<Object>)array).get(j));
             }
-          } catch (Exception e) {
-            continue;
           }
         }
         jsonList = tmp_jsonList;
       } else {
         for (int i = 0; i < (jsonList).size(); i++) {
-          try {
-            tmp_jsonList.add(((JSONArray) (jsonList).get(i)).get(Integer
-                .parseInt(index)));
-          } catch (ClassCastException e) {
+          Object array = jsonList.get(i);
+          int indexValue = Integer.parseInt(index);
+          if (!(array instanceof List)) {
             continue;
-          } catch (JSONException e) {
+          }
+          if (indexValue >= ((List<Object>)array).size()) {
             return null;
           }
+          tmp_jsonList.add(((List<Object>)array).get(indexValue));
           jsonList = tmp_jsonList;
         }
       }
     }
-    return (jsonList.size() > 1) ? new JSONArray(jsonList) : jsonList.get(0);
+    if (jsonList.isEmpty()) {
+      return null;
+    }
+    return (jsonList.size() > 1) ? new ArrayList<Object>(jsonList) : jsonList.get(0);
   }
 
-  private Object extract_json_withkey(Object json, String path)
-      throws JSONException {
-    if (json.getClass() == org.json.JSONArray.class) {
-      JSONArray jsonArray = new JSONArray();
-      for (int i = 0; i < ((JSONArray) json).length(); i++) {
-        Object josn_elem = ((JSONArray) json).get(i);
-        try {
-          Object json_obj = ((JSONObject) josn_elem).get(path);
-          if (json_obj.getClass() == org.json.JSONArray.class) {
-            for (int j = 0; j < ((JSONArray) json_obj).length(); j++) {
-              jsonArray.put(((JSONArray) json_obj).get(j));
-            }
-          } else {
-            jsonArray.put(json_obj);
-          }
-        } catch (Exception e) {
+  @SuppressWarnings("unchecked")
+  private Object extract_json_withkey(Object json, String path) {
+    if (json instanceof List) {
+      List<Object> jsonArray = new ArrayList<Object>();
+      for (int i = 0; i < ((List<Object>) json).size(); i++) {
+        Object json_elem = ((List<Object>) json).get(i);
+        Object json_obj = null;
+        if (json_elem instanceof Map) {
+          json_obj = ((Map<String, Object>) json_elem).get(path);
+        } else {
           continue;
         }
+        if (json_obj instanceof List) {
+          for (int j = 0; j < ((List<Object>) json_obj).size(); j++) {
+            jsonArray.add(((List<Object>) json_obj).get(j));
+          }
+        } else if (json_obj != null) {
+          jsonArray.add(json_obj);
+        }
       }
-      return (jsonArray.length() == 0) ? null : jsonArray;
+      return (jsonArray.size() == 0) ? null : jsonArray;
+    } else if (json instanceof Map) {
+      return ((Map<String, Object>) json).get(path);
     } else {
-      return ((JSONObject) json).get(path);
+      return null;
     }
   }
 }

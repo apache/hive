@@ -37,51 +37,47 @@ STAGE PLANS:
               predicate:
                   expr: (((((key > '1') and (key < '400')) and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key <> '4'))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > '1')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Filter Operator
-                    predicate:
-                        expr: (_col0 < '400')
-                        type: boolean
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: 0
-                      value expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Filter Operator
+                  predicate:
+                      expr: (_col0 < '400')
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
         src2:src 
           TableScan
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
+                  expr: ((((key > '2') and (key < '400')) and (key <> '4')) and (key > '20'))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > '2')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                  outputColumnNames: _col0
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                Filter Operator
+                  predicate:
+                      expr: (_col0 < '400')
+                      type: boolean
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -238,7 +234,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
+                  expr: ((((key > '2') and (key < '400')) and (key <> '4')) and (key > '20'))
                   type: boolean
               Select Operator
                 expressions:

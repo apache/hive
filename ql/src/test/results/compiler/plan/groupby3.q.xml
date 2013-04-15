@@ -2,7 +2,7 @@
 #### A masked pattern was here #### 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
-   <string>Stage-3</string> 
+   <string>Stage-1</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -64,10 +64,6 @@
           <string>location</string> 
           #### A masked pattern was here #### 
          </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
-          #### A masked pattern was here #### 
-         </void> 
         </object> 
        </void> 
        <void property="serdeClassName"> 
@@ -91,6 +87,10 @@
             <string>default.src</string> 
            </void> 
            <void method="put"> 
+            <string>numFiles</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
             <string>columns.types</string> 
             <string>string:string</string> 
            </void> 
@@ -107,6 +107,18 @@
             <string>key,value</string> 
            </void> 
            <void method="put"> 
+            <string>rawDataSize</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numRows</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numPartitions</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
             <string>bucket_count</string> 
             <string>-1</string> 
            </void> 
@@ -117,6 +129,10 @@
            <void method="put"> 
             <string>file.inputformat</string> 
             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>totalSize</string> 
+            <string>5812</string> 
            </void> 
            <void method="put"> 
             <string>file.outputformat</string> 
@@ -390,21 +406,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_53_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_3_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_53_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_3_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_53_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_RS_3_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_53_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_RS_3_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>RS_53</string> 
+                     <string>RS_3</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -614,7 +630,7 @@
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
                       <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFAverage$GenericUDAFAverageEvaluator0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage$GenericUDAFAverageEvaluator"/> 
+                       <object id="GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble"/> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>avg</string> 
@@ -681,7 +697,7 @@
                        <boolean>true</boolean> 
                       </void> 
                       <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFAverage$GenericUDAFAverageEvaluator1" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage$GenericUDAFAverageEvaluator"/> 
+                       <object id="GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble1" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble"/> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>avg</string> 
@@ -882,6 +898,9 @@
                     </void> 
                    </object> 
                   </void> 
+                  <void property="listGroupingSets"> 
+                   <object id="ArrayList0" class="java.util.ArrayList"/> 
+                  </void> 
                   <void property="memoryThreshold"> 
                    <float>0.9</float> 
                   </void> 
@@ -917,21 +936,24 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_52_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_2_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_52_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_2_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_52_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_GBY_2_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_52_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_GBY_2_FATAL_ERROR</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_GBY_2_COUNT_HASH_OUT</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>GBY_52</string> 
+                 <string>GBY_2</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1130,21 +1152,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_51_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_51_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_51_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_1_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_51_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_1_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_51</string> 
+             <string>SEL_1</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -1191,16 +1213,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_50_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_50_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_50_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_50_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1212,7 +1234,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_50</string> 
+         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1274,6 +1296,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="keyDesc"> 
      <object idref="TableDesc0"/> 
     </void> 
@@ -1322,6 +1347,10 @@
            <string>default.src</string> 
           </void> 
           <void method="put"> 
+           <string>numFiles</string> 
+           <string>1</string> 
+          </void> 
+          <void method="put"> 
            <string>columns.types</string> 
            <string>string:string</string> 
           </void> 
@@ -1338,6 +1367,18 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>rawDataSize</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numRows</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numPartitions</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -1348,6 +1389,10 @@
           <void method="put"> 
            <string>file.inputformat</string> 
            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>totalSize</string> 
+           <string>5812</string> 
           </void> 
           <void method="put"> 
            <string>file.outputformat</string> 
@@ -1384,6 +1429,10 @@
              <string>default.src</string> 
             </void> 
             <void method="put"> 
+             <string>numFiles</string> 
+             <string>1</string> 
+            </void> 
+            <void method="put"> 
              <string>columns.types</string> 
              <string>string:string</string> 
             </void> 
@@ -1400,6 +1449,18 @@
              <string>key,value</string> 
             </void> 
             <void method="put"> 
+             <string>rawDataSize</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numRows</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numPartitions</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
              <string>bucket_count</string> 
              <string>-1</string> 
             </void> 
@@ -1410,6 +1471,10 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>totalSize</string> 
+             <string>5812</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 
@@ -1455,6 +1520,9 @@
                 <void property="statsAggPrefix"> 
                  #### A masked pattern was here #### 
                 </void> 
+                <void property="statsCollectRawDataSize"> 
+                 <boolean>true</boolean> 
+                </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                   <void property="deserializerClass"> 
@@ -1496,21 +1564,21 @@
               <void property="counterNames"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_56_NUM_INPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_6_NUM_INPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_56_NUM_OUTPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_6_NUM_OUTPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_56_TIME_TAKEN</string> 
+                 <string>CNTR_NAME_FS_6_TIME_TAKEN</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_56_FATAL_ERROR</string> 
+                 <string>CNTR_NAME_FS_6_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
               <void property="operatorId"> 
-               <string>FS_56</string> 
+               <string>FS_6</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -1715,21 +1783,21 @@
           <void property="counterNames"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_55_NUM_INPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_55_NUM_OUTPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_55_TIME_TAKEN</string> 
+             <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_55_FATAL_ERROR</string> 
+             <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
           <void property="operatorId"> 
-           <string>SEL_55</string> 
+           <string>SEL_5</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -1854,7 +1922,7 @@
           <void method="add"> 
            <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
             <void property="genericUDAFEvaluator"> 
-             <object idref="GenericUDAFAverage$GenericUDAFAverageEvaluator0"/> 
+             <object idref="GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble0"/> 
             </void> 
             <void property="genericUDAFName"> 
              <string>avg</string> 
@@ -1884,7 +1952,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="genericUDAFEvaluator"> 
-             <object idref="GenericUDAFAverage$GenericUDAFAverageEvaluator1"/> 
+             <object idref="GenericUDAFAverage$GenericUDAFAverageEvaluatorDouble1"/> 
             </void> 
             <void property="genericUDAFName"> 
              <string>avg</string> 
@@ -1972,6 +2040,9 @@
         <void property="keys"> 
          <object class="java.util.ArrayList"/> 
         </void> 
+        <void property="listGroupingSets"> 
+         <object idref="ArrayList0"/> 
+        </void> 
         <void property="memoryThreshold"> 
          <float>0.9</float> 
         </void> 
@@ -2004,21 +2075,24 @@
       <void property="counterNames"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_54_NUM_INPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_4_NUM_INPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_54_NUM_OUTPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_4_NUM_OUTPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_54_TIME_TAKEN</string> 
+         <string>CNTR_NAME_GBY_4_TIME_TAKEN</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_54_FATAL_ERROR</string> 
+         <string>CNTR_NAME_GBY_4_FATAL_ERROR</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_GBY_4_COUNT_HASH_OUT</string> 
         </void> 
        </object> 
       </void> 
       <void property="operatorId"> 
-       <string>GBY_54</string> 
+       <string>GBY_4</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 

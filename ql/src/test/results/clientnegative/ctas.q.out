@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: CREATE-TABLE-AS-SELECT cannot create external table
+FAILED: SemanticException [Error 10070]: CREATE-TABLE-AS-SELECT cannot create external table

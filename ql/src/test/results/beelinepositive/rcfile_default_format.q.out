@@ -1,0 +1,54 @@
+Saving all output to "!!{outputDirectory}!!/rcfile_default_format.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/rcfile_default_format.q
+>>>  SET hive.default.fileformat = RCFile;
+No rows affected 
+>>>  
+>>>  CREATE TABLE rcfile_default_format (key STRING);
+No rows affected 
+>>>  DESCRIBE EXTENDED rcfile_default_format;
+'col_name','data_type','comment'
+'key','string',''
+'','',''
+'Detailed Table Information','Table(tableName:rcfile_default_format, dbName:rcfile_default_format, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/rcfile_default_format.db/rcfile_default_format, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{transient_lastDdlTime=!!UNIXTIME!!}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  
+>>>  CREATE TABLE rcfile_default_format_ctas AS SELECT key,value FROM src;
+'key','value'
+No rows selected 
+>>>  DESCRIBE EXTENDED rcfile_default_format_ctas;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:rcfile_default_format_ctas, dbName:rcfile_default_format, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/rcfile_default_format.db/rcfile_default_format_ctas, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5293, rawDataSize=4812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  INSERT OVERWRITE TABLE rcfile_default_format_txtfile SELECT key from src;
+'key'
+No rows selected 
+>>>  DESCRIBE EXTENDED rcfile_default_format_txtfile;
+'col_name','data_type','comment'
+'key','string',''
+'','',''
+'Detailed Table Information','Table(tableName:rcfile_default_format_txtfile, dbName:rcfile_default_format, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/rcfile_default_format.db/rcfile_default_format_txtfile, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, totalSize=1906, numRows=500, rawDataSize=1406}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+3 rows selected 
+>>>  
+>>>  SET hive.default.fileformat = TextFile;
+No rows affected 
+>>>  CREATE TABLE textfile_default_format_ctas AS SELECT key,value FROM rcfile_default_format_ctas;
+'key','value'
+No rows selected 
+>>>  DESCRIBE EXTENDED textfile_default_format_ctas;
+'col_name','data_type','comment'
+'key','string',''
+'value','string',''
+'','',''
+'Detailed Table Information','Table(tableName:textfile_default_format_ctas, dbName:rcfile_default_format, owner:!!{user.name}!!, createTime:!!UNIXTIME!!, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:!!{hive.metastore.warehouse.dir}!!/rcfile_default_format.db/textfile_default_format_ctas, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{})), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=!!UNIXTIME!!, numRows=500, totalSize=5812, rawDataSize=5312}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)',''
+4 rows selected 
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  !record

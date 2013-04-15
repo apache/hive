@@ -1,0 +1,243 @@
+PREHOOK: query: create table original (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table original (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@original
+PREHOOK: query: describe formatted original
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table original SKEWED BY (key) ON (1,5,6)
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@original
+PREHOOK: Output: default@original
+POSTHOOK: query: alter table original SKEWED BY (key) ON (1,5,6)
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@original
+POSTHOOK: Output: default@original
+PREHOOK: query: describe formatted original
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table original
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@original
+PREHOOK: Output: default@original
+POSTHOOK: query: drop table original
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@original
+POSTHOOK: Output: default@original
+PREHOOK: query: create table original2 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table original2 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@original2
+PREHOOK: query: describe formatted original2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@original2
+PREHOOK: Output: default@original2
+POSTHOOK: query: alter table original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@original2
+POSTHOOK: Output: default@original2
+PREHOOK: query: describe formatted original2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[1, 1], [5, 6]]    	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table original2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@original2
+PREHOOK: Output: default@original2
+POSTHOOK: query: drop table original2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@original2
+POSTHOOK: Output: default@original2
+PREHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@original3
+PREHOOK: query: describe formatted original3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[1, 1], [5, 6]]    	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table original3 not skewed
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@original3
+PREHOOK: Output: default@original3
+POSTHOOK: query: alter table original3 not skewed
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@original3
+POSTHOOK: Output: default@original3
+PREHOOK: query: describe formatted original3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted original3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table original3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@original3
+PREHOOK: Output: default@original3
+POSTHOOK: query: drop table original3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@original3
+POSTHOOK: Output: default@original3

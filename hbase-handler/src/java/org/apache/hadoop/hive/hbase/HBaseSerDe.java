@@ -30,7 +30,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -58,7 +59,7 @@ import org.apache.hadoop.io.Writable;
  * HBaseSerDe can be used to serialize object into an HBase table and
  * deserialize objects from an HBase table.
  */
-public class HBaseSerDe implements SerDe {
+public class HBaseSerDe extends AbstractSerDe {
 
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
@@ -159,7 +160,7 @@ public class HBaseSerDe implements SerDe {
     ColumnMapping columnMapping = null;
 
     for (int i = 0; i < columnSpecs.length; i++) {
-      String mappingSpec = columnSpecs[i];
+      String mappingSpec = columnSpecs[i].trim();
       String [] mapInfo = mappingSpec.split("#");
       String colInfo = mapInfo[0];
 
@@ -271,7 +272,7 @@ public class HBaseSerDe implements SerDe {
 
         // use the table default storage specification
         if (colType.getCategory() == Category.PRIMITIVE) {
-          if (!colType.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+          if (!colType.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
             colMap.binaryStorage.add(tableBinaryStorage);
           } else {
             colMap.binaryStorage.add(false);
@@ -281,14 +282,14 @@ public class HBaseSerDe implements SerDe {
           TypeInfo valueTypeInfo = ((MapTypeInfo) colType).getMapValueTypeInfo();
 
           if (keyTypeInfo.getCategory() == Category.PRIMITIVE &&
-              !keyTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+              !keyTypeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
             colMap.binaryStorage.add(tableBinaryStorage);
           } else {
             colMap.binaryStorage.add(false);
           }
 
           if (valueTypeInfo.getCategory() == Category.PRIMITIVE &&
-              !valueTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+              !valueTypeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
             colMap.binaryStorage.add(tableBinaryStorage);
           } else {
             colMap.binaryStorage.add(false);
@@ -311,7 +312,7 @@ public class HBaseSerDe implements SerDe {
         }
 
         if (colType.getCategory() == Category.PRIMITIVE &&
-            !colType.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            !colType.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
 
           if ("-".equals(storageOption)) {
             colMap.binaryStorage.add(tableBinaryStorage);
@@ -349,7 +350,7 @@ public class HBaseSerDe implements SerDe {
         TypeInfo valueTypeInfo = ((MapTypeInfo) colType).getMapValueTypeInfo();
 
         if (keyTypeInfo.getCategory() == Category.PRIMITIVE &&
-            !keyTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            !keyTypeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
 
           if (keyStorage.equals("-")) {
             colMap.binaryStorage.add(tableBinaryStorage);
@@ -363,7 +364,7 @@ public class HBaseSerDe implements SerDe {
         }
 
         if (valueTypeInfo.getCategory() == Category.PRIMITIVE &&
-            !valueTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            !valueTypeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
           if (valStorage.equals("-")) {
             colMap.binaryStorage.add(tableBinaryStorage);
           } else if ("binary".startsWith(valStorage)) {
@@ -416,7 +417,7 @@ public class HBaseSerDe implements SerDe {
 
     // Read configuration parameters
     hbaseColumnsMapping = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,"-1"));
 
     // Parse and initialize the HBase columns mapping
@@ -435,17 +436,17 @@ public class HBaseSerDe implements SerDe {
 
         if (colMap.hbaseRowKey) {
           // the row key column becomes a STRING
-          sb.append(Constants.STRING_TYPE_NAME);
+          sb.append(serdeConstants.STRING_TYPE_NAME);
         } else if (colMap.qualifierName == null)  {
           // a column family become a MAP
-          sb.append(Constants.MAP_TYPE_NAME + "<" + Constants.STRING_TYPE_NAME + ","
-              + Constants.STRING_TYPE_NAME + ">");
+          sb.append(serdeConstants.MAP_TYPE_NAME + "<" + serdeConstants.STRING_TYPE_NAME + ","
+              + serdeConstants.STRING_TYPE_NAME + ">");
         } else {
           // an individual column becomes a STRING
-          sb.append(Constants.STRING_TYPE_NAME);
+          sb.append(serdeConstants.STRING_TYPE_NAME);
         }
       }
-      tbl.setProperty(Constants.LIST_COLUMN_TYPES, sb.toString());
+      tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, sb.toString());
     }
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
@@ -546,10 +547,11 @@ public class HBaseSerDe implements SerDe {
         throw new SerDeException("HBase row key cannot be NULL");
       }
 
-      if(putTimestamp >= 0)
+      if(putTimestamp >= 0) {
         put = new Put(key,putTimestamp);
-      else
+      } else {
         put = new Put(key);
+      }
 
       // Serialize each field
       for (int i = 0; i < fields.size(); i++) {

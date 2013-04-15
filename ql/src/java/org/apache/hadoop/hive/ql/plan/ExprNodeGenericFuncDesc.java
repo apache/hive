@@ -22,14 +22,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -268,6 +269,15 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     return true;
   }
 
+  @Override
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
+    builder.append(childExprs);
+    return builder.toHashCode();
+  }
+
   public boolean isSortedExpr() {
     return isSortedExpr;
   }
@@ -275,5 +285,4 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   public void setSortedExpr(boolean isSortedExpr) {
     this.isSortedExpr = isSortedExpr;
   }
-
 }

@@ -29,6 +29,7 @@ import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -166,7 +167,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       return timestamp.getNanos();
     }
 
-    return TimestampWritable.getNanos(currentBytes, offset+4);
+    return hasDecimal() ? TimestampWritable.getNanos(currentBytes, offset+4) : 0;
   }
 
   /**
@@ -183,7 +184,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    */
   private int getDecimalLength() {
     checkBytes();
-    return WritableUtils.decodeVIntSize(currentBytes[offset+4]);
+    return hasDecimal() ? WritableUtils.decodeVIntSize(currentBytes[offset+4]) : 0;
   }
 
   public Timestamp getTimestamp() {
@@ -393,7 +394,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     long millis = t.getTime();
     int nanos = t.getNanos();
 
-    boolean hasDecimal = setNanosBytes(nanos, b, offset+4);
+    boolean hasDecimal = nanos != 0 && setNanosBytes(nanos, b, offset+4);
     setSecondsBytes(millis, b, offset, hasDecimal);
   }
 
@@ -451,6 +452,17 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     return doubleToTimestamp((double) f);
   }
 
+  public static Timestamp decimalToTimestamp(HiveDecimal d) {
+    BigDecimal seconds = new BigDecimal(d.longValue());
+    long millis = d.bigDecimalValue().multiply(new BigDecimal(1000)).longValue();
+    int nanos = d.bigDecimalValue().subtract(seconds).multiply(new BigDecimal(1000000000)).intValue();
+
+    Timestamp t = new Timestamp(millis);
+    t.setNanos(nanos);
+
+    return t;
+  }
+
   public static Timestamp doubleToTimestamp(double f) {
     long seconds = (long) f;
 
@@ -471,14 +483,21 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
+    boolean hasDecimal = hasDecimal(bytes[offset]);
     t.setTime(((long) TimestampWritable.getSeconds(bytes, offset)) * 1000);
-    t.setNanos(TimestampWritable.getNanos(bytes, offset+4));
+    if (hasDecimal) {
+      t.setNanos(TimestampWritable.getNanos(bytes, offset+4));
+    }
   }
 
   public static Timestamp createTimestamp(byte[] bytes, int offset) {
     Timestamp t = new Timestamp(0);
     TimestampWritable.setTimestamp(t, bytes, offset);
     return t;
+  }
+
+  public boolean hasDecimal() {
+    return hasDecimal(currentBytes[offset]);
   }
 
   /**

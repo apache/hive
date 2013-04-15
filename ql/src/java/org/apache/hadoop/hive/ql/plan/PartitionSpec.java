@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class PartitionSpec {
     }
   }
 
-  private Map<String, PredicateSpec> partSpec;
+  private final Map<String, PredicateSpec> partSpec;
 
   public PartitionSpec() {
     this.partSpec = new LinkedHashMap<String, PredicateSpec>();
@@ -101,5 +102,30 @@ public class PartitionSpec {
       count++;
     }
     return filterString.toString();
+  }
+
+  // getParitionsByFilter only works for string columns due to a JDO limitation.
+  // The operator is only useful if it can be passed as a filter to the metastore.
+  // For compatibility with other non-string partition columns, this function
+  // returns the key, value mapping assuming that the operator is equality.
+  public Map<String, String> getPartSpecWithoutOperator() {
+    Map<String, String> partSpec = new LinkedHashMap<String, String>();
+    for (Map.Entry<String, PredicateSpec> entry: this.partSpec.entrySet()) {
+      partSpec.put(entry.getKey(), PlanUtils.stripQuotes(entry.getValue().getValue()));
+    }
+
+    return partSpec;
+  }
+
+  // Again, for the same reason as the above function - getPartSpecWithoutOperator
+  public boolean isNonEqualityOperator() {
+    Iterator<PredicateSpec> iter = partSpec.values().iterator();
+    while (iter.hasNext()) {
+      PredicateSpec predSpec = iter.next();
+      if (!predSpec.operator.equals("=")) {
+        return true;
+      }
+    }
+    return false;
   }
 }

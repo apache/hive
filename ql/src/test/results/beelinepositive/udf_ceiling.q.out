@@ -1,0 +1,17 @@
+Saving all output to "!!{outputDirectory}!!/udf_ceiling.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_ceiling.q
+>>>  DESCRIBE FUNCTION ceiling;
+'tab_name'
+'ceiling(x) - Find the smallest integer not smaller than x'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED ceiling;
+'tab_name'
+'ceiling(x) - Find the smallest integer not smaller than x'
+'Synonyms: ceil'
+'Example:'
+'  > SELECT ceiling(-0.1) FROM src LIMIT 1;'
+'  0'
+'  > SELECT ceiling(5) FROM src LIMIT 1;'
+'  5'
+7 rows selected 
+>>>  !record

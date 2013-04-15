@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 
 /**
@@ -44,13 +43,6 @@ public abstract class ListenerEvent {
   }
 
   /**
-   * @return the handler
-   */
-  public HMSHandler getHandler() {
-    return handler;
-  }
-
-  /**
    * @return the status of event.
    */
   public boolean getStatus() {
@@ -68,4 +60,10 @@ public abstract class ListenerEvent {
     return environmentContext;
   }
 
+  /**
+   * @return the handler
+   */
+  public HMSHandler getHandler() {
+    return handler;
+  }
 }

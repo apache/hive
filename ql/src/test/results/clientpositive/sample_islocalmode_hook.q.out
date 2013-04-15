@@ -1,19 +1,11 @@
-PREHOOK: query: drop table if exists sih_i_part
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists sih_i_part
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists sih_src
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists sih_src
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists sih_src2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists sih_src2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- create file inputs
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+-- create file inputs
 create table sih_i_part (key int, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- create file inputs
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+-- create file inputs
 create table sih_i_part (key int, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@sih_i_part
@@ -83,34 +75,28 @@ POSTHOOK: Lineage: sih_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: sih_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: sih_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: sih_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- sample split, running locally limited by num tasks
+PREHOOK: query: -- Relaxing hive.exec.mode.local.auto.input.files.max=1.
+-- Hadoop20 will not generate more splits than there are files (one).
+-- Hadoop23 generate splits correctly (four), hence the max needs to be adjusted to ensure running in local mode.
+-- Default value is hive.exec.mode.local.auto.input.files.max=4 which produces expected behavior on Hadoop23.
+-- hive.sample.seednumber is required because Hadoop23 generates multiple splits and tablesample is non-repeatable without it.
+
+-- sample split, running locally limited by num tasks
 select count(1) from sih_src tablesample(1 percent)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
 #### A masked pattern was here ####
-1500
+25
 PREHOOK: query: -- sample two tables
-select count(1) from sih_src tablesample(1 percent)a join sih_src2 tablesample(1 percent)b on a.key = b.key
+select count(1) from sih_src tablesample(1 percent) a join sih_src2 tablesample(1 percent) b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
 PREHOOK: Input: default@sih_src2
 #### A masked pattern was here ####
-3084
+49
 PREHOOK: query: -- sample split, running locally limited by max bytes
 select count(1) from sih_src tablesample(1 percent)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
 #### A masked pattern was here ####
-1500
-PREHOOK: query: drop table sih_i_part
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@sih_i_part
-PREHOOK: Output: default@sih_i_part
-PREHOOK: query: drop table sih_src
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@sih_src
-PREHOOK: Output: default@sih_src
-PREHOOK: query: drop table sih_src2
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@sih_src2
-PREHOOK: Output: default@sih_src2
+25

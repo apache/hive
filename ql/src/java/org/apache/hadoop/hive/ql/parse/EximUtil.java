@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -78,11 +79,11 @@ public class EximUtil {
       // generate absolute path relative to home directory
       if (!path.startsWith("/")) {
         if (testMode) {
-          path = new Path(System.getProperty("build.dir.hive"),
-              path).toString();
+          path = (new Path(System.getProperty("build.dir.hive"),
+              path)).toUri().getPath();
         } else {
-          path = new Path(new Path("/user/" + System.getProperty("user.name")),
-              path).toString();
+          path = (new Path(new Path("/user/" + System.getProperty("user.name")),
+              path)).toUri().getPath();
         }
       }
       // set correct scheme and authority
@@ -143,8 +144,8 @@ public class EximUtil {
       String authority = uri.getAuthority();
       String path = uri.getPath();
       if (!path.startsWith("/")) {
-          path = new Path(System.getProperty("build.dir.hive"),
-              path).toString();
+          path = (new Path(System.getProperty("build.dir.hive"),
+              path)).toUri().getPath();
       }
       if (StringUtils.isEmpty(scheme)) {
           scheme = "pfile";
@@ -200,11 +201,12 @@ public class EximUtil {
     }
   }
 
-  public static Map.Entry<Table, List<Partition>> 
-      readMetaData(FileSystem fs, Path metadataPath) 
+  public static Map.Entry<Table, List<Partition>>
+      readMetaData(FileSystem fs, Path metadataPath)
       throws IOException, SemanticException {
+    FSDataInputStream mdstream = null;
     try {
-      FSDataInputStream mdstream = fs.open(metadataPath);
+      mdstream = fs.open(metadataPath);
       byte[] buffer = new byte[1024];
       ByteArrayOutputStream sb = new ByteArrayOutputStream();
       int read = mdstream.read(buffer);
@@ -237,6 +239,10 @@ public class EximUtil {
       throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
+    } finally {
+      if (mdstream != null) {
+        mdstream.close();
+      }
     }
   }
 

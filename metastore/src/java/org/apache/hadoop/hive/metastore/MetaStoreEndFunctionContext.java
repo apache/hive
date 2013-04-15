@@ -28,9 +28,17 @@ public class MetaStoreEndFunctionContext {
    * whether method was successful or not.
    */
   private final boolean success;
+  private final Exception e;
+  private final String inputTableName;
+
+  public MetaStoreEndFunctionContext(boolean success, Exception e, String inputTableName) {
+    this.success = success;
+    this.e = e;
+    this.inputTableName = inputTableName;
+  }
 
   public MetaStoreEndFunctionContext(boolean success) {
-    this.success = success;
+    this(success, null, null);
   }
 
   /**
@@ -38,6 +46,14 @@ public class MetaStoreEndFunctionContext {
    */
   public boolean isSuccess() {
     return success;
+  }
+
+  public Exception getException() {
+    return e;
+  }
+
+  public String getInputTableName() {
+    return inputTableName;
   }
 
 }

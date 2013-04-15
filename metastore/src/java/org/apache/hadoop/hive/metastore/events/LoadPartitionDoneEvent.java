@@ -29,8 +29,8 @@ public class LoadPartitionDoneEvent extends ListenerEvent {
 
   private final Map<String,String> partSpec;
 
-  public LoadPartitionDoneEvent(boolean status, HMSHandler handler, Table table,
-      Map<String,String> partSpec) {
+  public LoadPartitionDoneEvent(boolean status, Table table,
+      Map<String,String> partSpec, HMSHandler handler) {
     super(status, handler);
     this.table = table;
     this.partSpec = partSpec;

@@ -20,12 +20,23 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
  * CreateTableDesc.
@@ -56,6 +67,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   Map<String, String> serdeProps;
   Map<String, String> tblProps;
   boolean ifNotExists;
+  List<String> skewedColNames;
+  List<List<String>> skewedColValues;
+  boolean isStoredAsSubDirectories = false;
 
   public CreateTableDesc() {
   }
@@ -69,13 +83,13 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists) {
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
 
     this(tableName, isExternal, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
-        tblProps, ifNotExists);
+        tblProps, ifNotExists, skewedColNames, skewedColValues);
 
     this.databaseName = databaseName;
   }
@@ -89,7 +103,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists) {
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.bucketCols = new ArrayList<String>(bucketCols);
@@ -111,6 +125,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.serdeProps = serdeProps;
     this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
+    this.skewedColNames = new ArrayList<String>(skewedColNames);
+    this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
   }
 
   @Explain(displayName = "columns")
@@ -342,4 +358,143 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.tblProps = tblProps;
   }
 
+  /**
+   * @return the skewedColNames
+   */
+  public List<String> getSkewedColNames() {
+    return skewedColNames;
+  }
+
+  /**
+   * @param skewedColNames the skewedColNames to set
+   */
+  public void setSkewedColNames(ArrayList<String> skewedColNames) {
+    this.skewedColNames = skewedColNames;
+  }
+
+  /**
+   * @return the skewedColValues
+   */
+  public List<List<String>> getSkewedColValues() {
+    return skewedColValues;
+  }
+
+  /**
+   * @param skewedColValues the skewedColValues to set
+   */
+  public void setSkewedColValues(ArrayList<List<String>> skewedColValues) {
+    this.skewedColValues = skewedColValues;
+  }
+
+  public void validate()
+      throws SemanticException {
+
+    if ((this.getCols() == null) || (this.getCols().size() == 0)) {
+      // for now make sure that serde exists
+      if (StringUtils.isEmpty(this.getSerName())
+          || !SerDeUtils.shouldGetColsFromSerDe(this.getSerName())) {
+        throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
+      }
+      return;
+    }
+
+    if (this.getStorageHandler() == null) {
+      try {
+        Class<?> origin = Class.forName(this.getOutputFormat(), true,
+          JavaUtils.getClassLoader());
+        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
+          .getOutputFormatSubstitute(origin);
+        if (replaced == null) {
+          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
+            .getMsg());
+        }
+      } catch (ClassNotFoundException e) {
+        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
+      }
+    }
+
+    List<String> colNames = ParseUtils.validateColumnNameUniqueness(this.getCols());
+
+    if (this.getBucketCols() != null) {
+      // all columns in cluster and sort are valid columns
+      Iterator<String> bucketCols = this.getBucketCols().iterator();
+      while (bucketCols.hasNext()) {
+        String bucketCol = bucketCols.next();
+        boolean found = false;
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = colNamesIter.next();
+          if (bucketCol.equalsIgnoreCase(colName)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+        }
+      }
+    }
+
+    if (this.getSortCols() != null) {
+      // all columns in cluster and sort are valid columns
+      Iterator<Order> sortCols = this.getSortCols().iterator();
+      while (sortCols.hasNext()) {
+        String sortCol = sortCols.next().getCol();
+        boolean found = false;
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = colNamesIter.next();
+          if (sortCol.equalsIgnoreCase(colName)) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+        }
+      }
+    }
+
+    if (this.getPartCols() != null) {
+      // there is no overlap between columns and partitioning columns
+      Iterator<FieldSchema> partColsIter = this.getPartCols().iterator();
+      while (partColsIter.hasNext()) {
+        FieldSchema fs = partColsIter.next();
+        String partCol = fs.getName();
+        PrimitiveObjectInspectorUtils.PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils
+            .getTypeEntryFromTypeName(
+            fs.getType());
+        if(null == pte){
+          throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
+        + partCol + " of type: " + fs.getType());
+        }
+        Iterator<String> colNamesIter = colNames.iterator();
+        while (colNamesIter.hasNext()) {
+          String colName = BaseSemanticAnalyzer.unescapeIdentifier(colNamesIter.next());
+          if (partCol.equalsIgnoreCase(colName)) {
+            throw new SemanticException(
+                ErrorMsg.COLUMN_REPEATED_IN_PARTITIONING_COLS.getMsg());
+          }
+        }
+      }
+    }
+
+    /* Validate skewed information. */
+    ValidationUtility.validateSkewedInformation(colNames, this.getSkewedColNames(),
+        this.getSkewedColValues());
+  }
+
+  /**
+   * @return the isStoredAsSubDirectories
+   */
+  public boolean isStoredAsSubDirectories() {
+    return isStoredAsSubDirectories;
+  }
+
+  /**
+   * @param isStoredAsSubDirectories the isStoredAsSubDirectories to set
+   */
+  public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
+    this.isStoredAsSubDirectories = isStoredAsSubDirectories;
+  }
 }

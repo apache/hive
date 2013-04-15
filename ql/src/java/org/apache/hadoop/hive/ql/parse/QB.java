@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
 /**
@@ -48,7 +49,18 @@ public class QB {
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
+  private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
+
+  // used by PTFs
+  /*
+   * This map maintains the PTFInvocationSpec for each PTF chain invocation in this QB.
+   */
+  private HashMap<ASTNode, PTFInvocationSpec> ptfNodeToSpec;
+  /*
+   * the WindowingSpec used for windowing clauses in this QB.
+   */
+  private HashMap<String, WindowingSpec> destToWindowingSpec;
 
   // results
 
@@ -74,7 +86,22 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    id = (outer_id == null ? alias : outer_id + ":" + alias);
+    ptfNodeToSpec = new HashMap<ASTNode, PTFInvocationSpec>();
+    destToWindowingSpec = new HashMap<String, WindowingSpec>();
+    id = getAppendedAliasFromId(outer_id, alias);
+  }
+
+  // For sub-queries, the id. and alias should be appended since same aliases can be re-used
+  // within different sub-queries.
+  // For a query like:
+  // select ...
+  //   (select * from T1 a where ...) subq1
+  //  join
+  //   (select * from T2 a where ...) subq2
+  // ..
+  // the alias is modified to subq1:a and subq2:a from a, to identify the right sub-query.
+  public static String getAppendedAliasFromId(String outer_id, String alias) {
+    return (outer_id == null ? alias : outer_id + ":" + alias);
   }
 
   public QBParseInfo getParseInfo() {
@@ -183,8 +210,13 @@ public class QB {
     return isQuery;
   }
 
-  public boolean isSelectStarQuery() {
-    return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS() && !qbp.isAnalyzeCommand();
+  public boolean isSimpleSelectQuery() {
+    return qbp.isSimpleSelectQuery() && aliasToSubq.isEmpty() && !isCTAS() &&
+        !qbp.isAnalyzeCommand();
+  }
+
+  public boolean hasTableSample(String alias) {
+    return qbp.getTabSample(alias) != null;
   }
 
   public CreateTableDesc getTableDesc() {
@@ -201,4 +233,60 @@ public class QB {
   public boolean isCTAS() {
     return tblDesc != null;
   }
+
+  /**
+   * Retrieve skewed column name for a table.
+   * @param alias table alias
+   * @return
+   */
+  public List<String> getSkewedColumnNames(String alias) {
+    List<String> skewedColNames = null;
+    if (null != qbm &&
+        null != qbm.getAliasToTable() &&
+            qbm.getAliasToTable().size() > 0) {
+      Table tbl = getMetaData().getTableForAlias(alias);
+      skewedColNames = tbl.getSkewedColNames();
+    }
+    return skewedColNames;
+
+  }
+
+  public boolean isAnalyzeRewrite() {
+    return isAnalyzeRewrite;
+  }
+
+  public void setAnalyzeRewrite(boolean isAnalyzeRewrite) {
+    this.isAnalyzeRewrite = isAnalyzeRewrite;
+  }
+
+  public PTFInvocationSpec getPTFInvocationSpec(ASTNode node) {
+    return ptfNodeToSpec == null ? null : ptfNodeToSpec.get(node);
+  }
+
+  public void addPTFNodeToSpec(ASTNode node, PTFInvocationSpec spec) {
+    ptfNodeToSpec = ptfNodeToSpec == null ? new HashMap<ASTNode, PTFInvocationSpec>() : ptfNodeToSpec;
+    ptfNodeToSpec.put(node, spec);
+  }
+
+  public HashMap<ASTNode, PTFInvocationSpec> getPTFNodeToSpec() {
+    return ptfNodeToSpec;
+  }
+
+  public WindowingSpec getWindowingSpec(String dest) {
+    return destToWindowingSpec.get(dest);
+  }
+
+  public void addDestToWindowingSpec(String dest, WindowingSpec windowingSpec) {
+    destToWindowingSpec.put(dest, windowingSpec);
+  }
+
+  public boolean hasWindowingSpec(String dest) {
+    return destToWindowingSpec.get(dest) != null;
+  }
+
+  public HashMap<String, WindowingSpec> getAllWindowingSpecs() {
+    return destToWindowingSpec;
+  }
+
+
 }

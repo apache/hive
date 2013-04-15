@@ -1,0 +1,35 @@
+PREHOOK: query: CREATE TABLE table(string string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table(string string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE table
+PREHOOK: type: LOAD
+PREHOOK: Output: default@table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE table
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@table
+PREHOOK: query: SELECT table, count(1)
+FROM
+(
+  FROM table
+  SELECT TRANSFORM (table.string)
+#### A masked pattern was here ####
+) subq
+GROUP BY table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT table, count(1)
+FROM
+(
+  FROM table
+  SELECT TRANSFORM (table.string)
+#### A masked pattern was here ####
+) subq
+GROUP BY table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table
+#### A masked pattern was here ####
+1uauniajqtunlsvadmxhlxvngxpqjuzbpzvdiwmzphmbaicduzkgxgtdeiunduosu.html	4
+4uzsbtwvdypfitqfqdjosynqp.html	4

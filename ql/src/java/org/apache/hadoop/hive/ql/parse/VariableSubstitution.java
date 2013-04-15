@@ -31,7 +31,6 @@ public class VariableSubstitution {
 
   private static final Log l4j = LogFactory.getLog(VariableSubstitution.class);
   protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
-  protected static int MAX_SUBST = 40;
 
   private String getSubstitute(HiveConf conf, String var) {
     String val = null;
@@ -74,7 +73,7 @@ public class VariableSubstitution {
     }
     Matcher match = varPat.matcher("");
     String eval = expr;
-    for(int s=0; s<MAX_SUBST; s++) {
+    for(int s=0;s<conf.getIntVar(ConfVars.HIVEVARIABLESUBSTITUTEDEPTH); s++) {
       match.reset(eval);
       if (!match.find()) {
         return eval;
@@ -91,6 +90,6 @@ public class VariableSubstitution {
       eval = eval.substring(0, match.start())+val+eval.substring(match.end());
     }
     throw new IllegalStateException("Variable substitution depth too large: "
-                                    + MAX_SUBST + " " + expr);
+                                    + conf.getIntVar(ConfVars.HIVEVARIABLESUBSTITUTEDEPTH) + " " + expr);
   }
 }

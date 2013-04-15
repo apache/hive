@@ -66,12 +66,21 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
     List<TypeInfo> pTypeInfos = null;
     List<TypeInfo> modArgTypeInfos = new ArrayList<TypeInfo>();
 
-    // If either argument is a string, we convert to a double because a number
-    // in string form should always be convertible into a double
+    // If either argument is a string, we convert to a double or decimal because a number
+    // in string form should always be convertible into either of those
     if (argTypeInfos.get(0).equals(TypeInfoFactory.stringTypeInfo)
         || argTypeInfos.get(1).equals(TypeInfoFactory.stringTypeInfo)) {
-      modArgTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
-      modArgTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+      
+      // Default is double, but if one of the sides is already in decimal we 
+      // complete the operation in that type.
+      if (argTypeInfos.get(0).equals(TypeInfoFactory.decimalTypeInfo)
+          || argTypeInfos.get(1).equals(TypeInfoFactory.decimalTypeInfo)) {
+        modArgTypeInfos.add(TypeInfoFactory.decimalTypeInfo);
+        modArgTypeInfos.add(TypeInfoFactory.decimalTypeInfo);
+      } else {
+        modArgTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+        modArgTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+      }
     } else {
       // If it's a void, we change the type to a byte because once the types
       // are run through getCommonClass(), a byte and any other type T will

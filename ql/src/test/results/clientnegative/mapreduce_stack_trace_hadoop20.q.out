@@ -1,0 +1,13 @@
+PREHOOK: query: FROM src SELECT TRANSFORM(key, value) USING 'script_does_not_exist' AS (key, value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+FATAL ExecMapper: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+FATAL ExecMapper: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+FATAL ExecMapper: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+FATAL ExecMapper: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+Hive Runtime Error while processing row {"key":"238","value":"val_238"}
+FAILED: Execution Error, return code 20000 from org.apache.hadoop.hive.ql.exec.MapRedTask. Unable to initialize custom script.

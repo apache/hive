@@ -1,8 +1,9 @@
-PREHOOK: query: DROP TABLE serde_regex
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE serde_regex
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: EXPLAIN
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: --  This should fail because Regex SerDe supports only columns of type string
+EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
@@ -20,7 +21,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: --  This should fail because Regex SerDe supports only columns of type string
+EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,

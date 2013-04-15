@@ -1,0 +1,558 @@
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@outputTbl1
+PREHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME outputTbl1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '1')) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (ds = '1')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: key
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
+                        expr: key
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: UDFToInteger(_col0)
+                  type: int
+                  expr: UDFToInteger(_col1)
+                  type: int
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,cnt
+                    columns.types int:int
+#### A masked pattern was here ####
+                    name default.outputtbl1
+                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
+              TotalFiles: 1
+              GatherStats: true
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,cnt
+                columns.types int:int
+#### A masked pattern was here ####
+                name default.outputtbl1
+                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@outputtbl1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@outputtbl1
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@ds=2
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME outputTbl1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '1')) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (ds = '1')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: key
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
+                        expr: key
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: UDFToInteger(_col0)
+                  type: int
+                  expr: UDFToInteger(_col1)
+                  type: int
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,cnt
+                    columns.types int:int
+#### A masked pattern was here ####
+                    name default.outputtbl1
+                    numFiles 1
+                    numPartitions 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
+              TotalFiles: 1
+              GatherStats: true
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,cnt
+                columns.types int:int
+#### A masked pattern was here ####
+                name default.outputtbl1
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
+                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@outputtbl1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@outputtbl1
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: -- The plan should not be converted to a map-side group since the partition being accessed
+-- is neither bucketed not sorted
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- The plan should not be converted to a map-side group since the partition being accessed
+-- is neither bucketed not sorted
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME outputTbl1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2')) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        t1 
+          TableScan
+            alias: t1
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: ds=2
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2
+            properties:
+              bucket_count -1
+              columns key,val
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.t1
+              numFiles 1
+              numRows 0
+              partition_columns ds
+              rawDataSize 0
+              serialization.ddl struct t1 { string key, string val}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 30
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,val
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.t1
+                numFiles 1
+                numPartitions 1
+                numRows 0
+                partition_columns ds
+                rawDataSize 0
+                serialization.ddl struct t1 { string key, string val}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 30
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.t1
+            name: default.t1
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: UDFToInteger(_col0)
+                  type: int
+                  expr: UDFToInteger(_col1)
+                  type: int
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,cnt
+                    columns.types int:int
+#### A masked pattern was here ####
+                    name default.outputtbl1
+                    numFiles 1
+                    numPartitions 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.outputtbl1
+              TotalFiles: 1
+              GatherStats: true
+              MultiFileSpray: false
+      Truncated Path -> Alias:
+        /t1/ds=2 [t1]
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,cnt
+                columns.types int:int
+#### A masked pattern was here ####
+                name default.outputtbl1
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
+                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@ds=2
+PREHOOK: Output: default@outputtbl1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@ds=2
+POSTHOOK: Output: default@outputtbl1
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM outputTbl1 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+1	1
+2	1
+3	1
+7	1
+8	2

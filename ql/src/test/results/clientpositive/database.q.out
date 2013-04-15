@@ -129,14 +129,18 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
-col1	string	
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
 PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
-col1	string	
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- CREATE LIKE in non-default DB
@@ -156,7 +160,9 @@ PREHOOK: query: DESCRIBE EXTENDED test_table_like
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
-col1	string	
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- LOAD and SELECT
@@ -1054,12 +1060,14 @@ PREHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@srcpart
 PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@srcpart
 POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
@@ -1336,8 +1344,10 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-key	string	default
-value	string	default
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- character escaping

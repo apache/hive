@@ -19,14 +19,19 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.lang.Exception;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
 import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -48,19 +53,32 @@ public class JobDebugger implements Runnable {
   private final Map<String, Integer> failures = new HashMap<String, Integer>();
   private final Set<String> successes = new HashSet<String>(); // Successful task ID's
   private final Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
+  private int maxFailures = 0;
 
   // Used for showJobFailDebugInfo
   private static class TaskInfo {
     String jobId;
     Set<String> logUrls;
+    int errorCode;  // Obtained from the HiveException thrown
+    String[] diagnosticMesgs;
 
     public TaskInfo(String jobId) {
       this.jobId = jobId;
       logUrls = new HashSet<String>();
+      errorCode = 0;
+      diagnosticMesgs = null;
     }
 
     public void addLogUrl(String logUrl) {
       logUrls.add(logUrl);
+    }
+
+    public void setErrorCode(int errorCode) {
+      this.errorCode = errorCode;
+    }
+
+    public void setDiagnosticMesgs(String[] diagnosticMesgs) {
+      this.diagnosticMesgs = diagnosticMesgs;
     }
 
     public Set<String> getLogUrls() {
@@ -69,6 +87,14 @@ public class JobDebugger implements Runnable {
 
     public String getJobId() {
       return jobId;
+    }
+
+    public int getErrorCode() {
+      return errorCode;
+    }
+
+    public String[] getDiagnosticMesgs() {
+      return diagnosticMesgs;
     }
   }
 
@@ -94,21 +120,32 @@ public class JobDebugger implements Runnable {
       console.printError(e.getMessage());
     }
   }
-  private String getTaskAttemptLogUrl(String taskTrackerHttpAddress, String taskAttemptId) {
-    return taskTrackerHttpAddress + "/tasklog?taskid=" + taskAttemptId + "&start=-8193";
+
+  public static int extractErrorCode(String[] diagnostics) {
+    int result = 0;
+    Pattern errorCodeRegex = ErrorMsg.getErrorCodePattern();
+    for (String mesg : diagnostics) {
+      Matcher matcher = errorCodeRegex.matcher(mesg);
+      if (matcher.find()) {
+        result = Integer.parseInt(matcher.group(1));
+        // We don't exit the loop early because we want to extract the error code
+        // corresponding to the bottommost error coded exception.
+      }
+    }
+    return result;
   }
 
-  class TaskLogGrabber implements Runnable {
+  class TaskInfoGrabber implements Runnable {
 
     public void run() {
       try {
-        getTaskLogs();
-      } catch (IOException e) {
+        getTaskInfos();
+      } catch (Exception e) {
         console.printError(e.getMessage());
       }
     }
 
-    private void getTaskLogs() throws IOException {
+    private void getTaskInfos() throws IOException, MalformedURLException {
       int startIndex = 0;
       while (true) {
         TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(startIndex);
@@ -146,13 +183,22 @@ public class JobDebugger implements Runnable {
           }
           // These tasks should have come from the same job.
           assert (ti.getJobId() != null &&  ti.getJobId().equals(jobId));
-          ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+          String taskAttemptLogUrl = ShimLoader.getHadoopShims().getTaskAttemptLogUrl(
+            conf, t.getTaskTrackerHttp(), t.getTaskId());
+          if (taskAttemptLogUrl != null) {
+            ti.getLogUrls().add(taskAttemptLogUrl);
+          }
 
-          // If a task failed, then keep track of the total number of failures
-          // for that task (typically, a task gets re-run up to 4 times if it
-          // fails
-
+          // If a task failed, fetch its error code (if available).
+          // Also keep track of the total number of failures for that
+          // task (typically, a task gets re-run up to 4 times if it fails.
           if (t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
+            String[] diags = rj.getTaskDiagnostics(t.getTaskAttemptId());
+            ti.setDiagnosticMesgs(diags);
+            if (ti.getErrorCode() == 0) {
+              ti.setErrorCode(extractErrorCode(diags));
+            }
+
             Integer failAttempts = failures.get(taskId);
             if (failAttempts == null) {
               failAttempts = Integer.valueOf(0);
@@ -171,14 +217,25 @@ public class JobDebugger implements Runnable {
     }
   }
 
+  private void computeMaxFailures() {
+    maxFailures = 0;
+    for (Integer failCount : failures.values()) {
+      if (maxFailures < failCount.intValue()) {
+        maxFailures = failCount.intValue();
+      }
+    }
+  }
+
   @SuppressWarnings("deprecation")
   private void showJobFailDebugInfo() throws IOException {
-
-
     console.printError("Error during job, obtaining debugging information...");
+    if (!conf.get("mapred.job.tracker", "local").equals("local")) {
+      // Show Tracking URL for remotely running jobs.
+      console.printError("Job Tracking URL: " + rj.getTrackingURL());
+    }
     // Loop to get all task completion events because getTaskCompletionEvents
     // only returns a subset per call
-    TaskLogGrabber tlg = new TaskLogGrabber();
+    TaskInfoGrabber tlg = new TaskInfoGrabber();
     Thread t = new Thread(tlg);
     try {
       t.start();
@@ -196,23 +253,24 @@ public class JobDebugger implements Runnable {
     if (failures.keySet().size() == 0) {
       return;
     }
-
     // Find the highest failure count
-    int maxFailures = 0;
-    for (Integer failCount : failures.values()) {
-      if (maxFailures < failCount.intValue()) {
-        maxFailures = failCount.intValue();
-      }
-    }
+    computeMaxFailures() ;
 
     // Display Error Message for tasks with the highest failure count
-    String jtUrl = JobTrackerURLResolver.getURL(conf);
+    String jtUrl = null;
+    try {
+      jtUrl = JobTrackerURLResolver.getURL(conf);
+    } catch (Exception e) {
+      console.printError("Unable to retrieve URL for Hadoop Task logs. "
+          + e.getMessage());
+    }
 
     for (String task : failures.keySet()) {
       if (failures.get(task).intValue() == maxFailures) {
         TaskInfo ti = taskIdToInfo.get(task);
         String jobId = ti.getJobId();
-        String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
+        String taskUrl = (jtUrl == null) ? null :
+          jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
 
         TaskLogProcessor tlp = new TaskLogProcessor(conf);
         for (String logUrl : ti.getLogUrls()) {
@@ -239,7 +297,9 @@ public class JobDebugger implements Runnable {
           sb.append("Task with the most failures(" + maxFailures + "): \n");
           sb.append("-----\n");
           sb.append("Task ID:\n  " + task + "\n\n");
-          sb.append("URL:\n  " + taskUrl + "\n");
+          if (taskUrl != null) {
+            sb.append("URL:\n  " + taskUrl + "\n");
+          }
 
           for (ErrorAndSolution e : errors) {
             sb.append("\n");
@@ -248,6 +308,11 @@ public class JobDebugger implements Runnable {
           }
           sb.append("-----\n");
 
+          sb.append("Diagnostic Messages for this Task:\n");
+          String[] diagMesgs = ti.getDiagnosticMesgs();
+          for (String mesg : diagMesgs) {
+            sb.append(mesg + "\n");
+          }
           console.printError(sb.toString());
         }
 
@@ -256,6 +321,16 @@ public class JobDebugger implements Runnable {
       }
     }
     return;
+  }
 
+  public int getErrorCode() {
+    for (String task : failures.keySet()) {
+      if (failures.get(task).intValue() == maxFailures) {
+        TaskInfo ti = taskIdToInfo.get(task);
+        return ti.getErrorCode();
+      }
+    }
+    // Should never reach here unless there were no failed tasks.
+    return 0;
   }
 }

@@ -1166,11 +1166,13 @@ POSTHOOK: Output: default@gl_src_part1@p=12
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key from gl_src_part1 where p like '1%' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=11
 PREHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p like '1%' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=11
 POSTHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
@@ -1187,10 +1189,12 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 4
 PREHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=11
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
@@ -1206,10 +1210,12 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 41
 PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
@@ -1225,9 +1231,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 4
 PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: alter table gl_src_part1 add partition (p='13')
@@ -1240,19 +1248,23 @@ POSTHOOK: Output: default@gl_src_part1@p=13
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=13
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=13
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
 PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
 PREHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
 POSTHOOK: Input: default@gl_src_part1@p=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]

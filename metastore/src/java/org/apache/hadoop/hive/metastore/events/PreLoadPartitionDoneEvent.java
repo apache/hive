@@ -28,8 +28,8 @@ public class PreLoadPartitionDoneEvent extends PreEventContext {
   private final String tableName;
   private final Map<String,String> partSpec;
 
-  public PreLoadPartitionDoneEvent(HMSHandler handler, String dbName, String tableName,
-      Map<String, String> partSpec) {
+  public PreLoadPartitionDoneEvent(String dbName, String tableName,
+      Map<String, String> partSpec, HMSHandler handler) {
     super(PreEventType.LOAD_PARTITION_DONE, handler);
     this.dbName = dbName;
     this.tableName = tableName;

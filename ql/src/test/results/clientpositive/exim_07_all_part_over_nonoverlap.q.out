@@ -47,6 +47,7 @@ POSTHOOK: query: load data local inpath "../data/files/test.dat"
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_employee
 POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
@@ -113,13 +114,22 @@ PREHOOK: query: describe extended exim_employee
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended exim_employee
 POSTHOOK: type: DESCTABLE
-emp_id	int	employee id
-emp_country	string	iso code
-emp_state	string	free-form text
+# col_name            	data_type           	comment             
+	 	 
+emp_id              	int                 	employee id         
+emp_country         	string              	iso code            
+emp_state           	string              	free-form text      
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	iso code            
+emp_state           	string              	free-form text      
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee
 PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
 PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=al
@@ -128,6 +138,7 @@ PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
 POSTHOOK: query: select * from exim_employee
 POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee
 POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
 POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
 POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=al
@@ -172,6 +183,7 @@ POSTHOOK: query: drop table exim_employee
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee
+#### A masked pattern was here ####
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: drop database importer

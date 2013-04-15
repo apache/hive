@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,99 +35,90 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class JoinUtil {
 
-  public static HashMap<Byte, List<ObjectInspector>> getObjectInspectorsFromEvaluators(
-      Map<Byte, List<ExprNodeEvaluator>> exprEntries,
+  public static List<ObjectInspector>[] getObjectInspectorsFromEvaluators(
+      List<ExprNodeEvaluator>[] exprEntries,
       ObjectInspector[] inputObjInspector,
-      int posBigTableAlias) throws HiveException {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ExprNodeEvaluator>> exprEntry : exprEntries
-        .entrySet()) {
-      Byte alias = exprEntry.getKey();
+      int posBigTableAlias, int tagLen) throws HiveException {
+    List<ObjectInspector>[] result = new List[tagLen];
+    for (byte alias = 0; alias < exprEntries.length; alias++) {
       //get big table
-      if(alias == (byte) posBigTableAlias){
+      if (alias == (byte) posBigTableAlias){
         //skip the big tables
           continue;
       }
 
-      List<ExprNodeEvaluator> exprList = exprEntry.getValue();
-      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>();
+      List<ExprNodeEvaluator> exprList = exprEntries[alias];
+      List<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>();
       for (int i = 0; i < exprList.size(); i++) {
         fieldOIList.add(exprList.get(i).initialize(inputObjInspector[alias]));
       }
-      result.put(alias, fieldOIList);
+      result[alias] = fieldOIList;
     }
     return result;
   }
 
 
-  public static HashMap<Byte, List<ObjectInspector>> getStandardObjectInspectors(
-      Map<Byte, List<ObjectInspector>> aliasToObjectInspectors,
-      int posBigTableAlias) {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ObjectInspector>> oiEntry : aliasToObjectInspectors
-        .entrySet()) {
-      Byte alias = oiEntry.getKey();
-
+  public static List<ObjectInspector>[] getStandardObjectInspectors(
+      List<ObjectInspector>[] aliasToObjectInspectors,
+      int posBigTableAlias, int tagLen) {
+    List<ObjectInspector>[] result = new List[tagLen];
+    for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
       //get big table
       if(alias == (byte) posBigTableAlias ){
         //skip the big tables
           continue;
       }
 
-      List<ObjectInspector> oiList = oiEntry.getValue();
+      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
       ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(
           oiList.size());
       for (int i = 0; i < oiList.size(); i++) {
         fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList
             .get(i), ObjectInspectorCopyOption.WRITABLE));
       }
-      result.put(alias, fieldOIList);
+      result[alias] = fieldOIList;
     }
     return result;
 
   }
-  public static int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
+
+  public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
+      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) {
+    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
+  }
+
+  public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
       int posBigTableAlias) {
-
     int total = 0;
-
-    Iterator<Map.Entry<Byte, List<ExprNodeDesc>>> entryIter = inputMap
-        .entrySet().iterator();
-    while (entryIter.hasNext()) {
-      Map.Entry<Byte, List<ExprNodeDesc>> e = entryIter.next();
-      Byte key = order[e.getKey()];
-
+    for (Entry<Byte, List<ExprNodeDesc>> e : inputMap.entrySet()) {
+      Byte key = order == null ? e.getKey() : order[e.getKey()];
       List<ExprNodeEvaluator> valueFields = new ArrayList<ExprNodeEvaluator>();
-
-      List<ExprNodeDesc> expr = e.getValue();
-      int sz = expr.size();
-      total += sz;
-
-      for (int j = 0; j < sz; j++) {
-        if(key == (byte) posBigTableAlias){
+      for (ExprNodeDesc expr : e.getValue()) {
+        if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
-        }else{
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr.get(j)));
+        } else {
+          valueFields.add(ExprNodeEvaluatorFactory.get(expr));
         }
       }
-
-      outMap.put(key, valueFields);
+      outMap[key] = valueFields;
+      total += valueFields.size();
     }
 
     return total;
@@ -207,14 +196,14 @@ public class JoinUtil {
   public static Object[] computeMapJoinValues(Object row,
       List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
       List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      boolean noOuterJoin) throws HiveException {
+      int[] filterMap) throws HiveException {
 
     // Compute the keys
     Object[] nr;
-    if (!noOuterJoin) {
+    if (filterMap != null) {
       nr = new Object[valueFields.size()+1];
       // add whether the row is filtered or not.
-      nr[valueFields.size()] = new BooleanWritable(isFiltered(row, filters, filtersOI));
+      nr[valueFields.size()] = new ShortWritable(isFiltered(row, filters, filtersOI, filterMap));
     }else{
       nr = new Object[valueFields.size()];
     }
@@ -231,67 +220,82 @@ public class JoinUtil {
   /**
    * Return the value as a standard object. StandardObject can be inspected by a
    * standard ObjectInspector.
+   * If it would be tagged by filter, reserve one more slot for that.
    */
   public static ArrayList<Object> computeValues(Object row,
-      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      boolean noOuterJoin) throws HiveException {
+      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI, boolean hasFilter)
+      throws HiveException {
 
     // Compute the values
-    ArrayList<Object> nr = new ArrayList<Object>(valueFields.size());
+    int reserve = hasFilter ? valueFields.size() + 1 : valueFields.size();
+    ArrayList<Object> nr = new ArrayList<Object>(reserve);
     for (int i = 0; i < valueFields.size(); i++) {
       nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
           .evaluate(row), valueFieldsOI.get(i),
           ObjectInspectorCopyOption.WRITABLE));
     }
-    if (!noOuterJoin) {
-      // add whether the row is filtered or not.
-      nr.add(new BooleanWritable(isFiltered(row, filters, filtersOI)));
-    }
-
     return nr;
   }
+
+  private static final short[] MASKS;
+  static {
+    int num = 32;
+    MASKS = new short[num];
+    MASKS[0] = 1;
+    for (int idx = 1; idx < num; idx++) {
+      MASKS[idx] = (short)(2 * MASKS[idx-1]);
+    }
+  }
+
   /**
    * Returns true if the row does not pass through filters.
    */
-  protected static Boolean isFiltered(Object row,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> ois)
-      throws HiveException {
+  protected static short isFiltered(Object row, List<ExprNodeEvaluator> filters,
+      List<ObjectInspector> ois, int[] filterMap) throws HiveException {
     // apply join filters on the row.
-    Boolean ret = false;
-    for (int j = 0; j < filters.size(); j++) {
-      Object condition = filters.get(j).evaluate(row);
-      ret = (Boolean) ((PrimitiveObjectInspector)
-          ois.get(j)).getPrimitiveJavaObject(condition);
-      if (ret == null || !ret) {
-        return true;
+    short ret = 0;
+    int j = 0;
+    for (int i = 0; i < filterMap.length; i += 2) {
+      int tag = filterMap[i];
+      int length = filterMap[i + 1];
+
+      boolean passed = true;
+      for (; length > 0; length--, j++) {
+        if (passed) {
+          Object condition = filters.get(j).evaluate(row);
+          Boolean result = (Boolean) ((PrimitiveObjectInspector)
+              ois.get(j)).getPrimitiveJavaObject(condition);
+          if (result == null || !result) {
+            passed = false;
+          }
+        }
+      }
+      if (!passed) {
+        ret |= MASKS[tag];
       }
     }
-    return false;
+    return ret;
   }
 
-  public static TableDesc getSpillTableDesc(Byte alias,
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
-    if (spillTableDesc == null || spillTableDesc.size() == 0) {
-      spillTableDesc = initSpillTables(conf,noOuterJoin);
+  protected static boolean isFiltered(short filter, int tag) {
+    return (filter & MASKS[tag]) != 0;
+  }
+
+  protected static boolean hasAnyFiltered(short tag) {
+    return tag != 0;
+  }
+
+  public static TableDesc getSpillTableDesc(Byte alias, TableDesc[] spillTableDesc,
+      JoinDesc conf, boolean noFilter) {
+    if (spillTableDesc == null || spillTableDesc.length == 0) {
+      spillTableDesc = initSpillTables(conf,noFilter);
     }
-    return spillTableDesc.get(alias);
+    return spillTableDesc[alias];
   }
 
-  public static Map<Byte, TableDesc> getSpillTableDesc(
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
-    if (spillTableDesc == null) {
-      spillTableDesc = initSpillTables(conf,noOuterJoin);
-    }
-    return spillTableDesc;
-  }
-
-  public static SerDe getSpillSerDe(byte alias,
-      Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
-      boolean noOuterJoin) {
-    TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noOuterJoin);
+  public static SerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
+      JoinDesc conf, boolean noFilter) {
+    TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noFilter);
     if (desc == null) {
       return null;
     }
@@ -306,9 +310,10 @@ public class JoinUtil {
     return sd;
   }
 
-  public static Map<Byte, TableDesc>  initSpillTables(JoinDesc conf,boolean noOuterJoin) {
+  public static TableDesc[] initSpillTables(JoinDesc conf, boolean noFilter) {
+    int tagLen = conf.getTagLength();
     Map<Byte, List<ExprNodeDesc>> exprs = conf.getExprs();
-    Map<Byte, TableDesc> spillTableDesc = new HashMap<Byte, TableDesc>(exprs.size());
+    TableDesc[] spillTableDesc = new TableDesc[tagLen];
     for (int tag = 0; tag < exprs.size(); tag++) {
       List<ExprNodeDesc> valueCols = exprs.get((byte) tag);
       int columnSize = valueCols.size();
@@ -325,10 +330,10 @@ public class JoinUtil {
         colTypes.append(valueCols.get(k).getTypeString());
         colTypes.append(',');
       }
-      if (!noOuterJoin) {
+      if (!noFilter) {
         colNames.append("filtered");
         colNames.append(',');
-        colTypes.append(TypeInfoFactory.booleanTypeInfo.getTypeName());
+        colTypes.append(TypeInfoFactory.shortTypeInfo.getTypeName());
         colTypes.append(',');
       }
       // remove the last ','
@@ -337,13 +342,13 @@ public class JoinUtil {
       TableDesc tblDesc = new TableDesc(LazyBinarySerDe.class,
           SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
           Utilities.makeProperties(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, ""
           + Utilities.ctrlaCode,
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames
+          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames
           .toString(),
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
+          org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
           colTypes.toString()));
-      spillTableDesc.put((byte) tag, tblDesc);
+      spillTableDesc[tag] = tblDesc;
     }
     return spillTableDesc;
   }
@@ -351,18 +356,17 @@ public class JoinUtil {
 
   public static RowContainer getRowContainer(Configuration hconf,
       List<ObjectInspector> structFieldObjectInspectors,
-      Byte alias,int containerSize, Map<Byte, TableDesc> spillTableDesc,
-      JoinDesc conf,boolean noOuterJoin) throws HiveException {
+      Byte alias,int containerSize, TableDesc[] spillTableDesc,
+      JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
 
-    TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noOuterJoin);
-    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf,
-        noOuterJoin);
+    TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);
+    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
 
     if (serde == null) {
       containerSize = -1;
     }
 
-    RowContainer rc = new RowContainer(containerSize, hconf);
+    RowContainer rc = new RowContainer(containerSize, hconf, reporter);
     StructObjectInspector rcOI = null;
     if (tblDesc != null) {
       // arbitrary column names used internally for serializing to spill table

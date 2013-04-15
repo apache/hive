@@ -63,17 +63,22 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
         toRemovePaths.add(path);
         ArrayList<String> aliases = pathToAliases.remove(path);
         for (FileStatus symlink : symlinks) {
-          BufferedReader reader = new BufferedReader(new InputStreamReader(
-              fileSystem.open(symlink.getPath())));
+          BufferedReader reader = null;
+          try {
+            reader = new BufferedReader(new InputStreamReader(
+                fileSystem.open(symlink.getPath())));
 
-          partDesc.setInputFileFormatClass(TextInputFormat.class);
+            partDesc.setInputFileFormatClass(TextInputFormat.class);
 
-          String line;
-          while ((line = reader.readLine()) != null) {
-            // no check for the line? How to check?
-            // if the line is invalid for any reason, the job will fail.
-            toAddPathToPart.put(line, partDesc);
-            pathToAliases.put(line, aliases);
+            String line;
+            while ((line = reader.readLine()) != null) {
+              // no check for the line? How to check?
+              // if the line is invalid for any reason, the job will fail.
+              toAddPathToPart.put(line, partDesc);
+              pathToAliases.put(line, aliases);
+            }
+          } finally {
+            org.apache.hadoop.io.IOUtils.closeStream(reader);
           }
         }
       }

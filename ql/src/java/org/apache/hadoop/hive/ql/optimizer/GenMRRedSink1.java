@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Processor for the rule - table scan followed by reduce sink.
@@ -42,8 +43,12 @@ public class GenMRRedSink1 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered.
-   * 
+   * Reduce Sink encountered.
+   * a) If we are seeing this RS for first time, we initialize plan corresponding to this RS.
+   * b) If we are seeing this RS for second or later time then either query had a join in which
+   *    case we will merge this plan with earlier plan involving this RS or plan for this RS
+   *    needs to be split in two branches.
+   *
    * @param nd
    *          the reduce sink operator encountered
    * @param opProcCtx
@@ -54,15 +59,15 @@ public class GenMRRedSink1 implements NodeProcessor {
     ReduceSinkOperator op = (ReduceSinkOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
 
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     MapredWork currPlan = (MapredWork) currTask.getWork();
-    Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
+    Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
-    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
+    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
         .getOpTaskMap();
     Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
@@ -80,7 +85,7 @@ public class GenMRRedSink1 implements NodeProcessor {
     } else {
       // This will happen in case of joins. The current plan can be thrown away
       // after being merged with the original plan
-      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
+      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }

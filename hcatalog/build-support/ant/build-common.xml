@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project name="build-common" default="jar"
+         xmlns:artifact="artifact:org.apache.maven.artifact.ant">
+
+  <loadproperties srcfile="${path.to.basedir}/build.properties"/>
+
+  <condition property="hadoopversion" value="20">
+    <equals arg1="${_mvn.hadoop.profile}" arg2="hadoop20"/>
+  </condition>
+  <condition property="hadoopversion" value="23">
+    <equals arg1="${_mvn.hadoop.profile}" arg2="hadoop23"/>
+  </condition>
+
+  <import file="checkstyle.xml"/>
+  <import file="deploy.xml"/>
+  <import file="findbugs.xml"/>
+  <import file="test.xml"/>
+
+  <macrodef name="_javac">
+    <attribute name="srcDir"/>
+    <attribute name="destDir"/>
+    <attribute name="classPathRef"/>
+    <sequential>
+      <mkdir dir="@{destDir}"/>
+      <javac
+          fork="true"
+          deprecation="false"
+          sourcepath=""
+          includes="**/*.java"
+          debug="${javac.debug}"
+          encoding="utf-8"
+          srcdir="@{srcDir}"
+          destdir="@{destDir}"
+          classpathref="@{classPathRef}"
+          includeantruntime="false"/>
+    </sequential>
+  </macrodef>
+
+  <target name="clean">
+    <echo message="${ant.project.name}"/>
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="clean-test">
+    <echo message="${ant.project.name}"/>
+    <delete dir="${test.dir}"/>
+  </target>
+
+
+  <!--
+       Empty target, override in subproject to do any additional
+       specific resource compilation in subprojects.
+       Webhcat server overrides it.
+  -->
+  <target name="compile-resource">
+    <echo message="${ant.project.name}"/>
+    <echo message="Empty default compile-resource target"/>
+  </target>
+
+
+  <target name="compile">
+    <echo message="${ant.project.name}"/>
+    <_javac srcDir="${basedir}/src/main/java"
+            destDir="${build.classes}"
+            classPathRef="compile.class.path"/>
+  </target>
+
+  <target name="compile-test" depends="jar">
+    <echo message="${ant.project.name}"/>
+    <_javac srcDir="${basedir}/src/test/java"
+            destDir="${test.classes}"
+            classPathRef="test.class.path"/>
+  </target>
+
+  <target name="test" depends="jar, compile-test">
+    <echo message="${ant.project.name}"/>
+    <_junit srcDir="${basedir}/src/test/java"/>
+  </target>
+
+  <target name="jar" depends="mvn-dependencies,compile,compile-resource">
+    <echo message="${ant.project.name}"/>
+    <jar jarfile="${build.dir}/${jar.name}" basedir="${build.classes}">
+      <metainf dir="${path.to.basedir}" includes="**/LICENSE.txt,**/NOTICE.txt"/>
+    </jar>
+    <artifact:install file="${build.dir}/${ant.project.name}-${hcatalog.version}.jar">
+      <artifact:pom file="${pom.file}"/>
+      <artifact:localRepository path="${mvn.local.repo}"/>
+    </artifact:install>
+  </target>
+
+  <target name="findbugs" depends="init-findbugs,jar">
+    <echo message="${ant.project.name}"/>
+    <_findbugs outputDir="${findbugs.out.dir}"
+               outputFile="${findbugs.report.xmlfile}"
+               excludeFilter="${findbugs.exclude.file}"
+               findbugsReportXmlFile="${findbugs.report.xmlfile}"
+               findbugsReportHtmlFile="${findbugs.report.htmlfile}"
+               sourceDir="${basedir}/src/main/java"
+               jarDir="${build.dir}"
+               classPathRef="findbugs.class.path"/>
+  </target>
+</project>

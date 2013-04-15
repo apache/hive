@@ -51,13 +51,10 @@ public class TestHiveHistory extends TestCase {
 
   static HiveConf conf;
 
-  private static String tmpdir = "/tmp/" + System.getProperty("user.name")
-      + "/";
+  private static String tmpdir = System.getProperty("test.tmp.dir");
   private static Path tmppath = new Path(tmpdir);
   private static Hive db;
   private static FileSystem fs;
-  private QTestSetup setup;
-
   /*
    * intialize the tables
    */
@@ -78,16 +75,14 @@ public class TestHiveHistory extends TestCase {
               + tmpdir);
         }
       }
-
-      setup = new QTestSetup();
-      setup.preTest(conf);
+      
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
       // copy the test files into hadoop if required.
       int i = 0;
       Path[] hadoopDataFile = new Path[2];
       String[] testFiles = {"kv1.txt", "kv2.txt"};
-      String testFileDir = "file://"
-          + conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+      String testFileDir = new Path(conf.get("test.data.files")).toUri().getPath();
       for (String oneFile : testFiles) {
         Path localDataFile = new Path(testFileDir, oneFile);
         hadoopDataFile[i] = new Path(tmppath, oneFile);
@@ -116,19 +111,6 @@ public class TestHiveHistory extends TestCase {
     }
   }
 
-  @Override
-  protected void tearDown() {
-    try {
-      setup.tearDown();
-    }
-    catch (Exception e) {
-      System.out.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.out.flush();
-      fail("Unexpected exception in tearDown");
-    }
-  }
-
   /**
    * Check history file output for this query.
    */
@@ -137,12 +119,10 @@ public class TestHiveHistory extends TestCase {
     try {
 
       // NOTE: It is critical to do this here so that log4j is reinitialized
-      // before
-      // any of the other core hive classes are loaded
+      // before any of the other core hive classes are loaded
       try {
         LogUtils.initHiveLog4j();
       } catch (LogInitializationException e) {
-        // ignore
       }
 
       CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));

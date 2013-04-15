@@ -2,7 +2,7 @@
 #### A masked pattern was here #### 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
-   <string>Stage-3</string> 
+   <string>Stage-1</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -64,10 +64,6 @@
           <string>location</string> 
           #### A masked pattern was here #### 
          </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
-          #### A masked pattern was here #### 
-         </void> 
         </object> 
        </void> 
        <void property="serdeClassName"> 
@@ -91,6 +87,10 @@
             <string>default.src</string> 
            </void> 
            <void method="put"> 
+            <string>numFiles</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
             <string>columns.types</string> 
             <string>string:string</string> 
            </void> 
@@ -107,6 +107,18 @@
             <string>key,value</string> 
            </void> 
            <void method="put"> 
+            <string>rawDataSize</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numRows</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numPartitions</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
             <string>bucket_count</string> 
             <string>-1</string> 
            </void> 
@@ -117,6 +129,10 @@
            <void method="put"> 
             <string>file.inputformat</string> 
             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>totalSize</string> 
+            <string>5812</string> 
            </void> 
            <void method="put"> 
             <string>file.outputformat</string> 
@@ -196,10 +212,6 @@
           <string>location</string> 
           #### A masked pattern was here #### 
          </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
-          #### A masked pattern was here #### 
-         </void> 
         </object> 
        </void> 
        <void property="serdeClassName"> 
@@ -223,6 +235,10 @@
             <string>default.src</string> 
            </void> 
            <void method="put"> 
+            <string>numFiles</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
             <string>columns.types</string> 
             <string>string:string</string> 
            </void> 
@@ -239,6 +255,18 @@
             <string>key,value</string> 
            </void> 
            <void method="put"> 
+            <string>rawDataSize</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numRows</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numPartitions</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
             <string>bucket_count</string> 
             <string>-1</string> 
            </void> 
@@ -249,6 +277,10 @@
            <void method="put"> 
             <string>file.inputformat</string> 
             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>totalSize</string> 
+            <string>5812</string> 
            </void> 
            <void method="put"> 
             <string>file.outputformat</string> 
@@ -437,21 +469,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_493_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_6_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_493_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_6_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_493_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_RS_6_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_493_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_RS_6_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>RS_493</string> 
+                     <string>RS_6</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -557,21 +589,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_492_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_492_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_492_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_492_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_492</string> 
+                 <string>SEL_5</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -756,21 +788,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_501_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_14_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_501_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_14_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_501_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_14_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_501_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_14_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_501</string> 
+             <string>FIL_14</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -782,9 +814,9 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object id="ArrayList1" class="java.util.ArrayList"> 
+               <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                   <void property="internalName"> 
                    <string>key</string> 
                   </void> 
@@ -797,45 +829,9 @@
                  </object> 
                 </void> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                   <void property="internalName"> 
                    <string>value</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="hiddenVirtualCol"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="internalName"> 
-                   <string>BLOCK__OFFSET__INSIDE__FILE</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                    <void property="typeName"> 
-                     <string>bigint</string> 
-                    </void> 
-                   </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="hiddenVirtualCol"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="internalName"> 
-                   <string>INPUT__FILE__NAME</string> 
                   </void> 
                   <void property="tabAlias"> 
                    <string>src1</string> 
@@ -866,16 +862,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_490_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_3_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_490_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_3_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_490_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_3_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_490_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_3_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -890,12 +886,55 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_490</string> 
+         <string>TS_3</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object idref="ArrayList1"/> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <object idref="ColumnInfo0"/> 
+            </void> 
+            <void method="add"> 
+             <object idref="ColumnInfo1"/> 
+            </void> 
+            <void method="add"> 
+             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+              <void property="hiddenVirtualCol"> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="internalName"> 
+               <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>src1</string> 
+              </void> 
+              <void property="type"> 
+               <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                <void property="typeName"> 
+                 <string>bigint</string> 
+                </void> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+              <void property="hiddenVirtualCol"> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="internalName"> 
+               <string>INPUT__FILE__NAME</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>src1</string> 
+              </void> 
+              <void property="type"> 
+               <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
           </void> 
          </object> 
         </void> 
@@ -948,7 +987,7 @@
                        <object class="java.util.ArrayList"/> 
                       </void> 
                       <void property="keyCols"> 
-                       <object id="ArrayList2" class="java.util.ArrayList"> 
+                       <object id="ArrayList1" class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                           <void property="column"> 
@@ -1014,7 +1053,7 @@
                        </object> 
                       </void> 
                       <void property="partitionCols"> 
-                       <object idref="ArrayList2"/> 
+                       <object idref="ArrayList1"/> 
                       </void> 
                       <void property="tag"> 
                        <int>1</int> 
@@ -1063,21 +1102,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_494_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_7_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_494_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_7_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_494_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_RS_7_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_494_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_RS_7_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>RS_494</string> 
+                     <string>RS_7</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -1183,21 +1222,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_489_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_2_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_489_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_2_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_489_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_2_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_489_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_489</string> 
+                 <string>SEL_2</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1374,21 +1413,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_502_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_15_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_502_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_15_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_502_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_15_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_502_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_15_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_502</string> 
+             <string>FIL_15</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -1400,9 +1439,9 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object id="ArrayList3" class="java.util.ArrayList"> 
+               <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                   <void property="internalName"> 
                    <string>key</string> 
                   </void> 
@@ -1415,41 +1454,9 @@
                  </object> 
                 </void> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                   <void property="internalName"> 
                    <string>value</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="hiddenVirtualCol"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="internalName"> 
-                   <string>BLOCK__OFFSET__INSIDE__FILE</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo3"/> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="hiddenVirtualCol"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="internalName"> 
-                   <string>INPUT__FILE__NAME</string> 
                   </void> 
                   <void property="tabAlias"> 
                    <string>src2</string> 
@@ -1480,16 +1487,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_487_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_487_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_487_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_487_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1504,18 +1511,60 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_487</string> 
+         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object idref="ArrayList3"/> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <object idref="ColumnInfo2"/> 
+            </void> 
+            <void method="add"> 
+             <object idref="ColumnInfo3"/> 
+            </void> 
+            <void method="add"> 
+             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+              <void property="hiddenVirtualCol"> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="internalName"> 
+               <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>src2</string> 
+              </void> 
+              <void property="type"> 
+               <object idref="PrimitiveTypeInfo3"/> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+              <void property="hiddenVirtualCol"> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="internalName"> 
+               <string>INPUT__FILE__NAME</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>src2</string> 
+              </void> 
+              <void property="type"> 
+               <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
           </void> 
          </object> 
         </void> 
        </object> 
       </void> 
      </object> 
+    </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
     </void> 
     <void property="keyDesc"> 
      <object idref="TableDesc1"/> 
@@ -1571,6 +1620,10 @@
            <string>default.src</string> 
           </void> 
           <void method="put"> 
+           <string>numFiles</string> 
+           <string>1</string> 
+          </void> 
+          <void method="put"> 
            <string>columns.types</string> 
            <string>string:string</string> 
           </void> 
@@ -1587,6 +1640,18 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>rawDataSize</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numRows</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numPartitions</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -1597,6 +1662,10 @@
           <void method="put"> 
            <string>file.inputformat</string> 
            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>totalSize</string> 
+           <string>5812</string> 
           </void> 
           <void method="put"> 
            <string>file.outputformat</string> 
@@ -1633,6 +1702,10 @@
              <string>default.src</string> 
             </void> 
             <void method="put"> 
+             <string>numFiles</string> 
+             <string>1</string> 
+            </void> 
+            <void method="put"> 
              <string>columns.types</string> 
              <string>string:string</string> 
             </void> 
@@ -1649,6 +1722,18 @@
              <string>key,value</string> 
             </void> 
             <void method="put"> 
+             <string>rawDataSize</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numRows</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numPartitions</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
              <string>bucket_count</string> 
              <string>-1</string> 
             </void> 
@@ -1659,6 +1744,10 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>totalSize</string> 
+             <string>5812</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 
@@ -1696,252 +1785,77 @@
               <void property="childOperators"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object id="SelectOperator3" class="org.apache.hadoop.hive.ql.exec.SelectOperator"> 
-                  <void property="childOperators"> 
-                   <object class="java.util.ArrayList"> 
-                    <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
-                      <void property="conf"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
-                        <void property="dirName"> 
-                         #### A masked pattern was here #### 
-                        </void> 
-                        <void property="numFiles"> 
-                         <int>1</int> 
-                        </void> 
-                        <void property="statsAggPrefix"> 
-                         #### A masked pattern was here #### 
-                        </void> 
-                        <void property="tableInfo"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                          <void property="deserializerClass"> 
-                           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-                          </void> 
-                          <void property="inputFileFormatClass"> 
-                           <class>org.apache.hadoop.mapred.TextInputFormat</class> 
-                          </void> 
-                          <void property="outputFileFormatClass"> 
-                           <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
-                          </void> 
-                          <void property="properties"> 
-                           <object class="java.util.Properties"> 
-                            <void method="put"> 
-                             <string>columns</string> 
-                             <string>_col0,_col1,_col2,_col3</string> 
-                            </void> 
-                            <void method="put"> 
-                             <string>serialization.format</string> 
-                             <string>1</string> 
-                            </void> 
-                            <void method="put"> 
-                             <string>columns.types</string> 
-                             <string>string:string:string:string</string> 
-                            </void> 
-                            <void method="put"> 
-                             <string>escape.delim</string> 
-                             <string>\</string> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="totalFiles"> 
-                         <int>1</int> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void property="counterNames"> 
-                       <object class="java.util.ArrayList"> 
-                        <void method="add"> 
-                         <string>CNTR_NAME_FS_499_NUM_INPUT_ROWS</string> 
-                        </void> 
-                        <void method="add"> 
-                         <string>CNTR_NAME_FS_499_NUM_OUTPUT_ROWS</string> 
-                        </void> 
-                        <void method="add"> 
-                         <string>CNTR_NAME_FS_499_TIME_TAKEN</string> 
-                        </void> 
-                        <void method="add"> 
-                         <string>CNTR_NAME_FS_499_FATAL_ERROR</string> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void property="operatorId"> 
-                       <string>FS_499</string> 
-                      </void> 
-                      <void property="parentOperators"> 
-                       <object class="java.util.ArrayList"> 
-                        <void method="add"> 
-                         <object idref="SelectOperator3"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void property="schema"> 
-                       <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-                        <void property="signature"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                            <void property="internalName"> 
-                             <string>_col0</string> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string></string> 
-                            </void> 
-                            <void property="type"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                            <void property="internalName"> 
-                             <string>_col1</string> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string></string> 
-                            </void> 
-                            <void property="type"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                            <void property="internalName"> 
-                             <string>_col2</string> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string></string> 
-                            </void> 
-                            <void property="type"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                            <void property="internalName"> 
-                             <string>_col3</string> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string></string> 
-                            </void> 
-                            <void property="type"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void property="columnExprMap"> 
-                   <object class="java.util.HashMap"> 
-                    <void method="put"> 
-                     <string>_col3</string> 
-                     <object id="ExprNodeColumnDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>_col3</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void method="put"> 
-                     <string>_col2</string> 
-                     <object id="ExprNodeColumnDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>_col2</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void method="put"> 
-                     <string>_col1</string> 
-                     <object id="ExprNodeColumnDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>_col1</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void method="put"> 
-                     <string>_col0</string> 
-                     <object id="ExprNodeColumnDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>_col0</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                   </object> 
-                  </void> 
+                 <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
                   <void property="conf"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
-                    <void property="colList"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object idref="ExprNodeColumnDesc11"/> 
+                   <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
+                    <void property="dirName"> 
+                     #### A masked pattern was here #### 
+                    </void> 
+                    <void property="numFiles"> 
+                     <int>1</int> 
+                    </void> 
+                    <void property="statsAggPrefix"> 
+                     #### A masked pattern was here #### 
+                    </void> 
+                    <void property="statsCollectRawDataSize"> 
+                     <boolean>true</boolean> 
+                    </void> 
+                    <void property="tableInfo"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                      <void property="deserializerClass"> 
+                       <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                       </void> 
-                      <void method="add"> 
-                       <object idref="ExprNodeColumnDesc10"/> 
+                      <void property="inputFileFormatClass"> 
+                       <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                       </void> 
-                      <void method="add"> 
-                       <object idref="ExprNodeColumnDesc9"/> 
+                      <void property="outputFileFormatClass"> 
+                       <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
                       </void> 
-                      <void method="add"> 
-                       <object idref="ExprNodeColumnDesc8"/> 
+                      <void property="properties"> 
+                       <object class="java.util.Properties"> 
+                        <void method="put"> 
+                         <string>columns</string> 
+                         <string>_col0,_col1,_col2,_col3</string> 
+                        </void> 
+                        <void method="put"> 
+                         <string>serialization.format</string> 
+                         <string>1</string> 
+                        </void> 
+                        <void method="put"> 
+                         <string>columns.types</string> 
+                         <string>string:string:string:string</string> 
+                        </void> 
+                        <void method="put"> 
+                         <string>escape.delim</string> 
+                         <string>\</string> 
+                        </void> 
+                       </object> 
                       </void> 
                      </object> 
                     </void> 
-                    <void property="outputColumnNames"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <string>_col0</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>_col1</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>_col2</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>_col3</string> 
-                      </void> 
-                     </object> 
+                    <void property="totalFiles"> 
+                     <int>1</int> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="counterNames"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <string>CNTR_NAME_SEL_498_NUM_INPUT_ROWS</string> 
+                     <string>CNTR_NAME_FS_12_NUM_INPUT_ROWS</string> 
                     </void> 
                     <void method="add"> 
-                     <string>CNTR_NAME_SEL_498_NUM_OUTPUT_ROWS</string> 
+                     <string>CNTR_NAME_FS_12_NUM_OUTPUT_ROWS</string> 
                     </void> 
                     <void method="add"> 
-                     <string>CNTR_NAME_SEL_498_TIME_TAKEN</string> 
+                     <string>CNTR_NAME_FS_12_TIME_TAKEN</string> 
                     </void> 
                     <void method="add"> 
-                     <string>CNTR_NAME_SEL_498_FATAL_ERROR</string> 
+                     <string>CNTR_NAME_FS_12_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="operatorId"> 
-                   <string>SEL_498</string> 
+                   <string>FS_12</string> 
                   </void> 
                   <void property="parentOperators"> 
                    <object class="java.util.ArrayList"> 
@@ -1956,14 +1870,11 @@
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                        <void property="alias"> 
-                         <string>c1</string> 
-                        </void> 
                         <void property="internalName"> 
                          <string>_col0</string> 
                         </void> 
                         <void property="tabAlias"> 
-                         <string>c</string> 
+                         <string></string> 
                         </void> 
                         <void property="type"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -1972,14 +1883,11 @@
                       </void> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                        <void property="alias"> 
-                         <string>c2</string> 
-                        </void> 
                         <void property="internalName"> 
                          <string>_col1</string> 
                         </void> 
                         <void property="tabAlias"> 
-                         <string>c</string> 
+                         <string></string> 
                         </void> 
                         <void property="type"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -1988,14 +1896,11 @@
                       </void> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                        <void property="alias"> 
-                         <string>c3</string> 
-                        </void> 
                         <void property="internalName"> 
                          <string>_col2</string> 
                         </void> 
                         <void property="tabAlias"> 
-                         <string>c</string> 
+                         <string></string> 
                         </void> 
                         <void property="type"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -2004,14 +1909,11 @@
                       </void> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                        <void property="alias"> 
-                         <string>c4</string> 
-                        </void> 
                         <void property="internalName"> 
                          <string>_col3</string> 
                         </void> 
                         <void property="tabAlias"> 
-                         <string>c</string> 
+                         <string></string> 
                         </void> 
                         <void property="type"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -2030,7 +1932,7 @@
                <object class="java.util.HashMap"> 
                 <void method="put"> 
                  <string>_col3</string> 
-                 <object id="ExprNodeColumnDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col3</string> 
                   </void> 
@@ -2044,7 +1946,7 @@
                 </void> 
                 <void method="put"> 
                  <string>_col2</string> 
-                 <object id="ExprNodeColumnDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col2</string> 
                   </void> 
@@ -2058,7 +1960,7 @@
                 </void> 
                 <void method="put"> 
                  <string>_col1</string> 
-                 <object id="ExprNodeColumnDesc14" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col1</string> 
                   </void> 
@@ -2072,7 +1974,7 @@
                 </void> 
                 <void method="put"> 
                  <string>_col0</string> 
-                 <object id="ExprNodeColumnDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col0</string> 
                   </void> 
@@ -2091,16 +1993,16 @@
                 <void property="colList"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object idref="ExprNodeColumnDesc15"/> 
+                   <object idref="ExprNodeColumnDesc11"/> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeColumnDesc14"/> 
+                   <object idref="ExprNodeColumnDesc10"/> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeColumnDesc13"/> 
+                   <object idref="ExprNodeColumnDesc9"/> 
                   </void> 
                   <void method="add"> 
-                   <object idref="ExprNodeColumnDesc12"/> 
+                   <object idref="ExprNodeColumnDesc8"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -2125,21 +2027,21 @@
               <void property="counterNames"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>CNTR_NAME_SEL_496_NUM_INPUT_ROWS</string> 
+                 <string>CNTR_NAME_SEL_9_NUM_INPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_SEL_496_NUM_OUTPUT_ROWS</string> 
+                 <string>CNTR_NAME_SEL_9_NUM_OUTPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_SEL_496_TIME_TAKEN</string> 
+                 <string>CNTR_NAME_SEL_9_TIME_TAKEN</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_SEL_496_FATAL_ERROR</string> 
+                 <string>CNTR_NAME_SEL_9_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
               <void property="operatorId"> 
-               <string>SEL_496</string> 
+               <string>SEL_9</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -2154,9 +2056,15 @@
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="alias"> 
+                     <string>c1</string> 
+                    </void> 
                     <void property="internalName"> 
                      <string>_col0</string> 
                     </void> 
+                    <void property="tabAlias"> 
+                     <string>c</string> 
+                    </void> 
                     <void property="type"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
@@ -2164,9 +2072,15 @@
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="alias"> 
+                     <string>c2</string> 
+                    </void> 
                     <void property="internalName"> 
                      <string>_col1</string> 
                     </void> 
+                    <void property="tabAlias"> 
+                     <string>c</string> 
+                    </void> 
                     <void property="type"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
@@ -2174,9 +2088,15 @@
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="alias"> 
+                     <string>c3</string> 
+                    </void> 
                     <void property="internalName"> 
                      <string>_col2</string> 
                     </void> 
+                    <void property="tabAlias"> 
+                     <string>c</string> 
+                    </void> 
                     <void property="type"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
@@ -2184,8 +2104,14 @@
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="alias"> 
+                     <string>c4</string> 
+                    </void> 
                     <void property="internalName"> 
                      <string>_col3</string> 
+                    </void> 
+                    <void property="tabAlias"> 
+                     <string>c</string> 
                     </void> 
                     <void property="type"> 
                      <object idref="PrimitiveTypeInfo0"/> 
@@ -2207,7 +2133,7 @@
               <void property="childExprs"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="ExprNodeColumnDesc13"/> 
+                 <object idref="ExprNodeColumnDesc9"/> 
                 </void> 
                </object> 
               </void> 
@@ -2224,21 +2150,21 @@
           <void property="counterNames"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>CNTR_NAME_FIL_500_NUM_INPUT_ROWS</string> 
+             <string>CNTR_NAME_FIL_13_NUM_INPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_FIL_500_NUM_OUTPUT_ROWS</string> 
+             <string>CNTR_NAME_FIL_13_NUM_OUTPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_FIL_500_TIME_TAKEN</string> 
+             <string>CNTR_NAME_FIL_13_TIME_TAKEN</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_FIL_500_FATAL_ERROR</string> 
+             <string>CNTR_NAME_FIL_13_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
           <void property="operatorId"> 
-           <string>FIL_500</string> 
+           <string>FIL_13</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -2252,7 +2178,7 @@
             <void property="signature"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo4" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>_col0</string> 
                 </void> 
@@ -2265,7 +2191,7 @@
                </object> 
               </void> 
               <void method="add"> 
-               <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo5" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>_col1</string> 
                 </void> 
@@ -2278,7 +2204,7 @@
                </object> 
               </void> 
               <void method="add"> 
-               <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo6" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>_col2</string> 
                 </void> 
@@ -2291,7 +2217,7 @@
                </object> 
               </void> 
               <void method="add"> 
-               <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo7" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>_col3</string> 
                 </void> 
@@ -2315,7 +2241,7 @@
        <object class="java.util.HashMap"> 
         <void method="put"> 
          <string>_col3</string> 
-         <object id="ExprNodeColumnDesc16" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+         <object id="ExprNodeColumnDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col1</string> 
           </void> 
@@ -2329,7 +2255,7 @@
         </void> 
         <void method="put"> 
          <string>_col2</string> 
-         <object id="ExprNodeColumnDesc17" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+         <object id="ExprNodeColumnDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col0</string> 
           </void> 
@@ -2343,7 +2269,7 @@
         </void> 
         <void method="put"> 
          <string>_col1</string> 
-         <object id="ExprNodeColumnDesc18" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+         <object id="ExprNodeColumnDesc14" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col1</string> 
           </void> 
@@ -2357,7 +2283,7 @@
         </void> 
         <void method="put"> 
          <string>_col0</string> 
-         <object id="ExprNodeColumnDesc19" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+         <object id="ExprNodeColumnDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col0</string> 
           </void> 
@@ -2393,10 +2319,10 @@
            <byte>0</byte> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc19"/> 
+             <object idref="ExprNodeColumnDesc15"/> 
             </void> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc18"/> 
+             <object idref="ExprNodeColumnDesc14"/> 
             </void> 
            </object> 
           </void> 
@@ -2404,14 +2330,25 @@
            <byte>1</byte> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc17"/> 
+             <object idref="ExprNodeColumnDesc13"/> 
             </void> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc16"/> 
+             <object idref="ExprNodeColumnDesc12"/> 
             </void> 
            </object> 
           </void> 
          </object> 
+        </void> 
+        <void property="filterMap"> 
+         <array class="[I" length="2"> 
+          <void index="0"> 
+           <array class="int" length="2"> 
+            <void index="0"> 
+             <int>1</int> 
+            </void> 
+           </array> 
+          </void> 
+         </array> 
         </void> 
         <void property="filters"> 
          <object class="java.util.HashMap"> 
@@ -2424,11 +2361,11 @@
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
-        </void>
-        <void property="nullSafes">
-         <array class="boolean" length="1"/>
-        </void>
-        <void property="outputColumnNames">
+        </void> 
+        <void property="nullSafes"> 
+         <array class="boolean" length="1"/> 
+        </void> 
+        <void property="outputColumnNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>_col0</string> 
@@ -2479,21 +2416,21 @@
       <void property="counterNames"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <string>CNTR_NAME_JOIN_495_NUM_INPUT_ROWS</string> 
+         <string>CNTR_NAME_JOIN_8_NUM_INPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_JOIN_495_NUM_OUTPUT_ROWS</string> 
+         <string>CNTR_NAME_JOIN_8_NUM_OUTPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_JOIN_495_TIME_TAKEN</string> 
+         <string>CNTR_NAME_JOIN_8_TIME_TAKEN</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_JOIN_495_FATAL_ERROR</string> 
+         <string>CNTR_NAME_JOIN_8_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 
       <void property="operatorId"> 
-       <string>JOIN_495</string> 
+       <string>JOIN_8</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 
@@ -2530,16 +2467,16 @@
         <void property="signature"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <object idref="ColumnInfo0"/> 
+           <object idref="ColumnInfo4"/> 
           </void> 
           <void method="add"> 
-           <object idref="ColumnInfo1"/> 
+           <object idref="ColumnInfo5"/> 
           </void> 
           <void method="add"> 
-           <object idref="ColumnInfo2"/> 
+           <object idref="ColumnInfo6"/> 
           </void> 
           <void method="add"> 
-           <object idref="ColumnInfo3"/> 
+           <object idref="ColumnInfo7"/> 
           </void> 
          </object> 
         </void> 

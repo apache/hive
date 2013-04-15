@@ -2,4 +2,4 @@ PREHOOK: query: DROP VIEW xxx14
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx14
 POSTHOOK: type: DROPVIEW
-FAILED: Error in semantic analysis: Duplicate column name: key
+FAILED: SemanticException [Error 10036]: Duplicate column name: key

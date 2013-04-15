@@ -1,0 +1,26 @@
+PREHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@testTable
+PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+c	3
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
+ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
+ The following property z does not exist in testtable

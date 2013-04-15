@@ -1,35 +1,27 @@
-PREHOOK: query: drop table ss_src1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_src1
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_src2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_src2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_src3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_src3
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_i_part
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_i_part
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_t3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_t3
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_t4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_t4
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table ss_t5
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ss_t5
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- create multiple file inputs (two enable multiple splits)
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- create multiple file inputs (two enable multiple splits)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
+-- create multiple file inputs (two enable multiple splits)
 create table ss_i_part (key int, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@ss_i_part
@@ -71,11 +63,13 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table ss_src2 as select key, value from ss_i_part
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ss_i_part
 PREHOOK: Input: default@ss_i_part@p=1
 PREHOOK: Input: default@ss_i_part@p=2
 PREHOOK: Input: default@ss_i_part@p=3
 POSTHOOK: query: create table ss_src2 as select key, value from ss_i_part
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ss_i_part
 POSTHOOK: Input: default@ss_i_part@p=1
 POSTHOOK: Input: default@ss_i_part@p=2
 POSTHOOK: Input: default@ss_i_part@p=3
@@ -113,8 +107,10 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	int	
-value	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
 PREHOOK: query: explain select key, value from ss_src2 tablesample(1 percent) limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, value from ss_src2 tablesample(1 percent) limit 10
@@ -126,7 +122,7 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_PERCENT 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -153,7 +149,7 @@ STAGE PLANS:
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-      Percentage Sample:
+      Split Sample:
         ss_src2 
             percentage: 1.0
             seed number: 0
@@ -245,11 +241,13 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table ss_src3 as select key, value from ss_i_part
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ss_i_part
 PREHOOK: Input: default@ss_i_part@p=1
 PREHOOK: Input: default@ss_i_part@p=2
 PREHOOK: Input: default@ss_i_part@p=3
 POSTHOOK: query: create table ss_src3 as select key, value from ss_i_part
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ss_i_part
 POSTHOOK: Input: default@ss_i_part@p=1
 POSTHOOK: Input: default@ss_i_part@p=2
 POSTHOOK: Input: default@ss_i_part@p=3
@@ -367,7 +365,7 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE 70))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL key)))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_PERCENT 70))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL key)))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -403,7 +401,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-      Percentage Sample:
+      Split Sample:
         ss_src2 
             percentage: 70.0
             seed number: 5
@@ -495,7 +493,7 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_PERCENT 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -520,7 +518,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: int
-      Percentage Sample:
+      Split Sample:
         subq:ss_src2 
             percentage: 1.0
             seed number: 5
@@ -4055,7 +4053,7 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME ss_src1) (TOK_TABLESPLITSAMPLE 80) t1) (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE 2) t2) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL t2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t1) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) key) k)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (or (TOK_FUNCTION in (TOK_TABLE_OR_COL k) 199 10199 20199) (TOK_FUNCTION in (TOK_TABLE_OR_COL k1) 199 10199 20199)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME ss_src1) (TOK_TABLESPLITSAMPLE TOK_PERCENT 80) t1) (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_PERCENT 2) t2) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL t2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t1) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) key) k)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (or (TOK_FUNCTION in (TOK_TABLE_OR_COL k) 199 10199 20199) (TOK_FUNCTION in (TOK_TABLE_OR_COL k1) 199 10199 20199)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4095,7 +4093,7 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: int
-      Percentage Sample:
+      Split Sample:
         subq:t1 
             percentage: 80.0
             seed number: 5
@@ -4122,19 +4120,12 @@ STAGE PLANS:
                     expr: _col4
                     type: int
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: int
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -4213,7 +4204,7 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_PERCENT 1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4239,7 +4230,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: bigint
-      Percentage Sample:
+      Split Sample:
         ss_src2 
             percentage: 1.0
             seed number: 5
@@ -4309,14 +4300,18 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1000
-PREHOOK: query: drop table ss_src1
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_src1
-PREHOOK: Output: default@ss_src1
-POSTHOOK: query: drop table ss_src1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_src1
-POSTHOOK: Output: default@ss_src1
+PREHOOK: query: --HIVE-3401 more split samplings
+
+-- total length
+explain
+select count(1) from ss_src2 tablesample(100B)
+PREHOOK: type: QUERY
+POSTHOOK: query: --HIVE-3401 more split samplings
+
+-- total length
+explain
+select count(1) from ss_src2 tablesample(100B)
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4329,14 +4324,69 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_src2
-PREHOOK: type: DROPTABLE
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_LENGTH 100B))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        ss_src2 
+          TableScan
+            alias: ss_src2
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Split Sample:
+        ss_src2 
+            seed number: 5
+            total length: 100
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(1) from ss_src2 tablesample(100B)
+PREHOOK: type: QUERY
 PREHOOK: Input: default@ss_src2
-PREHOOK: Output: default@ss_src2
-POSTHOOK: query: drop table ss_src2
-POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from ss_src2 tablesample(100B)
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss_src2
-POSTHOOK: Output: default@ss_src2
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4349,14 +4399,13 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_src3
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_src3
-PREHOOK: Output: default@ss_src3
-POSTHOOK: query: drop table ss_src3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_src3
-POSTHOOK: Output: default@ss_src3
+500
+PREHOOK: query: explain
+select count(1) from ss_src2 tablesample(1K)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from ss_src2 tablesample(1K)
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4369,14 +4418,69 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_i_part
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_i_part
-PREHOOK: Output: default@ss_i_part
-POSTHOOK: query: drop table ss_i_part
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_i_part
-POSTHOOK: Output: default@ss_i_part
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_LENGTH 1K))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        ss_src2 
+          TableScan
+            alias: ss_src2
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Split Sample:
+        ss_src2 
+            seed number: 5
+            total length: 1024
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(1) from ss_src2 tablesample(1K)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from ss_src2 tablesample(1K)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4389,14 +4493,15 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_t3
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_t3
-PREHOOK: Output: default@ss_t3
-POSTHOOK: query: drop table ss_t3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_t3
-POSTHOOK: Output: default@ss_t3
+500
+PREHOOK: query: -- row per split
+explain
+select key, value from ss_src2 tablesample(0 ROWS)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- row per split
+explain
+select key, value from ss_src2 tablesample(0 ROWS)
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4409,14 +4514,48 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_t4
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_t4
-PREHOOK: Output: default@ss_t4
-POSTHOOK: query: drop table ss_t4
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_t4
-POSTHOOK: Output: default@ss_t4
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_ROWCOUNT 0))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        ss_src2 
+          TableScan
+            alias: ss_src2
+            Row Limit Per Split: 0
+            Select Operator
+              expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select key, value from ss_src2 tablesample(0 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from ss_src2 tablesample(0 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4429,14 +4568,12 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table ss_t5
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ss_t5
-PREHOOK: Output: default@ss_t5
-POSTHOOK: query: drop table ss_t5
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ss_t5
-POSTHOOK: Output: default@ss_t5
+PREHOOK: query: explain
+select count(1) from ss_src2 tablesample(10 ROWS)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from ss_src2 tablesample(10 ROWS)
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4449,3 +4586,258 @@ POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_ROWCOUNT 10))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        ss_src2 
+          TableScan
+            alias: ss_src2
+            Row Limit Per Split: 10
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(1) from ss_src2 tablesample(10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from ss_src2 tablesample(10 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+10
+PREHOOK: query: explain
+select count(1) from ss_src2 tablesample(100 ROWS)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from ss_src2 tablesample(100 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME ss_src2) (TOK_TABLESPLITSAMPLE TOK_ROWCOUNT 100))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        ss_src2 
+          TableScan
+            alias: ss_src2
+            Row Limit Per Split: 100
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(1) from ss_src2 tablesample(100 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from ss_src2 tablesample(100 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+100
+PREHOOK: query: select key from ss_src2 tablesample(200B)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select key from ss_src2 tablesample(200B)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238
+86
+311
+27
+165
+409
+255
+278
+98
+484
+265
+193
+401
+150
+273
+224
+369
+66
+PREHOOK: query: select key from ss_src2 tablesample(10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select key from ss_src2 tablesample(10 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238
+86
+311
+27
+165
+409
+255
+278
+98
+484
+PREHOOK: query: -- ROW type works with other input formats (others, don't)
+select count(1) from ss_src2 tablesample(10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: query: -- ROW type works with other input formats (others, don't)
+select count(1) from ss_src2 tablesample(10 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ss_src2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+10

@@ -2,7 +2,7 @@
 #### A masked pattern was here #### 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
-   <string>Stage-3</string> 
+   <string>Stage-1</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -62,10 +62,6 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          #### A masked pattern was here #### 
-         </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
           #### A masked pattern was here #### 
          </void> 
         </object> 
@@ -164,6 +160,9 @@
                   <void property="statsAggPrefix"> 
                    #### A masked pattern was here #### 
                   </void> 
+                  <void property="statsCollectRawDataSize"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                     <void property="deserializerClass"> 
@@ -187,7 +186,7 @@
                       </void> 
                       <void method="put"> 
                        <string>columns.types</string> 
-                       <string>bigint:bigint:bigint:bigint:bigint:bigint:double:double:double:bigint:bigint:bigint:bigint:double:int:int:int:int:int</string> 
+                       <string>double:double:double:bigint:bigint:bigint:double:double:double:bigint:bigint:bigint:bigint:double:int:int:int:int:int</string> 
                       </void> 
                       <void method="put"> 
                        <string>escape.delim</string> 
@@ -205,21 +204,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_627_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_2_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_627_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_2_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_627_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_FS_2_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_627_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_FS_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>FS_627</string> 
+                 <string>FS_2</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -243,7 +242,7 @@
                       <void property="type"> 
                        <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                         <void property="typeName"> 
-                         <string>bigint</string> 
+                         <string>double</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -284,7 +283,11 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="typeName"> 
+                         <string>bigint</string> 
+                        </void> 
+                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -297,7 +300,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -310,7 +313,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -323,11 +326,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                        <void property="typeName"> 
-                         <string>double</string> 
-                        </void> 
-                       </object> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -340,7 +339,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -353,7 +352,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -366,7 +365,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -379,7 +378,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -392,7 +391,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -405,7 +404,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -418,7 +417,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -509,7 +508,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>0.0</double> 
@@ -532,7 +531,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -548,7 +547,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <double>1.0</double> 
@@ -574,7 +573,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -594,7 +593,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -606,7 +605,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.0</double> 
@@ -629,7 +628,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -645,7 +644,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <double>1.5</double> 
@@ -671,7 +670,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -691,7 +690,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -703,7 +702,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.5</double> 
@@ -726,7 +725,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -738,7 +737,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.0</double> 
@@ -761,7 +760,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -777,7 +776,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <double>1.5</double> 
@@ -803,7 +802,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -835,7 +834,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.5</double> 
@@ -870,7 +869,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.0</double> 
@@ -893,7 +892,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -928,7 +927,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -940,7 +939,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.0</double> 
@@ -963,7 +962,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -979,7 +978,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <double>1.5</double> 
@@ -1005,7 +1004,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1025,7 +1024,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -1037,7 +1036,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.5</double> 
@@ -1060,7 +1059,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -1244,7 +1243,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <double>1.0</double> 
@@ -1440,21 +1439,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_626_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_626_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_1_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_626_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_1_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_626_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_1_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_626</string> 
+             <string>SEL_1</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -1515,7 +1514,7 @@
                    <string>_col3</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1528,7 +1527,7 @@
                    <string>_col4</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1541,7 +1540,7 @@
                    <string>_col5</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1554,7 +1553,7 @@
                    <string>_col6</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo1"/> 
+                   <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1567,7 +1566,7 @@
                    <string>_col7</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo1"/> 
+                   <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1580,7 +1579,7 @@
                    <string>_col8</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo1"/> 
+                   <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1593,7 +1592,7 @@
                    <string>_col9</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1606,7 +1605,7 @@
                    <string>_col10</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1619,7 +1618,7 @@
                    <string>_col11</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1632,7 +1631,7 @@
                    <string>_col12</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1645,7 +1644,7 @@
                    <string>_col13</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo1"/> 
+                   <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1735,16 +1734,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_625_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_625_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_625_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_625_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1752,7 +1751,7 @@
          <object class="java.util.ArrayList"/> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_625</string> 
+         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1800,7 +1799,7 @@
                <string>dest1</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo0"/> 
+               <object idref="PrimitiveTypeInfo1"/> 
               </void> 
              </object> 
             </void> 
@@ -1827,6 +1826,9 @@
        </object> 
       </void> 
      </object> 
+    </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
     </void> 
     <void property="nameToSplitSample"> 
      <object class="java.util.HashMap"/> 

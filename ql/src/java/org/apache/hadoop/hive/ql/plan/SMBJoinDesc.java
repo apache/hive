@@ -20,16 +20,20 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 
 @Explain(displayName = "Sorted Merge Bucket Map Join Operator")
 public class SMBJoinDesc extends MapJoinDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
+
   private MapredLocalWork localWork;
-  
-  //keep a mapping from tag to the fetch operator alias 
+
+  // keep a mapping from tag to the fetch operator alias
   private HashMap<Byte, String> tagToAlias;
+  private Map<String, DummyStoreOperator> aliasToSink;
 
   public SMBJoinDesc(MapJoinDesc conf) {
     super(conf);
@@ -53,5 +57,12 @@ public class SMBJoinDesc extends MapJoinDesc implements Serializable {
   public void setTagToAlias(HashMap<Byte, String> tagToAlias) {
     this.tagToAlias = tagToAlias;
   }
-  
+
+  public Map<String, DummyStoreOperator> getAliasToSink() {
+    return aliasToSink;
+  }
+
+  public void setAliasToSink(Map<String, DummyStoreOperator> aliasToSink) {
+    this.aliasToSink = aliasToSink;
+  }
 }

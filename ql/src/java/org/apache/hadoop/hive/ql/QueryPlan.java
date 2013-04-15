@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +46,10 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
+import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
 import org.apache.hadoop.hive.ql.plan.api.NodeType;
 import org.apache.hadoop.hive.ql.plan.api.TaskType;
@@ -66,6 +72,7 @@ public class QueryPlan implements Serializable {
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
+  private final List<ReducerTimeStatsPerJob> reducerTimeStatsPerJobList;
 
   private HashSet<ReadEntity> inputs;
   /**
@@ -79,41 +86,47 @@ public class QueryPlan implements Serializable {
    * Lineage information for the query.
    */
   protected LineageInfo linfo;
+  private TableAccessInfo tableAccessInfo;
+  private ColumnAccessInfo columnAccessInfo;
 
   private HashMap<String, String> idToTableNameMap;
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
-  private HashMap<String, HashMap<String, Long>> counters;
-  private HashSet<String> done;
-  private HashSet<String> started;
+  private final Map<String, Map<String, Long>> counters =
+      new ConcurrentHashMap<String, Map<String, Long>>();
+  private final Set<String> done = Collections.newSetFromMap(new
+      ConcurrentHashMap<String, Boolean>());
+  private final Set<String> started = Collections.newSetFromMap(new
+      ConcurrentHashMap<String, Boolean>());
 
   private QueryProperties queryProperties;
 
   private transient Long queryStartTime;
 
   public QueryPlan() {
+    this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>();
+    this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     rootTasks.addAll(sem.getRootTasks());
     fetchTask = sem.getFetchTask();
     // Note that inputs and outputs can be changed when the query gets executed
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
     linfo = sem.getLineageInfo();
+    tableAccessInfo = sem.getTableAccessInfo();
+    columnAccessInfo = sem.getColumnAccessInfo();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
 
     queryId = makeQueryId();
     query = new org.apache.hadoop.hive.ql.plan.api.Query();
     query.setQueryId(queryId);
     query.putToQueryAttributes("queryString", this.queryString);
-    counters = new HashMap<String, HashMap<String, Long>>();
-    done = new HashSet<String>();
-    started = new HashSet<String>();
     queryProperties = sem.getQueryProperties();
     queryStartTime = startTime;
   }
@@ -152,18 +165,18 @@ public class QueryPlan implements Serializable {
    */
   private void populateOperatorGraph(
       org.apache.hadoop.hive.ql.plan.api.Task task,
-      Collection<Operator<? extends Serializable>> topOps) {
+      Collection<Operator<? extends OperatorDesc>> topOps) {
 
     task.setOperatorGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     task.getOperatorGraph().setNodeType(NodeType.OPERATOR);
 
-    Queue<Operator<? extends Serializable>> opsToVisit =
-      new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited =
-      new HashSet<Operator<? extends Serializable>>();
+    Queue<Operator<? extends OperatorDesc>> opsToVisit =
+      new LinkedList<Operator<? extends OperatorDesc>>();
+    Set<Operator<? extends OperatorDesc>> opsVisited =
+      new HashSet<Operator<? extends OperatorDesc>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.peek() != null) {
-      Operator<? extends Serializable> op = opsToVisit.remove();
+      Operator<? extends OperatorDesc> op = opsToVisit.remove();
       opsVisited.add(op);
       // populate the operator
       org.apache.hadoop.hive.ql.plan.api.Operator operator =
@@ -177,7 +190,7 @@ public class QueryPlan implements Serializable {
           new org.apache.hadoop.hive.ql.plan.api.Adjacency();
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(op.getOperatorId());
-        for (Operator<? extends Serializable> childOp : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
           entry.addToChildren(childOp.getOperatorId());
           if (!opsVisited.contains(childOp)) {
             opsToVisit.add(childOp);
@@ -230,8 +243,8 @@ public class QueryPlan implements Serializable {
           reduceTask.setTaskId(stage.getStageId() + "_REDUCE");
           reduceTask.setTaskType(TaskType.REDUCE);
           stage.addToTaskList(reduceTask);
-          Collection<Operator<? extends Serializable>> reducerTopOps =
-            new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
+            new ArrayList<Operator<? extends OperatorDesc>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           populateOperatorGraph(reduceTask, reducerTopOps);
         }
@@ -298,6 +311,9 @@ public class QueryPlan implements Serializable {
     if (query.getStageList() != null) {
       for (org.apache.hadoop.hive.ql.plan.api.Stage stage : query
           .getStageList()) {
+        if (stage.getStageId() == null) {
+          continue;
+        }
         stage.setStarted(started.contains(stage.getStageId()));
         stage.setStageCounters(counters.get(stage.getStageId()));
         stage.setDone(done.contains(stage.getStageId()));
@@ -309,8 +325,11 @@ public class QueryPlan implements Serializable {
           } else {
             task.setStarted(started.contains(task.getTaskId()));
             task.setDone(done.contains(task.getTaskId()));
-            for (org.apache.hadoop.hive.ql.plan.api.Operator op : task
-                .getOperatorList()) {
+            if (task.getOperatorList() == null) {
+              return;
+            }
+            for (org.apache.hadoop.hive.ql.plan.api.Operator op :
+              task.getOperatorList()) {
               // if the task has started, all operators within the task have
               // started
               op.setStarted(started.contains(task.getTaskId()));
@@ -344,7 +363,9 @@ public class QueryPlan implements Serializable {
           }
         }
       }
-
+      if (task.getId() == null) {
+        continue;
+      }
       if (started.contains(task.getId()) && done.contains(task.getId())) {
         continue;
       }
@@ -370,8 +391,8 @@ public class QueryPlan implements Serializable {
           done.add(task.getId() + "_MAP");
         }
         if (mrTask.hasReduce()) {
-          Collection<Operator<? extends Serializable>> reducerTopOps =
-            new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends OperatorDesc>> reducerTopOps =
+            new ArrayList<Operator<? extends OperatorDesc>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           extractOperatorCounters(reducerTopOps, task.getId() + "_REDUCE");
           if (mrTask.reduceStarted()) {
@@ -393,21 +414,24 @@ public class QueryPlan implements Serializable {
   }
 
   private void extractOperatorCounters(
-      Collection<Operator<? extends Serializable>> topOps, String taskId) {
-    Queue<Operator<? extends Serializable>> opsToVisit =
-      new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited =
-      new HashSet<Operator<? extends Serializable>>();
+      Collection<Operator<? extends OperatorDesc>> topOps, String taskId) {
+    Queue<Operator<? extends OperatorDesc>> opsToVisit =
+      new LinkedList<Operator<? extends OperatorDesc>>();
+    Set<Operator<? extends OperatorDesc>> opsVisited =
+      new HashSet<Operator<? extends OperatorDesc>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.size() != 0) {
-      Operator<? extends Serializable> op = opsToVisit.remove();
+      Operator<? extends OperatorDesc> op = opsToVisit.remove();
       opsVisited.add(op);
-      counters.put(op.getOperatorId(), op.getCounters());
+      Map<String,Long> ctrs = op.getCounters();
+      if (ctrs != null) {
+        counters.put(op.getOperatorId(), op.getCounters());
+      }
       if (op.getDone()) {
         done.add(op.getOperatorId());
       }
       if (op.getChildOperators() != null) {
-        for (Operator<? extends Serializable> childOp : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
           if (!opsVisited.contains(childOp)) {
             opsToVisit.add(childOp);
           }
@@ -642,11 +666,11 @@ public class QueryPlan implements Serializable {
     done.add(queryId);
   }
 
-  public HashSet<String> getStarted() {
+  public Set<String> getStarted() {
     return started;
   }
 
-  public HashSet<String> getDone() {
+  public Set<String> getDone() {
     return done;
   }
 
@@ -702,28 +726,20 @@ public class QueryPlan implements Serializable {
     return query;
   }
 
+  public List<ReducerTimeStatsPerJob> getReducerTimeStatsPerJobList() {
+    return this.reducerTimeStatsPerJobList;
+  }
+
   public void setQuery(org.apache.hadoop.hive.ql.plan.api.Query query) {
     this.query = query;
   }
 
-  public HashMap<String, HashMap<String, Long>> getCounters() {
+  public Map<String, Map<String, Long>> getCounters() {
     return counters;
-  }
-
-  public void setCounters(HashMap<String, HashMap<String, Long>> counters) {
-    this.counters = counters;
   }
 
   public void setQueryId(String queryId) {
     this.queryId = queryId;
-  }
-
-  public void setDone(HashSet<String> done) {
-    this.done = done;
-  }
-
-  public void setStarted(HashSet<String> started) {
-    this.started = started;
   }
 
   /**
@@ -742,6 +758,43 @@ public class QueryPlan implements Serializable {
    */
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
+  }
+
+  /**
+   * Gets the table access information.
+   *
+   * @return TableAccessInfo associated with the query.
+   */
+  public TableAccessInfo getTableAccessInfo() {
+    return tableAccessInfo;
+  }
+
+  /**
+   * Sets the table access information.
+   *
+   * @param taInfo The TableAccessInfo structure that is set right before the optimization phase.
+   */
+  public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
+    this.tableAccessInfo = tableAccessInfo;
+  }
+
+  /**
+   * Gets the column access information.
+   *
+   * @return ColumnAccessInfo associated with the query.
+   */
+  public ColumnAccessInfo getColumnAccessInfo() {
+    return columnAccessInfo;
+  }
+
+  /**
+   * Sets the column access information.
+   *
+   * @param columnAccessInfo The ColumnAccessInfo structure that is set immediately after
+   * the optimization phase.
+   */
+  public void setColumnAccessInfo(ColumnAccessInfo columnAccessInfo) {
+    this.columnAccessInfo = columnAccessInfo;
   }
 
   public QueryProperties getQueryProperties() {

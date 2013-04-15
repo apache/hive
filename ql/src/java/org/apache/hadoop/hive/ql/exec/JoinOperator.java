@@ -80,18 +80,14 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         nextSz = joinEmitInterval;
       }
 
-
-      ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues.get(alias),
-          joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
-          joinFilterObjectInspectors.get(alias), noOuterJoin);
-
+      ArrayList<Object> nr = getFilteredValue(alias, row);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);
       }
 
       // number of rows for the key in the given table
-      int sz = storage.get(alias).size();
+      int sz = storage[alias].size();
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
@@ -106,7 +102,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
           // storage,
           // to preserve the correctness for outer joins.
           checkAndGenObject();
-          storage.get(alias).clear();
+          storage[alias].clear();
         }
       } else {
         if (sz == nextSz) {
@@ -127,7 +123,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         endGroup();
         startGroup();
       }
-      storage.get(alias).add(nr);
+      storage[alias].add(nr);
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
@@ -152,7 +148,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
+  public void jobCloseOp(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
       throws HiveException {
     int numAliases = conf.getExprs().size();
     if (conf.getHandleSkewJoin()) {
@@ -189,7 +185,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         throw new HiveException(e);
       }
     }
-    super.jobClose(hconf, success, feedBack);
+    super.jobCloseOp(hconf, success, feedBack);
   }
 
   private void moveUpFiles(String specPath, Configuration hconf, Log log)
@@ -266,4 +262,11 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     }
   }
 
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    // Since skew join optimization makes a copy of the tree above joins, and
+    // there is no multi-query optimization in place, let us not use skew join
+    // optimizations for now.
+    return false;
+  }
 }

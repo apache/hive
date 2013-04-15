@@ -44,8 +44,8 @@ public class RetryingRawStore implements InvocationHandler {
   private final RawStore base;
   private int retryInterval = 0;
   private int retryLimit = 0;
-  private JDOConnectionURLHook urlHook = null;
-  private String urlHookClassName = "";
+  private MetaStoreInit.MetaStoreInitData metaStoreInitData =
+    new MetaStoreInit.MetaStoreInitData();
   private final int id;
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
@@ -82,7 +82,7 @@ public class RetryingRawStore implements InvocationHandler {
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
-    updateConnectionURL(getConf(), null);
+    MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
   }
 
   private void initMS() {
@@ -98,7 +98,7 @@ public class RetryingRawStore implements InvocationHandler {
         HiveConf.ConfVars.METASTOREFORCERELOADCONF);
 
     if (reloadConf) {
-      updateConnectionURL(getConf(), null);
+      MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
     }
 
     int retryCount = 0;
@@ -115,11 +115,17 @@ public class RetryingRawStore implements InvocationHandler {
       } catch (UndeclaredThrowableException e) {
         throw e.getCause();
       } catch (InvocationTargetException e) {
-        throw e.getCause();
+        if (e.getCause() instanceof javax.jdo.JDOException) {
+          // Due to reflection, the jdo exception is wrapped in
+          // invocationTargetException
+          caughtException = (javax.jdo.JDOException) e.getCause();
+        }
+        else
+          throw e.getCause();
       }
 
       if (retryCount >= retryLimit) {
-        throw caughtException;
+        throw  caughtException;
       }
 
       assert (retryInterval >= 0);
@@ -131,74 +137,11 @@ public class RetryingRawStore implements InvocationHandler {
       Thread.sleep(retryInterval);
       // If we have a connection error, the JDO connection URL hook might
       // provide us with a new URL to access the datastore.
-      String lastUrl = getConnectionURL(getConf());
-      gotNewConnectUrl = updateConnectionURL(getConf(), lastUrl);
+      String lastUrl = MetaStoreInit.getConnectionURL(getConf());
+      gotNewConnectUrl = MetaStoreInit.updateConnectionURL(hiveConf, getConf(),
+        lastUrl, metaStoreInitData);
     }
     return ret;
-  }
-
-  /**
-   * Updates the connection URL in hiveConf using the hook
-   *
-   * @return true if a new connection URL was loaded into the thread local
-   *         configuration
-   */
-  private boolean updateConnectionURL(Configuration conf, String badUrl)
-      throws MetaException {
-    String connectUrl = null;
-    String currentUrl = getConnectionURL(conf);
-    try {
-      // We always call init because the hook name in the configuration could
-      // have changed.
-      initConnectionUrlHook();
-      if (urlHook != null) {
-        if (badUrl != null) {
-          urlHook.notifyBadConnectionUrl(badUrl);
-        }
-        connectUrl = urlHook.getJdoConnectionUrl(hiveConf);
-      }
-    } catch (Exception e) {
-      LOG.error("Exception while getting connection URL from the hook: " +
-          e);
-    }
-
-    if (connectUrl != null && !connectUrl.equals(currentUrl)) {
-      LOG.error(addPrefix(
-          String.format("Overriding %s with %s",
-              HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(),
-              connectUrl)));
-      conf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(),
-          connectUrl);
-      return true;
-    }
-    return false;
-  }
-
-  private static String getConnectionURL(Configuration conf) {
-    return conf.get(
-        HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(), "");
-  }
-
-  // Multiple threads could try to initialize at the same time.
-  synchronized private void initConnectionUrlHook()
-      throws ClassNotFoundException {
-
-    String className =
-        hiveConf.get(HiveConf.ConfVars.METASTORECONNECTURLHOOK.toString(), "").trim();
-    if (className.equals("")) {
-      urlHookClassName = "";
-      urlHook = null;
-      return;
-    }
-    boolean urlHookChanged = !urlHookClassName.equals(className);
-    if (urlHook == null || urlHookChanged) {
-      urlHookClassName = className.trim();
-
-      Class<?> urlHookClass = Class.forName(urlHookClassName, true,
-          JavaUtils.getClassLoader());
-      urlHook = (JDOConnectionURLHook) ReflectionUtils.newInstance(urlHookClass, null);
-    }
-    return;
   }
 
   private String addPrefix(String s) {

@@ -1,0 +1,224 @@
+PREHOOK: query: -- This tests that the schema can be changed for binary serde data
+create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This tests that the schema can be changed for binary serde data
+create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@partition_test_partitioned
+PREHOOK: query: alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
+POSTHOOK: query: alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partition_test_partitioned@dt=1
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partition_test_partitioned@dt=1
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238	1
+238	val_238	1
+PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+476.0	val_238
+476.0	val_238
+PREHOOK: query: alter table partition_test_partitioned change key key int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
+POSTHOOK: query: alter table partition_test_partitioned change key key int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+476	val_238
+476	val_238
+PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238	1
+238	val_238	1
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='2') select * from src where key = 97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partition_test_partitioned@dt=2
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt='2') select * from src where key = 97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partition_test_partitioned@dt=2
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table partition_test_partitioned add columns (value2 string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
+POSTHOOK: query: alter table partition_test_partitioned add columns (value2 string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+476	val_238
+476	val_238
+194	val_97
+194	val_97
+PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned@dt=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238	NULL	1
+238	val_238	NULL	1
+97	val_97	NULL	2
+97	val_97	NULL	2
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='3') select key, value, value from src where key = 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partition_test_partitioned@dt=3
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt='3') select key, value, value from src where key = 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partition_test_partitioned@dt=3
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key+key, value, value2 from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned@dt=2
+PREHOOK: Input: default@partition_test_partitioned@dt=3
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value, value2 from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned@dt=2
+POSTHOOK: Input: default@partition_test_partitioned@dt=3
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+476	val_238	NULL
+476	val_238	NULL
+194	val_97	NULL
+194	val_97	NULL
+400	val_200	val_200
+400	val_200	val_200
+PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned@dt=2
+PREHOOK: Input: default@partition_test_partitioned@dt=3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned@dt=2
+POSTHOOK: Input: default@partition_test_partitioned@dt=3
+#### A masked pattern was here ####
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=3).value2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238	NULL	1
+238	val_238	NULL	1
+97	val_97	NULL	2
+97	val_97	NULL	2
+200	val_200	val_200	3
+200	val_200	val_200	3

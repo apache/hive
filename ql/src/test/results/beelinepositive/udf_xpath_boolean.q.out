@@ -1,0 +1,41 @@
+Saving all output to "!!{outputDirectory}!!/udf_xpath_boolean.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_xpath_boolean.q
+>>>  DESCRIBE FUNCTION xpath_boolean ;
+'tab_name'
+'xpath_boolean(xml, xpath) - Evaluates a boolean xpath expression'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED xpath_boolean ;
+'tab_name'
+'xpath_boolean(xml, xpath) - Evaluates a boolean xpath expression'
+'Example:'
+'  > SELECT xpath_boolean('<a><b>1</b></a>','a/b') FROM src LIMIT 1;'
+'  true'
+'  > SELECT xpath_boolean('<a><b>1</b></a>','a/b = 2') FROM src LIMIT 1;'
+'  false'
+6 rows selected 
+>>>  
+>>>  SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b') FROM src LIMIT 1 ;
+'_c0'
+'true'
+1 row selected 
+>>>  SELECT xpath_boolean ('<a><b>b</b></a>', 'a/c') FROM src LIMIT 1 ;
+'_c0'
+'false'
+1 row selected 
+>>>  SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "b"') FROM src LIMIT 1 ;
+'_c0'
+'true'
+1 row selected 
+>>>  SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "c"') FROM src LIMIT 1 ;
+'_c0'
+'false'
+1 row selected 
+>>>  SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b < 10') FROM src LIMIT 1 ;
+'_c0'
+'false'
+1 row selected 
+>>>  SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b = 10') FROM src LIMIT 1 ;
+'_c0'
+'true'
+1 row selected 
+>>>  !record

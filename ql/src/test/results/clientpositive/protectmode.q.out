@@ -43,7 +43,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable offline
@@ -58,7 +60,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl1
@@ -111,18 +115,22 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@tbl2
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 partition (p='p1') enable offline
@@ -138,8 +146,15 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable offline
@@ -154,8 +169,15 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable no_drop
@@ -170,8 +192,15 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 drop partition (p='p3')
@@ -194,8 +223,15 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 disable no_drop
@@ -210,24 +246,35 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 PREHOOK: query: select col from tbl2 where p='p2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 POSTHOOK: query: select col from tbl2 where p='p2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p2
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 partition (p='p1') disable offline
@@ -243,32 +290,45 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+p                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 PREHOOK: query: select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 POSTHOOK: query: select col from tbl2 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p1
 #### A masked pattern was here ####
 PREHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@p=p1
 PREHOOK: Output: default@tbl1
 POSTHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@p=p1
 POSTHOOK: Output: default@tbl1
 POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:col, type:string, comment:null), ]

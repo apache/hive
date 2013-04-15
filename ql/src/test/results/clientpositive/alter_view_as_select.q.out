@@ -1,0 +1,124 @@
+PREHOOK: query: DROP VIEW testView
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW testView
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW testView as SELECT * FROM srcpart
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: CREATE VIEW testView as SELECT * FROM srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testView
+PREHOOK: query: DESCRIBE FORMATTED testView
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED testView
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT * FROM srcpart	 
+View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
+PREHOOK: query: ALTER VIEW testView AS SELECT value FROM src WHERE key=86
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: ALTER VIEW testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testview
+PREHOOK: query: DESCRIBE FORMATTED testView
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED testView
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT value FROM src WHERE key=86	 
+View Expanded Text: 	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
+PREHOOK: query: ALTER VIEW testView AS
+SELECT * FROM src
+WHERE key > 80 AND key < 100
+ORDER BY key, value
+LIMIT 10
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: ALTER VIEW testView AS
+SELECT * FROM src
+WHERE key > 80 AND key < 100
+ORDER BY key, value
+LIMIT 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testview
+PREHOOK: query: DESCRIBE FORMATTED testView
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED testView
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT * FROM src	 
+WHERE key > 80 AND key < 100	 	 
+ORDER BY key, value	 	 
+LIMIT 10	 	 
+View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
+WHERE `src`.`key` > 80 AND `src`.`key` < 100	 	 
+ORDER BY `src`.`key`, `src`.`value`	 	 
+LIMIT 10	 	 

@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table nzhang_part1 (key string, value string) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_part1
-FAILED: Error in semantic analysis: Line 3:23 Cannot insert into target table because column number/types are different 'hr': Table insclause-0 has 3 columns, but query has 2 columns.
+FAILED: SemanticException [Error 10044]: Line 3:23 Cannot insert into target table because column number/types are different 'hr': Table insclause-0 has 3 columns, but query has 2 columns.

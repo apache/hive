@@ -50,4 +50,18 @@ public class Utils {
     
     return ret_nd;
   }
+
+  /**
+   * Find the first node of a type from ancestor stack, starting from parents.
+   * Returns null if not found.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T findNode(Stack<Node> stack, Class<T> target) {
+    for (int i = stack.size() - 2; i >= 0; i--) {
+      if (target.isInstance(stack.get(i))) {
+        return (T) stack.get(i);
+      }
+    }
+    return null;
+  }
 }

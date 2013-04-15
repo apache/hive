@@ -129,21 +129,25 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable
 PREHOOK: Input: db1@sourcetable@ds=2011-11-11
 PREHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable
 POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
 POSTHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 PREHOOK: type: QUERY
+PREHOOK: Input: db2@destintable
 PREHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
 POSTHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@destintable
 POSTHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
@@ -255,11 +259,13 @@ STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable
 PREHOOK: Input: db1@sourcetable@ds=2011-11-11
 PREHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable
 POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
 POSTHOOK: Output: db2@destintable@ds=2011-11-11
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
@@ -268,10 +274,12 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 PREHOOK: type: QUERY
+PREHOOK: Input: db2@destintable
 PREHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
 POSTHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@destintable
 POSTHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]

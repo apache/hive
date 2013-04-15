@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 
 /**
  * LoadSemanticAnalyzer.
@@ -80,10 +82,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = new Path(System.getProperty("user.dir"), path).toString();
+        path = new Path(System.getProperty("user.dir"), path).toUri().toString();
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
-            path).toString();
+          path).toString();
       }
     }
 
@@ -202,6 +204,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ts.tableHandle.isNonNative()) {
       throw new SemanticException(ErrorMsg.LOAD_INTO_NON_NATIVE.getMsg());
     }
+
+    if(ts.tableHandle.isStoredAsSubDirectories()) {
+      throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
+    }
+
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation()
         : ts.tableHandle.getDataLocation();
 
@@ -230,7 +237,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // create final load/move work
-    
+
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
@@ -257,30 +264,49 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc loadTableWork = new LoadTableDesc(fromURI.toString(),
         loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
 
+    Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
+        getOutputs(), loadTableWork, null, true), conf);
     if (rTask != null) {
-      rTask.addDependentTask(TaskFactory.get(new MoveWork(getInputs(),
-          getOutputs(), loadTableWork, null, true), conf));
+      rTask.addDependentTask(childTask);
     } else {
-      rTask = TaskFactory.get(new MoveWork(getInputs(), getOutputs(),
-          loadTableWork, null, true), conf);
+      rTask = childTask;
     }
 
     rootTasks.add(rTask);
+
+    // The user asked for stats to be collected.
+    // Some stats like number of rows require a scan of the data
+    // However, some other stats, like number of files, do not require a complete scan
+    // Update the stats which do not require a complete scan.
+    Task<? extends Serializable> statTask = null;
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      StatsWork statDesc = new StatsWork(loadTableWork);
+      statDesc.setNoStatsAggregator(true);
+      statDesc.setClearAggregatorStats(true);
+      statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+      statTask = TaskFactory.get(statDesc, conf);
+    }
+
+    // HIVE-3334 has been filed for load file with index auto update
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
       IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, getInputs(), conf);
       try {
         List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater.generateUpdateTasks();
+
         for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
-          //LOAD DATA will either have a copy & move or just a move, we always want the update to be dependent on the move
-          if (rTask.getChildren() == null || rTask.getChildren().size() == 0) {
-            rTask.addDependentTask(updateTask);
-          } else {
-            ((Task<? extends Serializable>)rTask.getChildren().get(0)).addDependentTask(updateTask);
+          //LOAD DATA will either have a copy & move or just a move,
+          // we always want the update to be dependent on the move
+          childTask.addDependentTask(updateTask);
+          if (statTask != null) {
+            updateTask.addDependentTask(statTask);
           }
         }
       } catch (HiveException e) {
         console.printInfo("WARNING: could not auto-update stale indexes, indexes are not out of sync");
       }
+    }
+    else if (statTask != null) {
+      childTask.addDependentTask(statTask);
     }
   }
 }

@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.io.Closeable;
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,7 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
  * can do short-circuit evaluations using DeferedObject.
  */
 @UDFType(deterministic = true)
-public abstract class GenericUDF {
+public abstract class GenericUDF implements Closeable {
 
   /**
    * A Defered Object allows us to do lazy-evaluation and short-circuiting.
@@ -84,6 +88,15 @@ public abstract class GenericUDF {
    */
   public abstract ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException;
+
+  /**
+   * Additionally setup GenericUDF with MapredContext before initializing.
+   * This is only called in runtime of MapRedTask.
+   *
+   * @param context context
+   */
+  public void configure(MapredContext context) {
+  }
 
   /**
    * Initialize this GenericUDF.  Additionally, if the arguments are constant
@@ -163,4 +176,10 @@ public abstract class GenericUDF {
    */
   public abstract String getDisplayString(String[] children);
 
+  /**
+   * Close GenericUDF.
+   * This is only called in runtime of MapRedTask.
+   */
+  public void close() throws IOException {
+  }
 }

@@ -2,6 +2,10 @@ set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set hive.default.fileformat=RCFILE;
+
+-- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
 DROP TABLE IF EXISTS escape2;
 DROP TABLE IF EXISTS escape_raw;
 

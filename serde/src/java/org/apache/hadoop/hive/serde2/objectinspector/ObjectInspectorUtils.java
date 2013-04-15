@@ -29,12 +29,13 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -193,10 +194,30 @@ public final class ObjectInspectorUtils {
       if (i++ >= startCol) {
         result.add(copyToStandardObject(soi.getStructFieldData(row, f),
             f.getFieldObjectInspector(), objectInspectorOption));
-        if (j == numCols) {
+        if (++j == numCols) {
           break;
         }
       }
+    }
+  }
+
+  /**
+   * Copy fields in the input row to the output array of standard objects.
+   *
+   * @param result
+   *          output list of standard objects.
+   * @param row
+   *          input row.
+   * @param soi
+   *          Object inspector for the to-be-copied columns.
+   * @param objectInspectorOption
+   */
+  public static void copyToStandardObject(List<Object> result, Object row,
+      StructObjectInspector soi, ObjectInspectorCopyOption objectInspectorOption) {
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    for (StructField f : fields) {
+      result.add(copyToStandardObject(soi.getStructFieldData(row, f),
+          f.getFieldObjectInspector(), objectInspectorOption));
     }
   }
 
@@ -313,7 +334,7 @@ public final class ObjectInspectorUtils {
 
   public static String getStandardUnionTypeName(UnionObjectInspector uoi) {
     StringBuilder sb = new StringBuilder();
-    sb.append(Constants.UNION_TYPE_NAME + "<");
+    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
     List<ObjectInspector> ois = uoi.getObjectInspectors();
     for(int i = 0; i < ois.size(); i++) {
       if (i > 0) {
@@ -471,6 +492,9 @@ public final class ObjectInspectorUtils {
         TimestampWritable t = ((TimestampObjectInspector) poi)
             .getPrimitiveWritableObject(o);
         return t.hashCode();
+      case DECIMAL:
+        return ((HiveDecimalObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
+
       default: {
         throw new RuntimeException("Unknown type: "
             + poi.getPrimitiveCategory());
@@ -652,6 +676,13 @@ public final class ObjectInspectorUtils {
         TimestampWritable t1 = ((TimestampObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);
         TimestampWritable t2 = ((TimestampObjectInspector) poi2)
+            .getPrimitiveWritableObject(o2);
+        return t1.compareTo(t2);
+      }
+      case DECIMAL: {
+        HiveDecimalWritable t1 = ((HiveDecimalObjectInspector) poi1)
+            .getPrimitiveWritableObject(o1);
+        HiveDecimalWritable t2 = ((HiveDecimalObjectInspector) poi2)
             .getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
       }

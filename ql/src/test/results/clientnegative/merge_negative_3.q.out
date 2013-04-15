@@ -1,0 +1,16 @@
+PREHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets stored as RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table srcpart2 (key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 2 buckets stored as RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart2
+PREHOOK: query: insert overwrite table srcpart2 partition (ds='2011') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@srcpart2@ds=2011
+POSTHOOK: query: insert overwrite table srcpart2 partition (ds='2011') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@srcpart2@ds=2011
+POSTHOOK: Lineage: srcpart2 PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart2 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Merge can not perform on bucketized partition/table.

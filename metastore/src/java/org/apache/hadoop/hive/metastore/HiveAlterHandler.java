@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
 /**
  * Hive specific implementation of alter
@@ -63,7 +64,7 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     if (!MetaStoreUtils.validateName(newt.getTableName())
-        || !MetaStoreUtils.validateColNames(newt.getSd().getCols())) {
+        || !MetaStoreUtils.validateTblColumns(newt.getSd().getCols())) {
       throw new InvalidOperationException(newt.getTableName()
           + " is not a valid object name");
     }
@@ -126,7 +127,11 @@ public class HiveAlterHandler implements AlterHandler {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()), newt.getTableName()).toString();
+        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()),
+            newt.getTableName()).toString();
+        Path newTblPath = constructRenamedPath(new Path(newTblLoc),
+            new Path(newt.getSd().getLocation()));
+        newTblLoc = newTblPath.toString();
         newt.getSd().setLocation(newTblLoc);
         oldTblLoc = oldt.getSd().getLocation();
         moveData = true;
@@ -242,9 +247,9 @@ public class HiveAlterHandler implements AlterHandler {
     String newPartLoc = null;
     // Set DDL time to now if not specified
     if (new_part.getParameters() == null ||
-        new_part.getParameters().get(Constants.DDL_TIME) == null ||
-        Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
-      new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
+        new_part.getParameters().get(hive_metastoreConstants.DDL_TIME) == null ||
+        Integer.parseInt(new_part.getParameters().get(hive_metastoreConstants.DDL_TIME)) == 0) {
+      new_part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
     }
     //alter partition
@@ -286,48 +291,55 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to rename partition because table or database do not exist");
       }
-      try {
-        destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
+
+      // if the external partition is renamed, the file should not change
+      if (tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        new_part.getSd().setLocation(oldPart.getSd().getLocation());
+        msdb.alterPartition(dbname, name, part_vals, new_part);
+      } else {
+        try {
+          destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
-        destPath = constructRenamedPartitionPath(destPath, new_part);
-      } catch (NoSuchObjectException e) {
-        LOG.debug(e);
-        throw new InvalidOperationException(
+          destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
+        } catch (NoSuchObjectException e) {
+          LOG.debug(e);
+          throw new InvalidOperationException(
             "Unable to change partition or table. Database " + dbname + " does not exist"
-                + " Check metastore logs for detailed stack." + e.getMessage());
-      }
-      if (destPath != null) {
-        newPartLoc = destPath.toString();
-        oldPartLoc = oldPart.getSd().getLocation();
+              + " Check metastore logs for detailed stack." + e.getMessage());
+        }
+        if (destPath != null) {
+          newPartLoc = destPath.toString();
+          oldPartLoc = oldPart.getSd().getLocation();
 
-        srcPath = new Path(oldPartLoc);
+          srcPath = new Path(oldPartLoc);
 
-        LOG.info("srcPath:" + oldPartLoc);
-        LOG.info("descPath:" + newPartLoc);
-        srcFs = wh.getFs(srcPath);
-        destFs = wh.getFs(destPath);
-        // check that src and dest are on the same file system
-        if (srcFs != destFs) {
-          throw new InvalidOperationException("table new location " + destPath
+          LOG.info("srcPath:" + oldPartLoc);
+          LOG.info("descPath:" + newPartLoc);
+          srcFs = wh.getFs(srcPath);
+          destFs = wh.getFs(destPath);
+          // check that src and dest are on the same file system
+          if (srcFs != destFs) {
+            throw new InvalidOperationException("table new location " + destPath
               + " is on a different file system than the old location "
               + srcPath + ". This operation is not supported");
-        }
-        try {
-          srcFs.exists(srcPath); // check that src exists and also checks
-          if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
-            throw new InvalidOperationException("New location for this table "
+          }
+          try {
+            srcFs.exists(srcPath); // check that src exists and also checks
+            if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
+              throw new InvalidOperationException("New location for this table "
                 + tbl.getDbName() + "." + tbl.getTableName()
                 + " already exists : " + destPath);
-          }
-        } catch (IOException e) {
-          Warehouse.closeFs(srcFs);
-          Warehouse.closeFs(destFs);
-          throw new InvalidOperationException("Unable to access new location "
+            }
+          } catch (IOException e) {
+            Warehouse.closeFs(srcFs);
+            Warehouse.closeFs(destFs);
+            throw new InvalidOperationException("Unable to access new location "
               + destPath + " for partition " + tbl.getDbName() + "."
               + tbl.getTableName() + " " + new_part.getValues());
+          }
+          new_part.getSd().setLocation(newPartLoc);
+          msdb.alterPartition(dbname, name, part_vals, new_part);
         }
-        new_part.getSd().setLocation(newPartLoc);
-        msdb.alterPartition(dbname, name, part_vals, new_part);
       }
 
       success = msdb.commitTransaction();
@@ -335,7 +347,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!success) {
         msdb.rollbackTransaction();
       }
-      if (success && newPartLoc.compareTo(oldPartLoc) != 0) {
+      if (success && newPartLoc != null && newPartLoc.compareTo(oldPartLoc) != 0) {
         //rename the data directory
         try{
           if (srcFs.exists(srcPath)) {
@@ -368,6 +380,35 @@ public class HiveAlterHandler implements AlterHandler {
     return oldPart;
   }
 
+  public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
+      final String name, final List<Partition> new_parts)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
+      MetaException {
+    List<Partition> oldParts = new ArrayList<Partition>();
+    List<List<String>> partValsList = new ArrayList<List<String>>();
+    try {
+      for (Partition tmpPart: new_parts) {
+        // Set DDL time to now if not specified
+        if (tmpPart.getParameters() == null ||
+            tmpPart.getParameters().get(hive_metastoreConstants.DDL_TIME) == null ||
+            Integer.parseInt(tmpPart.getParameters().get(hive_metastoreConstants.DDL_TIME)) == 0) {
+          tmpPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+              .currentTimeMillis() / 1000));
+        }
+        Partition oldTmpPart = msdb.getPartition(dbname, name, tmpPart.getValues());
+        oldParts.add(oldTmpPart);
+        partValsList.add(tmpPart.getValues());
+      }
+      msdb.alterPartitions(dbname, name, partValsList, new_parts);
+    } catch (InvalidObjectException e) {
+      throw new InvalidOperationException("alter is not possible");
+    } catch (NoSuchObjectException e){
+      //old partition does not exist
+      throw new InvalidOperationException("alter is not possible");
+    }
+    return oldParts;
+  }
+
   private boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,
       List<FieldSchema> newPartKeys) {
     //return true if both are null, or false if one is null and the other isn't
@@ -384,8 +425,9 @@ public class HiveAlterHandler implements AlterHandler {
     while (oldPartKeysIter.hasNext()) {
       oldFs = oldPartKeysIter.next();
       newFs = newPartKeysIter.next();
-      if (!oldFs.getName().equals(newFs.getName()) ||
-          !oldFs.getType().equals(newFs.getType())) {
+      // Alter table can change the type of partition key now.
+      // So check the column name only.
+      if (!oldFs.getName().equals(newFs.getName())) {
         return false;
       }
     }
@@ -394,13 +436,13 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   /**
-   * Uses the scheme and authority of the partition's current location, and the path constructed
-   * using the partition's new name to construct a path for the partition's new location.
+   * Uses the scheme and authority of the object's current location and the path constructed
+   * using the object's new name to construct a path for the object's new location.
    */
-  private Path constructRenamedPartitionPath(Path defaultPath, Partition part) {
-    Path oldPath = new Path(part.getSd().getLocation());
-    URI oldUri = oldPath.toUri();
+  private Path constructRenamedPath(Path defaultNewPath, Path currentPath) {
+    URI currentUri = currentPath.toUri();
 
-    return new Path(oldUri.getScheme(), oldUri.getAuthority(), defaultPath.toUri().getPath());
+    return new Path(currentUri.getScheme(), currentUri.getAuthority(),
+        defaultNewPath.toUri().getPath());
   }
 }

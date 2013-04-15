@@ -19,7 +19,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 enable no_drop
@@ -34,7 +36,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable no_drop cascade
@@ -49,7 +53,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col	string	
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable no_drop
@@ -106,14 +112,40 @@ POSTHOOK: query: alter table tbl2 enable no_drop cascade
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
-PREHOOK: query: desc extended tbl2
+PREHOOK: query: desc formatted tbl2
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: desc extended tbl2
+POSTHOOK: query: desc formatted tbl2
 POSTHOOK: type: DESCTABLE
-col	string	
-p	string	
+# col_name            	data_type           	comment             
 	 	 
+col                 	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	NO_DROP_CASCADE     	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	PROTECT_MODE        	NO_DROP_CASCADE     
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: alter table tbl2 disable no_drop cascade
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -122,6 +154,39 @@ POSTHOOK: query: alter table tbl2 disable no_drop cascade
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
+PREHOOK: query: desc formatted tbl2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted tbl2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col                 	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table tbl2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl2

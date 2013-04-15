@@ -7,4 +7,4 @@ explain analyze table analyze_src compute statistics;
 
 analyze table analyze_src compute statistics;
 
-describe extended analyze_src;
+describe formatted analyze_src;

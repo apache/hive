@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -35,7 +38,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 public class UDFToBoolean extends UDF {
-  private BooleanWritable booleanWritable = new BooleanWritable();
+  private final BooleanWritable booleanWritable = new BooleanWritable();
 
   public UDFToBoolean() {
   }
@@ -168,6 +171,15 @@ public class UDFToBoolean extends UDF {
       return null;
     } else {
       booleanWritable.set(i.getSeconds() != 0 || i.getNanos() != 0);
+      return booleanWritable;
+    }
+  }
+
+  public BooleanWritable evaluate(HiveDecimalWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      booleanWritable.set(HiveDecimal.ZERO.compareTo(i.getHiveDecimal()) != 0);
       return booleanWritable;
     }
   }

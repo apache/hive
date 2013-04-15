@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -27,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * PrintOpTreeProcessor.
@@ -35,7 +35,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 public class PrintOpTreeProcessor implements NodeProcessor {
 
   private final PrintStream out;
-  private final HashMap<Operator<? extends Serializable>, Integer> opMap = new HashMap<Operator<? extends Serializable>, Integer>();
+  private final HashMap<Operator<? extends OperatorDesc>, Integer> opMap =
+    new HashMap<Operator<? extends OperatorDesc>, Integer>();
   private Integer curNum = 0;
 
   public PrintOpTreeProcessor() {
@@ -46,11 +47,11 @@ public class PrintOpTreeProcessor implements NodeProcessor {
     out = o;
   }
 
-  private String getParents(Operator<? extends Serializable> op) {
+  private String getParents(Operator<? extends OperatorDesc> op) {
     StringBuilder ret = new StringBuilder("[");
     boolean first = true;
     if (op.getParentOperators() != null) {
-      for (Operator<? extends Serializable> parent : op.getParentOperators()) {
+      for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
         if (!first) {
           ret.append(",");
         }
@@ -62,11 +63,11 @@ public class PrintOpTreeProcessor implements NodeProcessor {
     return ret.toString();
   }
 
-  private String getChildren(Operator<? extends Serializable> op) {
+  private String getChildren(Operator<? extends OperatorDesc> op) {
     StringBuilder ret = new StringBuilder("[");
     boolean first = true;
     if (op.getChildOperators() != null) {
-      for (Operator<? extends Serializable> child : op.getChildOperators()) {
+      for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
         if (!first) {
           ret.append(",");
         }
@@ -80,7 +81,7 @@ public class PrintOpTreeProcessor implements NodeProcessor {
 
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
       Object... nodeOutputs) throws SemanticException {
-    Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+    Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
     if (opMap.get(op) == null) {
       opMap.put(op, curNum++);
     }

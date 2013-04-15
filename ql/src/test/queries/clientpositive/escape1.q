@@ -1,5 +1,9 @@
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions.pernode=200;
+
+-- EXCLUDE_OS_WINDOWS
+-- excluded on windows because of difference in file name encoding logic
+
 DROP TABLE escape1;
 DROP TABLE escape_raw;
 

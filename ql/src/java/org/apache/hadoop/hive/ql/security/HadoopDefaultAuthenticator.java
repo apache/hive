@@ -30,7 +30,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
 
   private String userName;
   private List<String> groupNames;
-  
+
   private Configuration conf;
 
   @Override

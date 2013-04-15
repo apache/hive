@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 /**
  * Compute the standard deviation by extending GenericUDAFVariance and
  * overriding the terminate() method of the evaluator.
- * 
+ *
  */
 @Description(name = "std,stddev,stddev_pop",
     value = "_FUNC_(x) - Returns the standard deviation of a set of numbers")
@@ -56,6 +56,7 @@ public class GenericUDAFStd extends GenericUDAFVariance {
     case DOUBLE:
     case STRING:
     case TIMESTAMP:
+    case DECIMAL:
       return new GenericUDAFStdEvaluator();
     case BOOLEAN:
     default:
@@ -68,7 +69,7 @@ public class GenericUDAFStd extends GenericUDAFVariance {
   /**
    * Compute the standard deviation by extending GenericUDAFVarianceEvaluator
    * and overriding the terminate() method of the evaluator.
-   * 
+   *
    */
   public static class GenericUDAFStdEvaluator extends
       GenericUDAFVarianceEvaluator {

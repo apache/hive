@@ -47,7 +47,8 @@ public class LineageInfo implements Serializable {
    *                 set operations like union on columns on other tables
    *                 e.g. T2.c1 = T1.c1 + T3.c1.
    * 4. SCRIPT - Indicates that the column is derived from the output
-   *             of a user script through a TRANSFORM, MAP or REDUCE syntax.
+   *             of a user script through a TRANSFORM, MAP or REDUCE syntax
+   *             or from the output of a PTF chain execution.
    */
   public static enum DependencyType {
     SIMPLE, EXPRESSION, SCRIPT

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.index;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -80,8 +79,8 @@ public final class RewriteQueryUsingAggregateIndex {
         Object... nodeOutputs) throws SemanticException {
       SelectOperator operator = (SelectOperator)nd;
       rewriteQueryCtx = (RewriteQueryUsingAggregateIndexCtx)ctx;
-      List<Operator<? extends Serializable>> childOps = operator.getChildOperators();
-      Operator<? extends Serializable> childOp = childOps.iterator().next();
+      List<Operator<? extends OperatorDesc>> childOps = operator.getChildOperators();
+      Operator<? extends OperatorDesc> childOp = childOps.iterator().next();
 
       //we need to set the colList, outputColumnNames, colExprMap,
       // rowSchema for only that SelectOperator which precedes the GroupByOperator
@@ -136,9 +135,9 @@ public final class RewriteQueryUsingAggregateIndex {
       // and add new ones
       Map<TableScanOperator, Table>  topToTable =
         rewriteQueryCtx.getParseContext().getTopToTable();
-      Map<String, Operator<? extends Serializable>>  topOps =
+      Map<String, Operator<? extends OperatorDesc>>  topOps =
         rewriteQueryCtx.getParseContext().getTopOps();
-      Map<Operator<? extends Serializable>, OpParseContext>  opParseContext =
+      Map<Operator<? extends OperatorDesc>, OpParseContext>  opParseContext =
         rewriteQueryCtx.getParseContext().getOpParseCtx();
 
       //need this to set rowResolver for new scanOperator
@@ -202,11 +201,11 @@ public final class RewriteQueryUsingAggregateIndex {
       topOps.put(tabNameWithAlias, scanOperator);
       opParseContext.put(scanOperator, operatorContext);
       rewriteQueryCtx.getParseContext().setTopToTable(
-          (HashMap<TableScanOperator, Table>) topToTable);
+        (HashMap<TableScanOperator, Table>) topToTable);
       rewriteQueryCtx.getParseContext().setTopOps(
-          (HashMap<String, Operator<? extends Serializable>>) topOps);
+        (HashMap<String, Operator<? extends OperatorDesc>>) topOps);
       rewriteQueryCtx.getParseContext().setOpParseCtx(
-          (LinkedHashMap<Operator<? extends Serializable>, OpParseContext>) opParseContext);
+        (LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext>) opParseContext);
 
       return null;
     }

@@ -74,9 +74,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -88,9 +93,14 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
@@ -106,50 +116,41 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col4, _col5
           Select Operator
             expressions:
-                  expr: _col0
-                  type: string
+                  expr: UDFToInteger(_col0)
+                  type: int
                   expr: _col1
                   type: string
-                  expr: _col4
-                  type: string
+                  expr: UDFToInteger(_col4)
+                  type: int
                   expr: _col5
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(_col0)
-                    type: int
-                    expr: _col1
-                    type: string
-                    expr: UDFToInteger(_col2)
-                    type: int
-                    expr: _col3
-                    type: string
-              outputColumnNames: _col0, _col1, _col2, _col3
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
+              NumFilesPerFileSink: 1
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      columns key1,value1,key2,value2
-                      columns.types int:string:int:string
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key1,value1,key2,value2
+                    columns.types int:string:int:string
 #### A masked pattern was here ####
-                      name default.dest1
-                      serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name default.dest1
+                    serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
-                TotalFiles: 1
-                GatherStats: true
-                MultiFileSpray: false
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+              TotalFiles: 1
+              GatherStats: true
+              MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [src2, src1]
 
   Stage: Stage-0
     Move Operator

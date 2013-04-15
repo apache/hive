@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="${hive.ivy.org}" module="hive-serde" revision="${version}">
     <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
     <description homepage="http://hive.apache.org">
@@ -28,22 +28,20 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-common" rev="${version}"
                 conf="compile->default" />
-    <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
-                conf="compile->default" transitive="false"  />
     <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
     <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"
                 transitive="false"/>
     <dependency org="org.mockito" name="mockito-all" rev="${mockito-all.version}"/>
-    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                transitive="false"/>
     <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
-                transitive="false"/>
-    <dependency org="commons-lang" name="commons-lang" rev="${commons-lang.version}"/>
-    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
                 transitive="false"/>
     <dependency org="commons-codec" name="commons-codec" rev="${commons-codec.version}"
                 transitive="false"/>
+    <dependency org="org.apache.avro" name="avro" rev="${avro.version}"
+                transitive="false"/>
+    <dependency org="org.apache.avro" name="avro-mapred" rev="${avro.version}"
+                transitive="false"/>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
   </dependencies>
 </ivy-module>

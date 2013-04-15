@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -81,8 +82,9 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
           physicalContext.getParseContext());
 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("R1", "JOIN%"), SkewJoinProcFactory
-          .getJoinProc());
+      opRules.put(new RuleRegExp("R1",
+        CommonJoinOperator.getOperatorName() + "%"),
+        SkewJoinProcFactory.getJoinProc());
 
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along

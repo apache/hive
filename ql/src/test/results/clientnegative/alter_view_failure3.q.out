@@ -1,6 +1,1 @@
-PREHOOK: query: -- should fail:  can't use ALTER VIEW on a table
-ALTER VIEW srcpart ADD PARTITION (ds='2012-12-31', hr='23')
-PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Input: default@srcpart
-FAILED: Error in metadata: Cannot alter a base table with ALTER VIEW
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: SemanticException [Error 10132]: To alter a base table you need to use the ALTER TABLE command.

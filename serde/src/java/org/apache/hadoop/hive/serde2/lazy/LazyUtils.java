@@ -28,10 +28,12 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -235,6 +237,12 @@ public final class LazyUtils {
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
+    case DECIMAL: {
+      HiveDecimal bd = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      ByteBuffer b = Text.encode(bd.toString());
+      out.write(b.array(), 0, b.limit());
+      break;
+    }
     default: {
       throw new RuntimeException("Hive internal error.");
     }
@@ -315,9 +323,9 @@ public final class LazyUtils {
   public static void extractColumnInfo(Properties tbl, SerDeParameters serdeParams,
       String serdeName) throws SerDeException {
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
+    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
 
     // Parse the configuration parameters
 
@@ -333,7 +341,7 @@ public final class LazyUtils {
         if (i > 0) {
           sb.append(":");
         }
-        sb.append(Constants.STRING_TYPE_NAME);
+        sb.append(serdeConstants.STRING_TYPE_NAME);
       }
       columnTypeProperty = sb.toString();
     }
@@ -347,6 +355,16 @@ public final class LazyUtils {
           + " elements while columns.types has "
           + serdeParams.columnTypes.size() + " elements!");
     }
+  }
+
+  /**
+   * gets a byte[] with copy of data from source BytesWritable
+   * @param sourceBw - source BytesWritable
+   */
+  public static byte[] createByteArray(BytesWritable sourceBw){
+    //TODO should replace with BytesWritable.copyData() once Hive
+    //removes support for the Hadoop 0.20 series.
+    return Arrays.copyOf(sourceBw.getBytes(), sourceBw.getLength());
   }
 
   private LazyUtils() {

@@ -1,0 +1,9 @@
+PREHOOK: query: -- explain plan json:  the query gets the formatted json output of the query plan of the hive query
+
+EXPLAIN FORMATTED SELECT count(1) FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- explain plan json:  the query gets the formatted json output of the query plan of the hive query
+
+EXPLAIN FORMATTED SELECT count(1) FROM src
+POSTHOOK: type: QUERY
+{"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Reduce Operator Tree:":{"GBY_4":{"SEL_5":{"FS_6":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}}}}}},"Split Sample:":{},"Alias -> Map Operator Tree:":{"src":{"TS_0":{"SEL_1":{"GBY_2":{"RS_3":{"Reduce Output Operator":{"Map-reduce partition columns:":[],"sort order:":"","tag:":"-1","value expressions:":[{"type:":"bigint","expr:":"_col0"}],"key expressions:":[]}}}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1"}}},"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"ROOT STAGE":"TRUE"}},"ABSTRACT SYNTAX TREE":"(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))"}

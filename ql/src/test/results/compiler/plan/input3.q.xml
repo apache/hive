@@ -21,7 +21,7 @@
                 <void method="add"> 
                  <object id="StatsTask0" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-7</string> 
+                   <string>Stage-5</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
@@ -49,7 +49,7 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-2</string> 
+               <string>Stage-0</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
@@ -66,7 +66,7 @@
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-8</string> 
+                   <string>Stage-6</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork0" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -159,21 +159,21 @@
                             <void property="counterNames"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_181_NUM_INPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_14_NUM_INPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_181_NUM_OUTPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_14_NUM_OUTPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_181_TIME_TAKEN</string> 
+                               <string>CNTR_NAME_FS_14_TIME_TAKEN</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_181_FATAL_ERROR</string> 
+                               <string>CNTR_NAME_FS_14_FATAL_ERROR</string> 
                               </void> 
                              </object> 
                             </void> 
                             <void property="operatorId"> 
-                             <string>FS_181</string> 
+                             <string>FS_14</string> 
                             </void> 
                             <void property="parentOperators"> 
                              <object class="java.util.ArrayList"> 
@@ -227,21 +227,21 @@
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_180_NUM_INPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_13_NUM_INPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_180_NUM_OUTPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_13_NUM_OUTPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_180_TIME_TAKEN</string> 
+                           <string>CNTR_NAME_TS_13_TIME_TAKEN</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_180_FATAL_ERROR</string> 
+                           <string>CNTR_NAME_TS_13_FATAL_ERROR</string> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
-                         <string>TS_180</string> 
+                         <string>TS_13</string> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema0"/> 
@@ -369,12 +369,83 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask2" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask1"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-9</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask2" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask2"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-8</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork0"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork0" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx0" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"/> 
                   </void> 
@@ -399,29 +470,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-9</string> 
+           <string>Stage-7</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork0" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork0"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
          <object idref="MapRedTask1"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask2"/> 
         </void> 
        </object> 
       </void> 
@@ -439,6 +499,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx0"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -464,16 +527,16 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-14</string> 
+       <string>Stage-16</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList1" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask2" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask3" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask3" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask4" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="childTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
@@ -484,7 +547,7 @@
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask3"/> 
+                     <object idref="MoveTask4"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -507,19 +570,19 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-3</string> 
+               <string>Stage-1</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask2"/> 
+                 <object idref="MoveTask3"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask2" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask3" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask3"/> 
+                     <object idref="MoveTask4"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -617,21 +680,21 @@
                             <void property="counterNames"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_183_NUM_INPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_16_NUM_INPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_183_NUM_OUTPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_16_NUM_OUTPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_183_TIME_TAKEN</string> 
+                               <string>CNTR_NAME_FS_16_TIME_TAKEN</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_183_FATAL_ERROR</string> 
+                               <string>CNTR_NAME_FS_16_FATAL_ERROR</string> 
                               </void> 
                              </object> 
                             </void> 
                             <void property="operatorId"> 
-                             <string>FS_183</string> 
+                             <string>FS_16</string> 
                             </void> 
                             <void property="parentOperators"> 
                              <object class="java.util.ArrayList"> 
@@ -681,21 +744,21 @@
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_182_NUM_INPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_15_NUM_INPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_182_NUM_OUTPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_15_NUM_OUTPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_182_TIME_TAKEN</string> 
+                           <string>CNTR_NAME_TS_15_TIME_TAKEN</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_182_FATAL_ERROR</string> 
+                           <string>CNTR_NAME_TS_15_FATAL_ERROR</string> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
-                         <string>TS_182</string> 
+                         <string>TS_15</string> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema1"/> 
@@ -823,12 +886,83 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask5" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask4"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-15</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask4" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask5"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-14</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork1"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork1" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx1" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"/> 
                   </void> 
@@ -856,26 +990,15 @@
            <string>Stage-13</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork1" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork1"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask2"/> 
+         <object idref="MapRedTask3"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask4"/> 
         </void> 
        </object> 
       </void> 
@@ -893,6 +1016,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx1"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -918,27 +1044,27 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-18</string> 
+       <string>Stage-22</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList2" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask4" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask6" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask5" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask7" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="childTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
                  <object id="StatsTask2" class="org.apache.hadoop.hive.ql.exec.StatsTask"> 
                   <void property="id"> 
-                   <string>Stage-15</string> 
+                   <string>Stage-17</string> 
                   </void> 
                   <void property="parentTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask5"/> 
+                     <object idref="MoveTask7"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -961,24 +1087,24 @@
                </object> 
               </void> 
               <void property="id"> 
-               <string>Stage-4</string> 
+               <string>Stage-2</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask4"/> 
+                 <object idref="MoveTask6"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask3" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask5" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask5"/> 
+                     <object idref="MoveTask7"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-16</string> 
+                   <string>Stage-18</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork2" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1075,21 +1201,21 @@
                             <void property="counterNames"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_185_NUM_INPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_18_NUM_INPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_185_NUM_OUTPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_18_NUM_OUTPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_185_TIME_TAKEN</string> 
+                               <string>CNTR_NAME_FS_18_TIME_TAKEN</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_185_FATAL_ERROR</string> 
+                               <string>CNTR_NAME_FS_18_FATAL_ERROR</string> 
                               </void> 
                              </object> 
                             </void> 
                             <void property="operatorId"> 
-                             <string>FS_185</string> 
+                             <string>FS_18</string> 
                             </void> 
                             <void property="parentOperators"> 
                              <object class="java.util.ArrayList"> 
@@ -1139,21 +1265,21 @@
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_184_NUM_INPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_17_NUM_INPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_184_NUM_OUTPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_17_NUM_OUTPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_184_TIME_TAKEN</string> 
+                           <string>CNTR_NAME_TS_17_TIME_TAKEN</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_184_FATAL_ERROR</string> 
+                           <string>CNTR_NAME_TS_17_FATAL_ERROR</string> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
-                         <string>TS_184</string> 
+                         <string>TS_17</string> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema2"/> 
@@ -1281,12 +1407,83 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask8" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask7"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-21</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask6" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask8"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-20</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork2"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork2" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
                <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
                 <void property="loadTableWork"> 
                  <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
+                  <void property="lbCtx"> 
+                   <object id="ListBucketingCtx2" class="org.apache.hadoop.hive.ql.plan.ListBucketingCtx"> 
+                    <void property="defaultDirName"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME</string> 
+                    </void> 
+                    <void property="defaultKey"> 
+                     <string>HIVE_DEFAULT_LIST_BUCKETING_KEY</string> 
+                    </void> 
+                    <void property="lbLocationMap"> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="skewedColNames"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                    <void property="skewedColValues"> 
+                     <object class="java.util.ArrayList"/> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="partitionSpec"> 
                    <object class="java.util.LinkedHashMap"> 
                     <void method="put"> 
@@ -1320,29 +1517,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-17</string> 
+           <string>Stage-19</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork2" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork2"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask3"/> 
+         <object idref="MapRedTask5"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask6"/> 
         </void> 
        </object> 
       </void> 
@@ -1360,6 +1546,9 @@
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
          #### A masked pattern was here #### 
+        </void> 
+        <void property="lbCtx"> 
+         <object idref="ListBucketingCtx2"/> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -1385,35 +1574,35 @@
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.ConditionalTask"> 
       <void property="id"> 
-       <string>Stage-21</string> 
+       <string>Stage-27</string> 
       </void> 
       <void property="listTasks"> 
        <object id="ArrayList3" class="java.util.ArrayList"> 
         <void method="add"> 
-         <object id="MoveTask6" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+         <object id="MoveTask9" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
           <void property="childTasks"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object id="MoveTask7" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+             <object id="MoveTask10" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
               <void property="id"> 
-               <string>Stage-5</string> 
+               <string>Stage-3</string> 
               </void> 
               <void property="parentTasks"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="MoveTask6"/> 
+                 <object idref="MoveTask9"/> 
                 </void> 
                 <void method="add"> 
-                 <object id="MapRedTask4" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                 <object id="MapRedTask7" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
                   <void property="childTasks"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="MoveTask7"/> 
+                     <object idref="MoveTask10"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void property="id"> 
-                   <string>Stage-19</string> 
+                   <string>Stage-23</string> 
                   </void> 
                   <void property="work"> 
                    <object id="MapredWork3" class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1471,21 +1660,21 @@
                             <void property="counterNames"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_187_NUM_INPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_20_NUM_INPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_187_NUM_OUTPUT_ROWS</string> 
+                               <string>CNTR_NAME_FS_20_NUM_OUTPUT_ROWS</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_187_TIME_TAKEN</string> 
+                               <string>CNTR_NAME_FS_20_TIME_TAKEN</string> 
                               </void> 
                               <void method="add"> 
-                               <string>CNTR_NAME_FS_187_FATAL_ERROR</string> 
+                               <string>CNTR_NAME_FS_20_FATAL_ERROR</string> 
                               </void> 
                              </object> 
                             </void> 
                             <void property="operatorId"> 
-                             <string>FS_187</string> 
+                             <string>FS_20</string> 
                             </void> 
                             <void property="parentOperators"> 
                              <object class="java.util.ArrayList"> 
@@ -1522,21 +1711,21 @@
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_186_NUM_INPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_19_NUM_INPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_186_NUM_OUTPUT_ROWS</string> 
+                           <string>CNTR_NAME_TS_19_NUM_OUTPUT_ROWS</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_186_TIME_TAKEN</string> 
+                           <string>CNTR_NAME_TS_19_TIME_TAKEN</string> 
                           </void> 
                           <void method="add"> 
-                           <string>CNTR_NAME_TS_186_FATAL_ERROR</string> 
+                           <string>CNTR_NAME_TS_19_FATAL_ERROR</string> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
-                         <string>TS_186</string> 
+                         <string>TS_19</string> 
                         </void> 
                         <void property="schema"> 
                          <object idref="RowSchema3"/> 
@@ -1626,6 +1815,58 @@
                   </void> 
                  </object> 
                 </void> 
+                <void method="add"> 
+                 <object id="MoveTask11" class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
+                  <void property="childTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="MoveTask10"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="id"> 
+                   <string>Stage-26</string> 
+                  </void> 
+                  <void property="parentTasks"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object id="MapRedTask8" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+                      <void property="childTasks"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object idref="MoveTask11"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void property="id"> 
+                       <string>Stage-25</string> 
+                      </void> 
+                      <void property="work"> 
+                       <object idref="MapredWork3"/> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="work"> 
+                   <object id="MoveWork3" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
+                    <void property="loadFileWork"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
+                      <void property="isDfsDir"> 
+                       <boolean>true</boolean> 
+                      </void> 
+                      <void property="sourceDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                      <void property="targetDir"> 
+                       #### A masked pattern was here #### 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
                </object> 
               </void> 
               <void property="work"> 
@@ -1656,29 +1897,18 @@
            </object> 
           </void> 
           <void property="id"> 
-           <string>Stage-20</string> 
+           <string>Stage-24</string> 
           </void> 
           <void property="work"> 
-           <object id="MoveWork3" class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
-            <void property="loadFileWork"> 
-             <object class="org.apache.hadoop.hive.ql.plan.LoadFileDesc"> 
-              <void property="isDfsDir"> 
-               <boolean>true</boolean> 
-              </void> 
-              <void property="sourceDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-              <void property="targetDir"> 
-               #### A masked pattern was here #### 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
+           <object idref="MoveWork3"/> 
           </void> 
          </object> 
         </void> 
         <void method="add"> 
-         <object idref="MapRedTask4"/> 
+         <object idref="MapRedTask7"/> 
+        </void> 
+        <void method="add"> 
+         <object idref="MapRedTask8"/> 
         </void> 
        </object> 
       </void> 
@@ -1721,7 +1951,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-6</string> 
+   <string>Stage-4</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -1783,10 +2013,6 @@
           <string>location</string> 
           #### A masked pattern was here #### 
          </void> 
-         <void method="put"> 
-          <string>transient_lastDdlTime</string> 
-          #### A masked pattern was here #### 
-         </void> 
         </object> 
        </void> 
        <void property="serdeClassName"> 
@@ -1810,6 +2036,10 @@
             <string>default.src</string> 
            </void> 
            <void method="put"> 
+            <string>numFiles</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
             <string>columns.types</string> 
             <string>string:string</string> 
            </void> 
@@ -1826,6 +2056,18 @@
             <string>key,value</string> 
            </void> 
            <void method="put"> 
+            <string>rawDataSize</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numRows</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
+            <string>numPartitions</string> 
+            <string>0</string> 
+           </void> 
+           <void method="put"> 
             <string>bucket_count</string> 
             <string>-1</string> 
            </void> 
@@ -1836,6 +2078,10 @@
            <void method="put"> 
             <string>file.inputformat</string> 
             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>totalSize</string> 
+            <string>5812</string> 
            </void> 
            <void method="put"> 
             <string>file.outputformat</string> 
@@ -1887,11 +2133,20 @@
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
                       </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx0"/> 
+                      </void> 
+                      <void property="maxStatsKeyPrefixLength"> 
+                       <int>200</int> 
+                      </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
                       </void> 
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc0"/> 
@@ -1904,21 +2159,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_170_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_3_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_170_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_3_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_170_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_FS_3_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_170_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_FS_3_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>FS_170</string> 
+                     <string>FS_3</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -1996,21 +2251,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_169_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_2_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_169_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_2_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_169_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_2_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_169_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_169</string> 
+                 <string>SEL_2</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -2109,21 +2364,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_168_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_1_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_168_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_1_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_168_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_1_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_168_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_1_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_168</string> 
+             <string>FIL_1</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -2189,11 +2444,20 @@
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
                       </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx1"/> 
+                      </void> 
+                      <void property="maxStatsKeyPrefixLength"> 
+                       <int>200</int> 
+                      </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
                       </void> 
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc1"/> 
@@ -2206,21 +2470,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_173_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_6_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_173_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_6_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_173_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_FS_6_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_173_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_FS_6_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>FS_173</string> 
+                     <string>FS_6</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -2295,21 +2559,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_172_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_172_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_172_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_172_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_172</string> 
+                 <string>SEL_5</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -2451,21 +2715,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_171_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_4_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_171_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_4_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_171_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_4_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_171_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_4_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_171</string> 
+             <string>FIL_4</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -2511,6 +2775,12 @@
                       <void property="gatherStats"> 
                        <boolean>true</boolean> 
                       </void> 
+                      <void property="lbCtx"> 
+                       <object idref="ListBucketingCtx2"/> 
+                      </void> 
+                      <void property="maxStatsKeyPrefixLength"> 
+                       <int>200</int> 
+                      </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
                       </void> 
@@ -2519,6 +2789,9 @@
                       </void> 
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
+                      </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc2"/> 
@@ -2531,21 +2804,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_176_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_9_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_176_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_9_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_176_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_FS_9_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_176_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_FS_9_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>FS_176</string> 
+                     <string>FS_9</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -2621,21 +2894,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_175_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_8_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_175_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_8_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_175_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_8_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_175_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_8_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_175</string> 
+                 <string>SEL_8</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -2774,21 +3047,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_174_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_7_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_174_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_7_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_174_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_7_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_174_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_7_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_174</string> 
+             <string>FIL_7</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -2834,6 +3107,9 @@
                       <void property="statsAggPrefix"> 
                        #### A masked pattern was here #### 
                       </void> 
+                      <void property="statsCollectRawDataSize"> 
+                       <boolean>true</boolean> 
+                      </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc3"/> 
                       </void> 
@@ -2845,21 +3121,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_179_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_12_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_179_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_FS_12_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_179_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_FS_12_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_FS_179_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_FS_12_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>FS_179</string> 
+                     <string>FS_12</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -2914,21 +3190,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_178_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_11_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_178_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_SEL_11_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_178_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_SEL_11_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_SEL_178_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_SEL_11_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>SEL_178</string> 
+                 <string>SEL_11</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -3009,21 +3285,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_177_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_10_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_177_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_FIL_10_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_177_TIME_TAKEN</string> 
+               <string>CNTR_NAME_FIL_10_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_FIL_177_FATAL_ERROR</string> 
+               <string>CNTR_NAME_FIL_10_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>FIL_177</string> 
+             <string>FIL_10</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -3063,16 +3339,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_167_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_167_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_167_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_167_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -3087,7 +3363,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_167</string> 
+         <string>TS_0</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -3143,6 +3419,9 @@
       </void> 
      </object> 
     </void> 
+    <void property="finalMapRed"> 
+     <boolean>true</boolean> 
+    </void> 
     <void property="gatheringStats"> 
      <boolean>true</boolean> 
     </void> 
@@ -3188,6 +3467,10 @@
            <string>default.src</string> 
           </void> 
           <void method="put"> 
+           <string>numFiles</string> 
+           <string>1</string> 
+          </void> 
+          <void method="put"> 
            <string>columns.types</string> 
            <string>string:string</string> 
           </void> 
@@ -3204,6 +3487,18 @@
            <string>key,value</string> 
           </void> 
           <void method="put"> 
+           <string>rawDataSize</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numRows</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
+           <string>numPartitions</string> 
+           <string>0</string> 
+          </void> 
+          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -3214,6 +3509,10 @@
           <void method="put"> 
            <string>file.inputformat</string> 
            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+          </void> 
+          <void method="put"> 
+           <string>totalSize</string> 
+           <string>5812</string> 
           </void> 
           <void method="put"> 
            <string>file.outputformat</string> 
@@ -3250,6 +3549,10 @@
              <string>default.src</string> 
             </void> 
             <void method="put"> 
+             <string>numFiles</string> 
+             <string>1</string> 
+            </void> 
+            <void method="put"> 
              <string>columns.types</string> 
              <string>string:string</string> 
             </void> 
@@ -3266,6 +3569,18 @@
              <string>key,value</string> 
             </void> 
             <void method="put"> 
+             <string>rawDataSize</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numRows</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
+             <string>numPartitions</string> 
+             <string>0</string> 
+            </void> 
+            <void method="put"> 
              <string>bucket_count</string> 
              <string>-1</string> 
             </void> 
@@ -3276,6 +3591,10 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+            </void> 
+            <void method="put"> 
+             <string>totalSize</string> 
+             <string>5812</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 

@@ -123,7 +123,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -169,7 +168,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -220,6 +218,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -228,11 +229,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -318,7 +321,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -364,7 +366,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -410,7 +411,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -461,6 +461,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -469,12 +473,14 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -602,7 +608,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -648,7 +653,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -699,6 +703,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -707,11 +714,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -805,7 +814,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -851,7 +859,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -902,6 +909,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -911,12 +921,14 @@ STAGE PLANS:
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
@@ -1010,7 +1022,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1056,7 +1067,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1102,7 +1112,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1153,6 +1162,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1162,6 +1175,7 @@ STAGE PLANS:
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -1169,6 +1183,7 @@ PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -1271,7 +1286,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1317,7 +1331,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1363,7 +1376,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1414,6 +1426,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1423,6 +1439,7 @@ STAGE PLANS:
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -1430,6 +1447,7 @@ PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -1536,7 +1554,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1582,7 +1599,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1633,6 +1649,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1641,11 +1660,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -1718,7 +1739,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1764,7 +1784,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1815,6 +1834,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1823,11 +1845,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -1940,7 +1964,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -1986,7 +2009,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2032,7 +2054,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2083,6 +2104,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2091,12 +2116,14 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -2241,7 +2268,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2287,7 +2313,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2338,6 +2363,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2346,11 +2374,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -2441,7 +2471,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2512,6 +2541,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t2, t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2575,6 +2606,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -2583,10 +2616,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2713,7 +2748,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2759,7 +2793,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 3
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -2830,6 +2863,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t1]
+        /pcr_t1/ds=2000-04-09 [t2]
 
   Stage: Stage-2
     Map Reduce
@@ -2893,6 +2929,8 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -2901,11 +2939,13 @@ STAGE PLANS:
 
 PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
@@ -3045,7 +3085,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3091,7 +3130,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3137,7 +3175,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3183,7 +3220,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3234,6 +3270,11 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+        /pcr_t1/ds=2000-04-11 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3242,6 +3283,7 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -3249,6 +3291,7 @@ PREHOOK: Input: default@pcr_t1@ds=2000-04-11
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -3380,7 +3423,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3426,7 +3468,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3472,7 +3513,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3523,6 +3563,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3531,12 +3575,14 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
@@ -3639,16 +3685,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -3738,7 +3788,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -3770,8 +3819,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -3869,11 +3920,85 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t2
+                    serialization.ddl struct pcr_t2 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t2
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t2
+              serialization.ddl struct pcr_t2 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t2
+                serialization.ddl struct pcr_t2 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t2
+            name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -3901,11 +4026,11 @@ STAGE PLANS:
               name: default.pcr_t3
 #### A masked pattern was here ####
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -3968,12 +4093,87 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t3
+                    serialization.ddl struct pcr_t3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t3
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10005
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t3
+              serialization.ddl struct pcr_t3 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t3
+                serialization.ddl struct pcr_t3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t3
+            name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Output: default@pcr_t2
 PREHOOK: Output: default@pcr_t3
@@ -3981,6 +4181,7 @@ POSTHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcr_t2
 POSTHOOK: Output: default@pcr_t3
@@ -4023,16 +4224,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -4142,7 +4347,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t1
               numFiles 1
-              numPartitions 4
               numRows 20
               partition_columns ds
               rawDataSize 160
@@ -4174,8 +4378,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -4293,11 +4499,100 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t2
+                    numFiles 1
+                    numPartitions 0
+                    numRows 20
+                    rawDataSize 160
+                    serialization.ddl struct pcr_t2 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 180
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t2
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t2
+              numFiles 1
+              numPartitions 0
+              numRows 20
+              rawDataSize 160
+              serialization.ddl struct pcr_t2 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 180
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t2
+                numFiles 1
+                numPartitions 0
+                numRows 20
+                rawDataSize 160
+                serialization.ddl struct pcr_t2 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 180
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t2
+            name: default.pcr_t2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -4330,11 +4625,11 @@ STAGE PLANS:
               name: default.pcr_t3
 #### A masked pattern was here ####
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -4412,12 +4707,102 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.pcr_t3
+                    numFiles 1
+                    numPartitions 0
+                    numRows 20
+                    rawDataSize 160
+                    serialization.ddl struct pcr_t3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 180
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.pcr_t3
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10005
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.pcr_t3
+              numFiles 1
+              numPartitions 0
+              numRows 20
+              rawDataSize 160
+              serialization.ddl struct pcr_t3 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 180
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.pcr_t3
+                numFiles 1
+                numPartitions 0
+                numRows 20
+                rawDataSize 160
+                serialization.ddl struct pcr_t3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 180
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pcr_t3
+            name: default.pcr_t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Output: default@pcr_t2
 PREHOOK: Output: default@pcr_t3
@@ -4425,6 +4810,7 @@ POSTHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcr_t2
 POSTHOOK: Output: default@pcr_t3
@@ -4515,10 +4901,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
+              numFiles 1
+              numRows 0
               partition_columns ds/hr
+              rawDataSize 0
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4530,10 +4920,15 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
+                numFiles 4
+                numPartitions 4
+                numRows 0
                 partition_columns ds/hr
+                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -4558,6 +4953,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -4566,9 +4963,11 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from srcpart where ds='2008-04-04' and hr=11 order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from srcpart where ds='2008-04-04' and hr=11 order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -4674,10 +5073,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
+              numFiles 1
+              numRows 0
               partition_columns ds/hr
+              rawDataSize 0
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4689,10 +5092,15 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
+                numFiles 4
+                numPartitions 4
+                numRows 0
                 partition_columns ds/hr
+                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -4711,10 +5119,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
+              numFiles 1
+              numRows 0
               partition_columns ds/hr
+              rawDataSize 0
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4726,10 +5138,15 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
+                numFiles 4
+                numPartitions 4
+                numRows 0
                 partition_columns ds/hr
+                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -4753,6 +5170,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -4761,11 +5181,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -4875,10 +5297,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
+              numFiles 1
+              numRows 0
               partition_columns ds/hr
+              rawDataSize 0
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4890,10 +5316,15 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
+                numFiles 4
+                numPartitions 4
+                numRows 0
                 partition_columns ds/hr
+                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -4912,10 +5343,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.srcpart
+              numFiles 1
+              numRows 0
               partition_columns ds/hr
+              rawDataSize 0
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4927,10 +5362,15 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
+                numFiles 4
+                numPartitions 4
+                numRows 0
                 partition_columns ds/hr
+                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -4954,6 +5394,9 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-09/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -4962,11 +5405,13 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####

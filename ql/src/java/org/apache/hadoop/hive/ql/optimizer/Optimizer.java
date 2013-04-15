@@ -24,12 +24,14 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.index.RewriteGBUsingIndex;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
+import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.pcr.PartitionConditionRemover;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
+import org.apache.hadoop.hive.ql.ppd.PredicateTransitivePropagate;
 
 /**
  * Implementation of the optimizer.
@@ -47,33 +49,61 @@ public class Optimizer {
     transformations = new ArrayList<Transform>();
     // Add the transformation that computes the lineage information.
     transformations.add(new Generator());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
-      transformations.add(new ColumnPruner());
-    }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+      transformations.add(new PredicateTransitivePropagate());
       transformations.add(new PredicatePushDown());
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+        /* Add list bucketing pruner. */
+        transformations.add(new ListBucketingPruner());
+      }
+    }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
+      transformations.add(new ColumnPruner());
+    }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
+      transformations.add(new SkewJoinOptimizer());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
       transformations.add(new RewriteGBUsingIndex());
     }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
       transformations.add(new GroupByOptimizer());
     }
     transformations.add(new SamplePruner());
     transformations.add(new MapJoinProcessor());
+    boolean bucketMapJoinOptimizer = false;
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN)) {
       transformations.add(new BucketMapJoinOptimizer());
-      if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
-        transformations.add(new SortedMergeBucketMapJoinOptimizer());
-      }
+      bucketMapJoinOptimizer = true;
     }
+
+    // If optimize hive.optimize.bucketmapjoin.sortedmerge is set, add both
+    // BucketMapJoinOptimizer and SortedMergeBucketMapJoinOptimizer
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
+      if (!bucketMapJoinOptimizer) {
+        // No need to add BucketMapJoinOptimizer twice
+        transformations.add(new BucketMapJoinOptimizer());
+      }
+      transformations.add(new SortedMergeBucketMapJoinOptimizer());
+    }
+
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEBUCKETINGSORTING)) {
+      transformations.add(new BucketingSortingReduceSinkOptimizer());
+    }
+
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
       transformations.add(new ReduceSinkDeDuplication());
     }
+    transformations.add(new NonBlockingOpDeDupProc());
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVELIMITOPTENABLE)) {
+      transformations.add(new GlobalLimitOptimizer());
+    }
+    transformations.add(new SimpleFetchOptimizer());  // must be called last
   }
 
   /**
@@ -84,7 +114,7 @@ public class Optimizer {
    */
   public ParseContext optimize() throws SemanticException {
     for (Transform t : transformations) {
-      pctx = t.transform(pctx);
+        pctx = t.transform(pctx);
     }
     return pctx;
   }

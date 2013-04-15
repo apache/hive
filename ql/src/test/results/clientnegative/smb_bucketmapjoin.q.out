@@ -34,4 +34,4 @@ POSTHOOK: Lineage: smb_bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, 
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: Error in semantic analysis: MAPJOIN cannot be performed with OUTER JOIN
+FAILED: SemanticException [Error 10057]: MAPJOIN cannot be performed with OUTER JOIN

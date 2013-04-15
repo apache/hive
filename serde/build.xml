@@ -51,23 +51,6 @@
     </javac>
   </target>
 
-  <target name="thriftif" depends="check-thrift-home">
-    <echo message="Project: ${ant.project.name}"/>
-    <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
-    <echo>Executing ${thrift.home}/bin/thrift to build java serde Constants... </echo>
-    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="${thrift.args} -o ${src.dir}/gen/thrift if/serde.thrift " />
-    </exec>
-    <echo>Executing ${thrift.home}/bin/thrift to build complex.thrift test classes... </echo>
-    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="--gen java:beans -o ${src.dir}/gen/thrift if/test/complex.thrift " />
-    </exec>
-    <echo>Executing ${thrift.home}/bin/thrift to build testthrift.thrift classes... </echo>
-    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="--gen java:beans -o ${src.dir}/gen/thrift if/test/testthrift.thrift " />
-    </exec>
-  </target>
-
   <target name="gen-testdata" depends="compile-test,test-jar">
     <echo message="Project: ${ant.project.name}"/>
     <echo>Generating data/files/complex.seq... </echo>

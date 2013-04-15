@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * TextRecordWriter.
@@ -32,15 +34,23 @@ import org.apache.hadoop.io.Writable;
 public class TextRecordWriter implements RecordWriter {
 
   private OutputStream out;
+  private Configuration conf;
 
   public void initialize(OutputStream out, Configuration conf)
       throws IOException {
     this.out = out;
+    this.conf = conf;
   }
 
   public void write(Writable row) throws IOException {
     Text text = (Text) row;
-    out.write(text.getBytes(), 0, text.getLength());
+    Text escapeText = text;
+
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
+      escapeText = HiveUtils.escapeText(text);
+    }
+
+    out.write(escapeText.getBytes(), 0, escapeText.getLength());
     out.write(Utilities.newLineCode);
   }
 

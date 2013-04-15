@@ -1,5 +1,8 @@
-set mapred.job.tracker=does.notexist.com:666;
+set mapreduce.framework.name=yarn;
+set mapreduce.jobtracker.address=localhost:58;
 set hive.exec.mode.local.auto=true;
+
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
 
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE;

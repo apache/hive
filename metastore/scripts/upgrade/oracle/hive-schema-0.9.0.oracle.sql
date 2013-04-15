@@ -1,25 +1,32 @@
-------------------------------------------------------------------
--- DataNucleus SchemaTool (version 2.0.3) ran at 10/08/2011 21:27:47
-------------------------------------------------------------------
---     org.apache.hadoop.hive.metastore.model.MDatabase
---     org.apache.hadoop.hive.metastore.model.MFieldSchema
---     org.apache.hadoop.hive.metastore.model.MType
---     org.apache.hadoop.hive.metastore.model.MTable
---     org.apache.hadoop.hive.metastore.model.MSerDeInfo
---     org.apache.hadoop.hive.metastore.model.MOrder
---     org.apache.hadoop.hive.metastore.model.MStorageDescriptor
---     org.apache.hadoop.hive.metastore.model.MPartition
---     org.apache.hadoop.hive.metastore.model.MIndex
---     org.apache.hadoop.hive.metastore.model.MRole
---     org.apache.hadoop.hive.metastore.model.MRoleMap
---     org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
---     org.apache.hadoop.hive.metastore.model.MDBPrivilege
---     org.apache.hadoop.hive.metastore.model.MTablePrivilege
---     org.apache.hadoop.hive.metastore.model.MPartitionPrivilege
---     org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege
---     org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege
---     org.apache.hadoop.hive.metastore.model.MPartitionEvent
---
+
+
+-- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
+-- NOTE: Some versions of SchemaTool do not automatically generate this table.
+-- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+CREATE TABLE SEQUENCE_TABLE
+(
+   SEQUENCE_NAME VARCHAR2(255) NOT NULL,
+   NEXT_VAL NUMBER NOT NULL
+);
+
+ALTER TABLE SEQUENCE_TABLE ADD CONSTRAINT PART_TABLE_PK PRIMARY KEY (SEQUENCE_NAME);
+
+-- Table NUCLEUS_TABLES is an internal table required by DataNucleus.
+-- This table is required if datanucleus.autoStartMechanism=SchemaTable
+-- NOTE: Some versions of SchemaTool do not automatically generate this table.
+-- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+CREATE TABLE NUCLEUS_TABLES
+(
+   CLASS_NAME VARCHAR2(128) NOT NULL,
+   TABLE_NAME VARCHAR2(128) NOT NULL,
+   TYPE VARCHAR2(4) NOT NULL,
+   OWNER VARCHAR2(2) NOT NULL,
+   VERSION VARCHAR2(20) NOT NULL,
+   INTERFACE_NAME VARCHAR2(255) NULL
+);
+
+ALTER TABLE NUCLEUS_TABLES ADD CONSTRAINT NUCLEUS_TABLES_PK PRIMARY KEY (CLASS_NAME);
+
 -- Table PART_COL_PRIVS for classes [org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege]
 CREATE TABLE PART_COL_PRIVS
 (

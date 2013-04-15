@@ -1,0 +1,71 @@
+PREHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
+    col1 INT COMMENT 'col1 one line comment',
+    col2 STRING COMMENT 'col2
+two lines comment',
+    col3 STRING COMMENT 'col3
+three lines
+comment') 
+COMMENT 'table comment
+two lines'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- test comment indent processing for multi-line comments
+
+CREATE TABLE test_table(
+    col1 INT COMMENT 'col1 one line comment',
+    col2 STRING COMMENT 'col2
+two lines comment',
+    col3 STRING COMMENT 'col3
+three lines
+comment') 
+COMMENT 'table comment
+two lines'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: DESCRIBE test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE test_table
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	col1 one line comment
+col2                	string              	col2                
+                    	                    	two lines comment
+col3                	string              	col3                
+                    	                    	three lines
+                    	                    	comment
+PREHOOK: query: DESCRIBE FORMATTED test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED test_table
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	col1 one line comment
+col2                	string              	col2                
+                    	                    	two lines comment
+col3                	string              	col3                
+                    	                    	three lines
+                    	                    	comment
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	comment             	table comment\ntwo lines
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

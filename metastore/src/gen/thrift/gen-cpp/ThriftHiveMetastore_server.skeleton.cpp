@@ -2,10 +2,10 @@
 // You should copy it to another filename to avoid overwriting it.
 
 #include "ThriftHiveMetastore.h"
-#include <protocol/TBinaryProtocol.h>
-#include <server/TSimpleServer.h>
-#include <transport/TServerSocket.h>
-#include <transport/TBufferTransports.h>
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -14,7 +14,7 @@ using namespace ::apache::thrift::server;
 
 using boost::shared_ptr;
 
-using namespace Apache::Hadoop::Hive;
+using namespace  ::Apache::Hadoop::Hive;
 
 class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
  public:
@@ -97,6 +97,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table\n");
   }
 
+  void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_table_with_environment_context\n");
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
@@ -152,9 +157,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition\n");
   }
 
+  void append_partition_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("append_partition_with_environment_context\n");
+  }
+
   void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
     // Your implementation goes here
     printf("append_partition_by_name\n");
+  }
+
+  void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("append_partition_by_name_with_environment_context\n");
   }
 
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) {
@@ -162,9 +177,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_partition\n");
   }
 
+  bool drop_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_partition_with_environment_context\n");
+  }
+
   bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_partition_by_name\n");
+  }
+
+  bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("drop_partition_by_name_with_environment_context\n");
   }
 
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {
@@ -227,6 +252,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_partition\n");
   }
 
+  void alter_partitions(const std::string& db_name, const std::string& tbl_name, const std::vector<Partition> & new_parts) {
+    // Your implementation goes here
+    printf("alter_partitions\n");
+  }
+
   void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("alter_partition_with_environment_context\n");
@@ -235,6 +265,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
     // Your implementation goes here
     printf("rename_partition\n");
+  }
+
+  bool partition_name_has_valid_characters(const std::vector<std::string> & part_vals, const bool throw_exception) {
+    // Your implementation goes here
+    printf("partition_name_has_valid_characters\n");
   }
 
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) {
@@ -290,6 +325,36 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
     // Your implementation goes here
     printf("get_index_names\n");
+  }
+
+  bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
+    // Your implementation goes here
+    printf("update_table_column_statistics\n");
+  }
+
+  bool update_partition_column_statistics(const ColumnStatistics& stats_obj) {
+    // Your implementation goes here
+    printf("update_partition_column_statistics\n");
+  }
+
+  void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("get_table_column_statistics\n");
+  }
+
+  void get_partition_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("get_partition_column_statistics\n");
+  }
+
+  bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("delete_partition_column_statistics\n");
+  }
+
+  bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
+    // Your implementation goes here
+    printf("delete_table_column_statistics\n");
   }
 
   bool create_role(const Role& role) {

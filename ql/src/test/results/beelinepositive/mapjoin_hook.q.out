@@ -1,0 +1,47 @@
+Saving all output to "!!{outputDirectory}!!/mapjoin_hook.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/mapjoin_hook.q
+>>>  set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.MapJoinCounterHook ;
+No rows affected 
+>>>  drop table dest1;
+No rows affected 
+>>>  CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  set hive.auto.convert.join = true;
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE dest1 
+SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  
+>>>  FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key) 
+INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  
+>>>  
+>>>  set hive.mapjoin.localtask.max.memory.usage = 0.0001;
+No rows affected 
+>>>  set hive.mapjoin.check.memory.rows = 2;
+No rows affected 
+>>>  
+>>>  
+>>>  FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key) 
+INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value 
+where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or src1.hr = '11');
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  
+>>>  FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key) 
+INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  !record

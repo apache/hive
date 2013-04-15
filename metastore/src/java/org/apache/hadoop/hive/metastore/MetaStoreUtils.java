@@ -20,15 +20,20 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,12 +44,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -65,6 +70,8 @@ public class MetaStoreUtils {
 
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
+
+  public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
   /**
    * printStackTrace
@@ -97,13 +104,13 @@ public class MetaStoreUtils {
     serdeInfo.setSerializationLib(LazySimpleSerDe.class.getName());
     serdeInfo.setParameters(new HashMap<String, String>());
     serdeInfo.getParameters().put(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "1");
 
     List<FieldSchema> fields = new ArrayList<FieldSchema>();
     sd.setCols(fields);
     for (String col : columns) {
       FieldSchema field = new FieldSchema(col,
-          org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME, "'default'");
+          org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME, "'default'");
       fields.add(field);
     }
 
@@ -111,7 +118,7 @@ public class MetaStoreUtils {
     for (String partCol : partCols) {
       FieldSchema part = new FieldSchema();
       part.setName(partCol);
-      part.setType(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME); // default
+      part.setType(org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME); // default
                                                                              // partition
                                                                              // key
       tTable.getPartitionKeys().add(part);
@@ -153,7 +160,9 @@ public class MetaStoreUtils {
    *          hadoop config
    * @param schema
    *          the properties to use to instantiate the deserializer
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in passed
+   *   in properties. Also, initializes the deserializer with schema stored in passed in properties.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -163,7 +172,7 @@ public class MetaStoreUtils {
   static public Deserializer getDeserializer(Configuration conf,
       Properties schema) throws MetaException {
     String lib = schema
-        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
       (deserializer).initialize(conf, schema);
@@ -185,7 +194,10 @@ public class MetaStoreUtils {
    *          - hadoop config
    * @param table
    *          the table
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in
+   *   storage descriptor of passed in table. Also, initializes the deserializer with schema
+   *   of table.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -200,7 +212,7 @@ public class MetaStoreUtils {
     }
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
-      deserializer.initialize(conf, MetaStoreUtils.getSchema(table));
+      deserializer.initialize(conf, MetaStoreUtils.getTableMetadata(table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -222,7 +234,10 @@ public class MetaStoreUtils {
    * @param part
    *          the partition
    * @param table the table
-   * @return the Deserializer
+   * @return
+   *   Returns instantiated deserializer by looking up class name of deserializer stored in
+   *   storage descriptor of passed in partition. Also, initializes the deserializer with
+   *   schema of partition.
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
@@ -233,7 +248,7 @@ public class MetaStoreUtils {
     String lib = part.getSd().getSerdeInfo().getSerializationLib();
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
-      deserializer.initialize(conf, MetaStoreUtils.getSchema(part, table));
+      deserializer.initialize(conf, MetaStoreUtils.getPartitionMetadata(part, table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -313,13 +328,68 @@ public class MetaStoreUtils {
     return false;
   }
 
-  static public boolean validateColNames(List<FieldSchema> cols) {
+  static public boolean validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateName(fieldSchema.getName())) {
         return false;
       }
+      if (!validateColumnType(fieldSchema.getType())) {
+        return false;
+      }
     }
     return true;
+  }
+
+  /**
+   * validate column type
+   *
+   * if it is predefined, yes. otherwise no
+   * @param name
+   * @return
+   */
+  static public boolean validateColumnType(String type) {
+    int last = 0;
+    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    for (int i = 1; i <= type.length(); i++) {
+      if (i == type.length()
+          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+        String token = type.substring(last, i);
+        last = i;
+        if (!hiveThriftTypeMap.contains(token)) {
+          return false;
+        }
+        break;
+      }
+    }
+    return true;
+  }
+
+  public static  boolean validateSkewedColNames(List<String> cols) {
+    if (null == cols) {
+      return true;
+    }
+    for (String col : cols) {
+      if (!validateName(col)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean validateSkewedColNamesSubsetCol(List<String> skewedColNames,
+      List<FieldSchema> cols) {
+    if (null == skewedColNames) {
+      return true;
+    }
+    List<String> colNames = new ArrayList<String>();
+    for (FieldSchema fieldSchema : cols) {
+      colNames.add(fieldSchema.getName());
+    }
+    // make a copy
+    List<String> copySkewedColNames = new ArrayList<String>(skewedColNames);
+    // remove valid columns
+    copySkewedColNames.removeAll(colNames);
+    return (copySkewedColNames.size() > 0) ? false : true;
   }
 
   public static String getListType(String t) {
@@ -342,38 +412,49 @@ public class MetaStoreUtils {
   static {
     typeToThriftTypeMap = new HashMap<String, String>();
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.BOOLEAN_TYPE_NAME, "bool");
+        org.apache.hadoop.hive.serde.serdeConstants.BOOLEAN_TYPE_NAME, "bool");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.TINYINT_TYPE_NAME, "byte");
+        org.apache.hadoop.hive.serde.serdeConstants.TINYINT_TYPE_NAME, "byte");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.SMALLINT_TYPE_NAME, "i16");
+        org.apache.hadoop.hive.serde.serdeConstants.SMALLINT_TYPE_NAME, "i16");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.INT_TYPE_NAME, "i32");
+        org.apache.hadoop.hive.serde.serdeConstants.INT_TYPE_NAME, "i32");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.BIGINT_TYPE_NAME, "i64");
+        org.apache.hadoop.hive.serde.serdeConstants.BIGINT_TYPE_NAME, "i64");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.DOUBLE_TYPE_NAME, "double");
+        org.apache.hadoop.hive.serde.serdeConstants.DOUBLE_TYPE_NAME, "double");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.FLOAT_TYPE_NAME, "float");
+        org.apache.hadoop.hive.serde.serdeConstants.FLOAT_TYPE_NAME, "float");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME, "list");
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME, "list");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME, "map");
+        org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME, "map");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME, "string");
+        org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME, "string");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.BINARY_TYPE_NAME, "binary");
-    // These 3 types are not supported yet.
+        org.apache.hadoop.hive.serde.serdeConstants.BINARY_TYPE_NAME, "binary");
+    // These 4 types are not supported yet.
     // We should define a complex type date in thrift that contains a single int
     // member, and DynamicSerDe
     // should convert it to date type at runtime.
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.DATE_TYPE_NAME, "date");
+        org.apache.hadoop.hive.serde.serdeConstants.DATE_TYPE_NAME, "date");
     typeToThriftTypeMap.put(
-        org.apache.hadoop.hive.serde.Constants.DATETIME_TYPE_NAME, "datetime");
+        org.apache.hadoop.hive.serde.serdeConstants.DATETIME_TYPE_NAME, "datetime");
     typeToThriftTypeMap
-        .put(org.apache.hadoop.hive.serde.Constants.TIMESTAMP_TYPE_NAME,
+        .put(org.apache.hadoop.hive.serde.serdeConstants.TIMESTAMP_TYPE_NAME,
             "timestamp");
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.serdeConstants.DECIMAL_TYPE_NAME, "decimal");
+  }
+
+  static Set<String> hiveThriftTypeMap; //for validation
+  static {
+    hiveThriftTypeMap = new HashSet<String>();
+    hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.PrimitiveTypes);
+    hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.CollectionTypes);
+    hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME);
+    hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.STRUCT_TYPE_NAME);
   }
 
   /**
@@ -455,14 +536,23 @@ public class MetaStoreUtils {
     }
     ddl.append("}");
 
-    LOG.info("DDL: " + ddl);
+    LOG.debug("DDL: " + ddl);
     return ddl.toString();
   }
 
-  public static Properties getSchema(
+  public static Properties getTableMetadata(
       org.apache.hadoop.hive.metastore.api.Table table) {
     return MetaStoreUtils.getSchema(table.getSd(), table.getSd(), table
         .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
+  }
+
+  public static Properties getPartitionMetadata(
+      org.apache.hadoop.hive.metastore.api.Partition partition,
+      org.apache.hadoop.hive.metastore.api.Table table) {
+    return MetaStoreUtils
+        .getSchema(partition.getSd(), partition.getSd(), partition
+            .getParameters(), table.getDbName(), table.getTableName(),
+            table.getPartitionKeys());
   }
 
   public static Properties getSchema(
@@ -507,42 +597,42 @@ public class MetaStoreUtils {
     String inputFormat = sd.getInputFormat();
     if (inputFormat == null || inputFormat.length() == 0) {
       String tblInput =
-        schema.getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT);
+        schema.getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT);
       if (tblInput == null) {
         inputFormat = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
       } else {
         inputFormat = tblInput;
       }
     }
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT,
         inputFormat);
 
     // OutputFormat
     String outputFormat = sd.getOutputFormat();
     if (outputFormat == null || outputFormat.length() == 0) {
       String tblOutput =
-        schema.getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT);
+        schema.getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT);
       if (tblOutput == null) {
         outputFormat = org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName();
       } else {
         outputFormat = tblOutput;
       }
     }
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT,
         outputFormat);
 
     // Location
     if (sd.getLocation() != null) {
-      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION,
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
           sd.getLocation());
     }
 
     // Bucket count
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT,
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT,
         Integer.toString(sd.getNumBuckets()));
 
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
-      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME,
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
           sd.getBucketCols().get(0));
     }
 
@@ -552,9 +642,9 @@ public class MetaStoreUtils {
       // We should not update the following 3 values if SerDeInfo contains these.
       // This is to keep backward compatible with getSchema(), where these 3 keys
       // are updated after SerDeInfo properties got copied.
-      String cols = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS;
-      String colTypes = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES;
-      String parts = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS;
+      String cols = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS;
+      String colTypes = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES;
+      String parts = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS;
 
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
@@ -566,7 +656,7 @@ public class MetaStoreUtils {
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
-        schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB,
+        schema.setProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB,
             sd.getSerdeInfo().getSerializationLib());
       }
     }
@@ -595,7 +685,7 @@ public class MetaStoreUtils {
         .getName();
     }
     schema.setProperty(
-      org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
+      org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT,
       inputFormat);
     String outputFormat = sd.getOutputFormat();
     if (outputFormat == null || outputFormat.length() == 0) {
@@ -603,24 +693,24 @@ public class MetaStoreUtils {
         .getName();
     }
     schema.setProperty(
-      org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
+      org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT,
       outputFormat);
 
     schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
         databaseName + "." + tableName);
 
     if (sd.getLocation() != null) {
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION,
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
           sd.getLocation());
     }
     schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT, Integer
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT, Integer
             .toString(sd.getNumBuckets()));
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME, sd
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME, sd
               .getBucketCols().get(0));
     }
     if (sd.getSerdeInfo() != null) {
@@ -630,7 +720,7 @@ public class MetaStoreUtils {
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
         schema.setProperty(
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, sd
+            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB, sd
                 .getSerdeInfo().getSerializationLib());
       }
     }
@@ -649,14 +739,14 @@ public class MetaStoreUtils {
     String colNames = colNameBuf.toString();
     String colTypes = colTypeBuf.toString();
     schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS,
         colNames);
     schema.setProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES,
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
         colTypes);
     if (sd.getCols() != null) {
       schema.setProperty(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL,
+          org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_DDL,
           getDDLFromFieldSchema(tableName, sd.getCols()));
     }
 
@@ -672,7 +762,7 @@ public class MetaStoreUtils {
     if (partString.length() > 0) {
       schema
           .setProperty(
-              org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS,
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
               partString);
     }
 
@@ -769,6 +859,19 @@ public class MetaStoreUtils {
       }
     }
     throw exc;
+  }
+
+  /**
+   * Finds a free port on the machine.
+   *
+   * @return
+   * @throws IOException
+   */
+  public static int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
   }
 
   /**
@@ -881,7 +984,7 @@ public class MetaStoreUtils {
   public static boolean isArchived(
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
-    if ("true".equalsIgnoreCase(params.get(Constants.IS_ARCHIVED))) {
+    if ("true".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED))) {
       return true;
     } else {
       return false;
@@ -892,7 +995,7 @@ public class MetaStoreUtils {
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
     assert(isArchived(part));
-    String originalLocation = params.get(Constants.ORIGINAL_LOCATION);
+    String originalLocation = params.get(hive_metastoreConstants.ORIGINAL_LOCATION);
     assert( originalLocation != null);
 
     return new Path(originalLocation);
@@ -902,7 +1005,7 @@ public class MetaStoreUtils {
     if (table == null) {
       return false;
     }
-    return (table.getParameters().get(Constants.META_TABLE_STORAGE) != null);
+    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
   }
 
   /**
@@ -984,9 +1087,12 @@ public class MetaStoreUtils {
             listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
                 Configuration.class).newInstance(conf);
         listeners.add(listener);
+      } catch (InvocationTargetException ie) {
+        throw new MetaException("Failed to instantiate listener named: "+
+            listenerImpl + ", reason: " + ie.getCause());
       } catch (Exception e) {
         throw new MetaException("Failed to instantiate listener named: "+
-            listenerImpl + e.toString());
+            listenerImpl + ", reason: " + e);
       }
     }
 
@@ -1001,4 +1107,70 @@ public class MetaStoreUtils {
       throw new MetaException(rawStoreClassName + " class not found");
     }
   }
+
+  /**
+   * Create an object of the given class.
+   * @param theClass
+   * @param parameterTypes
+   *          an array of parameterTypes for the constructor
+   * @param initargs
+   *          the list of arguments for the constructor
+   */
+  public static <T> T newInstance(Class<T> theClass, Class<?>[] parameterTypes,
+      Object[] initargs) {
+    // Perform some sanity checks on the arguments.
+    if (parameterTypes.length != initargs.length) {
+      throw new IllegalArgumentException(
+          "Number of constructor parameter types doesn't match number of arguments");
+    }
+    for (int i = 0; i < parameterTypes.length; i++) {
+      Class<?> clazz = parameterTypes[i];
+      if (!(clazz.isInstance(initargs[i]))) {
+        throw new IllegalArgumentException("Object : " + initargs[i]
+            + " is not an instance of " + clazz);
+      }
+    }
+
+    try {
+      Constructor<T> meth = theClass.getDeclaredConstructor(parameterTypes);
+      meth.setAccessible(true);
+      return meth.newInstance(initargs);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
+    }
+  }
+
+  public static void validatePartitionNameCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) throws MetaException {
+
+    String invalidPartitionVal =
+        getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+    if (invalidPartitionVal != null) {
+      throw new MetaException("Partition value '" + invalidPartitionVal +
+          "' contains a character " + "not matched by whitelist pattern '" +
+          partitionValidationPattern.toString() + "'.  " + "(configure with " +
+          HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+      }
+  }
+
+  public static boolean partitionNameHasValidCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+
+    return null;
+  }
+
 }

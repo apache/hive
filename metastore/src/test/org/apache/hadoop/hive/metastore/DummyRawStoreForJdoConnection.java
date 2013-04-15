@@ -25,8 +25,10 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -255,6 +257,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
 
   }
+
+  @Override
+  public void alterPartitions(String db_name, String tbl_name, List<List<String>> part_vals_list,
+      List<Partition> new_parts) throws InvalidObjectException, MetaException {
+
+
+  }
+
 
   @Override
   public boolean addIndex(Index index) throws InvalidObjectException, MetaException {
@@ -504,4 +514,46 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return 0;
   }
 
+  @Override
+  public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
+
+  @Override
+  public boolean deleteTableColumnStatistics(String dbName, String tableName,
+                                              String colName)
+      throws NoSuchObjectException, MetaException, InvalidObjectException {
+    return false;
+  }
+
+
+  public boolean deletePartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVals, String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException,
+    InvalidInputException {
+    return false;
+
+  }
+
+  @Override
+  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVal, String colName) throws MetaException,
+    NoSuchObjectException, InvalidInputException, InvalidObjectException  {
+    return null;
+  }
+
+  @Override
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+      throws NoSuchObjectException, MetaException, InvalidObjectException {
+    return false;
+  }
+
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals)
+    throws NoSuchObjectException, MetaException, InvalidObjectException {
+    return false;
+  }
 }
+
+

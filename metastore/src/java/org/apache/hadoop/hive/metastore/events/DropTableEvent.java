@@ -21,20 +21,19 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-public class DropTableEvent extends ListenerEvent{
+public class DropTableEvent extends ListenerEvent {
 
   private final Table table;
 
-  public DropTableEvent (Table table, boolean status, HMSHandler handler) {
-
-    super (status, handler);
+  public DropTableEvent(Table table, boolean status, HMSHandler handler) {
+    super(status, handler);
     this.table = table;
   }
 
   /**
    * @return the table
    */
-  public Table getTable () {
+  public Table getTable() {
     return table;
   }
 }

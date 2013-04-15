@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -69,8 +69,8 @@ public class TestPlan extends TestCase {
       LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
       pt.put("/tmp/testfolder", partDesc);
 
-      LinkedHashMap<String, Operator<? extends Serializable>> ao =
-        new LinkedHashMap<String, Operator<? extends Serializable>>();
+      LinkedHashMap<String, Operator<? extends OperatorDesc>> ao =
+        new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
       ao.put("a", op);
 
       MapredWork mrwork = new MapredWork();

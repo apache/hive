@@ -11,12 +11,90 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hive_test_src
+PREHOOK: query: explain extended
+load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
+PREHOOK: type: LOAD
+POSTHOOK: query: explain extended
+load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
+POSTHOOK: type: LOAD
+ABSTRACT SYNTAX TREE:
+  (TOK_LOAD '../data/files/test.dat' (TOK_TAB (TOK_TABNAME hive_test_src)) local overwrite)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-0
+    Copy
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns col1
+                columns.types string
+#### A masked pattern was here ####
+                name default.hive_test_src
+                serialization.ddl struct hive_test_src { string col1}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.hive_test_src
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+
 PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_test_src
 POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_test_src
+PREHOOK: query: desc formatted hive_test_src
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted hive_test_src
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	11                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
@@ -33,10 +111,12 @@ POSTHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -48,10 +128,12 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6	test_part	test_Part
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -68,18 +150,22 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -87,10 +173,12 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -103,31 +191,65 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6	test_part	test_Part
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst
 #### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: describe extended hive_test_dst
+PREHOOK: query: describe formatted hive_test_dst
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended hive_test_dst
+POSTHOOK: query: describe formatted hive_test_dst
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-col1	string	
-pcol1	string	
-pcol2	string	
+# col_name            	data_type           	comment             
 	 	 
+col1                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+pcol1               	string              	None                
+pcol2               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	6                   
+	rawDataSize         	6                   
+	totalSize           	171                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table hive_test_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_src

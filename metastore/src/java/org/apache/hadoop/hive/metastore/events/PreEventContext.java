@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
+
 /**
  * Base class for all the events which are defined for metastore.
  */
@@ -35,13 +36,13 @@ public abstract class PreEventContext {
     ALTER_PARTITION,
     CREATE_DATABASE,
     DROP_DATABASE,
-    LOAD_PARTITION_DONE,
+    LOAD_PARTITION_DONE
   }
 
   private final PreEventType eventType;
   private final HMSHandler handler;
 
-  public PreEventContext(PreEventType eventType, HMSHandler handler) {
+  public PreEventContext(PreEventType eventType, HMSHandler  handler) {
     this.eventType = eventType;
     this.handler = handler;
   }
@@ -59,4 +60,5 @@ public abstract class PreEventContext {
   public HMSHandler getHandler() {
     return handler;
   }
+
 }

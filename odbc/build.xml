@@ -29,16 +29,33 @@
   <property name="make.cmd" value="make"/>
   <import file="../build-common.xml"/>
 
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <path refid="classpath"/>
-  </path>
+  <!--Skip the Make file execution on windows-->
+  <condition property="execute.makefile">
+    <not>
+      <equals arg1="windows" arg2="${os.family}"/>
+    </not>
+  </condition>
+
+  <!-- Only run tests if thrift.home is defined and not on windows-->
+  <condition property="execute.tests">
+    <and>
+      <istrue value="${execute.makefile}"/>
+      <istrue value="${thrift.home.defined}"/>
+    </and>
+  </condition>
+
+  <target name="set-test-classpath">
+    <path id="test.classpath">
+      <pathelement location="${test.build.classes}" />
+      <pathelement location="" />
+      <pathelement location="${test.src.data.dir}/conf"/>
+      <pathelement location="${hive.conf.dir}"/>
+      <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
+      <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+      <pathelement location="${build.dir.hive}/ql/test/classes"/>
+      <path refid="classpath"/>
+    </path>
+  </target>
 
   <target name="check-word-size">
     <echo message="Project: ${ant.project.name}"/>
@@ -47,7 +64,7 @@
     </condition>
   </target>
 
-  <target name="compile-cpp" depends="init,check-word-size">
+  <target name="compile-cpp" depends="init,check-word-size" if="execute.makefile">
     <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <env key="WORD_SIZE" value="${word.size}"/>
@@ -61,7 +78,7 @@
     <copy file="${basedir}/src/cpp/hiveconstants.h" todir="${build.dir.hive}/odbc/include"/>
   </target>
 
-  <target name="clean">
+  <target name="clean" if="execute.makefile">
     <echo message="Project: ${ant.project.name}"/>
     <delete dir="${build.dir.hive}/odbc/include"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
@@ -71,7 +88,7 @@
     </exec>
   </target>
 
-  <target name="install" depends="check-word-size">
+  <target name="install" depends="check-word-size" if="execute.makefile">
     <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="install"/>
@@ -82,7 +99,7 @@
     </exec>
   </target>
 
-  <target name="uninstall">
+  <target name="uninstall" if="execute.makefile">
     <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="uninstall"/>
@@ -92,7 +109,7 @@
   </target>
 
   <!-- Only run tests if thrift.home is defined so that we don't break other tests -->
-  <target name="test" depends="check-word-size,check-thrift-home" if="thrift.home.defined">
+  <target name="test" depends="check-word-size,check-thrift-home,set-test-classpath" if="execute.tests">
     <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="test"/>
@@ -102,7 +119,4 @@
       <env key="BASE_DIR" value="${basedir}"/>
     </exec>
   </target>
-
-
-
 </project>

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -50,6 +51,9 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   // alias to filter mapping
   private Map<Byte, List<ExprNodeDesc>> filters;
 
+  // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
+  private int[][] filterMap;
+
   // used for create joinOutputObjectInspector
   protected List<String> outputColumnNames;
 
@@ -75,17 +79,14 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   private Map<Byte, List<Integer>> retainList;
 
-  private transient String bigTableAlias;
-
-  private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
-  private LinkedHashMap<String, Integer> bucketFileNameMapping;
+  private transient BucketMapJoinContext bucketMapjoinContext;
   private float hashtableMemoryUsage;
 
   //map join dump file name
   private String dumpFilePrefix;
 
   public HashTableSinkDesc() {
-    bucketFileNameMapping = new LinkedHashMap<String, Integer>();
+    bucketMapjoinContext = new BucketMapJoinContext();
   }
 
   public HashTableSinkDesc(MapJoinDesc clone) {
@@ -102,6 +103,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.smallKeysDirMap = clone.getSmallKeysDirMap();
     this.tagOrder = clone.getTagOrder();
     this.filters = clone.getFilters();
+    this.filterMap = clone.getFilterMap();
 
     this.keys = clone.getKeys();
     this.keyTblDesc = clone.getKeyTblDesc();
@@ -109,10 +111,8 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.valueTblFilteredDescs = clone.getValueFilteredTblDescs();
     this.posBigTable = clone.getPosBigTable();
     this.retainList = clone.getRetainList();
-    this.bigTableAlias = clone.getBigTableAlias();
-    this.aliasBucketFileNameMapping = clone.getAliasBucketFileNameMapping();
-    this.bucketFileNameMapping = clone.getBucketFileNameMapping();
     this.dumpFilePrefix = clone.getDumpFilePrefix();
+    this.bucketMapjoinContext = new BucketMapJoinContext(clone);
   }
 
 
@@ -291,6 +291,21 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.keyTableDesc = keyTableDesc;
   }
 
+  @Override
+  public int[][] getFilterMap() {
+    return filterMap;
+  }
+
+  @Override
+  public void setFilterMap(int[][] filterMap) {
+    this.filterMap = filterMap;
+  }
+
+  @Override
+  @Explain(displayName = "filter mappings", normalExplain = false)
+  public Map<Integer, String> getFilterMapString() {
+    return toCompactString(filterMap);
+  }
 
   public Map<Byte, List<Integer>> getRetainList() {
     return retainList;
@@ -362,34 +377,11 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.valueTblDescs = valueTblDescs;
   }
 
-  /**
-   * @return bigTableAlias
-   */
-  public String getBigTableAlias() {
-    return bigTableAlias;
+  public BucketMapJoinContext getBucketMapjoinContext() {
+    return bucketMapjoinContext;
   }
 
-  /**
-   * @param bigTableAlias
-   */
-  public void setBigTableAlias(String bigTableAlias) {
-    this.bigTableAlias = bigTableAlias;
-  }
-
-  public LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> getAliasBucketFileNameMapping() {
-    return aliasBucketFileNameMapping;
-  }
-
-  public void setAliasBucketFileNameMapping(
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
-    this.aliasBucketFileNameMapping = aliasBucketFileNameMapping;
-  }
-
-  public LinkedHashMap<String, Integer> getBucketFileNameMapping() {
-    return bucketFileNameMapping;
-  }
-
-  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping) {
-    this.bucketFileNameMapping = bucketFileNameMapping;
+  public void setBucketMapjoinContext(BucketMapJoinContext bucketMapjoinContext) {
+    this.bucketMapjoinContext = bucketMapjoinContext;
   }
 }

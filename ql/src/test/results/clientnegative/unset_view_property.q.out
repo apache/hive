@@ -1,0 +1,25 @@
+PREHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testView
+PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
+ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
+ The following property propX does not exist in testview

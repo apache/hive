@@ -4,11 +4,9 @@ POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view v as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe formatted v
@@ -44,37 +42,41 @@ View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, 
 PREHOOK: query: -- modifying definition of unpartitioned view
 create or replace view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- modifying definition of unpartitioned view
 create or replace view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: alter view v add partition (ds='2008-04-08',hr='11')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@v
 POSTHOOK: query: alter view v add partition (ds='2008-04-08',hr='11')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v@ds=2008-04-08/hr=11
 PREHOOK: query: alter view v add partition (ds='2008-04-08',hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@v
 POSTHOOK: query: alter view v add partition (ds='2008-04-08',hr='12')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v@ds=2008-04-08/hr=12
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
@@ -126,19 +128,19 @@ ds=2008-04-08/hr=12
 PREHOOK: query: -- altering partitioned view 1
 create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- altering partitioned view 1
 create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
@@ -189,19 +191,19 @@ ds=2008-04-08/hr=12
 PREHOOK: query: -- altering partitioned view 2
 create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- altering partitioned view 2
 create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
@@ -267,11 +269,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcpart_temp
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart_temp
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart_temp
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: drop table srcpart_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_temp
@@ -283,12 +283,10 @@ POSTHOOK: Output: default@srcpart_temp
 PREHOOK: query: -- v is now invalid
 create or replace view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- v is now invalid
 create or replace view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-#### A masked pattern was here ####
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe formatted v

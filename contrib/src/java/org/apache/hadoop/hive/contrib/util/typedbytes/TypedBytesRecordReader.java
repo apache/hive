@@ -31,7 +31,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.io.NonSyncDataOutputBuffer;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -71,21 +71,21 @@ public class TypedBytesRecordReader implements RecordReader {
 
   private static Map<Type, String> typedBytesToTypeName = new HashMap<Type, String>();
   static {
-    typedBytesToTypeName.put(getType(1), Constants.TINYINT_TYPE_NAME);
-    typedBytesToTypeName.put(getType(2), Constants.BOOLEAN_TYPE_NAME);
-    typedBytesToTypeName.put(getType(3), Constants.INT_TYPE_NAME);
-    typedBytesToTypeName.put(getType(4), Constants.BIGINT_TYPE_NAME);
-    typedBytesToTypeName.put(getType(5), Constants.FLOAT_TYPE_NAME);
-    typedBytesToTypeName.put(getType(6), Constants.DOUBLE_TYPE_NAME);
-    typedBytesToTypeName.put(getType(7), Constants.STRING_TYPE_NAME);
-    typedBytesToTypeName.put(getType(11), Constants.SMALLINT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(1), serdeConstants.TINYINT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(2), serdeConstants.BOOLEAN_TYPE_NAME);
+    typedBytesToTypeName.put(getType(3), serdeConstants.INT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(4), serdeConstants.BIGINT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(5), serdeConstants.FLOAT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(6), serdeConstants.DOUBLE_TYPE_NAME);
+    typedBytesToTypeName.put(getType(7), serdeConstants.STRING_TYPE_NAME);
+    typedBytesToTypeName.put(getType(11), serdeConstants.SMALLINT_TYPE_NAME);
   }
 
   public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     din = new DataInputStream(in);
     tbIn = new TypedBytesWritableInput(din);
     tbOut = new TypedBytesWritableOutput(barrStr);
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     columnTypes = Arrays.asList(columnTypeProperty.split(","));
     for (String columnType : columnTypes) {
       PrimitiveTypeEntry dstTypeEntry = PrimitiveObjectInspectorUtils
@@ -205,21 +205,21 @@ public class TypedBytesRecordReader implements RecordReader {
 
     Writable w = (Writable) converters.get(pos).convert(inpw);
 
-    if (typ.equalsIgnoreCase(Constants.BOOLEAN_TYPE_NAME)) {
+    if (typ.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
       tbOut.writeBoolean((BooleanWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.TINYINT_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)) {
       tbOut.writeByte((ByteWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.SMALLINT_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)) {
       tbOut.writeShort((ShortWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.INT_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)) {
       tbOut.writeInt((IntWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
       tbOut.writeLong((LongWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.FLOAT_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
       tbOut.writeFloat((FloatWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.DOUBLE_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
       tbOut.writeDouble((DoubleWritable) w);
-    } else if (typ.equalsIgnoreCase(Constants.STRING_TYPE_NAME)) {
+    } else if (typ.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
       tbOut.writeText((Text) w);
     } else {
       assert false;

@@ -60,9 +60,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -74,9 +79,14 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
@@ -117,6 +127,8 @@ STAGE PLANS:
               TotalFiles: 2
               GatherStats: true
               MultiFileSpray: true
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Move Operator
@@ -241,10 +253,12 @@ STAGE PLANS:
 
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket3_1
 PREHOOK: Input: default@bucket3_1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket3_1
 POSTHOOK: Input: default@bucket3_1@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

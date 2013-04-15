@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Field;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javolution.util.FastBitSet;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -39,12 +42,18 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyString;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -58,6 +67,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -68,9 +78,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   private static final Log LOG = LogFactory.getLog(GroupByOperator.class
       .getName());
-
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
+
+  public static final String counterNameHashOut = "COUNT_HASH_OUT";
 
   protected transient ExprNodeEvaluator[] keyFields;
   protected transient ObjectInspector[] keyObjectInspectors;
@@ -99,7 +110,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   protected transient ArrayList<ObjectInspector> objectInspectors;
   transient ArrayList<String> fieldNames;
 
-  transient KeyWrapperFactory keyWrapperFactory;
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2,
   // MERGEPARTIAL
   protected transient KeyWrapper currentKeys;
@@ -112,8 +122,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
   protected transient HashSet<KeyWrapper> keysCurrentGroup;
-
-  transient boolean bucketGroup;
 
   transient boolean firstRow;
   transient long totalMemory;
@@ -138,6 +146,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   public static MemoryMXBean memoryMXBean;
   private long maxMemory;
   private float memoryThreshold;
+
+  private boolean groupingSetsPresent;
+  private int groupingSetsPosition;
+  private List<Integer> groupingSets;
+  private List<FastBitSet> groupingSetsBitSet;
+  transient private List<Object> newKeysGroupingSets;
 
   /**
    * This is used to store the position and field names for variable length
@@ -177,6 +191,19 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   transient int countAfterReport;
   transient int heartbeatInterval;
 
+  public static FastBitSet groupingSet2BitSet(int value) {
+    FastBitSet bits = new FastBitSet();
+    int index = 0;
+    while (value != 0) {
+      if (value % 2 != 0) {
+        bits.set(index);
+      }
+      ++index;
+      value = value >>> 1;
+    }
+    return bits;
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     totalMemory = Runtime.getRuntime().totalMemory();
@@ -186,19 +213,39 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     heartbeatInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
     countAfterReport = 0;
-
+    groupingSetsPresent = conf.isGroupingSetsPresent();
     ObjectInspector rowInspector = inputObjInspectors[0];
 
     // init keyFields
-    keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
-    keyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
-    currentKeyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
-    for (int i = 0; i < keyFields.length; i++) {
+    int numKeys = conf.getKeys().size();
+
+    keyFields = new ExprNodeEvaluator[numKeys];
+    keyObjectInspectors = new ObjectInspector[numKeys];
+    currentKeyObjectInspectors = new ObjectInspector[numKeys];
+    for (int i = 0; i < numKeys; i++) {
       keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils
-          .getStandardObjectInspector(keyObjectInspectors[i],
-          ObjectInspectorCopyOption.WRITABLE);
+        .getStandardObjectInspector(keyObjectInspectors[i],
+        ObjectInspectorCopyOption.WRITABLE);
+    }
+
+    // Initialize the constants for the grouping sets, so that they can be re-used for
+    // each row
+    if (groupingSetsPresent) {
+      groupingSets = conf.getListGroupingSets();
+      groupingSetsPosition = conf.getGroupingSetPosition();
+      newKeysGroupingSets = new ArrayList<Object>();
+      groupingSetsBitSet = new ArrayList<FastBitSet>();
+
+      for (Integer groupingSet: groupingSets) {
+        // Create the mapping corresponding to the grouping set
+        ExprNodeEvaluator groupingSetValueEvaluator =
+          ExprNodeEvaluatorFactory.get(new ExprNodeConstantDesc(String.valueOf(groupingSet)));
+
+        newKeysGroupingSets.add(groupingSetValueEvaluator.evaluate(null));
+        groupingSetsBitSet.add(groupingSet2BitSet(groupingSet));
+      }
     }
 
     // initialize unionExpr for reduce-side
@@ -316,15 +363,21 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     for (ExprNodeEvaluator keyField : keyFields) {
       objectInspectors.add(null);
     }
+    MapredContext context = MapredContext.get();
+    if (context != null) {
+      for (GenericUDAFEvaluator genericUDAFEvaluator : aggregationEvaluators) {
+        context.setup(genericUDAFEvaluator);
+      }
+    }
     for (int i = 0; i < aggregationEvaluators.length; i++) {
       ObjectInspector roi = aggregationEvaluators[i].init(conf.getAggregators()
           .get(i).getMode(), aggregationParameterObjectInspectors[i]);
       objectInspectors.add(roi);
     }
 
-    bucketGroup = conf.getBucketGroup();
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
-    if (conf.getMode() != GroupByDesc.Mode.HASH || bucketGroup) {
+    if ((conf.getMode() != GroupByDesc.Mode.HASH || conf.getBucketGroup()) &&
+      (!groupingSetsPresent)) {
       aggregations = newAggregations();
       hashAggr = false;
     } else {
@@ -367,7 +420,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, objectInspectors);
 
-    keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors, currentKeyObjectInspectors);
+    KeyWrapperFactory keyWrapperFactory =
+      new KeyWrapperFactory(keyFields, keyObjectInspectors, currentKeyObjectInspectors);
 
     newKeys = keyWrapperFactory.getKeyWrapper();
 
@@ -430,6 +484,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     case STRING:
       keyPositionsSize.add(new Integer(pos));
       return javaObjectOverHead;
+    case BINARY:
+      keyPositionsSize.add(new Integer(pos));
+      return javaObjectOverHead;
+    case TIMESTAMP:
+      return javaObjectOverHead + javaSizePrimitiveType;
     default:
       return javaSizeUnknownType;
     }
@@ -461,7 +520,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       return javaSizePrimitiveType;
     }
 
-    if (c.isInstance(new String())) {
+    if (c.isInstance(new Timestamp(0))){
+      return javaObjectOverHead + javaSizePrimitiveType;
+    }
+
+    if (c.isInstance(new String()) || c.isInstance(new ByteArrayRef())) {
       int idx = 0;
       varLenFields v = null;
       for (idx = 0; idx < aggrPositions.size(); idx++) {
@@ -686,6 +749,24 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
   }
 
+  private void processKey(Object row,
+      ObjectInspector rowInspector) throws HiveException {
+    if (hashAggr) {
+      newKeys.setHashKey();
+      processHashAggr(row, rowInspector, newKeys);
+    } else {
+      processAggr(row, rowInspector, newKeys);
+    }
+
+    firstRowInGroup = false;
+
+    if (countAfterReport != 0 && (countAfterReport % heartbeatInterval) == 0
+      && (reporter != null)) {
+      reporter.progress();
+      countAfterReport = 0;
+    }
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     firstRow = false;
@@ -715,21 +796,32 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
     try {
       countAfterReport++;
-
       newKeys.getNewKey(row, rowInspector);
-      if (hashAggr) {
-        newKeys.setHashKey();
-        processHashAggr(row, rowInspector, newKeys);
+
+      if (groupingSetsPresent) {
+        Object[] newKeysArray = newKeys.getKeyArray();
+        Object[] cloneNewKeysArray = new Object[newKeysArray.length];
+        for (int keyPos = 0; keyPos < groupingSetsPosition; keyPos++) {
+          cloneNewKeysArray[keyPos] = newKeysArray[keyPos];
+        }
+
+        for (int groupingSetPos = 0; groupingSetPos < groupingSets.size(); groupingSetPos++) {
+          for (int keyPos = 0; keyPos < groupingSetsPosition; keyPos++) {
+            newKeysArray[keyPos] = null;
+          }
+
+          FastBitSet bitset = groupingSetsBitSet.get(groupingSetPos);
+          // Some keys need to be left to null corresponding to that grouping set.
+          for (int keyPos = bitset.nextSetBit(0); keyPos >= 0;
+            keyPos = bitset.nextSetBit(keyPos+1)) {
+            newKeysArray[keyPos] = cloneNewKeysArray[keyPos];
+          }
+
+          newKeysArray[groupingSetsPosition] = newKeysGroupingSets.get(groupingSetPos);
+          processKey(row, rowInspector);
+        }
       } else {
-        processAggr(row, rowInspector, newKeys);
-      }
-
-      firstRowInGroup = false;
-
-      if (countAfterReport != 0 && (countAfterReport % heartbeatInterval) == 0
-          && (reporter != null)) {
-        reporter.progress();
-        countAfterReport = 0;
+        processKey(row, rowInspector);
       }
     } catch (HiveException e) {
       throw e;
@@ -781,7 +873,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   }
 
   // Non-hash aggregation
-  private void processAggr(Object row, ObjectInspector rowInspector,
+  private void processAggr(Object row,
+      ObjectInspector rowInspector,
       KeyWrapper newKeys) throws HiveException {
     // Prepare aggs for updating
     AggregationBuffer[] aggs = null;
@@ -791,7 +884,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
     boolean keysAreEqual = (currentKeys != null && newKeys != null)?
         newKeys.equals(currentKeys) : false;
-
 
     // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual) {
@@ -848,7 +940,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         Object key = newKeys.getKeyArray()[pos.intValue()];
         // Ignore nulls
         if (key != null) {
-          if (key instanceof LazyPrimitive) {
+          if (key instanceof LazyString) {
               totalVariableSize +=
                   ((LazyPrimitive<LazyStringObjectInspector, Text>) key).
                       getWritableObject().getLength();
@@ -856,6 +948,14 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
             totalVariableSize += ((String) key).length();
           } else if (key instanceof Text) {
             totalVariableSize += ((Text) key).getLength();
+          } else if (key instanceof LazyBinary) {
+            totalVariableSize +=
+                ((LazyPrimitive<LazyBinaryObjectInspector, BytesWritable>) key).
+                    getWritableObject().getLength();
+          } else if (key instanceof BytesWritable) {
+            totalVariableSize += ((BytesWritable) key).getLength();
+          } else if (key instanceof ByteArrayRef) {
+            totalVariableSize += ((ByteArrayRef) key).getData().length;
           }
         }
       }
@@ -873,7 +973,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
         try {
           for (Field f : fieldsVarLen) {
-            totalVariableSize += ((String) f.get(agg)).length();
+            Object o = f.get(agg);
+            if (o instanceof String){
+              totalVariableSize += ((String)o).length();
+            }
+            else if (o instanceof ByteArrayRef){
+              totalVariableSize += ((ByteArrayRef)o).getData().length;
+            }
           }
         } catch (IllegalAccessException e) {
           assert false;
@@ -942,18 +1048,19 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    *          The keys in the record
    * @throws HiveException
    */
-  protected void forward(Object[] keys, AggregationBuffer[] aggs)
-      throws HiveException {
-    int totalFields = keys.length+ aggs.length;
+  protected void forward(Object[] keys,
+      AggregationBuffer[] aggs) throws HiveException {
+
+    int totalFields = keys.length + aggs.length;
     if (forwardCache == null) {
       forwardCache = new Object[totalFields];
     }
+
     for (int i = 0; i < keys.length; i++) {
       forwardCache[i] = keys[i];
     }
     for (int i = 0; i < aggs.length; i++) {
-      forwardCache[keys.length + i] = aggregationEvaluators[i]
-          .evaluate(aggs[i]);
+      forwardCache[keys.length + i] = aggregationEvaluators[i].evaluate(aggs[i]);
     }
 
     forward(forwardCache, outputObjInspector);
@@ -967,6 +1074,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   public void closeOp(boolean abort) throws HiveException {
     if (!abort) {
       try {
+        // put the hash related stats in statsMap if applicable, so that they
+        // are sent to jt as counters
+        if (hashAggr) {
+          incrCounter(counterNameHashOut, numRowsHashTbl);
+        }
+
         // If there is no grouping key and no row came to this operator
         if (firstRow && (keyFields.length == 0)) {
           firstRow = false;
@@ -1026,9 +1139,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
   }
 
+  @Override
+  protected List<String> getAdditionalCounters() {
+    List<String> ctrList = new ArrayList<String>();
+    ctrList.add(getWrappedCounterName(counterNameHashOut));
+    return ctrList;
+  }
+
   // Group by contains the columns needed - no need to aggregate from children
   public List<String> genColLists(
-      HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
+      HashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx) {
     List<String> colLists = new ArrayList<String>();
     ArrayList<ExprNodeDesc> keys = conf.getKeys();
     for (ExprNodeDesc key : keys) {
@@ -1051,6 +1171,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "GBY";
   }
 

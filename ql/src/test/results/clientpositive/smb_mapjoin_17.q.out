@@ -1,0 +1,917 @@
+PREHOOK: query: -- Create bucketed and sorted tables
+CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Create bucketed and sorted tables
+CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table3
+PREHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table4
+PREHOOK: query: CREATE TABLE test_table5 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table5 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table5
+PREHOOK: query: CREATE TABLE test_table6 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table6 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table6
+PREHOOK: query: CREATE TABLE test_table7 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table7 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table7
+PREHOOK: query: CREATE TABLE test_table8 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table8 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table8
+PREHOOK: query: INSERT OVERWRITE TABLE test_table1
+SELECT * FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table1
+SELECT * FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table1
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2
+SELECT * FROM src  WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2
+SELECT * FROM src  WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table2
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3
+SELECT * FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table3
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3
+SELECT * FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table3
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table4
+SELECT * FROM src  WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table4
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table4
+SELECT * FROM src  WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table4
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table5
+SELECT * FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table5
+SELECT * FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table5
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table6
+SELECT * FROM src  WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table6
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table6
+SELECT * FROM src  WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table6
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table7
+SELECT * FROM src WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table7
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table7
+SELECT * FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table7
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table8
+SELECT * FROM src  WHERE key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table8
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table8
+SELECT * FROM src  WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table8
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
+EXPLAIN
+SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
+FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+JOIN test_table3 c ON a.key = c.key
+JOIN test_table4 d ON a.key = d.key
+JOIN test_table5 e ON a.key = e.key
+JOIN test_table6 f ON a.key = f.key
+JOIN test_table7 g ON a.key = g.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
+EXPLAIN
+SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
+FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+JOIN test_table3 c ON a.key = c.key
+JOIN test_table4 d ON a.key = d.key
+JOIN test_table5 e ON a.key = e.key
+JOIN test_table6 f ON a.key = f.key
+JOIN test_table7 g ON a.key = g.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME test_table1) a) (TOK_TABREF (TOK_TABNAME test_table2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME test_table3) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME test_table4) d) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL d) key))) (TOK_TABREF (TOK_TABNAME test_table5) e) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL e) key))) (TOK_TABREF (TOK_TABNAME test_table6) f) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL f) key))) (TOK_TABREF (TOK_TABNAME test_table7) g) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL g) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b c d e f g))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+                   Inner Join 0 to 2
+                   Inner Join 0 to 3
+                   Inner Join 0 to 4
+                   Inner Join 0 to 5
+                   Inner Join 0 to 6
+              condition expressions:
+                0 
+                1 
+                2 
+                3 
+                4 
+                5 
+                6 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+                2 [Column[key]]
+                3 [Column[key]]
+                4 [Column[key]]
+                5 [Column[key]]
+                6 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
+FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+JOIN test_table3 c ON a.key = c.key
+JOIN test_table4 d ON a.key = d.key
+JOIN test_table5 e ON a.key = e.key
+JOIN test_table6 f ON a.key = f.key
+JOIN test_table7 g ON a.key = g.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
+FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+JOIN test_table3 c ON a.key = c.key
+JOIN test_table4 d ON a.key = d.key
+JOIN test_table5 e ON a.key = e.key
+JOIN test_table6 f ON a.key = f.key
+JOIN test_table7 g ON a.key = g.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+4378
+PREHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
+-- a single MR job
+EXPLAIN
+SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
+-- a single MR job
+EXPLAIN
+SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME test_table1) a) (TOK_TABREF (TOK_TABNAME test_table2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME test_table3) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME test_table4) d) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL d) key))) (TOK_TABREF (TOK_TABNAME test_table5) e) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL e) key))) (TOK_TABREF (TOK_TABNAME test_table6) f) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL f) key))) (TOK_TABREF (TOK_TABNAME test_table7) g) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL g) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+                   Left Outer Join0 to 2
+                   Left Outer Join0 to 3
+                   Left Outer Join0 to 4
+                   Left Outer Join0 to 5
+                   Left Outer Join0 to 6
+              condition expressions:
+                0 
+                1 
+                2 
+                3 
+                4 
+                5 
+                6 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+                2 [Column[key]]
+                3 [Column[key]]
+                4 [Column[key]]
+                5 [Column[key]]
+                6 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+4378
+PREHOOK: query: EXPLAIN
+SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME test_table1) a) (TOK_TABREF (TOK_TABNAME test_table2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME test_table3) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME test_table4) d) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL d) key))) (TOK_TABREF (TOK_TABNAME test_table5) e) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL e) key))) (TOK_TABREF (TOK_TABNAME test_table6) f) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL f) key))) (TOK_TABREF (TOK_TABNAME test_table7) g) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL g) key))) (TOK_TABREF (TOK_TABNAME test_table8) h) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL h) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+                   Left Outer Join0 to 2
+                   Left Outer Join0 to 3
+                   Left Outer Join0 to 4
+                   Left Outer Join0 to 5
+                   Left Outer Join0 to 6
+                   Left Outer Join0 to 7
+              condition expressions:
+                0 
+                1 
+                2 
+                3 
+                4 
+                5 
+                6 
+                7 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+                2 [Column[key]]
+                3 [Column[key]]
+                4 [Column[key]]
+                5 [Column[key]]
+                6 [Column[key]]
+                7 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+PREHOOK: Input: default@test_table8
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*)
+FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+POSTHOOK: Input: default@test_table8
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+13126
+PREHOOK: query: -- outer join with max 16 aliases
+EXPLAIN
+SELECT a.*
+FROM test_table1 a
+LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+LEFT OUTER JOIN test_table4 i ON a.key = i.key
+LEFT OUTER JOIN test_table5 j ON a.key = j.key
+LEFT OUTER JOIN test_table6 k ON a.key = k.key
+LEFT OUTER JOIN test_table7 l ON a.key = l.key
+LEFT OUTER JOIN test_table8 m ON a.key = m.key
+LEFT OUTER JOIN test_table7 n ON a.key = n.key
+LEFT OUTER JOIN test_table8 o ON a.key = o.key
+LEFT OUTER JOIN test_table4 p ON a.key = p.key
+LEFT OUTER JOIN test_table5 q ON a.key = q.key
+LEFT OUTER JOIN test_table6 r ON a.key = r.key
+LEFT OUTER JOIN test_table7 s ON a.key = s.key
+LEFT OUTER JOIN test_table8 t ON a.key = t.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- outer join with max 16 aliases
+EXPLAIN
+SELECT a.*
+FROM test_table1 a
+LEFT OUTER JOIN test_table2 b ON a.key = b.key
+LEFT OUTER JOIN test_table3 c ON a.key = c.key
+LEFT OUTER JOIN test_table4 d ON a.key = d.key
+LEFT OUTER JOIN test_table5 e ON a.key = e.key
+LEFT OUTER JOIN test_table6 f ON a.key = f.key
+LEFT OUTER JOIN test_table7 g ON a.key = g.key
+LEFT OUTER JOIN test_table8 h ON a.key = h.key
+LEFT OUTER JOIN test_table4 i ON a.key = i.key
+LEFT OUTER JOIN test_table5 j ON a.key = j.key
+LEFT OUTER JOIN test_table6 k ON a.key = k.key
+LEFT OUTER JOIN test_table7 l ON a.key = l.key
+LEFT OUTER JOIN test_table8 m ON a.key = m.key
+LEFT OUTER JOIN test_table7 n ON a.key = n.key
+LEFT OUTER JOIN test_table8 o ON a.key = o.key
+LEFT OUTER JOIN test_table4 p ON a.key = p.key
+LEFT OUTER JOIN test_table5 q ON a.key = q.key
+LEFT OUTER JOIN test_table6 r ON a.key = r.key
+LEFT OUTER JOIN test_table7 s ON a.key = s.key
+LEFT OUTER JOIN test_table8 t ON a.key = t.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME test_table1) a) (TOK_TABREF (TOK_TABNAME test_table2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME test_table3) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME test_table4) d) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL d) key))) (TOK_TABREF (TOK_TABNAME test_table5) e) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL e) key))) (TOK_TABREF (TOK_TABNAME test_table6) f) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL f) key))) (TOK_TABREF (TOK_TABNAME test_table7) g) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL g) key))) (TOK_TABREF (TOK_TABNAME test_table8) h) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL h) key))) (TOK_TABREF (TOK_TABNAME test_table4) i) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL i) key))) (TOK_TABREF (TOK_TABNAME test_table5) j) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL j) key))) (TOK_TABREF (TOK_TABNAME test_table6) k) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL k) key))) (TOK_TABREF (TOK_TABNAME test_table7) l) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL l) key))) (TOK_TABREF (TOK_TABNAME test_table8) m) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL m) key))) (TOK_TABREF (TOK_TABNAME test_table7) n) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL n) key))) (TOK_TABREF (TOK_TABNAME test_table8) o) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL o) key))) (TOK_TABREF (TOK_TABNAME test_table4) p) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL p) key))) (TOK_TABREF (TOK_TABNAME test_table5) q) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL q) key))) (TOK_TABREF (TOK_TABNAME test_table6) r) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL r) key))) (TOK_TABREF (TOK_TABNAME test_table7) s) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL s) key))) (TOK_TABREF (TOK_TABNAME test_table8) t) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL t) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+                   Left Outer Join0 to 2
+                   Left Outer Join0 to 3
+                   Left Outer Join0 to 4
+                   Left Outer Join0 to 5
+                   Left Outer Join0 to 6
+                   Left Outer Join0 to 7
+                   Left Outer Join0 to 8
+                   Left Outer Join0 to 9
+                   Left Outer Join0 to 10
+                   Left Outer Join0 to 11
+                   Left Outer Join0 to 12
+                   Left Outer Join0 to 13
+                   Left Outer Join0 to 14
+                   Left Outer Join0 to 15
+              condition expressions:
+                0 {key} {value}
+                1 
+                2 
+                3 
+                4 
+                5 
+                6 
+                7 
+                8 
+                9 
+                10 
+                11 
+                12 
+                13 
+                14 
+                15 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+                2 [Column[key]]
+                3 [Column[key]]
+                4 [Column[key]]
+                5 [Column[key]]
+                6 [Column[key]]
+                7 [Column[key]]
+                8 [Column[key]]
+                9 [Column[key]]
+                10 [Column[key]]
+                11 [Column[key]]
+                12 [Column[key]]
+                13 [Column[key]]
+                14 [Column[key]]
+                15 [Column[key]]
+              outputColumnNames: _col0, _col1
+              Position of Big Table: 0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: int
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: int
+                tag: 0
+                value expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
+        q 
+          TableScan
+            alias: q
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 1
+        r 
+          TableScan
+            alias: r
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 2
+        s 
+          TableScan
+            alias: s
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 3
+        t 
+          TableScan
+            alias: t
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 4
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+               Left Outer Join0 to 2
+               Left Outer Join0 to 3
+               Left Outer Join0 to 4
+          condition expressions:
+            0 {VALUE._col24} {VALUE._col25}
+            1 
+            2 
+            3 
+            4 
+          handleSkewJoin: false
+          outputColumnNames: _col24, _col25
+          Select Operator
+            expressions:
+                  expr: _col24
+                  type: int
+                  expr: _col25
+                  type: string
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+

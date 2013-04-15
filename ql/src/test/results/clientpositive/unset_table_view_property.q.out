@@ -1,0 +1,305 @@
+PREHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE testTable(col1 INT, col2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@testTable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET TABLE PROPERTIES
+ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- UNSET TABLE PROPERTIES
+ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+c	3
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET all the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- UNSET all the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+d	4
+#### A masked pattern was here ####
+c	3
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET a subset of the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- UNSET a subset of the properties
+ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+c	3
+#### A masked pattern was here ####
+PREHOOK: query: -- the same property being UNSET multiple times
+ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- the same property being UNSET multiple times
+ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+d	4
+#### A masked pattern was here ####
+b	2
+c	3
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+c	3
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@testtable
+PREHOOK: Output: default@testtable
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@testtable
+POSTHOOK: Output: default@testtable
+PREHOOK: query: SHOW TBLPROPERTIES testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+a	1
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET VIEW PROPERTIES
+CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- UNSET VIEW PROPERTIES
+CREATE VIEW testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testView
+PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET all the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: -- UNSET all the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propB')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+#### A masked pattern was here ####
+propD	400
+propC	300
+PREHOOK: query: -- UNSET a subset of the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: -- UNSET a subset of the properties
+ALTER VIEW testView UNSET TBLPROPERTIES ('propA', 'propC')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propD	400
+PREHOOK: query: -- the same property being UNSET multiple times
+ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: -- the same property being UNSET multiple times
+ALTER VIEW testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+propD	400
+propC	300
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@testview
+PREHOOK: Output: default@testview
+POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
+ALTER VIEW testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@testview
+POSTHOOK: Output: default@testview
+PREHOOK: query: SHOW TBLPROPERTIES testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+propA	100
+#### A masked pattern was here ####

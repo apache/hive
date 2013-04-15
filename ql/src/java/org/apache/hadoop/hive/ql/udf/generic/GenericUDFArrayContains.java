@@ -63,7 +63,7 @@ public class GenericUDFArrayContains extends GenericUDF {
     // Check if ARRAY_IDX argument is of category LIST
     if (!arguments[ARRAY_IDX].getCategory().equals(Category.LIST)) {
       throw new UDFArgumentTypeException(ARRAY_IDX,
-          "\"" + org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "\" "
+          "\"" + org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "\" "
           + "expected at function ARRAY_CONTAINS, but "
           + "\"" + arguments[ARRAY_IDX].getTypeName() + "\" "
           + "is found");

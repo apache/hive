@@ -55,10 +55,11 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.service.HiveClient;
@@ -77,8 +78,8 @@ import sun.misc.SignalHandler;
  */
 public class CliDriver {
 
-  public static String prompt = "hive";
-  public static String prompt2 = "    "; // when ';' is not yet seen
+  public static String prompt = null;
+  public static String prompt2 = null; // when ';' is not yet seen
   public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
 
   public static final String HIVERCFILE = ".hiverc";
@@ -265,11 +266,13 @@ public class CliDriver {
 
             printHeader(qp, out);
 
+            int counter = 0;
             try {
               while (qp.getResults(res)) {
                 for (String r : res) {
                   out.println(r);
                 }
+                counter += res.size();
                 res.clear();
                 if (out.checkError()) {
                   break;
@@ -288,10 +291,9 @@ public class CliDriver {
             }
 
             long end = System.currentTimeMillis();
-            if (end > start) {
-              double timeTaken = (end - start) / 1000.0;
-              console.printInfo("Time taken: " + timeTaken + " seconds", null);
-            }
+            double timeTaken = (end - start) / 1000.0;
+            console.printInfo("Time taken: " + timeTaken + " seconds" +
+                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
 
           } else {
             String firstToken = tokenizeCmd(cmd.trim())[0];
@@ -300,7 +302,12 @@ public class CliDriver {
             if (ss.getIsVerbose()) {
               ss.out.println(firstToken + " " + cmd_1);
             }
-            ret = proc.run(cmd_1).getResponseCode();
+            CommandProcessorResponse res = proc.run(cmd_1);
+            if (res.getResponseCode() != 0) {
+              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
+                  ", cause: " + res.getErrorMessage());
+            }
+            ret = res.getResponseCode();
           }
         }
       } catch (CommandNeedRetryException e) {
@@ -466,7 +473,21 @@ public class CliDriver {
     }
     if (ss.initFiles.size() == 0) {
       if (System.getenv("HIVE_HOME") != null) {
-        String hivercDefault = System.getenv("HIVE_HOME") + File.separator + "bin" + File.separator + HIVERCFILE;
+        String hivercDefault = System.getenv("HIVE_HOME") + File.separator +
+          "bin" + File.separator + HIVERCFILE;
+        if (new File(hivercDefault).exists()) {
+          int rc = processFile(hivercDefault);
+          if (rc != 0) {
+            System.exit(rc);
+          }
+          console.printError("Putting the global hiverc in " +
+                             "$HIVE_HOME/bin/.hiverc is deprecated. Please "+
+                             "use $HIVE_CONF_DIR/.hiverc instead.");
+        }
+      }
+      if (System.getenv("HIVE_CONF_DIR") != null) {
+        String hivercDefault = System.getenv("HIVE_CONF_DIR") + File.separator
+          + HIVERCFILE;
         if (new File(hivercDefault).exists()) {
           int rc = processFile(hivercDefault);
           if (rc != 0) {
@@ -475,7 +496,8 @@ public class CliDriver {
         }
       }
       if (System.getProperty("user.home") != null) {
-        String hivercUser = System.getProperty("user.home") + File.separator + HIVERCFILE;
+        String hivercUser = System.getProperty("user.home") + File.separator +
+          HIVERCFILE;
         if (new File(hivercUser).exists()) {
           int rc = processFile(hivercUser);
           if (rc != 0) {
@@ -487,7 +509,17 @@ public class CliDriver {
     ss.setIsSilent(saveSilent);
   }
 
-  public static Completor getCommandCompletor () {
+  public void processSelectDatabase(CliSessionState ss) throws IOException {
+    String database = ss.database;
+    if (database != null) {
+      int rc = processLine("use " + database + ";");
+      if (rc != 0) {
+        System.exit(rc);
+      }
+    }
+  }
+
+  public static Completor[] getCommandCompletor () {
     // SimpleCompletor matches against a pre-defined wordlist
     // We start with an empty wordlist and build it up
     SimpleCompletor sc = new SimpleCompletor(new String[0]);
@@ -504,7 +536,7 @@ public class CliDriver {
     }
 
     // We add Hive keywords, including lower-cased versions
-    for (String s : ParseDriver.getKeywords()) {
+    for (String s : HiveParser.getKeywords()) {
       sc.addCandidateString(s);
       sc.addCandidateString(s.toLowerCase());
     }
@@ -550,7 +582,32 @@ public class CliDriver {
       }
     };
 
-    return completor;
+    HiveConf.ConfVars[] confs = HiveConf.ConfVars.values();
+    String[] vars = new String[confs.length];
+    for (int i = 0; i < vars.length; i++) {
+      vars[i] = confs[i].varname;
+    }
+    SimpleCompletor conf = new SimpleCompletor(vars);
+    conf.setDelimiter(".");
+
+    SimpleCompletor set = new SimpleCompletor("set") {
+      @Override
+      public int complete(String buffer, int cursor, List clist) {
+        return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
+      }
+    };
+    ArgumentCompletor propCompletor = new ArgumentCompletor(new Completor[]{set, conf}) {
+      @Override
+      @SuppressWarnings("unchecked")
+      public int complete(String buffer, int offset, List completions) {
+        int ret = super.complete(buffer, offset, completions);
+        if (completions.size() == 1) {
+          completions.set(0, ((String)completions.get(0)).trim());
+        }
+        return ret;
+      }
+    };
+    return new Completor[] {propCompletor, completor};
   }
 
   public static void main(String[] args) throws Exception {
@@ -605,6 +662,11 @@ public class CliDriver {
       ss.getOverriddenConfigurations().put((String) item.getKey(), (String) item.getValue());
     }
 
+    // read prompt configuration and substitute variables.
+    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = new VariableSubstitution().substitute(conf, prompt);
+    prompt2 = spacesForString(prompt);
+
     SessionState.start(ss);
 
     // connect to Hive Server
@@ -635,6 +697,9 @@ public class CliDriver {
     CliDriver cli = new CliDriver();
     cli.setHiveVariables(oproc.getHiveVariables());
 
+    // use the specified database if specified
+    cli.processSelectDatabase(ss);
+
     // Execute -i init files (always in silent mode)
     cli.processInitFiles(ss);
 
@@ -654,7 +719,9 @@ public class CliDriver {
     ConsoleReader reader = new ConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-    reader.addCompletor(getCommandCompletor());
+    for (Completor completor : getCommandCompletor()) {
+      reader.addCompletor(completor);
+    }
 
     String line;
     final String HISTORYFILE = ".hivehistory";

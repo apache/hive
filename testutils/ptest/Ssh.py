@@ -42,7 +42,7 @@ class SSHConnection():
         pre = []
         pre.append('cd "{0}"'.format(self.pwd))
         for (e, v) in self.env.iteritems():
-            pre.append('export {0}="{1}"'.format(e, v))
+            pre.append('export {0}=\\"{1}\\"'.format(e, v))
         for p in self.path:
             pre.append('export PATH="{0}:${{PATH}}"'.format(p))
         pre.append(cmd)
@@ -60,7 +60,7 @@ class SSHConnection():
             quiet = True
         else:
             print(cmd + '\n')
-        cmd = '''ssh -nT '{0}' "bash -c '{1}'"'''.format(self.host, cmd)
+        cmd = '''ssh '{0}' "bash -c '{1}'"'''.format(self.host, cmd)
         try:
             return Process.run(cmd, quiet, abandon_output)
         except Exception as e:

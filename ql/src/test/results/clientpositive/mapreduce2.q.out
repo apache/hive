@@ -7,18 +7,18 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1
 MAP src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
-USING '/bin/cat' AS (tkey, ten, one, tvalue)
+USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1
 MAP src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
-USING '/bin/cat' AS (tkey, ten, one, tvalue)
+USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (TOK_FUNCTION TOK_INT (/ (. (TOK_TABLE_OR_COL src) key) 10)) (TOK_FUNCTION TOK_INT (% (. (TOK_TABLE_OR_COL src) key) 10)) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey ten one tvalue)))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL tvalue) (TOK_TABLE_OR_COL tkey))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (TOK_FUNCTION TOK_INT (/ (. (TOK_TABLE_OR_COL src) key) 10)) (TOK_FUNCTION TOK_INT (% (. (TOK_TABLE_OR_COL src) key) 10)) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey ten one tvalue)))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL tvalue) (TOK_TABLE_OR_COL tkey))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -44,7 +44,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1, _col2, _col3
               Transform Operator
-                command: /bin/cat
+                command: cat
                 output info:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -104,7 +104,7 @@ STAGE PLANS:
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1
 MAP src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
-USING '/bin/cat' AS (tkey, ten, one, tvalue)
+USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -112,7 +112,7 @@ PREHOOK: Output: default@dest1
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1
 MAP src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
-USING '/bin/cat' AS (tkey, ten, one, tvalue)
+USING 'cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

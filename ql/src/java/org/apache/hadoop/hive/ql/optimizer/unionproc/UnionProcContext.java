@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
  * UnionProcContext.
@@ -38,16 +39,13 @@ public class UnionProcContext implements NodeProcessorCtx {
     private final transient boolean[] mapOnlySubq;
     private final transient boolean[] mapOnlySubqSet;
     private final transient boolean[] rootTask;
-    private final transient boolean[] mapJoinSubq;
 
     private transient int numInputs;
-    private transient boolean mapJoinQuery;
 
     public UnionParseContext(int numInputs) {
       this.numInputs = numInputs;
       mapOnlySubq = new boolean[numInputs];
       rootTask = new boolean[numInputs];
-      mapJoinSubq = new boolean[numInputs];
       mapOnlySubqSet = new boolean[numInputs];
     }
 
@@ -58,21 +56,6 @@ public class UnionProcContext implements NodeProcessorCtx {
     public void setMapOnlySubq(int pos, boolean mapOnlySubq) {
       this.mapOnlySubq[pos] = mapOnlySubq;
       this.mapOnlySubqSet[pos] = true;
-    }
-
-    public boolean getMapJoinSubq(int pos) {
-      return mapJoinSubq[pos];
-    }
-
-    public void setMapJoinSubq(int pos, boolean mapJoinSubq) {
-      this.mapJoinSubq[pos] = mapJoinSubq;
-      if (mapJoinSubq) {
-        mapJoinQuery = true;
-      }
-    }
-
-    public boolean getMapJoinQuery() {
-      return mapJoinQuery;
     }
 
     public boolean getRootTask(int pos) {
@@ -112,11 +95,13 @@ public class UnionProcContext implements NodeProcessorCtx {
       }
       return true;
     }
-
   }
 
   // the subqueries are map-only jobs
   private boolean mapOnlySubq;
+
+  // ParseContext
+  private ParseContext parseContext;
 
   /**
    * @return the mapOnlySubq
@@ -146,5 +131,13 @@ public class UnionProcContext implements NodeProcessorCtx {
 
   public UnionParseContext getUnionParseContext(UnionOperator u) {
     return uCtxMap.get(u);
+  }
+
+  public ParseContext getParseContext() {
+    return parseContext;
+  }
+
+  public void setParseContext(ParseContext parseContext) {
+    this.parseContext = parseContext;
   }
 }

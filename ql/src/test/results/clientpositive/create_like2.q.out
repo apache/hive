@@ -1,0 +1,55 @@
+PREHOOK: query: -- Tests the copying over of Table Parameters according to a HiveConf setting
+-- when doing a CREATE TABLE LIKE.
+
+CREATE TABLE table1(a INT, b STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests the copying over of Table Parameters according to a HiveConf setting
+-- when doing a CREATE TABLE LIKE.
+
+CREATE TABLE table1(a INT, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table1
+PREHOOK: query: ALTER TABLE table1 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: ALTER TABLE table1 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+PREHOOK: query: CREATE TABLE table2 LIKE table1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table2 LIKE table1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table2
+PREHOOK: query: DESC FORMATTED table2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED table2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	a                   	1                   
+	c                   	3                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

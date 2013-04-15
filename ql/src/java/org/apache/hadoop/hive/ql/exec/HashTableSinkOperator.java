@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +45,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -62,17 +58,16 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   /**
    * The expressions for join inputs's join keys.
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinKeys;
+  protected transient List<ExprNodeEvaluator>[] joinKeys;
   /**
    * The ObjectInspectors for the join inputs's join keys.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
+  protected transient List<ObjectInspector>[] joinKeysObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs's join keys.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
 
-  protected transient int posBigTableTag = -1; // one of the tables that is not in memory
   protected transient int posBigTableAlias = -1; // one of the tables that is not in memory
   transient int mapJoinRowsKey; // rows for a given key
 
@@ -84,34 +79,36 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   /**
    * The filters for join
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinFilters;
+  protected transient List<ExprNodeEvaluator>[] joinFilters;
+
+  protected transient int[][] filterMaps;
 
   protected transient int numAliases; // number of aliases
   /**
    * The expressions for join outputs.
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinValues;
+  protected transient List<ExprNodeEvaluator>[] joinValues;
   /**
    * The ObjectInspectors for the join inputs.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinValuesObjectInspectors;
+  protected transient List<ObjectInspector>[] joinValuesObjectInspectors;
   /**
    * The ObjectInspectors for join filters.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinFilterObjectInspectors;
+  protected transient List<ObjectInspector>[] joinFilterObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinValuesStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] joinValuesStandardObjectInspectors;
 
-  protected transient Map<Byte, List<ObjectInspector>> rowContainerStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] rowContainerStandardObjectInspectors;
 
   protected transient Byte[] order; // order in which the results should
   Configuration hconf;
   protected transient Byte alias;
-  protected transient Map<Byte, TableDesc> spillTableDesc; // spill tables are
+  protected transient TableDesc[] spillTableDesc; // spill tables are
 
-  protected transient Map<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> mapJoinTables;
+  protected transient HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>[] mapJoinTables;
   protected transient boolean noOuterJoin;
 
   private long rowNumber = 0;
@@ -124,16 +121,18 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     SerDe serde;
     TableDesc tblDesc;
     Configuration conf;
+    boolean hasFilter;
 
     /**
      * @param standardOI
      * @param serde
      */
     public HashTableSinkObjectCtx(ObjectInspector standardOI, SerDe serde, TableDesc tblDesc,
-        Configuration conf) {
+        boolean hasFilter, Configuration conf) {
       this.standardOI = standardOI;
       this.serde = serde;
       this.tblDesc = tblDesc;
+      this.hasFilter = hasFilter;
       this.conf = conf;
     }
 
@@ -153,6 +152,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     public TableDesc getTblDesc() {
       return tblDesc;
+    }
+
+    public boolean hasFilterTag() {
+      return hasFilter;
     }
 
     public Configuration getConf() {
@@ -178,6 +181,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
 
   @Override
+  @SuppressWarnings("unchecked")
   protected void initializeOp(Configuration hconf) throws HiveException {
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
@@ -185,11 +189,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     firstRow = true;
 
     // for small tables only; so get the big table position first
-    posBigTableTag = conf.getPosBigTable();
+    posBigTableAlias = conf.getPosBigTable();
 
     order = conf.getTagOrder();
-
-    posBigTableAlias = order[posBigTableTag];
 
     // initialize some variables, which used to be initialized in CommonJoinOperator
     numAliases = conf.getExprs().size();
@@ -197,51 +199,57 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     totalSz = 0;
 
     noOuterJoin = conf.isNoOuterJoin();
+    filterMaps = conf.getFilterMap();
+
+    int tagLen = conf.getTagLength();
 
     // process join keys
-    joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), order, posBigTableAlias);
+    joinKeys = new List[tagLen];
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
-        inputObjInspectors, posBigTableAlias);
+        inputObjInspectors, posBigTableAlias, tagLen);
     joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinKeysObjectInspectors, posBigTableAlias);
+        joinKeysObjectInspectors, posBigTableAlias, tagLen);
 
     // process join values
-    joinValues = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), order, posBigTableAlias);
+    joinValues = new List[tagLen];
+    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias);
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
-        inputObjInspectors, posBigTableAlias);
+        inputObjInspectors, posBigTableAlias, tagLen);
     joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinValuesObjectInspectors, posBigTableAlias);
+        joinValuesObjectInspectors, posBigTableAlias, tagLen);
 
     // process join filters
-    joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), order, posBigTableAlias);
+    joinFilters = new List[tagLen];
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias);
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
-        inputObjInspectors, posBigTableAlias);
+        inputObjInspectors, posBigTableAlias, tagLen);
 
     if (noOuterJoin) {
       rowContainerStandardObjectInspectors = joinValuesStandardObjectInspectors;
     } else {
-      Map<Byte, List<ObjectInspector>> rowContainerObjectInspectors = new HashMap<Byte, List<ObjectInspector>>();
+      List<ObjectInspector>[] rowContainerObjectInspectors = new List[tagLen];
       for (Byte alias : order) {
         if (alias == posBigTableAlias) {
           continue;
         }
-        ArrayList<ObjectInspector> rcOIs = new ArrayList<ObjectInspector>();
-        rcOIs.addAll(joinValuesObjectInspectors.get(alias));
-        // for each alias, add object inspector for boolean as the last element
-        rcOIs.add(PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
-        rowContainerObjectInspectors.put(alias, rcOIs);
+        List<ObjectInspector> rcOIs = joinValuesObjectInspectors[alias];
+        if (filterMaps != null && filterMaps[alias] != null) {
+          // for each alias, add object inspector for filter tag as the last element
+          rcOIs = new ArrayList<ObjectInspector>(rcOIs);
+          rcOIs.add(PrimitiveObjectInspectorFactory.writableShortObjectInspector);
+        }
+        rowContainerObjectInspectors[alias] = rcOIs;
       }
-      rowContainerStandardObjectInspectors = getStandardObjectInspectors(rowContainerObjectInspectors);
+      rowContainerStandardObjectInspectors = getStandardObjectInspectors(
+          rowContainerObjectInspectors, tagLen);
     }
 
     metadataValueTag = new int[numAliases];
     for (int pos = 0; pos < numAliases; pos++) {
       metadataValueTag[pos] = -1;
     }
-    mapJoinTables = new HashMap<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>>();
+    mapJoinTables = new HashMapWrapper[tagLen];
 
     int hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     float hashTableLoadFactor = HiveConf.getFloatVar(hconf,
@@ -255,31 +263,33 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // initialize the hash tables for other tables
     for (Byte pos : order) {
-      if (pos == posBigTableTag) {
+      if (pos == posBigTableAlias) {
         continue;
       }
 
       HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>(
           hashTableThreshold, hashTableLoadFactor, hashTableMaxMemoryUsage);
 
-      mapJoinTables.put(pos, hashTable);
+      mapJoinTables[pos] = hashTable;
     }
   }
 
 
 
-  protected static HashMap<Byte, List<ObjectInspector>> getStandardObjectInspectors(
-      Map<Byte, List<ObjectInspector>> aliasToObjectInspectors) {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ObjectInspector>> oiEntry : aliasToObjectInspectors.entrySet()) {
-      Byte alias = oiEntry.getKey();
-      List<ObjectInspector> oiList = oiEntry.getValue();
+  protected static List<ObjectInspector>[] getStandardObjectInspectors(
+      List<ObjectInspector>[] aliasToObjectInspectors, int maxTag) {
+    List<ObjectInspector>[] result = new List[maxTag];
+    for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
+      List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
+      if (oiList == null) {
+        continue;
+      }
       ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(oiList.size());
       for (int i = 0; i < oiList.size(); i++) {
         fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList.get(i),
             ObjectInspectorCopyOption.WRITABLE));
       }
-      result.put(alias, fieldOIList);
+      result[alias] = fieldOIList;
     }
     return result;
 
@@ -294,9 +304,12 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     MapJoinMetaData.clear();
     MapJoinMetaData.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
         ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
-            ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, hconf));
+            ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, false, hconf));
   }
 
+  private boolean hasFilter(int alias) {
+    return filterMaps != null && filterMaps[alias] != null;
+  }
   /*
    * This operator only process small tables Read the key/value pairs Load them into hashtable
    */
@@ -309,20 +322,17 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         setKeyMetaData();
         firstRow = false;
       }
-      alias = order[tag];
-      // alias = (byte)tag;
+      alias = (byte)tag;
 
       // compute keys and values as StandardObjects
-      AbstractMapJoinKey keyMap = JoinUtil.computeMapJoinKeys(row, joinKeys.get(alias),
-          joinKeysObjectInspectors.get(alias));
+      AbstractMapJoinKey keyMap = JoinUtil.computeMapJoinKeys(row, joinKeys[alias],
+          joinKeysObjectInspectors[alias]);
 
-      Object[] value = JoinUtil.computeMapJoinValues(row, joinValues.get(alias),
-          joinValuesObjectInspectors.get(alias), joinFilters.get(alias), joinFilterObjectInspectors
-              .get(alias), noOuterJoin);
+      Object[] value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
+          joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
+          filterMaps == null ? null : filterMaps[alias]);
 
-
-      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables
-          .get((byte) tag);
+      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables[alias];
 
       MapJoinObjectValue o = hashTable.get(keyMap);
       MapJoinRowContainer<Object[]> res = null;
@@ -370,7 +380,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     valueSerDe.initialize(null, valueTableDesc.getProperties());
 
-    List<ObjectInspector> newFields = rowContainerStandardObjectInspectors.get((Byte) alias);
+    List<ObjectInspector> newFields = rowContainerStandardObjectInspectors[alias];
     int length = newFields.size();
     List<String> newNames = new ArrayList<String>(length);
     for (int i = 0; i < length; i++) {
@@ -380,8 +390,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     StandardStructObjectInspector standardOI = ObjectInspectorFactory
         .getStandardStructObjectInspector(newNames, newFields);
 
-    MapJoinMetaData.put(Integer.valueOf(metadataValueTag[tag]), new HashTableSinkObjectCtx(
-        standardOI, valueSerDe, valueTableDesc, hconf));
+    int alias = Integer.valueOf(metadataValueTag[tag]);
+    MapJoinMetaData.put(alias, new HashTableSinkObjectCtx(
+        standardOI, valueSerDe, valueTableDesc, hasFilter(alias), hconf));
   }
 
   @Override
@@ -392,19 +403,21 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         String tmpURI = this.getExecContext().getLocalWork().getTmpFileURI();
         LOG.info("Get TMP URI: " + tmpURI);
         long fileLength;
-        for (Map.Entry<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> hashTables : mapJoinTables
-            .entrySet()) {
+        for (byte tag = 0; tag < mapJoinTables.length; tag++) {
           // get the key and value
-          Byte tag = hashTables.getKey();
-          HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = hashTables.getValue();
+          HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables[tag];
+          if (hashTable == null) {
+            continue;
+          }
 
           // get current input file name
-          String bigBucketFileName = this.getExecContext().getCurrentBigBucketFile();
-          if (bigBucketFileName == null || bigBucketFileName.length() == 0) {
-            bigBucketFileName = "-";
-          }
+          String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
+
+          String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
+
           // get the tmp URI path; it will be a hdfs path if not local mode
-          String tmpURIPath = Utilities.generatePath(tmpURI, conf.getDumpFilePrefix(), tag, bigBucketFileName);
+          String dumpFilePrefix = conf.getDumpFilePrefix();
+          String tmpURIPath = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
           hashTable.isAbort(rowNumber, console);
           console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
           // get the hashtable file and path
@@ -434,6 +447,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "HASHTABLESINK";
   }
 

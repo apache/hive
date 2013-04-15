@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -59,6 +60,10 @@ public class RCFileMergeMapper extends MapReduceBase implements
   int columnNumber = 0;
 
   boolean hasDynamicPartitions = false;
+  boolean isListBucketingDML = false;
+  boolean isListBucketingAlterTableConcatenate = false;
+  int listBucketingDepth; // used as depth for dir-calculation and if it is list bucketing case.
+  boolean tmpPathFixedConcatenate = false;
   boolean tmpPathFixed = false;
   Path tmpPath;
   Path taskTmpPath;
@@ -74,6 +79,10 @@ public class RCFileMergeMapper extends MapReduceBase implements
     jc = job;
     hasDynamicPartitions = HiveConf.getBoolVar(job,
         HiveConf.ConfVars.HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS);
+    isListBucketingAlterTableConcatenate = HiveConf.getBoolVar(job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETING);
+    listBucketingDepth = HiveConf.getIntVar(job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBCONCATENATELISTBUCKETINGDEPTH);
 
     String specPath = RCFileBlockMergeOutputFormat.getMergeOutputPath(job)
         .toString();
@@ -111,13 +120,33 @@ public class RCFileMergeMapper extends MapReduceBase implements
         key = (RCFileKeyBufferWrapper) k;
       }
 
-      if (hasDynamicPartitions) {
-        if (tmpPathFixed) {
+      /**
+       * 1. boolean isListBucketingAlterTableConcatenate will be true only if it is alter table ...
+       * concatenate on stored-as-dir so it will handle list bucketing alter table merge in the if
+       * cause with the help of fixTmpPathConcatenate
+       * 2. If it is DML, isListBucketingAlterTableConcatenate will be false so that it will be
+       * handled by else cause. In this else cause, we have another if check.
+       * 2.1 the if check will make sure DP or LB, we will fix path with the help of fixTmpPath(..).
+       * Since both has sub-directories. it includes SP + LB.
+       * 2.2 only SP without LB, we dont fix path.
+       */
+      // Fix temp path for alter table ... concatenate
+      if (isListBucketingAlterTableConcatenate) {
+        if (this.tmpPathFixedConcatenate) {
           checkPartitionsMatch(key.inputPath.getParent());
         } else {
-          // We haven't fixed the TMP path for this mapper yet
-          fixTmpPath(key.inputPath.getParent());
-          tmpPathFixed = true;
+          fixTmpPathConcatenate(key.inputPath.getParent());
+          tmpPathFixedConcatenate = true;
+        }
+      } else {
+        if (hasDynamicPartitions || (listBucketingDepth > 0)) {
+          if (tmpPathFixed) {
+            checkPartitionsMatch(key.inputPath.getParent());
+          } else {
+            // We haven't fixed the TMP path for this mapper yet
+            fixTmpPath(key.inputPath.getParent());
+            tmpPathFixed = true;
+          }
         }
       }
 
@@ -165,7 +194,18 @@ public class RCFileMergeMapper extends MapReduceBase implements
   /**
    * Fixes tmpPath to point to the correct partition.
    * Before this is called, tmpPath will default to the root tmp table dir
-   *
+   * fixTmpPath(..) works for DP + LB + multiple skewed values + merge. reason:
+   * 1. fixTmpPath(..) compares inputPath and tmpDepth, find out path difference and put it into
+   * newPath. Then add newpath to existing this.tmpPath and this.taskTmpPath.
+   * 2. The path difference between inputPath and tmpDepth can be DP or DP+LB. It will automatically
+   * handle it.
+   * 3. For example,
+   * if inputpath is <prefix>/-ext-10002/hr=a1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
+   * HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
+   * tmppath is <prefix>/_tmp.-ext-10000
+   * newpath will be hr=a1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
+   * Then, this.tmpPath and this.taskTmpPath will be update correctly.
+   * We have list_bucket_dml_6.q cover this case: DP + LP + multiple skewed values + merge.
    * @param inputPath
    * @throws HiveException
    * @throws IOException
@@ -191,6 +231,48 @@ public class RCFileMergeMapper extends MapReduceBase implements
     }
     updatePaths(newTmpPath, newTaskTmpPath);
   }
+
+  /**
+   * Fixes tmpPath to point to the correct list bucketing sub-directories.
+   * Before this is called, tmpPath will default to the root tmp table dir
+   * Reason to add a new method instead of changing fixTmpPath()
+   * Reason 1: logic has slightly difference
+   * fixTmpPath(..) needs 2 variables in order to decide path delta which is in variable newPath.
+   * 1. inputPath.depth()
+   * 2. tmpPath.depth()
+   * fixTmpPathConcatenate needs 2 variables too but one of them is different from fixTmpPath(..)
+   * 1. inputPath.depth()
+   * 2. listBucketingDepth
+   * Reason 2: less risks
+   * The existing logic is a little not trivial around map() and fixTmpPath(). In order to ensure
+   * minimum impact on existing flow, we try to avoid change on existing code/flow but add new code
+   * for new feature.
+   *
+   * @param inputPath
+   * @throws HiveException
+   * @throws IOException
+   */
+  private void fixTmpPathConcatenate(Path inputPath)
+      throws HiveException, IOException {
+    dpPath = inputPath;
+    Path newPath = new Path(".");
+
+    int depth = listBucketingDepth;
+    // Build the path from bottom up. pick up list bucketing subdirectories
+    while ((inputPath != null) && (depth > 0)) {
+      newPath = new Path(inputPath.getName(), newPath);
+      inputPath = inputPath.getParent();
+      depth--;
+    }
+
+    Path newTmpPath = new Path(tmpPath, newPath);
+    Path newTaskTmpPath = new Path(taskTmpPath, newPath);
+    if (!fs.exists(newTmpPath)) {
+      fs.mkdirs(newTmpPath);
+    }
+    updatePaths(newTmpPath, newTaskTmpPath);
+  }
+
 
   @Override
   public void close() throws IOException {
@@ -231,11 +313,13 @@ public class RCFileMergeMapper extends MapReduceBase implements
   }
 
   public static void jobClose(String outputPath, boolean success, JobConf job,
-      LogHelper console) throws HiveException, IOException {
+      LogHelper console, DynamicPartitionCtx dynPartCtx, Reporter reporter
+      ) throws HiveException, IOException {
     Path outpath = new Path(outputPath);
     FileSystem fs = outpath.getFileSystem(job);
     Path backupPath = backupOutputPath(fs, outpath, job);
-    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, null, null);
+    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
+      reporter);
     fs.delete(backupPath, true);
   }
 

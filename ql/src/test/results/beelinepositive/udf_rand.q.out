@@ -1,0 +1,11 @@
+Saving all output to "!!{outputDirectory}!!/udf_rand.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_rand.q
+>>>  DESCRIBE FUNCTION rand;
+'tab_name'
+'rand([seed]) - Returns a pseudorandom number between 0 and 1'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED rand;
+'tab_name'
+'rand([seed]) - Returns a pseudorandom number between 0 and 1'
+1 row selected 
+>>>  !record

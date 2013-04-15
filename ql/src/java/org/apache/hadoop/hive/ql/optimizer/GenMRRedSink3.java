@@ -26,12 +26,15 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Processor for the rule - union followed by reduce sink.
@@ -56,10 +59,13 @@ public class GenMRRedSink3 implements NodeProcessor {
 
     // union consisted on a bunch of map-reduce jobs, and it has been split at
     // the union
-    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
+    UnionOperator union = Utils.findNode(stack, UnionOperator.class);
+    assert union != null;
+
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
-    GenMapRedCtx mapredCtx = mapCurrCtx.get(ctx.getCurrUnionOp());
+    GenMapRedCtx mapredCtx = mapCurrCtx.get(union);
 
     Task<? extends Serializable> unionTask = null;
     if(mapredCtx != null) {
@@ -70,7 +76,7 @@ public class GenMRRedSink3 implements NodeProcessor {
 
 
     MapredWork plan = (MapredWork) unionTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
         .getOpTaskMap();
     Task<? extends Serializable> reducerTask = opTaskMap.get(reducer);
 
@@ -80,7 +86,7 @@ public class GenMRRedSink3 implements NodeProcessor {
     if (reducerTask == null) {
       // When the reducer is encountered for the first time
       if (plan.getReducer() == null) {
-        GenMapRedUtils.initUnionPlan(op, ctx, unionTask);
+        GenMapRedUtils.initUnionPlan(op, union, ctx, unionTask);
         // When union is followed by a multi-table insert
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
@@ -89,9 +95,9 @@ public class GenMRRedSink3 implements NodeProcessor {
       // The union is already initialized. However, the union is walked from
       // another input
       // initUnionPlan is idempotent
-      GenMapRedUtils.initUnionPlan(op, ctx, unionTask);
+      GenMapRedUtils.initUnionPlan(op, union, ctx, unionTask);
     } else {
-      GenMapRedUtils.joinUnionPlan(ctx, unionTask, reducerTask, false);
+      GenMapRedUtils.joinUnionPlan(ctx, union, unionTask, reducerTask, false);
       ctx.setCurrTask(reducerTask);
     }
 

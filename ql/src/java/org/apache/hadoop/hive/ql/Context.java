@@ -42,8 +42,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -51,6 +55,7 @@ import org.apache.hadoop.util.StringUtils;
  * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
+  private boolean isHDFSCleanup;
   private Path resFile;
   private Path resDir;
   private FileSystem resFs;
@@ -86,6 +91,12 @@ public class Context {
 
   private boolean needLockMgr;
 
+  // Keep track of the mapping from load table desc to the output and the lock
+  private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
+      new HashMap<LoadTableDesc, WriteEntity>();
+  private final Map<WriteEntity, List<HiveLockObj>> outputLockObjects =
+      new HashMap<WriteEntity, List<HiveLockObj>>();
+
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -98,16 +109,22 @@ public class Context {
     this.conf = conf;
     this.executionId = executionId;
 
-    // non-local tmp location is configurable. however it is the same across
+    // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
     nonLocalScratchPath =
       new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR),
                executionId);
+    localScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
+            executionId).toUri().getPath();
+  }
 
-    // local tmp location is not configurable for now
-    localScratchDir = System.getProperty("java.io.tmpdir")
-      + Path.SEPARATOR + System.getProperty("user.name") + Path.SEPARATOR
-      + executionId;
+
+  public Map<LoadTableDesc, WriteEntity> getLoadTableOutputMap() {
+    return loadTableOutputMap;
+  }
+
+  public Map<WriteEntity, List<HiveLockObj>> getOutputLockObjects() {
+    return outputLockObjects;
   }
 
   /**
@@ -166,12 +183,16 @@ public class Context {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
           }
+          if (isHDFSCleanup) {
+            fs.deleteOnExit(dirPath);
+          }
         } catch (IOException e) {
           throw new RuntimeException (e);
         }
       }
       dir = dirPath.toString();
       fsScratchDirs.put(fileSystem, dir);
+
     }
     return dir;
   }
@@ -486,7 +507,7 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
-    return HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPJT).equals("local");
+    return ShimLoader.getHadoopShims().isLocalMode(conf);
   }
 
   public List<HiveLock> getHiveLocks() {
@@ -514,7 +535,7 @@ public class Context {
 
   public void restoreOriginalTracker() {
     if (originalTracker != null) {
-      HiveConf.setVar(conf, HiveConf.ConfVars.HADOOPJT, originalTracker);
+      ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf, originalTracker);
       originalTracker = null;
     }
   }
@@ -566,6 +587,20 @@ public class Context {
       }
     }
     paths.addAll(toAdd);
+  }
+
+  /**
+   * @return the isHDFSCleanup
+   */
+  public boolean isHDFSCleanup() {
+    return isHDFSCleanup;
+  }
+
+  /**
+   * @param isHDFSCleanup the isHDFSCleanup to set
+   */
+  public void setHDFSCleanup(boolean isHDFSCleanup) {
+    this.isHDFSCleanup = isHDFSCleanup;
   }
 
   public boolean isNeedLockMgr() {

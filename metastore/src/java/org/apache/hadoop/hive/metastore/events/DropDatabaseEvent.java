@@ -26,7 +26,6 @@ public class DropDatabaseEvent extends ListenerEvent {
   private final Database db;
 
   public DropDatabaseEvent(Database db, boolean status, HMSHandler handler) {
-
     super (status, handler);
     this.db = db;
   }

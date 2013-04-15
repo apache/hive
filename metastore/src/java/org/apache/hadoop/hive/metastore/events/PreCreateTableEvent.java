@@ -25,15 +25,15 @@ public class PreCreateTableEvent extends PreEventContext {
 
   private final Table table;
 
-  public PreCreateTableEvent (Table table, HMSHandler handler) {
-    super (PreEventType.CREATE_TABLE, handler);
+  public PreCreateTableEvent(Table table, HMSHandler handler) {
+    super(PreEventType.CREATE_TABLE, handler);
     this.table = table;
   }
 
   /**
    * @return the table
    */
-  public Table getTable () {
+  public Table getTable() {
     return table;
   }
 }

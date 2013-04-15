@@ -39,12 +39,14 @@ POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.F
 PREHOOK: query: select key, value, newcol from partition_vs_table
 order by key, value, newcol
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_vs_table
 PREHOOK: Input: default@partition_vs_table@ds=100
 PREHOOK: Input: default@partition_vs_table@ds=101
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, newcol from partition_vs_table
 order by key, value, newcol
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_vs_table
 POSTHOOK: Input: default@partition_vs_table@ds=100
 POSTHOOK: Input: default@partition_vs_table@ds=101
 #### A masked pattern was here ####

@@ -1,6 +1,8 @@
 set hive.archive.enabled = true;
 set hive.enforce.bucketing = true;
 
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+
 drop table tstsrc;
 drop table tstsrcpart;
 
@@ -20,8 +22,6 @@ select key, value from srcpart where ds='2008-04-09' and hr='11';
 
 insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12')
 select key, value from srcpart where ds='2008-04-09' and hr='12';
-
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2;

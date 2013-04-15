@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,14 +56,23 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -73,7 +84,10 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -88,14 +102,17 @@ import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
@@ -355,6 +372,10 @@ public class ObjectStore implements RawStore, Configurable {
       transactionStatus = TXN_STATUS.ROLLBACK;
       // could already be rolled back
       currentTransaction.rollback();
+      // remove all detached objects from the cache, since the transaction is
+      // being rolled back they are no longer relevant, and this prevents them
+      // from reattaching in future transactions
+      pm.evictAll();
     }
   }
 
@@ -455,11 +476,6 @@ public class ObjectStore implements RawStore, Configurable {
     dbname = dbname.toLowerCase();
     try {
       openTransaction();
-
-      // first drop tables
-      for (String tableName : getAllTables(dbname)) {
-        dropTable(dbname, tableName);
-      }
 
       // then drop the database
       MDatabase db = getMDatabase(dbname);
@@ -674,14 +690,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public boolean dropTable(String dbName, String tableName) throws MetaException {
+  public boolean dropTable(String dbName, String tableName) throws MetaException,
+    NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
       MTable tbl = getMTable(dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
-        // first remove all the partitions
+        // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
         if (tabGrants != null && tabGrants.size() > 0) {
           pm.deletePersistentAll(tabGrants);
@@ -702,20 +719,12 @@ public class ObjectStore implements RawStore, Configurable {
         if (partColGrants != null && partColGrants.size() > 0) {
           pm.deletePersistentAll(partColGrants);
         }
-
-        int partitionBatchSize = HiveConf.getIntVar(getConf(),
-          ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-        // call dropPartition on each of the table's partitions to follow the
-        // procedure for cleanly dropping partitions.
-        while(true) {
-          List<MPartition> partsToDelete = listMPartitions(dbName, tableName, partitionBatchSize);
-          if (partsToDelete == null || partsToDelete.isEmpty()) {
-            break;
-          }
-          for (MPartition mpart : partsToDelete) {
-            dropPartitionCommon(mpart);
-          }
+        // delete column statistics if present
+        try {
+          deleteTableColumnStatistics(dbName, tableName, null);
+        } catch (NoSuchObjectException e) {
+          LOG.info("Found no table level column statistics associated with db " + dbName +
+          " table " + tableName + " record to delete");
         }
 
         preDropStorageDescriptor(tbl.getSd());
@@ -994,17 +1003,87 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     List<MFieldSchema> mFieldSchemas = msd.getCD() == null ? null : msd.getCD().getCols();
-    return new StorageDescriptor(noFS ? null: convertToFieldSchemas(mFieldSchemas),
+
+    StorageDescriptor sd = new StorageDescriptor(noFS ? null : convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
         .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
         .getSortCols()), msd.getParameters());
+    SkewedInfo skewedInfo = new SkewedInfo(msd.getSkewedColNames(),
+        convertToSkewedValues(msd.getSkewedColValues()),
+        covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
+    sd.setSkewedInfo(skewedInfo);
+    sd.setStoredAsSubDirectories(msd.isStoredAsSubDirectories());
+    return sd;
   }
 
   private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
       throws MetaException {
     return convertToStorageDescriptor(msd, false);
   }
+
+  /**
+   * Convert a list of MStringList to a list of list string
+   *
+   * @param mLists
+   * @return
+   */
+  private List<List<String>> convertToSkewedValues(List<MStringList> mLists) {
+    List<List<String>> lists = null;
+    if (mLists != null) {
+      lists = new ArrayList<List<String>>(mLists.size());
+      for (MStringList element : mLists) {
+        lists.add(new ArrayList<String>(element.getInternalList()));
+      }
+    }
+    return lists;
+  }
+
+  private List<MStringList> convertToMStringLists(List<List<String>> mLists) {
+    List<MStringList> lists = null ;
+    if (null != mLists) {
+      lists = new ArrayList<MStringList>();
+      for (List<String> mList : mLists) {
+        lists.add(new MStringList(mList));
+      }
+    }
+    return lists;
+  }
+
+  /**
+   * Convert a MStringList Map to a Map
+   * @param mMap
+   * @return
+   */
+  private Map<SkewedValueList, String> covertToSkewedMap(Map<MStringList, String> mMap) {
+    Map<SkewedValueList, String> map = null;
+    if (mMap != null) {
+      map = new HashMap<SkewedValueList, String>(mMap.size());
+      Set<MStringList> keys = mMap.keySet();
+      for (MStringList key : keys) {
+        map.put(new SkewedValueList(new ArrayList<String>(key.getInternalList())), mMap.get(key));
+      }
+    }
+    return map;
+  }
+
+  /**
+   * Covert a Map to a MStringList Map
+   * @param mMap
+   * @return
+   */
+  private Map<MStringList, String> convertToMapMStringList(Map<SkewedValueList, String> mMap) {
+    Map<MStringList, String> map = null;
+    if (mMap != null) {
+      map = new HashMap<MStringList, String>(mMap.size());
+      for (Map.Entry<SkewedValueList, String> entry : mMap.entrySet()) {
+        map.put(new MStringList(entry.getKey().getSkewedValueList()), entry.getValue());
+      }
+    }
+    return map;
+  }
+
+
 
   /**
    * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
@@ -1040,7 +1119,13 @@ public class ObjectStore implements RawStore, Configurable {
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
         .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
-        convertToMOrders(sd.getSortCols()), sd.getParameters());
+        convertToMOrders(sd.getSortCols()), sd.getParameters(),
+        (null == sd.getSkewedInfo()) ? null
+            : sd.getSkewedInfo().getSkewedColNames(),
+        convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+            .getSkewedColValues()),
+        convertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+            .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
   public boolean addPartition(Partition part) throws InvalidObjectException,
@@ -1201,13 +1286,14 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     return new Partition(mpart.getValues(), dbName, tblName, mpart.getCreateTime(),
-        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), true),
+        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false),
         mpart.getParameters());
   }
 
   @Override
   public boolean dropPartition(String dbName, String tableName,
-      List<String> part_vals) throws MetaException {
+    List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
+    InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
@@ -1227,8 +1313,13 @@ public class ObjectStore implements RawStore, Configurable {
    *   drop the storage descriptor cleanly, etc.)
    * @param part - the MPartition to drop
    * @return whether the transaction committed successfully
+   * @throws InvalidInputException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws NoSuchObjectException
    */
-  private boolean dropPartitionCommon(MPartition part) {
+  private boolean dropPartitionCommon(MPartition part) throws NoSuchObjectException, MetaException,
+    InvalidObjectException, InvalidInputException {
     boolean success = false;
     try {
       openTransaction();
@@ -1256,6 +1347,17 @@ public class ObjectStore implements RawStore, Configurable {
         if (partColumnGrants != null && partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
+
+        String dbName = part.getTable().getDatabase().getName();
+        String tableName = part.getTable().getTableName();
+
+        // delete partition level column stats if it exists
+       try {
+          deletePartitionColumnStatistics(dbName, tableName, partName, part.getValues(), null);
+        } catch (NoSuchObjectException e) {
+          LOG.info("No column statistics records found to delete");
+        }
+
         preDropStorageDescriptor(part.getSd());
         pm.deletePersistent(part);
       }
@@ -1617,6 +1719,11 @@ public class ObjectStore implements RawStore, Configurable {
     } catch(RecognitionException re) {
       throw new MetaException("Error parsing partition filter : " + re);
     }
+
+    if (lexer.errorMsg != null) {
+      throw new MetaException("Error parsing partition filter : " + lexer.errorMsg);
+    }
+
     return parser;
   }
 
@@ -1862,7 +1969,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
-      fullCopyMSD(newt.getSd(), oldt.getSd());
+      copyMSD(newt.getSd(), oldt.getSd());
       oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
@@ -1910,35 +2017,77 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
+      Partition newPart) throws InvalidObjectException, MetaException {
+    name = name.toLowerCase();
+    dbname = dbname.toLowerCase();
+    MPartition oldp = getMPartition(dbname, name, part_vals);
+    MPartition newp = convertToMPart(newPart, false);
+    if (oldp == null || newp == null) {
+      throw new InvalidObjectException("partition does not exist.");
+    }
+    oldp.setValues(newp.getValues());
+    oldp.setPartitionName(newp.getPartitionName());
+    oldp.setParameters(newPart.getParameters());
+    if (!TableType.VIRTUAL_VIEW.name().equals(oldp.getTable().getTableType())) {
+      copyMSD(newp.getSd(), oldp.getSd());
+    }
+    if (newp.getCreateTime() != oldp.getCreateTime()) {
+      oldp.setCreateTime(newp.getCreateTime());
+    }
+    if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
+      oldp.setLastAccessTime(newp.getLastAccessTime());
+    }
+  }
+
   public void alterPartition(String dbname, String name, List<String> part_vals, Partition newPart)
       throws InvalidObjectException, MetaException {
     boolean success = false;
+    Exception e = null;
     try {
       openTransaction();
-      name = name.toLowerCase();
-      dbname = dbname.toLowerCase();
-      MPartition oldp = getMPartition(dbname, name, part_vals);
-      MPartition newp = convertToMPart(newPart, false);
-      if (oldp == null || newp == null) {
-        throw new InvalidObjectException("partition does not exist.");
-      }
-      oldp.setValues(newp.getValues());
-      oldp.setPartitionName(newp.getPartitionName());
-      oldp.setParameters(newPart.getParameters());
-      copyMSD(newp.getSd(), oldp.getSd());
-      if (newp.getCreateTime() != oldp.getCreateTime()) {
-        oldp.setCreateTime(newp.getCreateTime());
-      }
-      if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
-        oldp.setLastAccessTime(newp.getLastAccessTime());
-      }
+      alterPartitionNoTxn(dbname, name, part_vals, newPart);
       // commit the changes
       success = commitTransaction();
+    } catch (Exception exception) {
+      e = exception;
     } finally {
       if (!success) {
         rollbackTransaction();
-        throw new MetaException(
+        MetaException metaException = new MetaException(
             "The transaction for alter partition did not commit successfully.");
+        if (e != null) {
+          metaException.initCause(e);
+        }
+        throw metaException;
+      }
+    }
+  }
+
+  public void alterPartitions(String dbname, String name, List<List<String>> part_vals,
+      List<Partition> newParts) throws InvalidObjectException, MetaException {
+    boolean success = false;
+    Exception e = null;
+    try {
+      openTransaction();
+      Iterator<List<String>> part_val_itr = part_vals.iterator();
+      for (Partition tmpPart: newParts) {
+        List<String> tmpPartVals = part_val_itr.next();
+        alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart);
+      }
+      // commit the changes
+      success = commitTransaction();
+    } catch (Exception exception) {
+      e = exception;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+        MetaException metaException = new MetaException(
+            "The transaction for alter partition did not commit successfully.");
+        if (e != null) {
+          metaException.initCause(e);
+        }
+        throw metaException;
       }
     }
   }
@@ -1973,17 +2122,12 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
-  }
-
-  /**
-   * copy over all fields from newSd to oldSd
-   * @param newSd the new storage descriptor
-   * @param oldSd the old descriptor that gets copied over
-   */
-  private void fullCopyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
-    copyMSD(newSd, oldSd);
+    oldSd.setSkewedColNames(newSd.getSkewedColNames());
+    oldSd.setSkewedColValues(newSd.getSkewedColValues());
+    oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
     oldSd.setSortCols(newSd.getSortCols());
     oldSd.setParameters(newSd.getParameters());
+    oldSd.setStoredAsSubDirectories(newSd.isStoredAsSubDirectories());
   }
 
   /**
@@ -3908,6 +4052,1200 @@ public class ObjectStore implements RawStore, Configurable {
     return join(storedVals,',');
   }
 
+  /** The following API
+   *
+   *  - executeJDOQLSelect
+   *
+   * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+   *
+   */
+  public Collection<?> executeJDOQLSelect(String query) {
+    boolean committed = false;
+    Collection<?> result = null;
+
+    try {
+      openTransaction();
+      Query q = pm.newQuery(query);
+      result = (Collection<?>) q.execute();
+      committed = commitTransaction();
+      if (committed) {
+        return result;
+      } else {
+        return null;
+      }
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /** The following API
+  *
+  *  - executeJDOQLUpdate
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public long executeJDOQLUpdate(String query) {
+    boolean committed = false;
+    long numUpdated = 0;
+
+    try {
+      openTransaction();
+      Query q = pm.newQuery(query);
+      numUpdated = (Long) q.execute();
+      committed = commitTransaction();
+      if (committed) {
+        return numUpdated;
+      } else {
+        return -1;
+      }
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /** The following API
+  *
+  *  - listFSRoots
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public Set<String> listFSRoots() {
+    boolean committed = false;
+    Set<String> fsRoots = new HashSet<String>();
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MDatabase.class);
+      List<MDatabase> mDBs = (List<MDatabase>) query.execute();
+      pm.retrieveAll(mDBs);
+
+      for (MDatabase mDB:mDBs) {
+        fsRoots.add(mDB.getLocationUri());
+      }
+      committed = commitTransaction();
+      if (committed) {
+        return fsRoots;
+      } else {
+        return null;
+      }
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private boolean shouldUpdateURI(URI onDiskUri, URI inputUri) {
+    String onDiskHost = onDiskUri.getHost();
+    String inputHost = inputUri.getHost();
+
+    int onDiskPort = onDiskUri.getPort();
+    int inputPort = inputUri.getPort();
+
+    String onDiskScheme = onDiskUri.getScheme();
+    String inputScheme = inputUri.getScheme();
+
+    //compare ports
+    if (inputPort != -1) {
+      if (inputPort != onDiskPort) {
+        return false;
+      }
+    }
+    //compare schemes
+    if (inputScheme != null) {
+      if (onDiskScheme == null) {
+        return false;
+      }
+      if (!inputScheme.equalsIgnoreCase(onDiskScheme)) {
+        return false;
+      }
+    }
+    //compare hosts
+    if (onDiskHost != null) {
+      if (!inputHost.equalsIgnoreCase(onDiskHost)) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  public class UpdateMDatabaseURIRetVal {
+    private List<String> badRecords;
+    private Map<String, String> updateLocations;
+
+    UpdateMDatabaseURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
+      this.badRecords = badRecords;
+      this.updateLocations = updateLocations;
+    }
+
+    public List<String> getBadRecords() {
+      return badRecords;
+    }
+
+    public void setBadRecords(List<String> badRecords) {
+      this.badRecords = badRecords;
+    }
+
+    public Map<String, String> getUpdateLocations() {
+      return updateLocations;
+    }
+
+    public void setUpdateLocations(Map<String, String> updateLocations) {
+      this.updateLocations = updateLocations;
+    }
+  }
+
+  /** The following APIs
+  *
+  *  - updateMDatabaseURI
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public UpdateMDatabaseURIRetVal updateMDatabaseURI(URI oldLoc, URI newLoc, boolean dryRun) {
+    boolean committed = false;
+    Map<String, String> updateLocations = new HashMap<String, String>();
+    List<String> badRecords = new ArrayList<String>();
+    UpdateMDatabaseURIRetVal retVal = null;
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MDatabase.class);
+      List<MDatabase> mDBs = (List<MDatabase>) query.execute();
+      pm.retrieveAll(mDBs);
+
+      for(MDatabase mDB:mDBs) {
+        URI locationURI = null;
+        String location = mDB.getLocationUri();
+        try {
+          locationURI = new URI(location);
+        } catch(URISyntaxException e) {
+          badRecords.add(location);
+        } catch (NullPointerException e) {
+          badRecords.add(location);
+        }
+        if (locationURI == null) {
+          badRecords.add(location);
+        } else {
+          if (shouldUpdateURI(locationURI, oldLoc)) {
+            String dbLoc = mDB.getLocationUri().replaceAll(oldLoc.toString(), newLoc.toString());
+            updateLocations.put(locationURI.toString(), dbLoc);
+            if (!dryRun) {
+              mDB.setLocationUri(dbLoc);
+            }
+          }
+        }
+      }
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdateMDatabaseURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public class UpdateMStorageDescriptorTblPropURIRetVal {
+    private List<String> badRecords;
+    private Map<String, String> updateLocations;
+
+    UpdateMStorageDescriptorTblPropURIRetVal(List<String> badRecords,
+      Map<String, String> updateLocations) {
+      this.badRecords = badRecords;
+      this.updateLocations = updateLocations;
+    }
+
+    public List<String> getBadRecords() {
+      return badRecords;
+    }
+
+    public void setBadRecords(List<String> badRecords) {
+      this.badRecords = badRecords;
+    }
+
+    public Map<String, String> getUpdateLocations() {
+      return updateLocations;
+    }
+
+    public void setUpdateLocations(Map<String, String> updateLocations) {
+      this.updateLocations = updateLocations;
+    }
+  }
+
+  /** The following APIs
+  *
+  *  - updateMStorageDescriptorTblPropURI
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public UpdateMStorageDescriptorTblPropURIRetVal updateMStorageDescriptorTblPropURI(URI oldLoc,
+      URI newLoc, String tblPropKey, boolean isDryRun) {
+    boolean committed = false;
+    Map<String, String> updateLocations = new HashMap<String, String>();
+    List<String> badRecords = new ArrayList<String>();
+    UpdateMStorageDescriptorTblPropURIRetVal retVal = null;
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MStorageDescriptor.class);
+      List<MStorageDescriptor> mSDSs = (List<MStorageDescriptor>) query.execute();
+      pm.retrieveAll(mSDSs);
+
+      for(MStorageDescriptor mSDS:mSDSs) {
+        URI tablePropLocationURI = null;
+        if (mSDS.getParameters().containsKey(tblPropKey)) {
+          String tablePropLocation = mSDS.getParameters().get(tblPropKey);
+          try {
+              tablePropLocationURI = new URI(tablePropLocation);
+            } catch (URISyntaxException e) {
+              badRecords.add(tablePropLocation);
+            } catch (NullPointerException e) {
+              badRecords.add(tablePropLocation);
+            }
+            // if tablePropKey that was passed in lead to a valid URI resolution, update it if
+            //parts of it match the old-NN-loc, else add to badRecords
+            if (tablePropLocationURI == null) {
+              badRecords.add(tablePropLocation);
+            } else {
+              if (shouldUpdateURI(tablePropLocationURI, oldLoc)) {
+                String tblPropLoc = mSDS.getParameters().get(tblPropKey).replaceAll(oldLoc.toString(),
+                    newLoc.toString());
+                updateLocations.put(tablePropLocationURI.toString(), tblPropLoc);
+                if (!isDryRun) {
+                  mSDS.getParameters().put(tblPropKey, tblPropLoc);
+                }
+             }
+           }
+         }
+      }
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdateMStorageDescriptorTblPropURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+     } finally {
+        if (!committed) {
+          rollbackTransaction();
+        }
+     }
+  }
+
+  public class UpdateMStorageDescriptorTblURIRetVal {
+    private List<String> badRecords;
+    private Map<String, String> updateLocations;
+
+    UpdateMStorageDescriptorTblURIRetVal(List<String> badRecords,
+      Map<String, String> updateLocations) {
+      this.badRecords = badRecords;
+      this.updateLocations = updateLocations;
+    }
+
+    public List<String> getBadRecords() {
+      return badRecords;
+    }
+
+    public void setBadRecords(List<String> badRecords) {
+      this.badRecords = badRecords;
+    }
+
+    public Map<String, String> getUpdateLocations() {
+      return updateLocations;
+    }
+
+    public void setUpdateLocations(Map<String, String> updateLocations) {
+      this.updateLocations = updateLocations;
+    }
+  }
+
+  /** The following APIs
+  *
+  *  - updateMStorageDescriptorTblURI
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public UpdateMStorageDescriptorTblURIRetVal updateMStorageDescriptorTblURI(URI oldLoc, URI newLoc,
+    boolean isDryRun) {
+    boolean committed = false;
+    Map<String, String> updateLocations = new HashMap<String, String>();
+    List<String> badRecords = new ArrayList<String>();
+    UpdateMStorageDescriptorTblURIRetVal retVal = null;
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MStorageDescriptor.class);
+      List<MStorageDescriptor> mSDSs = (List<MStorageDescriptor>) query.execute();
+      pm.retrieveAll(mSDSs);
+
+      for(MStorageDescriptor mSDS:mSDSs) {
+        URI locationURI = null;
+        String location = mSDS.getLocation();
+        try {
+          locationURI = new URI(location);
+        } catch (URISyntaxException e) {
+          badRecords.add(location);
+        } catch (NullPointerException e) {
+          badRecords.add(location);
+        }
+        if (locationURI == null) {
+          badRecords.add(location);
+        } else {
+          if (shouldUpdateURI(locationURI, oldLoc)) {
+            String tblLoc = mSDS.getLocation().replaceAll(oldLoc.toString(), newLoc.toString());
+            updateLocations.put(locationURI.toString(), tblLoc);
+            if (!isDryRun) {
+              mSDS.setLocation(tblLoc);
+            }
+          }
+        }
+      }
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdateMStorageDescriptorTblURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+    } finally {
+        if (!committed) {
+          rollbackTransaction();
+        }
+     }
+  }
+
+  public class UpdateSerdeURIRetVal {
+    private List<String> badRecords;
+    private Map<String, String> updateLocations;
+
+    UpdateSerdeURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
+      this.badRecords = badRecords;
+      this.updateLocations = updateLocations;
+    }
+
+    public List<String> getBadRecords() {
+      return badRecords;
+    }
+
+    public void setBadRecords(List<String> badRecords) {
+      this.badRecords = badRecords;
+    }
+
+    public Map<String, String> getUpdateLocations() {
+      return updateLocations;
+    }
+
+    public void setUpdateLocations(Map<String, String> updateLocations) {
+      this.updateLocations = updateLocations;
+    }
+  }
+
+  /** The following APIs
+  *
+  *  - updateSerdeURI
+  *
+  * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
+  *
+  */
+  public UpdateSerdeURIRetVal updateSerdeURI(URI oldLoc, URI newLoc, String serdeProp,
+    boolean isDryRun) {
+    boolean committed = false;
+    Map<String, String> updateLocations = new HashMap<String, String>();
+    List<String> badRecords = new ArrayList<String>();
+    UpdateSerdeURIRetVal retVal = null;
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MSerDeInfo.class);
+      List<MSerDeInfo> mSerdes = (List<MSerDeInfo>) query.execute();
+      pm.retrieveAll(mSerdes);
+
+      for(MSerDeInfo mSerde:mSerdes) {
+        if (mSerde.getParameters().containsKey(serdeProp)) {
+          String schemaLoc = mSerde.getParameters().get(serdeProp);
+          URI schemaLocURI = null;
+          try {
+            schemaLocURI = new URI(schemaLoc);
+          } catch (URISyntaxException e) {
+            badRecords.add(schemaLoc);
+          } catch (NullPointerException e) {
+            badRecords.add(schemaLoc);
+          }
+          if (schemaLocURI == null) {
+            badRecords.add(schemaLoc);
+          } else {
+            if (shouldUpdateURI(schemaLocURI, oldLoc)) {
+              String newSchemaLoc = schemaLoc.replaceAll(oldLoc.toString(), newLoc.toString());
+              updateLocations.put(schemaLocURI.toString(), newSchemaLoc);
+              if (!isDryRun) {
+                mSerde.getParameters().put(serdeProp, newSchemaLoc);
+              }
+            }
+          }
+        }
+      }
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdateSerdeURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  // Methods to persist, maintain and retrieve Column Statistics
+  private MTableColumnStatistics convertToMTableColumnStatistics(ColumnStatisticsDesc statsDesc,
+      ColumnStatisticsObj statsObj) throws NoSuchObjectException,
+      MetaException, InvalidObjectException
+  {
+     if (statsObj == null || statsDesc == null) {
+       throw new InvalidObjectException("Invalid column stats object");
+     }
+
+     String dbName = statsDesc.getDbName();
+     String tableName = statsDesc.getTableName();
+     MTable table = getMTable(dbName, tableName);
+
+     if (table == null) {
+       throw new NoSuchObjectException("Table " + tableName +
+       " for which stats is gathered doesn't exist.");
+     }
+
+     MTableColumnStatistics mColStats = new MTableColumnStatistics();
+     mColStats.setTable(table);
+     mColStats.setDbName(statsDesc.getDbName());
+     mColStats.setTableName(statsDesc.getTableName());
+     mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
+     mColStats.setColName(statsObj.getColName());
+     mColStats.setColType(statsObj.getColType());
+
+     if (statsObj.getStatsData().isSetBooleanStats()) {
+       BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
+       mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
+           boolStats.getNumNulls());
+     } else if (statsObj.getStatsData().isSetLongStats()) {
+       LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
+       mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+           longStats.getLowValue(), longStats.getHighValue());
+     } else if (statsObj.getStatsData().isSetDoubleStats()) {
+       DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
+       mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+           doubleStats.getLowValue(), doubleStats.getHighValue());
+     } else if (statsObj.getStatsData().isSetStringStats()) {
+       StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
+       mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
+         stringStats.getMaxColLen(), stringStats.getAvgColLen());
+     } else if (statsObj.getStatsData().isSetBinaryStats()) {
+       BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
+       mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
+         binaryStats.getAvgColLen());
+     }
+     return mColStats;
+  }
+
+  private ColumnStatisticsObj getTableColumnStatisticsObj(MTableColumnStatistics mStatsObj) {
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+    statsObj.setColType(mStatsObj.getColType());
+    statsObj.setColName(mStatsObj.getColName());
+    String colType = mStatsObj.getColType();
+    ColumnStatisticsData colStatsData = new ColumnStatisticsData();
+
+    if (colType.equalsIgnoreCase("boolean")) {
+      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+      boolStats.setNumFalses(mStatsObj.getNumFalses());
+      boolStats.setNumTrues(mStatsObj.getNumTrues());
+      boolStats.setNumNulls(mStatsObj.getNumNulls());
+      colStatsData.setBooleanStats(boolStats);
+    } else if (colType.equalsIgnoreCase("string")) {
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      stringStats.setNumNulls(mStatsObj.getNumNulls());
+      stringStats.setAvgColLen(mStatsObj.getAvgColLen());
+      stringStats.setMaxColLen(mStatsObj.getMaxColLen());
+      stringStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setStringStats(stringStats);
+    } else if (colType.equalsIgnoreCase("binary")) {
+      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+      binaryStats.setNumNulls(mStatsObj.getNumNulls());
+      binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
+      binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
+      colStatsData.setBinaryStats(binaryStats);
+    } else if (colType.equalsIgnoreCase("bigint") || colType.equalsIgnoreCase("int") ||
+        colType.equalsIgnoreCase("smallint") || colType.equalsIgnoreCase("tinyint") ||
+        colType.equalsIgnoreCase("timestamp")) {
+      LongColumnStatsData longStats = new LongColumnStatsData();
+      longStats.setNumNulls(mStatsObj.getNumNulls());
+      longStats.setHighValue(mStatsObj.getLongHighValue());
+      longStats.setLowValue(mStatsObj.getLongLowValue());
+      longStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setLongStats(longStats);
+   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+     DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+     doubleStats.setNumNulls(mStatsObj.getNumNulls());
+     doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
+     doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
+     doubleStats.setNumDVs(mStatsObj.getNumDVs());
+     colStatsData.setDoubleStats(doubleStats);
+   }
+   statsObj.setStatsData(colStatsData);
+   return statsObj;
+  }
+
+  private ColumnStatisticsDesc getTableColumnStatisticsDesc(MTableColumnStatistics mStatsObj) {
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+    statsDesc.setIsTblLevel(true);
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+    return statsDesc;
+  }
+
+  private ColumnStatistics convertToTableColumnStatistics(MTableColumnStatistics mStatsObj)
+    throws MetaException
+  {
+    if (mStatsObj == null) {
+      return null;
+    }
+
+    ColumnStatisticsDesc statsDesc = getTableColumnStatisticsDesc(mStatsObj);
+    ColumnStatisticsObj statsObj = getTableColumnStatisticsObj(mStatsObj);
+    List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+    statsObjs.add(statsObj);
+
+    ColumnStatistics colStats = new ColumnStatistics();
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(statsObjs);
+    return colStats;
+  }
+
+  private MPartitionColumnStatistics convertToMPartitionColumnStatistics(ColumnStatisticsDesc
+    statsDesc, ColumnStatisticsObj statsObj, List<String> partVal)
+    throws MetaException, NoSuchObjectException
+  {
+    if (statsDesc == null || statsObj == null || partVal == null) {
+      return null;
+    }
+
+    MPartition partition  = getMPartition(statsDesc.getDbName(), statsDesc.getTableName(), partVal);
+
+    if (partition == null) {
+      throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
+    }
+
+    MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
+    mColStats.setPartition(partition);
+    mColStats.setDbName(statsDesc.getDbName());
+    mColStats.setTableName(statsDesc.getTableName());
+    mColStats.setPartitionName(statsDesc.getPartName());
+    mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
+    mColStats.setColName(statsObj.getColName());
+    mColStats.setColType(statsObj.getColType());
+
+    if (statsObj.getStatsData().isSetBooleanStats()) {
+      BooleanColumnStatsData boolStats = statsObj.getStatsData().getBooleanStats();
+      mColStats.setBooleanStats(boolStats.getNumTrues(), boolStats.getNumFalses(),
+          boolStats.getNumNulls());
+    } else if (statsObj.getStatsData().isSetLongStats()) {
+      LongColumnStatsData longStats = statsObj.getStatsData().getLongStats();
+      mColStats.setLongStats(longStats.getNumNulls(), longStats.getNumDVs(),
+          longStats.getLowValue(), longStats.getHighValue());
+    } else if (statsObj.getStatsData().isSetDoubleStats()) {
+      DoubleColumnStatsData doubleStats = statsObj.getStatsData().getDoubleStats();
+      mColStats.setDoubleStats(doubleStats.getNumNulls(), doubleStats.getNumDVs(),
+          doubleStats.getLowValue(), doubleStats.getHighValue());
+    } else if (statsObj.getStatsData().isSetStringStats()) {
+      StringColumnStatsData stringStats = statsObj.getStatsData().getStringStats();
+      mColStats.setStringStats(stringStats.getNumNulls(), stringStats.getNumDVs(),
+        stringStats.getMaxColLen(), stringStats.getAvgColLen());
+    } else if (statsObj.getStatsData().isSetBinaryStats()) {
+      BinaryColumnStatsData binaryStats = statsObj.getStatsData().getBinaryStats();
+      mColStats.setBinaryStats(binaryStats.getNumNulls(), binaryStats.getMaxColLen(),
+        binaryStats.getAvgColLen());
+    }
+    return mColStats;
+  }
+
+  private void writeMTableColumnStatistics(MTableColumnStatistics mStatsObj)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+     String dbName = mStatsObj.getDbName();
+     String tableName = mStatsObj.getTableName();
+     String colName = mStatsObj.getColName();
+
+     LOG.info("Updating table level column statistics for db=" + dbName + " tableName=" + tableName
+       + " colName=" + colName);
+
+     MTable mTable = getMTable(mStatsObj.getDbName(), mStatsObj.getTableName());
+     boolean foundCol = false;
+
+     if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          " for which stats gathering is requested doesn't exist.");
+      }
+
+      MStorageDescriptor mSDS = mTable.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(mStatsObj.getColName().trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new
+          NoSuchObjectException("Column " + colName +
+          " for which stats gathering is requested doesn't exist.");
+      }
+
+      MTableColumnStatistics oldStatsObj = getMTableColumnStatistics(dbName, tableName, colName);
+
+      if (oldStatsObj != null) {
+       oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+       oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
+       oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
+       oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+       oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
+       oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
+       oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+       oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+       oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+      } else {
+        pm.makePersistent(mStatsObj);
+      }
+   }
+
+  private ColumnStatisticsObj getPartitionColumnStatisticsObj(MPartitionColumnStatistics mStatsObj)
+  {
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
+    statsObj.setColType(mStatsObj.getColType());
+    statsObj.setColName(mStatsObj.getColName());
+    String colType = mStatsObj.getColType();
+    ColumnStatisticsData colStatsData = new ColumnStatisticsData();
+
+    if (colType.equalsIgnoreCase("boolean")) {
+      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+      boolStats.setNumFalses(mStatsObj.getNumFalses());
+      boolStats.setNumTrues(mStatsObj.getNumTrues());
+      boolStats.setNumNulls(mStatsObj.getNumNulls());
+      colStatsData.setBooleanStats(boolStats);
+    } else if (colType.equalsIgnoreCase("string")) {
+      StringColumnStatsData stringStats = new StringColumnStatsData();
+      stringStats.setNumNulls(mStatsObj.getNumNulls());
+      stringStats.setAvgColLen(mStatsObj.getAvgColLen());
+      stringStats.setMaxColLen(mStatsObj.getMaxColLen());
+      stringStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setStringStats(stringStats);
+    } else if (colType.equalsIgnoreCase("binary")) {
+      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+      binaryStats.setNumNulls(mStatsObj.getNumNulls());
+      binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
+      binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
+      colStatsData.setBinaryStats(binaryStats);
+    } else if (colType.equalsIgnoreCase("tinyint") || colType.equalsIgnoreCase("smallint") ||
+        colType.equalsIgnoreCase("int") || colType.equalsIgnoreCase("bigint") ||
+        colType.equalsIgnoreCase("timestamp")) {
+      LongColumnStatsData longStats = new LongColumnStatsData();
+      longStats.setNumNulls(mStatsObj.getNumNulls());
+      longStats.setHighValue(mStatsObj.getLongHighValue());
+      longStats.setLowValue(mStatsObj.getLongLowValue());
+      longStats.setNumDVs(mStatsObj.getNumDVs());
+      colStatsData.setLongStats(longStats);
+   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+     DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+     doubleStats.setNumNulls(mStatsObj.getNumNulls());
+     doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
+     doubleStats.setLowValue(mStatsObj.getDoubleLowValue());
+     doubleStats.setNumDVs(mStatsObj.getNumDVs());
+     colStatsData.setDoubleStats(doubleStats);
+   }
+   statsObj.setStatsData(colStatsData);
+   return statsObj;
+  }
+
+  private ColumnStatisticsDesc getPartitionColumnStatisticsDesc(
+    MPartitionColumnStatistics mStatsObj) {
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+    statsDesc.setIsTblLevel(false);
+    statsDesc.setDbName(mStatsObj.getDbName());
+    statsDesc.setTableName(mStatsObj.getTableName());
+    statsDesc.setPartName(mStatsObj.getPartitionName());
+    statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+    return statsDesc;
+  }
+
+  private void writeMPartitionColumnStatistics(MPartitionColumnStatistics mStatsObj,
+    List<String> partVal) throws NoSuchObjectException, MetaException, InvalidObjectException,
+    InvalidInputException
+  {
+    String dbName = mStatsObj.getDbName();
+    String tableName = mStatsObj.getTableName();
+    String partName = mStatsObj.getPartitionName();
+    String colName = mStatsObj.getColName();
+
+    LOG.info("Updating partition level column statistics for db=" + dbName + " tableName=" +
+      tableName + " partName=" + partName + " colName=" + colName);
+
+    MTable mTable = getMTable(mStatsObj.getDbName(), mStatsObj.getTableName());
+    boolean foundCol = false;
+
+    if (mTable == null) {
+      throw new
+        NoSuchObjectException("Table " + tableName +
+        " for which stats gathering is requested doesn't exist.");
+    }
+
+    MPartition mPartition =
+                 getMPartition(mStatsObj.getDbName(), mStatsObj.getTableName(), partVal);
+
+    if (mPartition == null) {
+      throw new
+        NoSuchObjectException("Partition " + partName +
+        " for which stats gathering is requested doesn't exist");
+    }
+
+    MStorageDescriptor mSDS = mPartition.getSd();
+    List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+    for(MFieldSchema mCol:colList) {
+      if (mCol.getName().equals(mStatsObj.getColName().trim())) {
+        foundCol = true;
+        break;
+      }
+    }
+
+    if (!foundCol) {
+      throw new
+        NoSuchObjectException("Column " + colName +
+        " for which stats gathering is requested doesn't exist.");
+    }
+
+    MPartitionColumnStatistics oldStatsObj = getMPartitionColumnStatistics(dbName, tableName,
+                                                               partName, partVal, colName);
+    if (oldStatsObj != null) {
+      oldStatsObj.setAvgColLen(mStatsObj.getAvgColLen());
+      oldStatsObj.setLongHighValue(mStatsObj.getLongHighValue());
+      oldStatsObj.setDoubleHighValue(mStatsObj.getDoubleHighValue());
+      oldStatsObj.setLastAnalyzed(mStatsObj.getLastAnalyzed());
+      oldStatsObj.setLongLowValue(mStatsObj.getLongLowValue());
+      oldStatsObj.setDoubleLowValue(mStatsObj.getDoubleLowValue());
+      oldStatsObj.setMaxColLen(mStatsObj.getMaxColLen());
+      oldStatsObj.setNumDVs(mStatsObj.getNumDVs());
+      oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
+      oldStatsObj.setNumTrues(mStatsObj.getNumTrues());
+      oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
+    } else {
+      pm.makePersistent(mStatsObj);
+    }
+ }
+
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean committed = false;
+
+    try {
+      openTransaction();
+      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+
+      for (ColumnStatisticsObj statsObj:statsObjs) {
+          MTableColumnStatistics mStatsObj = convertToMTableColumnStatistics(statsDesc, statsObj);
+          writeMTableColumnStatistics(mStatsObj);
+      }
+      committed = commitTransaction();
+      return committed;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+ }
+
+  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean committed = false;
+
+    try {
+    openTransaction();
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+
+    for (ColumnStatisticsObj statsObj:statsObjs) {
+        MPartitionColumnStatistics mStatsObj =
+            convertToMPartitionColumnStatistics(statsDesc, statsObj, partVals);
+        writeMPartitionColumnStatistics(mStatsObj, partVals);
+    }
+    committed = commitTransaction();
+    return committed;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MTableColumnStatistics getMTableColumnStatistics(String dbName, String tableName,
+    String colName) throws NoSuchObjectException, InvalidInputException, MetaException
+  {
+    boolean committed = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null || colName == null) {
+      throw new InvalidInputException("TableName/ColName passed to get_table_column_statistics " +
+      "is null");
+    }
+
+    try {
+      openTransaction();
+      MTableColumnStatistics mStatsObj = null;
+      MTable mTable = getMTable(dbName.trim(), tableName.trim());
+      boolean foundCol = false;
+
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table " + tableName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      MStorageDescriptor mSDS = mTable.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(colName.trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new NoSuchObjectException("Column " + colName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      Query query = pm.newQuery(MTableColumnStatistics.class);
+      query.setFilter("table.tableName == t1 && " +
+        "dbName == t2 && " + "colName == t3");
+      query
+      .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      query.setUnique(true);
+
+      mStatsObj = (MTableColumnStatistics) query.execute(tableName.trim(),
+                                                        dbName.trim(), colName.trim());
+      pm.retrieve(mStatsObj);
+      committed = commitTransaction();
+      return mStatsObj;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return null;
+      }
+    }
+  }
+
+ public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
+   throws MetaException, NoSuchObjectException, InvalidInputException
+  {
+    ColumnStatistics statsObj;
+    MTableColumnStatistics mStatsObj = getMTableColumnStatistics(dbName, tableName, colName);
+
+    if (mStatsObj == null) {
+      throw new NoSuchObjectException("Statistics for dbName=" + dbName + " tableName=" + tableName
+        + " columnName=" + colName + " doesn't exist.");
+    }
+
+    statsObj = convertToTableColumnStatistics(mStatsObj);
+    return statsObj;
+  }
+
+  public ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVal, String colName)
+    throws MetaException, NoSuchObjectException, InvalidInputException
+  {
+    ColumnStatistics statsObj;
+    MPartitionColumnStatistics mStatsObj =
+          getMPartitionColumnStatistics(dbName, tableName, partName, partVal, colName);
+
+    if (mStatsObj == null) {
+      throw new NoSuchObjectException("Statistics for dbName=" + dbName + " tableName=" + tableName
+          + " partName= " + partName + " columnName=" + colName + " doesn't exist.");
+    }
+    statsObj = convertToPartColumnStatistics(mStatsObj);
+    return statsObj;
+  }
+
+  private ColumnStatistics convertToPartColumnStatistics(MPartitionColumnStatistics mStatsObj)
+  {
+    if (mStatsObj == null) {
+      return null;
+    }
+
+    ColumnStatisticsDesc statsDesc = getPartitionColumnStatisticsDesc(mStatsObj);
+    ColumnStatisticsObj statsObj = getPartitionColumnStatisticsObj(mStatsObj);
+    List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+    statsObjs.add(statsObj);
+
+    ColumnStatistics colStats = new ColumnStatistics();
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(statsObjs);
+    return colStats;
+  }
+
+  private MPartitionColumnStatistics getMPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVal, String colName) throws NoSuchObjectException,
+    InvalidInputException, MetaException
+  {
+    boolean committed = false;
+    MPartitionColumnStatistics mStatsObj = null;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null || partVal == null || colName == null) {
+      throw new InvalidInputException("TableName/PartName/ColName passed to " +
+        " get_partition_column_statistics is null");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName.trim(), tableName.trim());
+      boolean foundCol = false;
+
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table "  + tableName +
+          " for which stats is requested doesn't exist.");
+      }
+
+      MPartition mPartition =
+                  getMPartition(dbName, tableName, partVal);
+
+      if (mPartition == null) {
+        throw new
+          NoSuchObjectException("Partition " + partName +
+          " for which stats is requested doesn't exist");
+      }
+
+      MStorageDescriptor mSDS = mPartition.getSd();
+      List<MFieldSchema> colList = mSDS.getCD().getCols();
+
+      for(MFieldSchema mCol:colList) {
+        if (mCol.getName().equals(colName.trim())) {
+          foundCol = true;
+          break;
+        }
+      }
+
+      if (!foundCol) {
+        throw new NoSuchObjectException("Column " + colName +
+        " for which stats is requested doesn't exist.");
+      }
+
+      Query query = pm.newQuery(MPartitionColumnStatistics.class);
+      query.setFilter("partition.partitionName == t1 && " +
+        "dbName == t2 && " + "tableName == t3 && " + "colName == t4");
+      query
+      .declareParameters("java.lang.String t1, java.lang.String t2, " +
+         "java.lang.String t3, java.lang.String t4");
+      query.setUnique(true);
+
+      mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
+                                                        dbName.trim(), tableName.trim(),
+                                                        colName.trim());
+      pm.retrieve(mStatsObj);
+      committed = commitTransaction();
+      return mStatsObj;
+
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+       }
+    }
+  }
+
+  public boolean deletePartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVals,String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean ret = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName, tableName);
+      MPartitionColumnStatistics mStatsObj;
+      List<MPartitionColumnStatistics> mStatsObjColl;
+
+      if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          "  for which stats deletion is requested doesn't exist");
+      }
+
+      MPartition mPartition =
+          getMPartition(dbName, tableName, partVals);
+
+      if (mPartition == null) {
+        throw new
+          NoSuchObjectException("Partition " + partName +
+          " for which stats deletion is requested doesn't exist");
+      }
+
+      Query query = pm.newQuery(MPartitionColumnStatistics.class);
+      String filter;
+      String parameters;
+
+      if (colName != null) {
+        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3 && " +
+                    "colName == t4";
+        parameters = "java.lang.String t1, java.lang.String t2, " +
+                        "java.lang.String t3, java.lang.String t4";
+      } else {
+        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3";
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+      }
+
+      query.setFilter(filter);
+      query
+        .declareParameters(parameters);
+
+      if (colName != null) {
+        query.setUnique(true);
+        mStatsObj = (MPartitionColumnStatistics)query.executeWithArray(partName.trim(),
+                                                dbName.trim(), tableName.trim(), colName.trim());
+        pm.retrieve(mStatsObj);
+
+        if (mStatsObj != null) {
+          pm.deletePersistent(mStatsObj);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" +dbName + " table="
+              + tableName + " partition=" + partName + " col=" + colName);
+        }
+      } else {
+        mStatsObjColl= (List<MPartitionColumnStatistics>)query.execute(partName.trim(),
+                                  dbName.trim(), tableName.trim());
+        pm.retrieveAll(mStatsObjColl);
+
+        if (mStatsObjColl != null) {
+          pm.deletePersistentAll(mStatsObjColl);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+            " table=" + tableName + " partition" + partName);
+        }
+      }
+      ret = commitTransaction();
+    } catch(NoSuchObjectException e) {
+       rollbackTransaction();
+       throw e;
+    } finally {
+      if (!ret) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException
+  {
+    boolean ret = false;
+
+    if (dbName == null) {
+      dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    }
+
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
+
+    try {
+      openTransaction();
+      MTable mTable = getMTable(dbName, tableName);
+      MTableColumnStatistics mStatsObj;
+        List<MTableColumnStatistics> mStatsObjColl;
+
+      if (mTable == null) {
+        throw new
+          NoSuchObjectException("Table " + tableName +
+          "  for which stats deletion is requested doesn't exist");
+      }
+
+      Query query = pm.newQuery(MTableColumnStatistics.class);
+      String filter;
+      String parameters;
+
+      if (colName != null) {
+        filter = "table.tableName == t1 && dbName == t2 && colName == t3";
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+      } else {
+        filter = "table.tableName == t1 && dbName == t2";
+        parameters = "java.lang.String t1, java.lang.String t2";
+      }
+
+      query.setFilter(filter);
+      query
+        .declareParameters(parameters);
+
+      if (colName != null) {
+        query.setUnique(true);
+        mStatsObj = (MTableColumnStatistics)query.execute(tableName.trim(),
+                                                    dbName.trim(), colName.trim());
+        pm.retrieve(mStatsObj);
+
+        if (mStatsObj != null) {
+          pm.deletePersistent(mStatsObj);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" +dbName + " table="
+              + tableName + " col=" + colName);
+        }
+      } else {
+        mStatsObjColl= (List<MTableColumnStatistics>)query.execute(tableName.trim(), dbName.trim());
+        pm.retrieveAll(mStatsObjColl);
+
+        if (mStatsObjColl != null) {
+          pm.deletePersistentAll(mStatsObjColl);
+        } else {
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+            " table=" + tableName);
+        }
+      }
+      ret = commitTransaction();
+    } catch(NoSuchObjectException e) {
+       rollbackTransaction();
+       throw e;
+    } finally {
+      if (!ret) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
   @Override
   public long cleanupEvents() {
     boolean commited = false;
@@ -3930,4 +5268,5 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return delCnt;
   }
+
 }

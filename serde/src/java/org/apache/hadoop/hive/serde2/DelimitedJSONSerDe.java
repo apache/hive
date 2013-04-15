@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -54,9 +54,10 @@ public class DelimitedJSONSerDe extends LazySimpleSerDe {
   @Override
   protected void serializeField(ByteStream.Output out, Object obj, ObjectInspector objInspector,
       SerDeParameters serdeParams) throws SerDeException {
-    if (!objInspector.getCategory().equals(Category.PRIMITIVE) || (objInspector.getTypeName().equalsIgnoreCase(Constants.BINARY_TYPE_NAME))) {
+    if (!objInspector.getCategory().equals(Category.PRIMITIVE) || (objInspector.getTypeName().equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME))) {
+      //do this for all complex types and binary
       try {
-        serialize(out, SerDeUtils.getJSONString(obj, objInspector),
+        serialize(out, SerDeUtils.getJSONString(obj, objInspector, serdeParams.getNullSequence().toString()),
             PrimitiveObjectInspectorFactory.javaStringObjectInspector, serdeParams.getSeparators(),
             1, serdeParams.getNullSequence(), serdeParams.isEscaped(), serdeParams.getEscapeChar(),
             serdeParams.getNeedsEscape());
@@ -66,6 +67,7 @@ public class DelimitedJSONSerDe extends LazySimpleSerDe {
       }
 
     } else {
+      //primitives except binary
       super.serializeField(out, obj, objInspector, serdeParams);
     }
   }

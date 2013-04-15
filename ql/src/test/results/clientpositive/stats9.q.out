@@ -48,13 +48,39 @@ POSTHOOK: Input: default@analyze_srcbucket
 POSTHOOK: Output: default@analyze_srcbucket
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended analyze_srcbucket
+PREHOOK: query: describe formatted analyze_srcbucket
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcbucket
+POSTHOOK: query: describe formatted analyze_srcbucket
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
-key	int	
-value	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	1000                
+	rawDataSize         	10603               
+	totalSize           	11603               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

@@ -26,7 +26,7 @@ public class PreDropDatabaseEvent extends PreEventContext {
   private final Database db;
 
   public PreDropDatabaseEvent(Database db, HMSHandler handler) {
-    super (PreEventType.DROP_DATABASE, handler);
+    super(PreEventType.DROP_DATABASE, handler);
     this.db = db;
   }
 

@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_NULL_FORMAT;
-import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
 import java.util.Map;
@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
@@ -103,6 +104,9 @@ public class SetProcessor implements CommandProcessor {
 
   private CommandProcessorResponse setVariable(String varname, String varvalue){
     SessionState ss = SessionState.get();
+    if (varvalue.contains("\n")){
+      ss.err.println("Warning: Value had a \\n character in it.");
+    }
     if (varname.startsWith(SetProcessor.ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
       return new CommandProcessorResponse(1);
@@ -112,17 +116,44 @@ public class SetProcessor implements CommandProcessor {
       return new CommandProcessorResponse(0);
     } else if (varname.startsWith(SetProcessor.HIVECONF_PREFIX)){
       String propName = varname.substring(SetProcessor.HIVECONF_PREFIX.length());
-      ss.getConf().set(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
-      return new CommandProcessorResponse(0);
+      try {
+        setConf(varname, propName, varvalue, false);
+        return new CommandProcessorResponse(0);
+      } catch (IllegalArgumentException e) {
+        return new CommandProcessorResponse(1, e.getMessage(), "42000");
+      }
     } else if (varname.startsWith(SetProcessor.HIVEVAR_PREFIX)) {
       String propName = varname.substring(SetProcessor.HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
       return new CommandProcessorResponse(0);
     } else {
-      String substitutedValue = new VariableSubstitution().substitute(ss.getConf(),varvalue);
-      ss.getConf().set(varname, substitutedValue );
-      ss.getOverriddenConfigurations().put(varname, substitutedValue);
-      return new CommandProcessorResponse(0);
+      try {
+        setConf(varname, varname, varvalue, true);
+        return new CommandProcessorResponse(0);
+      } catch (IllegalArgumentException e) {
+        return new CommandProcessorResponse(1, e.getMessage(), "42000");
+      }
+    }
+  }
+
+  // returns non-null string for validation fail
+  private void setConf(String varname, String key, String varvalue, boolean register)
+        throws IllegalArgumentException {
+    HiveConf conf = SessionState.get().getConf();
+    String value = new VariableSubstitution().substitute(conf, varvalue);
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
+      HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
+      if (confVars != null && !confVars.isType(value)) {
+        StringBuilder message = new StringBuilder();
+        message.append("'SET ").append(varname).append('=').append(varvalue);
+        message.append("' FAILED because "); message.append(key).append(" expects an ");
+        message.append(confVars.typeString()).append(" value.");
+        throw new IllegalArgumentException(message.toString());
+      }
+    }
+    conf.verifyAndSet(key, value);
+    if (register) {
+      SessionState.get().getOverriddenConfigurations().put(key, value);
     }
   }
 
@@ -186,7 +217,7 @@ public class SetProcessor implements CommandProcessor {
       }
     } else {
       dumpOption(varname);
-      return new CommandProcessorResponse(0);
+      return new CommandProcessorResponse(0, null, null, getSchema());
     }
   }
 

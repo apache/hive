@@ -67,7 +67,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (value is not null and (value <> ''))
+                  expr: ((key is not null and value is not null) and (value <> ''))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -80,8 +80,6 @@ STAGE PLANS:
                 tag: 1
                 value expressions:
                       expr: value
-                      type: string
-                      expr: ds
                       type: string
       Needs Tagging: true
       Path -> Alias:
@@ -101,7 +99,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
-              numPartitions 1
               numRows 25
               partition_columns ds
               rawDataSize 211
@@ -139,9 +136,9 @@ STAGE PLANS:
                Inner Join 0 to 1
           condition expressions:
             0 {VALUE._col0}
-            1 {VALUE._col1} {VALUE._col2}
+            1 {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col6, _col7
+          outputColumnNames: _col0, _col6
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -151,12 +148,14 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
-                  columns _col0,_col6,_col7
-                  columns.types int,string,string
+                  columns _col0,_col6
+                  columns.types int,string
                   escape.delim \
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [f, m]
 
   Stage: Stage-2
     Map Reduce
@@ -178,18 +177,23 @@ STAGE PLANS:
           TableScan
             alias: g
             GatherStats: false
-            Reduce Output Operator
-              key expressions:
-                    expr: value
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: value
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (value <> '')
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: value
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: value
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: value
+                      type: string
       Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
@@ -200,15 +204,15 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col6,_col7
-              columns.types int,string,string
+              columns _col0,_col6
+              columns.types int,string
               escape.delim \
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col6,_col7
-                columns.types int,string,string
+                columns _col0,_col6
+                columns.types int,string
                 escape.delim \
 #### A masked pattern was here ####
           Partition
@@ -224,7 +228,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
-              numPartitions 1
               numRows 25
               partition_columns ds
               rawDataSize 211
@@ -289,6 +292,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [g]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -299,12 +305,14 @@ PREHOOK: query: SELECT f.key, g.value
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@filter_join_breaktask
 PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT f.key, g.value 
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@filter_join_breaktask
 POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

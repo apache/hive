@@ -18,14 +18,21 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * The list of pruned partitions.
  */
 public class PrunedPartitionList {
+
+  // source table
+  private final Table source;
+
   // confirmed partitions - satisfy the partition criteria
   private Set<Partition> confirmedPartns;
 
@@ -37,20 +44,25 @@ public class PrunedPartitionList {
 
   /**
    * @param confirmedPartns
-   *          confirmed paritions
+   *          confirmed partitions
    * @param unknownPartns
    *          unknown partitions
    */
-  public PrunedPartitionList(Set<Partition> confirmedPartns,
+  public PrunedPartitionList(Table source, Set<Partition> confirmedPartns,
       Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
+    this.source = source;
     this.confirmedPartns = confirmedPartns;
     this.unknownPartns = unknownPartns;
     this.deniedPartns = deniedPartns;
   }
 
+  public Table getSourceTable() {
+    return source;
+  }
+
   /**
    * get confirmed partitions.
-   * 
+   *
    * @return confirmedPartns confirmed paritions
    */
   public Set<Partition> getConfirmedPartns() {
@@ -59,7 +71,7 @@ public class PrunedPartitionList {
 
   /**
    * get unknown partitions.
-   * 
+   *
    * @return unknownPartns unknown paritions
    */
   public Set<Partition> getUnknownPartns() {
@@ -68,7 +80,7 @@ public class PrunedPartitionList {
 
   /**
    * get denied partitions.
-   * 
+   *
    * @return deniedPartns denied paritions
    */
   public Set<Partition> getDeniedPartns() {
@@ -76,8 +88,18 @@ public class PrunedPartitionList {
   }
 
   /**
+   * return all not-denied(confirmed + unknown) partitions.
+   */
+  public List<Partition> getNotDeniedPartns() {
+    List<Partition> partitions = new ArrayList<Partition>();
+    partitions.addAll(confirmedPartns);
+    partitions.addAll(unknownPartns);
+    return partitions;
+  }
+
+  /**
    * set confirmed partitions.
-   * 
+   *
    * @param confirmedPartns
    *          confirmed paritions
    */
@@ -87,7 +109,7 @@ public class PrunedPartitionList {
 
   /**
    * set unknown partitions.
-   * 
+   *
    * @param unknownPartns
    *          unknown partitions
    */

@@ -1,0 +1,391 @@
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE db1.t1(key1 INT, value1 STRING) PARTITIONED BY (ds STRING, part STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: db1@t1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='3', part='3')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: db1@t1
+POSTHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='3', part='3')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: db1@t1
+POSTHOOK: Output: db1@t1@ds=3/part=3
+PREHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: db1@t1
+POSTHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: db1@t1
+POSTHOOK: Output: db1@t1@ds=4/part=4
+PREHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: db1@t1
+POSTHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: db1@t1
+POSTHOOK: Output: db1@t1@ds=4/part=5
+PREHOOK: query: -- describe table
+DESCRIBE t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe table
+DESCRIBE t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+PREHOOK: query: DESCRIBE EXTENDED t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	db1                 	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- describe database.table
+DESCRIBE db1.t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe database.table
+DESCRIBE db1.t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+PREHOOK: query: DESCRIBE EXTENDED db1.t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED db1.t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED db1.t1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED db1.t1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	db1                 	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- describe table column
+DESCRIBE t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe table column
+DESCRIBE t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE EXTENDED t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: -- describe database.tabe column
+DESCRIBE db1.t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe database.tabe column
+DESCRIBE db1.t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE EXTENDED db1.t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED db1.t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED db1.t1 key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED db1.t1 key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: -- describe table.column
+-- after first checking t1.key1 for database.table not valid
+-- fall back to the old syntax table.column
+DESCRIBE t1.key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe table.column
+-- after first checking t1.key1 for database.table not valid
+-- fall back to the old syntax table.column
+DESCRIBE t1.key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE EXTENDED t1.key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED t1.key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED t1.key1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t1.key1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	from deserializer   
+PREHOOK: query: -- describe table partition
+DESCRIBE t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe table partition
+DESCRIBE t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+PREHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[4, 5]              	 
+Database:           	db1                 	 
+Table:              	t1                  	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- describe database.table partition
+DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- describe database.table partition
+DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+PREHOOK: query: DESCRIBE EXTENDED db1.t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED db1.t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED db1.t1 PARTITION(ds='4', part='5')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED db1.t1 PARTITION(ds='4', part='5')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key1                	int                 	None                
+value1              	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[4, 5]              	 
+Database:           	db1                 	 
+Table:              	t1                  	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

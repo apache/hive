@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,14 +41,17 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * ExplainTask implementation.
@@ -57,6 +62,51 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public static final String EXPL_COLUMN_NAME = "Explain";
   public ExplainTask() {
     super();
+  }
+
+  /*
+   * Below method returns the dependencies for the passed in query to EXPLAIN.
+   * The dependencies are the set of input tables and partitions, and are
+   * provided back as JSON output for the EXPLAIN command.
+   * Example output:
+   * {"input_tables":[{"tablename": "default@test_sambavi_v1", "tabletype": "TABLE"}],
+   *  "input partitions":["default@srcpart@ds=2008-04-08/hr=11"]}
+   */
+  private static JSONObject getJSONDependencies(ExplainWork work)
+      throws Exception {
+    assert(work.getDependency());
+
+    JSONObject outJSONObject = new JSONObject();
+    List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
+    List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
+    for (ReadEntity input: work.getInputs()) {
+      switch (input.getType()) {
+        case TABLE:
+          Table table = input.getTable();
+          Map<String, String> tableInfo = new HashMap<String, String>();
+          tableInfo.put("tablename", table.getCompleteName());
+          tableInfo.put("tabletype", table.getTableType().toString());
+          if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
+            tableInfo.put("tableParents", input.getParents().toString());
+          }
+          inputTableInfo.add(tableInfo);
+          break;
+        case PARTITION:
+          Map<String, String> partitionInfo = new HashMap<String, String>();
+          partitionInfo.put("partitionName", input.getPartition().getCompleteName());
+          if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
+            partitionInfo.put("partitionParents", input.getParents().toString());
+          }
+          inputPartitionInfo.add(partitionInfo);
+          break;
+        default:
+          break;
+      }
+    }
+
+    outJSONObject.put("input_tables", inputTableInfo);
+    outJSONObject.put("input_partitions", inputPartitionInfo);
+    return outJSONObject;
   }
 
   static public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
@@ -111,10 +161,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      JSONObject jsonPlan = getJSONPlan(out, work);
-
-      if (work.isFormatted()) {
-        out.print(jsonPlan);
+      if (work.getDependency()) {
+        JSONObject jsonDependencies = getJSONDependencies(work);
+        out.print(jsonDependencies);
+      } else {
+        JSONObject jsonPlan = getJSONPlan(out, work);
+        if (work.isFormatted()) {
+          out.print(jsonPlan);
+        }
       }
 
       out.close();
@@ -198,12 +252,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? json : null;
   }
 
-  private static String outputList(List<?> l, String header, PrintStream out,
+  private static JSONArray outputList(List<?> l, String header, PrintStream out,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     boolean first_el = true;
     boolean nl = false;
-    StringBuffer s = new StringBuffer();
+    JSONArray outputArray = new JSONArray();
+
     for (Object o : l) {
       if (first_el && (out != null)) {
         out.print(header);
@@ -217,8 +272,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
 
         if (jsonOutput) {
-          s.append(delim);
-          s.append(o);
+          outputArray.put(o);
         }
         nl = true;
       }
@@ -229,10 +283,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonOut = outputPlan((Serializable) o, out, extended,
             jsonOutput, jsonOutput ? 0 : indent + 2);
         if (jsonOutput) {
-          if (!first_el) {
-            s.append(", ");
-          }
-          s.append(jsonOut);
+          outputArray.put(jsonOut);
         }
       }
 
@@ -242,12 +293,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (nl && (out != null)) {
       out.println();
     }
-    return jsonOutput ? s.toString() : null;
+
+    return jsonOutput ? outputArray : null;
   }
 
   private static boolean isPrintable(Object val) {
     if (val instanceof Boolean || val instanceof String
-        || val instanceof Integer || val instanceof Byte
+        || val instanceof Integer || val instanceof Long || val instanceof Byte
         || val instanceof Float || val instanceof Double) {
       return true;
     }
@@ -281,7 +333,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     // If this is an operator then we need to call the plan generation on the
     // conf and then the children
     if (work instanceof Operator) {
-      Operator<? extends Serializable> operator = (Operator<? extends Serializable>) work;
+      Operator<? extends OperatorDesc> operator =
+        (Operator<? extends OperatorDesc>) work;
       if (operator.getConf() != null) {
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent);
@@ -291,7 +344,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
 
       if (operator.getChildOperators() != null) {
-        for (Operator<? extends Serializable> op : operator.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
           JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, jsonOutput ? 0 : indent + 2);
           if (jsonOutput) {
             json.put(operator.getOperatorId(), jsonOut);
@@ -346,8 +399,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             header = indentString(prop_indents);
           }
 
+          // Try the output as a primitive object
           if (isPrintable(val)) {
-            if (out != null) {
+            if (out != null && shouldPrint(xpl_note, val)) {
               out.printf("%s ", header);
               out.println(val);
             }
@@ -374,11 +428,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Try this as a list
           try {
             List<?> l = (List<?>) val;
-            String jsonOut = outputList(l, header, out, extended, jsonOutput,
+            JSONArray jsonOut = outputList(l, header, out, extended, jsonOutput,
                 jsonOutput ? 0 : prop_indents + 2);
+
             if (jsonOutput) {
               json.put(header, jsonOut);
             }
+
             continue;
           }
           catch (ClassCastException ce) {
@@ -414,8 +470,24 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       return json;
     }
-
     return null;
+  }
+
+  /**
+   * use case: we want to print the object in explain only if it is true
+   * how to do : print it unless the following 3 are all true:
+   * 1. displayOnlyOnTrue tag is on
+   * 2. object is boolean
+   * 3. object is false
+   * @param exp
+   * @param val
+   * @return
+   */
+  private static boolean shouldPrint(Explain exp, Object val) {
+    if (exp.displayOnlyOnTrue() && (val instanceof Boolean) & !((Boolean)val)) {
+      return false;
+    }
+    return true;
   }
 
   private static JSONObject outputPlan(Task<? extends Serializable> task,
@@ -651,6 +723,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     throw new RuntimeException("Unexpected call");
   }
 
+  @Override
   public List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();

@@ -21,18 +21,26 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
+import org.apache.hadoop.http.HtmlQuoting;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -51,6 +59,7 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
@@ -63,6 +72,9 @@ import org.apache.hadoop.util.ToolRunner;
  * Base implemention for shims against secure Hadoop 0.20.3/0.23.
  */
 public abstract class HadoopShimsSecure implements HadoopShims {
+
+  static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
+
   public boolean usesJobShell() {
     return false;
   }
@@ -78,6 +90,11 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     // gone in 0.18+
   }
 
+  @Override
+  public String unquoteHtmlChars(String item) {
+    return HtmlQuoting.unquoteHtmlChars(item);
+  }
+
   public boolean isJobPreparing(RunningJob job) throws IOException {
     return job.getJobState() == JobStatus.PREP;
   }
@@ -86,33 +103,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
    */
   public void setTmpFiles(String prop, String files) {
     // gone in 20+
-  }
-
-  public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
-      int numDataNodes,
-      boolean format,
-      String[] racks) throws IOException {
-    return new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
-  }
-
-  /**
-   * MiniDFSShim.
-   *
-   */
-  public class MiniDFSShim implements HadoopShims.MiniDFSShim {
-    private final MiniDFSCluster cluster;
-
-    public MiniDFSShim(MiniDFSCluster cluster) {
-      this.cluster = cluster;
-    }
-
-    public FileSystem getFileSystem() throws IOException {
-      return cluster.getFileSystem();
-    }
-
-    public void shutdown() {
-      cluster.shutdown();
-    }
   }
 
   /**
@@ -152,8 +142,15 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     }
 
     public InputSplitShim(CombineFileSplit old) throws IOException {
-      super(old);
+      super(old.getJob(), old.getPaths(), old.getStartOffsets(),
+          old.getLengths(), dedup(old.getLocations()));
       _isShrinked = false;
+    }
+
+    private static String[] dedup(String[] locations) {
+      Set<String> dedup = new HashSet<String>();
+      Collections.addAll(dedup, locations);
+      return dedup.toArray(new String[dedup.size()]);
     }
 
     @Override
@@ -432,26 +429,31 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     HadoopArchives har = new HadoopArchives(conf);
     List<String> args = new ArrayList<String>();
 
-    if (conf.get("hive.archive.har.parentdir.settable") == null) {
-      throw new RuntimeException("hive.archive.har.parentdir.settable is not set");
-    }
-    boolean parentSettable =
-      conf.getBoolean("hive.archive.har.parentdir.settable", false);
-
-    if (parentSettable) {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add("-p");
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    } else {
-      args.add("-archiveName");
-      args.add(archiveName);
-      args.add(sourceDir.toString());
-      args.add(destDir.toString());
-    }
+    args.add("-archiveName");
+    args.add(archiveName);
+    args.add("-p");
+    args.add(sourceDir.toString());
+    args.add(destDir.toString());
 
     return ToolRunner.run(har, args.toArray(new String[0]));
+  }
+
+  /*
+   * This particular instance is for Hadoop 1.0 which creates an archive
+   * with only the relative path of the archived directory stored within
+   * the archive as compared to the full path in case of earlier versions.
+   * See this api in Hadoop20Shims for comparison.
+   */
+  public URI getHarUri(URI original, URI base, URI originalBase)
+    throws URISyntaxException {
+    URI relative = originalBase.relativize(original);
+    if (relative.isAbsolute()) {
+      throw new URISyntaxException("Couldn't create URI for location.",
+                                   "Relative: " + relative + " Base: "
+                                   + base + " OriginalBase: " + originalBase);
+    }
+
+    return base.resolve(relative);
   }
 
   public static class NullOutputCommitter extends OutputCommitter {
@@ -510,13 +512,47 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   }
 
   @Override
-  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws IOException, InterruptedException {
-    ugi.doAs(pvea);
+  public void setTokenStr(UserGroupInformation ugi, String tokenStr, String tokenService) throws IOException {
+    Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
+    delegationToken.decodeFromUrlString(tokenStr);
+    delegationToken.setService(new Text(tokenService));
+    ugi.addToken(delegationToken);
+  }
+
+  @Override
+  public <T> T doAs(UserGroupInformation ugi, PrivilegedExceptionAction<T> pvea) throws IOException, InterruptedException {
+    return ugi.doAs(pvea);
+  }
+
+  @Override
+  public UserGroupInformation createProxyUser(String userName) throws IOException {
+    return UserGroupInformation.createProxyUser(
+        userName, UserGroupInformation.getLoginUser());
+  }
+
+  @Override
+  public boolean isSecurityEnabled() {
+    return UserGroupInformation.isSecurityEnabled();
   }
 
   @Override
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
     return UserGroupInformation.createRemoteUser(userName);
+  }
+
+  @Override
+  public void closeAllForUGI(UserGroupInformation ugi) {
+    try {
+      FileSystem.closeAllForUGI(ugi);
+    } catch (IOException e) {
+      LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+    }
+  }
+
+  @Override
+  public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
+    String hostPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    UserGroupInformation.loginUserFromKeytab(hostPrincipal, keytabFile);
   }
 
   @Override
@@ -527,4 +563,26 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   @Override
   abstract public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job);
+
+  @Override
+  abstract public boolean isLocalMode(Configuration conf);
+
+  @Override
+  abstract public void setJobLauncherRpcAddress(Configuration conf, String val);
+
+  @Override
+  abstract public String getJobLauncherHttpAddress(Configuration conf);
+
+  @Override
+  abstract public String getJobLauncherRpcAddress(Configuration conf);
+
+  @Override
+  abstract public short getDefaultReplication(FileSystem fs, Path path);
+
+  @Override
+  abstract public long getDefaultBlockSize(FileSystem fs, Path path);
+
+  @Override
+  abstract public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
+          throws IOException;
 }

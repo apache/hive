@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: DATE and DATETIME types aren't supported yet. Please use TIMESTAMP instead
+FAILED: SemanticException [Error 10099]: DATE and DATETIME types aren't supported yet. Please use TIMESTAMP instead

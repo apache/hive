@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING, dt STRING, hr STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-FAILED: Error in semantic analysis: Sampling expression needed for non-bucketed table srcpart
+FAILED: SemanticException [Error 10060]: Sampling expression needed for non-bucketed table srcpart

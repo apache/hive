@@ -1,0 +1,598 @@
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+
+-- List bucketing query logic test case. We simulate the directory structure by DML here.
+-- Test condition: 
+-- 1. where clause has multiple skewed columns and non-skewed columns
+-- 3. where clause has a few operators
+-- Test focus:
+-- 1. basic list bucketing query work
+-- Test result:
+-- 1. pruner only pick up right directory
+-- 2. query result is right
+
+-- create a skewed table
+create table fact_daily (key String, value String) 
+partitioned by (ds String, hr String) 
+skewed by (key, value) on (('484','val_484'),('238','val_238')) 
+stored as DIRECTORIES
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
+
+-- List bucketing query logic test case. We simulate the directory structure by DML here.
+-- Test condition: 
+-- 1. where clause has multiple skewed columns and non-skewed columns
+-- 3. where clause has a few operators
+-- Test focus:
+-- 1. basic list bucketing query work
+-- Test result:
+-- 1. pruner only pick up right directory
+-- 2. query result is right
+
+-- create a skewed table
+create table fact_daily (key String, value String) 
+partitioned by (ds String, hr String) 
+skewed by (key, value) on (('484','val_484'),('238','val_238')) 
+stored as DIRECTORIES
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@fact_daily
+PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@fact_daily@ds=1/hr=4
+POSTHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@fact_daily@ds=1/hr=4
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1, 4]              	 
+Database:           	default             	 
+Table:              	fact_daily          	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	3                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[484, val_484], [238, val_238]]	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[484, val_484]=/fact_daily/ds=1/hr=4/key=484/value=val_484, [238, val_238]=/fact_daily/ds=1/hr=4/key=238/value=val_238}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+500
+PREHOOK: query: -- pruner only pick up default directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- pruner only pick up default directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL value) 'val_484')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        fact_daily 
+          TableScan
+            alias: fact_daily
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (value = 'val_484')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              rawDataSize 5312
+              serialization.ddl struct fact_daily { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily
+                numFiles 3
+                numPartitions 1
+                numRows 500
+                partition_columns ds/hr
+                rawDataSize 5312
+                serialization.ddl struct fact_daily { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily
+            name: default.fact_daily
+#### A masked pattern was here ####
+          Partition
+            base file name: value=val_484
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              rawDataSize 5312
+              serialization.ddl struct fact_daily { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily
+                numFiles 3
+                numPartitions 1
+                numRows 500
+                partition_columns ds/hr
+                rawDataSize 5312
+                serialization.ddl struct fact_daily { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily
+            name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+484	val_484
+PREHOOK: query: -- pruner only pick up default directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- pruner only pick up default directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL key) '406')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        fact_daily 
+          TableScan
+            alias: fact_daily
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key = '406')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types string
+                        escape.delim \
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              rawDataSize 5312
+              serialization.ddl struct fact_daily { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily
+                numFiles 3
+                numPartitions 1
+                numRows 500
+                partition_columns ds/hr
+                rawDataSize 5312
+                serialization.ddl struct fact_daily { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily
+            name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+PREHOOK: query: -- pruner only pick up skewed-value directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- pruner only pick up skewed-value directory
+-- explain plan shows which directory selected: Truncated Path -> Alias
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (or (and (= (TOK_TABLE_OR_COL key) '484') (= (TOK_TABLE_OR_COL value) 'val_484')) (and (= (TOK_TABLE_OR_COL key) '238') (= (TOK_TABLE_OR_COL value) 'val_238')))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        fact_daily 
+          TableScan
+            alias: fact_daily
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (((key = '484') and (value = 'val_484')) or ((key = '238') and (value = 'val_238')))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types string:string
+                        escape.delim \
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Needs Tagging: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: value=val_238
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              rawDataSize 5312
+              serialization.ddl struct fact_daily { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily
+                numFiles 3
+                numPartitions 1
+                numRows 500
+                partition_columns ds/hr
+                rawDataSize 5312
+                serialization.ddl struct fact_daily { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily
+            name: default.fact_daily
+#### A masked pattern was here ####
+          Partition
+            base file name: value=val_484
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              rawDataSize 5312
+              serialization.ddl struct fact_daily { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily
+                numFiles 3
+                numPartitions 1
+                numRows 500
+                partition_columns ds/hr
+                rawDataSize 5312
+                serialization.ddl struct fact_daily { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily
+            name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
+        /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: query: -- List Bucketing Query
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+484	val_484
+238	val_238
+238	val_238
+PREHOOK: query: -- clean up
+drop table fact_daily
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@fact_daily
+PREHOOK: Output: default@fact_daily
+POSTHOOK: query: -- clean up
+drop table fact_daily
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@fact_daily
+POSTHOOK: Output: default@fact_daily
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

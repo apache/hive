@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,17 +42,17 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   /**
    * The expressions for join inputs's join keys.
    */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinKeys;
+  protected transient List<ExprNodeEvaluator>[] joinKeys;
   /**
    * The ObjectInspectors for the join inputs's join keys.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
+  protected transient List<ObjectInspector>[] joinKeysObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs's join keys.
    */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
+  protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
 
-  protected transient int posBigTable = -1; // one of the tables that is not in memory
+  protected transient byte posBigTable = -1; // one of the tables that is not in memory
   transient int mapJoinRowsKey; // rows for a given key
 
   protected transient RowContainer<ArrayList<Object>> emptyList = null;
@@ -78,28 +76,33 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
     numMapRowsRead = 0;
     firstRow = true;
 
-    joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
+    int tagLen = conf.getTagLength();
 
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(),order,NOTSKIPBIGTABLE);
+    joinKeys = new List[tagLen];
+
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), NOTSKIPBIGTABLE);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
-        inputObjInspectors,NOTSKIPBIGTABLE);
+        inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinKeysObjectInspectors,NOTSKIPBIGTABLE);
+        joinKeysObjectInspectors,NOTSKIPBIGTABLE, tagLen);
 
     // all other tables are small, and are cached in the hash table
-    posBigTable = conf.getPosBigTable();
+    posBigTable = (byte) conf.getPosBigTable();
 
-    emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
+    emptyList = new RowContainer<ArrayList<Object>>(1, hconf, reporter);
+
     RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
-        rowContainerStandardObjectInspectors.get((byte) posBigTable),
-        order[posBigTable], joinCacheSize,spillTableDesc, conf,noOuterJoin);
-    storage.put((byte) posBigTable, bigPosRC);
+        rowContainerStandardObjectInspectors[posBigTable],
+        posBigTable, joinCacheSize,spillTableDesc, conf,
+        !hasFilter(posBigTable), reporter);
+    storage[posBigTable] = bigPosRC;
 
     mapJoinRowsKey = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEMAPJOINROWSIZE);

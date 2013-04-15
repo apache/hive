@@ -24,10 +24,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 PREHOOK: query: select * from ppr_test where ds = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -35,10 +37,12 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 2	2
 PREHOOK: query: select * from ppr_test where ds = '22'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
 PREHOOK: Input: default@ppr_test@ds=22
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '22'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
 POSTHOOK: Input: default@ppr_test@ds=22
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -76,10 +80,12 @@ POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=2,s=1).key SIMPLE []
 PREHOOK: query: select * from ppr_test2 where s = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test2
 PREHOOK: Input: default@ppr_test2@ds=2/s=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test2 where s = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test2
 POSTHOOK: Input: default@ppr_test2@ds=2/s=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -89,10 +95,12 @@ POSTHOOK: Lineage: ppr_test2 PARTITION(ds=2,s=1).key SIMPLE []
 2	2	1
 PREHOOK: query: select * from ppr_test2 where ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test2
 PREHOOK: Input: default@ppr_test2@ds=1/s=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test2 where ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test2
 POSTHOOK: Input: default@ppr_test2@ds=1/s=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -153,10 +161,12 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=1).key SIMPLE []
 POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where l = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where l = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -169,10 +179,12 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 3	1	2	1
 PREHOOK: query: select * from ppr_test3 where l = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where l = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -185,10 +197,12 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 2	1	1	2
 PREHOOK: query: select * from ppr_test3 where ol = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -201,11 +215,13 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 2	1	1	2
 PREHOOK: query: select * from ppr_test3 where ol = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
 #### A masked pattern was here ####
@@ -220,12 +236,14 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 1	1	2	3
 PREHOOK: query: select * from ppr_test3 where col = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where col = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
@@ -242,10 +260,12 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 1	1	2	3
 PREHOOK: query: select * from ppr_test3 where ol = '2' and l = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '2' and l = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
@@ -258,10 +278,12 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 3	1	2	1
 PREHOOK: query: select * from ppr_test3 where col='1' and ol = '2' and l = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test3
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where col='1' and ol = '2' and l = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test3
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []

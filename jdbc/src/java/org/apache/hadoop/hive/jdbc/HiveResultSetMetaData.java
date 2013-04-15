@@ -20,10 +20,9 @@ package org.apache.hadoop.hive.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
  * HiveResultSetMetaData.
@@ -96,27 +95,31 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     // TODO: this would be better handled in an enum
     String type = columnTypes.get(column - 1);
     if ("string".equalsIgnoreCase(type)) {
-      return Constants.STRING_TYPE_NAME;
+      return serdeConstants.STRING_TYPE_NAME;
     } else if ("float".equalsIgnoreCase(type)) {
-      return Constants.FLOAT_TYPE_NAME;
+      return serdeConstants.FLOAT_TYPE_NAME;
     } else if ("double".equalsIgnoreCase(type)) {
-      return Constants.DOUBLE_TYPE_NAME;
+      return serdeConstants.DOUBLE_TYPE_NAME;
     } else if ("boolean".equalsIgnoreCase(type)) {
-      return Constants.BOOLEAN_TYPE_NAME;
+      return serdeConstants.BOOLEAN_TYPE_NAME;
     } else if ("tinyint".equalsIgnoreCase(type)) {
-      return Constants.TINYINT_TYPE_NAME;
+      return serdeConstants.TINYINT_TYPE_NAME;
     } else if ("smallint".equalsIgnoreCase(type)) {
-      return Constants.SMALLINT_TYPE_NAME;
+      return serdeConstants.SMALLINT_TYPE_NAME;
     } else if ("int".equalsIgnoreCase(type)) {
-      return Constants.INT_TYPE_NAME;
+      return serdeConstants.INT_TYPE_NAME;
     } else if ("bigint".equalsIgnoreCase(type)) {
-      return Constants.BIGINT_TYPE_NAME;
+      return serdeConstants.BIGINT_TYPE_NAME;
+    } else if ("timestamp".equalsIgnoreCase(type)) {
+      return serdeConstants.TIMESTAMP_TYPE_NAME;
+    } else if ("decimal".equalsIgnoreCase(type)) {
+      return serdeConstants.DECIMAL_TYPE_NAME;
     } else if (type.startsWith("map<")) {
-      return Constants.STRING_TYPE_NAME;
+      return serdeConstants.STRING_TYPE_NAME;
     } else if (type.startsWith("array<")) {
-      return Constants.STRING_TYPE_NAME;
+      return serdeConstants.STRING_TYPE_NAME;
     } else if (type.startsWith("struct<")) {
-      return Constants.STRING_TYPE_NAME;
+      return serdeConstants.STRING_TYPE_NAME;
     }
 
     throw new SQLException("Unrecognized column type: " + type);

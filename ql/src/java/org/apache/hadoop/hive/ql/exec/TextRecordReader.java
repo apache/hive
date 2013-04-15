@@ -27,6 +27,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+
 /**
  * TextRecordReader.
  *
@@ -36,11 +39,13 @@ public class TextRecordReader implements RecordReader {
   private LineReader lineReader;
   private InputStream in;
   private Text row;
+  private Configuration conf;
 
   public void initialize(InputStream in, Configuration conf, Properties tbl)
       throws IOException {
     lineReader = new LineReader(in, conf);
     this.in = in;
+    this.conf = conf;
   }
 
   public Writable createRow() throws IOException {
@@ -53,7 +58,12 @@ public class TextRecordReader implements RecordReader {
       return -1;
     }
 
-    return lineReader.readLine((Text) row);
+    int bytesConsumed = lineReader.readLine((Text) row);
+
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
+      return HiveUtils.unescapeText((Text) row);
+    }
+    return bytesConsumed;
   }
 
   public void close() throws IOException {

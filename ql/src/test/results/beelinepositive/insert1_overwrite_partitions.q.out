@@ -1,0 +1,259 @@
+Saving all output to "!!{outputDirectory}!!/insert1_overwrite_partitions.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/insert1_overwrite_partitions.q
+>>>  CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string);
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11');
+No rows affected 
+>>>  
+>>>  load data local inpath '../data/files/kv3.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='12');
+No rows affected 
+>>>  
+>>>  CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string);
+No rows affected 
+>>>  
+>>>  EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists 
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-2 depends on stages: Stage-1'
+'  Stage-0 depends on stages: Stage-2'
+'  Stage-3 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        sourcetable '
+'          TableScan'
+'            alias: sourcetable'
+'            Select Operator'
+'              expressions:'
+'                    expr: one'
+'                    type: string'
+'                    expr: two'
+'                    type: string'
+'              outputColumnNames: _col0, _col1'
+'              Reduce Output Operator'
+'                key expressions:'
+'                      expr: _col0'
+'                      type: string'
+'                      expr: _col1'
+'                      type: string'
+'                sort order: --'
+'                tag: -1'
+'                value expressions:'
+'                      expr: _col0'
+'                      type: string'
+'                      expr: _col1'
+'                      type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          Limit'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+''
+'  Stage: Stage-2'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        file:!!{hive.exec.scratchdir}!! '
+'            Reduce Output Operator'
+'              key expressions:'
+'                    expr: _col0'
+'                    type: string'
+'                    expr: _col1'
+'                    type: string'
+'              sort order: --'
+'              tag: -1'
+'              value expressions:'
+'                    expr: _col0'
+'                    type: string'
+'                    expr: _col1'
+'                    type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          Limit'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 1'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                  name: insert1_overwrite_partitions.destintable'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          partition:'
+'            ds 2011-11-11'
+'            hr 11'
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: insert1_overwrite_partitions.destintable'
+''
+'  Stage: Stage-3'
+'    Stats-Aggr Operator'
+''
+''
+92 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists 
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+'one','two'
+No rows selected 
+>>>  
+>>>  select one,two from destinTable order by one desc, two desc;
+'one','two'
+'98','val_98'
+'98','val_98'
+'97','val_97'
+'97','val_97'
+'96','val_96'
+5 rows selected 
+>>>  
+>>>  EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists 
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '12'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))'
+''
+'STAGE DEPENDENCIES:'
+''
+'STAGE PLANS:'
+'STAGE PLANS:'
+7 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists 
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5;
+No rows affected 
+>>>  
+>>>  select one,two from destinTable order by one desc, two desc;
+'one','two'
+'98','val_98'
+'98','val_98'
+'97','val_97'
+'97','val_97'
+'96','val_96'
+5 rows selected 
+>>>  
+>>>  drop table destinTable;
+No rows affected 
+>>>  
+>>>  CREATE TABLE destinTable (one string,two string);
+No rows affected 
+>>>  
+>>>  EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-2 depends on stages: Stage-1'
+'  Stage-0 depends on stages: Stage-2'
+'  Stage-3 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        sourcetable '
+'          TableScan'
+'            alias: sourcetable'
+'            Select Operator'
+'              expressions:'
+'                    expr: one'
+'                    type: string'
+'                    expr: two'
+'                    type: string'
+'              outputColumnNames: _col0, _col1'
+'              Reduce Output Operator'
+'                key expressions:'
+'                      expr: _col0'
+'                      type: string'
+'                      expr: _col1'
+'                      type: string'
+'                sort order: --'
+'                tag: -1'
+'                value expressions:'
+'                      expr: _col0'
+'                      type: string'
+'                      expr: _col1'
+'                      type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          Limit'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 0'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+''
+'  Stage: Stage-2'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        file:!!{hive.exec.scratchdir}!! '
+'            Reduce Output Operator'
+'              key expressions:'
+'                    expr: _col0'
+'                    type: string'
+'                    expr: _col1'
+'                    type: string'
+'              sort order: --'
+'              tag: -1'
+'              value expressions:'
+'                    expr: _col0'
+'                    type: string'
+'                    expr: _col1'
+'                    type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          Limit'
+'            File Output Operator'
+'              compressed: false'
+'              GlobalTableId: 1'
+'              table:'
+'                  input format: org.apache.hadoop.mapred.TextInputFormat'
+'                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                  name: insert1_overwrite_partitions.destintable'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: insert1_overwrite_partitions.destintable'
+''
+'  Stage: Stage-3'
+'    Stats-Aggr Operator'
+''
+''
+89 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5;
+'one','two'
+No rows selected 
+>>>  
+>>>  drop table destinTable;
+No rows affected 
+>>>  
+>>>  drop table sourceTable;
+No rows affected 
+>>>  !record

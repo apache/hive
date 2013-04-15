@@ -43,6 +43,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -92,6 +94,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -105,7 +108,6 @@ import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -127,7 +129,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -142,9 +144,11 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.Shell;
 
 /**
  * Utilities.
@@ -204,7 +208,7 @@ public final class Utilities {
       assert jobID != null;
       gWork = gWorkMap.get(jobID);
       if (gWork == null) {
-        String jtConf = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT);
+        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(job);
         String path;
         if (jtConf.equals("local")) {
           String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
@@ -353,7 +357,7 @@ public final class Utilities {
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
       // able to get the plan directly from the cache
-      if (!HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local")) {
+      if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
         // Set up distributed cache
         DistributedCache.createSymlink(job);
         String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;
@@ -555,30 +559,6 @@ public final class Utilities {
     }
   }
 
-  /**
-   * Tuple.
-   *
-   * @param <T>
-   * @param <V>
-   */
-  public static class Tuple<T, V> {
-    private final T one;
-    private final V two;
-
-    public Tuple(T one, V two) {
-      this.one = one;
-      this.two = two;
-    }
-
-    public T getOne() {
-      return this.one;
-    }
-
-    public V getTwo() {
-      return this.two;
-    }
-  }
-
   public static TableDesc defaultTd;
   static {
     // by default we expect ^A separated strings
@@ -589,6 +569,7 @@ public final class Utilities {
     defaultTd = PlanUtils.getDefaultTableDesc("" + Utilities.ctrlaCode);
   }
 
+  public static final int carriageReturnCode = 13;
   public static final int newLineCode = 10;
   public static final int tabCode = 9;
   public static final int ctrlaCode = 1;
@@ -688,16 +669,16 @@ public final class Utilities {
 
   public static TableDesc getTableDesc(Table tbl) {
     return (new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), tbl.getSchema()));
+        .getOutputFormatClass(), tbl.getMetadata()));
   }
 
   // column names and column types are all delimited by comma
   public static TableDesc getTableDesc(String cols, String colTypes) {
     return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
-        org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cols,
+        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes)));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
@@ -814,12 +795,29 @@ public final class Utilities {
 
   public static StreamStatus readColumn(DataInput in, OutputStream out) throws IOException {
 
+    boolean foundCrChar = false;
     while (true) {
       int b;
       try {
         b = in.readByte();
       } catch (EOFException e) {
         return StreamStatus.EOF;
+      }
+
+      // Default new line characters on windows are "CRLF" so detect if there are any windows
+      // native newline characters and handle them.
+      if (Shell.WINDOWS) {
+        // if the CR is not followed by the LF on windows then add it back to the stream and
+        // proceed with next characters in the input stream.
+        if (foundCrChar && b != Utilities.newLineCode) {
+          out.write(Utilities.carriageReturnCode);
+          foundCrChar = false;
+        }
+
+        if (b == Utilities.carriageReturnCode) {
+          foundCrChar = true;
+          continue;
+        }
       }
 
       if (b == Utilities.newLineCode) {
@@ -1011,10 +1009,6 @@ public final class Utilities {
       return null;
     }
 
-    try {
-      fs.close();
-    } catch (IOException e) {
-    }
     String file = path.makeQualified(fs).toString();
     // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c
     if (StringUtils.startsWith(file, "file:/") && !StringUtils.startsWith(file, "file:///")) {
@@ -1120,18 +1114,25 @@ public final class Utilities {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
       for (FileStatus file : files) {
+
         Path srcFilePath = file.getPath();
         String fileName = srcFilePath.getName();
         Path dstFilePath = new Path(dst, fileName);
-        if (fs.exists(dstFilePath)) {
-          int suffix = 0;
-          do {
-            suffix++;
-            dstFilePath = new Path(dst, fileName + "_" + suffix);
-          } while (fs.exists(dstFilePath));
+        if (file.isDir()) {
+          renameOrMoveFiles(fs, srcFilePath, dstFilePath);
         }
-        if (!fs.rename(srcFilePath, dstFilePath)) {
-          throw new HiveException("Unable to move: " + src + " to: " + dst);
+        else {
+          if (fs.exists(dstFilePath)) {
+            int suffix = 0;
+            do {
+              suffix++;
+              dstFilePath = new Path(dst, fileName + "_" + suffix);
+            } while (fs.exists(dstFilePath));
+          }
+
+          if (!fs.rename(srcFilePath, dstFilePath)) {
+            throw new HiveException("Unable to move: " + src + " to: " + dst);
+          }
         }
       }
     }
@@ -1143,7 +1144,20 @@ public final class Utilities {
    * return an integer only - this should match a pure integer as well. {1,3} is used to limit
    * matching for attempts #'s 0-999.
    */
-  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+  private static final Pattern FILE_NAME_TO_TASK_ID_REGEX =
+      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+
+  /**
+   * This retruns prefix part + taskID for bucket join for partitioned table
+   */
+  private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
+      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,3})?(\\..*)?$");
+
+  /**
+   * This breaks a prefixed bucket number into the prefix and the taskID
+   */
+  private static final Pattern PREFIXED_TASK_ID_REGEX =
+      Pattern.compile("^(.*?\\(.*\\))?([0-9]+)$");
 
   /**
    * Get the task id from the filename. It is assumed that the filename is derived from the output
@@ -1153,13 +1167,28 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
+    return getIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
+  }
+
+  /**
+   * Get the part-spec + task id from the filename. It is assumed that the filename is derived
+   * from the output of getTaskId
+   *
+   * @param filename
+   *          filename to extract taskid from
+   */
+  public static String getPrefixedTaskIdFromFilename(String filename) {
+    return getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
+  }
+
+  private static String getIdFromFilename(String filename, Pattern pattern) {
     String taskId = filename;
     int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
       taskId = filename.substring(dirEnd + 1);
     }
 
-    Matcher m = fileNameTaskIdRegex.matcher(taskId);
+    Matcher m = pattern.matcher(taskId);
     if (!m.matches()) {
       LOG.warn("Unable to get task id from file name: " + filename + ". Using last component"
           + taskId + " as task id.");
@@ -1170,6 +1199,14 @@ public final class Utilities {
     return taskId;
   }
 
+  public static String getFileNameFromDirName(String dirName) {
+    int dirEnd = dirName.lastIndexOf(Path.SEPARATOR);
+    if (dirEnd != -1) {
+      return dirName.substring(dirEnd + 1);
+    }
+    return dirName;
+  }
+
   /**
    * Replace the task id from the filename. It is assumed that the filename is derived from the
    * output of getTaskId
@@ -1178,21 +1215,55 @@ public final class Utilities {
    *          filename to replace taskid "0_0" or "0_0.gz" by 33 to "33_0" or "33_0.gz"
    */
   public static String replaceTaskIdFromFilename(String filename, int bucketNum) {
+    return replaceTaskIdFromFilename(filename, String.valueOf(bucketNum));
+  }
+
+  public static String replaceTaskIdFromFilename(String filename, String fileId) {
     String taskId = getTaskIdFromFilename(filename);
-    String newTaskId = replaceTaskId(taskId, bucketNum);
+    String newTaskId = replaceTaskId(taskId, fileId);
     String ret = replaceTaskIdFromFilename(filename, taskId, newTaskId);
     return (ret);
   }
 
   private static String replaceTaskId(String taskId, int bucketNum) {
-    String strBucketNum = String.valueOf(bucketNum);
-    int bucketNumLen = strBucketNum.length();
+    return replaceTaskId(taskId, String.valueOf(bucketNum));
+  }
+
+  /**
+   * Returns strBucketNum with enough 0's prefixing the task ID portion of the String to make it
+   * equal in length to taskId
+   *
+   * @param taskId - the taskId used as a template for length
+   * @param strBucketNum - the bucket number of the output, may or may not be prefixed
+   * @return
+   */
+  private static String replaceTaskId(String taskId, String strBucketNum) {
+    Matcher m = PREFIXED_TASK_ID_REGEX.matcher(strBucketNum);
+    if (!m.matches()) {
+      LOG.warn("Unable to determine bucket number from file ID: " + strBucketNum + ". Using " +
+          "file ID as bucket number.");
+      return adjustBucketNumLen(strBucketNum, taskId);
+    } else {
+      String adjustedBucketNum = adjustBucketNumLen(m.group(2), taskId);
+      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+    }
+  }
+
+  /**
+   * Adds 0's to the beginning of bucketNum until bucketNum and taskId are the same length.
+   *
+   * @param bucketNum - the bucket number, should not be prefixed
+   * @param taskId - the taskId used as a template for length
+   * @return
+   */
+  private static String adjustBucketNumLen(String bucketNum, String taskId) {
+    int bucketNumLen = bucketNum.length();
     int taskIdLen = taskId.length();
     StringBuffer s = new StringBuffer();
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
       s.append("0");
     }
-    return s.toString() + strBucketNum;
+    return s.toString() + bucketNum;
   }
 
   /**
@@ -1250,7 +1321,8 @@ public final class Utilities {
   }
 
   public static void mvFileToFinalPath(String specPath, Configuration hconf,
-      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf) throws IOException,
+      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+      Reporter reporter) throws IOException,
       HiveException {
 
     FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
@@ -1271,7 +1343,7 @@ public final class Utilities {
             Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
-          createEmptyBuckets(hconf, emptyBuckets, conf);
+          createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
         }
 
         // Step3: move to the file destination
@@ -1288,17 +1360,15 @@ public final class Utilities {
    * Check the existence of buckets according to bucket specification. Create empty buckets if
    * needed.
    *
-   * @param specPath
-   *          The final path where the dynamic partitions should be in.
-   * @param conf
-   *          FileSinkDesc.
-   * @param dpCtx
-   *          dynamic partition context.
+   * @param hconf
+   * @param paths A list of empty buckets to create
+   * @param conf The definition of the FileSink.
+   * @param reporter The mapreduce reporter object
    * @throws HiveException
    * @throws IOException
    */
   private static void createEmptyBuckets(Configuration hconf, ArrayList<String> paths,
-      FileSinkDesc conf)
+      FileSinkDesc conf, Reporter reporter)
       throws HiveException, IOException {
 
     JobConf jc;
@@ -1328,7 +1398,8 @@ public final class Utilities {
     for (String p : paths) {
       Path path = new Path(p);
       RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
-          jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), path);
+          jc, hiveOutputFormat, outputClass, isCompressed,
+          tableInfo.getProperties(), path, reporter);
       writer.close(false);
       LOG.info("created empty bucket for enforcing bucketing at " + path);
     }
@@ -1411,7 +1482,7 @@ public final class Utilities {
           throw new IOException("Unable to delete tmp file: " + one.getPath());
         }
       } else {
-        String taskId = getTaskIdFromFilename(one.getPath().getName());
+        String taskId = getPrefixedTaskIdFromFilename(one.getPath().getName());
         FileStatus otherFile = taskIdToFile.get(taskId);
         if (otherFile == null) {
           taskIdToFile.put(taskId, one);
@@ -1552,7 +1623,7 @@ public final class Utilities {
 
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
-    String colNames = props.getProperty(Constants.LIST_COLUMNS);
+    String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
     String[] cols = colNames.trim().split(",");
     if (cols != null) {
       for (String col : cols) {
@@ -1566,7 +1637,7 @@ public final class Utilities {
 
   public static List<String> getColumnTypes(Properties props) {
     List<String> names = new ArrayList<String>();
-    String colNames = props.getProperty(Constants.LIST_COLUMN_TYPES);
+    String colNames = props.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     String[] cols = colNames.trim().split(",");
     if (cols != null) {
       for (String col : cols) {
@@ -1842,10 +1913,6 @@ public final class Utilities {
     }
   }
 
-  public static boolean supportCombineFileInputFormat() {
-    return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
-  }
-
   /**
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.
@@ -1860,7 +1927,7 @@ public final class Utilities {
       FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDPCols, fs);
 
       if (status.length == 0) {
-        LOG.warn("No partition is genereated by dynamic partitioning");
+        LOG.warn("No partition is generated by dynamic partitioning");
         return null;
       }
 
@@ -1898,6 +1965,29 @@ public final class Utilities {
     }
   }
 
+  /**
+   * If statsPrefix's length is greater than maxPrefixLength and maxPrefixLength > 0,
+   * then it returns an MD5 hash of statsPrefix followed by path separator, otherwise
+   * it returns statsPrefix
+   *
+   * @param statsPrefix
+   * @param maxPrefixLength
+   * @return
+   */
+  public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
+    String ret = statsPrefix;
+    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
+      try {
+        MessageDigest digester = MessageDigest.getInstance("MD5");
+        digester.update(statsPrefix.getBytes());
+        ret = new String(digester.digest()) + Path.SEPARATOR;
+      } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return ret;
+  }
+
   public static void setColumnNameList(JobConf jobConf, Operator op) {
     RowSchema rowSchema = op.getSchema();
     if (rowSchema == null) {
@@ -1911,7 +2001,7 @@ public final class Utilities {
       columnNames.append(colInfo.getInternalName());
     }
     String columnNamesString = columnNames.toString();
-    jobConf.set(Constants.LIST_COLUMNS, columnNamesString);
+    jobConf.set(serdeConstants.LIST_COLUMNS, columnNamesString);
   }
 
   public static void setColumnTypeList(JobConf jobConf, Operator op) {
@@ -1927,7 +2017,7 @@ public final class Utilities {
       columnTypes.append(colInfo.getType().getTypeName());
     }
     String columnTypesString = columnTypes.toString();
-    jobConf.set(Constants.LIST_COLUMN_TYPES, columnTypesString);
+    jobConf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypesString);
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec)
@@ -2017,42 +2107,59 @@ public final class Utilities {
    *     restriction by the current JDO filtering implementation.
    * @param tab The table that contains the partition columns.
    * @param expr the partition pruning expression
-   * @return true if the partition pruning expression can be pushed down to JDO filtering.
+   * @return null if the partition pruning expression can be pushed down to JDO filtering.
    */
-  public static boolean checkJDOPushDown(Table tab, ExprNodeDesc expr) {
+  public static String checkJDOPushDown(Table tab, ExprNodeDesc expr) {
     if (expr instanceof ExprNodeConstantDesc) {
       // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
       Object value = ((ExprNodeConstantDesc)expr).getValue();
-      return (value instanceof String);
+      if (value instanceof String) {
+        return null;
+      }
+      return "Constant " + value + " is not string type";
     } else if (expr instanceof ExprNodeColumnDesc) {
       // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
       TypeInfo type = expr.getTypeInfo();
-      if (type.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+      if (type.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
         String colName = ((ExprNodeColumnDesc)expr).getColumn();
         for (FieldSchema fs: tab.getPartCols()) {
           if (fs.getName().equals(colName)) {
-            return fs.getType().equals(Constants.STRING_TYPE_NAME);
+            if (fs.getType().equals(serdeConstants.STRING_TYPE_NAME)) {
+              return null;
+            }
+            return "Partition column " + fs.getName() + " is not string type";
           }
         }
         assert(false); // cannot find the partition column!
      } else {
-       return false;
+        return "Column " + expr.getExprString() + " is not string type";
      }
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
       GenericUDF func = funcDesc.getGenericUDF();
       if (!supportedJDOFuncs(func)) {
-        return false;
+        return "Expression " + expr.getExprString() + " cannot be evaluated";
       }
+      boolean allChildrenConstant = true;
       List<ExprNodeDesc> children = funcDesc.getChildExprs();
       for (ExprNodeDesc child: children) {
-        if (!checkJDOPushDown(tab, child)) {
-          return false;
+        if (!(child instanceof ExprNodeConstantDesc)) {
+          allChildrenConstant = false;
+        }
+        String message = checkJDOPushDown(tab, child);
+        if (message != null) {
+          return message;
         }
       }
-      return true;
+
+      // If all the children of the expression are constants then JDO cannot parse the expression
+      // see Filter.g
+      if (allChildrenConstant) {
+        return "Expression " + expr.getExprString() + " has only constants as children.";
+      }
+      return null;
     }
-    return false;
+    return "Expression " + expr.getExprString() + " cannot be evaluated";
   }
 
   /**

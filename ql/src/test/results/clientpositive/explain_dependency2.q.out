@@ -1,0 +1,73 @@
+PREHOOK: query: -- This test is used for testing EXPLAIN DEPENDENCY command
+
+-- select from a table which does not involve a map-reduce job
+EXPLAIN DEPENDENCY SELECT * FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- This test is used for testing EXPLAIN DEPENDENCY command
+
+-- select from a table which does not involve a map-reduce job
+EXPLAIN DEPENDENCY SELECT * FROM src
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@src","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a table which involves a map-reduce job
+EXPLAIN DEPENDENCY SELECT count(*) FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a table which involves a map-reduce job
+EXPLAIN DEPENDENCY SELECT count(*) FROM src
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@src","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a partitioned table which does not involve a map-reduce job
+-- and some partitions are being selected
+EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table which does not involve a map-reduce job
+-- and some partitions are being selected
+EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds is not null
+POSTHOOK: type: QUERY
+{"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}],"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a partitioned table which does not involve a map-reduce job
+-- and none of the partitions are being selected
+EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table which does not involve a map-reduce job
+-- and none of the partitions are being selected
+EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds = '1'
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a partitioned table which involves a map-reduce job
+-- and some partitions are being selected
+EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table which involves a map-reduce job
+-- and some partitions are being selected
+EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds is not null
+POSTHOOK: type: QUERY
+{"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}],"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a partitioned table which involves a map-reduce job
+-- and none of the partitions are being selected
+EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table which involves a map-reduce job
+-- and none of the partitions are being selected
+EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds = '1'
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: create table tstsrcpart like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrcpart like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstsrcpart
+PREHOOK: query: -- select from a partitioned table with no partitions which does not involve a map-reduce job
+EXPLAIN DEPENDENCY SELECT * FROM tstsrcpart where ds is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table with no partitions which does not involve a map-reduce job
+EXPLAIN DEPENDENCY SELECT * FROM tstsrcpart where ds is not null
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@tstsrcpart","tabletype":"MANAGED_TABLE"}]}
+PREHOOK: query: -- select from a partitioned table with no partitions which involves a map-reduce job
+EXPLAIN DEPENDENCY SELECT count(*) FROM tstsrcpart where ds is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: -- select from a partitioned table with no partitions which involves a map-reduce job
+EXPLAIN DEPENDENCY SELECT count(*) FROM tstsrcpart where ds is not null
+POSTHOOK: type: QUERY
+{"input_partitions":[],"input_tables":[{"tablename":"default@tstsrcpart","tabletype":"MANAGED_TABLE"}]}

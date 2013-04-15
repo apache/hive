@@ -1,0 +1,24 @@
+Saving all output to "!!{outputDirectory}!!/show_partitions.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/show_partitions.q
+>>>  SHOW PARTITIONS srcpart;
+'partition'
+'ds=2008-04-08/hr=11'
+'ds=2008-04-08/hr=12'
+'ds=2008-04-09/hr=11'
+'ds=2008-04-09/hr=12'
+4 rows selected 
+>>>  SHOW PARTITIONS srcpart PARTITION(hr='11');
+'partition'
+'ds=2008-04-08/hr=11'
+'ds=2008-04-09/hr=11'
+2 rows selected 
+>>>  SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08');
+'partition'
+'ds=2008-04-08/hr=11'
+'ds=2008-04-08/hr=12'
+2 rows selected 
+>>>  SHOW PARTITIONS srcpart PARTITION(ds='2008-04-08', hr='12');
+'partition'
+'ds=2008-04-08/hr=12'
+1 row selected 
+>>>  !record

@@ -1,0 +1,338 @@
+PREHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_tmp
+PREHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python newline.py' AS key, value FROM src limit 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python newline.py' AS key, value FROM src limit 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1	2	NULL
+1	2	NULL
+1	NULL
+2	NULL
+1	NULL
+2	NULL
+1	NULL
+2	NULL
+1	NULL
+2	NULL
+PREHOOK: query: drop table tmp_tmp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_tmp
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: drop table tmp_tmp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_tmp
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmp_tmp(key string, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapednewline.py' AS key, value FROM src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapednewline.py' AS key, value FROM src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+PREHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+1\n2	NULL
+PREHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapedcarriagereturn.py' AS key, value FROM src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapedcarriagereturn.py' AS key, value FROM src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+PREHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+1\r2	NULL
+PREHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapedtab.py' AS key, value FROM src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python escapedtab.py' AS key, value FROM src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+PREHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+1\t2	NULL
+PREHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python doubleescapedtab.py' AS key, value FROM src limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_tmp
+POSTHOOK: query: insert overwrite table tmp_tmp
+SELECT TRANSFORM(key, value) USING
+'python doubleescapedtab.py' AS key, value FROM src limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_tmp
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\	2	NULL
+1\	2	NULL
+1\	2	NULL
+1\\t2	NULL
+1\\t2	NULL
+PREHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT TRANSFORM(key, value) USING
+'cat' AS (key, value) FROM tmp_tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_tmp
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+1\	2	NULL
+1\\t2	NULL
+1\	2	NULL
+1\\t2	NULL
+1\	2	NULL
+PREHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+a	b
+PREHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+c

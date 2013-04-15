@@ -9,7 +9,8 @@ create table exim_employee ( emp_id int comment "employee id")
 	tblproperties("creator"="krishna");
 load data local inpath "../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn");		
-!rm -rf ../build/ql/test/data/exports/exim_employee;
+dfs -mkdir ../build/ql/test/data/exports/exim_employee/temp;
+dfs -rmr ../build/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;
 
@@ -19,7 +20,7 @@ use importer;
 import from 'ql/test/data/exports/exim_employee';
 describe extended exim_employee;
 show table extended like exim_employee;
-!rm -rf ../build/ql/test/data/exports/exim_employee;
+dfs -rmr ../build/ql/test/data/exports/exim_employee;
 select * from exim_employee;
 drop table exim_employee;
 

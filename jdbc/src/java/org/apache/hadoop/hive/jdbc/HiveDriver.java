@@ -24,9 +24,11 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -166,6 +168,11 @@ public class HiveDriver implements Driver {
     return HiveDriver.getMinorDriverVersion();
   }
 
+  public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+    // JDK 1.7
+    throw new SQLFeatureNotSupportedException("Method not supported");
+  }
+
   public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
     if (info == null) {
       info = new Properties();
@@ -294,4 +301,6 @@ public class HiveDriver implements Driver {
     }
     return manifestAttributes.getValue(attributeName);
   }
+
 }
+

@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -97,7 +99,7 @@ public interface RawStore extends Configurable {
       MetaException;
 
   public abstract boolean dropTable(String dbName, String tableName)
-      throws MetaException;
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
   public abstract Table getTable(String dbName, String tableName)
       throws MetaException;
@@ -109,7 +111,8 @@ public interface RawStore extends Configurable {
       List<String> part_vals) throws MetaException, NoSuchObjectException;
 
   public abstract boolean dropPartition(String dbName, String tableName,
-      List<String> part_vals) throws MetaException;
+      List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
+      InvalidInputException;
 
   public abstract List<Partition> getPartitions(String dbName,
       String tableName, int max) throws MetaException;
@@ -158,6 +161,10 @@ public interface RawStore extends Configurable {
 
   public abstract void alterPartition(String db_name, String tbl_name, List<String> part_vals,
       Partition new_part) throws InvalidObjectException, MetaException;
+
+  public abstract void alterPartitions(String db_name, String tbl_name,
+      List<List<String>> part_vals_list, List<Partition> new_parts)
+      throws InvalidObjectException, MetaException;
 
   public abstract boolean addIndex(Index index)
       throws InvalidObjectException, MetaException;
@@ -302,5 +309,116 @@ public interface RawStore extends Configurable {
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException;
 
+  /** Persists the given column statistics object to the metastore
+   * @param partVals
+   *
+   * @param ColumnStats object to persist
+   * @param List of partVals
+   * @return Boolean indicating the outcome of the operation
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidObjectException
+   * @throws InvalidInputException
+   */
+  public abstract boolean updateTableColumnStatistics(ColumnStatistics colStats)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
+  /** Persists the given column statistics object to the metastore
+   * @param partVals
+   *
+   * @param ColumnStats object to persist
+   * @param List of partVals
+   * @return Boolean indicating the outcome of the operation
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidObjectException
+   * @throws InvalidInputException
+   */
+  public abstract boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
+     List<String> partVals)
+     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
+  /**
+   * Returns the relevant column statistics for a given column in a given table in a given database
+   * if such statistics exist.
+   *
+   * @param The name of the database, defaults to current database
+   * @param The name of the table
+   * @param The name of the column for which statistics is requested
+   * @return Relevant column statistics for the column for the given table
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidInputException
+   *
+   */
+  public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
+    String colName) throws MetaException, NoSuchObjectException, InvalidInputException,
+    InvalidObjectException;
+
+  /**
+   * Returns the relevant column statistics for a given column in a given partition in a given
+   * table in a given database if such statistics exist.
+   * @param partName
+   *
+   * @param The name of the database, defaults to current database
+   * @param The name of the table
+   * @param The name of the partition
+   * @param List of partVals for the partition
+   * @param The name of the column for which statistics is requested
+   * @return Relevant column statistics for the column for the given partition in a given table
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidInputException
+   * @throws InvalidObjectException
+   *
+   */
+
+  public abstract ColumnStatistics getPartitionColumnStatistics(String dbName, String tableName,
+    String partName, List<String> partVals, String colName)
+    throws MetaException, NoSuchObjectException, InvalidInputException, InvalidObjectException;
+
+  /**
+   * Deletes column statistics if present associated with a given db, table, partition and col. If
+   * null is passed instead of a colName, stats when present for all columns associated
+   * with a given db, table and partition are deleted.
+   *
+   * @param dbName
+   * @param tableName
+   * @param partName
+   * @param partVals
+   * @param colName
+   * @return Boolean indicating the outcome of the operation
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidObjectException
+   * @throws InvalidInputException
+   */
+
+  public abstract boolean deletePartitionColumnStatistics(String dbName, String tableName,
+      String partName, List<String> partVals, String colName)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
+  /**
+   * Deletes column statistics if present associated with a given db, table and col. If
+   * null is passed instead of a colName, stats when present for all columns associated
+   * with a given db and table are deleted.
+   *
+   * @param dbName
+   * @param tableName
+   * @param colName
+   * @return Boolean indicating the outcome of the operation
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws InvalidObjectException
+   * @throws InvalidInputException
+   */
+
+  public abstract boolean deleteTableColumnStatistics(String dbName, String tableName,
+    String colName)
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
  public abstract long cleanupEvents();
+
+
+
 }

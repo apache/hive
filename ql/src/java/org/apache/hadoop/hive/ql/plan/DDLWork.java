@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
@@ -45,6 +44,7 @@ public class DDLWork implements Serializable {
   private AlterIndexDesc alterIdxDesc;
   private ShowDatabasesDesc showDatabasesDesc;
   private ShowTablesDesc showTblsDesc;
+  private ShowColumnsDesc showColumnsDesc;
   private ShowTblPropertiesDesc showTblPropertiesDesc;
   private LockTableDesc lockTblDesc;
   private UnlockTableDesc unlockTblDesc;
@@ -52,6 +52,7 @@ public class DDLWork implements Serializable {
   private ShowLocksDesc showLocksDesc;
   private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
+  private ShowCreateTableDesc showCreateTblDesc;
   private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
   private RenamePartitionDesc renamePartitionDesc;
@@ -61,6 +62,8 @@ public class DDLWork implements Serializable {
   private ShowIndexesDesc showIndexesDesc;
   private DescDatabaseDesc descDbDesc;
   private AlterDatabaseDesc alterDbDesc;
+  private AlterTableAlterPartDesc alterTableAlterPartDesc;
+  private TruncateTableDesc truncateTblDesc;
 
   private RoleDDLDesc roleDDLDesc;
   private GrantDesc grantDesc;
@@ -123,6 +126,12 @@ public class DDLWork implements Serializable {
       AlterDatabaseDesc alterDbDesc) {
     this(inputs, outputs);
     this.alterDbDesc = alterDbDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      TruncateTableDesc truncateTblDesc) {
+    this(inputs, outputs);
+    this.truncateTblDesc = truncateTblDesc;
   }
 
   public DescDatabaseDesc getDescDatabaseDesc() {
@@ -244,6 +253,16 @@ public class DDLWork implements Serializable {
   }
 
   /**
+   * @param showColumnsDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowColumnsDesc showColumnsDesc) {
+    this(inputs, outputs);
+
+    this.showColumnsDesc = showColumnsDesc;
+  }
+
+  /**
    * @param lockTblDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -301,6 +320,16 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showPartsDesc = showPartsDesc;
+  }
+
+  /**
+   * @param showCreateTblDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowCreateTableDesc showCreateTblDesc) {
+    this(inputs, outputs);
+
+    this.showCreateTblDesc = showCreateTblDesc;
   }
 
   /**
@@ -414,7 +443,13 @@ public class DDLWork implements Serializable {
     this.mergeFilesDesc = mergeDesc;
   }
 
-  /**
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterTableAlterPartDesc alterPartDesc) {
+    this(inputs, outputs);
+    this.alterTableAlterPartDesc = alterPartDesc;
+  }
+
+    /**
    * @return Create Database descriptor
    */
   public CreateDatabaseDesc getCreateDatabaseDesc() {
@@ -602,6 +637,22 @@ public class DDLWork implements Serializable {
   }
 
   /**
+   * @return the showColumnsDesc
+   */
+  @Explain(displayName = "Show Columns Operator")
+  public ShowColumnsDesc getShowColumnsDesc() {
+    return showColumnsDesc;
+  }
+
+  /**
+   * @param showColumnsDesc
+   *          the showColumnsDesc to set
+   */
+  public void setShowColumnsDesc(ShowColumnsDesc showColumnsDesc) {
+    this.showColumnsDesc = showColumnsDesc;
+  }
+
+  /**
    * @return the showFuncsDesc
    */
   @Explain(displayName = "Show Function Operator")
@@ -695,6 +746,22 @@ public class DDLWork implements Serializable {
    */
   public void setShowPartsDesc(ShowPartitionsDesc showPartsDesc) {
     this.showPartsDesc = showPartsDesc;
+  }
+
+  /**
+   * @return the showCreateTblDesc
+   */
+  @Explain(displayName = "Show Create Table Operator")
+  public ShowCreateTableDesc getShowCreateTblDesc() {
+    return showCreateTblDesc;
+  }
+
+  /**
+   * @param showCreateTblDesc
+   *          the showCreateTblDesc to set
+   */
+  public void setShowCreateTblDesc(ShowCreateTableDesc showCreateTblDesc) {
+    this.showCreateTblDesc = showCreateTblDesc;
   }
 
   /**
@@ -935,4 +1002,27 @@ public class DDLWork implements Serializable {
     this.needLock = needLock;
   }
 
+  /**
+   * @return information about the partitions we want to change.
+   */
+  public AlterTableAlterPartDesc getAlterTableAlterPartDesc() {
+    return alterTableAlterPartDesc;
+  }
+
+  /**
+   * @param alterPartitionDesc
+   *          information about the partitions we want to change.
+   */
+  public void setAlterTableAlterPartDesc(AlterTableAlterPartDesc alterPartitionDesc) {
+    this.alterTableAlterPartDesc = alterPartitionDesc;
+  }
+
+  @Explain(displayName = "Truncate Table Operator")
+  public TruncateTableDesc getTruncateTblDesc() {
+    return truncateTblDesc;
+  }
+
+  public void setTruncateTblDesc(TruncateTableDesc truncateTblDesc) {
+    this.truncateTblDesc = truncateTblDesc;
+  }
 }

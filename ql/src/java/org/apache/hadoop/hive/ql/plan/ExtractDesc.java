@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 
 /**
  * ExtractDesc.
  *
  */
 @Explain(displayName = "Extract")
-public class ExtractDesc implements Serializable {
+public class ExtractDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private ExprNodeDesc col;
 

@@ -75,8 +75,9 @@ public class DosToUnix {
   }
 
   public static boolean isWindowsScript(File file) {
+    BufferedReader reader = null;
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+      reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
       char[] buffer = new char[4096];
       int readLength = reader.read(buffer);
       if (readLength >= 2 && buffer[0] == '#' && buffer[1] == '!') {
@@ -90,7 +91,14 @@ public class DosToUnix {
         }
       }
     } catch (Exception e) {
-      // ignore error reading file, if we can't read it then it isn't a windows script
+      // It means, It is not a valid windows script file so ignore the exception and return false.
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        }catch (Exception e) {
+        }
+      }
     }
     return false;
   }

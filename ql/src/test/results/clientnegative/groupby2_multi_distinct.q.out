@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest_g2
-FAILED: Error in semantic analysis: DISTINCT on different columns not supported with skew in data
+FAILED: SemanticException [Error 10022]: DISTINCT on different columns not supported with skew in data

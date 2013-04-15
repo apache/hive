@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -81,7 +82,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
       return "null";
     }
 
-    if (typeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+    if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)) {
       return "'" + value.toString() + "'";
     } else {
       return value.toString();
@@ -107,5 +108,14 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     }
 
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
+    builder.append(value);
+    return builder.toHashCode();
   }
 }

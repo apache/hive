@@ -26,7 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TField;
@@ -116,14 +116,14 @@ public class TBinarySortableProtocol extends TProtocol implements
   boolean ascending;
 
   public void initialize(Configuration conf, Properties tbl) throws TException {
-    sortOrder = tbl.getProperty(Constants.SERIALIZATION_SORT_ORDER);
+    sortOrder = tbl.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
     if (sortOrder == null) {
       sortOrder = "";
     }
     for (int i = 0; i < sortOrder.length(); i++) {
       char c = sortOrder.charAt(i);
       if (c != '+' && c != '-') {
-        throw new TException(Constants.SERIALIZATION_SORT_ORDER
+        throw new TException(serdeConstants.SERIALIZATION_SORT_ORDER
             + " should be a string consists of only '+' and '-'!");
       }
     }

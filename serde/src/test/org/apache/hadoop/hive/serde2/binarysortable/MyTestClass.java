@@ -17,36 +17,38 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-
 public class MyTestClass {
-  Byte myByte;
-  Short myShort;
-  Integer myInt;
-  Long myLong;
-  Float myFloat;
-  Double myDouble;
-  String myString;
-  MyTestInnerStruct myStruct;
-  List<Integer> myList;
-  ByteArrayRef myBA;
+    Byte myByte;
+    Short myShort;
+    Integer myInt;
+    Long myLong;
+    Float myFloat;
+    Double myDouble;
+    String myString;
+    HiveDecimal myDecimal;
+    MyTestInnerStruct myStruct;
+    List<Integer> myList;
+    byte[] myBA;
 
-  public MyTestClass() {
-  }
+    public MyTestClass() {
+    }
 
-  public MyTestClass(Byte b, Short s, Integer i, Long l, Float f, Double d,
-      String st, MyTestInnerStruct is, List<Integer> li, ByteArrayRef ba) {
-    myByte = b;
-    myShort = s;
-    myInt = i;
-    myLong = l;
-    myFloat = f;
-    myDouble = d;
-    myString = st;
-    myStruct = is;
-    myList = li;
-    myBA = ba;
-  }
+    public MyTestClass(Byte b, Short s, Integer i, Long l, Float f, Double d,
+		       String st, HiveDecimal bd, MyTestInnerStruct is, List<Integer> li, byte[] ba) {
+	myByte = b;
+	myShort = s;
+	myInt = i;
+	myLong = l;
+	myFloat = f;
+	myDouble = d;
+	myString = st;
+	myDecimal = bd;
+	myStruct = is;
+	myList = li;
+	myBA = ba;
+    }
 }

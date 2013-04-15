@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.AbstractDeserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Writable;
  * S3LogDeserializer.
  *
  */
-public class S3LogDeserializer implements Deserializer {
+public class S3LogDeserializer extends AbstractDeserializer {
 
   public static final Log LOG = LogFactory.getLog(S3LogDeserializer.class
       .getName());
@@ -73,6 +73,7 @@ public class S3LogDeserializer implements Deserializer {
 
   S3LogStruct deserializeCache = new S3LogStruct();
 
+  @Override
   public void initialize(Configuration job, Properties tbl)
       throws SerDeException {
 
@@ -132,6 +133,7 @@ public class S3LogDeserializer implements Deserializer {
     return (c);
   }
 
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     String row = null;
     if (field instanceof BytesWritable) {
@@ -155,6 +157,7 @@ public class S3LogDeserializer implements Deserializer {
     }
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
   }
@@ -202,6 +205,7 @@ public class S3LogDeserializer implements Deserializer {
 
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

@@ -18,16 +18,33 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.io.BytesWritable;
 
 public interface SettableBinaryObjectInspector extends BinaryObjectInspector{
 
-  Object set(Object o, ByteArrayRef bb);
+  /**
+   * Set the object with the value. Return the object that has the new value.
+   *
+   * In most cases the returned value should be the same as o, but in case o is
+   * unmodifiable, this will return a new object with new value.
+   */
+  Object set(Object o, byte[] bb);
 
+  /**
+   * Set the object with the value. Return the object that has the new value.
+   *
+   * In most cases the returned value should be the same as o, but in case o is
+   * unmodifiable, this will return a new object with new value.
+   */
   Object set(Object o, BytesWritable bw);
 
-  Object create(ByteArrayRef bb);
+  /**
+   * Create an object with the value.
+   */
+  Object create(byte[] bb);
 
+  /**
+   * Create an object with the value.
+   */
   Object create(BytesWritable bw);
 }

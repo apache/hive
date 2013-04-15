@@ -486,7 +486,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE._col0)
+                expr: count(1)
                 expr: count()
                 expr: count(KEY._col0:14._col0)
                 expr: count(KEY._col0:14._col1)

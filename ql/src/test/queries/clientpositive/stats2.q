@@ -12,10 +12,10 @@ insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where
 
 insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null;
 
-desc extended analyze_t1;
+desc formatted analyze_t1;
 
 explain analyze table analyze_t1 partition (ds, hr) compute statistics;
 
 analyze table analyze_t1 partition (ds, hr) compute statistics;
 
-describe extended analyze_t1;
+describe formatted analyze_t1;

@@ -1,0 +1,18 @@
+PREHOOK: query: -- checking that script operator does not cause NPE
+-- Derby strangeness is causing the output collector for the Hive Profiler to not get output during DB read 
+
+SELECT TRANSFORM(src.key, src.value)
+       USING 'testgrep' AS (tkey, tvalue)
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+103	val_103
+100	val_100
+10	val_10
+103	val_103
+104	val_104
+105	val_105
+104	val_104
+310	val_310
+100	val_100

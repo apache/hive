@@ -52,10 +52,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean extended = false;
     boolean formatted = false;
+    boolean dependency = false;
     if (ast.getChildCount() == 2) {
       int explainOptions = ast.getChild(1).getType();
       formatted = (explainOptions == HiveParser.KW_FORMATTED);
-      extended = (explainOptions == HiveParser.KW_EXTENDED);	
+      extended = (explainOptions == HiveParser.KW_EXTENDED);
+      dependency = (explainOptions == HiveParser.KW_DEPENDENCY);
     }
 
     ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -74,8 +76,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         TaskFactory.get(new ExplainWork(ctx.getResFile().toString(),
         tasks,
         ((ASTNode) ast.getChild(0)).toStringTree(),
+        sem.getInputs(),
         extended,
-        formatted),
+        formatted,
+        dependency),
       conf);
 
     fieldList = explTask.getResultSchema();

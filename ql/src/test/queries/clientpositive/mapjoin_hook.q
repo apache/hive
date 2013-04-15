@@ -15,6 +15,7 @@ INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value;
 
 set hive.mapjoin.localtask.max.memory.usage = 0.0001;
 set hive.mapjoin.check.memory.rows = 2;
+set hive.auto.convert.join.noconditionaltask = false;
 
 
 FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)

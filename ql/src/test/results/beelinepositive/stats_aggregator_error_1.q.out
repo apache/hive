@@ -1,0 +1,61 @@
+Saving all output to "!!{outputDirectory}!!/stats_aggregator_error_1.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/stats_aggregator_error_1.q
+>>>  -- In this test, there is a dummy stats aggregator which throws an error when various
+>>>  -- methods are called (as indicated by the parameter hive.test.dummystats.agregator)
+>>>  -- Since stats need not be reliable (by setting hive.stats.reliable to false), the
+>>>  -- insert statements succeed. The insert statement succeeds even if the stats aggregator
+>>>  -- is set to null, since stats need not be reliable.
+>>>  
+>>>  create table tmptable(key string, value string);
+No rows affected 
+>>>  
+>>>  set hive.stats.dbclass=dummy;
+No rows affected 
+>>>  set hive.stats.default.publisher=org.apache.hadoop.hive.ql.stats.DummyStatsPublisher;
+No rows affected 
+>>>  set hive.stats.default.aggregator=org.apache.hadoop.hive.ql.stats.DummyStatsAggregator;
+No rows affected 
+>>>  set hive.stats.reliable=false;
+No rows affected 
+>>>  
+>>>  set hive.test.dummystats.aggregator=connect;
+No rows affected 
+>>>  
+>>>  INSERT OVERWRITE TABLE tmptable select * from src;
+'key','value'
+No rows selected 
+>>>  select count(1) from tmptable;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  set hive.test.dummystats.aggregator=closeConnection;
+No rows affected 
+>>>  INSERT OVERWRITE TABLE tmptable select * from src;
+'key','value'
+No rows selected 
+>>>  select count(1) from tmptable;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  set hive.test.dummystats.aggregator=cleanUp;
+No rows affected 
+>>>  INSERT OVERWRITE TABLE tmptable select * from src;
+'key','value'
+No rows selected 
+>>>  select count(1) from tmptable;
+'_c0'
+'500'
+1 row selected 
+>>>  
+>>>  set hive.stats.default.aggregator="";
+No rows affected 
+>>>  INSERT OVERWRITE TABLE tmptable select * from src;
+'key','value'
+No rows selected 
+>>>  select count(1) from tmptable;
+'_c0'
+'500'
+1 row selected 
+>>>  !record

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Expression processor factory for lineage. Each processor is responsible to
@@ -173,7 +173,7 @@ public class ExprProcFactory {
    * @throws SemanticException
    */
   public static Dependency getExprDependency(LineageCtx lctx,
-      Operator<? extends Serializable> inpOp, ExprNodeDesc expr)
+      Operator<? extends OperatorDesc> inpOp, ExprNodeDesc expr)
       throws SemanticException {
 
     // Create the walker, the rules dispatcher and the context.

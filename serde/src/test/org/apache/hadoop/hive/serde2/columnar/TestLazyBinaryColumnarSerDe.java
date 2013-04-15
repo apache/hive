@@ -28,10 +28,9 @@ import java.util.TreeMap;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.CrossMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -59,7 +58,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     Float mFloat;
     Double mDouble;
     String mString;
-    ByteArrayRef mBA;
+    byte[] mBA;
     List<InnerStruct> mArray;
     Map<String, InnerStruct> mMap;
     InnerStruct mStruct;
@@ -70,8 +69,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -83,9 +82,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5.01f;
     outerStruct.mDouble = 6.001d;
     outerStruct.mString = "seven";
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(new byte[]{'2'});
-    outerStruct.mBA =  ba;
+    outerStruct.mBA =  new byte[]{'2'};
     InnerStruct is1 = new InnerStruct(8, 9l);
     InnerStruct is2 = new InnerStruct(10, 11l);
     outerStruct.mArray = new ArrayList<InnerStruct>(2);
@@ -96,7 +93,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mMap.put(new String("fifteen"), new InnerStruct(16, 17l));
     outerStruct.mStruct = new InnerStruct(18, 19l);
     BytesRefArrayWritable braw = (BytesRefArrayWritable) serde.serialize(outerStruct, oi);
-    
+
     ObjectInspector out_oi = serde.getObjectInspector();
     Object out_o = serde.deserialize(braw);
     if (0 != ObjectInspectorUtils.compare(outerStruct, oi, out_o, out_oi, new CrossMapEqualComparer())) {
@@ -113,8 +110,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -126,14 +123,12 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5005.01f;
     outerStruct.mDouble = 6006.001d;
     outerStruct.mString = "";
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(new byte[]{'a'});
-    outerStruct.mBA = ba;
+    outerStruct.mBA = new byte[]{'a'};
     outerStruct.mArray = new ArrayList<InnerStruct>();
     outerStruct.mMap = new TreeMap<String, InnerStruct>();
     outerStruct.mStruct = new InnerStruct(180018, 190019l);
     BytesRefArrayWritable braw = (BytesRefArrayWritable) serde.serialize(outerStruct, oi);
-    
+
     ObjectInspector out_oi = serde.getObjectInspector();
     Object out_o = serde.deserialize(braw);
     if (0 != ObjectInspectorUtils.compare(outerStruct, oi, out_o, out_oi, new SimpleMapEqualComparer())) {
@@ -150,8 +145,8 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -163,9 +158,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5005.01f;
     outerStruct.mDouble = 6006.001d;
     outerStruct.mString = "";
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(new byte[]{});
-    outerStruct.mBA = ba;
+    outerStruct.mBA = new byte[]{};
     outerStruct.mArray = new ArrayList<InnerStruct>();
     outerStruct.mMap = new TreeMap<String, InnerStruct>();
     outerStruct.mStruct = new InnerStruct(180018, 190019l);
@@ -185,14 +178,14 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
     OuterStruct outerStruct = new OuterStruct();
     BytesRefArrayWritable braw = (BytesRefArrayWritable) serde.serialize(outerStruct, oi);
-    
+
     ObjectInspector out_oi = serde.getObjectInspector();
     Object out_o = serde.deserialize(braw);
     if (0 != ObjectInspectorUtils.compare(outerStruct, oi, out_o, out_oi, new SimpleMapEqualComparer())) {
@@ -203,14 +196,14 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
       fail("Deserialized object does not compare");
     }
   }
-  
+
   public void testSerDeInnerNulls() throws SerDeException {
     StructObjectInspector oi = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
     String cols = ObjectInspectorUtils.getFieldNames(oi);
     Properties props = new Properties();
-    props.setProperty(Constants.LIST_COLUMNS, cols);
-    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
     LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
     serde.initialize(new Configuration(), props);
 
@@ -222,9 +215,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5.01f;
     outerStruct.mDouble = 6.001d;
     outerStruct.mString = "seven";
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(new byte[]{'3'});
-    outerStruct.mBA = ba;
+    outerStruct.mBA = new byte[]{'3'};
     InnerStruct is1 = new InnerStruct(null, 9l);
     InnerStruct is2 = new InnerStruct(10, null);
     outerStruct.mArray = new ArrayList<InnerStruct>(2);
@@ -235,7 +226,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mMap.put(new String("fifteen"), null);
     outerStruct.mStruct = new InnerStruct(null, null);
     BytesRefArrayWritable braw = (BytesRefArrayWritable) serde.serialize(outerStruct, oi);
-    
+
     ObjectInspector out_oi = serde.getObjectInspector();
     Object out_o = serde.deserialize(braw);
     if (0 != ObjectInspectorUtils.compare(outerStruct, oi, out_o, out_oi, new SimpleMapEqualComparer())) {

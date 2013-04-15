@@ -14,11 +14,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -45,7 +47,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.nzhang_part
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -83,14 +85,35 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) select key, value, hr from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@nzhang_part@ds=2010-08-15
 POSTHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) select key, value, hr from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
@@ -101,11 +124,13 @@ POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpa
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
@@ -1128,11 +1153,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1157,7 +1184,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.nzhang_part
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -1195,14 +1222,35 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr=11) select key, value from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr=11) select key, value from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
@@ -1214,11 +1262,13 @@ POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpa
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
 #### A masked pattern was here ####
@@ -2752,16 +2802,18 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR '1' key) (TOK_SELEXPR '1' value) (TOK_SELEXPR 'file,' hr)) (TOK_LIMIT 1)))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2010-08-15') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-7
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-9 is a root stage
+  Stage-2 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-7
+  Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:s-subquery2:src 
@@ -2851,7 +2903,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -2889,6 +2941,25 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part
 
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
 select * from (
@@ -2897,6 +2968,7 @@ select * from (
     select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@nzhang_part@ds=2010-08-15
@@ -2907,6 +2979,7 @@ select * from (
     select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
@@ -2945,10 +3018,12 @@ ds=2010-08-15/hr=12
 ds=2010-08-15/hr=file,
 PREHOOK: query: select * from nzhang_part where hr = 'file,'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part where hr = 'file,'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
 #### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

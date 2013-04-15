@@ -21,19 +21,22 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -47,8 +50,8 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 
 /**
@@ -178,7 +181,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
    */
   class MetadataOnlyTaskDispatcher implements Dispatcher {
 
-    private PhysicalContext physicalContext;
+    private final PhysicalContext physicalContext;
 
     public MetadataOnlyTaskDispatcher(PhysicalContext context) {
       super();
@@ -188,7 +191,8 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     private String getAliasForTableScanOperator(MapredWork work,
         TableScanOperator tso) {
 
-      for (Map.Entry<String, Operator<? extends Serializable>> entry : work.getAliasToWork().entrySet()) {
+      for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
+        work.getAliasToWork().entrySet()) {
         if (entry.getValue() == tso) {
           return entry.getKey();
         }
@@ -200,6 +204,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc) {
       if (desc != null) {
         desc.setInputFileFormatClass(OneNullRowInputFormat.class);
+        desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
         desc.setDeserializerClass(NullStructSerDe.class);
         desc.setSerdeClassName(NullStructSerDe.class.getName());
       }
@@ -225,16 +230,21 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
       List<String> paths = getPathsForAlias(work, alias);
       for (String path : paths) {
-        PartitionDesc newPartition = changePartitionToMetadataOnly(work.getPathToPartitionInfo().get(
-            path));
-        Path fakePath = new Path("file", null,
-            "/fake-path-metadata-only-query-" + newPartition.getTableName()
-                + newPartition.getPartSpec().toString());
+        PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+        PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
+        Path fakePath = new Path(physicalContext.getContext().getMRTmpFileURI()
+            + newPartition.getTableName()
+            + encode(newPartition.getPartSpec()));
         work.getPathToPartitionInfo().remove(path);
         work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
         ArrayList<String> aliases = work.getPathToAliases().remove(path);
         work.getPathToAliases().put(fakePath.getName(), aliases);
       }
+    }
+
+    // considered using URLEncoder, but it seemed too much
+    private String encode(Map<String, String> partSpec) {
+      return partSpec.toString().replaceAll("[:/#\\?]", "_");
     }
 
     private void convertToMetadataOnlyQuery(MapredWork work,
@@ -248,7 +258,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
         throws SemanticException {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
-      Collection<Operator<? extends Serializable>> topOperators
+      Collection<Operator<? extends OperatorDesc>> topOperators
         = task.getTopOperators();
       if (topOperators.size() == 0) {
         return null;
@@ -260,8 +270,12 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       WalkerCtx walkerCtx = new WalkerCtx();
 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("R1", "TS%"), new TableScanProcessor());
-      opRules.put(new RuleRegExp("R2", "GBY%.*FS%"), new FileSinkProcessor());
+      opRules.put(new RuleRegExp("R1",
+        TableScanOperator.getOperatorName() + "%"),
+        new TableScanProcessor());
+      opRules.put(new RuleRegExp("R2",
+        GroupByOperator.getOperatorName() + "%.*" + FileSinkOperator.getOperatorName() + "%"),
+        new FileSinkProcessor());
 
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
@@ -271,7 +285,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       // Create a list of topOp nodes
       ArrayList<Node> topNodes = new ArrayList<Node>();
       // Get the top Nodes for this map-reduce task
-      for (Operator<? extends Serializable>
+      for (Operator<? extends OperatorDesc>
            workOperator : topOperators) {
         if (parseContext.getTopOps().values().contains(workOperator)) {
           topNodes.add(workOperator);

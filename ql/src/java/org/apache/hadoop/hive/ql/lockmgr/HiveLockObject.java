@@ -18,27 +18,27 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class HiveLockObject {
-  String [] pathNames = null;
+  String[] pathNames = null;
 
   public static class HiveLockObjectData {
 
-    private String queryId;  // queryId of the command
+    private String queryId; // queryId of the command
     private String lockTime; // time at which lock was acquired
     // mode of the lock: EXPLICIT(lock command)/IMPLICIT(query)
     private String lockMode;
     private String queryStr;
-    private String clientIp; 
+    private String clientIp;
 
     public HiveLockObjectData(String queryId,
-                              String lockTime,
-                              String lockMode,
-                              String queryStr) {
-      this.queryId  = queryId;
+        String lockTime,
+        String lockMode,
+        String queryStr) {
+      this.queryId = queryId;
       this.lockTime = lockTime;
       this.lockMode = lockMode;
       this.queryStr = queryStr.trim();
@@ -51,7 +51,7 @@ public class HiveLockObject {
       }
 
       String[] elem = data.split(":");
-      queryId  = elem[0];
+      queryId = elem[0];
       lockTime = elem[1];
       lockMode = elem[2];
       queryStr = elem[3];
@@ -73,17 +73,39 @@ public class HiveLockObject {
       return queryStr;
     }
 
+    @Override
     public String toString() {
       return queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr + ":"
           + clientIp;
     }
-    
+
     public String getClientIp() {
       return this.clientIp;
     }
-    
+
     public void setClientIp(String clientIp) {
       this.clientIp = clientIp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof HiveLockObjectData)) {
+        return false;
+      }
+
+      HiveLockObjectData target = (HiveLockObjectData) o;
+      boolean ret = (queryId == null) ? target.getQueryId() == null :
+          queryId.equals(target.getQueryId());
+      ret = ret && (lockTime == null) ? target.getLockTime() == null :
+          queryId.equals(target.getLockTime());
+      ret = ret && (lockMode == null) ? target.getLockMode() == null :
+          queryId.equals(target.getLockMode());
+      ret = ret && (queryStr == null) ? target.getQueryStr() == null :
+          queryStr.equals(target.getQueryStr());
+      ret = ret && (clientIp == null) ? target.getClientIp() == null :
+          clientIp.equals(target.getClientIp());
+
+      return ret;
     }
   }
 
@@ -110,12 +132,16 @@ public class HiveLockObject {
   }
 
   public HiveLockObject(Partition par, HiveLockObjectData lockData) {
-    this(new String[] { par.getTable().getDbName(),
-        par.getTable().getTableName(), par.getName() }, lockData);
+    this(new String[] {par.getTable().getDbName(),
+        par.getTable().getTableName(), par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {
-    this(new String[] { par.getName() }, lockData);
+    this(new String[] {par.getName()}, lockData);
+  }
+
+  public String[] getPaths() {
+    return pathNames;
   }
 
   public String getName() {
@@ -167,4 +193,14 @@ public class HiveLockObject {
     this.data = data;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof HiveLockObject)) {
+      return false;
+    }
+
+    HiveLockObject tgt = (HiveLockObject) o;
+    return getName().equals(tgt.getName()) &&
+        data == null ? tgt.getData() == null : data.equals(tgt.getData());
+  }
 }

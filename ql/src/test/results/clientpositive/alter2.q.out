@@ -7,9 +7,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -27,9 +34,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -48,9 +62,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -76,9 +97,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -96,9 +124,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -117,9 +152,16 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
@@ -175,9 +217,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
@@ -195,9 +244,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
@@ -216,9 +272,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
@@ -244,9 +307,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
@@ -264,9 +334,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
@@ -285,9 +362,16 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-a	int	
-b	int	
-insertdate	string	
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	int                 	None                
+insertdate          	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+insertdate          	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2

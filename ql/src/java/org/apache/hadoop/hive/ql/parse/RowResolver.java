@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 
@@ -123,7 +125,7 @@ public class RowResolver implements Serializable{
    * values is returned.
    *
    * This allows us to interpret both select t.c1 type of references and select
-   * c1 kind of refereneces. The later kind are what we call non aliased column
+   * c1 kind of references. The later kind are what we call non aliased column
    * references in the query.
    *
    * @param tab_alias
@@ -164,28 +166,62 @@ public class RowResolver implements Serializable{
     return ret;
   }
 
+  /**
+   * check if column name is already exist in RR
+   */
+  public void checkColumn(String tableAlias, String columnAlias) throws SemanticException {
+    ColumnInfo prev = get(null, columnAlias);
+    if (prev != null &&
+        (tableAlias == null || !tableAlias.equalsIgnoreCase(prev.getTabAlias()))) {
+      throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(columnAlias));
+    }
+  }
+
   public ArrayList<ColumnInfo> getColumnInfos() {
     return rowSchema.getSignature();
   }
 
   /**
-   * Get a list of non-hidden column names
+   * Get a list of aliases for non-hidden columns
    * @param max the maximum number of columns to return
    * @return a list of non-hidden column names no greater in size than max
    */
-  public List<String> getNonHiddenColumnNames(int max) {
-    List<String> columnNames = new ArrayList<String>();
+  public List<String> getReferenceableColumnAliases(String tableAlias, int max) {
     int count = 0;
-    for (ColumnInfo columnInfo : getColumnInfos()) {
-      if (max > 0 && count >= max) {
-        break;
+    Set<String> columnNames = new LinkedHashSet<String> ();
+
+    int tables = rslvMap.size();
+
+    Map<String, ColumnInfo> mapping = rslvMap.get(tableAlias);
+    if (mapping != null) {
+      for (Map.Entry<String, ColumnInfo> entry : mapping.entrySet()) {
+        if (max > 0 && count >= max) {
+          break;
+        }
+        ColumnInfo columnInfo = entry.getValue();
+        if (!columnInfo.isHiddenVirtualCol()) {
+          columnNames.add(entry.getKey());
+          count++;
+        }
       }
-      if (!columnInfo.isHiddenVirtualCol()) {
-        columnNames.add(columnInfo.getInternalName());
-        count++;
+    } else {
+      for (ColumnInfo columnInfo : getColumnInfos()) {
+        if (max > 0 && count >= max) {
+          break;
+        }
+        if (!columnInfo.isHiddenVirtualCol()) {
+          String[] inverse = !isExprResolver ? reverseLookup(columnInfo.getInternalName()) : null;
+          if (inverse != null) {
+            columnNames.add(inverse[0] == null || tables <= 1 ? inverse[1] :
+                inverse[0] + "." + inverse[1]);
+          } else {
+            columnNames.add(columnInfo.getAlias());
+          }
+          count++;
+        }
       }
     }
-    return columnNames;
+    return new ArrayList<String>(columnNames);
   }
 
   public HashMap<String, ColumnInfo> getFieldMap(String tabAlias) {

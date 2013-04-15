@@ -1,0 +1,61 @@
+PREHOOK: query: create table tab_empty(a boolean, b int, c double, d string, e binary)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tab_empty(a boolean, b int, c double, d string, e binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tab_empty
+PREHOOK: query: select count(*) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+0
+PREHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: -- compute statistical summary of data
+select compute_stats(a, 16) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+{"columntype":"Boolean","counttrues":0,"countfalses":0,"countnulls":0}
+PREHOOK: query: select compute_stats(b, 16) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: select compute_stats(b, 16) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+{"columntype":"Long","min":0,"max":0,"countnulls":0,"numdistinctvalues":0}
+PREHOOK: query: select compute_stats(c, 16) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: select compute_stats(c, 16) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+{"columntype":"Double","min":0.0,"max":0.0,"countnulls":0,"numdistinctvalues":0}
+PREHOOK: query: select compute_stats(d, 16) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: select compute_stats(d, 16) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+{"columntype":"String","maxlength":0,"avglength":0.0,"countnulls":0,"numdistinctvalues":0}
+PREHOOK: query: select compute_stats(e, 16) from tab_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+POSTHOOK: query: select compute_stats(e, 16) from tab_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_empty
+#### A masked pattern was here ####
+{"columntype":"Binary","maxlength":0,"avglength":0.0,"countnulls":0}

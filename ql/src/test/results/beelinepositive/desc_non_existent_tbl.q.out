@@ -1,0 +1,3 @@
+Saving all output to "!!{outputDirectory}!!/desc_non_existent_tbl.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/desc_non_existent_tbl.q
+>>>  !record

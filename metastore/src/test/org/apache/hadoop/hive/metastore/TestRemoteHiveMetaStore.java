@@ -20,30 +20,16 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
-  protected static final String METASTORE_PORT = "29083";
   private static boolean isServerStarted = false;
 
   public TestRemoteHiveMetaStore() {
     super();
     isThriftClient = true;
   }
-
-  private static class RunMS implements Runnable {
-
-      @Override
-      public void run() {
-        try {
-        HiveMetaStore.main(new String[] { METASTORE_PORT });
-        } catch (Throwable e) {
-          e.printStackTrace(System.err);
-          assert false;
-        }
-      }
-
-    }
 
   @Override
   protected void setUp() throws Exception {
@@ -54,21 +40,17 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
       return;
     }
 
-    System.out.println("Starting MetaStore Server on port " + METASTORE_PORT);
-    Thread t = new Thread(new RunMS());
-    t.start();
+    int port = MetaStoreUtils.findFreePort();
+    System.out.println("Starting MetaStore Server on port " + port);
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
     isServerStarted = true;
 
-    // Wait a little bit for the metastore to start. Should probably have
-    // a better way of detecting if the metastore has started?
-    Thread.sleep(5000);
     // This is default case with setugi off for both client and server
-    createClient(false);
+    createClient(false, port);
   }
 
-  protected void createClient(boolean setugi) throws Exception {
-    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
+  protected void createClient(boolean setugi, int port) throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI,setugi);
     client = new HiveMetaStoreClient(hiveConf);
   }

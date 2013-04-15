@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -258,6 +258,30 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class HiveDecimalConverter implements Converter {
+
+    PrimitiveObjectInspector inputOI;
+    SettableHiveDecimalObjectInspector outputOI;
+    Object r;
+
+    public HiveDecimalConverter(PrimitiveObjectInspector inputOI,
+        SettableHiveDecimalObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      this.r = outputOI.create(HiveDecimal.ZERO);
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
+          inputOI));
+    }
+
+  }
+
   public static class BinaryConverter implements Converter{
 
     PrimitiveObjectInspector inputOI;
@@ -268,9 +292,7 @@ public class PrimitiveObjectInspectorConverter {
         SettableBinaryObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      ByteArrayRef ba = new ByteArrayRef();
-      ba.setData(new byte[]{});
-      r = outputOI.create(ba);
+      r = outputOI.create(new byte[]{});
     }
 
     @Override
@@ -336,11 +358,11 @@ public class PrimitiveObjectInspectorConverter {
         t.set(String.valueOf(((DoubleObjectInspector) inputOI).get(input)));
         return t;
       case STRING:
-	if (inputOI.preferWritable()) {
-	  t.set(((StringObjectInspector) inputOI).getPrimitiveWritableObject(input));
-	} else {
-	  t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
-	}
+        if (inputOI.preferWritable()) {
+          t.set(((StringObjectInspector) inputOI).getPrimitiveWritableObject(input));
+        } else {
+          t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+        }
         return t;
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
@@ -348,6 +370,9 @@ public class PrimitiveObjectInspectorConverter {
         return t;
       case BINARY:
         t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
+        return t;
+      case DECIMAL:
+        t.set(((HiveDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());

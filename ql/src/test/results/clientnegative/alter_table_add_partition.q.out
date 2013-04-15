@@ -1,0 +1,6 @@
+PREHOOK: query: create table mp (a int) partitioned by (b int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table mp (a int) partitioned by (b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mp
+FAILED: SemanticException [Error 10214]: Invalid partition spec specified table is partitioned but partition spec is not specified or does not fully match table partitioning: {b=1, c=1}

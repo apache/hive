@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.Path;
  *
  */
 @Explain(displayName = "File Output Operator")
-public class FileSinkDesc implements Serializable {
+public class FileSinkDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   private String dirName;
   // normally statsKeyPref will be the same as dirName, but the latter
@@ -40,6 +40,9 @@ public class FileSinkDesc implements Serializable {
   private String compressCodec;
   private String compressType;
   private boolean multiFileSpray;
+  // Whether the files output by this FileSink can be merged, e.g. if they are to be put into a
+  // bucketed or sorted table/partition they cannot be merged.
+  private boolean canBeMerged;
   private int     totalFiles;
   private ArrayList<ExprNodeDesc> partitionCols;
   private int     numFiles;
@@ -47,19 +50,38 @@ public class FileSinkDesc implements Serializable {
   private String staticSpec; // static partition spec ends with a '/'
   private boolean gatherStats;
 
+  // This file descriptor is linked to other file descriptors.
+  // One use case is that, a union->select (star)->file sink, is broken down.
+  // For eg: consider a query like:
+  // select * from (subq1 union all subq2)x;
+  // where subq1 or subq2 involves a map-reduce job.
+  // It is broken into two independent queries involving subq1 and subq2 directly, and
+  // the sub-queries write to sub-directories of a common directory. So, the file sink
+  // descriptors for subq1 and subq2 are linked.
+  private boolean linkedFileSink = false;
+  private String parentDir;
+  transient private List<FileSinkDesc> linkedFileSinkDesc;
+
+  private boolean statsReliable;
+  private ListBucketingCtx lbCtx;
+  private int maxStatsKeyPrefixLength = -1;
+
+  private boolean statsCollectRawDataSize;
+
   public FileSinkDesc() {
   }
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
-      final int numFiles, final int totalFiles, final ArrayList<ExprNodeDesc> partitionCols,
-      final DynamicPartitionCtx dpCtx) {
+      final boolean canBeMerged, final int numFiles, final int totalFiles,
+      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
     this.compressed = compressed;
     this.destTableId = destTableId;
     this.multiFileSpray = multiFileSpray;
+    this.canBeMerged = canBeMerged;
     this.numFiles = numFiles;
     this.totalFiles = totalFiles;
     this.partitionCols = partitionCols;
@@ -74,9 +96,29 @@ public class FileSinkDesc implements Serializable {
     this.compressed = compressed;
     destTableId = 0;
     this.multiFileSpray = false;
+    this.canBeMerged = false;
     this.numFiles = 1;
     this.totalFiles = 1;
     this.partitionCols = null;
+  }
+
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
+        destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
+        partitionCols, dpCtx);
+    ret.setCompressCodec(compressCodec);
+    ret.setCompressType(compressType);
+    ret.setGatherStats(gatherStats);
+    ret.setStaticSpec(staticSpec);
+    ret.setStatsAggPrefix(statsKeyPref);
+    ret.setLinkedFileSink(linkedFileSink);
+    ret.setParentDir(parentDir);
+    ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
+    ret.setStatsReliable(statsReliable);
+    ret.setMaxStatsKeyPrefixLength(maxStatsKeyPrefixLength);
+    ret.setStatsCollectRawDataSize(statsCollectRawDataSize);
+    return (Object) ret;
   }
 
   @Explain(displayName = "directory", normalExplain = false)
@@ -86,6 +128,10 @@ public class FileSinkDesc implements Serializable {
 
   public void setDirName(final String dirName) {
     this.dirName = dirName;
+  }
+
+  public String getFinalDirName() {
+    return linkedFileSink ? parentDir : dirName;
   }
 
   @Explain(displayName = "table")
@@ -144,6 +190,14 @@ public class FileSinkDesc implements Serializable {
    */
   public void setMultiFileSpray(boolean multiFileSpray) {
     this.multiFileSpray = multiFileSpray;
+  }
+
+  public boolean canBeMerged() {
+    return canBeMerged;
+  }
+
+  public void setCanBeMerged(boolean canBeMerged) {
+    this.canBeMerged = canBeMerged;
   }
 
   /**
@@ -247,4 +301,67 @@ public class FileSinkDesc implements Serializable {
       statsKeyPref = k + Path.SEPARATOR;
     }
   }
+
+  public boolean isLinkedFileSink() {
+    return linkedFileSink;
+  }
+
+  public void setLinkedFileSink(boolean linkedFileSink) {
+    this.linkedFileSink = linkedFileSink;
+  }
+
+  public String getParentDir() {
+    return parentDir;
+  }
+
+  public void setParentDir(String parentDir) {
+    this.parentDir = parentDir;
+  }
+
+  public boolean isStatsReliable() {
+    return statsReliable;
+  }
+
+  public void setStatsReliable(boolean statsReliable) {
+    this.statsReliable = statsReliable;
+  }
+
+  /**
+   * @return the lbCtx
+   */
+  public ListBucketingCtx getLbCtx() {
+    return lbCtx;
+  }
+
+  /**
+   * @param lbCtx the lbCtx to set
+   */
+  public void setLbCtx(ListBucketingCtx lbCtx) {
+    this.lbCtx = lbCtx;
+  }
+
+  public List<FileSinkDesc> getLinkedFileSinkDesc() {
+    return linkedFileSinkDesc;
+  }
+
+  public void setLinkedFileSinkDesc(List<FileSinkDesc> linkedFileSinkDesc) {
+    this.linkedFileSinkDesc = linkedFileSinkDesc;
+  }
+
+  public int getMaxStatsKeyPrefixLength() {
+    return maxStatsKeyPrefixLength;
+  }
+
+  public void setMaxStatsKeyPrefixLength(int maxStatsKeyPrefixLength) {
+    this.maxStatsKeyPrefixLength = maxStatsKeyPrefixLength;
+  }
+
+  public boolean isStatsCollectRawDataSize() {
+    return statsCollectRawDataSize;
+  }
+
+  public void setStatsCollectRawDataSize(boolean statsCollectRawDataSize) {
+    this.statsCollectRawDataSize = statsCollectRawDataSize;
+  }
+
 }

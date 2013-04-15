@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
@@ -31,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -50,6 +50,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private JobConf jc;
   private boolean abort = false;
   private Reporter rp;
+  private List<OperatorHook> opHooks;
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
 
@@ -93,9 +94,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       localWork = mrwork.getMapLocalWork();
       execContext.setLocalWork(localWork);
 
+      MapredContext.init(true, new JobConf(jc));
+
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
+      opHooks = OperatorHookUtils.getOperatorHooks(jc);
 
       if (localWork == null) {
         return;
@@ -104,13 +108,11 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       //The following code is for mapjoin
       //initialize all the dummy ops
       l4j.info("Initializing dummy operator");
-      List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
-      for(Operator<? extends Serializable> dummyOp : dummyOps){
+      List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
+      for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
         dummyOp.setExecContext(execContext);
         dummyOp.initialize(jc,null);
       }
-
-
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -130,6 +132,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       rp = reporter;
       mo.setOutputCollector(oc);
       mo.setReporter(rp);
+      mo.setOperatorHooks(opHooks);
+      MapredContext.get().setReporter(reporter);
     }
     // reset the execContext for each new row
     execContext.resetRow();
@@ -194,9 +198,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       //for close the local work
       if(localWork != null){
-        List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
+        List<Operator<? extends OperatorDesc>> dummyOps = localWork.getDummyParentOp();
 
-        for(Operator<? extends Serializable> dummyOp : dummyOps){
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
           dummyOp.close(abort);
         }
       }
@@ -204,7 +208,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       if (fetchOperators != null) {
         MapredLocalWork localWork = mo.getConf().getMapLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-          Operator<? extends Serializable> forwardOp = localWork
+          Operator<? extends OperatorDesc> forwardOp = localWork
               .getAliasToWork().get(entry.getKey());
           forwardOp.close(abort);
         }
@@ -225,6 +229,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators", e);
       }
+    } finally {
+      MapredContext.close();
     }
   }
 
@@ -256,8 +262,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     }
 
     public void func(Operator op) {
-      Map<Enum, Long> opStats = op.getStats();
-      for (Map.Entry<Enum, Long> e : opStats.entrySet()) {
+      Map<Enum<?>, Long> opStats = op.getStats();
+      for (Map.Entry<Enum<?>, Long> e : opStats.entrySet()) {
         if (rp != null) {
           rp.incrCounter(e.getKey(), e.getValue());
         }

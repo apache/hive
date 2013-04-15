@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
@@ -38,13 +38,11 @@ public class LazyBinaryObjectInspector extends
   }
 
   @Override
-  public ByteArrayRef getPrimitiveJavaObject(Object o) {
+  public byte[] getPrimitiveJavaObject(Object o) {
     if (null == o) {
       return null;
     }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(((LazyBinary) o).getWritableObject().getBytes());
-    return ba;
+    return LazyUtils.createByteArray(((LazyBinary) o).getWritableObject());
   }
 
   @Override

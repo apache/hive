@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -45,6 +46,7 @@ public abstract class UDFBaseNumericUnaryOp extends UDF {
   protected LongWritable longWritable = new LongWritable();
   protected FloatWritable floatWritable = new FloatWritable();
   protected DoubleWritable doubleWritable = new DoubleWritable();
+  protected HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
 
   public abstract ByteWritable evaluate(ByteWritable a);
 
@@ -58,4 +60,5 @@ public abstract class UDFBaseNumericUnaryOp extends UDF {
 
   public abstract DoubleWritable evaluate(DoubleWritable a);
 
+  public abstract HiveDecimalWritable evaluate(HiveDecimalWritable a);
 }

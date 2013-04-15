@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:7 Arguments length mismatch '"2"': The function MAP_KEYS only accepts one argument.
+FAILED: SemanticException [Error 10015]: Line 1:7 Arguments length mismatch '"2"': The function MAP_KEYS only accepts one argument.

@@ -1,0 +1,25 @@
+Saving all output to "!!{outputDirectory}!!/join_empty.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/join_empty.q
+>>>  create table srcpart_empty(key int, value string) partitioned by (ds string);
+No rows affected 
+>>>  create table src2_empty (key int, value string);
+No rows affected 
+>>>  
+>>>  select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key;
+'key','value'
+No rows selected 
+>>>  select /*+mapjoin(a)*/ a.key, b.value from src2_empty a join src b on a.key=b.key;
+'key','value'
+No rows selected 
+>>>  
+>>>  set hive.mapred.mode=nonstrict;
+No rows affected 
+>>>  set hive.auto.convert.join = true;
+No rows affected 
+>>>  select a.key, b.value from srcpart_empty a join src b on a.key=b.key;
+'key','value'
+No rows selected 
+>>>  select a.key, b.value from src2_empty a join src b on a.key=b.key;
+'key','value'
+No rows selected 
+>>>  !record

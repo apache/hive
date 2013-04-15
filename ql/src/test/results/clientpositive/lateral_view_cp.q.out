@@ -1,0 +1,177 @@
+PREHOOK: query: --HIVE 3226
+drop table array_valued_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: --HIVE 3226
+drop table array_valued_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table array_valued_src (key string, value array<string>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table array_valued_src (key string, value array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@array_valued_src
+PREHOOK: query: insert overwrite table array_valued_src select key, array(value) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@array_valued_src
+POSTHOOK: query: insert overwrite table array_valued_src select key, array(value) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@array_valued_src
+POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- replace sel(*) to sel(exprs) for reflecting CP result properly
+explain select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
+PREHOOK: type: QUERY
+POSTHOOK: query: -- replace sel(*) to sel(exprs) for reflecting CP result properly
+explain select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_TABLE_OR_COL array_val)) val (TOK_TABALIAS c))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME array_valued_src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) array_val)))) i))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL val))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        i:a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+        i:b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
+                    type: array<string>
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col5
+          Select Operator
+            expressions:
+                  expr: _col5
+                  type: array<string>
+            outputColumnNames: _col1
+            Lateral View Forward
+              Select Operator
+                Lateral View Join Operator
+                  outputColumnNames: _col2
+                  Select Operator
+                    expressions:
+                          expr: _col2
+                          type: string
+                    outputColumnNames: _col2
+                    Group By Operator
+                      aggregations:
+                            expr: count(_col2)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: array<string>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col2
+                    Select Operator
+                      expressions:
+                            expr: _col2
+                            type: string
+                      outputColumnNames: _col2
+                      Group By Operator
+                        aggregations:
+                              expr: count(_col2)
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued_src
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(val) from (select a.key as key, b.value as array_val from src a join array_valued_src b on a.key=b.key) i lateral view explode (array_val) c as val
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued_src
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: array_valued_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: array_valued_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+1028

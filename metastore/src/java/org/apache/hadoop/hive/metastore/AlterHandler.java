@@ -79,4 +79,27 @@ public interface AlterHandler extends Configurable {
       final String name, final List<String> part_vals, final Partition new_part)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException;
+
+  /**
+   * handles alter partitions
+   *
+   * @param msdb
+   *          object to get metadata
+   * @param wh
+   * @param dbname
+   *          database of the partition being altered
+   * @param name
+   *          table of the partition being altered
+   * @param new_parts
+   *          new partition list
+   * @return the altered partition list
+   * @throws InvalidOperationException
+   * @throws InvalidObjectException
+   * @throws AlreadyExistsException
+   * @throws MetaException
+   */
+  public abstract List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
+      final String dbname, final String name, final List<Partition> new_part)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
+      MetaException;
 }

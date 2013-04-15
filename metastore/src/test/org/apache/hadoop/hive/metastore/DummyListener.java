@@ -42,6 +42,17 @@ public class DummyListener extends MetaStoreEventListener{
 
   public static final List<ListenerEvent> notifyList = new ArrayList<ListenerEvent>();
 
+  /**
+   * @return The last event received, or null if no event was received.
+   */
+  public static ListenerEvent getLastEvent() {
+    if (notifyList.isEmpty()) {
+      return null;
+    } else {
+      return notifyList.get(notifyList.size() - 1);
+    }
+  }
+
   public DummyListener(Configuration config) {
     super(config);
   }
@@ -90,4 +101,5 @@ public class DummyListener extends MetaStoreEventListener{
   public void onLoadPartitionDone(LoadPartitionDoneEvent partEvent) throws MetaException {
     notifyList.add(partEvent);
   }
+
 }

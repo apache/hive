@@ -1,7 +1,11 @@
-PREHOOK: query: create table src_auth_tmp as select * from src
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_auth_tmp as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table src_auth_tmp as select * from src
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table src_auth_tmp as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_auth_tmp
@@ -155,11 +159,13 @@ privilege	Select
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part
 PREHOOK: Input: default@authorization_part@ds=2010
 PREHOOK: Input: default@authorization_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part
 POSTHOOK: Input: default@authorization_part@ds=2010
 POSTHOOK: Input: default@authorization_part@ds=2011
 #### A masked pattern was here ####
@@ -351,11 +357,13 @@ privilege	Select
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part
 PREHOOK: Input: default@authorization_part@ds=2010
 PREHOOK: Input: default@authorization_part@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part
 POSTHOOK: Input: default@authorization_part@ds=2010
 POSTHOOK: Input: default@authorization_part@ds=2011
 #### A masked pattern was here ####

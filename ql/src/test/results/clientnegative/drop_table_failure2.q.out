@@ -1,10 +1,8 @@
 PREHOOK: query: CREATE VIEW xxx6 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx6 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx6
-#### A masked pattern was here ####
 PREHOOK: query: -- Can't use DROP TABLE on a view
 DROP TABLE xxx6
 PREHOOK: type: DROPTABLE

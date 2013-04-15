@@ -409,6 +409,9 @@ public class HiveHistory {
 
   public void printRowCount(String queryId) {
     QueryInfo ji = queryInfoMap.get(queryId);
+    if (ji == null) {
+      return;
+    }
     for (String tab : ji.rowCountMap.keySet()) {
       console.printInfo(ji.rowCountMap.get(tab) + " Rows loaded to " + tab);
     }
@@ -420,7 +423,6 @@ public class HiveHistory {
    * @param queryId
    */
   public void endQuery(String queryId) {
-
     QueryInfo ji = queryInfoMap.get(queryId);
     if (ji == null) {
       return;
@@ -488,12 +490,16 @@ public class HiveHistory {
   /**
    * write out counters.
    */
-  static Map<String, String> ctrmap = null;
+  static ThreadLocal<Map<String,String>> ctrMapFactory =
+      new ThreadLocal<Map<String, String>>() {
+        @Override
+        protected Map<String,String> initialValue() {
+          return new HashMap<String,String>();
+        }
+      };
 
   public void logPlanProgress(QueryPlan plan) throws IOException {
-    if (ctrmap == null) {
-      ctrmap = new HashMap<String, String>();
-    }
+    Map<String,String> ctrmap = ctrMapFactory.get();
     ctrmap.put("plan", plan.toString());
     log(RecordTypes.Counters, ctrmap);
   }

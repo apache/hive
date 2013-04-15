@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(key INT, value DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-FAILED: Error in semantic analysis: Line 4:44 Expression not in GROUP BY key 'key'
+FAILED: SemanticException [Error 10025]: Line 4:44 Expression not in GROUP BY key 'key'

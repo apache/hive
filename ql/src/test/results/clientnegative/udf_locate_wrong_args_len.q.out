@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:7 Arguments length mismatch '2': The function LOCATE accepts exactly 2 or 3 arguments.
+FAILED: SemanticException [Error 10015]: Line 1:7 Arguments length mismatch '2': The function LOCATE accepts exactly 2 or 3 arguments.

@@ -27,6 +27,7 @@
     <!-- Private configurations -->
     <conf name="docs" visibility="private"/>
     <conf name="checkstyle" visibility="private"/>
+    <conf name="findbugs" visibility="private"/>
     <conf name="rat" visibility="private"/>
     <conf name="maven" visibility="private"/>
   </configurations>
@@ -39,7 +40,11 @@
                rev="${rat.version}" conf="rat->default"/>
    <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
      conf="checkstyle->default"/>
+   <dependency org="com.google.code.findbugs" name="findbugs-ant" rev="${findbugs.version}"
+     conf="findbugs->default"/>
    <dependency org="org.jdom" name="jdom" rev="${jdom.version}"
+     conf="docs->default"/>
+   <dependency org="org.apache.velocity" name="velocity" rev="${velocity.version}"
      conf="docs->default"/>
    <dependency org="org.apache.maven" name="maven-ant-tasks" rev="${maven-ant-tasks.version}"
      conf="maven->default"/>

@@ -39,16 +39,20 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-7 depends on stages: Stage-1
-  Stage-8
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-14 depends on stages: Stage-2 , consists of Stage-11, Stage-10, Stage-12
+  Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10, Stage-13
+  Stage-9 depends on stages: Stage-1
+  Stage-10
+  Stage-12
+  Stage-13 depends on stages: Stage-12
 
 STAGE PLANS:
   Stage: Stage-2
@@ -102,7 +106,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.nzhang_part2
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -140,10 +144,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part1
 
-  Stage: Stage-10
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part1
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-14
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
@@ -162,10 +185,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.nzhang_part2
 
-  Stage: Stage-7
+  Stage: Stage-9
     Stats-Aggr Operator
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -178,11 +201,31 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part2
 
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part2
+
+  Stage: Stage-13
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: from srcpart
 insert overwrite table nzhang_part1 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
 insert overwrite table nzhang_part2 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -193,6 +236,7 @@ POSTHOOK: query: from srcpart
 insert overwrite table nzhang_part1 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
 insert overwrite table nzhang_part2 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -239,11 +283,13 @@ ds=2008-12-31/hr=11
 ds=2008-12-31/hr=12
 PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part1
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part1
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
@@ -1257,11 +1303,13 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(sr
 97	val_97	2008-04-08	12
 PREHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part2
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part2
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
 #### A masked pattern was here ####
@@ -2273,9 +2321,9 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(sr
 400	val_400	2008-12-31	12
 200	val_200	2008-12-31	12
 97	val_97	2008-12-31	12
-PREHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2285,15 +2333,44 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	default             	 
+Table:              	nzhang_part1        	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=12)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=12)
+POSTHOOK: query: describe formatted nzhang_part1 partition(ds='2008-04-08',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2303,15 +2380,44 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 12]    	 
+Database:           	default             	 
+Table:              	nzhang_part1        	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=11)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=11)
+POSTHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2321,15 +2427,44 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-12-31, 11]    	 
+Database:           	default             	 
+Table:              	nzhang_part2        	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=12)
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=12)
+POSTHOOK: query: describe formatted nzhang_part2 partition(ds='2008-12-31',hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2339,15 +2474,44 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-12-31, 12]    	 
+Database:           	default             	 
+Table:              	nzhang_part2        	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended nzhang_part1
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted nzhang_part1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part1
+POSTHOOK: query: describe formatted nzhang_part1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2357,15 +2521,45 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
-PREHOOK: query: describe extended nzhang_part2
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	1000                
+	rawDataSize         	10624               
+	totalSize           	11624               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted nzhang_part2
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended nzhang_part2
+POSTHOOK: query: describe formatted nzhang_part2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -2375,12 +2569,42 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
 	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	1000                
+	rawDataSize         	10624               
+	totalSize           	11624               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table nzhang_part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part1

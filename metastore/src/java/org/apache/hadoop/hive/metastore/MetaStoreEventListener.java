@@ -50,13 +50,15 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param tableEvent table event.
    * @throws MetaException
    */
-  public abstract void onCreateTable (CreateTableEvent tableEvent) throws MetaException;
+  public void onCreateTable (CreateTableEvent tableEvent) throws MetaException {
+  }
 
   /**
    * @param tableEvent table event.
    * @throws MetaException
    */
-  public abstract void onDropTable (DropTableEvent tableEvent)  throws MetaException;
+  public void onDropTable (DropTableEvent tableEvent)  throws MetaException {
+  }
 
   /**
    * @param add partition event
@@ -67,40 +69,48 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param tableEvent alter table event
    * @throws MetaException
    */
-  public abstract void onAlterTable (AlterTableEvent tableEvent) throws MetaException;
+  public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
+  }
 
-
-  public abstract void onAddPartition (AddPartitionEvent partitionEvent)  throws MetaException;
-
-  /**
-   * @param partitionEvent partition event
-   * @throws MetaException
-   */
-  public abstract void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException;
+  public void onAddPartition (AddPartitionEvent partitionEvent)
+      throws MetaException {
+  }
 
   /**
    * @param partitionEvent partition event
    * @throws MetaException
    */
-  public abstract void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException;
+  public void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException {
+  }
+
+  /**
+   * @param partitionEvent partition event
+   * @throws MetaException
+   */
+  public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
+  }
 
   /**
    * @param dbEvent database event
    * @throws MetaException
    */
-  public abstract void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException;
+  public void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException {
+  }
 
   /**
    * @param dbEvent database event
    * @throws MetaException
    */
-  public abstract void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException;
+  public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
+  }
 
   /**
    * @param partSetDoneEvent
    * @throws MetaException
    */
-  public abstract void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException;
+  public void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException {
+
+  }
 
   @Override
   public Configuration getConf() {

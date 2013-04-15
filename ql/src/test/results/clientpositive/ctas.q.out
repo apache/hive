@@ -1,6 +1,10 @@
-PREHOOK: query: create table nzhang_Tmp(a int, b string)
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table nzhang_Tmp(a int, b string)
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
+
+create table nzhang_Tmp(a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
@@ -774,9 +778,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -788,9 +797,14 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
@@ -813,6 +827,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-2
     Map Reduce
@@ -875,6 +891,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator

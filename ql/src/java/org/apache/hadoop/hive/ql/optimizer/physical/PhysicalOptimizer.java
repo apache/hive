@@ -59,6 +59,13 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
       resolvers.add(new MetadataOnlyOptimizer());
     }
+
+    // Physical optimizers which follow this need to be careful not to invalidate the inferences
+    // made by this optimizer.  Only optimizers which depend on the results of this one should
+    // follow it.
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT)) {
+      resolvers.add(new BucketingSortingInferenceOptimizer());
+    }
   }
 
   /**

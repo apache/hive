@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
@@ -29,9 +28,9 @@ public interface BucketMatcher {
   public List<Path> getAliasBucketFiles(String currentInputFile, String refTableAlias, String alias);
 
   public void setAliasBucketFileNameMapping(
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping);
+      Map<String,Map<String,List<String>>> aliasBucketFileNameMapping);
 
-  public LinkedHashMap<String, Integer> getBucketFileNameMapping();
+  public Map<String, Integer> getBucketFileNameMapping();
 
-  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping);
+  public void setBucketFileNameMapping(Map<String, Integer> bucketFileNameMapping);
 }

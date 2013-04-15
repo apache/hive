@@ -27,11 +27,7 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="org.apache.hive" name="hive-service" rev="${version}"
+    <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
                 conf="compile->default" />
-    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
-                transitive="false"/>
   </dependencies>
 </ivy-module>

@@ -1,0 +1,42 @@
+PREHOOK: query: -- This test verifies that if a partition exists outside an index table's current location when the
+-- index is dropped the partition's location is dropped as well.
+
+CREATE TABLE test_table (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This test verifies that if a partition exists outside an index table's current location when the
+-- index is dropped the partition's location is dropped as well.
+
+CREATE TABLE test_table (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: CREATE INDEX test_index ON 
+TABLE test_table(key) AS 'compact' WITH DEFERRED REBUILD
+IN TABLE test_index_table
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX test_index ON 
+TABLE test_table(key) AS 'compact' WITH DEFERRED REBUILD
+IN TABLE test_index_table
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@test_index_table
+PREHOOK: query: ALTER TABLE test_index_table ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@test_index_table
+POSTHOOK: query: ALTER TABLE test_index_table ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@test_index_table
+POSTHOOK: Output: default@test_index_table@part=1
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: DROP INDEX test_index ON test_table
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX test_index ON test_table
+POSTHOOK: type: DROPINDEX
+#### A masked pattern was here ####

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -28,6 +30,13 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * read by the query.
  */
 public class ReadEntity extends Entity implements Serializable {
+
+  // Consider a query like: select * from V, where the view V is defined as:
+  // select * from T
+  // The inputs will contain V and T (parent: V)
+
+  // For views, the entities can be nested - by default, entities are at the top level
+  private final Set<ReadEntity> parents = new HashSet<ReadEntity>();
 
   /**
    * For serialization only.
@@ -46,14 +55,34 @@ public class ReadEntity extends Entity implements Serializable {
     super(t);
   }
 
+  private void initParent(ReadEntity parent) {
+    if (parent != null) {
+      this.parents.add(parent);
+    }
+  }
+
+  public ReadEntity(Table t, ReadEntity parent) {
+    super(t);
+    initParent(parent);
+  }
+
   /**
-   * Constructor given a partiton.
+   * Constructor given a partition.
    *
    * @param p
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
     super(p);
+  }
+
+  public ReadEntity(Partition p, ReadEntity parent) {
+    super(p);
+    initParent(parent);
+  }
+
+  public Set<ReadEntity> getParents() {
+    return parents;
   }
 
   /**

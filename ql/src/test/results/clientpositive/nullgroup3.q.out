@@ -76,11 +76,13 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
 #### A masked pattern was here ####
@@ -163,11 +165,13 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl2
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl2
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
 #### A masked pattern was here ####
@@ -258,11 +262,13 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
 #### A masked pattern was here ####
@@ -353,11 +359,13 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl2
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl2
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
 #### A masked pattern was here ####

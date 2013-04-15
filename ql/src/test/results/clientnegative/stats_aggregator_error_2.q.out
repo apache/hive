@@ -1,0 +1,40 @@
+PREHOOK: query: -- In this test, the stats aggregator does not exists.
+-- If stats need not be reliable, the statement succeeds. However, if stats are supposed
+-- to be reliable (by setting hive.stats.reliable to true), the insert statement fails
+-- because stats cannot be collected for this statement
+
+create table tmptable(key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- In this test, the stats aggregator does not exists.
+-- If stats need not be reliable, the statement succeeds. However, if stats are supposed
+-- to be reliable (by setting hive.stats.reliable to true), the insert statement fails
+-- because stats cannot be collected for this statement
+
+create table tmptable(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

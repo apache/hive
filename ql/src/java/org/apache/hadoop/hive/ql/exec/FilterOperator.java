@@ -149,11 +149,35 @@ public class FilterOperator extends Operator<FilterDesc> implements
    */
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "FIL";
   }
 
   @Override
   public OperatorType getType() {
     return OperatorType.FILTER;
+  }
+
+  @Override
+  public boolean supportSkewJoinOptimization() {
+    return true;
+  }
+
+  @Override
+  public boolean columnNamesRowResolvedCanBeObtained() {
+    return true;
+  }
+
+  @Override
+  public boolean supportAutomaticSortMergeJoin() {
+    return true;
+  }
+
+  @Override
+  public boolean supportUnionRemoveOptimization() {
+    return true;
   }
 }

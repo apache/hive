@@ -1,0 +1,61 @@
+PREHOOK: query: -- This test verifies that if a partition exists outside a table's current location when the
+-- database is dropped the partition's location is dropped as well.
+
+CREATE DATABASE test_database
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- This test verifies that if a partition exists outside a table's current location when the
+-- database is dropped the partition's location is dropped as well.
+
+CREATE DATABASE test_database
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE test_database
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_database
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_database@test_table
+PREHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: test_database@test_table
+POSTHOOK: query: ALTER TABLE test_table ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: test_database@test_table
+POSTHOOK: Output: test_database@test_table@part=1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+SELECT * FROM default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: test_database@test_table@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+SELECT * FROM default.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: test_database@test_table@part=1
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP DATABASE test_database CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE test_database CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####

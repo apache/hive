@@ -25,12 +25,21 @@
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.metadata" location="${build.dir}/metadata"/>
   <property name="install.dir" location="${pdk.script.dir}/../.."/>
+  <property name="pdk.test.conf.dir" location="${pdk.script.dir}/conf"/>
   <property name="function.sql.prefix" value=""/>
-  <property name="plugin.jar.basename" 
+  <property name="plugin.jar.basename"
             value="${plugin.libname}-${plugin.version}.jar"/>
 
   <property environment="env"/>
   <property name="hadoop.home" value="${env.HADOOP_HOME}"/>
+  <if>
+    <not>
+      <isset property="jvm.args"/>
+    </not>
+    <then>
+      <property name="jvm.args" value="-XX:-UseSplitVerifier"/>
+    </then>
+  </if>
 
   <path id="plugin.classpath">
     <fileset dir="${build.ivy.lib.dir}/default" includes="hive-exec-*.jar"/>
@@ -98,7 +107,7 @@
 
   <target name="extract-functions" depends="compile, get-class-list">
     <mkdir dir="${build.metadata}"/>
-    <java classname="org.apache.hive.pdk.FunctionExtractor" 
+    <java classname="org.apache.hive.pdk.FunctionExtractor"
           classpathref="plugin.classpath" fork="true"
           output="${build.metadata}/class-info.xml">
        <arg line="${class.list}" />
@@ -122,6 +131,7 @@
   <target name="test" depends="package" unless="testcase">
     <path id="hive.hadoop.mock.classpath">
        <fileset dir="${build.ivy.lib.dir}/test" includes="*.jar" excludes="hive*.jar"/>
+       <pathelement path="${pdk.test.conf.dir}"/>
     </path>
     <property name="hive.hadoop.mock.classpath" refid="hive.hadoop.mock.classpath"/>
     <junit fork="true" printsummary="on" haltonfailure="true"
@@ -133,6 +143,7 @@
       <sysproperty key="hive.metastore.warehouse.dir" value="${build.dir}/warehouse"/>
       <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hive.hadoop.mock.classpath}"/>
       <env key="HADOOP_HOME" value="${hadoop.home}"/>
+      <env key="HADOOP_CONF_DIR" value="${pdk.test.conf.dir}"/>
       <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
       <env key="HIVE_HOME" value="${install.dir}"/>
       <env key="HIVE_PLUGIN_ROOT_DIR" value="${plugin.dir}"/>
@@ -141,6 +152,7 @@
       <assertions>
         <enable />
       </assertions>
+      <jvmarg line="${jvm.args}"/>
     </junit>
   </target>
 

@@ -40,6 +40,11 @@ import org.apache.thrift.transport.TTransportException;
  */
 public class CliSessionState extends SessionState {
   /**
+   * -database option if any that the session has been invoked with.
+   */
+  public String database;
+
+  /**
    * -e option if any that the session has been invoked with.
    */
   public String execString;

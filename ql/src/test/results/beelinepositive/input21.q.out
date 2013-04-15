@@ -1,0 +1,86 @@
+Saving all output to "!!{outputDirectory}!!/input21.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input21.q
+>>>  
+>>>  
+>>>  CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null;
+No rows affected 
+>>>  
+>>>  EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_null))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL c)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL d)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 is a root stage'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        src_null '
+'          TableScan'
+'            alias: src_null'
+'            Select Operator'
+'              expressions:'
+'                    expr: a'
+'                    type: string'
+'                    expr: b'
+'                    type: string'
+'                    expr: c'
+'                    type: string'
+'                    expr: d'
+'                    type: string'
+'              outputColumnNames: _col0, _col1, _col2, _col3'
+'              Reduce Output Operator'
+'                key expressions:'
+'                      expr: _col3'
+'                      type: string'
+'                sort order: +'
+'                Map-reduce partition columns:'
+'                      expr: _col2'
+'                      type: string'
+'                tag: -1'
+'                value expressions:'
+'                      expr: _col0'
+'                      type: string'
+'                      expr: _col1'
+'                      type: string'
+'                      expr: _col2'
+'                      type: string'
+'                      expr: _col3'
+'                      type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          File Output Operator'
+'            compressed: false'
+'            GlobalTableId: 0'
+'            table:'
+'                input format: org.apache.hadoop.mapred.TextInputFormat'
+'                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+''
+'  Stage: Stage-0'
+'    Fetch Operator'
+'      limit: -1'
+''
+''
+57 rows selected 
+>>>  
+>>>  SELECT * FROM src_null DISTRIBUTE BY c SORT BY d;
+'a','b','c','d'
+'1.0','1','same','0'
+'1.0','1','same','1'
+'1.0','1','same','2'
+'1.0','1','same','3'
+'1.0','1','same','4'
+'','1','same','5'
+'','','same','6'
+'1.0','','same','7'
+'1.0','1','same','8'
+'1.0','1','same','9'
+10 rows selected 
+>>>  
+>>>  
+>>>  !record

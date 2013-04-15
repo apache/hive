@@ -22,12 +22,13 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -291,10 +292,10 @@ public final class TypeInfoUtils {
       }
       Token t = typeInfoTokens.get(iToken);
       if (item.equals("type")) {
-        if (!Constants.LIST_TYPE_NAME.equals(t.text)
-            && !Constants.MAP_TYPE_NAME.equals(t.text)
-            && !Constants.STRUCT_TYPE_NAME.equals(t.text)
-            && !Constants.UNION_TYPE_NAME.equals(t.text)
+        if (!serdeConstants.LIST_TYPE_NAME.equals(t.text)
+            && !serdeConstants.MAP_TYPE_NAME.equals(t.text)
+            && !serdeConstants.STRUCT_TYPE_NAME.equals(t.text)
+            && !serdeConstants.UNION_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
@@ -332,7 +333,7 @@ public final class TypeInfoUtils {
       }
 
       // Is this a list type?
-      if (Constants.LIST_TYPE_NAME.equals(t.text)) {
+      if (serdeConstants.LIST_TYPE_NAME.equals(t.text)) {
         expect("<");
         TypeInfo listElementType = parseType();
         expect(">");
@@ -340,7 +341,7 @@ public final class TypeInfoUtils {
       }
 
       // Is this a map type?
-      if (Constants.MAP_TYPE_NAME.equals(t.text)) {
+      if (serdeConstants.MAP_TYPE_NAME.equals(t.text)) {
         expect("<");
         TypeInfo mapKeyType = parseType();
         expect(",");
@@ -350,7 +351,7 @@ public final class TypeInfoUtils {
       }
 
       // Is this a struct type?
-      if (Constants.STRUCT_TYPE_NAME.equals(t.text)) {
+      if (serdeConstants.STRUCT_TYPE_NAME.equals(t.text)) {
         ArrayList<String> fieldNames = new ArrayList<String>();
         ArrayList<TypeInfo> fieldTypeInfos = new ArrayList<TypeInfo>();
         boolean first = true;
@@ -374,7 +375,7 @@ public final class TypeInfoUtils {
         return TypeInfoFactory.getStructTypeInfo(fieldNames, fieldTypeInfos);
       }
       // Is this a union type?
-      if (Constants.UNION_TYPE_NAME.equals(t.text)) {
+      if (serdeConstants.UNION_TYPE_NAME.equals(t.text)) {
         List<TypeInfo> objectTypeInfos = new ArrayList<TypeInfo>();
         boolean first = true;
         do {
@@ -400,8 +401,8 @@ public final class TypeInfoUtils {
 
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
-      new HashMap<TypeInfo, ObjectInspector>();
+  static Map<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
+      new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an
@@ -477,8 +478,8 @@ public final class TypeInfoUtils {
     return result;
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
-      new HashMap<TypeInfo, ObjectInspector>();
+  static Map<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
+      new ConcurrentHashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an

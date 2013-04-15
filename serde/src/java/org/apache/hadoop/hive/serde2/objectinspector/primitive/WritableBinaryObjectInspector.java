@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.io.BytesWritable;
+import java.util.Arrays;
 
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.io.BytesWritable;
+/**
+ * A WritableBinaryObjectInspector inspects a BytesWritable Object.
+ */
 public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObjectInspector
     implements SettableBinaryObjectInspector {
 
@@ -40,13 +44,8 @@ public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObje
   }
 
   @Override
-  public ByteArrayRef getPrimitiveJavaObject(Object o) {
-    if (null == o){
-      return null;
-    }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(((BytesWritable)o).getBytes());
-    return ba;
+  public byte[] getPrimitiveJavaObject(Object o) {
+    return o == null ? null : LazyUtils.createByteArray((BytesWritable)o);
   }
 
   @Override
@@ -54,15 +53,21 @@ public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObje
     return null == o ? null : (BytesWritable)o;
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
-  public BytesWritable set(Object o, ByteArrayRef bb) {
+  public BytesWritable set(Object o, byte[] bb) {
     BytesWritable incoming = (BytesWritable)o;
     if (bb != null){
-      incoming.set(bb.getData(),0,bb.getData().length);
+      incoming.set(bb, 0, bb.length);
     }
     return incoming;
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
   public BytesWritable set(Object o, BytesWritable bw) {
     BytesWritable incoming = (BytesWritable)o;
@@ -72,11 +77,17 @@ public class WritableBinaryObjectInspector extends AbstractPrimitiveWritableObje
     return incoming;
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
-  public BytesWritable create(ByteArrayRef bb) {
-    return new BytesWritable(bb.getData());
+  public BytesWritable create(byte[] bb) {
+    return new BytesWritable(Arrays.copyOf(bb, bb.length));
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
   public BytesWritable create(BytesWritable bw) {
 

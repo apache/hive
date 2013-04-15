@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:35 Argument type mismatch '"4"': Argument 2 of function FORMAT_NUMBER must be "tinyint" or "smallint" or "int" or "bigint", but "string" was found.

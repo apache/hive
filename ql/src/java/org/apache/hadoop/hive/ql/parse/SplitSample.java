@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 
 /**
  *
- * This class stores all the information specified in the TABLESAMPLE(PERCENT ...) clause.
+ * This class stores all the information specified in the TABLESAMPLE(...) clause.
  * e.g. for the clause "FROM t TABLESAMPLE(1 PERCENT) it will store the percentage 1,
  * and the seed number is to determine which 1%. Currently it is from the conf
  * hive.sample.seednumber
@@ -36,10 +36,10 @@ public class SplitSample implements Serializable{
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * The percentage of the TABLESAMPLE clause.
-   */
-  private double percent;
+  // only one of belows is not-null
+  private Long totalLength; // total length of sample, prunes splits exceeded
+  private Double percent;   // percent to total input, prunes splits exceeded
+  private Integer rowCount; // row count per split, do not prune splits
 
   /**
    * The number used to determine which part of the input to sample
@@ -49,19 +49,45 @@ public class SplitSample implements Serializable{
   public SplitSample() {
   }
 
-
   public SplitSample(double percent, int seedNum) {
     this.percent = percent;
     this.seedNum = seedNum;
   }
 
+  public SplitSample(long totalLength, int seedNum) {
+    this.totalLength = totalLength;
+    this.seedNum = seedNum;
+  }
+
+  public SplitSample(int rowCount) {
+    this.rowCount = rowCount;
+  }
+
   @Explain(displayName = "percentage")
-  public double getPercent() {
+  public Double getPercent() {
     return percent;
   }
 
-  public void setPercent(double percent) {
+  public void setPercent(Double percent) {
     this.percent = percent;
+  }
+
+  @Explain(displayName = "total length")
+  public Long getTotalLength() {
+    return totalLength;
+  }
+
+  public void setTotalLength(Long totalLength) {
+    this.totalLength = totalLength;
+  }
+
+  @Explain(displayName = "row count")
+  public Integer getRowCount() {
+    return rowCount;
+  }
+
+  public void setRowCount(Integer rowCount) {
+    this.rowCount = rowCount;
   }
 
   @Explain(displayName = "seed number")
@@ -73,4 +99,7 @@ public class SplitSample implements Serializable{
     this.seedNum = seedNum;
   }
 
+  public long getTargetSize(long totalSize) {
+    return totalLength != null ? totalLength : (long) (totalSize * percent / 100D);
+  }
 }

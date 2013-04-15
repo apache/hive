@@ -32,7 +32,7 @@ import org.apache.hadoop.io.Writable;
  * Placeholder SerDe for cases where neither serialization nor deserialization is needed
  *
  */
-public class NullStructSerDe implements SerDe {
+public class NullStructSerDe extends AbstractSerDe {
 
   class NullStructField implements StructField {
     @Override
@@ -56,32 +56,11 @@ public class NullStructSerDe implements SerDe {
     return null;
   }
 
+  private static ObjectInspector nullStructOI = new NullStructSerDeObjectInspector();
+
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
-    return new StructObjectInspector() {
-      public String getTypeName() {
-        return "null";
-      }
-      public Category getCategory() {
-        return Category.PRIMITIVE;
-      }
-      @Override
-      public StructField getStructFieldRef(String fieldName) {
-        return null;
-      }
-      @Override
-      public List<NullStructField> getAllStructFieldRefs() {
-        return new ArrayList<NullStructField>();
-      }
-      @Override
-      public Object getStructFieldData(Object data, StructField fieldRef) {
-        return null;
-      }
-      @Override
-      public List<Object> getStructFieldsDataAsList(Object data) {
-        return new ArrayList<Object>();
-      }
-    };
+    return nullStructOI;
   }
 
   @Override
@@ -101,6 +80,40 @@ public class NullStructSerDe implements SerDe {
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     return NullWritable.get();
+  }
+
+
+  /**
+   * A object inspector for null struct serde.
+   */
+  public static class NullStructSerDeObjectInspector extends StructObjectInspector {
+    public String getTypeName() {
+      return "null";
+    }
+
+    public Category getCategory() {
+      return Category.PRIMITIVE;
+    }
+
+    @Override
+    public StructField getStructFieldRef(String fieldName) {
+      return null;
+    }
+
+    @Override
+    public List<NullStructField> getAllStructFieldRefs() {
+      return new ArrayList<NullStructField>();
+    }
+
+    @Override
+    public Object getStructFieldData(Object data, StructField fieldRef) {
+      return null;
+    }
+
+    @Override
+    public List<Object> getStructFieldsDataAsList(Object data) {
+      return new ArrayList<Object>();
+    }
   }
 
 }

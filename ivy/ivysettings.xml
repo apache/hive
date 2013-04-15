@@ -33,8 +33,9 @@
   <property name="repo.maven.org" value="http://repo1.maven.org/maven2/" override="false"/>
   <property name="snapshot.apache.org" value="https://repository.apache.org/content/repositories/snapshots/" override="false"/>
   <property name="maven2.pattern" value="[organisation]/[module]/[revision]/[module]-[revision](-[classifier])"/>
-  <property name="repo.dir" value="${user.home}/.m2/repository"/>
+  <property name="repo.dir" value="${user.home}/.m2/repository" override="false"/>
   <property name="maven2.pattern.ext"  value="${maven2.pattern}.[ext]"/>
+  <property name="sourceforge-repo" value="http://www.sourceforge.net/projects"/>
   <property name="resolvers" value="default" override="false"/>
   <!-- pull in the local repository -->
   <include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
@@ -47,21 +48,26 @@
              changingPattern="${ivy.changingPattern}"/>
 
     <url name="datanucleus-repo" m2compatible="true">
-      <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
+      <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"/>
     </url>
 
-    <filesystem name="fs" m2compatible="true" force="true">
-       <artifact pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].[ext]"/>
-       <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
+    <url name="sourceforge" m2compatible="false" checksums="">
+      <artifact pattern="${sourceforge-repo}/[module]/files/[module]/[branch]/[module]-[revision](-[classifier]).[ext]"/>
+    </url>
+
+    <filesystem name="fs" m2compatible="true" alwaysCheckExactRevision="true">
+       <artifact pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"/>
+       <ivy pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).pom"/>
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" 
-           checkmodified="true" 
+           checkmodified="${ivy.checkmodified}" 
            changingPattern="${ivy.changingPattern}">
       <resolver ref="local" />
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="sourceforge"/>
     </chain>
 
     <chain name="internal" dual="true">
@@ -70,6 +76,7 @@
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="sourceforge"/>
     </chain>
 
     <chain name="external">

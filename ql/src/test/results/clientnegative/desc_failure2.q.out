@@ -1,0 +1,17 @@
+PREHOOK: query: DESC srcpart
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC srcpart
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+FAILED: SemanticException [Error 10006]: Partition not found {ds=2012-04-08, hr=15}

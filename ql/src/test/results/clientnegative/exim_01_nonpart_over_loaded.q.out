@@ -13,6 +13,7 @@ PREHOOK: Output: default@exim_department
 POSTHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_department
+#### A masked pattern was here ####
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department
@@ -52,4 +53,4 @@ PREHOOK: Output: importer@exim_department
 POSTHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
 POSTHOOK: type: LOAD
 POSTHOOK: Output: importer@exim_department
-FAILED: Error in semantic analysis: Table exists and contains data files
+FAILED: SemanticException [Error 10119]: Table exists and contains data files

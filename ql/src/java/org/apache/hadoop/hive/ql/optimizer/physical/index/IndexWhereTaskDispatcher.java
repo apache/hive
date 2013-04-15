@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
 import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
@@ -131,7 +132,8 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
 
     // We set the pushed predicate from the WHERE clause as the filter expr on
     // all table scan operators, so we look for table scan operators(TS%)
-    operatorRules.put(new RuleRegExp("RULEWhere", "TS%"), new IndexWhereProcessor(indexes));
+    operatorRules.put(new RuleRegExp("RULEWhere", TableScanOperator.getOperatorName() + "%"),
+      new IndexWhereProcessor(indexes));
 
     return operatorRules;
   }

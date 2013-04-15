@@ -65,8 +65,8 @@ STAGE PLANS:
             alias: src
             Select Operator
               expressions:
-                    expr: 0
-                    type: int
+                    expr: UDFToLong(0)
+                    type: bigint
               outputColumnNames: _col0
               Union
                 Select Operator

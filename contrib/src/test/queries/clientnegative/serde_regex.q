@@ -1,7 +1,8 @@
 add jar ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
 
-DROP TABLE serde_regex;
+USE default;
 
+--  This should fail because Regex SerDe supports only columns of type string
 EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
@@ -36,10 +37,3 @@ WITH SERDEPROPERTIES (
   "output.format.string" = "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"
 )
 STORED AS TEXTFILE;
-
-LOAD DATA LOCAL INPATH "../data/files/apache.access.log" INTO TABLE serde_regex;
-LOAD DATA LOCAL INPATH "../data/files/apache.access.2.log" INTO TABLE serde_regex;
-
-SELECT * FROM serde_regex ORDER BY time;
-
-DROP TABLE serde_regex;

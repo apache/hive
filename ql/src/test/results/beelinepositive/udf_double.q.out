@@ -1,0 +1,11 @@
+Saving all output to "!!{outputDirectory}!!/udf_double.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_double.q
+>>>  DESCRIBE FUNCTION double;
+'tab_name'
+'There is no documentation for function 'double''
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED double;
+'tab_name'
+'There is no documentation for function 'double''
+1 row selected 
+>>>  !record

@@ -32,25 +32,33 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-8 depends on stages: Stage-4 , consists of Stage-7, Stage-6
+  Stage-10 depends on stages: Stage-4 , consists of Stage-7, Stage-6, Stage-8
   Stage-7
-  Stage-0 depends on stages: Stage-7, Stage-6
+  Stage-0 depends on stages: Stage-7, Stage-6, Stage-9
   Stage-5 depends on stages: Stage-0
   Stage-6
-  Stage-12 depends on stages: Stage-4 , consists of Stage-11, Stage-10
-  Stage-11
-  Stage-1 depends on stages: Stage-11, Stage-10
-  Stage-9 depends on stages: Stage-1
-  Stage-10
-  Stage-16 depends on stages: Stage-4 , consists of Stage-15, Stage-14
-  Stage-15
-  Stage-2 depends on stages: Stage-15, Stage-14
-  Stage-13 depends on stages: Stage-2
+  Stage-8
+  Stage-9 depends on stages: Stage-8
+  Stage-16 depends on stages: Stage-4 , consists of Stage-13, Stage-12, Stage-14
+  Stage-13
+  Stage-1 depends on stages: Stage-13, Stage-12, Stage-15
+  Stage-11 depends on stages: Stage-1
+  Stage-12
   Stage-14
-  Stage-19 depends on stages: Stage-4 , consists of Stage-18, Stage-17
+  Stage-15 depends on stages: Stage-14
+  Stage-22 depends on stages: Stage-4 , consists of Stage-19, Stage-18, Stage-20
+  Stage-19
+  Stage-2 depends on stages: Stage-19, Stage-18, Stage-21
+  Stage-17 depends on stages: Stage-2
   Stage-18
-  Stage-3 depends on stages: Stage-18, Stage-17
-  Stage-17
+  Stage-20
+  Stage-21 depends on stages: Stage-20
+  Stage-27 depends on stages: Stage-4 , consists of Stage-24, Stage-23, Stage-25
+  Stage-24
+  Stage-3 depends on stages: Stage-24, Stage-23, Stage-26
+  Stage-23
+  Stage-25
+  Stage-26 depends on stages: Stage-25
 
 STAGE PLANS:
   Stage: Stage-4
@@ -65,74 +73,55 @@ STAGE PLANS:
                   type: boolean
               Select Operator
                 expressions:
-                      expr: key
-                      type: string
+                      expr: UDFToInteger(key)
+                      type: int
                       expr: value
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1
             Filter Operator
               predicate:
                   expr: ((key >= 100.0) and (key < 200.0))
                   type: boolean
               Select Operator
                 expressions:
-                      expr: key
-                      type: string
+                      expr: UDFToInteger(key)
+                      type: int
                       expr: value
                       type: string
                 outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 2
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 2
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest2
             Filter Operator
               predicate:
                   expr: ((key >= 200.0) and (key < 300.0))
                   type: boolean
               Select Operator
                 expressions:
-                      expr: key
-                      type: string
+                      expr: UDFToInteger(key)
+                      type: int
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 3
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest3
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 3
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest3
             Filter Operator
               predicate:
                   expr: (key >= 300.0)
@@ -149,7 +138,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-8
+  Stage: Stage-10
     Conditional Operator
 
   Stage: Stage-7
@@ -184,10 +173,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
 
-  Stage: Stage-12
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-9
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-16
     Conditional Operator
 
-  Stage: Stage-11
+  Stage: Stage-13
     Move Operator
       files:
           hdfs directory: true
@@ -203,10 +211,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest2
 
-  Stage: Stage-9
+  Stage: Stage-11
     Stats-Aggr Operator
 
-  Stage: Stage-10
+  Stage: Stage-12
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -219,10 +227,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest2
 
-  Stage: Stage-16
-    Conditional Operator
+  Stage: Stage-14
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest2
 
   Stage: Stage-15
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-22
+    Conditional Operator
+
+  Stage: Stage-19
     Move Operator
       files:
           hdfs directory: true
@@ -241,10 +268,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest3
 
-  Stage: Stage-13
+  Stage: Stage-17
     Stats-Aggr Operator
 
-  Stage: Stage-14
+  Stage: Stage-18
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -257,10 +284,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest3
 
-  Stage: Stage-19
+  Stage: Stage-20
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest3
+
+  Stage: Stage-21
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-27
     Conditional Operator
 
-  Stage: Stage-18
+  Stage: Stage-24
     Move Operator
       files:
           hdfs directory: true
@@ -272,7 +318,7 @@ STAGE PLANS:
           hdfs directory: true
           destination: ../build/ql/test/data/warehouse/dest4.out
 
-  Stage: Stage-17
+  Stage: Stage-23
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -282,6 +328,23 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-25
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-26
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
 
 
 PREHOOK: query: FROM src
@@ -528,10 +591,12 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 169	val_169
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

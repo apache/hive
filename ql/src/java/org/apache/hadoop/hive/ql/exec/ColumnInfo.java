@@ -39,6 +39,10 @@ public class ColumnInfo implements Serializable {
 
   private String alias = null; // [optional] alias of the column (external name
   // as seen by the users)
+  /**
+   * Indicates whether the column is a skewed column.
+   */
+  private boolean isSkewedCol;
 
   /**
    * Store the alias of the table where available.
@@ -73,23 +77,33 @@ public class ColumnInfo implements Serializable {
       boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this(internalName,
          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(type),
-         tabAlias, 
+         tabAlias,
          isVirtualCol,
          isHiddenVirtualCol);
   }
 
-  public ColumnInfo(String internalName, ObjectInspector objectInspector, 
+  public ColumnInfo(String internalName, ObjectInspector objectInspector,
       String tabAlias, boolean isVirtualCol) {
     this(internalName, objectInspector, tabAlias, isVirtualCol, false);
   }
 
-  public ColumnInfo(String internalName, ObjectInspector objectInspector, 
+  public ColumnInfo(String internalName, ObjectInspector objectInspector,
       String tabAlias, boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this.internalName = internalName;
     this.objectInspector = objectInspector;
     this.tabAlias = tabAlias;
     this.isVirtualCol = isVirtualCol;
     this.isHiddenVirtualCol = isHiddenVirtualCol;
+  }
+
+  public ColumnInfo(ColumnInfo columnInfo) {
+    this.internalName = columnInfo.getInternalName();
+    this.alias = columnInfo.getAlias();
+    this.isSkewedCol = columnInfo.isSkewedCol();
+    this.tabAlias = columnInfo.getTabAlias();
+    this.isVirtualCol = columnInfo.getIsVirtualCol();
+    this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
+    this.setType(columnInfo.getType());
   }
 
   public TypeInfo getType() {
@@ -153,5 +167,40 @@ public class ColumnInfo implements Serializable {
     this.isHiddenVirtualCol = isHiddenVirtualCol;
   }
 
+  /**
+   * @return the isSkewedCol
+   */
+  public boolean isSkewedCol() {
+    return isSkewedCol;
+  }
 
+  /**
+   * @param isSkewedCol the isSkewedCol to set
+   */
+  public void setSkewedCol(boolean isSkewedCol) {
+    this.isSkewedCol = isSkewedCol;
+  }
+
+  private boolean checkEquals(Object obj1, Object obj2) {
+    return obj1 == null ? obj2 == null : obj1.equals(obj2);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof ColumnInfo) || (obj == null)) {
+      return false;
+    }
+
+    ColumnInfo dest = (ColumnInfo)obj;
+    if ((!checkEquals(internalName, dest.getInternalName())) ||
+        (!checkEquals(alias, dest.getAlias())) ||
+        (!checkEquals(getType(), dest.getType())) ||
+        (isSkewedCol != dest.isSkewedCol()) ||
+        (isVirtualCol != dest.getIsVirtualCol()) ||
+        (isHiddenVirtualCol != dest.isHiddenVirtualCol())) {
+      return false;
+    }
+
+    return true;
+  }
 }

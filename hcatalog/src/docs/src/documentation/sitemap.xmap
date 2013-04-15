@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
+  <map:components>
+    <map:actions>
+      <map:action logger="sitemap.action.sourcetype" name="sourcetype" src="org.apache.forrest.sourcetype.SourceTypeAction">
+        <sourcetype name="hello-v1.0">
+          <document-declaration public-id="-//Acme//DTD Hello Document V1.0//EN" />
+        </sourcetype>
+      </map:action>
+    </map:actions>
+    <map:selectors default="parameter">
+      <map:selector logger="sitemap.selector.parameter" name="parameter" src="org.apache.cocoon.selection.ParameterSelector" />
+    </map:selectors>
+  </map:components>
+  <map:resources>
+    <map:resource name="transform-to-document">
+      <map:act type="sourcetype" src="{src}">
+        <map:select type="parameter">
+          <map:parameter name="parameter-selector-test" value="{sourcetype}" />
+          <map:when test="hello-v1.0">
+            <map:generate src="{properties:content.xdocs}{../../1}.xml" />
+            <map:transform src="{properties:resources.stylesheets}/hello2document.xsl" />
+            <map:serialize type="xml-document"/>
+          </map:when>
+        </map:select>
+      </map:act>
+    </map:resource>
+  </map:resources>
+  <map:pipelines>
+    <map:pipeline>
+      <map:match pattern="old_site/*.html">
+        <map:select type="exists">
+          <map:when test="{properties:content}{1}.html">
+            <map:read src="{properties:content}{1}.html" mime-type="text/html"/>
+<!--
+          Use this instead if you want JTidy to clean up your HTML
+          <map:generate type="html" src="{properties:content}/{0}" />
+          <map:serialize type="html"/>
+        -->
+          </map:when>
+        </map:select>
+      </map:match>
+      <map:match pattern="**.xml">
+        <map:call resource="transform-to-document">
+          <map:parameter name="src" value="{properties:content.xdocs}{1}.xml" />
+        </map:call>
+      </map:match>
+    </map:pipeline>
+  </map:pipelines>
+</map:sitemap>

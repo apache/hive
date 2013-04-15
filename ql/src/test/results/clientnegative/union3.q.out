@@ -7,4 +7,4 @@ POSTHOOK: query: -- Ensure that UNION ALL columns are in the correct order on bo
 CREATE TABLE IF NOT EXISTS union3  (bar int, baz int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@union3
-FAILED: Error in semantic analysis: 2:85 Schema of both sides of union should match: field bar: appears on the left side of the UNION at column position: 0, and on the right side of the UNION at column position: 1. Column positions should match for a UNION. Error encountered near token 'union3'
+FAILED: SemanticException 2:85 Schema of both sides of union should match: field bar: appears on the left side of the UNION at column position: 0, and on the right side of the UNION at column position: 1. Column positions should match for a UNION. Error encountered near token 'union3'

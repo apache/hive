@@ -15,4 +15,4 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions ptestfilter1
 POSTHOOK: type: SHOWPARTITIONS
 c=US/d=1
-FAILED: Error in semantic analysis: Partition not found c = 'US' AND d < 1
+FAILED: SemanticException [Error 10006]: Partition not found c = 'US' AND d < 1

@@ -1,0 +1,6 @@
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+FAILED: SemanticException [Error 10025]: Line 4:7 Expression not in GROUP BY key 'a'

@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.lang.IllegalArgumentException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.VersionInfo;
+import org.apache.log4j.AppenderSkeleton;
 
 /**
  * ShimLoader.
@@ -30,6 +32,7 @@ import org.apache.hadoop.util.VersionInfo;
 public abstract class ShimLoader {
   private static HadoopShims hadoopShims;
   private static JettyShims jettyShims;
+  private static AppenderSkeleton eventCounter;
 
   /**
    * The names of the classes for shimming Hadoop for each major version.
@@ -55,6 +58,18 @@ public abstract class ShimLoader {
     JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
     JETTY_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
+  
+  /**
+   * The names of the classes for shimming Hadoop's event counter
+   */
+  private static final HashMap<String, String> EVENT_COUNTER_SHIM_CLASSES =
+      new HashMap<String, String>();
+  
+  static {
+    EVENT_COUNTER_SHIM_CLASSES.put("0.20", "org.apache.hadoop.metrics.jvm.EventCounter");
+    EVENT_COUNTER_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.log.metrics.EventCounter");
+    EVENT_COUNTER_SHIM_CLASSES.put("0.23", "org.apache.hadoop.log.metrics.EventCounter");
+  }
 
   /**
    * Factory method to get an instance of HadoopShims based on the
@@ -76,6 +91,13 @@ public abstract class ShimLoader {
       jettyShims = loadShims(JETTY_SHIM_CLASSES, JettyShims.class);
     }
     return jettyShims;
+  }
+  
+  public static synchronized AppenderSkeleton getEventCounter() {
+    if (eventCounter == null) {
+      eventCounter = loadShims(EVENT_COUNTER_SHIM_CLASSES, AppenderSkeleton.class);
+    }
+    return eventCounter;
   }
 
   public static synchronized HadoopThriftAuthBridge getHadoopThriftAuthBridge() {
@@ -104,9 +126,12 @@ public abstract class ShimLoader {
   }
 
   /**
-   * Return the major version of Hadoop currently on the classpath.
-   * This is simply the first two components of the version number
-   * (e.g "0.18" or "0.20")
+   * Return the "major" version of Hadoop currently on the classpath.
+   * For releases in the 0.x series this is simply the first two
+   * components of the version, e.g. "0.20" or "0.23". Releases in
+   * the 1.x and 2.x series are mapped to the appropriate
+   * 0.x release series, e.g. 1.x is mapped to "0.20S" and 2.x
+   * is mapped to "0.23".
    */
   public static String getMajorVersion() {
     String vers = VersionInfo.getVersion();
@@ -116,9 +141,19 @@ public abstract class ShimLoader {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
           " (expected A.B.* format)");
     }
-    if (Integer.parseInt(parts[0]) > 0){
+
+    // Special handling for Hadoop 1.x and 2.x
+    switch (Integer.parseInt(parts[0])) {
+    case 0:
+      break;
+    case 1:
       return "0.20S";
+    case 2:
+      return "0.23";
+    default:
+      throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }
+    
     String majorVersion = parts[0] + "." + parts[1];
 
     // If we are running a security release, we won't have UnixUserGroupInformation

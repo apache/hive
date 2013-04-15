@@ -233,6 +233,19 @@
       </field>
 	</class>
 
+   <class name="MStringList" identity-type="datastore" table="Skewed_STRING_LIST" detachable="true">
+     <datastore-identity>
+       <column name="STRING_LIST_ID"/>
+     </datastore-identity>
+     <field name="internalList" table="Skewed_STRING_LIST_VALUES">
+       <collection element-type="java.lang.String"/>
+       <join>
+         <column name="STRING_LIST_ID"/>
+       </join>
+       <element column="STRING_LIST_VALUE"/>
+     </field>
+   </class>
+
     <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
       <datastore-identity>
         <column name="SD_ID"/>
@@ -250,6 +263,9 @@
         <column name="OUTPUT_FORMAT" length="4000" jdbc-type="VARCHAR"/>
       </field>
       <field name="isCompressed"/>
+      <field name="isStoredAsSubDirectories">
+        <column name="IS_STOREDASSUBDIRECTORIES"/>
+      </field>
       <field name="numBuckets">
         <column name="NUM_BUCKETS" jdbc-type="integer"/>
       </field>
@@ -289,6 +305,26 @@
         </key>
         <value>
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+        </value>
+      </field>
+      <field name="skewedColNames" table="SKEWED_COL_NAMES">
+        <collection element-type="java.lang.String"/>
+        <join>
+          <column name="SD_ID"/>
+        </join>
+        <element column="SKEWED_COL_NAME"/>
+      </field>
+      <field name="skewedColValues" table="SKEWED_VALUES">
+        <collection element-type="MStringList"/>
+        <join/>
+      </field>
+      <field name="skewedColValueLocationMaps" table="SKEWED_COL_VALUE_LOC_MAP">
+        <map key-type="MStringList" value-type="java.lang.String"/>
+        <join>
+          <column name="SD_ID"/>
+        </join>
+        <value>
+          <column name="location" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
     </class>
@@ -718,5 +754,119 @@
       </field>
 
     </class>
+
+    <class name="MTableColumnStatistics" table="TAB_COL_STATS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="CS_ID"/>
+      </datastore-identity>
+
+      <field name ="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="tableName">
+        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="table">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="colName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="colType">
+        <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="longLowValue">
+        <column name="LONG_LOW_VALUE"  jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="longHighValue">
+        <column name="LONG_HIGH_VALUE" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+       <field name="doubleLowValue">
+        <column name="DOUBLE_LOW_VALUE"  jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="doubleHighValue">
+        <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="numNulls">
+        <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="numDVs">
+        <column name="NUM_DISTINCTS" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="avgColLen">
+        <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="maxColLen">
+        <column name="MAX_COL_LEN" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numTrues">
+        <column name="NUM_TRUES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numFalses">
+        <column name="NUM_FALSES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="lastAnalyzed">
+        <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+    </class>
+
+    <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="CS_ID"/>
+      </datastore-identity>
+
+      <field name ="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="tableName">
+        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="partitionName">
+        <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="partition">
+        <column name="PART_ID"/>
+      </field>
+      <field name="colName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="colType">
+        <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="longLowValue">
+        <column name="LONG_LOW_VALUE"  jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="longHighValue">
+        <column name="LONG_HIGH_VALUE" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+       <field name="doubleLowValue">
+        <column name="DOUBLE_LOW_VALUE"  jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="doubleHighValue">
+        <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="numNulls">
+        <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="numDVs">
+        <column name="NUM_DISTINCTS" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="avgColLen">
+        <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
+      </field>
+      <field name="maxColLen">
+        <column name="MAX_COL_LEN" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numTrues">
+        <column name="NUM_TRUES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="numFalses">
+        <column name="NUM_FALSES" jdbc-type="BIGINT" allows-null="true"/>
+      </field>
+      <field name="lastAnalyzed">
+        <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+    </class>
+
   </package>
 </jdo>

@@ -25,12 +25,13 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -59,7 +60,7 @@ public final class PrimitiveObjectInspectorUtils {
   /**
    * TypeEntry stores information about a Hive Primitive TypeInfo.
    */
-  public static class PrimitiveTypeEntry implements Writable{
+  public static class PrimitiveTypeEntry implements Writable {
 
     /**
      * The category of the PrimitiveType.
@@ -145,40 +146,44 @@ public final class PrimitiveObjectInspectorUtils {
   }
 
   public static final PrimitiveTypeEntry binaryTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BINARY, Constants.BINARY_TYPE_NAME, byte[].class,
-      ByteArrayRef.class, BytesWritable.class);
+      PrimitiveCategory.BINARY, serdeConstants.BINARY_TYPE_NAME, byte[].class,
+      byte[].class, BytesWritable.class);
   public static final PrimitiveTypeEntry stringTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.STRING, Constants.STRING_TYPE_NAME, null, String.class,
+      PrimitiveCategory.STRING, serdeConstants.STRING_TYPE_NAME, null, String.class,
       Text.class);
   public static final PrimitiveTypeEntry booleanTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BOOLEAN, Constants.BOOLEAN_TYPE_NAME, Boolean.TYPE,
+      PrimitiveCategory.BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME, Boolean.TYPE,
       Boolean.class, BooleanWritable.class);
   public static final PrimitiveTypeEntry intTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.INT, Constants.INT_TYPE_NAME, Integer.TYPE,
+      PrimitiveCategory.INT, serdeConstants.INT_TYPE_NAME, Integer.TYPE,
       Integer.class, IntWritable.class);
   public static final PrimitiveTypeEntry longTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.LONG, Constants.BIGINT_TYPE_NAME, Long.TYPE,
+      PrimitiveCategory.LONG, serdeConstants.BIGINT_TYPE_NAME, Long.TYPE,
       Long.class, LongWritable.class);
   public static final PrimitiveTypeEntry floatTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.FLOAT, Constants.FLOAT_TYPE_NAME, Float.TYPE,
+      PrimitiveCategory.FLOAT, serdeConstants.FLOAT_TYPE_NAME, Float.TYPE,
       Float.class, FloatWritable.class);
   public static final PrimitiveTypeEntry voidTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.VOID, Constants.VOID_TYPE_NAME, Void.TYPE, Void.class,
+      PrimitiveCategory.VOID, serdeConstants.VOID_TYPE_NAME, Void.TYPE, Void.class,
       NullWritable.class);
 
   // No corresponding Writable classes for the following 3 in hadoop 0.17.0
   public static final PrimitiveTypeEntry doubleTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.DOUBLE, Constants.DOUBLE_TYPE_NAME, Double.TYPE,
+      PrimitiveCategory.DOUBLE, serdeConstants.DOUBLE_TYPE_NAME, Double.TYPE,
       Double.class, DoubleWritable.class);
   public static final PrimitiveTypeEntry byteTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.BYTE, Constants.TINYINT_TYPE_NAME, Byte.TYPE,
+      PrimitiveCategory.BYTE, serdeConstants.TINYINT_TYPE_NAME, Byte.TYPE,
       Byte.class, ByteWritable.class);
   public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE,
+      PrimitiveCategory.SHORT, serdeConstants.SMALLINT_TYPE_NAME, Short.TYPE,
       Short.class, ShortWritable.class);
+
   public static final PrimitiveTypeEntry timestampTypeEntry = new PrimitiveTypeEntry(
-      PrimitiveCategory.TIMESTAMP, Constants.TIMESTAMP_TYPE_NAME, null,
-      Object.class, TimestampWritable.class);
+      PrimitiveCategory.TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME, null,
+      Timestamp.class, TimestampWritable.class);
+  public static final PrimitiveTypeEntry decimalTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.DECIMAL, serdeConstants.DECIMAL_TYPE_NAME, null,
+      HiveDecimal.class, HiveDecimalWritable.class);
 
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
@@ -196,6 +201,7 @@ public final class PrimitiveObjectInspectorUtils {
     registerType(byteTypeEntry);
     registerType(shortTypeEntry);
     registerType(timestampTypeEntry);
+    registerType(decimalTypeEntry);
     registerType(unknownTypeEntry);
   }
 
@@ -359,9 +365,13 @@ public final class PrimitiveObjectInspectorUtils {
       return ((TimestampObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((TimestampObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
-    case BINARY:{
+    case BINARY: {
       return ((BinaryObjectInspector) oi1).getPrimitiveWritableObject(o1).
           equals(((BinaryObjectInspector) oi2).getPrimitiveWritableObject(o2));
+    }
+    case DECIMAL: {
+      return ((HiveDecimalObjectInspector) oi1).getPrimitiveJavaObject(o1)
+          .compareTo(((HiveDecimalObjectInspector) oi2).getPrimitiveJavaObject(o2)) == 0;
     }
     default:
       return false;
@@ -392,6 +402,8 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       return ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getDouble();
+    case DECIMAL:
+      return ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o).doubleValue();
     default:
       throw new NumberFormatException();
     }
@@ -465,6 +477,10 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds() != 0);
+      break;
+    case DECIMAL:
+      result = HiveDecimal.ZERO.compareTo(
+          ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o)) != 0;
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
@@ -546,6 +562,10 @@ public final class PrimitiveObjectInspectorUtils {
       result = (int) (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds());
       break;
+    case DECIMAL:
+      result = ((HiveDecimalObjectInspector) oi)
+          .getPrimitiveJavaObject(o).intValue();
+      break;
     default: {
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -600,6 +620,10 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getSeconds();
       break;
+    case DECIMAL:
+      result = ((HiveDecimalObjectInspector) oi)
+          .getPrimitiveJavaObject(o).longValue();
+      break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -647,6 +671,10 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getDouble();
       break;
+    case DECIMAL:
+      result = ((HiveDecimalObjectInspector) oi)
+          .getPrimitiveJavaObject(o).doubleValue();
+      break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -666,7 +694,7 @@ public final class PrimitiveObjectInspectorUtils {
   /**
    * Get the String value out of a primitive object. Note that
    * NullPointerException will be thrown if o is null. Note that
-   * NumberFormatException will be thrown if o is not a valid number.
+   * RuntimeException will be thrown if o is not a valid string.
    */
   public static String getString(Object o, PrimitiveObjectInspector oi) {
 
@@ -707,6 +735,10 @@ public final class PrimitiveObjectInspectorUtils {
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
+    case DECIMAL:
+      result = ((HiveDecimalObjectInspector) oi)
+          .getPrimitiveJavaObject(o).toString();
+      break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -714,13 +746,13 @@ public final class PrimitiveObjectInspectorUtils {
     return result;
   }
 
-  public static BytesWritable getBinary(Object o, PrimitiveObjectInspector oi){
+  public static BytesWritable getBinary(Object o, PrimitiveObjectInspector oi) {
 
-    if(null == o){
+    if (null == o) {
       return null;
     }
 
-    switch (oi.getPrimitiveCategory()){
+    switch (oi.getPrimitiveCategory()) {
 
     case VOID:
       return null;
@@ -738,6 +770,62 @@ public final class PrimitiveObjectInspectorUtils {
       throw new RuntimeException("Cannot convert to Binary from: "
           + oi.getTypeName());
     }
+  }
+
+  public static HiveDecimal getHiveDecimal(Object o, PrimitiveObjectInspector oi) {
+    if (o == null) {
+      return null;
+    }
+
+    HiveDecimal result = null;
+    try {
+      switch (oi.getPrimitiveCategory()) {
+      case VOID:
+        result = null;
+        break;
+      case BOOLEAN:
+        result = ((BooleanObjectInspector) oi).get(o) ?
+            HiveDecimal.ONE : HiveDecimal.ZERO;
+        break;
+      case BYTE:
+        result = new HiveDecimal(((ByteObjectInspector) oi).get(o));
+        break;
+      case SHORT:
+        result = new HiveDecimal(((ShortObjectInspector) oi).get(o));
+        break;
+      case INT:
+        result = new HiveDecimal(((IntObjectInspector) oi).get(o));
+        break;
+      case LONG:
+        result = new HiveDecimal(((LongObjectInspector) oi).get(o));
+        break;
+      case FLOAT:
+        Float f = ((FloatObjectInspector) oi).get(o);
+        result = new HiveDecimal(f.toString());
+        break;
+      case DOUBLE:
+        Double d = ((DoubleObjectInspector) oi).get(o);
+        result = new HiveDecimal(d.toString());
+        break;
+      case STRING:
+        result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
+        break;
+      case TIMESTAMP:
+        Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
+        .getDouble();
+        result = new HiveDecimal(ts.toString());
+        break;
+      case DECIMAL:
+        result = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+        break;
+      default:
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
+            + oi.getTypeName());
+      }
+    } catch(NumberFormatException e) {
+      // return null
+    }
+    return result;
   }
 
   public static Timestamp getTimestamp(Object o, PrimitiveObjectInspector oi) {
@@ -771,6 +859,10 @@ public final class PrimitiveObjectInspectorUtils {
     case DOUBLE:
       result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
       break;
+    case DECIMAL:
+      result = TimestampWritable.decimalToTimestamp(((HiveDecimalObjectInspector) oi)
+                                                    .getPrimitiveJavaObject(o));
+      break;
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
@@ -802,7 +894,7 @@ public final class PrimitiveObjectInspectorUtils {
     if (oi.getCategory() != Category.PRIMITIVE) {
       return null;
     }
-    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
     PrimitiveTypeEntry t =
         getTypeEntryFromPrimitiveCategory(poi.getPrimitiveCategory());
     return t == null ? null : t.primitiveJavaClass;

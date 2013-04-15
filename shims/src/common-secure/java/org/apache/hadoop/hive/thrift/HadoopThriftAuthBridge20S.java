@@ -39,6 +39,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Client;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.thrift.client.TUGIAssumingTransport;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -61,6 +64,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
+import static org.apache.hadoop.fs.CommonConfigurationKeys.HADOOP_SECURITY_AUTHENTICATION;
 
  /**
   * Functions that bridge Thrift's SASL transports to Hadoop's
@@ -71,6 +75,14 @@ import org.apache.thrift.transport.TTransportFactory;
 
    @Override
    public Client createClient() {
+     return new Client();
+   }
+
+   @Override
+   public Client createClientWithConf(String authType) {
+     Configuration conf = new Configuration();
+     conf.set(HADOOP_SECURITY_AUTHENTICATION, authType);
+     UserGroupInformation.setConfiguration(conf);
      return new Client();
    }
 
@@ -232,7 +244,7 @@ import org.apache.thrift.transport.TTransportFactory;
      /**
       * Create a server with a kerberos keytab/principal.
       */
-     private Server(String keytabFile, String principalConf)
+     protected Server(String keytabFile, String principalConf)
        throws TTransportException {
        if (keytabFile == null || keytabFile.isEmpty()) {
          throw new TTransportException("No keytab specified");
@@ -292,7 +304,15 @@ import org.apache.thrift.transport.TTransportFactory;
       */
      @Override
      public TProcessor wrapProcessor(TProcessor processor) {
-      return new TUGIAssumingProcessor(processor, secretManager);
+       return new TUGIAssumingProcessor(processor, secretManager, true);
+     }
+
+     /**
+      * Wrap a TProcessor to capture the client information like connecting userid, ip etc
+      */
+     @Override
+     public TProcessor wrapNonAssumingProcessor(TProcessor processor) {
+      return new TUGIAssumingProcessor(processor, secretManager, false);
      }
 
     protected DelegationTokenStore getTokenStore(Configuration conf)
@@ -397,6 +417,18 @@ import org.apache.thrift.transport.TTransportFactory;
        }
      };
 
+     private static ThreadLocal<String> remoteUser = new ThreadLocal<String> () {
+       @Override
+       protected synchronized String initialValue() {
+         return null;
+       }
+     };
+
+     @Override
+     public String getRemoteUser() {
+       return remoteUser.get();
+     }
+     
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     // This code is pretty much completely based on Hadoop's
     // SaslRpcServer.SaslDigestCallbackHandler - the only reason we could not
@@ -478,12 +510,15 @@ import org.apache.thrift.transport.TTransportFactory;
       *
       * This is used on the server side to set the UGI for each specific call.
       */
-     private class TUGIAssumingProcessor implements TProcessor {
+     protected class TUGIAssumingProcessor implements TProcessor {
        final TProcessor wrapped;
        DelegationTokenSecretManager secretManager;
-       TUGIAssumingProcessor(TProcessor wrapped, DelegationTokenSecretManager secretManager) {
+       boolean useProxy;
+       TUGIAssumingProcessor(TProcessor wrapped, DelegationTokenSecretManager secretManager,
+           boolean useProxy) {
          this.wrapped = wrapped;
          this.secretManager = secretManager;
+         this.useProxy = useProxy;
        }
 
        public boolean process(final TProtocol inProt, final TProtocol outProt) throws TException {
@@ -510,18 +545,25 @@ import org.apache.thrift.transport.TTransportFactory;
          }
          Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
          remoteAddress.set(socket.getInetAddress());
+         UserGroupInformation clientUgi = null;
          try {
-           UserGroupInformation clientUgi = UserGroupInformation.createProxyUser(
-              endUser, UserGroupInformation.getLoginUser());
-           return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
-               public Boolean run() {
-                 try {
-                   return wrapped.process(inProt, outProt);
-                 } catch (TException te) {
-                   throw new RuntimeException(te);
+           if (useProxy) {
+             clientUgi = UserGroupInformation.createProxyUser(
+               endUser, UserGroupInformation.getLoginUser());
+             remoteUser.set(clientUgi.getShortUserName());
+             return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
+                 public Boolean run() {
+                   try {
+                     return wrapped.process(inProt, outProt);
+                   } catch (TException te) {
+                     throw new RuntimeException(te);
+                   }
                  }
-               }
-             });
+               });
+           } else {
+             remoteUser.set(endUser);
+             return wrapped.process(inProt, outProt);
+           }
          } catch (RuntimeException rte) {
            if (rte.getCause() instanceof TException) {
              throw (TException)rte.getCause();
@@ -531,6 +573,14 @@ import org.apache.thrift.transport.TTransportFactory;
            throw new RuntimeException(ie); // unexpected!
          } catch (IOException ioe) {
            throw new RuntimeException(ioe); // unexpected!
+         }
+         finally {
+           if (clientUgi != null) {
+            try { FileSystem.closeAllForUGI(clientUgi); }
+              catch(IOException exception) {
+                LOG.error("Could not clean up file-system handles for UGI: " + clientUgi, exception);
+              }
+          }
          }
        }
      }

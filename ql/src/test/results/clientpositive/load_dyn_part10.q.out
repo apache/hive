@@ -15,10 +15,18 @@ PREHOOK: query: describe extended nzhang_part10
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part10
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
@@ -82,12 +90,14 @@ STAGE PLANS:
 PREHOOK: query: from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@nzhang_part10@ds=2008-12-31
 POSTHOOK: query: from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@nzhang_part10@ds=2008-12-31/hr=11
@@ -108,11 +118,13 @@ ds=2008-12-31/hr=11
 ds=2008-12-31/hr=12
 PREHOOK: query: select * from nzhang_part10 where ds is not null and hr is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part10
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part10 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part10
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
 #### A masked pattern was here ####

@@ -8,26 +8,26 @@ insert overwrite table analyze_srcpart partition (ds, hr) select * from srcpart 
 
 explain analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics;
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics;
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
-describe extended analyze_srcpart;
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
+describe formatted analyze_srcpart;
 
 explain analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics;
 analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics;
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
 
 explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics;
 analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics;
-describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11);
 
 explain analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics;
 analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics;
-describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12);
 
 explain analyze table analyze_srcpart PARTITION(ds, hr) compute statistics;
 analyze table analyze_srcpart PARTITION(ds, hr) compute statistics;
 
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
-describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
-describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11);
-describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12);
-describe extended analyze_srcpart;
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=12);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=11);
+describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr=12);
+describe formatted analyze_srcpart;

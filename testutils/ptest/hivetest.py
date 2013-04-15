@@ -53,6 +53,7 @@ all_set = None
 
 master_base_path = None
 host_base_path = None
+runtest_dir = os.getcwd()
 
 # End of user configurated things.
 
@@ -62,11 +63,12 @@ phutil_path = None
 code_path = None
 report_path = None
 host_code_path = None
+ivy_path = None
 
 def read_conf(config_file):
     global local, qfile_set, other_set, remote_set, all_set
     global master_base_path, host_base_path
-    global ant_path, arc_path, phutil_path, code_path, report_path, host_code_path
+    global ant_path, arc_path, phutil_path, code_path, report_path, host_code_path, ivy_path
 
     if config_file is not None:
         config.load(config_file)
@@ -87,16 +89,24 @@ def read_conf(config_file):
         master_base_path += '-' + suffix
         host_base_path  += '-' + suffix
 
-    ant_path = master_base_path + '/apache-ant-1.8.2'
+    ant_path = master_base_path + '/apache-ant-1.8.4'
     arc_path = master_base_path + '/arcanist'
     phutil_path = master_base_path + '/libphutil'
     code_path = master_base_path + '/trunk'
     report_path = master_base_path + '/report/' + time.strftime('%m.%d.%Y_%H:%M:%S')
     host_code_path = host_base_path + '/trunk-{host}'
+    ivy_path = master_base_path + '/.ivy2'
 
     # Setup of needed environmental variables and paths
 
+    # Proxy
+    if args.http_proxy is not None:
+      all_set.export('http_proxy', args.http_proxy + ':' + args.http_proxy_port)
+      all_set.export('https_proxy', args.http_proxy + ':' + args.http_proxy_port)
+      all_set.export('ANT_OPTS', get_ant_opts_proxy())
+
     # Ant
+    all_set.export('ANT_HOME', ant_path)
     all_set.add_path(ant_path + '/bin')
 
     # Arcanist
@@ -110,21 +120,24 @@ def read_conf(config_file):
     remote_set.export('HIVE_HOME', host_code_path + '/build/dist')
     remote_set.add_path(host_code_path + '/build/dist/bin')
 
-    # Hadoop
-    remote_set.export('HADOOP_HOME', host_code_path +
-            '/build/hadoopcore/hadoop-0.20.1')
+def get_ant_opts_proxy():
+  cmd  = ' -Dhttp.proxyHost='  + args.http_proxy
+  cmd += ' -Dhttp.proxyPort='  + args.http_proxy_port
+  cmd += ' -Dhttps.proxyHost=' + args.http_proxy
+  cmd += ' -Dhttps.proxyPort=' + args.http_proxy_port
+  return cmd
 
 def get_ant():
-    # Gets Ant 1.8.2 from one of Apache mirrors.
-    print('\n-- Installing Ant 1.8.2\n')
+    # Gets Ant 1.8.4 from one of Apache mirrors.
+    print('\n-- Installing Ant 1.8.4\n')
 
     if local.run('test -d "{0}"'.format(ant_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(master_base_path))
         local.cd(master_base_path)
-        local.run('curl "http://apache.osuosl.org//ant/binaries/apache-ant-1.8.2-bin.tar.gz" | tar xz')
+        local.run('curl "http://apache.osuosl.org//ant/binaries/apache-ant-1.8.4-bin.tar.gz" | tar xz')
     else:
-        print('\n  Ant 1.8.2 already installed\n')
+        print('\n  Ant 1.8.4 already installed\n')
 
 def get_arc():
     # Gets latest Arcanist and libphtuil from their Git repositories.
@@ -133,19 +146,19 @@ def get_arc():
     if local.run('test -d "{0}"'.format(arc_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(os.path.dirname(arc_path)))
-        local.run('git clone git://github.com/facebook/arcanist.git "{0}"'
+        local.run('git clone https://github.com/facebook/arcanist.git "{0}"'
                 .format(arc_path))
 
     if local.run('test -d "{0}"'.format(phutil_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(os.path.dirname(phutil_path)))
-        local.run('git clone git://github.com/facebook/libphutil.git "{0}"'
+        local.run('git clone https://github.com/facebook/libphutil.git "{0}"'
                 .format(phutil_path))
 
     local.cd(arc_path)
-    local.run('git pull')
+    local.run('git pull https://github.com/facebook/arcanist.git')
     local.cd(phutil_path)
-    local.run('git pull')
+    local.run('git pull https://github.com/facebook/libphutil.git')
 
 def get_clean_hive():
     # Gets latest Hive from Apache Git repository and cleans the repository
@@ -153,15 +166,30 @@ def get_clean_hive():
     # `arc-setup` so the repo is ready to be used.
     print('\n-- Updating Hive repo\n')
 
+    local.cd(code_path)
     if local.run('test -d "{0}"'.format(code_path), warn_only = True,
             abandon_output = False) is None:
-        local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
-        local.run('git clone git://git.apache.org/hive.git "{0}"'.format(code_path))
+      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
+      local.run('git clone http://git.apache.org/hive.git "{0}"'.format(code_path))
+    else:
+      # Clean repo and checkout to t he last revision
+      local.run('git reset --hard HEAD')
+      local.run('git clean -dffx')
+      local.run('git pull')
 
+    local.run('ant arc-setup')
+
+def copy_local_hive():
+    # Copy local repo to the destination path instead of using git clone
+    if local.run('test -d "{0}"'.format(code_path), warn_only = True,
+            abandon_output = False) is None:
+      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
+    local.run('rm -rf "{0}"'.format(code_path), warn_only = True)
+    local.run('mkdir -p "{0}"'.format(code_path))
+    local.run('echo "{0}"'.format(runtest_dir))
+    local.cd(runtest_dir)
+    local.run('cp -rf * "{0}"'.format(code_path))
     local.cd(code_path)
-    local.run('git reset --hard HEAD')
-    local.run('git clean -dffx')
-    local.run('git pull')
     local.run('ant arc-setup')
 
 def prepare_for_reports():
@@ -193,20 +221,34 @@ def patch_hive(patches = [], revision = None):
     if patches:
         print('\n-- Patching Hive repo using a patch from local file system\n')
         for patch in patches:
-            local.run('patch -f -p0 < "{0}"'.format(patch))
+            local.run('patch -rf -p0 < "{0}"'.format(patch))
 
 def build_hive():
     print('\n-- Building Hive\n')
     local.cd(code_path)
-    local.run('ant package')
+    cmd = 'ant -Divy.default.ivy.user.dir={0} '.format(ivy_path)
+    if args.very_clean:
+      cmd += 'very-clean '
+    else:
+      cmd += 'clean '
+    cmd += 'package'
+    local.run(cmd)
 
 def propagate_hive():
     # Expects master_base_path to be available on all test nodes in the same
     # place (for example using NFS).
     print('\n-- Propagating Hive repo to all hosts\n')
+    print(host_code_path)
+    print(code_path)
+
+    remote_set.run('rm -rf "{0}"'.format(host_code_path))
     remote_set.run('mkdir -p "{0}"'.format(host_code_path))
-    remote_set.run('rsync -qa --delete "{0}/" "{1}"'.format(
-        code_path, host_code_path))
+    remote_set.run('cp -r "{0}/*" "{1}"'.format(
+                    code_path, host_code_path))
+
+    # It should avoid issues with 'ivy publish' exceptions during testing phase.
+    remote_set.run('cp -r "{0}" "{1}"'.format(ivy_path, host_code_path))
+
 
 def segment_tests(path):
     # Removes `.q` files that should not be run on this host.  The huge shell
@@ -216,12 +258,15 @@ def segment_tests(path):
     tests = local.run('ls -1', quiet = True, abandon_output = False).strip().split('\n')
 
     qfile_set.cd(host_code_path + path)
-    cmd = []
+    test_splits = [[] for i in range(len(qfile_set))]
     i = 0
     for test in tests:
-        host = qfile_set.conn[i].hostname
-        cmd.append('if [[ "{host}" != "' + host + '" ]]; then rm -f "' + test + '"; fi')
+        test_splits[i].append(test)
         i = (i + 1) % len(qfile_set)
+    cmd = []
+    for i in range(len(qfile_set)):
+        host = qfile_set.conn[i].hostname
+        cmd.append('if [[ "{host}" != "' + host + '" ]]; then rm -f ' + ' '.join(test_splits[i]) + '; fi')
     cmd = ' && '.join(cmd)
     # The command is huge and printing it out is not very useful, using wabbit
     # hunting mode.
@@ -251,13 +296,14 @@ def collect_log(name):
     qfile_set.run('cp "hive.log" "' + report_path + '/logs/hive-{host}-' + name + '.log"',
             warn_only = True)
 
-def collect_out(name):
+def collect_out(name, desc_name):
     # Moves `.out` file (test output) to the global logs directory.
     #
     # This has the same restriction on master_base_path as propagate_hive.
-    qfile_set.cd(host_code_path + '/build/ql/test/logs/' + name)
+    qfile_set.cd(host_code_path + '/' + name)
     # Warn only if no files are found.
-    qfile_set.run('cp * "' + report_path + '/out/' + name + '"', warn_only = True)
+    qfile_set.run('mkdir -p "' + report_path + '/' + desc_name + '/out/' + '"', warn_only = True)
+    qfile_set.run('cp * "' + report_path + '/' + desc_name + '/out/' + '"', warn_only = True)
 
 def run_tests():
     # Runs TestCliDriver and TestNegativeCliDriver testcases.
@@ -270,17 +316,17 @@ def run_tests():
     # running all the other test, fortunately JUnit report saves the Ant output
     # if you need it for some reason).
 
-    qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestCliDriver -Doffline=true test',
-            quiet = True, warn_only = True)
-    collect_log('TEST-org.apache.hadoop.hive.cli.TestCliDriver.xml')
-    collect_out('clientpositive')
+    remote_ivy_path = '$(pwd)/.ivy2'
 
     qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestNegativeCliDriver -Doffline=true test',
-            quiet = True, warn_only = True)
+    qfile_set.run('ant -Divy.default.ivy.user.dir={0} -Dtestcase=TestCliDriver test'.format(remote_ivy_path), quiet = True, warn_only = True)
+    collect_log('TEST-org.apache.hadoop.hive.cli.TestCliDriver.xml')
+    collect_out('build/ql/test/logs/clientpositive', 'TestCliDriver')
+
+    qfile_set.cd(host_code_path)
+    qfile_set.run('ant -Divy.default.ivy.user.dir={0} -Dtestcase=TestNegativeCliDriver test'.format(remote_ivy_path), quiet = True, warn_only = True)
     collect_log('TEST-org.apache.hadoop.hive.cli.TestNegativeCliDriver.xml')
-    collect_out('clientnegative')
+    collect_out('build/ql/test/logs/clientnegative', 'TestNegativeCliDriver')
 
 def run_other_tests():
     # Runs all other tests that run_test doesn't run.
@@ -289,29 +335,64 @@ def run_other_tests():
         local.cd(code_path)
         # Generate test classes in build.
         local.run('ant -Dtestcase=nothing test')
-        tests = local.run(' | '.join([
-            'find build/*/test/classes -name "Test*.class"',
-            'sed -e "s:[^/]*/::g"',
-            'grep -v TestSerDe.class',
-            'grep -v TestHiveMetaStore.class',
-            'grep -v TestCliDriver.class',
-            'grep -v TestNegativeCliDriver.class',
-            'grep -v ".*\$.*\.class"',
-            'sed -e "s:\.class::"'
-        ]), abandon_output = False)
-        return tests.split()
+
+        if (args.singlehost):
+          tests = local.run(' | '.join([
+              'find build/*/test/classes -name "Test*.class"',
+              'sed -e "s:[^/]*/::g"',
+              'grep -v TestSerDe.class',
+              'grep -v TestHiveMetaStore.class',
+              'grep -v TestBeeLineDriver.class',
+              'grep -v TestHiveServer2Concurrency.class',
+              'grep -v TestCliDriver.class',
+              'grep -v TestNegativeCliDriver.class',
+              'grep -v ".*\$.*\.class"',
+              'sed -e "s:\.class::"'
+          ]), abandon_output = False)
+          return tests.split()
+        else:
+          tests = local.run(' | '.join([
+              'find build/*/test/classes -name "Test*.class"',
+              'sed -e "s:[^/]*/::g"',
+              'grep -v TestSerDe.class',
+              'grep -v TestHiveMetaStore.class',
+              'grep -v TestBeeLineDriver.class',
+              'grep -v TestHiveServer2Concurrency.class',
+              'grep -v TestCliDriver.class',
+              'grep -v TestNegativeCliDriver.class',
+              'grep -v ".*\$.*\.class"',
+              'grep -v TestSetUGIOnBothClientServer.class',
+              'grep -v TestSetUGIOnOnlyClient.class',
+              'grep -v TestSetUGIOnOnlyServer.class',
+              'grep -v TestRemoteHiveMetaStore',
+              'grep -v TestEmbeddedHiveMetaStore',
+              'sed -e "s:\.class::"'
+          ]), abandon_output = False)
+          return tests.split()
 
     def segment_other():
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver/positive', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver/negative', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestHBaseCliDriver', warn_only = True)
+
         # Split all test cases between hosts.
         def get_command(test):
             return '; '.join([
-                'ant -Dtestcase=' + test + ' -Doffline=true test',
+                'ant -Divy.default.ivy.user.dir=$(pwd)/.ivy2 -Dtestcase=' + test + ' test',
 
                 'cp "`find . -name "TEST-*.xml"`" "' + report_path + '/logs/" || ' +
                 'touch "' + report_path + '/logs/{host}-' + test + '.fail"',
 
-                'cp "build/ql/tmp/hive.log" "' + report_path + '/logs/hive-{host}-' + test + '.log"'
+                'cp "build/ql/tmp/hive.log" "' + report_path + '/logs/hive-{host}-' + test + '.log"',
+
+                'cp "build/contrib/test/logs/contribclientnegative/*" "' + report_path + '/TestContribCliDriver/negative 2>/dev/null"',
+
+                'cp "build/contrib/test/logs/contribclientpositive/*" "' + report_path + '/TestContribCliDriver/positive 2>/dev/null"',
+
+                'cp "build/hbase-handler/test/logs/hbase-handler/*" "' + report_path + '/TestHBaseCliDriver/ 2>/dev/null"'
             ])
+
         cmd = []
         i = 0
         for test in get_other_list():
@@ -346,6 +427,7 @@ def run_other_tests():
 def generate_report(one_file_report = False):
     # Uses `Report.py` to create a HTML report.
     print('\n-- Generating a test report\n')
+    local.run('cp "' + master_base_path + '/templogs/* " "'+ report_path + '/logs/" ', warn_only = True)
 
     # Call format to remove '{{' and '}}'.
     path = os.path.expandvars(report_path.format())
@@ -396,21 +478,39 @@ def overwrite_results():
         local.run('cp * "' + code_path + '/ql/src/test/results/' + name + '"',
                 warn_only = True)
 
+def save_svn_info():
+  if args.svn_info:
+    local.cd(master_base_path + '/trunk')
+    local.run('git show --summary > "{0}"'.format(report_path + '/svn-info'))
+
+def save_patch():
+  if args.save_patch:
+    local.cd(code_path)
+    local.run('git add --all')
+    local.run('git diff --no-prefix HEAD > "{0}"'.format(report_path + '/patch'))
+
 # -- Tasks that can be called from command line start here.
 
 def cmd_prepare(patches = [], revision = None):
     get_ant()
     get_arc()
-    get_clean_hive()
-    patch_hive(patches, revision)
+    if (args.copylocal):
+      copy_local_hive()
+    else :
+      get_clean_hive()
+      patch_hive(patches, revision)
+
     build_hive()
     propagate_hive()
     prepare_tests()
 
 def cmd_run_tests(one_file_report = False):
+    prepare_for_reports()
+    save_svn_info()
+    save_patch()
+
     t = Thread(target = run_other_tests)
     t.start()
-    prepare_for_reports()
     run_tests()
     t.join()
 
@@ -421,6 +521,18 @@ def cmd_run_tests(one_file_report = False):
 
 def cmd_test(patches = [], revision = None, one_file_report = False):
     cmd_prepare(patches, revision)
+
+    if args.singlehost==False:
+      local.cd(master_base_path + '/trunk')
+      local.run('chmod -R 777 *');
+      local.run('rm -rf "' + master_base_path + '/templogs/"')
+      local.run('mkdir -p "' + master_base_path + '/templogs/"')
+      tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
+
+      for test in tests:
+        local.run('sudo -u root ant -Divy.default.ivy.user.dir={0} '.format(ivy_path) + ' -Dtestcase=' + test + ' test')
+        local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
+
     cmd_run_tests(one_file_report)
 
 def cmd_stop():
@@ -454,6 +566,25 @@ parser.add_argument('--one-file-report', dest = 'one_file_report',
         help = 'Generate one (huge) report file instead of multiple small ones')
 parser.add_argument('--overwrite', dest = 'overwrite', action = 'store_true',
         help = 'Overwrite result files in master repo')
+parser.add_argument('--copylocal', dest = 'copylocal', action = 'store_true',
+        help = 'Copy local repo instead of using git clone and git hub')
+parser.add_argument('--singlehost', dest = 'singlehost', action = 'store_true',
+        help = 'Only run the test on single host, It is the users '
+               'responsibility to make sure that the conf. file does not '
+               'contain multiple hosts. '
+               'The script is not doing any validation. When --singlehost is set '
+               'the script should not be run using sudo.')
+parser.add_argument('--very-clean', action = 'store_true', dest = 'very_clean',
+        help = 'Build hive with `very-clean` option')
+parser.add_argument('--svn-info', dest = 'svn_info', action = 'store_true',
+        help = 'Save result of `svn info` into ${report_path}/svn-info')
+parser.add_argument('--save-patch', dest = 'save_patch', action = 'store_true',
+        help = 'Save applied patch into ${report_path}/patch')
+parser.add_argument('--http-proxy', dest = 'http_proxy',
+        help = 'Proxy host')
+parser.add_argument('--http-proxy-port', dest = 'http_proxy_port',
+        help = 'Proxy port')
+
 args = parser.parse_args()
 
 read_conf(args.config)
@@ -471,3 +602,6 @@ elif args.stop:
     cmd_stop()
 elif args.remove:
     cmd_remove()
+else:
+  parser.print_help()
+

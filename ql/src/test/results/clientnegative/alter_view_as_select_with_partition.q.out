@@ -1,0 +1,65 @@
+PREHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@testViewPart
+PREHOOK: query: ALTER VIEW testViewPart 
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testviewpart
+POSTHOOK: query: ALTER VIEW testViewPart 
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testviewpart
+POSTHOOK: Output: default@testviewpart@value=val_86
+POSTHOOK: Output: default@testviewpart@value=val_xyz
+PREHOOK: query: DESCRIBE FORMATTED testViewPart
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED testViewPart
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT key, value	 
+FROM src	 	 
+WHERE key=86	 	 
+View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+FROM `default`.`src`	 	 
+WHERE `src`.`key`=86	 	 
+FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has paritions
+ The following view has partition, it could not be replaced: testViewPart

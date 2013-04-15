@@ -134,10 +134,12 @@ POSTHOOK: Lineage: tt_b.a EXPRESSION []
 POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from temp_null2 where ds is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null2
 PREHOOK: Input: default@temp_null2@ds=2010-04-01
 #### A masked pattern was here ####
 POSTHOOK: query: select * from temp_null2 where ds is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null2
 POSTHOOK: Input: default@temp_null2@ds=2010-04-01
 #### A masked pattern was here ####
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []

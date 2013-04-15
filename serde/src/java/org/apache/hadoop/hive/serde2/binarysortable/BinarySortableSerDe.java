@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.serde2.binarysortable;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,12 +31,14 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -50,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -94,7 +99,7 @@ import org.apache.hadoop.io.Writable;
  * fields in the same top-level field will have the same sort order.
  *
  */
-public class BinarySortableSerDe implements SerDe {
+public class BinarySortableSerDe extends AbstractSerDe {
 
   public static final Log LOG = LogFactory.getLog(BinarySortableSerDe.class
       .getName());
@@ -107,13 +112,16 @@ public class BinarySortableSerDe implements SerDe {
 
   boolean[] columnSortOrderIsDesc;
 
+  private static byte[] decimalBuffer = null;
+  private static Charset decimalCharSet = Charset.forName("US-ASCII");
+
   @Override
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
 
     // Get column names and sort order
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
@@ -138,7 +146,7 @@ public class BinarySortableSerDe implements SerDe {
 
     // Get the sort order
     String columnSortOrder = tbl
-        .getProperty(Constants.SERIALIZATION_SORT_ORDER);
+        .getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
     columnSortOrderIsDesc = new boolean[columnNames.size()];
     for (int i = 0; i < columnSortOrderIsDesc.length; i++) {
       columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder
@@ -371,12 +379,71 @@ public class BinarySortableSerDe implements SerDe {
         t.setBinarySortable(bytes, 0);
         return t;
 
+      case DECIMAL: {
+        // See serialization of decimal for explanation (below)
+
+        HiveDecimalWritable bdw = (reuse == null ? new HiveDecimalWritable() :
+          (HiveDecimalWritable) reuse);
+
+        int b = buffer.read(invert) - 1;
+        assert (b == 1 || b == -1 || b == 0);
+        boolean positive = b != -1;
+
+        int factor = buffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          factor = (factor << 8) + (buffer.read(invert) & 0xff);
+        }
+
+        if (!positive) {
+          factor = -factor;
+        }
+
+        int start = buffer.tell();
+        int length = 0;
+
+        do {
+          b = buffer.read(positive ? invert : !invert);
+          assert(b != 1);
+
+          if (b == 0) {
+            // end of digits
+            break;
+          }
+
+          length++;
+        } while (true);
+
+        if(decimalBuffer == null || decimalBuffer.length < length) {
+          decimalBuffer = new byte[length];
+        }
+
+        buffer.seek(start);
+        for (int i = 0; i < length; ++i) {
+          decimalBuffer[i] = buffer.read(positive ? invert : !invert);
+        }
+
+        // read the null byte again
+        buffer.read(positive ? invert : !invert);
+
+        String digits = new String(decimalBuffer, 0, length, decimalCharSet);
+        BigInteger bi = new BigInteger(digits);
+        HiveDecimal bd = new HiveDecimal(bi).scaleByPowerOfTen(factor-length);
+
+        if (!positive) {
+          bd = bd.negate();
+        }
+
+        bdw.set(bd);
+        return bdw;
+      }
+
       default: {
         throw new RuntimeException("Unrecognized type: "
             + ptype.getPrimitiveCategory());
       }
       }
     }
+
     case LIST: {
       ListTypeInfo ltype = (ListTypeInfo) type;
       TypeInfo etype = ltype.getListElementTypeInfo();
@@ -608,6 +675,47 @@ public class BinarySortableSerDe implements SerDe {
         }
         return;
       }
+      case DECIMAL: {
+        // decimals are encoded in three pieces:
+        // sign: 1, 2 or 3 for smaller, equal or larger than 0 respectively
+        // factor: Number that indicates the amount of digits you have to move
+        // the decimal point left or right until the resulting number is smaller
+        // than zero but has something other than 0 as the first digit.
+        // digits: which is a string of all the digits in the decimal. If the number
+        // is negative the binary string will be inverted to get the correct ordering.
+        // Example: 0.00123
+        // Sign is 3 (bigger than 0)
+        // Factor is -2 (move decimal point 2 positions right)
+        // Digits are: 123
+
+        HiveDecimalObjectInspector boi = (HiveDecimalObjectInspector) poi;
+        HiveDecimal dec = boi.getPrimitiveJavaObject(o);
+
+        // get the sign of the big decimal
+        int sign = dec.compareTo(HiveDecimal.ZERO);
+
+        // we'll encode the absolute value (sign is separate)
+        dec = dec.abs();
+
+        // get the scale factor to turn big decimal into a decimal < 1
+        int factor = dec.precision() - dec.scale();
+        factor = sign == 1 ? factor : -factor;
+
+        // convert the absolute big decimal to string
+        dec.scaleByPowerOfTen(Math.abs(dec.scale()));
+        String digits = dec.unscaledValue().toString();
+
+        // finally write out the pieces (sign, scale, digits)
+        buffer.write((byte) ( sign + 1), invert);
+        buffer.write((byte) ((factor >> 24) ^ 0x80), invert);
+        buffer.write((byte) ( factor >> 16), invert);
+        buffer.write((byte) ( factor >> 8), invert);
+        buffer.write((byte)   factor, invert);
+        serializeBytes(buffer, digits.getBytes(decimalCharSet),
+            digits.length(), sign == -1 ? !invert : invert);
+        return;
+      }
+
       default: {
         throw new RuntimeException("Unrecognized type: "
             + poi.getPrimitiveCategory());
@@ -680,6 +788,7 @@ public class BinarySortableSerDe implements SerDe {
     }
     buffer.write((byte) 0, invert);
   }
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

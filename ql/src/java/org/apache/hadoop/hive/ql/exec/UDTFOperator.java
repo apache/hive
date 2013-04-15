@@ -65,6 +65,11 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
       udtfInputOIs[i] = inputFields.get(i).getFieldObjectInspector();
     }
     objToSendToUDTF = new Object[inputFields.size()];
+
+    MapredContext context = MapredContext.get();
+    if (context != null) {
+      context.setup(conf.getGenericUDTF());
+    }
     StructObjectInspector udtfOutputOI = conf.getGenericUDTF().initialize(
         udtfInputOIs);
 
@@ -114,6 +119,10 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "UDTF";
   }
 

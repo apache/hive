@@ -1,0 +1,61 @@
+PREHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test1
+PREHOOK: query: insert overwrite table test1 partition (partitionId=1)
+  select key from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test1@partitionid=1
+POSTHOOK: query: insert overwrite table test1 partition (partitionId=1)
+  select key from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test1@partitionid=1
+POSTHOOK: Lineage: test1 PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: FROM (
+ FROM test1
+ SELECT partitionId, 111 as col2, 222 as col3, 333 as col4
+ WHERE partitionId = 1
+ DISTRIBUTE BY partitionId
+ SORT BY partitionId
+ ) b
+
+SELECT TRANSFORM(
+ b.partitionId,b.col2,b.col3,b.col4
+ )
+
+ USING 'cat' as (a,b,c,d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1@partitionid=1
+#### A masked pattern was here ####
+POSTHOOK: query: FROM (
+ FROM test1
+ SELECT partitionId, 111 as col2, 222 as col3, 333 as col4
+ WHERE partitionId = 1
+ DISTRIBUTE BY partitionId
+ SORT BY partitionId
+ ) b
+
+SELECT TRANSFORM(
+ b.partitionId,b.col2,b.col3,b.col4
+ )
+
+ USING 'cat' as (a,b,c,d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1@partitionid=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test1 PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333
+1	111	222	333

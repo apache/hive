@@ -41,8 +41,7 @@ public class TestSemanticAnalyzerHookLoading extends TestCase {
 
     driver.run("drop table testDL");
     CommandProcessorResponse resp = driver.run("create table testDL (a int) as select * from tbl2");
-    assertEquals(10, resp.getResponseCode());
-    assertTrue(resp.getErrorMessage().contains("CTAS not supported."));
+    assertEquals(40000, resp.getResponseCode());
 
     resp = driver.run("create table testDL (a int)");
     assertEquals(0, resp.getResponseCode());

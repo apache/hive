@@ -80,20 +80,20 @@ public class PartitionDesc implements Serializable, Cloneable {
       this.serdeClassName = serdeClassName;
     } else if (properties != null) {
       this.serdeClassName = properties
-          .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+          .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     }
   }
 
   public PartitionDesc(final org.apache.hadoop.hive.ql.metadata.Partition part)
       throws HiveException {
     tableDesc = Utilities.getTableDesc(part.getTable());
-    properties = part.getSchema();
+    properties = part.getMetadataFromPartitionSchema();
     partSpec = part.getSpec();
     deserializerClass = part.getDeserializer(properties).getClass();
     inputFileFormatClass = part.getInputFormatClass();
     outputFileFormatClass = part.getOutputFormatClass();
     serdeClassName = properties
-        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     ;
   }
 
@@ -106,7 +106,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     Deserializer deserializer;
     try {
       deserializer = SerDeUtils.lookupDeserializer(
-          properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB));
+          properties.getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB));
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
@@ -114,7 +114,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     inputFileFormatClass = part.getInputFormatClass();
     outputFileFormatClass = part.getOutputFormatClass();
     serdeClassName = properties.getProperty(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
   }
 
   @Explain(displayName = "")
@@ -214,7 +214,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   @Explain(displayName = "name")
   public String getTableName() {
     return getProperties().getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME);
   }
 
   @Explain(displayName = "input format")

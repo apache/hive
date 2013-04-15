@@ -1,0 +1,121 @@
+Saving all output to "!!{outputDirectory}!!/input17.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/input17.q
+>>>  CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
+No rows affected 
+>>>  
+>>>  EXPLAIN 
+FROM ( 
+FROM src_thrift 
+SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0]) 
+USING 'cat' AS (tkey, tvalue) 
+CLUSTER BY tkey 
+) tmap 
+INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue;
+'Explain'
+'ABSTRACT SYNTAX TREE:'
+'  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (+ (. (TOK_TABLE_OR_COL src_thrift) aint) ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0)) ([ (. (TOK_TABLE_OR_COL src_thrift) lintstring) 0)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))'
+''
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 depends on stages: Stage-1'
+'  Stage-2 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Alias -> Map Operator Tree:'
+'        tmap:src_thrift '
+'          TableScan'
+'            alias: src_thrift'
+'            Select Operator'
+'              expressions:'
+'                    expr: (aint + lint[0])'
+'                    type: int'
+'                    expr: lintstring[0]'
+'                    type: struct<myint:int,mystring:string,underscore_int:int>'
+'              outputColumnNames: _col0, _col1'
+'              Transform Operator'
+'                command: cat'
+'                output info:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                Reduce Output Operator'
+'                  key expressions:'
+'                        expr: _col0'
+'                        type: string'
+'                  sort order: +'
+'                  Map-reduce partition columns:'
+'                        expr: _col0'
+'                        type: string'
+'                  tag: -1'
+'                  value expressions:'
+'                        expr: _col0'
+'                        type: string'
+'                        expr: _col1'
+'                        type: string'
+'      Reduce Operator Tree:'
+'        Extract'
+'          Select Operator'
+'            expressions:'
+'                  expr: _col0'
+'                  type: string'
+'                  expr: _col1'
+'                  type: string'
+'            outputColumnNames: _col0, _col1'
+'            Select Operator'
+'              expressions:'
+'                    expr: UDFToInteger(_col0)'
+'                    type: int'
+'                    expr: _col1'
+'                    type: string'
+'              outputColumnNames: _col0, _col1'
+'              File Output Operator'
+'                compressed: false'
+'                GlobalTableId: 1'
+'                table:'
+'                    input format: org.apache.hadoop.mapred.TextInputFormat'
+'                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                    name: input17.dest1'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          replace: true'
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: input17.dest1'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+''
+''
+80 rows selected 
+>>>  
+>>>  FROM ( 
+FROM src_thrift 
+SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0]) 
+USING 'cat' AS (tkey, tvalue) 
+CLUSTER BY tkey 
+) tmap 
+INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue;
+'_col0','_col1'
+No rows selected 
+>>>  
+>>>  SELECT dest1.* FROM dest1;
+'key','value'
+'','null'
+'-1461153966','{"myint":49,"mystring":"343","underscore_int":7}'
+'-1952710705','{"myint":25,"mystring":"125","underscore_int":5}'
+'-734328905','{"myint":16,"mystring":"64","underscore_int":4}'
+'-751827636','{"myint":4,"mystring":"8","underscore_int":2}'
+'1244525196','{"myint":36,"mystring":"216","underscore_int":6}'
+'1638581586','{"myint":64,"mystring":"512","underscore_int":8}'
+'1712634731','{"myint":0,"mystring":"0","underscore_int":0}'
+'336964422','{"myint":81,"mystring":"729","underscore_int":9}'
+'465985201','{"myint":1,"mystring":"1","underscore_int":1}'
+'477111225','{"myint":9,"mystring":"27","underscore_int":3}'
+11 rows selected 
+>>>  !record

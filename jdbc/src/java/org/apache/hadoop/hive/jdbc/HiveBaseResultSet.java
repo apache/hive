@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.jdbc;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
@@ -40,6 +41,8 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 
 /**
  * Data independed base class which implements the common part of
@@ -102,19 +105,32 @@ public abstract class HiveBaseResultSet implements ResultSet{
   }
 
   public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-    throw new SQLException("Method not supported");
+    Object obj = getObject(columnIndex);
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof BigDecimal) {
+      return ((BigDecimal) obj);
+    }
+    if (obj instanceof HiveDecimal) {
+      return ((HiveDecimal) obj).bigDecimalValue();
+    }
+    throw new SQLException("Cannot convert column " + columnIndex
+                           + " to BigDecimal. Found data of type: "
+                           + obj.getClass()+", value: " + obj.toString());
   }
 
   public BigDecimal getBigDecimal(String columnName) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getBigDecimal(findColumn(columnName));
   }
 
   public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-    throw new SQLException("Method not supported");
+    MathContext mc = new MathContext(scale);
+    return getBigDecimal(columnIndex).round(mc);
   }
 
   public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getBigDecimal(findColumn(columnName), scale);
   }
 
   public InputStream getBinaryStream(int columnIndex) throws SQLException {
@@ -370,6 +386,16 @@ public abstract class HiveBaseResultSet implements ResultSet{
     return getObject(findColumn(columnName));
   }
 
+  public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+    // TODO method required by JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
+  public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+    // TODO method required by JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
   public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
     throw new SQLException("Method not supported");
   }
@@ -467,11 +493,21 @@ public abstract class HiveBaseResultSet implements ResultSet{
   }
 
   public Timestamp getTimestamp(int columnIndex) throws SQLException {
-    throw new SQLException("Method not supported");
+    Object obj = getObject(columnIndex);
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof Timestamp) {
+      return (Timestamp) obj;
+    }
+    if (obj instanceof String) {
+      return Timestamp.valueOf((String)obj);
+    }
+    throw new SQLException("Illegal conversion");
   }
 
   public Timestamp getTimestamp(String columnName) throws SQLException {
-    throw new SQLException("Method not supported");
+    return getTimestamp(findColumn(columnName));
   }
 
   public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {

@@ -1,0 +1,61 @@
+PREHOOK: query: -- This test verifies that writing an empty partition succeeds when
+-- hive.stats.reliable is set to true.
+
+create table tmptable(key string, value string) partitioned by (part string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- This test verifies that writing an empty partition succeeds when
+-- hive.stats.reliable is set to true.
+
+create table tmptable(key string, value string) partitioned by (part string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable@part=1
+POSTHOOK: query: insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable@part=1
+POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted tmptable partition (part = '1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted tmptable partition (part = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	tmptable            	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

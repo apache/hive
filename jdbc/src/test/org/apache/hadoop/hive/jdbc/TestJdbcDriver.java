@@ -55,8 +55,6 @@ public class TestJdbcDriver extends TestCase {
   private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
   private static final String partitionedColumnName = "partcolabc";
   private static final String partitionedColumnValue = "20090619";
-  private static final String partitionedIntColumnName = "partcolint";
-  private static final int partitionedIntColumnValue = 777;
   private static final String partitionedTableComment = "Partitioned table";
   private static final String dataTypeTableName = "testDataTypeTable";
   private static final String dataTypeTableComment = "Table with many column data types";
@@ -124,16 +122,14 @@ public class TestJdbcDriver extends TestCase {
 
     res = stmt.executeQuery("create table " + partitionedTableName
         + " (under_col int, value string) comment '"+partitionedTableComment
-            +"' partitioned by (" + partitionedColumnName + " STRING,"
-            + partitionedIntColumnName + " INT)");
+            +"' partitioned by (" + partitionedColumnName + " STRING)");
     assertFalse(res.next());
 
     // load data
     res = stmt.executeQuery("load data local inpath '"
         + dataFilePath.toString() + "' into table " + partitionedTableName
         + " PARTITION (" + partitionedColumnName + "="
-        + partitionedColumnValue + ","
-        + partitionedIntColumnName + "=" + partitionedIntColumnValue + ")");
+        + partitionedColumnValue + ")");
     assertFalse(res.next());
 
     // drop table. ignore error.
@@ -151,7 +147,9 @@ public class TestJdbcDriver extends TestCase {
         + " c13 array<array<string>>,"
         + " c14 map<int, map<int,int>>,"
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
-        + " c16 array<struct<m:map<string,string>,n:int>>) comment '"+dataTypeTableComment
+        + " c16 array<struct<m:map<string,string>,n:int>>,"
+        + " c17 timestamp, "
+        + " c18 decimal) comment'" + dataTypeTableComment
             +"' partitioned by (dt STRING)");
     assertFalse(res.next());
 
@@ -382,6 +380,9 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("{}", res.getString(14));
     assertEquals("[null, null]", res.getString(15));
     assertEquals("[]", res.getString(16));
+    assertEquals(null, res.getString(17));
+    assertEquals(null, res.getTimestamp(17));
+    assertEquals(null, res.getBigDecimal(18));
 
     // row 3
     assertTrue(res.next());
@@ -401,6 +402,9 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("{1={11=12, 13=14}, 2={21=22}}", res.getString(14));
     assertEquals("[1, [2, x]]", res.getString(15));
     assertEquals("[[{}, 1], [{c=d, a=b}, 2]]", res.getString(16));
+    assertEquals("2012-04-22 09:00:00.123456789", res.getString(17));
+    assertEquals("2012-04-22 09:00:00.123456789", res.getTimestamp(17).toString());
+    assertEquals("123456789.0123456", res.getBigDecimal(18).toString());
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -441,7 +445,7 @@ public class TestJdbcDriver extends TestCase {
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
-    int expectedColCount = isPartitionTable ? 4 : 2;
+    int expectedColCount = isPartitionTable ? 3 : 2;
     assertEquals(
       "Unexpected column count", expectedColCount, meta.getColumnCount());
 
@@ -455,8 +459,6 @@ public class TestJdbcDriver extends TestCase {
         if (isPartitionTable) {
           assertEquals(res.getString(3), partitionedColumnValue);
           assertEquals(res.getString(3), res.getString(partitionedColumnName));
-          assertEquals(res.getInt(4), partitionedIntColumnValue);
-          assertEquals(res.getInt(4), res.getInt(partitionedIntColumnName));
         }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
@@ -496,7 +498,6 @@ public class TestJdbcDriver extends TestCase {
 
   public void testErrorMessages() throws SQLException {
     String invalidSyntaxSQLState = "42000";
-    int parseErrorCode = 10;
 
     // These tests inherently cause exceptions to be written to the test output
     // logs. This is undesirable, since you it might appear to someone looking
@@ -504,27 +505,23 @@ public class TestJdbcDriver extends TestCase {
     // sure
     // how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
-        "cannot recognize input near 'SELECTT' '*' 'FROM'", invalidSyntaxSQLState, 11);
+        "cannot recognize input near 'SELECTT' '*' 'FROM'",
+        invalidSyntaxSQLState, 40000);
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
-        "Table not found", "42000", parseErrorCode);
+        "Table not found", "42S02", 10001);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-        "Table not found", "42000", parseErrorCode);
+        "Table not found", "42S02", 10001);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
-        "Invalid table alias or column reference", invalidSyntaxSQLState,
-        parseErrorCode);
+        "Invalid table alias or column reference", invalidSyntaxSQLState, 10004);
     doTestErrorCase("SELECT invalid_function(under_col) FROM " + tableName,
-        "Invalid function", invalidSyntaxSQLState, parseErrorCode);
+    "Invalid function", invalidSyntaxSQLState, 10011);
 
-    // TODO: execute errors like this currently don't return good messages (i.e.
-    // 'Table already exists'). This is because the Driver class calls
-    // Task.executeTask() which swallows meaningful exceptions and returns a
-    // status
-    // code. This should be refactored.
+    // TODO: execute errors like this currently don't return good error
+    // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "Query returned non-zero code: 9, cause: FAILED: Execution Error, "
-        + "return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
-        "08S01", 9);
+        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
+        "08S01", 1);
   }
 
   private void doTestErrorCase(String sql, String expectedMessage,
@@ -663,9 +660,12 @@ public class TestJdbcDriver extends TestCase {
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
     tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
-    tests.put(new String[]{"testhivejdbc%", null}, 8);
+    tests.put(new String[]{"testhivejdbc%", null}, 7);
+    tests.put(new String[]{"testhiveJDBC%", null}, 7);
+    tests.put(new String[]{"testhiveJDB\\C%", null}, 0);
     tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_COL"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
@@ -767,17 +767,23 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
+    // "describe [table_name]" result format
+    // first line should be format name:
+    // "# col_name             data_type               comment"
+    // second line is empty
+    // the following lines contain the values
     res.next();
-    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
-    assertEquals("Column type 'under_col' for column under_col not found", "int", res
-        .getString(2));
+    assertEquals(true, res.getString(1).contains("col_name"));
+    assertEquals(true, res.getString(2).contains("data_type"));
+    assertEquals(true, res.getString(3).contains("comment"));
     res.next();
-    assertEquals("Column name 'value' not found", "value", res.getString(1));
-    assertEquals("Column type 'string' for column key not found", "string", res
-        .getString(2));
-
+    res.next();
+    assertEquals(true, res.getString(1).contains("under_col"));
+    assertEquals(true, res.getString(2).contains("int"));
+    res.next();
+    assertEquals(true, res.getString(1).contains("value"));
+    assertEquals(true, res.getString(2).contains("string"));
     assertFalse("More results found than expected", res.next());
-
   }
 
   public void testDatabaseMetaData() throws SQLException {
@@ -800,13 +806,13 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-        "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
+        "c1*2, sentences(null, null, null) as b, c17, c18 from " + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(14, meta.getColumnCount());
+    assertEquals(16, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1002,85 +1008,19 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
     assertEquals(0, meta.getScale(14));
 
-    for (int i = 1; i <= meta.getColumnCount(); i++) {
-      assertFalse(meta.isAutoIncrement(i));
-      assertFalse(meta.isCurrency(i));
-      assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
-    }
-  }
+    assertEquals("c17", meta.getColumnName(15));
+    assertEquals(Types.TIMESTAMP, meta.getColumnType(15));
+    assertEquals("timestamp", meta.getColumnTypeName(15));
+    assertEquals(29, meta.getColumnDisplaySize(15));
+    assertEquals(29, meta.getPrecision(15));
+    assertEquals(9, meta.getScale(15));
 
-  public void testPartitionedResultSetMetaData() throws SQLException {
-    Statement stmt = con.createStatement();
-
-    ResultSet res = stmt.executeQuery(
-        "select under_col, value, partcolabc, partcolint " +
-        "from " + partitionedTableName + " limit 1");
-    ResultSetMetaData meta = res.getMetaData();
-
-    ResultSet colRS = con.getMetaData().getColumns(null, null,
-        partitionedTableName.toLowerCase(), null);
-
-    assertEquals(4, meta.getColumnCount());
-
-    assertTrue(colRS.next());
-
-    assertEquals("under_col", meta.getColumnName(1));
-    assertEquals(Types.INTEGER, meta.getColumnType(1));
-    assertEquals("int", meta.getColumnTypeName(1));
-    assertEquals(11, meta.getColumnDisplaySize(1));
-    assertEquals(10, meta.getPrecision(1));
-    assertEquals(0, meta.getScale(1));
-
-    assertEquals("under_col", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
-    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
-    assertEquals(meta.getPrecision(1), colRS.getInt("COLUMN_SIZE"));
-    assertEquals(meta.getScale(1), colRS.getInt("DECIMAL_DIGITS"));
-
-    assertTrue(colRS.next());
-
-    assertEquals("value", meta.getColumnName(2));
-    assertEquals(Types.VARCHAR, meta.getColumnType(2));
-    assertEquals("string", meta.getColumnTypeName(2));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(2));
-    assertEquals(Integer.MAX_VALUE, meta.getPrecision(2));
-    assertEquals(0, meta.getScale(2));
-
-    assertEquals("value", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
-    assertEquals(meta.getPrecision(2), colRS.getInt("COLUMN_SIZE"));
-    assertEquals(meta.getScale(2), colRS.getInt("DECIMAL_DIGITS"));
-
-    assertTrue(colRS.next());
-
-    assertEquals("partcolabc", meta.getColumnName(3));
-    assertEquals(Types.VARCHAR, meta.getColumnType(3));
-    assertEquals("string", meta.getColumnTypeName(3));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(3));
-    assertEquals(Integer.MAX_VALUE, meta.getPrecision(3));
-    assertEquals(0, meta.getScale(3));
-
-    assertEquals("partcolabc", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
-    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
-    assertEquals(meta.getPrecision(3), colRS.getInt("COLUMN_SIZE"));
-    assertEquals(meta.getScale(3), colRS.getInt("DECIMAL_DIGITS"));
-
-    assertTrue(colRS.next());
-
-    assertEquals("partcolint", meta.getColumnName(4));
-    assertEquals(Types.INTEGER, meta.getColumnType(4));
-    assertEquals("int", meta.getColumnTypeName(4));
-    assertEquals(11, meta.getColumnDisplaySize(4));
-    assertEquals(10, meta.getPrecision(4));
-    assertEquals(0, meta.getScale(4));
-
-    assertEquals("partcolint", colRS.getString("COLUMN_NAME"));
-    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
-    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
-    assertEquals(meta.getPrecision(4), colRS.getInt("COLUMN_SIZE"));
-    assertEquals(meta.getScale(4), colRS.getInt("DECIMAL_DIGITS"));
+    assertEquals("c18", meta.getColumnName(16));
+    assertEquals(Types.DECIMAL, meta.getColumnType(16));
+    assertEquals("decimal", meta.getColumnTypeName(16));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(16));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(16));
+    assertEquals(Integer.MAX_VALUE, meta.getScale(16));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
@@ -1088,7 +1028,6 @@ public class TestJdbcDriver extends TestCase {
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
     }
   }
-
 
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {

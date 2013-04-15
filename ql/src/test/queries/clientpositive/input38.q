@@ -5,14 +5,14 @@ EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
-         USING '/bin/cat'
+         USING 'cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value;
 
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
-         USING '/bin/cat'
+         USING 'cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value;
 

@@ -47,6 +47,12 @@
 </property>
 
 <property>
+  <name>hive.exec.local.scratchdir</name>
+  <value>${build.dir}/localscratchdir/</value>
+  <description>Local scratch space for Hive jobs</description>
+</property>
+
+<property>
   <name>javax.jdo.option.ConnectionURL</name>
   <!-- note: variable substituion not working here because it's loaded by jdo, not Hive -->
   <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>
@@ -65,12 +71,6 @@
 <property>
   <name>javax.jdo.option.ConnectionPassword</name>
   <value>mine</value>
-</property>
-
-<property>
-  <name>hive.metastore.local</name>
-  <value>true</value>
-  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
 </property>
 
 <property>
@@ -168,6 +168,18 @@
     Let hive determine whether to run in local mode automatically
     Disabling this for tests so that minimr is not affected
   </description>
+</property>
+
+<property>
+  <name>hive.auto.convert.join</name>
+  <value>false</value>
+  <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
+</property>
+
+<property>
+  <name>hive.ignore.mapjoin.hint</name>
+  <value>false</value>
+  <description>Whether Hive ignores the mapjoin hint</description>
 </property>
 
 <property>

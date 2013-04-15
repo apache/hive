@@ -47,6 +47,10 @@ public abstract class StructObjectInspector implements ObjectInspector {
    */
   public abstract List<Object> getStructFieldsDataAsList(Object data);
 
+  public boolean isSettable() {
+    return false;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

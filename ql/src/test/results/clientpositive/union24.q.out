@@ -175,6 +175,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src5 [null-subquery2:s-subquery2:src5]
 
   Stage: Stage-2
     Map Reduce
@@ -479,6 +481,11 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src2 [null-subquery1-subquery1-subquery1:s-subquery1-subquery1-subquery1:src2]
+        /src3 [null-subquery1-subquery1-subquery2:s-subquery1-subquery1-subquery2:src3]
+        /src4 [null-subquery1-subquery2:s-subquery1-subquery2:src4]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -734,6 +741,9 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src4 [null-subquery2:s-subquery2:a]
+        /src5 [null-subquery2:s-subquery2:b]
 
   Stage: Stage-2
     Map Reduce
@@ -959,6 +969,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src2 [null-subquery1-subquery1:s-subquery1-subquery1:src2]
+        /src3 [null-subquery1-subquery2:s-subquery1-subquery2:src3]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -1209,6 +1223,9 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src4 [null-subquery2:s-subquery2:a]
+        /src5 [null-subquery2:s-subquery2:b]
 
   Stage: Stage-2
     Map Reduce
@@ -1278,6 +1295,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
@@ -1503,6 +1522,10 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src2 [null-subquery1-subquery1:s-subquery1-subquery1:src2]
+        /src3 [null-subquery1-subquery2:s-subquery1-subquery2:src3]
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

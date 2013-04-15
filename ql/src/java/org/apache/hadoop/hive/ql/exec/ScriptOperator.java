@@ -34,6 +34,7 @@ import java.util.TimerTask;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -45,6 +46,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -79,6 +81,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   transient RecordWriter scriptOutWriter = null;
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING = "Broken pipe";
+  static final String IO_EXCEPTION_STREAM_CLOSED = "Stream closed";
+  static final String IO_EXCEPTION_PIPE_ENDED_WIN = "The pipe has been ended";
+  static final String IO_EXCEPTION_PIPE_CLOSED_WIN = "The pipe is being closed";
 
   /**
    * sends periodic reports back to the tracker.
@@ -90,14 +95,13 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   // of the user assumptions.
   transient boolean firstRow;
 
-  /**
-   * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
-   */
-  static String safeEnvVarName(String var) {
+
+  String safeEnvVarName(String name) {
     StringBuilder safe = new StringBuilder();
-    int len = var.length();
+    int len = name.length();
+
     for (int i = 0; i < len; i++) {
-      char c = var.charAt(i);
+      char c = name.charAt(i);
       char s;
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
           || (c >= 'a' && c <= 'z')) {
@@ -110,8 +114,32 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return safe.toString();
   }
 
-  static void addJobConfToEnvironment(Configuration conf,
-      Map<String, String> env) {
+  /**
+   * Most UNIX implementations impose some limit on the total size of environment variables and
+   * size of strings. To fit in this limit we need sometimes to truncate strings.
+   * @param value environment variable value to check
+   * @param name name of variable (used only for logging purposes)
+   * @param truncate truncate value or not
+   * @return original value, or truncated one if it's length is more then 20KB and
+   * truncate flag is set
+   * @see <a href="http://www.kernel.org/doc/man-pages/online/pages/man2/execve.2.html">Linux
+   * Man page</a> for more details
+   */
+  String safeEnvVarValue(String value, String name, boolean truncate) {
+    final int lenLimit = 20*1024;
+    if (truncate && value.length() > lenLimit) {
+      value = value.substring(0, lenLimit);
+      LOG.warn("Length of environment variable " + name + " was truncated to " + lenLimit
+          + " bytes to fit system limits.");
+    }
+    return value;
+  }
+
+  /**
+   * addJobConfToEnvironment is mostly shamelessly copied from hadoop streaming. Added additional
+   * check on environment variable length
+   */
+  void addJobConfToEnvironment(Configuration conf, Map<String, String> env) {
     Iterator<Map.Entry<String, String>> it = conf.iterator();
     while (it.hasNext()) {
       Map.Entry<String, String> en = it.next();
@@ -120,6 +148,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       // expansion
       String value = conf.get(name); // does variable expansion
       name = safeEnvVarName(name);
+      boolean truncate = conf.getBoolean(HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV.toString(), false);
+      value = safeEnvVarValue(value, name, truncate);
       env.put(name, value);
     }
   }
@@ -214,12 +244,18 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       // initialize all children before starting the script
       initializeChildren(hconf);
     } catch (Exception e) {
-      throw new HiveException("Cannot initialize ScriptOperator", e);
+      throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
     }
   }
 
   boolean isBrokenPipeException(IOException e) {
-    return (e.getMessage().compareToIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) == 0);
+  if (Shell.WINDOWS) {
+      String errMsg = e.getMessage();
+      return errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_CLOSED_WIN) ||
+          errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_ENDED_WIN);
+    }
+    return (e.getMessage().equalsIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) ||
+            e.getMessage().equalsIgnoreCase(IO_EXCEPTION_STREAM_CLOSED));
   }
 
   boolean allowPartialConsumption() {
@@ -317,12 +353,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         outThread.start();
         errThread.start();
       } catch (Exception e) {
-        throw new HiveException("Cannot initialize ScriptOperator", e);
+        throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
       }
     }
 
     if (scriptError != null) {
-      throw new HiveException(scriptError);
+      throw new HiveException(ErrorMsg.SCRIPT_GENERIC_ERROR.getErrorCodedMsg(), scriptError);
     }
 
     try {
@@ -336,6 +372,21 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       throw new HiveException(e);
     } catch (IOException e) {
       if (isBrokenPipeException(e) && allowPartialConsumption()) {
+        // Give the outThread a chance to finish before marking the operator as done
+        try {
+          scriptPid.waitFor();
+        } catch (InterruptedException interruptedException) {
+        }
+        // best effort attempt to write all output from the script before marking the operator
+        // as done
+        try {
+          if (outThread != null) {
+            outThread.join(0);
+          }
+        } catch (Exception e2) {
+          LOG.warn("Exception in closing outThread: "
+              + StringUtils.stringifyException(e2));
+        }
         setDone(true);
         LOG
             .warn("Got broken pipe during write: ignoring exception and setting operator to done");
@@ -345,7 +396,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           displayBrokenPipeInfo();
         }
         scriptError = e;
-        throw new HiveException(e);
+        throw new HiveException(ErrorMsg.SCRIPT_IO_ERROR.getErrorCodedMsg(), e);
       }
     }
   }
@@ -356,7 +407,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     boolean new_abort = abort;
     if (!abort) {
       if (scriptError != null) {
-        throw new HiveException(scriptError);
+        throw new HiveException(ErrorMsg.SCRIPT_GENERIC_ERROR.getErrorCodedMsg(), scriptError);
       }
       // everything ok. try normal shutdown
       try {
@@ -449,7 +500,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     super.close(new_abort);
 
     if (new_abort && !abort) {
-      throw new HiveException("Hit error while closing ..");
+      throw new HiveException(ErrorMsg.SCRIPT_CLOSING_ERROR.getErrorCodedMsg());
     }
   }
 
@@ -665,6 +716,10 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
   @Override
   public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
     return "SCR";
   }
 

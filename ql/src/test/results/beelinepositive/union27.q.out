@@ -1,0 +1,23 @@
+Saving all output to "!!{outputDirectory}!!/union27.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/union27.q
+>>>  create table jackson_sev_same as select * from src;
+'key','value'
+No rows selected 
+>>>  create table dim_pho as select * from src;
+'key','value'
+No rows selected 
+>>>  create table jackson_sev_add as select * from src;
+'key','value'
+No rows selected 
+>>>  select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97;
+'key','value'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+'97','val_97'
+8 rows selected 
+>>>  !record

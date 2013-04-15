@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.index;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +31,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * RewriteCanApplyCtx class stores the context for the {@link RewriteCanApplyProcFactory}
@@ -252,13 +255,14 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
    * @param topOp
    * @throws SemanticException
    */
-  void populateRewriteVars(Operator<? extends Serializable> topOp) throws SemanticException{
+  void populateRewriteVars(Operator<? extends OperatorDesc> topOp)
+    throws SemanticException{
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "FIL%"),
+    opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"),
         RewriteCanApplyProcFactory.canApplyOnFilterOperator());
-    opRules.put(new RuleRegExp("R2", "GBY%"),
+    opRules.put(new RuleRegExp("R2", GroupByOperator.getOperatorName() + "%"),
         RewriteCanApplyProcFactory.canApplyOnGroupByOperator());
-    opRules.put(new RuleRegExp("R3", "SEL%"),
+    opRules.put(new RuleRegExp("R3", SelectOperator.getOperatorName() + "%"),
         RewriteCanApplyProcFactory.canApplyOnSelectOperator());
 
     // The dispatcher fires the processor corresponding to the closest matching

@@ -1,0 +1,27 @@
+Saving all output to "!!{outputDirectory}!!/timestamp_lazy.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/timestamp_lazy.q
+>>>  drop table timestamp_lazy;
+No rows affected 
+>>>  create table timestamp_lazy (t timestamp, key string, value string);
+No rows affected 
+>>>  insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src limit 5;
+'_c0','key','value'
+No rows selected 
+>>>  
+>>>  select t,key,value from timestamp_lazy ORDER BY key ASC, value ASC;
+'t','key','value'
+'2011-01-01 01:01:01.0','165','val_165'
+'2011-01-01 01:01:01.0','238','val_238'
+'2011-01-01 01:01:01.0','27','val_27'
+'2011-01-01 01:01:01.0','311','val_311'
+'2011-01-01 01:01:01.0','86','val_86'
+5 rows selected 
+>>>  select t,key,value from timestamp_lazy distribute by t sort by key ASC, value ASC;
+'t','key','value'
+'2011-01-01 01:01:01.0','165','val_165'
+'2011-01-01 01:01:01.0','238','val_238'
+'2011-01-01 01:01:01.0','27','val_27'
+'2011-01-01 01:01:01.0','311','val_311'
+'2011-01-01 01:01:01.0','86','val_86'
+5 rows selected 
+>>>  !record

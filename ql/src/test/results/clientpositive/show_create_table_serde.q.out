@@ -1,0 +1,89 @@
+PREHOOK: query: -- Test SHOW CREATE TABLE on a table with serde.
+
+-- without a storage handler
+CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test SHOW CREATE TABLE on a table with serde.
+
+-- without a storage handler
+CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1
+CREATE  TABLE tmp_showcrt1(
+  key int, 
+  value string, 
+  newvalue bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1
+PREHOOK: Output: default@tmp_showcrt1
+POSTHOOK: query: DROP TABLE tmp_showcrt1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: -- with a storage handler and serde properties
+CREATE EXTERNAL TABLE tmp_showcrt1 (key string, value boolean)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- with a storage handler and serde properties
+CREATE EXTERNAL TABLE tmp_showcrt1 (key string, value boolean)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1
+CREATE EXTERNAL TABLE tmp_showcrt1(
+  key string, 
+  value boolean)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED BY 
+  'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler' 
+WITH SERDEPROPERTIES ( 
+  'serialization.format'='$', 
+  'field.delim'=',')
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1
+PREHOOK: Output: default@tmp_showcrt1
+POSTHOOK: query: DROP TABLE tmp_showcrt1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1
+POSTHOOK: Output: default@tmp_showcrt1

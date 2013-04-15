@@ -18,54 +18,46 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.optimizer.PrunerExpressionOperatorFactory;
+import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 
 /**
  * Expression processor factory for partition pruning. Each processor tries to
  * convert the expression subtree into a partition pruning expression. This
  * expression is then used to figure out whether a particular partition should
  * be scanned or not.
+ *
+ *  * Refactor:
+ * Move main logic to PrunerExpressionOperatorFactory. ExprProcFactory extends it to reuse logic.
+ *
+ * Any other pruner can reuse it by creating a class extending from PrunerExpressionOperatorFactory.
+ *
+ * Only specific logic is in genPruner(..) which is in its own class like ExprProcFactory.
+ *
  */
-public final class ExprProcFactory {
+public final class ExprProcFactory extends PrunerExpressionOperatorFactory {
 
   private ExprProcFactory() {
     // prevent instantiation
   }
 
   /**
-   * Processor for column expressions.
+   * Processor for ppr column expressions.
    */
-  public static class ColumnExprProcessor implements NodeProcessor {
+  public static class PPRColumnExprProcessor extends ColumnExprProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      ExprNodeDesc newcd = null;
-      ExprNodeColumnDesc cd = (ExprNodeColumnDesc) nd;
+    protected ExprNodeDesc processColumnDesc(NodeProcessorCtx procCtx, ExprNodeColumnDesc cd) {
+      ExprNodeDesc newcd;
       ExprProcCtx epc = (ExprProcCtx) procCtx;
       if (cd.getTabAlias().equalsIgnoreCase(epc.getTabAlias())
           && cd.getIsPartitionColOrVirtualCol()) {
@@ -74,154 +66,22 @@ public final class ExprProcFactory {
         newcd = new ExprNodeConstantDesc(cd.getTypeInfo(), null);
         epc.setHasNonPartCols(true);
       }
-
       return newcd;
     }
-
   }
 
   /**
-   * If all children are candidates and refer only to one table alias then this
-   * expr is a candidate else it is not a candidate but its children could be
-   * final candidates.
-   */
-  public static class GenericFuncExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      ExprNodeDesc newfd = null;
-      ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) nd;
-
-      boolean unknown = false;
-
-      if (FunctionRegistry.isOpAndOrNot(fd)) {
-        // do nothing because "And" and "Or" and "Not" supports null value
-        // evaluation
-        // NOTE: In the future all UDFs that treats null value as UNKNOWN (both
-        // in parameters and return
-        // values) should derive from a common base class UDFNullAsUnknown, so
-        // instead of listing the classes
-        // here we would test whether a class is derived from that base class.
-        // If All childs are null, set unknown to true
-        boolean isAllNull = true;
-        for (Object child : nodeOutputs) {
-          ExprNodeDesc child_nd = (ExprNodeDesc) child;
-          if (!(child_nd instanceof ExprNodeConstantDesc
-              && ((ExprNodeConstantDesc) child_nd).getValue() == null)) {
-            isAllNull = false;
-          }
-        }
-        unknown = isAllNull;
-      } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
-        // If it's a non-deterministic UDF, set unknown to true
-        unknown = true;
-      } else {
-        // If any child is null, set unknown to true
-        for (Object child : nodeOutputs) {
-          ExprNodeDesc child_nd = (ExprNodeDesc) child;
-          if (child_nd instanceof ExprNodeConstantDesc
-              && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
-            unknown = true;
-          }
-        }
-      }
-
-      if (unknown) {
-        newfd = new ExprNodeConstantDesc(fd.getTypeInfo(), null);
-      } else {
-        // Create the list of children
-        ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-        for (Object child : nodeOutputs) {
-          children.add((ExprNodeDesc) child);
-        }
-        // Create a copy of the function descriptor
-        newfd = new ExprNodeGenericFuncDesc(fd.getTypeInfo(), fd
-            .getGenericUDF(), children);
-      }
-
-      return newfd;
-    }
-
-  }
-
-  /**
-   * FieldExprProcessor.
+   * Instantiate column processor.
    *
+   * @return
    */
-  public static class FieldExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      ExprNodeFieldDesc fnd = (ExprNodeFieldDesc) nd;
-      boolean unknown = false;
-      int idx = 0;
-      ExprNodeDesc left_nd = null;
-      for (Object child : nodeOutputs) {
-        ExprNodeDesc child_nd = (ExprNodeDesc) child;
-        if (child_nd instanceof ExprNodeConstantDesc
-            && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
-          unknown = true;
-        }
-        left_nd = child_nd;
-      }
-
-      assert (idx == 0);
-
-      ExprNodeDesc newnd = null;
-      if (unknown) {
-        newnd = new ExprNodeConstantDesc(fnd.getTypeInfo(), null);
-      } else {
-        newnd = new ExprNodeFieldDesc(fnd.getTypeInfo(), left_nd, fnd
-            .getFieldName(), fnd.getIsList());
-      }
-      return newnd;
-    }
-
-  }
-
-  /**
-   * Processor for constants and null expressions. For such expressions the
-   * processor simply clones the exprNodeDesc and returns it.
-   */
-  public static class DefaultExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      if (nd instanceof ExprNodeConstantDesc) {
-        return ((ExprNodeConstantDesc) nd).clone();
-      } else if (nd instanceof ExprNodeNullDesc) {
-        return ((ExprNodeNullDesc) nd).clone();
-      }
-
-      assert (false);
-      return null;
-    }
-  }
-
-  public static NodeProcessor getDefaultExprProcessor() {
-    return new DefaultExprProcessor();
-  }
-
-  public static NodeProcessor getGenericFuncProcessor() {
-    return new GenericFuncExprProcessor();
-  }
-
-  public static NodeProcessor getFieldProcessor() {
-    return new FieldExprProcessor();
-  }
-
   public static NodeProcessor getColumnProcessor() {
-    return new ColumnExprProcessor();
+    return new PPRColumnExprProcessor();
   }
 
   /**
    * Generates the partition pruner for the expression tree.
-   * 
+   *
    * @param tabAlias
    *          The table alias of the partition table that is being considered
    *          for pruning
@@ -237,30 +97,10 @@ public final class ExprProcFactory {
     // Create the walker, the rules dispatcher and the context.
     ExprProcCtx pprCtx = new ExprProcCtx(tabAlias);
 
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack. The dispatcher
-    // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(
-        new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
-        getColumnProcessor());
-    exprRules.put(
-        new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"),
-        getFieldProcessor());
-    exprRules.put(new RuleRegExp("R5", ExprNodeGenericFuncDesc.class.getName()
-        + "%"), getGenericFuncProcessor());
+    /* Move common logic to PrunerUtils.walkExprTree(...) so that it can be reused. */
+    Map<Node, Object> outputMap = PrunerUtils.walkExprTree(pred, pprCtx, getColumnProcessor(),
+        getFieldProcessor(), getGenericFuncProcessor(), getDefaultExprProcessor());
 
-    // The dispatcher fires the processor corresponding to the closest matching
-    // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
-        exprRules, pprCtx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
-
-    List<Node> startNodes = new ArrayList<Node>();
-    startNodes.add(pred);
-
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
-    egw.startWalking(startNodes, outputMap);
     hasNonPartCols = pprCtx.getHasNonPartCols();
 
     // Get the exprNodeDesc corresponding to the first start node;

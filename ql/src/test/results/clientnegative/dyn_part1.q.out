@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dynamic_partition
-FAILED: Error in semantic analysis: Non-Partition column appears in the partition specification:  hr
+FAILED: SemanticException [Error 10098]: Non-Partition column appears in the partition specification:  hr

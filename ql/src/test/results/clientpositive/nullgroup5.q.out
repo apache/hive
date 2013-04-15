@@ -114,6 +114,8 @@ PREHOOK: query: select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl
+PREHOOK: Input: default@tstparttbl2
 PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select u.* from
@@ -123,6 +125,8 @@ POSTHOOK: query: select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl
+POSTHOOK: Input: default@tstparttbl2
 POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09
 #### A masked pattern was here ####
 238	val_238

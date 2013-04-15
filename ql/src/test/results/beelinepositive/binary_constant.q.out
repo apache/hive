@@ -1,0 +1,7 @@
+Saving all output to "!!{outputDirectory}!!/binary_constant.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/binary_constant.q
+>>>  select cast(cast('a' as binary) as string) from src limit 1;
+'_c0'
+'a'
+1 row selected 
+>>>  !record

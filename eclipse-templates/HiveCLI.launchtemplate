@@ -20,7 +20,7 @@
   <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="false"/>
   <mapAttribute key="org.eclipse.debug.core.environmentVariables">
     <mapEntry key="JAVA_HOME" value="${system_property:java.home}"/>
-    <mapEntry key="HADOOP_HOME" value="${workspace_loc:@PROJECT@}/build/hadoopcore/hadoop-@HADOOPVER@"/>
+    <mapEntry key="HIVE_HADOOP_TEST_CLASSPATH" value="@HIVE_HADOOP_TEST_CLASSPATH@"/>
   </mapAttribute>
 
   <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
@@ -35,7 +35,7 @@
     <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry containerPath=&quot;org.eclipse.jdt.launching.JRE_CONTAINER&quot; javaProject=&quot;@PROJECT@&quot; path=&quot;1&quot; type=&quot;4&quot;/&gt;&#10;"/>
     <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/conf&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
     <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/common/src/java/conf&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
-    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/build/hadoopcore/hadoop-@HADOOPVER@/conf&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
+    <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/build/metastore/hive-metastore-@HIVE_VERSION@.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
     <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry id=&quot;org.eclipse.jdt.launching.classpathentry.defaultClasspath&quot;&gt;&#10;&lt;memento exportedEntriesOnly=&quot;false&quot; project=&quot;@PROJECT@&quot;/&gt;&#10;&lt;/runtimeClasspathEntry&gt;&#10;"/>
     <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;runtimeClasspathEntry internalArchive=&quot;/@PROJECT@/build/ql/hive-exec-@HIVE_VERSION@.jar&quot; path=&quot;3&quot; type=&quot;2&quot;/&gt;&#10;"/>
   </listAttribute>
@@ -44,6 +44,7 @@
   <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
   <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.hadoop.hive.cli.CliDriver"/>
   <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="@PROJECT@"/>
-  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dhive.root.logger=INFO,console"/>
+  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS"
+    value="@JVM_ARGS@ -Dhive.root.logger=INFO,console -Dhadoop.bin.path=@HADOOP_BIN_PATH@"/>
 
 </launchConfiguration>

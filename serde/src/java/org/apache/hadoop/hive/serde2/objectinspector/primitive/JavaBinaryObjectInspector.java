@@ -1,6 +1,8 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -29,60 +31,56 @@ public class JavaBinaryObjectInspector extends AbstractPrimitiveJavaObjectInspec
   }
 
   @Override
-  public ByteArrayRef copyObject(Object o) {
+  public byte[] copyObject(Object o) {
     if (null == o){
       return null;
     }
-
-    ByteArrayRef ba = new ByteArrayRef();
-    byte[] incoming = ((ByteArrayRef)o).getData();
+    byte[] incoming = (byte[])o;
     byte[] outgoing = new byte[incoming.length];
     System.arraycopy(incoming, 0, outgoing, 0, incoming.length);
-    ba.setData(outgoing);
-    return ba;
+    return outgoing;
   }
 
   @Override
   public BytesWritable getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new BytesWritable(((ByteArrayRef)o).getData());
+    return o == null ? null : new BytesWritable((byte[])o);
   }
 
   @Override
-  public ByteArrayRef getPrimitiveJavaObject(Object o) {
-    return (ByteArrayRef)o;
-  }
-  @Override
-  public ByteArrayRef set(Object o, ByteArrayRef bb) {
-    ByteArrayRef ba = (ByteArrayRef)o;
-    ba.setData(bb.getData());
-    return ba;
+  public byte[] getPrimitiveJavaObject(Object o) {
+    return (byte[])o;
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
-  public ByteArrayRef set(Object o, BytesWritable bw) {
-    if (null == bw){
-      return null;
-    }
-    ByteArrayRef ba = (ByteArrayRef)o;
-    ba.setData(bw.getBytes());
-    return ba;
+  public byte[] set(Object o, byte[] bb) {
+    return bb == null ? null : Arrays.copyOf(bb, bb.length);
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
-  public ByteArrayRef create(ByteArrayRef bb) {
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(bb.getData());
-    return ba;
+  public byte[] set(Object o, BytesWritable bw) {
+    return bw == null ? null :  LazyUtils.createByteArray(bw);
   }
 
+  /*
+   * {@inheritDoc}
+   */
   @Override
-  public ByteArrayRef create(BytesWritable bw) {
-    if(null == bw){
-      return null;
-    }
-    ByteArrayRef ba = new ByteArrayRef();
-    ba.setData(bw.getBytes());
-    return ba;
+  public byte[] create(byte[] bb) {
+    return bb == null ? null : Arrays.copyOf(bb, bb.length);
+  }
+
+  /*
+   * {@inheritDoc}
+   */
+  @Override
+  public byte[] create(BytesWritable bw) {
+    return bw == null ? null : LazyUtils.createByteArray(bw);
   }
 
 }

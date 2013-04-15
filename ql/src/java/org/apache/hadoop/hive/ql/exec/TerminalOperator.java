@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+
 /**
  * Terminal Operator Base Class.
  **/
-public abstract class TerminalOperator<T extends Serializable> extends
+public abstract class TerminalOperator<T extends OperatorDesc> extends
     Operator<T> implements Serializable {
   private static final long serialVersionUID = 1L;
 

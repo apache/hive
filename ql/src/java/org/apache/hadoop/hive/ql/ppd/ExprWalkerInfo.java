@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.ppd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Context for Expression Walker for determining predicate pushdown candidates
@@ -62,7 +62,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
 
   protected static final Log LOG = LogFactory.getLog(OpProcFactory.class
       .getName());;
-  private Operator<? extends Serializable> op = null;
+  private Operator<? extends OperatorDesc> op = null;
   private RowResolver toRR = null;
 
   /**
@@ -105,7 +105,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     newToOldExprMap = new HashMap<ExprNodeDesc, ExprNodeDesc>();
   }
 
-  public ExprWalkerInfo(Operator<? extends Serializable> op,
+  public ExprWalkerInfo(Operator<? extends OperatorDesc> op,
       final RowResolver toRR) {
     this.op = op;
     this.toRR = toRR;
@@ -119,7 +119,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * @return the op of this expression.
    */
-  public Operator<? extends Serializable> getOp() {
+  public Operator<? extends OperatorDesc> getOp() {
     return op;
   }
 

@@ -282,10 +282,11 @@ public class SessionState {
     }
 
     try {
-      startSs.authenticator = HiveUtils.getAuthenticator(startSs
-          .getConf());
-      startSs.authorizer = HiveUtils.getAuthorizeProviderManager(startSs
-          .getConf(), startSs.authenticator);
+      startSs.authenticator = HiveUtils.getAuthenticator(
+          startSs.getConf(),HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+      startSs.authorizer = HiveUtils.getAuthorizeProviderManager(
+          startSs.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+          startSs.authenticator);
       startSs.createTableGrants = CreateTableAutomaticGrant.create(startSs
           .getConf());
     } catch (HiveException e) {
@@ -590,25 +591,46 @@ public class SessionState {
   }
 
   /**
-   * Returns the list of filesystem schemas as regex which
-   * are permissible for download as a resource.
+   * Returns  true if it is from any external File Systems except local
    */
-  public static String getMatchingSchemaAsRegex() {
-    String[] matchingSchema = {"s3", "s3n", "hdfs"};
-    return StringUtils.join(matchingSchema, "|");
+  public static boolean canDownloadResource(String value) {
+    // Allow to download resources from any external FileSystem.
+    // And no need to download if it already exists on local file system.
+    String scheme = new Path(value).toUri().getScheme();
+    return (scheme != null) && !scheme.equalsIgnoreCase("file");
   }
 
   private String downloadResource(String value, boolean convertToUnix) {
-    if (value.matches("("+ getMatchingSchemaAsRegex() +")://.*")) {
+    if (canDownloadResource(value)) {
       getConsole().printInfo("converting to local " + value);
-      File resourceDir = new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
+      String location = getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR);
+
       String destinationName = new Path(value).getName();
-      File destinationFile = new File(resourceDir, destinationName);
-      if ( resourceDir.exists() && ! resourceDir.isDirectory() ) {
-        throw new RuntimeException("The resource directory is not a directory, resourceDir is set to" + resourceDir);
+      String prefix = destinationName;
+      String postfix = null;
+      int index = destinationName.lastIndexOf(".");
+      if (index > 0) {
+        prefix = destinationName.substring(0, index);
+        postfix = destinationName.substring(index);
       }
-      if ( ! resourceDir.exists() && ! resourceDir.mkdirs() ) {
+      if (prefix.length() < 3) {
+        prefix += ".tmp";   // prefix should be longer than 3
+      }
+
+      File resourceDir = new File(location);
+      if (resourceDir.exists() && !resourceDir.isDirectory()) {
+        throw new RuntimeException("The resource directory is not a directory, " +
+            "resourceDir is set to " + resourceDir);
+      }
+      if (!resourceDir.exists() && !resourceDir.mkdirs()) {
         throw new RuntimeException("Couldn't create directory " + resourceDir);
+      }
+
+      File destinationFile;
+      try {
+        destinationFile = File.createTempFile(prefix, postfix, resourceDir);
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create temporary file for " + value, e);
       }
       try {
         FileSystem fs = FileSystem.get(new URI(value), conf);
@@ -618,7 +640,8 @@ public class SessionState {
           try {
             DosToUnix.convertWindowsScriptToUnix(destinationFile);
           } catch (Exception e) {
-            throw new RuntimeException("Caught exception while converting to unix line endings", e);
+            throw new RuntimeException("Caught exception while converting file " +
+                destinationFile + " to unix line endings", e);
           }
         }
       } catch (Exception e) {

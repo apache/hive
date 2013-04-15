@@ -1,0 +1,14 @@
+Saving all output to "!!{outputDirectory}!!/udf_bitwise_not.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/udf_bitwise_not.q
+>>>  DESCRIBE FUNCTION ~;
+'tab_name'
+'~ n - Bitwise not'
+1 row selected 
+>>>  DESCRIBE FUNCTION EXTENDED ~;
+'tab_name'
+'~ n - Bitwise not'
+'Example:'
+'  > SELECT ~ 0 FROM src LIMIT 1;'
+'  -1'
+4 rows selected 
+>>>  !record

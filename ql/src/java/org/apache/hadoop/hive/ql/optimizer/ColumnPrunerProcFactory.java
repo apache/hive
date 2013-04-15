@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +32,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
@@ -56,15 +59,24 @@ import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -87,8 +99,11 @@ public final class ColumnPrunerProcFactory {
       // get list of columns used in the filter
       List<String> cl = condn.getCols();
       // merge it with the downstream col list
+      List<String> filterOpPrunedColLists = Utilities.mergeUniqElems(cppCtx.genColLists(op), cl);
+      List<String> filterOpPrunedColListsOrderPreserved = preserveColumnOrder(op,
+          filterOpPrunedColLists);
       cppCtx.getPrunedColLists().put(op,
-          Utilities.mergeUniqElems(cppCtx.genColLists(op), cl));
+          filterOpPrunedColListsOrderPreserved);
 
       pruneOperator(cppCtx, op, cppCtx.getPrunedColLists().get(op));
 
@@ -143,14 +158,128 @@ public final class ColumnPrunerProcFactory {
   }
 
   /**
+   * - Pruning can only be done for Windowing. PTFs are black boxes,
+   *   we assume all columns are needed.
+   * - add column names referenced in WindowFn args and in WindowFn expressions
+   *   to the pruned list of the child Select Op.
+   * - finally we set the prunedColList on the ColumnPrunerContx;
+   *   and update the RR & signature on the PTFOp.
+   */
+  public static class ColumnPrunerPTFProc implements NodeProcessor {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+        Object... nodeOutputs) throws SemanticException {
+
+      PTFOperator op = (PTFOperator) nd;
+      PTFDesc conf = op.getConf();
+      //Since we cannot know what columns will be needed by a PTF chain,
+      //we do not prune columns on PTFOperator for PTF chains.
+      if (!conf.forWindowing()) {
+        return getDefaultProc().process(nd, stack, ctx, nodeOutputs);
+      }
+
+      ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
+      WindowTableFunctionDef def = (WindowTableFunctionDef) conf.getFuncDef();
+      ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
+
+      List<String> prunedCols = cppCtx.getPrunedColList(op.getChildOperators().get(0));
+      //we create a copy of prunedCols to create a list of pruned columns for PTFOperator
+      prunedCols = new ArrayList<String>(prunedCols);
+      prunedColumnsList(prunedCols, def);
+      RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
+      RowResolver newRR = buildPrunedRR(prunedCols, oldRR, sig);
+      cppCtx.getPrunedColLists().put(op, prunedInputList(prunedCols, def));
+      cppCtx.getOpToParseCtxMap().get(op).setRowResolver(newRR);
+      op.getSchema().setSignature(sig);
+      return null;
+    }
+
+    private static RowResolver buildPrunedRR(List<String> prunedCols,
+        RowResolver oldRR, ArrayList<ColumnInfo> sig) throws SemanticException{
+      RowResolver newRR = new RowResolver();
+      HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
+      for(ColumnInfo cInfo : oldRR.getRowSchema().getSignature()) {
+        if ( prunedColsSet.contains(cInfo.getInternalName())) {
+          String[] nm = oldRR.reverseLookup(cInfo.getInternalName());
+          newRR.put(nm[0], nm[1], cInfo);
+          sig.add(cInfo);
+        }
+      }
+      return newRR;
+    }
+
+    /*
+     * add any input columns referenced in WindowFn args or expressions.
+     */
+    private void prunedColumnsList(List<String> prunedCols, WindowTableFunctionDef tDef) {
+      if ( tDef.getWindowFunctions() != null ) {
+        for(WindowFunctionDef wDef : tDef.getWindowFunctions() ) {
+          if ( wDef.getArgs() == null) {
+            continue;
+          }
+          for(PTFExpressionDef arg : wDef.getArgs()) {
+            ExprNodeDesc exprNode = arg.getExprNode();
+            Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+          }
+        }
+      }
+      if ( tDef.getWindowExpressions() != null ) {
+        for(WindowExpressionDef expr : tDef.getWindowExpressions()) {
+          ExprNodeDesc exprNode = expr.getExprNode();
+          Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+        }
+      }
+     if(tDef.getPartition() != null){
+         for(PTFExpressionDef col : tDef.getPartition().getExpressions()){
+           ExprNodeDesc exprNode = col.getExprNode();
+           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+         }
+       }
+       if(tDef.getOrder() != null){
+         for(PTFExpressionDef col : tDef.getOrder().getExpressions()){
+           ExprNodeDesc exprNode = col.getExprNode();
+           Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
+         }
+       }
+    }
+
+    /*
+     * from the prunedCols list filter out columns that refer to WindowFns or WindowExprs
+     * the returned list is set as the prunedList needed by the PTFOp.
+     */
+    private ArrayList<String> prunedInputList(List<String> prunedCols,
+        WindowTableFunctionDef tDef) {
+      ArrayList<String> prunedInputCols = new ArrayList<String>();
+
+      StructObjectInspector OI = tDef.getInput().getOutputShape().getOI();
+      for(StructField f : OI.getAllStructFieldRefs()) {
+        String fName = f.getFieldName();
+        if ( prunedCols.contains(fName)) {
+          prunedInputCols.add(fName);
+        }
+      }
+
+      return prunedInputCols;
+    }
+  }
+
+  /**
+   * Factory method to get the ColumnPrunerGroupByProc class.
+   *
+   * @return ColumnPrunerGroupByProc
+   */
+  public static ColumnPrunerPTFProc getPTFProc() {
+    return new ColumnPrunerPTFProc();
+  }
+
+  /**
    * The Default Node Processor for Column Pruning.
    */
   public static class ColumnPrunerDefaultProc implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      cppCtx.getPrunedColLists().put((Operator<? extends Serializable>) nd,
-          cppCtx.genColLists((Operator<? extends Serializable>) nd));
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
+          cppCtx.genColLists((Operator<? extends OperatorDesc>) nd));
 
       return null;
     }
@@ -175,8 +304,8 @@ public final class ColumnPrunerProcFactory {
       TableScanOperator scanOp = (TableScanOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       List<String> cols = cppCtx
-          .genColLists((Operator<? extends Serializable>) nd);
-      cppCtx.getPrunedColLists().put((Operator<? extends Serializable>) nd,
+          .genColLists((Operator<? extends OperatorDesc>) nd);
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
           cols);
       ArrayList<Integer> needed_columns = new ArrayList<Integer>();
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
@@ -236,13 +365,13 @@ public final class ColumnPrunerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap = cppCtx
+      HashMap<Operator<? extends OperatorDesc>, OpParseContext> opToParseCtxMap = cppCtx
           .getOpToParseCtxMap();
       RowResolver redSinkRR = opToParseCtxMap.get(op).getRowResolver();
       ReduceSinkDesc conf = op.getConf();
-      List<Operator<? extends Serializable>> childOperators = op
+      List<Operator<? extends OperatorDesc>> childOperators = op
           .getChildOperators();
-      List<Operator<? extends Serializable>> parentOperators = op
+      List<Operator<? extends OperatorDesc>> parentOperators = op
           .getParentOperators();
 
       List<String> colLists = new ArrayList<String>();
@@ -254,7 +383,7 @@ public final class ColumnPrunerProcFactory {
       if ((childOperators.size() == 1)
           && (childOperators.get(0) instanceof JoinOperator)) {
         assert parentOperators.size() == 1;
-        Operator<? extends Serializable> par = parentOperators.get(0);
+        Operator<? extends OperatorDesc> par = parentOperators.get(0);
         JoinOperator childJoin = (JoinOperator) childOperators.get(0);
         RowResolver parRR = opToParseCtxMap.get(par).getRowResolver();
         List<String> childJoinCols = cppCtx.getJoinPrunedColLists().get(
@@ -275,6 +404,39 @@ public final class ColumnPrunerProcFactory {
               if (!colLists.contains(cInfo.getInternalName())) {
                 colLists.add(cInfo.getInternalName());
               }
+            }
+          }
+        }
+        Collections.sort(colLists);
+        pruneReduceSinkOperator(flags, op, cppCtx);
+      } else if ((childOperators.size() == 1)
+          && (childOperators.get(0) instanceof ExtractOperator )
+          && (childOperators.get(0).getChildOperators().size() == 1)
+          && (childOperators.get(0).getChildOperators().get(0) instanceof PTFOperator )
+          && ((PTFOperator)childOperators.get(0).
+              getChildOperators().get(0)).getConf().forWindowing() )  {
+
+        /*
+         * For RS that are followed by Extract & PTFOp for windowing
+         * - do the same thing as above. Reconstruct ValueColumn list based on what is required
+         *   by the PTFOp.
+         */
+
+        assert parentOperators.size() == 1;
+
+        PTFOperator ptfOp = (PTFOperator) childOperators.get(0).getChildOperators().get(0);
+        List<String> childCols = cppCtx.getPrunedColList(ptfOp);
+        boolean[] flags = new boolean[conf.getValueCols().size()];
+        for (int i = 0; i < flags.length; i++) {
+          flags[i] = false;
+        }
+        if (childCols != null && childCols.size() > 0) {
+          ArrayList<String> outColNames = op.getConf().getOutputValueColumnNames();
+          for(int i=0; i < outColNames.size(); i++ ) {
+            if ( childCols.contains(outColNames.get(i))) {
+              ExprNodeDesc exprNode = op.getConf().getValueCols().get(i);
+              flags[i] = true;
+              Utilities.mergeUniqElems(colLists, exprNode.getCols());
             }
           }
         }
@@ -311,9 +473,8 @@ public final class ColumnPrunerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       LateralViewJoinOperator op = (LateralViewJoinOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      List<String> cols = new ArrayList<String>();
+      List<String> cols = cppCtx.genColLists(op);
 
-      cols = cppCtx.genColLists(op);
       Map<String, ExprNodeDesc> colExprMap = op.getColumnExprMap();
 
       // As columns go down the DAG, the LVJ will transform internal column
@@ -329,9 +490,63 @@ public final class ColumnPrunerProcFactory {
           colsAfterReplacement.add(col);
         }
       }
+      // this is SEL(*) cols + UDTF cols
+      List<String> outputCols = op.getConf().getOutputInternalColNames();
+      if (outputCols.size() != cols.size()) {
+        // cause we cannot prune columns from UDTF branch currently, extract
+        // columns from SEL(*) branch only and append all columns from UDTF branch to it
+        ArrayList<String> newColNames = new ArrayList<String>();
+        for (String col : cols) {
+          int index = outputCols.indexOf(col);
+          // colExprMap.size() == size of cols from SEL(*) branch
+          if (index >= 0 && index < colExprMap.size()) {
+            newColNames.add(col);
+          }
+        }
+        newColNames.addAll(outputCols.subList(colExprMap.size(), outputCols.size()));
+        op.getConf().setOutputInternalColNames(newColNames);
+      }
 
       cppCtx.getPrunedColLists().put(op,
           colsAfterReplacement);
+      return null;
+    }
+  }
+
+  /**
+   * The Node Processor for Column Pruning on Lateral View Forward Operators.
+   */
+  public static class ColumnPrunerLateralViewForwardProc extends ColumnPrunerDefaultProc {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+        Object... nodeOutputs) throws SemanticException {
+      super.process(nd, stack, ctx, nodeOutputs);
+      LateralViewForwardOperator op = (LateralViewForwardOperator) nd;
+      ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
+
+      // get the SEL(*) branch
+      Operator<?> select = op.getChildOperators().get(LateralViewJoinOperator.SELECT_TAG);
+
+      // these are from ColumnPrunerSelectProc
+      List<String> cols = cppCtx.getPrunedColList(select);
+      RowResolver rr = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
+      if (rr.getColumnInfos().size() != cols.size()) {
+        ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+        ArrayList<String> outputColNames = new ArrayList<String>();
+        for (String col : cols) {
+          // revert output cols of SEL(*) to ExprNodeColumnDesc
+          String[] tabcol = rr.reverseLookup(col);
+          ColumnInfo colInfo = rr.get(tabcol[0], tabcol[1]);
+          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo.getType(),
+              colInfo.getInternalName(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          colList.add(colExpr);
+          outputColNames.add(col);
+        }
+        // replace SEL(*) to SEL(exprs)
+        ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
+        ((SelectDesc)select.getConf()).setColList(colList);
+        ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
+      }
       return null;
     }
   }
@@ -344,10 +559,10 @@ public final class ColumnPrunerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-      List<String> cols = new ArrayList<String>();
 
+      LateralViewJoinOperator lvJoin = null;
       if (op.getChildOperators() != null) {
-        for (Operator<? extends Serializable> child : op.getChildOperators()) {
+        for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
           // If one of my children is a FileSink or Script, return all columns.
           // Without this break, a bug in ReduceSink to Extract edge column
           // pruning will manifest
@@ -361,11 +576,22 @@ public final class ColumnPrunerProcFactory {
                 .put(op, cppCtx.getColsFromSelectExpr(op));
             return null;
           }
+          if (op.getConf().isSelStarNoCompute() && child instanceof LateralViewJoinOperator) {
+            // this SEL is SEL(*) for LV
+            lvJoin = (LateralViewJoinOperator) child;
+          }
         }
       }
-      cols = cppCtx.genColLists(op);
+      List<String> cols = cppCtx.genColLists(op);
 
       SelectDesc conf = op.getConf();
+
+      if (lvJoin != null) {
+        // get columns for SEL(*) from LVJ
+        RowResolver rr = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
+        cppCtx.getPrunedColLists().put(op, cppCtx.getSelectColsFromLVJoin(rr, cols));
+        return null;
+      }
       // The input to the select does not matter. Go over the expressions
       // and return the ones which have a marked column
       cppCtx.getPrunedColLists().put(op,
@@ -383,7 +609,7 @@ public final class ColumnPrunerProcFactory {
       }
       // by now, 'prunedCols' are columns used by child operators, and 'columns'
       // are columns used by this select operator.
-      ArrayList<String> originalOutputColumnNames = conf.getOutputColumnNames();
+      List<String> originalOutputColumnNames = conf.getOutputColumnNames();
       if (cols.size() < originalOutputColumnNames.size()) {
         ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();
@@ -421,14 +647,14 @@ public final class ColumnPrunerProcFactory {
      */
     private void handleChildren(SelectOperator op,
         List<String> retainedSelOutputCols, ColumnPrunerProcCtx cppCtx) throws SemanticException {
-      for (Operator<? extends Serializable> child : op.getChildOperators()) {
+      for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
         if (child instanceof ReduceSinkOperator) {
           boolean[] flags = getPruneReduceSinkOpRetainFlags(
               retainedSelOutputCols, (ReduceSinkOperator) child);
           pruneReduceSinkOperator(flags, (ReduceSinkOperator) child, cppCtx);
         } else if (child instanceof FilterOperator) {
           // filter operator has the same output columns as its parent
-          for (Operator<? extends Serializable> filterChild : child
+          for (Operator<? extends OperatorDesc> filterChild : child
               .getChildOperators()) {
             if (filterChild instanceof ReduceSinkOperator) {
               boolean[] flags = getPruneReduceSinkOpRetainFlags(
@@ -469,59 +695,39 @@ public final class ColumnPrunerProcFactory {
       ReduceSinkOperator reduce, ColumnPrunerProcCtx cppCtx) throws SemanticException {
     ReduceSinkDesc reduceConf = reduce.getConf();
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
-    Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
-    ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
     RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(reduce).getRowResolver();
-    RowResolver newRR = new RowResolver();
-    ArrayList<String> originalValueOutputColNames = reduceConf
-        .getOutputValueColumnNames();
-    java.util.ArrayList<ExprNodeDesc> originalValueEval = reduceConf
-        .getValueCols();
-    ArrayList<String> newOutputColNames = new ArrayList<String>();
-    java.util.ArrayList<ExprNodeDesc> newValueEval = new ArrayList<ExprNodeDesc>();
+    ArrayList<ColumnInfo> signature = oldRR.getRowSchema().getSignature();
+
+    List<String> valueColNames = reduceConf.getOutputValueColumnNames();
+    ArrayList<String> newValueColNames = new ArrayList<String>();
+
+    List<ExprNodeDesc> valueExprs = reduceConf.getValueCols();
+    ArrayList<ExprNodeDesc> newValueExprs = new ArrayList<ExprNodeDesc>();
+
     for (int i = 0; i < retainFlags.length; i++) {
-      if (retainFlags[i]) {
-        newValueEval.add(originalValueEval.get(i));
-        String outputCol = originalValueOutputColNames.get(i);
-        newOutputColNames.add(outputCol);
+      String outputCol = valueColNames.get(i);
+      ExprNodeDesc outputColExpr = valueExprs.get(i);
+      if (!retainFlags[i]) {
         String[] nm = oldRR.reverseLookup(outputCol);
         if (nm == null) {
           outputCol = Utilities.ReduceField.VALUE.toString() + "." + outputCol;
           nm = oldRR.reverseLookup(outputCol);
         }
-        newMap.put(outputCol, oldMap.get(outputCol));
-        ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
-        newRR.put(nm[0], nm[1], colInfo);
-        sig.add(colInfo);
+        ColumnInfo colInfo = oldRR.getFieldMap(nm[0]).remove(nm[1]);
+        oldRR.getInvRslvMap().remove(colInfo.getInternalName());
+        oldMap.remove(outputCol);
+        signature.remove(colInfo);
+      } else {
+        newValueColNames.add(outputCol);
+        newValueExprs.add(outputColExpr);
       }
     }
 
-    ArrayList<ExprNodeDesc> keyCols = reduceConf.getKeyCols();
-    List<String> keys = new ArrayList<String>();
-    RowResolver parResover = cppCtx.getOpToParseCtxMap().get(
-        reduce.getParentOperators().get(0)).getRowResolver();
-    for (int i = 0; i < keyCols.size(); i++) {
-      keys = Utilities.mergeUniqElems(keys, keyCols.get(i).getCols());
-    }
-    for (int i = 0; i < keys.size(); i++) {
-      String outputCol = keys.get(i);
-      String[] nm = parResover.reverseLookup(outputCol);
-      ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
-      if (colInfo != null) {
-        String internalName=colInfo.getInternalName();
-        newMap.put(internalName, oldMap.get(internalName));
-        newRR.put(nm[0], nm[1], colInfo);
-      }
-    }
-
-    cppCtx.getOpToParseCtxMap().get(reduce).setRowResolver(newRR);
-    reduce.setColumnExprMap(newMap);
-    reduce.getSchema().setSignature(sig);
-    reduceConf.setOutputValueColumnNames(newOutputColNames);
-    reduceConf.setValueCols(newValueEval);
+    reduceConf.setOutputValueColumnNames(newValueColNames);
+    reduceConf.setValueCols(newValueExprs);
     TableDesc newValueTable = PlanUtils.getReduceValueTableDesc(PlanUtils
         .getFieldSchemasFromColumnList(reduceConf.getValueCols(),
-        newOutputColNames, 0, ""));
+        newValueColNames, 0, ""));
     reduceConf.setValueSerializeInfo(newValueTable);
   }
 
@@ -536,6 +742,10 @@ public final class ColumnPrunerProcFactory {
 
   public static ColumnPrunerLateralViewJoinProc getLateralViewJoinProc() {
     return new ColumnPrunerLateralViewJoinProc();
+  }
+
+  public static ColumnPrunerLateralViewForwardProc getLateralViewForwardProc() {
+    return new ColumnPrunerLateralViewForwardProc();
   }
 
   /**
@@ -574,7 +784,7 @@ public final class ColumnPrunerProcFactory {
   }
 
   private static void pruneOperator(NodeProcessorCtx ctx,
-      Operator<? extends Serializable> op,
+      Operator<? extends OperatorDesc> op,
       List<String> cols)
       throws SemanticException {
     // the pruning needs to preserve the order of columns in the input schema
@@ -591,16 +801,42 @@ public final class ColumnPrunerProcFactory {
     }
   }
 
+  /**
+   * The pruning needs to preserve the order of columns in the input schema
+   * @param op
+   * @param cols
+   * @return
+   * @throws SemanticException
+   */
+  private static List<String> preserveColumnOrder(Operator<? extends OperatorDesc> op,
+      List<String> cols)
+      throws SemanticException {
+    RowSchema inputSchema = op.getSchema();
+    if (inputSchema != null) {
+      ArrayList<String> rs = new ArrayList<String>();
+      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
+      for (ColumnInfo i: inputCols) {
+        if (cols.contains(i.getInternalName())) {
+          rs.add(i.getInternalName());
+        }
+      }
+      return rs;
+    } else {
+      return cols;
+    }
+  }
+
+
   private static void pruneJoinOperator(NodeProcessorCtx ctx,
       CommonJoinOperator op, JoinDesc conf,
       Map<String, ExprNodeDesc> columnExprMap,
       Map<Byte, List<Integer>> retainMap, boolean mapJoin) throws SemanticException {
     ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
     Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
-    List<Operator<? extends Serializable>> childOperators = op
+    List<Operator<? extends OperatorDesc>> childOperators = op
         .getChildOperators();
 
-    for (Operator<? extends Serializable> child : childOperators) {
+    for (Operator<? extends OperatorDesc> child : childOperators) {
       if (child instanceof FileSinkOperator) {
         return;
       }
@@ -688,7 +924,7 @@ public final class ColumnPrunerProcFactory {
 
     }
 
-    for (Operator<? extends Serializable> child : childOperators) {
+    for (Operator<? extends OperatorDesc> child : childOperators) {
       if (child instanceof ReduceSinkOperator) {
         boolean[] flags = getPruneReduceSinkOpRetainFlags(childColLists,
             (ReduceSinkOperator) child);

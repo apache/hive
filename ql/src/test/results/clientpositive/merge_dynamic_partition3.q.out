@@ -103,11 +103,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
   Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -136,7 +138,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.merge_dynamic_part
 
-  Stage: Stage-5
+  Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
@@ -174,9 +176,29 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_dynamic_part
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.merge_dynamic_part
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
 
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp
 PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=11
@@ -184,6 +206,7 @@ PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=12
 PREHOOK: Output: default@merge_dynamic_part
 POSTHOOK: query: insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp
 POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=11
@@ -202,6 +225,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr order by ds, hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_dynamic_part
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
@@ -209,6 +233,7 @@ PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr order by ds, hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_dynamic_part
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11

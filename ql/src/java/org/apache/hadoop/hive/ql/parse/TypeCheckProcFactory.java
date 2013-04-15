@@ -31,6 +31,7 @@ import java.util.Stack;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
@@ -55,7 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -123,7 +125,7 @@ public final class TypeCheckProcFactory {
     return desc;
   }
 
-  public static HashMap<Node, Object> genExprNode(ASTNode expr,
+  public static Map<ASTNode, ExprNodeDesc> genExprNode(ASTNode expr,
       TypeCheckCtx tcCtx) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     // create a walker which walks the tree in a DFS manner while maintaining
@@ -136,7 +138,8 @@ public final class TypeCheckProcFactory {
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
         HiveParser.TinyintLiteral + "%|" +
         HiveParser.SmallintLiteral + "%|" +
-        HiveParser.BigintLiteral + "%"),
+        HiveParser.BigintLiteral + "%|" +
+        HiveParser.DecimalLiteral + "%"),
         getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
@@ -161,10 +164,23 @@ public final class TypeCheckProcFactory {
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(expr);
-    HashMap<Node, Object> nodeOutputs = new HashMap<Node, Object>();
+    HashMap<Node, Object> nodeOutputs = new LinkedHashMap<Node, Object>();
     ogw.startWalking(topNodes, nodeOutputs);
 
-    return nodeOutputs;
+    return convert(nodeOutputs);
+  }
+
+  // temporary type-safe casting
+  private static Map<ASTNode, ExprNodeDesc> convert(Map<Node, Object> outputs) {
+    Map<ASTNode, ExprNodeDesc> converted = new LinkedHashMap<ASTNode, ExprNodeDesc>();
+    for (Map.Entry<Node, Object> entry : outputs.entrySet()) {
+      if (entry.getKey() instanceof ASTNode && entry.getValue() instanceof ExprNodeDesc) {
+        converted.put((ASTNode)entry.getKey(), (ExprNodeDesc)entry.getValue());
+      } else {
+        LOG.warn("Invalid type entry " + entry);
+      }
+    }
+    return converted;
   }
 
   /**
@@ -237,6 +253,10 @@ public final class TypeCheckProcFactory {
           // Literal tinyint.
           v = Byte.valueOf(expr.getText().substring(
                 0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("BD")) {
+          // Literal decimal
+          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo, 
+                expr.getText().substring(0, expr.getText().length() - 2));
         } else {
           v = Double.valueOf(expr.getText());
           v = Long.valueOf(expr.getText());
@@ -432,7 +452,7 @@ public final class TypeCheckProcFactory {
             ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
             return null;
           } else {
-            List<String> possibleColumnNames = input.getNonHiddenColumnNames(-1);
+            List<String> possibleColumnNames = input.getReferenceableColumnAliases(tableOrCol, -1);
             String reason = String.format("(possible column names are: %s)",
                 StringUtils.join(possibleColumnNames, ", "));
             ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0), reason),
@@ -443,9 +463,11 @@ public final class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          return new ExprNodeColumnDesc(colInfo.getType(), colInfo
+          ExprNodeColumnDesc exprNodColDesc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
               .getInternalName(), colInfo.getTabAlias(), colInfo
               .getIsVirtualCol());
+          exprNodColDesc.setSkewedCol(colInfo.isSkewedCol());
+          return exprNodColDesc;
         }
       }
 
@@ -470,6 +492,7 @@ public final class TypeCheckProcFactory {
     static HashMap<Integer, String> specialUnaryOperatorTextHashMap;
     static HashMap<Integer, String> specialFunctionTextHashMap;
     static HashMap<Integer, String> conversionFunctionTextHashMap;
+    static HashSet<Integer> windowingTokens;
     static {
       specialUnaryOperatorTextHashMap = new HashMap<Integer, String>();
       specialUnaryOperatorTextHashMap.put(HiveParser.PLUS, "positive");
@@ -479,35 +502,50 @@ public final class TypeCheckProcFactory {
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
       conversionFunctionTextHashMap = new HashMap<Integer, String>();
       conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN,
-          Constants.BOOLEAN_TYPE_NAME);
+          serdeConstants.BOOLEAN_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT,
-          Constants.TINYINT_TYPE_NAME);
+          serdeConstants.TINYINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT,
-          Constants.SMALLINT_TYPE_NAME);
+          serdeConstants.SMALLINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INT,
-          Constants.INT_TYPE_NAME);
+          serdeConstants.INT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT,
-          Constants.BIGINT_TYPE_NAME);
+          serdeConstants.BIGINT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT,
-          Constants.FLOAT_TYPE_NAME);
+          serdeConstants.FLOAT_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_DOUBLE,
-          Constants.DOUBLE_TYPE_NAME);
+          serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
-          Constants.STRING_TYPE_NAME);
+          serdeConstants.STRING_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
-          Constants.BINARY_TYPE_NAME);
+          serdeConstants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
-          Constants.TIMESTAMP_TYPE_NAME);
+          serdeConstants.TIMESTAMP_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_DECIMAL,
+          serdeConstants.DECIMAL_TYPE_NAME);
+
+      windowingTokens = new HashSet<Integer>();
+      windowingTokens.add(HiveParser.KW_OVER);
+      windowingTokens.add(HiveParser.TOK_PARTITIONINGSPEC);
+      windowingTokens.add(HiveParser.TOK_DISTRIBUTEBY);
+      windowingTokens.add(HiveParser.TOK_SORTBY);
+      windowingTokens.add(HiveParser.TOK_CLUSTERBY);
+      windowingTokens.add(HiveParser.TOK_WINDOWSPEC);
+      windowingTokens.add(HiveParser.TOK_WINDOWRANGE);
+      windowingTokens.add(HiveParser.TOK_WINDOWVALUES);
+      windowingTokens.add(HiveParser.KW_UNBOUNDED);
+      windowingTokens.add(HiveParser.KW_PRECEDING);
+      windowingTokens.add(HiveParser.KW_FOLLOWING);
+      windowingTokens.add(HiveParser.KW_CURRENT);
+      windowingTokens.add(HiveParser.TOK_TABSORTCOLNAMEASC);
+      windowingTokens.add(HiveParser.TOK_TABSORTCOLNAMEDESC);
     }
 
-    public static boolean isRedundantConversionFunction(ASTNode expr,
+    private static boolean isRedundantConversionFunction(ASTNode expr,
         boolean isFunction, ArrayList<ExprNodeDesc> children) {
       if (!isFunction) {
         return false;
       }
-      // children is always one less than the expr.getChildCount(), since the
-      // latter contains function name.
-      assert (children.size() == expr.getChildCount() - 1);
       // conversion functions take a single parameter
       if (children.size() != 1) {
         return false;
@@ -712,13 +750,13 @@ public final class TypeCheckProcFactory {
               children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
           Set<String> inferTypes = new HashSet<String>(Arrays.asList(
-              Constants.TINYINT_TYPE_NAME.toLowerCase(),
-              Constants.SMALLINT_TYPE_NAME.toLowerCase(),
-              Constants.INT_TYPE_NAME.toLowerCase(),
-              Constants.BIGINT_TYPE_NAME.toLowerCase(),
-              Constants.FLOAT_TYPE_NAME.toLowerCase(),
-              Constants.DOUBLE_TYPE_NAME.toLowerCase(),
-              Constants.STRING_TYPE_NAME.toLowerCase()
+              serdeConstants.TINYINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.SMALLINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.INT_TYPE_NAME.toLowerCase(),
+              serdeConstants.BIGINT_TYPE_NAME.toLowerCase(),
+              serdeConstants.FLOAT_TYPE_NAME.toLowerCase(),
+              serdeConstants.DOUBLE_TYPE_NAME.toLowerCase(),
+              serdeConstants.STRING_TYPE_NAME.toLowerCase()
               ));
 
           String constType = children.get(constIdx).getTypeString().toLowerCase();
@@ -732,19 +770,19 @@ public final class TypeCheckProcFactory {
 
             Number value = null;
             try {
-              if (columnType.equalsIgnoreCase(Constants.TINYINT_TYPE_NAME)) {
+              if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)) {
                 value = new Byte(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.SMALLINT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)) {
                 value = new Short(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.INT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)) {
                 value = new Integer(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
                 value = new Long(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.FLOAT_TYPE_NAME)) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
                 value = new Float(constValue);
-              } else if (columnType.equalsIgnoreCase(Constants.DOUBLE_TYPE_NAME)
-                  || (columnType.equalsIgnoreCase(Constants.STRING_TYPE_NAME)
-                     && !constType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME))) {
+              } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
+                  || (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
+                     && !constType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME))) {
                 // no smart inference for queries like "str_col = bigint_const"
                 triedDouble = true;
                 value = new Double(constValue);
@@ -756,7 +794,7 @@ public final class TypeCheckProcFactory {
               // the operator is EQUAL, return false due to the type mismatch
               if (triedDouble ||
                   (fi.getGenericUDF() instanceof GenericUDFOPEqual
-                  && !columnType.equals(Constants.STRING_TYPE_NAME))) {
+                  && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
                 return new ExprNodeConstantDesc(false);
               }
 
@@ -844,6 +882,57 @@ public final class TypeCheckProcFactory {
 
       ASTNode expr = (ASTNode) nd;
 
+      /*
+       * A Windowing specification get added as a child to a UDAF invocation to distinguish it
+       * from similar UDAFs but on different windows.
+       * The UDAF is translated to a WindowFunction invocation in the PTFTranslator.
+       * So here we just return null for tokens that appear in a Window Specification.
+       * When the traversal reaches up to the UDAF invocation its ExprNodeDesc is build using the
+       * ColumnInfo in the InputRR. This is similar to how UDAFs are handled in Select lists.
+       * The difference is that there is translation for Window related tokens, so we just
+       * return null;
+       */
+      if ( windowingTokens.contains(expr.getType())) {
+        return null;
+      }
+
+      if (expr.getType() == HiveParser.TOK_TABNAME) {
+        return null;
+      }
+
+      if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
+        RowResolver input = ctx.getInputRR();
+        ExprNodeColumnListDesc columnList = new ExprNodeColumnListDesc();
+        assert expr.getChildCount() <= 1;
+        if (expr.getChildCount() == 1) {
+          // table aliased (select a.*, for example)
+          ASTNode child = (ASTNode) expr.getChild(0);
+          assert child.getType() == HiveParser.TOK_TABNAME;
+          assert child.getChildCount() == 1;
+          String tableAlias = BaseSemanticAnalyzer.unescapeIdentifier(child.getChild(0).getText());
+          HashMap<String, ColumnInfo> columns = input.getFieldMap(tableAlias);
+          if (columns == null) {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(child));
+          }
+          for (Map.Entry<String, ColumnInfo> colMap : columns.entrySet()) {
+            ColumnInfo colInfo = colMap.getValue();
+            if (!colInfo.getIsVirtualCol()) {
+              columnList.addColumn(new ExprNodeColumnDesc(colInfo.getType(),
+                  colInfo.getInternalName(), colInfo.getTabAlias(), false));
+            }
+          }
+        } else {
+          // all columns (select *, for example)
+          for (ColumnInfo colInfo : input.getColumnInfos()) {
+            if (!colInfo.getIsVirtualCol()) {
+              columnList.addColumn(new ExprNodeColumnDesc(colInfo.getType(),
+                  colInfo.getInternalName(), colInfo.getTabAlias(), false));
+            }
+          }
+        }
+        return columnList;
+      }
+
       // If the first child is a TOK_TABLE_OR_COL, and nodeOutput[0] is NULL,
       // and the operator is a DOT, then it's a table column reference.
       if (expr.getType() == HiveParser.DOT
@@ -875,7 +964,9 @@ public final class TypeCheckProcFactory {
         return null;
       }
 
-      boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION);
+      boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION ||
+          expr.getType() == HiveParser.TOK_FUNCTIONSTAR ||
+          expr.getType() == HiveParser.TOK_FUNCTIONDI);
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
@@ -883,12 +974,32 @@ public final class TypeCheckProcFactory {
           .getChildCount()
           - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
-        children.add((ExprNodeDesc) nodeOutputs[ci]);
+        if (nodeOutputs[ci] instanceof ExprNodeColumnListDesc) {
+          children.addAll(((ExprNodeColumnListDesc)nodeOutputs[ci]).getChildren());
+        } else {
+          children.add((ExprNodeDesc) nodeOutputs[ci]);
+        }
+      }
+
+      if (expr.getType() == HiveParser.TOK_FUNCTIONSTAR) {
+        RowResolver input = ctx.getInputRR();
+        for (ColumnInfo colInfo : input.getColumnInfos()) {
+          if (!colInfo.getIsVirtualCol()) {
+            children.add(new ExprNodeColumnDesc(colInfo.getType(),
+                colInfo.getInternalName(), colInfo.getTabAlias(), false));
+          }
+        }
       }
 
       // If any of the children contains null, then return a null
       // this is a hack for now to handle the group by case
       if (children.contains(null)) {
+        RowResolver input = ctx.getInputRR();
+        List<String> possibleColumnNames = input.getReferenceableColumnAliases(null, -1);
+        String reason = String.format("(possible column names are: %s)",
+            StringUtils.join(possibleColumnNames, ", "));
+        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(0), reason),
+            expr);
         return null;
       }
 

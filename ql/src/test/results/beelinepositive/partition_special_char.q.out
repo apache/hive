@@ -1,0 +1,47 @@
+Saving all output to "!!{outputDirectory}!!/partition_special_char.q.raw". Enter "record" with no arguments to stop it.
+>>>  !run !!{qFileDirectory}!!/partition_special_char.q
+>>>  create table sc as select * 
+from (select '2011-01-11', '2011-01-11+14:18:26' from src limit 1 
+union all 
+select '2011-01-11', '2011-01-11+15:18:26' from src limit 1 
+union all 
+select '2011-01-11', '2011-01-11+16:18:26' from src limit 1 ) s;
+'_c0','_c1'
+No rows selected 
+>>>  
+>>>  create table sc_part (key string) partitioned by (ts string) stored as rcfile;
+No rows affected 
+>>>  
+>>>  set hive.exec.dynamic.partition=true;
+No rows affected 
+>>>  set hive.exec.dynamic.partition.mode=nonstrict;
+No rows affected 
+>>>  
+>>>  insert overwrite table sc_part partition(ts) select * from sc;
+'_c0','_c1'
+No rows selected 
+>>>  show partitions sc_part;
+'partition'
+'ts=2011-01-11+14%3A18%3A26'
+'ts=2011-01-11+15%3A18%3A26'
+'ts=2011-01-11+16%3A18%3A26'
+3 rows selected 
+>>>  select count(*) from sc_part where ts is not null;
+'_c0'
+'3'
+1 row selected 
+>>>  
+>>>  insert overwrite table sc_part partition(ts) select * from sc;
+'_c0','_c1'
+No rows selected 
+>>>  show partitions sc_part;
+'partition'
+'ts=2011-01-11+14%3A18%3A26'
+'ts=2011-01-11+15%3A18%3A26'
+'ts=2011-01-11+16%3A18%3A26'
+3 rows selected 
+>>>  select count(*) from sc_part where ts is not null;
+'_c0'
+'3'
+1 row selected 
+>>>  !record

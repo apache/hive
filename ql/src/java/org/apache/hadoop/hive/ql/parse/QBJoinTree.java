@@ -22,7 +22,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Internal representation of the join tree.
@@ -39,6 +43,11 @@ public class QBJoinTree implements Serializable{
   private JoinCond[] joinCond;
   private boolean noOuterJoin;
   private boolean noSemiJoin;
+  private Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
+
+  // The subquery identifier from QB.
+  // It is of the form topSubQuery:innerSubQuery:....:innerMostSubQuery
+  private String id;
 
   // keeps track of the right-hand-side table name of the left-semi-join, and
   // its list of join keys
@@ -52,6 +61,9 @@ public class QBJoinTree implements Serializable{
 
   // filters
   private ArrayList<ArrayList<ASTNode>> filters;
+
+  // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
+  private int[][] filterMap;
 
   // filters for pushing
   private ArrayList<ArrayList<ASTNode>> filtersForPushing;
@@ -71,6 +83,7 @@ public class QBJoinTree implements Serializable{
     noOuterJoin = true;
     noSemiJoin = true;
     rhsSemijoin = new HashMap<String, ArrayList<ASTNode>>();
+    aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
   }
 
   /**
@@ -304,5 +317,33 @@ public class QBJoinTree implements Serializable{
 
   public void setNullSafes(ArrayList<Boolean> nullSafes) {
     this.nullsafes = nullSafes;
+  }
+
+  public void addFilterMapping(int outer, int target, int length) {
+    filterMap[outer] = new int[] { target, length };
+  }
+
+  public int[][] getFilterMap() {
+    return filterMap;
+  }
+
+  public void setFilterMap(int[][] filterMap) {
+    this.filterMap = filterMap;
+  }
+
+  public Map<String, Operator<? extends OperatorDesc>> getAliasToOpInfo() {
+    return aliasToOpInfo;
+  }
+
+  public void setAliasToOpInfo(Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo) {
+    this.aliasToOpInfo = aliasToOpInfo;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 }

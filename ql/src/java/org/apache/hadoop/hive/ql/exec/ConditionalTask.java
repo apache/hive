@@ -84,16 +84,22 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     for (Task<? extends Serializable> tsk : getListTasks()) {
       if (!resTasks.contains(tsk)) {
         driverContext.getRunnable().remove(tsk);
-        console.printInfo(HadoopJobExecHelper.getJobEndMsg("" + Utilities.randGen.nextInt())
-            + ", job is filtered out (removed at runtime).");
+        console.printInfo(tsk.getId() + " is filtered out by condition resolver.");
         if (tsk.isMapRedTask()) {
           driverContext.incCurJobNo(1);
         }
         //recursively remove this task from its children's parent task
         tsk.removeFromChildrenTasks();
       } else {
+        if (getParentTasks() != null) {
+          // This makes it so that we can go back up the tree later
+          for (Task<? extends Serializable> task : getParentTasks()) {
+            task.addDependentTask(tsk);
+          }
+        }
         // resolved task
         if (!driverContext.getRunnable().contains(tsk)) {
+          console.printInfo(tsk.getId() + " is selected by condition resolver.");
           driverContext.addToRunnable(tsk);
         }
       }

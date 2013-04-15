@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,6 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * TestMetaStoreEventListener. Test case for
@@ -60,45 +61,41 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * {@link org.apache.hadoop.hive.metastore.MetaStorePreEventListener}
  */
 public class TestMetaStoreEventListener extends TestCase {
-  private static final String msPort = "20001";
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
   private Driver driver;
 
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[]{msPort});
-      } catch (Throwable e) {
-        e.printStackTrace(System.err);
-        assert false;
-      }
-    }
-  }
+  private static final String dbName = "tmpdb";
+  private static final String tblName = "tmptbl";
+  private static final String renamed = "tmptbl2";
 
   @Override
   protected void setUp() throws Exception {
 
     super.setUp();
-    System.setProperty(ConfVars.METASTORE_EVENT_LISTENERS.varname,
+
+    System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
-    System.setProperty(ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
+    System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
-    Thread t = new Thread(new RunMS());
-    t.start();
-    Thread.sleep(40000);
+
+    int port = MetaStoreUtils.findFreePort();
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf, null);
     driver = new Driver(hiveConf);
+
+    driver.run("drop database if exists " + dbName + " cascade");
+
+    DummyListener.notifyList.clear();
+    DummyPreListener.notifyList.clear();
   }
 
   @Override
@@ -123,6 +120,10 @@ public class TestMetaStoreEventListener extends TestCase {
 
   private void validateAddPartition(Partition expectedPartition, Partition actualPartition) {
     assertEquals(expectedPartition, actualPartition);
+  }
+
+  private void validateTableInAddPartition(Table expectedTable, Table actualTable) {
+    assertEquals(expectedTable, actualTable);
   }
 
   private void validatePartition(Partition expectedPartition, Partition actualPartition) {
@@ -167,6 +168,10 @@ public class TestMetaStoreEventListener extends TestCase {
     validatePartition(expectedPartition, actualPartition);
   }
 
+  private void validateTableInDropPartition(Table expectedTable, Table actualTable) {
+    validateTable(expectedTable, actualTable);
+  }
+
   private void validateDropTable(Table expectedTable, Table actualTable) {
     validateTable(expectedTable, actualTable);
   }
@@ -176,9 +181,6 @@ public class TestMetaStoreEventListener extends TestCase {
   }
 
   public void testListener() throws Exception {
-    String dbName = "tmpdb";
-    String tblName = "tmptbl";
-    String renamed = "tmptbl2";
     int listSize = 0;
 
     List<ListenerEvent> notifyList = DummyListener.notifyList;
@@ -222,6 +224,7 @@ public class TestMetaStoreEventListener extends TestCase {
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     assert partEvent.getStatus();
     validateAddPartition(part, partEvent.getPartition());
+    validateTableInAddPartition(tbl, partEvent.getTable());
 
     PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
     validateAddPartition(part, prePartEvent.getPartition());
@@ -246,6 +249,22 @@ public class TestMetaStoreEventListener extends TestCase {
     validateAlterPartition(origP, origP, preAlterPartEvent.getDbName(),
         preAlterPartEvent.getTableName(), preAlterPartEvent.getNewPartition().getValues(),
         preAlterPartEvent.getNewPartition());
+
+    List<String> part_vals = new ArrayList<String>();
+    part_vals.add("c=2012");
+    Partition newPart = msc.appendPartition(dbName, tblName, part_vals);
+
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    assertEquals(preNotifyList.size(), listSize);
+
+    AddPartitionEvent appendPartEvent =
+        (AddPartitionEvent)(notifyList.get(listSize-1));
+    validateAddPartition(newPart, appendPartEvent.getPartition());
+
+    PreAddPartitionEvent preAppendPartEvent =
+        (PreAddPartitionEvent)(preNotifyList.get(listSize-1));
+    validateAddPartition(newPart, preAppendPartEvent.getPartition());
 
     driver.run(String.format("alter table %s rename to %s", tblName, renamed));
     listSize++;
@@ -308,9 +327,11 @@ public class TestMetaStoreEventListener extends TestCase {
     DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
     assert dropPart.getStatus();
     validateDropPartition(part, dropPart.getPartition());
+    validateTableInDropPartition(tbl, dropPart.getTable());
 
     PreDropPartitionEvent preDropPart = (PreDropPartitionEvent)preNotifyList.get(listSize - 1);
     validateDropPartition(part, preDropPart.getPartition());
+    validateTableInDropPartition(tbl, preDropPart.getTable());
 
     driver.run("drop table " + tblName);
     listSize++;
@@ -337,4 +358,5 @@ public class TestMetaStoreEventListener extends TestCase {
     assert dropDB.getStatus();
     validateDropDb(db, preDropDB.getDatabase());
   }
+
 }

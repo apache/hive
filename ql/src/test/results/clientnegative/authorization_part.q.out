@@ -1,6 +1,10 @@
-PREHOOK: query: create table authorization_part_fail (key int, value string) partitioned by (ds string)
+PREHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_part_fail (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table authorization_part_fail (key int, value string) partitioned by (ds string)
+POSTHOOK: query: -- SORT_BEFORE_DIFF
+
+create table authorization_part_fail (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_part_fail
 PREHOOK: query: ALTER TABLE authorization_part_fail SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
@@ -113,10 +117,12 @@ privilege	Select
 grantor	hive_test_user	
 PREHOOK: query: select key, value from authorization_part_fail where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part_fail
 PREHOOK: Input: default@authorization_part_fail@ds=2010
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from authorization_part_fail where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part_fail
 POSTHOOK: Input: default@authorization_part_fail@ds=2010
 #### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
@@ -190,10 +196,12 @@ privilege	Select
 grantor	hive_test_user	
 PREHOOK: query: select key, value from authorization_part_fail where ds='2011' order by key limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part_fail
 PREHOOK: Input: default@authorization_part_fail@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from authorization_part_fail where ds='2011' order by key limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part_fail
 POSTHOOK: Input: default@authorization_part_fail@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
@@ -222,11 +230,13 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).value SIMPLE [(src
 19	val_19
 PREHOOK: query: select key,value, ds from authorization_part_fail where ds>='2010' order by key, ds limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part_fail
 PREHOOK: Input: default@authorization_part_fail@ds=2010
 PREHOOK: Input: default@authorization_part_fail@ds=2011
 #### A masked pattern was here ####
 POSTHOOK: query: select key,value, ds from authorization_part_fail where ds>='2010' order by key, ds limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part_fail
 POSTHOOK: Input: default@authorization_part_fail@ds=2010
 POSTHOOK: Input: default@authorization_part_fail@ds=2011
 #### A masked pattern was here ####

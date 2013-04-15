@@ -18,58 +18,210 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * Operator factory for MapJoin processing.
  */
 public final class MapJoinFactory {
 
-  public static int getPositionParent(AbstractMapJoinOperator<? extends MapJoinDesc> op, Stack<Node> stack) {
+  public static int getPositionParent(AbstractMapJoinOperator<? extends MapJoinDesc> op,
+      Stack<Node> stack) {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == op;
-    Operator<? extends Serializable> parent = (Operator<? extends Serializable>) stack
-        .get(size - 2);
-    List<Operator<? extends Serializable>> parOp = op.getParentOperators();
+    Operator<? extends OperatorDesc> parent =
+        (Operator<? extends OperatorDesc>) stack.get(size - 2);
+    List<Operator<? extends OperatorDesc>> parOp = op.getParentOperators();
     pos = parOp.indexOf(parent);
     assert pos < parOp.size();
     return pos;
   }
 
   /**
-   * TableScan followed by MapJoin.
+   * MapJoin processor.
+   * The user can specify a mapjoin hint to specify that the input should be processed as a
+   * mapjoin instead of map-reduce join. If hive.auto.convert.join is set to true, the
+   * user need not specify the hint explicitly, but hive will automatically process the joins
+   * as a mapjoin whenever possible. However, a join can only be processed as a bucketized
+   * map-side join or a sort merge join, if the user has provided the hint explicitly. This
+   * will be fixed as part of HIVE-3433, and eventually, we should remove support for mapjoin
+   * hint.
+   * However, currently, the mapjoin hint is processed as follows:
+   * A mapjoin will have 'n' parents for a n-way mapjoin, and therefore the mapjoin operator
+   * will be encountered 'n' times (one for each parent). Since a reduceSink operator is not
+   * allowed before a mapjoin, the task for the mapjoin will always be a root task. The task
+   * corresponding to the mapjoin is converted to a root task when the operator is encountered
+   * for the first time. When the operator is encountered subsequently, the current task is
+   * merged with the root task for the mapjoin. Note that, it is possible that the map-join task
+   * may be performed as a bucketized map-side join (or sort-merge join), the map join operator
+   * is enhanced to contain the bucketing info. when it is encountered.
    */
-  public static class TableScanMapJoin implements NodeProcessor {
+  private static class TableScanMapJoinProcessor implements NodeProcessor {
 
+    public static void setupBucketMapJoinInfo(MapredWork plan,
+        AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
+      if (currMapJoinOp != null) {
+        Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
+            currMapJoinOp.getConf().getAliasBucketFileNameMapping();
+        if (aliasBucketFileNameMapping != null) {
+          MapredLocalWork localPlan = plan.getMapLocalWork();
+          if (localPlan == null) {
+            if (currMapJoinOp instanceof SMBMapJoinOperator) {
+              localPlan = ((SMBMapJoinOperator) currMapJoinOp).getConf().getLocalWork();
+            }
+          } else {
+            // local plan is not null, we want to merge it into SMBMapJoinOperator's local work
+            if (currMapJoinOp instanceof SMBMapJoinOperator) {
+              MapredLocalWork smbLocalWork = ((SMBMapJoinOperator) currMapJoinOp).getConf()
+                  .getLocalWork();
+              if (smbLocalWork != null) {
+                localPlan.getAliasToFetchWork().putAll(smbLocalWork.getAliasToFetchWork());
+                localPlan.getAliasToWork().putAll(smbLocalWork.getAliasToWork());
+              }
+            }
+          }
+
+          if (localPlan == null) {
+            return;
+          }
+
+          if (currMapJoinOp instanceof SMBMapJoinOperator) {
+            plan.setMapLocalWork(null);
+            ((SMBMapJoinOperator) currMapJoinOp).getConf().setLocalWork(localPlan);
+          } else {
+            plan.setMapLocalWork(localPlan);
+          }
+          BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
+          localPlan.setBucketMapjoinContext(bucketMJCxt);
+          bucketMJCxt.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
+          bucketMJCxt.setBucketFileNameMapping(
+              currMapJoinOp.getConf().getBigTableBucketNumMapping());
+          localPlan.setInputFileChangeSensitive(true);
+          bucketMJCxt.setMapJoinBigTableAlias(currMapJoinOp.getConf().getBigTableAlias());
+          bucketMJCxt
+              .setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
+          bucketMJCxt.setBigTablePartSpecToFileMapping(
+              currMapJoinOp.getConf().getBigTablePartSpecToFileMapping());
+          // BucketizedHiveInputFormat should be used for either sort merge join or bucket map join
+          if ((currMapJoinOp instanceof SMBMapJoinOperator)
+              || (currMapJoinOp.getConf().isBucketMapJoin())) {
+            plan.setUseBucketizedHiveInputFormat(true);
+          }
+        }
+      }
+    }
+
+    /**
+     * Initialize the current plan by adding it to root tasks. Since a reduce sink
+     * cannot be present before a mapjoin, and the mapjoin operator is encountered
+     * for the first time, the task corresposding to the mapjoin is added to the
+     * root tasks.
+     *
+     * @param op
+     *          the map join operator encountered
+     * @param opProcCtx
+     *          processing context
+     * @param pos
+     *          position of the parent
+     */
+    private static void initMapJoinPlan(AbstractMapJoinOperator<? extends MapJoinDesc> op,
+        GenMRProcContext opProcCtx, int pos)
+        throws SemanticException {
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx =
+          opProcCtx.getMapCurrCtx();
+      int parentPos = (pos == -1) ? 0 : pos;
+      GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(
+          parentPos));
+      Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+      MapredWork plan = (MapredWork) currTask.getWork();
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+          opProcCtx.getOpTaskMap();
+      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+
+      MapJoinDesc desc = (MapJoinDesc) op.getConf();
+
+      // The map is overloaded to keep track of mapjoins also
+      opTaskMap.put(op, currTask);
+
+      List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
+      assert (!rootTasks.contains(currTask));
+      rootTasks.add(currTask);
+
+      assert currTopOp != null;
+      opProcCtx.getSeenOps().add(currTopOp);
+
+      String currAliasId = opProcCtx.getCurrAliasId();
+      boolean local = (pos == desc.getPosBigTable()) ? false : true;
+      GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
+      setupBucketMapJoinInfo(plan, op);
+    }
+
+    /**
+     * Merge the current task with the task for the current mapjoin. The mapjoin operator
+     * has already been encountered.
+     *
+     * @param op
+     *          operator being processed
+     * @param oldTask
+     *          the old task for the current mapjoin
+     * @param opProcCtx
+     *          processing context
+     * @param pos
+     *          position of the parent in the stack
+     */
+    public static void joinMapJoinPlan(AbstractMapJoinOperator<? extends OperatorDesc> op,
+        Task<? extends Serializable> oldTask,
+        GenMRProcContext opProcCtx, int pos)
+        throws SemanticException {
+      MapredWork plan = (MapredWork) oldTask.getWork();
+      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
+
+      List<Operator<? extends OperatorDesc>> seenOps = opProcCtx.getSeenOps();
+      String currAliasId = opProcCtx.getCurrAliasId();
+
+      if (!seenOps.contains(currTopOp)) {
+        seenOps.add(currTopOp);
+        boolean local = false;
+        if (pos != -1) {
+          local = (pos == ((MapJoinDesc) op.getConf()).getPosBigTable()) ? false
+              : true;
+        }
+        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
+        setupBucketMapJoinInfo(plan, op);
+      }
+      currTopOp = null;
+      opProcCtx.setCurrTopOp(currTopOp);
+      opProcCtx.setCurrTask(oldTask);
+    }
+
+    /*
+     * The mapjoin operator will be encountered many times (n times for a n-way join). Since a
+     * reduceSink operator is not allowed before a mapjoin, the task for the mapjoin will always
+     * be a root task. The task corresponding to the mapjoin is converted to a root task when the
+     * operator is encountered for the first time. When the operator is encountered subsequently,
+     * the current task is merged with the root task for the mapjoin. Note that, it is possible
+     * that the map-join task may be performed as a bucketized map-side join (or sort-merge join),
+     * the map join operator is enhanced to contain the bucketing info. when it is encountered.
+     */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -79,304 +231,33 @@ public final class MapJoinFactory {
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
 
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
-      Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
+      Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
       String currAliasId = mapredCtx.getCurrAliasId();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
-      Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
+      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+          ctx.getOpTaskMap();
+      Task<? extends Serializable> opMapTask = opTaskMap.get(mapJoin);
 
       ctx.setCurrTopOp(currTopOp);
       ctx.setCurrAliasId(currAliasId);
       ctx.setCurrTask(currTask);
 
-      // If the plan for this reducer does not exist, initialize the plan
+      // If we are seeing this mapjoin for the first time, initialize the plan.
+      // If we are seeing this mapjoin for the second or later time then atleast one of the
+      // branches for this mapjoin have been encounered. Join the plan with the plan created
+      // the first time.
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, false, false, false, pos);
+        initMapJoinPlan(mapJoin, ctx, pos);
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
-        GenMapRedUtils.joinPlan(mapJoin, null, opMapTask, ctx, pos, false,
-            false, false);
-        currTask = opMapTask;
-        ctx.setCurrTask(currTask);
-      }
-
-      mapCurrCtx.put(mapJoin, new GenMapRedCtx(ctx.getCurrTask(), ctx
-          .getCurrTopOp(), ctx.getCurrAliasId()));
-      return null;
-    }
-  }
-
-  /**
-   * ReduceSink followed by MapJoin.
-   */
-  public static class ReduceSinkMapJoin implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
-      GenMRProcContext opProcCtx = (GenMRProcContext) procCtx;
-
-      ParseContext parseCtx = opProcCtx.getParseCtx();
-      MapredWork cplan = GenMapRedUtils.getMapRedWork(parseCtx);
-      Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
-          .getConf());
-      Task<? extends Serializable> currTask = opProcCtx.getCurrTask();
-
-      // find the branch on which this processor was invoked
-      int pos = getPositionParent(mapJoin, stack);
-      boolean local = (pos == ((mapJoin.getConf())).getPosBigTable()) ? false
-          : true;
-
-      GenMapRedUtils.splitTasks(mapJoin, currTask, redTask, opProcCtx, false,
-          local, pos);
-
-      currTask = opProcCtx.getCurrTask();
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-          .getOpTaskMap();
-      Task<? extends Serializable> opMapTask = opTaskMap.get(mapJoin);
-
-      // If the plan for this reducer does not exist, initialize the plan
-      if (opMapTask == null) {
-        assert cplan.getReducer() == null;
-        opTaskMap.put(mapJoin, currTask);
-        opProcCtx.setCurrMapJoinOp(null);
-      } else {
-        // The current plan can be thrown away after being merged with the
-        // original plan
-        GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, opProcCtx, pos,
-            false, false, false);
-        currTask = opMapTask;
-        opProcCtx.setCurrTask(currTask);
-      }
-
-      return null;
-    }
-  }
-
-  /**
-   * MapJoin followed by Select.
-   */
-  public static class MapJoin implements NodeProcessor {
-
-    /**
-     * Create a task by splitting the plan below the join. The reason, we have
-     * to do so in the processing of Select and not MapJoin is due to the
-     * walker. While processing a node, it is not safe to alter its children
-     * because that will decide the course of the walk. It is perfectly fine to
-     * muck around with its parents though, since those nodes have already been
-     * visited.
-     */
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      SelectOperator sel = (SelectOperator) nd;
-      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) sel.getParentOperators().get(
-          0);
-      assert sel.getParentOperators().size() == 1;
-
-      GenMRProcContext ctx = (GenMRProcContext) procCtx;
-      ParseContext parseCtx = ctx.getParseCtx();
-
-      // is the mapjoin followed by a reducer
-      List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOps = parseCtx
-          .getListMapJoinOpsNoReducer();
-
-      if (listMapJoinOps.contains(mapJoin)) {
-        ctx.setCurrAliasId(null);
-        ctx.setCurrTopOp(null);
-        Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
-            .getMapCurrCtx();
-        mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
-            ctx.getCurrTask(), null, null));
-        return null;
-      }
-
-      ctx.setCurrMapJoinOp(mapJoin);
-
-      Task<? extends Serializable> currTask = ctx.getCurrTask();
-      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mapJoin);
-      if (mjCtx == null) {
-        mjCtx = new GenMRMapJoinCtx();
-        ctx.setMapJoinCtx(mapJoin, mjCtx);
-      }
-
-      MapredWork mjPlan = GenMapRedUtils.getMapRedWork(parseCtx);
-      Task<? extends Serializable> mjTask = TaskFactory.get(mjPlan, parseCtx
-          .getConf());
-
-      TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
-          .getFieldSchemasFromRowSchema(mapJoin.getSchema(), "temporarycol"));
-
-      // generate the temporary file
-      Context baseCtx = parseCtx.getContext();
-      String taskTmpDir = baseCtx.getMRTmpFileURI();
-
-      // Add the path to alias mapping
-      mjCtx.setTaskTmpDir(taskTmpDir);
-      mjCtx.setTTDesc(tt_desc);
-      mjCtx.setRootMapJoinOp(sel);
-
-      sel.setParentOperators(null);
-
-      // Create a file sink operator for this file name
-      Operator<? extends Serializable> fs_op = OperatorFactory.get(
-          new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
-          HiveConf.ConfVars.COMPRESSINTERMEDIATE)), mapJoin.getSchema());
-
-      assert mapJoin.getChildOperators().size() == 1;
-      mapJoin.getChildOperators().set(0, fs_op);
-
-      List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
-      parentOpList.add(mapJoin);
-      fs_op.setParentOperators(parentOpList);
-
-      currTask.addDependentTask(mjTask);
-
-      ctx.setCurrTask(mjTask);
-      ctx.setCurrAliasId(null);
-      ctx.setCurrTopOp(null);
-
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
-          .getMapCurrCtx();
-      mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
-          ctx.getCurrTask(), null, null));
-
-      return null;
-    }
-  }
-
-  /**
-   * MapJoin followed by MapJoin.
-   */
-  public static class MapJoinMapJoin implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin = (AbstractMapJoinOperator<? extends MapJoinDesc>) nd;
-      GenMRProcContext ctx = (GenMRProcContext) procCtx;
-
-      ctx.getParseCtx();
-      AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = ctx.getCurrMapJoinOp();
-
-      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mapJoin);
-      if (mjCtx != null) {
-        mjCtx.setOldMapJoin(oldMapJoin);
-      } else {
-        ctx.setMapJoinCtx(mapJoin, new GenMRMapJoinCtx(null, null, null,
-            oldMapJoin));
-      }
-      ctx.setCurrMapJoinOp(mapJoin);
-
-      // find the branch on which this processor was invoked
-      int pos = getPositionParent(mapJoin, stack);
-
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
-          .getMapCurrCtx();
-      GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
-          pos));
-      Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      MapredWork currPlan = (MapredWork) currTask.getWork();
-      mapredCtx.getCurrAliasId();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
-      Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
-
-      ctx.setCurrTask(currTask);
-
-      // If the plan for this reducer does not exist, initialize the plan
-      if (opMapTask == null) {
-        assert currPlan.getReducer() == null;
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, false, false, pos);
-      } else {
-        // The current plan can be thrown away after being merged with the
-        // original plan
-        GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, ctx, pos, false,
-            true, false);
-        currTask = opMapTask;
-        ctx.setCurrTask(currTask);
-      }
-
-      mapCurrCtx.put(mapJoin, new GenMapRedCtx(ctx.getCurrTask(), null, null));
-      return null;
-    }
-  }
-
-  /**
-   * Union followed by MapJoin.
-   */
-  public static class UnionMapJoin implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      GenMRProcContext ctx = (GenMRProcContext) procCtx;
-
-      ParseContext parseCtx = ctx.getParseCtx();
-      UnionProcContext uCtx = parseCtx.getUCtx();
-
-      // union was map only - no special processing needed
-      if (uCtx.isMapOnlySubq()) {
-        return (new TableScanMapJoin())
-            .process(nd, stack, procCtx, nodeOutputs);
-      }
-
-      UnionOperator currUnion = ctx.getCurrUnionOp();
-      assert currUnion != null;
-      ctx.getUnionTask(currUnion);
-      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
-
-      // find the branch on which this processor was invoked
-      int pos = getPositionParent(mapJoin, stack);
-
-      Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
-          .getMapCurrCtx();
-      GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
-          pos));
-      Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      MapredWork currPlan = (MapredWork) currTask.getWork();
-      Operator<? extends Serializable> reducer = mapJoin;
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
-          .getOpTaskMap();
-      Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
-
-      // union result cannot be a map table
-      boolean local = (pos == (mapJoin.getConf()).getPosBigTable()) ? false
-          : true;
-      if (local) {
-        throw new SemanticException(ErrorMsg.INVALID_MAPJOIN_TABLE.getMsg());
-      }
-
-      // If the plan for this reducer does not exist, initialize the plan
-      if (opMapTask == null) {
-        assert currPlan.getReducer() == null;
-        ctx.setCurrMapJoinOp(mapJoin);
-        GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, true, false, pos);
-        ctx.setCurrUnionOp(null);
-      } else {
-        // The current plan can be thrown away after being merged with the
-        // original plan
-        Task<? extends Serializable> uTask = ctx.getUnionTask(
-            ctx.getCurrUnionOp()).getUTask();
-        if (uTask.getId().equals(opMapTask.getId())) {
-          GenMapRedUtils.joinPlan(mapJoin, null, opMapTask, ctx, pos, false,
-              false, true);
-        } else {
-          GenMapRedUtils.joinPlan(mapJoin, uTask, opMapTask, ctx, pos, false,
-              false, true);
-        }
+        joinMapJoinPlan(mapJoin, opMapTask, ctx, pos);
         currTask = opMapTask;
         ctx.setCurrTask(currTask);
       }
@@ -388,23 +269,7 @@ public final class MapJoinFactory {
   }
 
   public static NodeProcessor getTableScanMapJoin() {
-    return new TableScanMapJoin();
-  }
-
-  public static NodeProcessor getUnionMapJoin() {
-    return new UnionMapJoin();
-  }
-
-  public static NodeProcessor getReduceSinkMapJoin() {
-    return new ReduceSinkMapJoin();
-  }
-
-  public static NodeProcessor getMapJoin() {
-    return new MapJoin();
-  }
-
-  public static NodeProcessor getMapJoinMapJoin() {
-    return new MapJoinMapJoin();
+    return new TableScanMapJoinProcessor();
   }
 
   private MapJoinFactory() {

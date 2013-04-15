@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -94,11 +94,11 @@ public class SkewJoinHandler {
   List<Object> dummyKey = null;
   String taskId;
 
-  private final CommonJoinOperator<? extends Serializable> joinOp;
+  private final CommonJoinOperator<? extends OperatorDesc> joinOp;
   private final int numAliases;
   private final JoinDesc conf;
 
-  public SkewJoinHandler(CommonJoinOperator<? extends Serializable> joinOp) {
+  public SkewJoinHandler(CommonJoinOperator<? extends OperatorDesc> joinOp) {
     this.joinOp = joinOp;
     numAliases = joinOp.numAliases;
     conf = joinOp.getConf();
@@ -116,6 +116,7 @@ public class SkewJoinHandler {
     bigKeysExistingMap = new HashMap<Byte, Boolean>(numAliases);
     taskId = Utilities.getTaskId(hconf);
 
+    int[][] filterMap = desc.getFilterMap();
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
       List<ObjectInspector> skewTableKeyInspectors = new ArrayList<ObjectInspector>();
@@ -145,26 +146,26 @@ public class SkewJoinHandler {
         break;
       }
 
-      TableDesc valTblDesc = JoinUtil.getSpillTableDesc(alias,joinOp.spillTableDesc,conf,noOuterJoin);
+      boolean hasFilter = filterMap != null && filterMap[i] != null;
+      TableDesc valTblDesc = JoinUtil.getSpillTableDesc(alias,
+          joinOp.spillTableDesc, conf, !hasFilter);
       List<String> valColNames = new ArrayList<String>();
       if (valTblDesc != null) {
         valColNames = Utilities.getColumnNames(valTblDesc.getProperties());
       }
       StructObjectInspector structTblValInpector = ObjectInspectorFactory
           .getStandardStructObjectInspector(valColNames,
-          joinOp.joinValuesStandardObjectInspectors.get((byte) i));
+          joinOp.joinValuesStandardObjectInspectors[i]);
 
       StructObjectInspector structTblInpector = ObjectInspectorFactory
-          .getUnionStructObjectInspector(Arrays
-          .asList(new StructObjectInspector[] {structTblValInpector, structTblKeyInpector}));
+          .getUnionStructObjectInspector(Arrays.asList(structTblValInpector, structTblKeyInpector));
       skewKeysTableObjectInspector.put((byte) i, structTblInpector);
     }
 
     // reset rowcontainer's serde, objectinspector, and tableDesc.
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
-      RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage.get(Byte
-          .valueOf((byte) i));
+      RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage[i];
       if (rc != null) {
         rc.setSerDe(tblSerializers.get((byte) i), skewKeysTableObjectInspector
             .get((byte) i));
@@ -177,8 +178,7 @@ public class SkewJoinHandler {
     if (skewKeyInCurrentGroup) {
 
       String specPath = conf.getBigKeysDirMap().get((byte) currBigKeyTag);
-      RowContainer<ArrayList<Object>> bigKey = (RowContainer)joinOp.storage.get(Byte
-          .valueOf((byte) currBigKeyTag));
+      RowContainer<ArrayList<Object>> bigKey = (RowContainer)joinOp.storage[currBigKeyTag];
       Path outputPath = getOperatorOutputPath(specPath);
       FileSystem destFs = outputPath.getFileSystem(hconf);
       bigKey.copyToDFSDirecory(destFs, outputPath);
@@ -187,8 +187,7 @@ public class SkewJoinHandler {
         if (((byte) i) == currBigKeyTag) {
           continue;
         }
-        RowContainer<ArrayList<Object>> values = (RowContainer)joinOp.storage.get(Byte
-            .valueOf((byte) i));
+        RowContainer<ArrayList<Object>> values = (RowContainer)joinOp.storage[i];
         if (values != null) {
           specPath = conf.getSmallKeysDirMap().get((byte) currBigKeyTag).get(
               (byte) i);
@@ -215,8 +214,7 @@ public class SkewJoinHandler {
       skewKeyInCurrentGroup = false;
 
       for (int i = 0; i < numAliases; i++) {
-        RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage.get(Byte
-            .valueOf((byte) i));
+        RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage[i];
         if (rc != null) {
           rc.setKeyObject(dummyKey);
         }

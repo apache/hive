@@ -67,9 +67,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -81,13 +86,20 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Fetch Operator
@@ -143,9 +155,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -157,9 +174,14 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
@@ -196,6 +218,8 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a:src]
 
   Stage: Stage-2
     Map Reduce
@@ -267,6 +291,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -365,9 +391,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -379,13 +410,20 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
 
   Stage: Stage-0
     Fetch Operator
@@ -443,9 +481,14 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
+              numFiles 1
+              numPartitions 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -457,9 +500,14 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
+                numFiles 1
+                numPartitions 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
@@ -500,6 +548,8 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Truncated Path -> Alias:
+        /src [a:src]
 
   Stage: Stage-2
     Map Reduce
@@ -579,6 +629,8 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -607,3 +659,48 @@ POSTHOOK: Input: default@src
 1	one	1
 2	two	1
 3	three	1
+PREHOOK: query: drop table lazy_array_map
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table lazy_array_map
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table lazy_array_map (map_col map<int,string>, array_col array<string>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table lazy_array_map (map_col map<int,string>, array_col array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@lazy_array_map
+PREHOOK: query: INSERT OVERWRITE TABLE lazy_array_map select map(1,'one',2,'two',3,'three'), array('100','200','300') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@lazy_array_map
+POSTHOOK: query: INSERT OVERWRITE TABLE lazy_array_map select map(1,'one',2,'two',3,'three'), array('100','200','300') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@lazy_array_map
+POSTHOOK: Lineage: lazy_array_map.array_col EXPRESSION []
+POSTHOOK: Lineage: lazy_array_map.map_col EXPRESSION []
+PREHOOK: query: SELECT array_col, myCol from lazy_array_map lateral view explode(array_col) X AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_array_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_col, myCol from lazy_array_map lateral view explode(array_col) X AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_array_map
+#### A masked pattern was here ####
+POSTHOOK: Lineage: lazy_array_map.array_col EXPRESSION []
+POSTHOOK: Lineage: lazy_array_map.map_col EXPRESSION []
+["100","200","300"]	100
+["100","200","300"]	200
+["100","200","300"]	300
+PREHOOK: query: SELECT map_col, myKey, myValue from lazy_array_map lateral view explode(map_col) X AS myKey, myValue
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_array_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT map_col, myKey, myValue from lazy_array_map lateral view explode(map_col) X AS myKey, myValue
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_array_map
+#### A masked pattern was here ####
+POSTHOOK: Lineage: lazy_array_map.array_col EXPRESSION []
+POSTHOOK: Lineage: lazy_array_map.map_col EXPRESSION []
+{1:"one",2:"two",3:"three"}	1	one
+{1:"one",2:"two",3:"three"}	2	two
+{1:"one",2:"two",3:"three"}	3	three

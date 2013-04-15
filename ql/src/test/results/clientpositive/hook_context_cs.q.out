@@ -16,5 +16,6 @@ POSTHOOK: Input: default@vcsc
 POSTHOOK: Output: default@vcsc@ds=dummy
 POSTHOOK: query: SELECT a.c, b.c FROM vcsc a JOIN vcsc b ON a.ds = 'dummy' AND b.ds = 'dummy' AND a.c = b.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcsc
 POSTHOOK: Input: default@vcsc@ds=dummy
 #### A masked pattern was here ####

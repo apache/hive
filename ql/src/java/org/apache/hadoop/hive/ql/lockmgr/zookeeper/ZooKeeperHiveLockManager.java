@@ -18,43 +18,42 @@
 
 package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs.Ids;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import org.apache.zookeeper.KeeperException;
-
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 
 public class ZooKeeperHiveLockManager implements HiveLockManager {
   HiveLockManagerCtx ctx;
@@ -73,7 +72,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private int numRetriesForLock;
   private int numRetriesForUnLock;
 
-  private String clientIp;
+  private static String clientIp;
+
+  static {
+    clientIp = "UNKNOWN";
+    try {
+      InetAddress clientAddr = InetAddress.getLocalHost();
+      clientIp = clientAddr.getHostAddress();
+    } catch (Exception e1) {
+    }
+  }
 
   public ZooKeeperHiveLockManager() {
   }
@@ -102,12 +110,6 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
     numRetriesForLock = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
     numRetriesForUnLock = conf.getIntVar(HiveConf.ConfVars.HIVE_UNLOCK_NUMRETRIES);
-    clientIp = "UNKNOWN";
-    try {
-      InetAddress clientAddr = InetAddress.getLocalHost();
-      clientIp = clientAddr.getHostAddress();
-    } catch (Exception e1) {
-    }
 
     try {
       renewZookeeperInstance(sessionTimeout, quorumServers);
@@ -117,6 +119,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper.create("/" +  parent, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       } catch (KeeperException e) {
         // ignore if the parent already exists
+        if (e.code() != KeeperException.Code.NODEEXISTS) {
+          LOG.warn("Unexpected ZK exception when creating parent node /" + parent, e);
+        }
       }
 
     } catch (Exception e) {
@@ -217,7 +222,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       HiveLock lock = null;
       try {
-        lock = lock(lockObject.getObj(), lockObject.getMode(), false, true);
+        lock = lock(lockObject.getObj(), lockObject.getMode(), keepAlive, true);
       } catch (LockException e) {
         console.printError("Error in acquireLocks..." );
         LOG.error("Error in acquireLocks...", e);
@@ -248,9 +253,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       for (int pos = len-1; pos >= 0; pos--) {
         HiveLock hiveLock = hiveLocks.get(pos);
         try {
+          LOG.info(" about to release lock for " + hiveLock.getHiveLockObject().getName());
           unlock(hiveLock);
         } catch (LockException e) {
           // The lock may have been released. Ignore and continue
+          LOG.warn("Error when releasing lock", e);
         }
       }
     }
@@ -298,6 +305,10 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       try {
         if (tryNum > 1) {
           Thread.sleep(sleepTime);
+          if (zooKeeper.getState() == ZooKeeper.States.CLOSED) {
+            // Reconnect if the connection is closed.
+            zooKeeper = null;
+          }
           prepareRetry();
         }
         ret = lockPrimitive(key, mode, keepAlive, parentCreated);
@@ -567,8 +578,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         if (fetchData) {
           try {
             data = new HiveLockObjectData(new String(zkpClient.getData(curChild, new DummyWatcher(), null)));
+            data.setClientIp(clientIp);
           } catch (Exception e) {
-            LOG.error("Error in getting data for " + curChild + " " + e);
+            LOG.error("Error in getting data for " + curChild, e);
             // ignore error
           }
         }
@@ -589,15 +601,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper = null;
       }
     } catch (Exception e) {
-      // ignore all errors
+      LOG.warn("Exception while removing all redundant nodes", e);
     }
   }
 
   private void checkRedundantNode(String node) {
     try {
       // Nothing to do if it is a lock mode
-      if (getLockMode(ctx.getConf(), node) != null)
+      if (getLockMode(ctx.getConf(), node) != null) {
         return;
+      }
 
       List<String> children = zooKeeper.getChildren(node, false);
       for (String child : children) {
@@ -610,7 +623,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         zooKeeper.delete(node, -1);
       }
     } catch (Exception e) {
-      // ignore all errors
+      LOG.warn("Error in checkRedundantNode for node " + node, e);
     }
   }
 
@@ -713,8 +726,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     Matcher shMatcher = shMode.matcher(path);
     Matcher exMatcher = exMode.matcher(path);
 
-    if (shMatcher.matches())
+    if (shMatcher.matches()) {
       return HiveLockMode.SHARED;
+    }
 
     if (exMatcher.matches()) {
       return HiveLockMode.EXCLUSIVE;

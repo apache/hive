@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 public final class TypeInfoFactory {
 
-  static HashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new HashMap<String, TypeInfo>();
+  static ConcurrentHashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new ConcurrentHashMap<String, TypeInfo>();
 
   private TypeInfoFactory() {
     // prevent instantiation
@@ -53,17 +53,18 @@ public final class TypeInfoFactory {
     return result;
   }
 
-  public static final TypeInfo voidTypeInfo = getPrimitiveTypeInfo(Constants.VOID_TYPE_NAME);
-  public static final TypeInfo booleanTypeInfo = getPrimitiveTypeInfo(Constants.BOOLEAN_TYPE_NAME);
-  public static final TypeInfo intTypeInfo = getPrimitiveTypeInfo(Constants.INT_TYPE_NAME);
-  public static final TypeInfo longTypeInfo = getPrimitiveTypeInfo(Constants.BIGINT_TYPE_NAME);
-  public static final TypeInfo stringTypeInfo = getPrimitiveTypeInfo(Constants.STRING_TYPE_NAME);
-  public static final TypeInfo floatTypeInfo = getPrimitiveTypeInfo(Constants.FLOAT_TYPE_NAME);
-  public static final TypeInfo doubleTypeInfo = getPrimitiveTypeInfo(Constants.DOUBLE_TYPE_NAME);
-  public static final TypeInfo byteTypeInfo = getPrimitiveTypeInfo(Constants.TINYINT_TYPE_NAME);
-  public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(Constants.SMALLINT_TYPE_NAME);
-  public static final TypeInfo timestampTypeInfo = getPrimitiveTypeInfo(Constants.TIMESTAMP_TYPE_NAME);
-  public static final TypeInfo binaryTypeInfo = getPrimitiveTypeInfo(Constants.BINARY_TYPE_NAME);
+  public static final TypeInfo voidTypeInfo = getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME);
+  public static final TypeInfo booleanTypeInfo = getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME);
+  public static final TypeInfo intTypeInfo = getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
+  public static final TypeInfo longTypeInfo = getPrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
+  public static final TypeInfo stringTypeInfo = getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
+  public static final TypeInfo floatTypeInfo = getPrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
+  public static final TypeInfo doubleTypeInfo = getPrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
+  public static final TypeInfo byteTypeInfo = getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
+  public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
+  public static final TypeInfo timestampTypeInfo = getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
+  public static final TypeInfo binaryTypeInfo = getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
+  public static final TypeInfo decimalTypeInfo = getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME);
 
   public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
 
@@ -83,8 +84,8 @@ public final class TypeInfoFactory {
         .getTypeNameFromPrimitiveJava(clazz));
   }
 
-  static HashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo =
-    new HashMap<ArrayList<List<?>>, TypeInfo>();
+  static ConcurrentHashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo =
+    new ConcurrentHashMap<ArrayList<List<?>>, TypeInfo>();
 
   public static TypeInfo getStructTypeInfo(List<String> names,
       List<TypeInfo> typeInfos) {
@@ -99,8 +100,8 @@ public final class TypeInfoFactory {
     return result;
   }
 
-  static HashMap<List<?>, TypeInfo> cachedUnionTypeInfo =
-    new HashMap<List<?>, TypeInfo>();
+  static ConcurrentHashMap<List<?>, TypeInfo> cachedUnionTypeInfo =
+    new ConcurrentHashMap<List<?>, TypeInfo>();
 
   public static TypeInfo getUnionTypeInfo(List<TypeInfo> typeInfos) {
     TypeInfo result = cachedUnionTypeInfo.get(typeInfos);
@@ -111,7 +112,7 @@ public final class TypeInfoFactory {
     return result;
   }
 
-  static HashMap<TypeInfo, TypeInfo> cachedListTypeInfo = new HashMap<TypeInfo, TypeInfo>();
+  static ConcurrentHashMap<TypeInfo, TypeInfo> cachedListTypeInfo = new ConcurrentHashMap<TypeInfo, TypeInfo>();
 
   public static TypeInfo getListTypeInfo(TypeInfo elementTypeInfo) {
     TypeInfo result = cachedListTypeInfo.get(elementTypeInfo);
@@ -122,8 +123,8 @@ public final class TypeInfoFactory {
     return result;
   }
 
-  static HashMap<ArrayList<TypeInfo>, TypeInfo> cachedMapTypeInfo =
-    new HashMap<ArrayList<TypeInfo>, TypeInfo>();
+  static ConcurrentHashMap<ArrayList<TypeInfo>, TypeInfo> cachedMapTypeInfo =
+    new ConcurrentHashMap<ArrayList<TypeInfo>, TypeInfo>();
 
   public static TypeInfo getMapTypeInfo(TypeInfo keyTypeInfo,
       TypeInfo valueTypeInfo) {
