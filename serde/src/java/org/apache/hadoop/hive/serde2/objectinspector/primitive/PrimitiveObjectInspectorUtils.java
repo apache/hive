@@ -778,52 +778,48 @@ public final class PrimitiveObjectInspectorUtils {
     }
 
     HiveDecimal result = null;
-    try {
-      switch (oi.getPrimitiveCategory()) {
-      case VOID:
-        result = null;
-        break;
-      case BOOLEAN:
-        result = ((BooleanObjectInspector) oi).get(o) ?
-            HiveDecimal.ONE : HiveDecimal.ZERO;
-        break;
-      case BYTE:
-        result = new HiveDecimal(((ByteObjectInspector) oi).get(o));
-        break;
-      case SHORT:
-        result = new HiveDecimal(((ShortObjectInspector) oi).get(o));
-        break;
-      case INT:
-        result = new HiveDecimal(((IntObjectInspector) oi).get(o));
-        break;
-      case LONG:
-        result = new HiveDecimal(((LongObjectInspector) oi).get(o));
-        break;
-      case FLOAT:
-        Float f = ((FloatObjectInspector) oi).get(o);
-        result = new HiveDecimal(f.toString());
-        break;
-      case DOUBLE:
-        Double d = ((DoubleObjectInspector) oi).get(o);
-        result = new HiveDecimal(d.toString());
-        break;
-      case STRING:
-        result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
-        break;
-      case TIMESTAMP:
-        Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
+    switch (oi.getPrimitiveCategory()) {
+    case VOID:
+      result = null;
+      break;
+    case BOOLEAN:
+      result = ((BooleanObjectInspector) oi).get(o) ?
+        HiveDecimal.ONE : HiveDecimal.ZERO;
+      break;
+    case BYTE:
+      result = new HiveDecimal(((ByteObjectInspector) oi).get(o));
+      break;
+    case SHORT:
+      result = new HiveDecimal(((ShortObjectInspector) oi).get(o));
+      break;
+    case INT:
+      result = new HiveDecimal(((IntObjectInspector) oi).get(o));
+      break;
+    case LONG:
+      result = new HiveDecimal(((LongObjectInspector) oi).get(o));
+      break;
+    case FLOAT:
+      Float f = ((FloatObjectInspector) oi).get(o);
+      result = new HiveDecimal(f.toString());
+      break;
+    case DOUBLE:
+      Double d = ((DoubleObjectInspector) oi).get(o);
+      result = new HiveDecimal(d.toString());
+      break;
+    case STRING:
+      result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
+      break;
+    case TIMESTAMP:
+      Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
         .getDouble();
-        result = new HiveDecimal(ts.toString());
-        break;
-      case DECIMAL:
-        result = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
-        break;
-      default:
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
-    } catch(NumberFormatException e) {
-      // return null
+      result = new HiveDecimal(ts.toString());
+      break;
+    case DECIMAL:
+      result = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      break;
+    default:
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+                                 + oi.getTypeName());
     }
     return result;
   }
