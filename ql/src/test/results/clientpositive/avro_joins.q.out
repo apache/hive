@@ -77,8 +77,6 @@ PREHOOK: query: DESCRIBE doctors4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE doctors4
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 number              	int                 	from deserializer   
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   
@@ -152,8 +150,6 @@ PREHOOK: query: DESCRIBE episodes
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE episodes
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 title               	string              	from deserializer   
 air_date            	string              	from deserializer   
 doctor              	int                 	from deserializer   

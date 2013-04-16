@@ -7,8 +7,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -25,8 +23,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -43,8 +39,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -61,8 +55,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -79,8 +71,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -97,8 +87,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -115,8 +103,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -133,8 +119,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	from deserializer   
 b                   	string              	from deserializer   
 	 	 
@@ -151,8 +135,6 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	from deserializer   
 b                   	string              	from deserializer   
 	 	 
@@ -169,8 +151,6 @@ PREHOOK: query: describe alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 c                   	string              	None                
@@ -221,8 +201,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -239,8 +217,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -257,8 +233,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -275,8 +249,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -293,8 +265,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -311,8 +281,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -329,8 +297,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 	 	 
@@ -347,8 +313,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	from deserializer   
 b                   	string              	from deserializer   
 	 	 
@@ -365,8 +329,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	from deserializer   
 b                   	string              	from deserializer   
 	 	 
@@ -383,8 +345,6 @@ PREHOOK: query: DESCRIBE alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE alter1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 c                   	string              	None                

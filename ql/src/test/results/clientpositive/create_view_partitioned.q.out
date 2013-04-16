@@ -33,8 +33,6 @@ PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED vp1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 

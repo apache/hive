@@ -41,8 +41,6 @@ PREHOOK: query: describe extended alter5 partition (dt='a')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 dt                  	string              	None                
 	 	 
@@ -83,8 +81,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 dt                  	string              	None                
 	 	 
@@ -178,8 +174,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 dt                  	string              	None                
 	 	 
@@ -223,8 +217,6 @@ POSTHOOK: query: describe extended alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 dt                  	string              	None                
 	 	 

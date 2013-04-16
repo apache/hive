@@ -33,8 +33,6 @@ PREHOOK: query: DESCRIBE INPUTDDL2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                

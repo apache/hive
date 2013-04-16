@@ -60,8 +60,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                
@@ -78,8 +76,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                
@@ -139,8 +135,6 @@ POSTHOOK: query: describe extended alter3_like_renamed
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                
@@ -298,8 +292,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                
@@ -318,8 +310,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                
@@ -387,8 +377,6 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMP
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 pcol1               	string              	None                
 pcol2               	string              	None                

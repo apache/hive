@@ -15,8 +15,6 @@ PREHOOK: query: describe extended nzhang_part12
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part12
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                

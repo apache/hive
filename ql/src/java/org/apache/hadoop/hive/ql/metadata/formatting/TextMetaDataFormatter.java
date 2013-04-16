@@ -19,13 +19,14 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.io.DataOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -143,10 +144,11 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
                   MetaDataPrettyFormatUtils.getAllColumnsInformation(
                       cols, partCols, prettyOutputNumCols)
                 :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols)
+                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted)
               );
           } else {
-            outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
+            outStream.writeBytes(
+                MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted));
           }
 
           if (tableName.equals(colPath)) {
@@ -455,11 +457,13 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
         try {
             outStream.writeBytes(database);
             outStream.write(separator);
-            if (comment != null)
-                outStream.writeBytes(comment);
+            if (comment != null) {
+              outStream.writeBytes(comment);
+            }
             outStream.write(separator);
-            if (location != null)
-                outStream.writeBytes(location);
+            if (location != null) {
+              outStream.writeBytes(location);
+            }
             outStream.write(separator);
             if (params != null && !params.isEmpty()) {
                 outStream.writeBytes(params.toString());

@@ -2,8 +2,6 @@ PREHOOK: query: describe srcpart
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe srcpart
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -18,15 +16,11 @@ PREHOOK: query: describe srcpart.key
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe srcpart.key
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	from deserializer   
 PREHOOK: query: describe srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -41,8 +35,6 @@ PREHOOK: query: describe extended srcpart
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended srcpart
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -59,15 +51,11 @@ PREHOOK: query: describe extended srcpart.key
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended srcpart.key
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	from deserializer   
 PREHOOK: query: describe extended srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                

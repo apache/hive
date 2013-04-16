@@ -17,8 +17,6 @@ PREHOOK: query: describe int_string
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe int_string
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
@@ -39,8 +37,6 @@ PREHOOK: query: describe int_string partition (b='part1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe int_string partition (b='part1')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
