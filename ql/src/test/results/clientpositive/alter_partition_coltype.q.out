@@ -23,8 +23,6 @@ POSTHOOK: query: desc alter_coltype
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	string              	None                
@@ -1227,8 +1225,6 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	int                 	None                
@@ -1249,8 +1245,6 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	int                 	None                
@@ -1271,8 +1265,6 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	int                 	None                
@@ -1293,8 +1285,6 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).key SIMPLE [(src1)src
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	int                 	None                

@@ -7,16 +7,12 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 	 	 
@@ -34,16 +30,12 @@ PREHOOK: query: DESCRIBE table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	int                 	None                
 PREHOOK: query: DESCRIBE EXTENDED table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	int                 	None                
 	 	 
@@ -61,16 +53,12 @@ PREHOOK: query: DESCRIBE table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 	 	 
@@ -88,16 +76,12 @@ PREHOOK: query: DESCRIBE table4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table4
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table4
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 	 	 
@@ -115,16 +99,12 @@ PREHOOK: query: DESCRIBE table5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table5
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table5
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 	 	 

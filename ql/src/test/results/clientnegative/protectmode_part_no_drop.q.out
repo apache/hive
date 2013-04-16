@@ -31,8 +31,6 @@ PREHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 c1                  	string              	None                
 c2                  	string              	None                
 p                   	string              	None                

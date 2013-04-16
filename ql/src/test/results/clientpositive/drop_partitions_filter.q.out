@@ -7,8 +7,6 @@ PREHOOK: query: describe ptestfilter
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe ptestfilter
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	int                 	None                
 c                   	string              	None                

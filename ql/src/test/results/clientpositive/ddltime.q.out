@@ -7,8 +7,6 @@ PREHOOK: query: desc extended T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -29,8 +27,6 @@ POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -55,8 +51,6 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -85,8 +79,6 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -112,8 +104,6 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -154,8 +144,6 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -200,8 +188,6 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -250,8 +236,6 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                

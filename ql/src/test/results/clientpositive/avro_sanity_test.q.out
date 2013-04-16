@@ -63,8 +63,6 @@ PREHOOK: query: DESCRIBE doctors
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE doctors
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 number              	int                 	from deserializer   
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   

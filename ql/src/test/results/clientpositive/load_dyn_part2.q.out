@@ -11,8 +11,6 @@ PREHOOK: query: describe extended nzhang_part_bucket
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part_bucket
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 ds                  	string              	None                

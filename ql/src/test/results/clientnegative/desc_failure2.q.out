@@ -2,8 +2,6 @@ PREHOOK: query: DESC srcpart
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC srcpart
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                

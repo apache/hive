@@ -109,10 +109,10 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -2323,7 +2323,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       List<FieldSchema> cols = table.getCols();
       cols.addAll(table.getPartCols());
-      outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
+      outStream.writeBytes(
+          MetaDataFormatUtils.getAllColumnsInformation(cols, false));
       ((FSDataOutputStream) outStream).close();
       outStream = null;
     } catch (IOException e) {
