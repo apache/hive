@@ -163,8 +163,11 @@ public final class MapJoinFactory {
       opTaskMap.put(op, currTask);
 
       List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
-      assert (!rootTasks.contains(currTask));
-      rootTasks.add(currTask);
+      if(!rootTasks.contains(currTask)
+         && (currTask.getParentTasks() == null
+             || currTask.getParentTasks().isEmpty())) {
+        rootTasks.add(currTask);
+      }
 
       assert currTopOp != null;
       opProcCtx.getSeenOps().add(currTopOp);

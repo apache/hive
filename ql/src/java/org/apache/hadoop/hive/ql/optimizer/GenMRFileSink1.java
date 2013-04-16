@@ -204,7 +204,9 @@ public class GenMRFileSink1 implements NodeProcessor {
           (MapredWork) currTask.getWork(), false, ctx);
       }
 
-      if (!rootTasks.contains(currTask)) {
+      if (!rootTasks.contains(currTask)
+          && (currTask.getParentTasks() == null
+              || currTask.getParentTasks().isEmpty())) {
         rootTasks.add(currTask);
       }
     }
@@ -721,7 +723,9 @@ public class GenMRFileSink1 implements NodeProcessor {
               (MapredWork) currTask.getWork(), false, ctx);
         }
         opTaskMap.put(null, currTask);
-        if (!rootTasks.contains(currTask)) {
+        if (!rootTasks.contains(currTask)
+            && (currTask.getParentTasks() == null
+                || currTask.getParentTasks().isEmpty())) {
           rootTasks.add(currTask);
         }
       } else {
