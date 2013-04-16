@@ -219,15 +219,11 @@ PREHOOK: query: DESCRIBE view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 value               	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 value               	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -264,16 +260,12 @@ PREHOOK: query: DESCRIBE view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
@@ -312,15 +304,11 @@ PREHOOK: query: DESCRIBE view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 valoo               	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 valoo               	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -366,8 +354,6 @@ PREHOOK: query: DESCRIBE EXTENDED view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 valoo               	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -415,8 +401,6 @@ POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table and an external table 
 -- of comparison for view descriptions
 DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -424,8 +408,6 @@ PREHOOK: query: DESCRIBE EXTENDED src1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED src1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -438,8 +420,6 @@ POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparis
 -- view descriptions
 DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -485,8 +465,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 PREHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -524,8 +502,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 PREHOOK: query: DESCRIBE view4
@@ -533,8 +509,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
@@ -565,8 +539,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view5
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key1                	int                 	None                
 key2                	int                 	None                
 PREHOOK: query: -- verify that column name and comment in DDL portion
@@ -586,8 +558,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view6
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 valoo               	string              	I cannot spell      
 PREHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
@@ -718,8 +688,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 c                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -795,8 +763,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 m                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -872,8 +838,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 m                   	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -938,8 +902,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view10
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
@@ -1011,8 +973,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view11
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 boom                	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -1079,8 +1039,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 mycol               	int                 	None                
@@ -1165,8 +1123,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 	 	 
 #### A masked pattern was here ####
@@ -1262,8 +1218,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 k1                  	string              	None                
 v1                  	string              	None                
 k2                  	string              	None                
@@ -1394,8 +1348,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value_count         	bigint              	None                
 	 	 
@@ -1481,8 +1433,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 value               	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -1561,8 +1511,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 value               	string              	None                
 PREHOOK: query: -- Likewise, DROP VIEW IF EXISTS should ignore a matching table name
 DROP VIEW IF EXISTS table1
@@ -1580,8 +1528,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 PREHOOK: query: -- this should work since currently we don't track view->table

@@ -19,8 +19,6 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 aint                	int                 	from deserializer   
 astring             	string              	from deserializer   
 lint                	array<int>          	from deserializer   

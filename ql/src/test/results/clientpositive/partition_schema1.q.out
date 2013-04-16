@@ -19,8 +19,6 @@ POSTHOOK: query: desc partition_schema1 partition(dt='100')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	string              	None                
@@ -45,8 +43,6 @@ POSTHOOK: query: desc partition_schema1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 x                   	string              	None                
@@ -62,8 +58,6 @@ POSTHOOK: query: desc partition_schema1 partition (dt='100')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 dt                  	string              	None                

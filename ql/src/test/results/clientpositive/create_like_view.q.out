@@ -23,8 +23,6 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table1
@@ -70,8 +68,6 @@ PREHOOK: query: DESCRIBE table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table2
@@ -120,8 +116,6 @@ PREHOOK: query: DESCRIBE table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table3

@@ -62,16 +62,22 @@ public final class MetaDataFormatUtils {
     columnInformation.append(LINE_DELIM);
   }
 
-  public static String getAllColumnsInformation(List<FieldSchema> cols) {
+  public static String getAllColumnsInformation(List<FieldSchema> cols,
+      boolean printHeader) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatColumnsHeader(columnInformation);
+    if(printHeader){
+      formatColumnsHeader(columnInformation);
+    }
     formatAllFields(columnInformation, cols);
     return columnInformation.toString();
   }
 
-  public static String getAllColumnsInformation(List<FieldSchema> cols, List<FieldSchema> partCols) {
+  public static String getAllColumnsInformation(List<FieldSchema> cols, List<FieldSchema> partCols,
+      boolean printHeader) {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatColumnsHeader(columnInformation);
+    if(printHeader){
+      formatColumnsHeader(columnInformation);
+    }
     formatAllFields(columnInformation, cols);
 
     if ((partCols != null) && (!partCols.isEmpty())) {

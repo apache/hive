@@ -7,8 +7,6 @@ PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -23,8 +21,6 @@ PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
@@ -48,8 +44,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_txtfile
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -66,8 +60,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED textfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
