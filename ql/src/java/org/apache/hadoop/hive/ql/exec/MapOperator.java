@@ -138,7 +138,6 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     public void setOp(Operator<? extends OperatorDesc> op) {
       this.op = op;
     }
-
   }
 
   private static class MapOpCtx {
@@ -468,8 +467,8 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
 
   public void setChildren(Configuration hconf) throws HiveException {
 
-    Path fpath = new Path((new Path(HiveConf.getVar(hconf,
-        HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
+    Path fpath = new Path(HiveConf.getVar(hconf,
+        HiveConf.ConfVars.HADOOPMAPFILENAME));
 
     ArrayList<Operator<? extends OperatorDesc>> children =
       new ArrayList<Operator<? extends OperatorDesc>>();
@@ -481,7 +480,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
     try {
       for (String onefile : conf.getPathToAliases().keySet()) {
         MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile, convertedOI);
-        Path onepath = new Path(new Path(onefile).toUri().getPath());
+        Path onepath = new Path(onefile);
         List<String> aliases = conf.getPathToAliases().get(onefile);
 
         for (String onealias : aliases) {
@@ -513,7 +512,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
         // didn't find match for input file path in configuration!
         // serious problem ..
         LOG.error("Configuration does not have any alias for path: "
-            + fpath.toUri().getPath());
+            + fpath.toUri());
         throw new HiveException("Configuration and input path are inconsistent");
       }
 
