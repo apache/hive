@@ -7,8 +7,6 @@ PREHOOK: query: DESC EXTENDED table_p1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -21,8 +19,6 @@ PREHOOK: query: DESC EXTENDED table_p2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -37,8 +33,6 @@ PREHOOK: query: DESC EXTENDED table_p3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED table_p3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 	 	 
 #### A masked pattern was here ####

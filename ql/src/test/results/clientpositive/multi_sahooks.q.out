@@ -13,8 +13,6 @@ PREHOOK: query: desc extended tbl_sahook
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_sahook
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 c                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -41,8 +39,6 @@ PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 c                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -69,8 +65,6 @@ PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 c                   	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -99,8 +93,6 @@ PREHOOK: query: desc extended tbl_sahooks
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 c                   	string              	None                
 	 	 
 #### A masked pattern was here ####

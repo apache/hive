@@ -7,8 +7,6 @@ PREHOOK: query: DESCRIBE tmp_select
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE tmp_select
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	string              	None                
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_select SELECT key, value FROM src

@@ -817,9 +817,6 @@ public class TestJdbcDriver2 extends TestCase {
 
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
-    res.next(); // skip header 1
-    res.next(); // skip header 2
-
     res.next();
     assertEquals("Column name 'under_col' not found", "under_col", res.getString(1).trim());
     assertEquals("Column type 'under_col' for column under_col not found", "int", res

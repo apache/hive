@@ -7,8 +7,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -25,8 +23,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -42,8 +38,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -74,8 +68,6 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -99,8 +91,6 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -123,8 +113,6 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -139,8 +127,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -163,8 +149,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -186,8 +170,6 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                

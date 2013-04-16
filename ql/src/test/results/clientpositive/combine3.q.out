@@ -47,8 +47,6 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key 
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -69,8 +67,6 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key 
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                

@@ -43,8 +43,6 @@ PREHOOK: query: describe extended exim_employee
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended exim_employee
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 emp_id              	int                 	employee id         
 emp_country         	string              	two char iso code   
 emp_state           	string              	free text           

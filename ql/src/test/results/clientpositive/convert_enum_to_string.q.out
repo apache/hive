@@ -21,8 +21,6 @@ PREHOOK: query: describe convert_enum_to_string
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe convert_enum_to_string
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 my_bool             	boolean             	from deserializer   
 my_byte             	tinyint             	from deserializer   
 my_16bit_int        	smallint            	from deserializer   
