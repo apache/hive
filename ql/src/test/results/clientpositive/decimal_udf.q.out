@@ -2482,6 +2482,216 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 [{"x":-1.2345678901234567E9,"y":1.0},{"x":-148.75058823529412,"y":34.0},{"x":1.2345678901234567E9,"y":1.0}]
+PREHOOK: query: -- min
+EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- min
+EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION MIN (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: min(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: decimal
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: min(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: decimal
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+-1234567890.123456789
+PREHOOK: query: -- max
+EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- max
+EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION MAX (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: max(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: decimal
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: max(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: decimal
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+1234567890.12345678
+PREHOOK: query: -- count
+EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- count
+EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+36
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf

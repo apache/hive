@@ -514,6 +514,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_precision
 #### A masked pattern was here ####
 NULL	NULL
+PREHOOK: query: SELECT dec * cast('123456789012345678901234567890.123456789' as decimal) FROM DECIMAL_PRECISION LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dec * cast('123456789012345678901234567890.123456789' as decimal) FROM DECIMAL_PRECISION LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT * from DECIMAL_PRECISION WHERE dec > cast('123456789012345678901234567890.123456789' as decimal) LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from DECIMAL_PRECISION WHERE dec > cast('123456789012345678901234567890.123456789' as decimal) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+PREHOOK: query: SELECT dec * 123456789012345678901234567890.123456789 FROM DECIMAL_PRECISION LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dec * 123456789012345678901234567890.123456789 FROM DECIMAL_PRECISION LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT MIN(cast('123456789012345678901234567890.123456789' as decimal)) FROM DECIMAL_PRECISION
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(cast('123456789012345678901234567890.123456789' as decimal)) FROM DECIMAL_PRECISION
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT COUNT(cast('123456789012345678901234567890.123456789' as decimal)) FROM DECIMAL_PRECISION
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(cast('123456789012345678901234567890.123456789' as decimal)) FROM DECIMAL_PRECISION
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+0
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision

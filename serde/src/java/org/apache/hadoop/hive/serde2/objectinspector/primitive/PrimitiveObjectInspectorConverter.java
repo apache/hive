@@ -276,10 +276,14 @@ public class PrimitiveObjectInspectorConverter {
       if (input == null) {
         return null;
       }
-      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
-          inputOI));
+      
+      try {
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
+            inputOI));
+      } catch (NumberFormatException e) {
+        return null;
+      }
     }
-
   }
 
   public static class BinaryConverter implements Converter{
