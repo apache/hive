@@ -31,7 +31,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
 
   public static final HiveDecimal ZERO = new HiveDecimal(BigDecimal.ZERO);
 
-  public static final int MAX_PRECISION = 36; // multiple of 9 for compact representation
+  public static final int MAX_PRECISION = 38; // fits into 128 bits
 
   public static final HiveDecimal ONE = new HiveDecimal(BigDecimal.ONE);
 
