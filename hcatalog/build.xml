@@ -210,7 +210,8 @@
                  noqualifier="all"
                  windowtitle="HCatalog ${hcatalog.version} API"
                  doctitle="HCatalog ${hcatalog.version} API"
-                 failonerror="true">
+                 failonerror="true"
+                 useexternalfile="yes">
             <packageset dir="core/src/main/java"/>
             <packageset dir="hcatalog-pig-adapter/src/main/java"/>
             <packageset dir="server-extensions/src/main/java"/>
