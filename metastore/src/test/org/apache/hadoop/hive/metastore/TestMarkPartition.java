@@ -62,36 +62,36 @@ public class TestMarkPartition extends TestCase{
   InvalidPartitionException, UnknownPartitionException, InterruptedException {
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf, null);
     driver = new Driver(hiveConf);
-    driver.run("drop database if exists tmpdb cascade");
-    driver.run("create database tmpdb");
-    driver.run("use tmpdb");
+    driver.run("drop database if exists hive2215 cascade");
+    driver.run("create database hive2215");
+    driver.run("use hive2215");
     driver.run("drop table if exists tmptbl");
     driver.run("create table tmptbl (a string) partitioned by (b string)");
     driver.run("alter table tmptbl add partition (b='2011')");
     Map<String,String> kvs = new HashMap<String, String>();
     kvs.put("b", "'2011'");
-    msc.markPartitionForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
-    assert msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    msc.markPartitionForEvent("hive2215", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    assert msc.isPartitionMarkedForEvent("hive2215", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     Thread.sleep(10000);
-    assert !msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    assert !msc.isPartitionMarkedForEvent("hive2215", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
 
     kvs.put("b", "'2012'");
-    assert !msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    assert !msc.isPartitionMarkedForEvent("hive2215", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     try{
-      msc.markPartitionForEvent("tmpdb", "tmptbl2", kvs, PartitionEventType.LOAD_DONE);
+      msc.markPartitionForEvent("hive2215", "tmptbl2", kvs, PartitionEventType.LOAD_DONE);
       assert false;
     } catch(Exception e){
       assert e instanceof UnknownTableException;
     }
     try{
-      msc.isPartitionMarkedForEvent("tmpdb", "tmptbl2", kvs, PartitionEventType.LOAD_DONE);
+      msc.isPartitionMarkedForEvent("hive2215", "tmptbl2", kvs, PartitionEventType.LOAD_DONE);
       assert false;
     } catch(Exception e){
       assert e instanceof UnknownTableException;
     }
     kvs.put("a", "'2012'");
     try{
-      msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+      msc.isPartitionMarkedForEvent("hive2215", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
       assert false;
     } catch(Exception e){
       assert e instanceof InvalidPartitionException;
@@ -100,7 +100,7 @@ public class TestMarkPartition extends TestCase{
 
   @Override
   protected void tearDown() throws Exception {
-    driver.run("drop database if exists tmpdb cascade");
+    driver.run("drop database if exists hive2215 cascade");
     super.tearDown();
   }
 
