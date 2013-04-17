@@ -534,7 +534,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
                 for (int _i89 = 0; _i89 < _map88.size; ++_i89)
                 {
                   String _key90; // required
-                  String _val91; // optional
+                  String _val91; // required
                   _key90 = iprot.readString();
                   _val91 = iprot.readString();
                   struct.parameters.put(_key90, _val91);
@@ -647,7 +647,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
           for (int _i95 = 0; _i95 < _map94.size; ++_i95)
           {
             String _key96; // required
-            String _val97; // optional
+            String _val97; // required
             _key96 = iprot.readString();
             _val97 = iprot.readString();
             struct.parameters.put(_key96, _val97);

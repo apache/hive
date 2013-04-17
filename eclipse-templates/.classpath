@@ -49,7 +49,6 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-mapred-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jline-@jline.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/sqlline-@sqlline.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/json-@json.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/asm-@asm.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-compress-@commons-compress.version@.jar"/>

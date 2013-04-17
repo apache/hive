@@ -20,16 +20,16 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -166,7 +166,7 @@ public class GenericUDFReflect2 extends AbstractGenericUDFReflect {
         ((BytesWritable)returnObj).set((byte[])result, 0, ((byte[]) result).length);
         return returnObj;
       case DECIMAL:
-        ((BigDecimalWritable)returnObj).set((BigDecimal)result);
+        ((HiveDecimalWritable)returnObj).set((HiveDecimal)result);
         return returnObj;
     }
     throw new HiveException("Invalid type " + returnOI.getPrimitiveCategory());

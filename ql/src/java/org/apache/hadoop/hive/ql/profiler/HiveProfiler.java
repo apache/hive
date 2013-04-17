@@ -17,18 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.profiler;
 
-import java.lang.System;
-import java.util.LinkedList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Iterator;
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.OperatorHook;
 import org.apache.hadoop.hive.ql.exec.OperatorHookContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,41 +33,40 @@ public class HiveProfiler implements OperatorHook {
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private static final HiveProfilePublisher pub = new HiveProfilePublisher();
 
-  private LinkedList<HiveProfilerEntry> operatorCallStack =
-    new LinkedList<HiveProfilerEntry>();
+  private final Map<String, HiveProfilerEntry> operatorCallStack =
+    new ConcurrentHashMap<String, HiveProfilerEntry>();
 
   // Aggregates stats for each operator in memory so that stats are written to DB
   // all at once - this allows the profiler to be extremely lightweight in
   // communication with the DB
-  private Map<String, HiveProfilerStats> aggrStats =
-    new HashMap<String, HiveProfilerStats>();
+  private final Map<String, HiveProfilerStats> aggrStats =
+    new ConcurrentHashMap<String, HiveProfilerStats>();
 
   public void enter(OperatorHookContext opHookContext) throws HiveException {
+    String opLevelAnnoName = HiveProfilerUtils.getLevelAnnotatedName(opHookContext);
     HiveProfilerEntry curEntry = new HiveProfilerEntry(opHookContext);
-    operatorCallStack.addFirst(curEntry);
+    assert(operatorCallStack.get(opLevelAnnoName) == null);
+    operatorCallStack.put(opLevelAnnoName, curEntry);
   }
 
-  private void exit(HiveProfilerEntry curEntry, HiveProfilerEntry parentEntry) {
+  private void exit(HiveProfilerEntry curEntry) {
     OperatorHookContext opHookContext = curEntry.getOperatorHookContext();
-
     // update the metrics we are
     long exitTime = System.nanoTime();
     long wallTime = exitTime - curEntry.wallStartTime;
 
     String opName = opHookContext.getOperatorName();
 
-    OperatorHookContext parentContext =
-      parentEntry != null ? parentEntry.getOperatorHookContext() :
-        null;
     Configuration conf = opHookContext.getOperator().getConfiguration();
 
-    String opId = opHookContext.getOperatorId();
-    if (aggrStats.containsKey(opId)) {
-      aggrStats.get(opId).updateStats(wallTime, 1);
+    String opLevelAnnoName = HiveProfilerUtils.getLevelAnnotatedName(opHookContext);
+
+    if (aggrStats.containsKey(opLevelAnnoName)) {
+      aggrStats.get(opLevelAnnoName).updateStats(wallTime, 1);
     } else {
       HiveProfilerStats stats =
-        new HiveProfilerStats(opHookContext, parentContext, 1, wallTime, conf);
-      aggrStats.put(opId, stats);
+        new HiveProfilerStats(opHookContext, 1, wallTime, conf);
+      aggrStats.put(opLevelAnnoName, stats);
     }
 
   }
@@ -79,16 +74,17 @@ public class HiveProfiler implements OperatorHook {
     if (operatorCallStack.isEmpty()) {
       LOG.error("Unexpected state: Operator Call Stack is empty on exit.");
     }
+    String opLevelAnnoName = HiveProfilerUtils.getLevelAnnotatedName(opHookContext);
 
-    // grab the top item on the call stack since that should be
-    // the first operator to exit.
-    HiveProfilerEntry curEntry = operatorCallStack.poll();
+    HiveProfilerEntry curEntry = operatorCallStack.get(opLevelAnnoName);
+
     if (!curEntry.getOperatorHookContext().equals(opHookContext)) {
       LOG.error("Expected to exit from: " + curEntry.getOperatorHookContext().toString() +
         " but exit called on " + opHookContext.toString());
     }
-    HiveProfilerEntry parentEntry = operatorCallStack.peekFirst();
-    exit(curEntry, parentEntry);
+
+    exit(curEntry);
+    operatorCallStack.remove(opLevelAnnoName);
   }
 
   public void close(OperatorHookContext opHookContext) {

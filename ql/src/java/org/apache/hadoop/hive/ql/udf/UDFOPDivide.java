@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * UDFOPDivide.
@@ -38,10 +36,9 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
  * return a double for divide.
  */
 public class UDFOPDivide extends UDF {
-  private final DoubleWritable doubleWritable = new DoubleWritable();
-  private final BigDecimalWritable bigDecimalWritable = new BigDecimalWritable();
 
-  private final int MAX_SCALE = 65; // max compatible with MySQL
+  private final DoubleWritable doubleWritable = new DoubleWritable();
+  private final HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
 
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
@@ -54,17 +51,17 @@ public class UDFOPDivide extends UDF {
     return doubleWritable;
   }
 
-  public BigDecimalWritable evaluate(BigDecimalWritable a, BigDecimalWritable b) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
     if ((a == null) || (b == null)) {
       return null;
     }
-    if (b.getBigDecimal().compareTo(BigDecimal.ZERO) == 0) {
+    if (b.getHiveDecimal().compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     } else {
-        bigDecimalWritable.set(a.getBigDecimal().divide(
-          b.getBigDecimal(), MAX_SCALE, RoundingMode.HALF_UP));
+        decimalWritable.set(a.getHiveDecimal().divide(
+          b.getHiveDecimal()));
     }
 
-    return bigDecimalWritable;
+    return decimalWritable;
   }
 }

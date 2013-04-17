@@ -969,9 +969,11 @@
 
 <property>
   <name>hive.auto.convert.sortmerge.join.bigtable.selection.policy</name>
-  <value>org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ</value>
+  <value>org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ</value>
   <description>The policy to choose the big table for automatic conversion to sort-merge join.
-    By default, the leftmost table is assigned the big table. Other policies are based on size:
+    By default, the table with the largest partitions is assigned the big table. All policies are:
+    . based on position of the table - the leftmost table is selected
+    org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSMJ.
     . based on total size (all the partitions selected in the query) of the table 
     org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ.
     . based on average size (all the partitions selected in the query) of the table 
@@ -1074,6 +1076,14 @@
   <name>hive.optimize.reducededuplication</name>
   <value>true</value>
   <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>
+</property>
+
+<property>
+  <name>hive.optimize.reducededuplication.min.reducer</name>
+  <value>4</value>
+  <description>Reduce deduplication merges two RSs by moving key/parts/reducer-num of the child RS to parent RS.
+  That means if reducer-num of the child RS is fixed (order by or forced bucketing) and small, it can make very slow, single MR.
+  The optimization will be disabled if number of reducers is less than specified value.</description>
 </property>
 
 <property>

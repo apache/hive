@@ -692,32 +692,32 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0.16666666666666666	0.0	2	6	19.0	16.237815945091466	2	42	2
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0.16666666666666666	0.0	1	6	19.0	16.237815945091466	2	42	2
-Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	0.16666666666666666	0.0	1	6	19.0	16.237815945091466	2	42	2
-Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	0.16666666666666666	0.0	2	6	19.0	16.237815945091466	2	42	2
-Manufacturer#1	almond aquamarine burnished black steel	28	1	1	0.16666666666666666	0.0	3	6	19.0	16.237815945091466	2	42	34
-Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	0.16666666666666666	0.0	3	6	19.0	16.237815945091466	2	42	6
-Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	0.2	0.0	1	5	19.8	12.560254774486067	4	18	14
-Manufacturer#2	almond antique violet turquoise frosted	40	1	1	0.2	0.0	1	5	19.8	12.560254774486067	4	18	14
-Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	0.2	0.0	2	5	19.8	12.560254774486067	4	18	14
-Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	0.2	0.0	2	5	19.8	12.560254774486067	4	18	40
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	0.2	0.0	3	5	19.8	12.560254774486067	4	18	2
-Manufacturer#3	almond antique chartreuse khaki white	17	1	1	0.2	0.0	1	5	19.2	14.344336861632886	4	45	17
-Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	0.2	0.0	2	5	19.2	14.344336861632886	4	45	17
-Manufacturer#3	almond antique metallic orange dim	19	1	1	0.2	0.0	1	5	19.2	14.344336861632886	4	45	17
-Manufacturer#3	almond antique misty red olive	1	1	1	0.2	0.0	2	5	19.2	14.344336861632886	4	45	14
-Manufacturer#3	almond antique olive coral navajo	45	1	1	0.2	0.0	3	5	19.2	14.344336861632886	4	45	19
-Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	0.2	0.0	1	5	19.0	12.149074038789951	0	12	10
-Manufacturer#4	almond antique violet mint lemon	39	1	1	0.2	0.0	1	5	19.0	12.149074038789951	0	12	10
-Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	0.2	0.0	2	5	19.0	12.149074038789951	0	12	10
-Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	0.2	0.0	2	5	19.0	12.149074038789951	0	12	39
-Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	0.2	0.0	3	5	19.0	12.149074038789951	0	12	27
-Manufacturer#5	almond antique blue firebrick mint	31	1	1	0.2	0.0	1	5	21.6	16.206171663906314	1	23	31
-Manufacturer#5	almond antique medium spring khaki	6	1	1	0.2	0.0	1	5	21.6	16.206171663906314	1	23	31
-Manufacturer#5	almond antique sky peru orange	2	1	1	0.2	0.0	2	5	21.6	16.206171663906314	1	23	31
-Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	0.2	0.0	2	5	21.6	16.206171663906314	1	23	6
-Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	0.2	0.0	3	5	21.6	16.206171663906314	1	23	2
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1.0	0.0	2	6	19.0	16.237815945091466	2	42	2
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1.0	0.0	1	6	19.0	16.237815945091466	2	42	2
+Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	1.0	0.0	1	6	19.0	16.237815945091466	2	42	2
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	1.0	0.0	2	6	19.0	16.237815945091466	2	42	2
+Manufacturer#1	almond aquamarine burnished black steel	28	1	1	1.0	0.0	3	6	19.0	16.237815945091466	2	42	34
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	1.0	0.0	3	6	19.0	16.237815945091466	2	42	6
+Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	1.0	0.0	1	5	19.8	12.560254774486067	4	18	14
+Manufacturer#2	almond antique violet turquoise frosted	40	1	1	1.0	0.0	1	5	19.8	12.560254774486067	4	18	14
+Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	1.0	0.0	2	5	19.8	12.560254774486067	4	18	14
+Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	1.0	0.0	2	5	19.8	12.560254774486067	4	18	40
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	1.0	0.0	3	5	19.8	12.560254774486067	4	18	2
+Manufacturer#3	almond antique chartreuse khaki white	17	1	1	1.0	0.0	1	5	19.2	14.344336861632886	4	45	17
+Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	1.0	0.0	2	5	19.2	14.344336861632886	4	45	17
+Manufacturer#3	almond antique metallic orange dim	19	1	1	1.0	0.0	1	5	19.2	14.344336861632886	4	45	17
+Manufacturer#3	almond antique misty red olive	1	1	1	1.0	0.0	2	5	19.2	14.344336861632886	4	45	14
+Manufacturer#3	almond antique olive coral navajo	45	1	1	1.0	0.0	3	5	19.2	14.344336861632886	4	45	19
+Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	1.0	0.0	1	5	19.0	12.149074038789951	0	12	10
+Manufacturer#4	almond antique violet mint lemon	39	1	1	1.0	0.0	1	5	19.0	12.149074038789951	0	12	10
+Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	1.0	0.0	2	5	19.0	12.149074038789951	0	12	10
+Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	1.0	0.0	2	5	19.0	12.149074038789951	0	12	39
+Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	1.0	0.0	3	5	19.0	12.149074038789951	0	12	27
+Manufacturer#5	almond antique blue firebrick mint	31	1	1	1.0	0.0	1	5	21.6	16.206171663906314	1	23	31
+Manufacturer#5	almond antique medium spring khaki	6	1	1	1.0	0.0	1	5	21.6	16.206171663906314	1	23	31
+Manufacturer#5	almond antique sky peru orange	2	1	1	1.0	0.0	2	5	21.6	16.206171663906314	1	23	31
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	1.0	0.0	2	5	21.6	16.206171663906314	1	23	6
+Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	1.0	0.0	3	5	21.6	16.206171663906314	1	23	2
 PREHOOK: query: -- 16. testMultipleWindows
 select  p_mfgr,p_name, p_size,  
   rank() over(distribute by p_mfgr sort by p_mfgr) as r, 
@@ -744,32 +744,32 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0.16666666666666666	4	4	2
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0.16666666666666666	2	4	2
-Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	0.16666666666666666	44	10	2
-Manufacturer#1	almond aquamarine burnished black steel	28	1	1	0.16666666666666666	72	28	34
-Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	0.16666666666666666	38	34	2
-Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	0.16666666666666666	114	42	6
-Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	0.2	56	2	14
-Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	0.2	14	14	14
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	0.2	99	32	2
-Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	0.2	81	25	40
-Manufacturer#2	almond antique violet turquoise frosted	40	1	1	0.2	54	40	14
-Manufacturer#3	almond antique misty red olive	1	1	1	0.2	51	1	14
-Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	0.2	31	14	17
-Manufacturer#3	almond antique chartreuse khaki white	17	1	1	0.2	17	31	17
-Manufacturer#3	almond antique metallic orange dim	19	1	1	0.2	50	50	17
-Manufacturer#3	almond antique olive coral navajo	45	1	1	0.2	96	45	19
-Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	0.2	83	7	39
-Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	0.2	10	17	10
-Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	0.2	95	29	27
-Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	0.2	76	27	10
-Manufacturer#4	almond antique violet mint lemon	39	1	1	0.2	49	39	10
-Manufacturer#5	almond antique sky peru orange	2	1	1	0.2	39	2	31
-Manufacturer#5	almond antique medium spring khaki	6	1	1	0.2	37	8	31
-Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	0.2	108	23	2
-Manufacturer#5	almond antique blue firebrick mint	31	1	1	0.2	31	31	31
-Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	0.2	85	46	6
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1.0	4	4	2
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1.0	2	4	2
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	1.0	44	10	2
+Manufacturer#1	almond aquamarine burnished black steel	28	1	1	1.0	72	28	34
+Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	1.0	38	34	2
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	1.0	114	42	6
+Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	1.0	56	2	14
+Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	1.0	14	14	14
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	1.0	99	32	2
+Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	1.0	81	25	40
+Manufacturer#2	almond antique violet turquoise frosted	40	1	1	1.0	54	40	14
+Manufacturer#3	almond antique misty red olive	1	1	1	1.0	51	1	14
+Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	1.0	31	14	17
+Manufacturer#3	almond antique chartreuse khaki white	17	1	1	1.0	17	31	17
+Manufacturer#3	almond antique metallic orange dim	19	1	1	1.0	50	50	17
+Manufacturer#3	almond antique olive coral navajo	45	1	1	1.0	96	45	19
+Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	1.0	83	7	39
+Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	1.0	10	17	10
+Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	1.0	95	29	27
+Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	1.0	76	27	10
+Manufacturer#4	almond antique violet mint lemon	39	1	1	1.0	49	39	10
+Manufacturer#5	almond antique sky peru orange	2	1	1	1.0	39	2	31
+Manufacturer#5	almond antique medium spring khaki	6	1	1	1.0	37	8	31
+Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	1.0	108	23	2
+Manufacturer#5	almond antique blue firebrick mint	31	1	1	1.0	31	31	31
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	1.0	85	46	6
 PREHOOK: query: -- 17. testCountStar
 select  p_mfgr,p_name, p_size,
 count(*) over(distribute by p_mfgr sort by p_mfgr ) as c, 
@@ -1018,7 +1018,6 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- 22. testViewAsTableInputWithWindowing
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -1027,7 +1026,6 @@ from part
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@mfgr_price_view
-#### A masked pattern was here ####
 PREHOOK: query: select p_mfgr, p_brand, s, 
 sum(s) over w1  as s1
 from mfgr_price_view 
@@ -1067,7 +1065,6 @@ sum(p_retailprice) over w1  as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and current row)
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
@@ -1076,7 +1073,6 @@ from part
 window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and current row)
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@mfgr_brand_price_view
-#### A masked pattern was here ####
 PREHOOK: query: select * from mfgr_brand_price_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mfgr_brand_price_view
@@ -1425,32 +1421,32 @@ POSTHOOK: Lineage: part_3.fv SCRIPT [(part)part.FieldSchema(name:p_partkey, type
 POSTHOOK: Lineage: part_3.p_mfgr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: part_3.p_name SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: part_3.p_size SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), (part)part.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (part)part.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0	4.0	4.0	2
-Manufacturer#1	almond antique burnished rose metallic	2	1	1	0	2.0	4.0	2
-Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	0	44.0	10.0	2
-Manufacturer#1	almond aquamarine burnished black steel	28	1	1	0	72.0	28.0	34
-Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	0	38.0	34.0	2
-Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	0	114.0	42.0	6
-Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	0	56.0	2.0	14
-Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	0	14.0	14.0	14
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	0	99.0	32.0	2
-Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	0	81.0	25.0	40
-Manufacturer#2	almond antique violet turquoise frosted	40	1	1	0	54.0	40.0	14
-Manufacturer#3	almond antique misty red olive	1	1	1	0	51.0	1.0	14
-Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	0	31.0	14.0	17
-Manufacturer#3	almond antique chartreuse khaki white	17	1	1	0	17.0	31.0	17
-Manufacturer#3	almond antique metallic orange dim	19	1	1	0	50.0	50.0	17
-Manufacturer#3	almond antique olive coral navajo	45	1	1	0	96.0	45.0	19
-Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	0	83.0	7.0	39
-Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	0	10.0	17.0	10
-Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	0	95.0	29.0	27
-Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	0	76.0	27.0	10
-Manufacturer#4	almond antique violet mint lemon	39	1	1	0	49.0	39.0	10
-Manufacturer#5	almond antique sky peru orange	2	1	1	0	39.0	2.0	31
-Manufacturer#5	almond antique medium spring khaki	6	1	1	0	37.0	8.0	31
-Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	0	108.0	23.0	2
-Manufacturer#5	almond antique blue firebrick mint	31	1	1	0	31.0	31.0	31
-Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	0	85.0	46.0	6
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1	4.0	4.0	2
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1	2.0	4.0	2
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	1	1	1	44.0	10.0	2
+Manufacturer#1	almond aquamarine burnished black steel	28	1	1	1	72.0	28.0	34
+Manufacturer#1	almond antique chartreuse lavender yellow	34	1	1	1	38.0	34.0	2
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	1	1	1	114.0	42.0	6
+Manufacturer#2	almond aquamarine midnight light salmon	2	1	1	1	56.0	2.0	14
+Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	1	14.0	14.0	14
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	1	1	1	99.0	32.0	2
+Manufacturer#2	almond aquamarine rose maroon antique	25	1	1	1	81.0	25.0	40
+Manufacturer#2	almond antique violet turquoise frosted	40	1	1	1	54.0	40.0	14
+Manufacturer#3	almond antique misty red olive	1	1	1	1	51.0	1.0	14
+Manufacturer#3	almond antique forest lavender goldenrod	14	1	1	1	31.0	14.0	17
+Manufacturer#3	almond antique chartreuse khaki white	17	1	1	1	17.0	31.0	17
+Manufacturer#3	almond antique metallic orange dim	19	1	1	1	50.0	50.0	17
+Manufacturer#3	almond antique olive coral navajo	45	1	1	1	96.0	45.0	19
+Manufacturer#4	almond aquamarine yellow dodger mint	7	1	1	1	83.0	7.0	39
+Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	1	10.0	17.0	10
+Manufacturer#4	almond azure aquamarine papaya violet	12	1	1	1	95.0	29.0	27
+Manufacturer#4	almond aquamarine floral ivory bisque	27	1	1	1	76.0	27.0	10
+Manufacturer#4	almond antique violet mint lemon	39	1	1	1	49.0	39.0	10
+Manufacturer#5	almond antique sky peru orange	2	1	1	1	39.0	2.0	31
+Manufacturer#5	almond antique medium spring khaki	6	1	1	1	37.0	8.0	31
+Manufacturer#5	almond azure blanched chiffon midnight	23	1	1	1	108.0	23.0	2
+Manufacturer#5	almond antique blue firebrick mint	31	1	1	1	31.0	31.0	31
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	1	1	1	85.0	46.0	6
 PREHOOK: query: select * from part_3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_3

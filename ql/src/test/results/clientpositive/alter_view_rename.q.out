@@ -5,17 +5,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@invites
 PREHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 foo                 	int                 	None                
 bar                 	string              	None                
 ds                  	string              	None                
@@ -34,8 +30,6 @@ PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 foo                 	int                 	None                
 bar                 	string              	None                
 ds                  	string              	None                

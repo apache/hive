@@ -264,7 +264,9 @@ public class GenMRUnion1 implements NodeProcessor {
     else {
       // is the current task a root task
       if (shouldBeRootTask(currTask)
-          && (!ctx.getRootTasks().contains(currTask))) {
+          && !ctx.getRootTasks().contains(currTask)
+          && (currTask.getParentTasks() == null
+              || currTask.getParentTasks().isEmpty())) {
         ctx.getRootTasks().add(currTask);
       }
 

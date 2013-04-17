@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -39,7 +39,7 @@ public class UDFAbs extends UDF {
   private final DoubleWritable resultDouble = new DoubleWritable();
   private final LongWritable resultLong = new LongWritable();
   private final IntWritable resultInt = new IntWritable();
-  private final BigDecimalWritable resultBigDecimal = new BigDecimalWritable();
+  private final HiveDecimalWritable resultHiveDecimal = new HiveDecimalWritable();
 
   public DoubleWritable evaluate(DoubleWritable n) {
     if (n == null) {
@@ -71,12 +71,12 @@ public class UDFAbs extends UDF {
     return resultInt;
   }
 
-  public BigDecimalWritable evaluate(BigDecimalWritable n) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable n) {
     if (n == null) {
       return null;
     }
 
-    resultBigDecimal.set(n.getBigDecimal().abs());
-    return resultBigDecimal;
+    resultHiveDecimal.set(n.getHiveDecimal().abs());
+    return resultHiveDecimal;
   }
 }

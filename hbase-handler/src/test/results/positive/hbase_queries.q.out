@@ -17,8 +17,6 @@ PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	from deserializer   
 value               	string              	from deserializer   
 	 	 

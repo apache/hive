@@ -230,11 +230,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       // compute keys and values as StandardObjects
       AbstractMapJoinKey key = JoinUtil.computeMapJoinKeys(row, joinKeys[alias],
           joinKeysObjectInspectors[alias]);
-      ArrayList<Object> value = getFilteredValue(alias, row);
 
-      // Add the value to the ArrayList
-      storage[alias].add(value);
-
+      boolean joinNeeded = false;
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != alias) {
 
@@ -243,12 +240,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
           // there is no join-value or join-key has all null elements
           if (o == null || key.hasAnyNulls(nullsafes)) {
-            if (noOuterJoin) {
-              storage[pos] = emptyList;
-            } else {
+            if (!noOuterJoin) {
+              joinNeeded = true;
               storage[pos] = dummyObjVectors[pos];
+            } else {
+              storage[pos] = emptyList;
             }
           } else {
+            joinNeeded = true;
             rowContainer.reset(o.getObj());
             storage[pos] = rowContainer;
             aliasFilterTags[pos] = o.getAliasFilter();
@@ -256,8 +255,15 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
 
-      // generate the output records
-      checkAndGenObject();
+      if (joinNeeded) {
+        ArrayList<Object> value = getFilteredValue(alias, row);
+
+        // Add the value to the ArrayList
+        storage[alias].add(value);
+
+        // generate the output records
+        checkAndGenObject();
+      }
 
       // done with the row
       storage[tag].clear();

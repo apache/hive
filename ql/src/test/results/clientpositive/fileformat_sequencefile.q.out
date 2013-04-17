@@ -40,8 +40,6 @@ PREHOOK: query: DESCRIBE EXTENDED dest1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED dest1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 

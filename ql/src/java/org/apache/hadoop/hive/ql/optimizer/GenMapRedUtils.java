@@ -106,7 +106,9 @@ public final class GenMapRedUtils {
 
     List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
 
-    if (!rootTasks.contains(currTask)) {
+    if (!rootTasks.contains(currTask)
+        && (currTask.getParentTasks() == null
+            || currTask.getParentTasks().isEmpty())) {
       rootTasks.add(currTask);
     }
     if (reducer.getClass() == JoinOperator.class) {

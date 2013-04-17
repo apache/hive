@@ -1023,7 +1023,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 .getMsg(partition.toString()));
           }
         }
-
+        skipRecursion = false;
+        break;
+      case HiveParser.TOK_LATERAL_VIEW:
+        // todo: nested LV
+        assert ast.getChildCount() == 1;
+        qb.getParseInfo().getDestToLateralView().put(ctx_1.dest, ast);
+        break;
       default:
         skipRecursion = false;
         break;
@@ -3989,7 +3995,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings({"nls"})
-  private Operator genGroupByPlan1MRMultiReduceGB(List<String> dests, QB qb, Operator input)
+  private Operator genGroupByPlan1ReduceMultiGBY(List<String> dests, QB qb, Operator input)
       throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
@@ -6811,9 +6817,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Return the common distinct expression
   // There should be more than 1 destination, with group bys in all of them.
   private List<ASTNode> getCommonDistinctExprs(QB qb, Operator input) {
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBParseInfo qbp = qb.getParseInfo();
+    // If a grouping set aggregation is present, common processing is not possible
+    if (!qbp.getDestCubes().isEmpty() || !qbp.getDestRollups().isEmpty()
+        || !qbp.getDestToLateralView().isEmpty()) {
+      return null;
+    }
 
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     TreeSet<String> ks = new TreeSet<String>();
     ks.addAll(qbp.getClauseNames());
 
@@ -6822,15 +6833,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return null;
     }
 
-    List<ExprNodeDesc.ExprNodeDescEqualityWrapper> oldList = null;
+    List<ExprNodeDesc> oldList = null;
     List<ASTNode> oldASTList = null;
 
     for (String dest : ks) {
-      // If a grouping set aggregation is present, common processing is not possible
-      if (!qbp.getDestCubes().isEmpty() || !qbp.getDestRollups().isEmpty()) {
-        return null;
-      }
-
       // If a filter is present, common processing is not possible
       if (qbp.getWhrForClause(dest) != null) {
         return null;
@@ -6847,7 +6853,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return null;
       }
 
-      List<ExprNodeDesc.ExprNodeDescEqualityWrapper> currDestList;
+      List<ExprNodeDesc> currDestList;
       try {
         currDestList = getDistinctExprs(qbp, dest, inputRR);
       } catch (SemanticException e) {
@@ -6968,10 +6974,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Groups the clause names into lists so that any two clauses in the same list has the same
   // group by and distinct keys and no clause appears in more than one list. Returns a list of the
   // lists of clauses.
-  private List<List<String>> getCommonGroupByDestGroups(QB qb, Operator input)
-      throws SemanticException {
+  private List<List<String>> getCommonGroupByDestGroups(QB qb,
+      Map<String, Operator<? extends OperatorDesc>> inputs) throws SemanticException {
 
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>();
@@ -6989,29 +6994,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return commonGroupByDestGroups;
     }
 
-    List<List<ExprNodeDesc.ExprNodeDescEqualityWrapper>> sprayKeyLists =
-        new ArrayList<List<ExprNodeDesc.ExprNodeDescEqualityWrapper>>(ks.size());
+    List<Operator<? extends OperatorDesc>> inputOperators =
+        new ArrayList<Operator<? extends OperatorDesc>>(ks.size());
+    List<List<ExprNodeDesc>> sprayKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
 
     // Iterate over each clause
     for (String dest : ks) {
-
-      List<ExprNodeDesc.ExprNodeDescEqualityWrapper> sprayKeys =
-          getDistinctExprs(qbp, dest, inputRR);
+      Operator input = inputs.get(dest);
+      RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+      List<ExprNodeDesc> sprayKeys = getDistinctExprs(qbp, dest, inputRR);
 
       // Add the group by expressions
       List<ASTNode> grpByExprs = getGroupByForClause(qbp, dest);
       for (ASTNode grpByExpr : grpByExprs) {
-        ExprNodeDesc.ExprNodeDescEqualityWrapper grpByExprWrapper =
-            new ExprNodeDesc.ExprNodeDescEqualityWrapper(genExprNodeDesc(grpByExpr, inputRR));
-        if (!sprayKeys.contains(grpByExprWrapper)) {
-          sprayKeys.add(grpByExprWrapper);
+        ExprNodeDesc exprDesc = genExprNodeDesc(grpByExpr, inputRR);
+        if (ExprNodeDescUtils.indexOf(exprDesc, sprayKeys) < 0) {
+          sprayKeys.add(exprDesc);
         }
       }
 
       // Loop through each of the lists of exprs, looking for a match
       boolean found = false;
       for (int i = 0; i < sprayKeyLists.size(); i++) {
-
+        if (!input.equals(inputOperators.get(i))) {
+          continue;
+        }
         if (!matchExprLists(sprayKeyLists.get(i), sprayKeys)) {
           continue;
         }
@@ -7024,6 +7031,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // No match was found, so create new entries
       if (!found) {
+        inputOperators.add(input);
         sprayKeyLists.add(sprayKeys);
         List<String> destGroup = new ArrayList<String>();
         destGroup.add(dest);
@@ -7035,15 +7043,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // Returns whether or not two lists contain the same elements independent of order
-  private boolean matchExprLists(List<ExprNodeDesc.ExprNodeDescEqualityWrapper> list1,
-      List<ExprNodeDesc.ExprNodeDescEqualityWrapper> list2) {
+  private boolean matchExprLists(List<ExprNodeDesc> list1, List<ExprNodeDesc> list2) {
 
     if (list1.size() != list2.size()) {
       return false;
     }
-
-    for (ExprNodeDesc.ExprNodeDescEqualityWrapper exprNodeDesc : list1) {
-      if (!list2.contains(exprNodeDesc)) {
+    for (ExprNodeDesc exprNodeDesc : list1) {
+      if (ExprNodeDescUtils.indexOf(exprNodeDesc, list2) < 0) {
         return false;
       }
     }
@@ -7051,23 +7057,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  // Returns a list of the distinct exprs for a given clause name as
-  // ExprNodeDesc.ExprNodeDescEqualityWrapper without duplicates
-  private List<ExprNodeDesc.ExprNodeDescEqualityWrapper>
-      getDistinctExprs(QBParseInfo qbp, String dest, RowResolver inputRR) throws SemanticException {
+  // Returns a list of the distinct exprs without duplicates for a given clause name
+  private List<ExprNodeDesc> getDistinctExprs(QBParseInfo qbp, String dest, RowResolver inputRR)
+      throws SemanticException {
 
     List<ASTNode> distinctAggExprs = qbp.getDistinctFuncExprsForClause(dest);
-    List<ExprNodeDesc.ExprNodeDescEqualityWrapper> distinctExprs =
-        new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>();
+    List<ExprNodeDesc> distinctExprs = new ArrayList<ExprNodeDesc>();
 
     for (ASTNode distinctAggExpr : distinctAggExprs) {
       // 0 is function name
       for (int i = 1; i < distinctAggExpr.getChildCount(); i++) {
         ASTNode parameter = (ASTNode) distinctAggExpr.getChild(i);
-        ExprNodeDesc.ExprNodeDescEqualityWrapper distinctExpr =
-            new ExprNodeDesc.ExprNodeDescEqualityWrapper(genExprNodeDesc(parameter, inputRR));
-        if (!distinctExprs.contains(distinctExpr)) {
-          distinctExprs.add(distinctExpr);
+        ExprNodeDesc expr = genExprNodeDesc(parameter, inputRR);
+        if (ExprNodeDescUtils.indexOf(expr, distinctExprs) < 0) {
+          distinctExprs.add(expr);
         }
       }
     }
@@ -7096,6 +7099,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
+    Map<String, Operator<? extends OperatorDesc>> inputs = createInputForDests(qb, input, ks);
     // For multi-group by with the same distinct, we ignore all user hints
     // currently. It doesnt matter whether he has asked to do
     // map-side aggregation or not. Map side aggregation is turned off
@@ -7148,7 +7152,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // expressions, otherwise treat all the expressions as a single group
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEMULTIGROUPBYSINGLEREDUCER)) {
         try {
-          commonGroupByDestGroups = getCommonGroupByDestGroups(qb, curr);
+          commonGroupByDestGroups = getCommonGroupByDestGroups(qb, inputs);
         } catch (SemanticException e) {
           LOG.error("Failed to group clauses by common spray keys.", e);
         }
@@ -7168,6 +7172,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
 
           String firstDest = commonGroupByDestGroup.get(0);
+          input = inputs.get(firstDest);
+
           // Constructs a standard group by plan if:
           // There is no other subquery with the same group by/distinct keys or
           // (There are no aggregations in a representative query for the group and
@@ -7182,7 +7188,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             // Go over all the destination tables
             for (String dest : commonGroupByDestGroup) {
-              curr = input;
+              curr = inputs.get(dest);
 
               if (qbp.getWhrForClause(dest) != null) {
                 curr = genFilterPlan(dest, qb, curr);
@@ -7215,7 +7221,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               curr = genPostGroupByBodyPlan(curr, dest, qb);
             }
           } else {
-            curr = genGroupByPlan1MRMultiReduceGB(commonGroupByDestGroup, qb, input);
+            curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input);
           }
         }
       }
@@ -7226,6 +7232,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return curr;
+  }
+
+  private Map<String, Operator<? extends OperatorDesc>> createInputForDests(QB qb,
+      Operator<? extends OperatorDesc> input, Set<String> dests) throws SemanticException {
+    Map<String, Operator<? extends OperatorDesc>> inputs =
+        new HashMap<String, Operator<? extends OperatorDesc>>();
+    for (String dest : dests) {
+      inputs.put(dest, genLateralViewPlanForDest(dest, qb, input));
+    }
+    return inputs;
   }
 
   private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb)
@@ -7308,7 +7324,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extraMRStep);
         qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
-      curr = genFileSinkPlan(dest, qb, curr);
+      if (!SessionState.get().getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
+        curr = genFileSinkPlan(dest, qb, curr);
+      }
     }
 
     // change curr ops row resolver's tab aliases to query alias if it
@@ -8035,76 +8053,91 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // -> LateralViewJoinOperator
           //
 
-          RowResolver lvForwardRR = new RowResolver();
-          RowResolver source = opParseCtx.get(op).getRowResolver();
-          for (ColumnInfo col : source.getColumnInfos()) {
-            if (col.getIsVirtualCol() && col.isHiddenVirtualCol()) {
-              continue;
-            }
-            String[] tabCol = source.reverseLookup(col.getInternalName());
-            lvForwardRR.put(tabCol[0], tabCol[1], col);
-          }
-
-          Operator lvForward = putOpInsertMap(OperatorFactory.getAndMakeChild(
-              new LateralViewForwardDesc(), new RowSchema(lvForwardRR.getColumnInfos()),
-              op), lvForwardRR);
-
-          // The order in which the two paths are added is important. The
-          // lateral view join operator depends on having the select operator
-          // give it the row first.
-
-          // Get the all path by making a select(*).
-          RowResolver allPathRR = opParseCtx.get(lvForward).getRowResolver();
-          // Operator allPath = op;
-          Operator allPath = putOpInsertMap(OperatorFactory.getAndMakeChild(
-              new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
-              lvForward), allPathRR);
-          // Get the UDTF Path
-          QB blankQb = new QB(null, null, false);
-          Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
-              .getChild(0), blankQb, lvForward);
-          // add udtf aliases to QB
-          for (String udtfAlias : blankQb.getAliases()) {
-            qb.addAlias(udtfAlias);
-          }
-          RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRowResolver();
-
-          // Merge the two into the lateral view join
-          // The cols of the merged result will be the combination of both the
-          // cols of the UDTF path and the cols of the all path. The internal
-          // names have to be changed to avoid conflicts
-
-          RowResolver lateralViewRR = new RowResolver();
-          ArrayList<String> outputInternalColNames = new ArrayList<String>();
-
-          LVmergeRowResolvers(allPathRR, lateralViewRR, outputInternalColNames);
-          LVmergeRowResolvers(udtfPathRR, lateralViewRR, outputInternalColNames);
-
-          // For PPD, we need a column to expression map so that during the walk,
-          // the processor knows how to transform the internal col names.
-          // Following steps are dependant on the fact that we called
-          // LVmerge.. in the above order
-          Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-
-          int i = 0;
-          for (ColumnInfo c : allPathRR.getColumnInfos()) {
-            String internalName = getColumnInternalName(i);
-            i++;
-            colExprMap.put(internalName,
-                new ExprNodeColumnDesc(c.getType(), c.getInternalName(),
-                    c.getTabAlias(), c.getIsVirtualCol()));
-          }
-
-          Operator lateralViewJoin = putOpInsertMap(OperatorFactory
-              .getAndMakeChild(new LateralViewJoinDesc(outputInternalColNames),
-                  new RowSchema(lateralViewRR.getColumnInfos()), allPath,
-                  udtfPath), lateralViewRR);
-          lateralViewJoin.setColumnExprMap(colExprMap);
+          Operator lateralViewJoin = genLateralViewPlan(qb, op, lateralViewTree);
           op = lateralViewJoin;
         }
         e.setValue(op);
       }
     }
+  }
+
+  private Operator genLateralViewPlanForDest(String dest, QB qb, Operator op)
+      throws SemanticException {
+    ASTNode lateralViewTree = qb.getParseInfo().getDestToLateralView().get(dest);
+    if (lateralViewTree != null) {
+      return genLateralViewPlan(qb, op, lateralViewTree);
+    }
+    return op;
+  }
+
+  private Operator genLateralViewPlan(QB qb, Operator op, ASTNode lateralViewTree)
+      throws SemanticException {
+    RowResolver lvForwardRR = new RowResolver();
+    RowResolver source = opParseCtx.get(op).getRowResolver();
+    for (ColumnInfo col : source.getColumnInfos()) {
+      if (col.getIsVirtualCol() && col.isHiddenVirtualCol()) {
+        continue;
+      }
+      String[] tabCol = source.reverseLookup(col.getInternalName());
+      lvForwardRR.put(tabCol[0], tabCol[1], col);
+    }
+
+    Operator lvForward = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new LateralViewForwardDesc(), new RowSchema(lvForwardRR.getColumnInfos()),
+        op), lvForwardRR);
+
+    // The order in which the two paths are added is important. The
+    // lateral view join operator depends on having the select operator
+    // give it the row first.
+
+    // Get the all path by making a select(*).
+    RowResolver allPathRR = opParseCtx.get(lvForward).getRowResolver();
+    // Operator allPath = op;
+    Operator allPath = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
+        lvForward), allPathRR);
+    // Get the UDTF Path
+    QB blankQb = new QB(null, null, false);
+    Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
+        .getChild(0), blankQb, lvForward);
+    // add udtf aliases to QB
+    for (String udtfAlias : blankQb.getAliases()) {
+      qb.addAlias(udtfAlias);
+    }
+    RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRowResolver();
+
+    // Merge the two into the lateral view join
+    // The cols of the merged result will be the combination of both the
+    // cols of the UDTF path and the cols of the all path. The internal
+    // names have to be changed to avoid conflicts
+
+    RowResolver lateralViewRR = new RowResolver();
+    ArrayList<String> outputInternalColNames = new ArrayList<String>();
+
+    LVmergeRowResolvers(allPathRR, lateralViewRR, outputInternalColNames);
+    LVmergeRowResolvers(udtfPathRR, lateralViewRR, outputInternalColNames);
+
+    // For PPD, we need a column to expression map so that during the walk,
+    // the processor knows how to transform the internal col names.
+    // Following steps are dependant on the fact that we called
+    // LVmerge.. in the above order
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
+    int i = 0;
+    for (ColumnInfo c : allPathRR.getColumnInfos()) {
+      String internalName = getColumnInternalName(i);
+      i++;
+      colExprMap.put(internalName,
+          new ExprNodeColumnDesc(c.getType(), c.getInternalName(),
+              c.getTabAlias(), c.getIsVirtualCol()));
+    }
+
+    Operator lateralViewJoin = putOpInsertMap(OperatorFactory
+        .getAndMakeChild(new LateralViewJoinDesc(outputInternalColNames),
+            new RowSchema(lateralViewRR.getColumnInfos()), allPath,
+            udtfPath), lateralViewRR);
+    lateralViewJoin.setColumnExprMap(colExprMap);
+    return lateralViewJoin;
   }
 
   /**
@@ -8702,7 +8735,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("\n" + Operator.toString(pCtx.getTopOps().values()));
+      LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
     }
 
     Optimizer optm = new Optimizer();
@@ -8711,7 +8744,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     pCtx = optm.optimize();
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("\n" + Operator.toString(pCtx.getTopOps().values()));
+      LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
     }
 
     // Generate column access stats if required - wait until column pruning takes place
@@ -10486,6 +10519,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, ExprNodeDesc> colExprMap,
       List<String> outputColumnNames,
       StringBuilder orderString,
+      RowResolver rsOpRR,
       RowResolver extractRR) throws SemanticException {
 
     ArrayList<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
@@ -10515,16 +10549,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       orderCols.add(colDef.getExprNode());
     }
 
-    /*
-     * We add the column to value columns or output column names
-     * only if it is not a virtual column
-     */
     ArrayList<ColumnInfo> colInfoList = inputRR.getColumnInfos();
-    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
-        new LinkedHashMap<String[], ColumnInfo>();
+    /*
+     * construct the ReduceSinkRR
+     */
     int pos = 0;
     for (ColumnInfo colInfo : colInfoList) {
-      if (!colInfo.isHiddenVirtualCol()) {
         ExprNodeDesc valueColExpr = new ExprNodeColumnDesc(colInfo.getType(), colInfo
             .getInternalName(), colInfo.getTabAlias(), colInfo
             .getIsVirtualCol());
@@ -10534,32 +10564,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         outputColumnNames.add(outColName);
 
         String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
-        /*
-         * if we have already encountered this colInfo internalName.
-         * We encounter it again because it must be put for the Having clause.
-         * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
-         */
-        if ( colsAddedByHaving.containsKey(alias)) {
-          continue;
-        }
-        ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
-        ColumnInfo eColInfo = new ColumnInfo(
+        ColumnInfo newColInfo = new ColumnInfo(
             outColName, colInfo.getType(), alias[0],
             colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+        rsOpRR.put(alias[0], alias[1], newColInfo);
+    }
 
-        if ( astNode == null ) {
-          extractRR.put(alias[0], alias[1], eColInfo);
-        }
-        else {
-          /*
-           * in case having clause refers to this column may have been added twice;
-           * once with the ASTNode.toStringTree as the alias
-           * and then with the real alias.
-           */
-          extractRR.putExpression(astNode, eColInfo);
-          if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
-            colsAddedByHaving.put(alias, eColInfo);
-          }
+    /*
+     * construct the ExtractRR
+     */
+    LinkedHashMap<String[], ColumnInfo> colsAddedByHaving =
+        new LinkedHashMap<String[], ColumnInfo>();
+    pos = 0;
+    for (ColumnInfo colInfo : colInfoList) {
+      String[] alias = inputRR.reverseLookup(colInfo.getInternalName());
+      /*
+       * if we have already encountered this colInfo internalName.
+       * We encounter it again because it must be put for the Having clause.
+       * We will add these entries in the end; in a loop on colsAddedByHaving. See below.
+       */
+      if ( colsAddedByHaving.containsKey(alias)) {
+        continue;
+      }
+      ASTNode astNode = PTFTranslator.getASTNode(colInfo, inputRR);
+      ColumnInfo eColInfo = new ColumnInfo(
+          SemanticAnalyzer.getColumnInternalName(pos++), colInfo.getType(), alias[0],
+          colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+
+      if ( astNode == null ) {
+        extractRR.put(alias[0], alias[1], eColInfo);
+      }
+      else {
+        /*
+         * in case having clause refers to this column may have been added twice;
+         * once with the ASTNode.toStringTree as the alias
+         * and then with the real alias.
+         */
+        extractRR.putExpression(astNode, eColInfo);
+        if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
+          colsAddedByHaving.put(alias, eColInfo);
         }
       }
     }
@@ -10578,6 +10621,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      */
     RowResolver rr = opParseCtx.get(input).getRowResolver();
     PTFDesc ptfDesc = translatePTFInvocationSpec(ptfQSpec, rr);
+
+    RowResolver rsOpRR = new RowResolver();
     /*
      * Build an RR for the Extract Op from the ResuceSink Op's RR.
      * Why?
@@ -10647,13 +10692,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colExprMap,
           outputColumnNames,
           orderString,
+          rsOpRR,
           extractOpRR);
 
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
           .getReduceSinkDesc(orderCols,
               valueCols, outputColumnNames, false,
               -1, partCols, orderString.toString(), -1),
-          new RowSchema(rr.getColumnInfos()), input), rr);
+          new RowSchema(rsOpRR.getColumnInfos()), input), rsOpRR);
       input.setColumnExprMap(colExprMap);
     }
 
@@ -10775,7 +10821,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getReduceSinkDesc(orderCols,
             valueCols, outputColumnNames, false,
             -1, partCols, orderString.toString(), -1),
-        new RowSchema(inputRR.getColumnInfos()), input), rsNewRR);
+        new RowSchema(rsNewRR.getColumnInfos()), input), rsNewRR);
     input.setColumnExprMap(colExprMap);
 
 

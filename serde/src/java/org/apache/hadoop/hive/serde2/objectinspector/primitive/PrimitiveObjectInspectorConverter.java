@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -258,17 +258,17 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
-  public static class BigDecimalConverter implements Converter {
+  public static class HiveDecimalConverter implements Converter {
 
     PrimitiveObjectInspector inputOI;
-    SettableBigDecimalObjectInspector outputOI;
+    SettableHiveDecimalObjectInspector outputOI;
     Object r;
 
-    public BigDecimalConverter(PrimitiveObjectInspector inputOI,
-        SettableBigDecimalObjectInspector outputOI) {
+    public HiveDecimalConverter(PrimitiveObjectInspector inputOI,
+        SettableHiveDecimalObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      this.r = outputOI.create(BigDecimal.ZERO);
+      this.r = outputOI.create(HiveDecimal.ZERO);
     }
 
     @Override
@@ -276,10 +276,14 @@ public class PrimitiveObjectInspectorConverter {
       if (input == null) {
         return null;
       }
-      return outputOI.set(r, PrimitiveObjectInspectorUtils.getBigDecimal(input,
-          inputOI));
+      
+      try {
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
+            inputOI));
+      } catch (NumberFormatException e) {
+        return null;
+      }
     }
-
   }
 
   public static class BinaryConverter implements Converter{
@@ -372,7 +376,7 @@ public class PrimitiveObjectInspectorConverter {
         t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
         return t;
       case DECIMAL:
-        t.set(((BigDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
+        t.set(((HiveDecimalObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());

@@ -7,12 +7,10 @@ PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx4 
 PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx4
-#### A masked pattern was here ####
 FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.

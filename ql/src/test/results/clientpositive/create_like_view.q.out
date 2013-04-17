@@ -23,8 +23,6 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table1
@@ -58,11 +56,9 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table2 LIKE view1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table2 LIKE view1
@@ -72,8 +68,6 @@ PREHOOK: query: DESCRIBE table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table2
@@ -122,8 +116,6 @@ PREHOOK: query: DESCRIBE table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table3
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	string              	None                
 PREHOOK: query: DESCRIBE FORMATTED table3
@@ -244,12 +236,10 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

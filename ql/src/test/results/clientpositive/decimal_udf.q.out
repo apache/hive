@@ -64,17 +64,17 @@ POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8.8E+3
-2E+99
-2E-99
+-8800
+NULL
+NULL
 0
-2E+2
-2E+1
+200
+20
 2
 0.2
 0.02
-4E+2
-4E+1
+400
+40
 4
 0
 0.4
@@ -146,16 +146,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 0
-1E+99
-1E-99
+NULL
+NULL
 0
-2E+2
-2E+1
+200
+20
 2
 0.1
 0.01
-4E+2
-4E+1
+400
+40
 4
 0
 0.2
@@ -226,17 +226,17 @@ POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2.2E+3
-1E+99
-1E-99
+-2200
+NULL
+NULL
 0
-1.5E+2
+150
 15
 1.5
 0.1
 0.01
-3E+2
-3E+1
+300
+30
 3
 0
 0.2
@@ -308,8 +308,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -4399
-1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
-1.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+NULL
+NULL
 1
 101
 11
@@ -391,8 +391,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 0
-0
-0
+NULL
+NULL
 0
 0
 0
@@ -471,9 +471,9 @@ POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8.8E+3
-1E+99
-1E-99
+-8800
+NULL
+NULL
 0
 0
 0
@@ -506,7 +506,7 @@ POSTHOOK: Input: default@decimal_udf
 0.14
 0.14
 -0.86
--1E-25
+-0.0000000000000000000000001
 -0.123456789
 0.12345678
 PREHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
@@ -552,17 +552,17 @@ POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--6.6E+3
-1E+99
-1E-99
+-6600
+NULL
+NULL
 0
-5E+1
+50
 5
 0.5
 0.1
 0.01
-1E+2
-1E+1
+100
+10
 1
 0
 0.2
@@ -634,8 +634,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -4401
-999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
--0.999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+NULL
+NULL
 -1
 99
 9
@@ -668,7 +668,7 @@ POSTHOOK: Input: default@decimal_udf
 2.14
 2.14
 2.14
--1E-25
+-0.0000000000000000000000001
 -1234567891.123456789
 1234567889.12345678
 PREHOOK: query: -- multiplication
@@ -716,17 +716,17 @@ POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1.936E+7
-1E+198
-1E-198
+19360000
+NULL
+NULL
 0
-1E+4
-1E+2
+10000
+100
 1
 0.01
 0.0001
-4E+4
-4E+2
+40000
+400
 4
 0
 0.04
@@ -751,7 +751,7 @@ POSTHOOK: Input: default@decimal_udf
 9.8596
 9.8596
 9.8596
-0.99999999999999999999999980000000000000000000000001
+NULL
 1524157875323883675.019051998750190521
 1524157875323883652.7968299765279684
 PREHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
@@ -797,17 +797,17 @@ POSTHOOK: query: SELECT key * value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1.936E+7
+-19360000
+NULL
+NULL
 0
-0
-0
-1E+4
-1E+2
+10000
+100
 1
 0
 0
-4E+4
-4E+2
+40000
+400
 4
 0
 0
@@ -827,7 +827,7 @@ POSTHOOK: Input: default@decimal_udf
 1.12
 1.122
 15376
-1.565E+4
+15650
 1575639.95
 9.42
 9.42
@@ -878,17 +878,17 @@ POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--9.68E+6
+-9680000
+NULL
+NULL
 0
-0
-0
-5E+3
-5E+1
+5000
+50
 0.5
 0
 0
-2E+4
-2E+2
+20000
+200
 2
 0
 0
@@ -959,17 +959,17 @@ POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8.8E+3
-2E+99
-2E-99
+-8800
+NULL
+NULL
 0
-2E+2
-2E+1
+200
+20
 2
 0.2
 0.02
-4E+2
-4E+1
+400
+40
 4
 0
 0.4
@@ -1170,8 +1170,6 @@ POSTHOOK: Input: default@decimal_udf
 1
 1
 1
-1
-1
 PREHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1228,7 +1226,7 @@ POSTHOOK: Input: default@decimal_udf
 1
 1
 1
-1.04666666666666666666666666666666666666666666666666666666666666667
+1.0466666666666666666666666666666666667
 1.12
 1.12
 0.102
@@ -1236,13 +1234,13 @@ POSTHOOK: Input: default@decimal_udf
 1.122
 1
 1.0016
-1.00039043824701195219123505976095617529880478087649402390438247012
-1.04666666666666666666666666666666666666666666666666666666666666667
-1.04666666666666666666666666666666666666666666666666666666666666667
+1.0003904382470119521912350597609561753
+1.0466666666666666666666666666666666667
+1.0466666666666666666666666666666666667
 0.785
 0.9999999999999999999999999
 1.0000000001
-1.00000000009999999270999993366099939631509450646736000885297608056
+1.0000000000999999927099999336609993963
 PREHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1299,7 +1297,7 @@ POSTHOOK: Input: default@decimal_udf
 2
 2
 2
-2.09333333333333333333333333333333333333333333333333333333333333333
+2.0933333333333333333333333333333333333
 2.24
 2.24
 0.204
@@ -1307,13 +1305,13 @@ POSTHOOK: Input: default@decimal_udf
 2.244
 2
 2.0032
-2.00078087649402390438247011952191235059760956175298804780876494024
-2.09333333333333333333333333333333333333333333333333333333333333333
-2.09333333333333333333333333333333333333333333333333333333333333333
+2.0007808764940239043824701195219123506
+2.0933333333333333333333333333333333333
+2.0933333333333333333333333333333333333
 1.57
 1.9999999999999999999999998
 2.0000000002
-2.00000000019999998541999986732199879263018901293472001770595216112
+2.0000000001999999854199998673219987926
 PREHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
@@ -1357,17 +1355,17 @@ POSTHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2.2E+3
-5E+98
+-2200
+NULL
+NULL
 0
-0
-5E+1
+50
 5
 0.5
 0.05
 0.005
-1E+2
-1E+1
+100
+10
 1
 0
 0.1
@@ -1440,17 +1438,17 @@ POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4.4E+3
-1E+99
-1E-99
+4400
+NULL
+NULL
 0
-1E+2
-1E+1
+100
+10
 1
 0.1
 0.01
-2E+2
-2E+1
+200
+20
 2
 0
 0.2
@@ -1478,6 +1476,145 @@ POSTHOOK: Input: default@decimal_udf
 0.9999999999999999999999999
 1234567890.123456789
 1234567890.12345678
+PREHOOK: query: -- avg
+EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- avg
+EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (/ (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)) (TOK_FUNCTION count (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_TABLE_OR_COL key)))) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: value
+                    type: int
+                    expr: key
+                    type: decimal
+              outputColumnNames: value, key
+              Group By Operator
+                aggregations:
+                      expr: sum(key)
+                      expr: count(key)
+                      expr: avg(key)
+                bucketGroup: false
+                keys:
+                      expr: value
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: int
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: decimal
+                        expr: _col2
+                        type: bigint
+                        expr: _col3
+                        type: struct<count:bigint,sum:decimal>
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: count(VALUE._col1)
+                expr: avg(VALUE._col2)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: (_col1 / _col2)
+                  type: decimal
+                  expr: _col3
+                  type: decimal
+            outputColumnNames: _col0, _col1, _col2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: decimal
+                    expr: _col2
+                    type: decimal
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+-1234567890	-1234567890.123456789	-1234567890.123456789
+-1255	-1255.49	-1255.49
+-11	-1.122	-1.122
+-1	-1.12	-1.12
+0	0.0275	0.0275
+1	1.04839999999999999999999998	1.04839999999999999999999998
+2	2	2
+3	3.14	3.14
+4	3.14	3.14
+10	10	10
+20	20	20
+100	100	100
+124	124	124
+125	125.2	125.2
+200	200	200
+4400	-4400	-4400
+1234567890	1234567890.12345678	1234567890.12345678
 PREHOOK: query: -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1523,17 +1660,17 @@ POSTHOOK: query: SELECT -key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4.4E+3
--1E+99
--1E-99
+4400
+NULL
+NULL
 0
--1E+2
--1E+1
+-100
+-10
 -1
 -0.1
 -0.01
--2E+2
--2E+1
+-200
+-20
 -2
 0
 -0.2
@@ -1606,17 +1743,17 @@ POSTHOOK: query: SELECT +key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4.4E+3
-1E+99
-1E-99
+-4400
+NULL
+NULL
 0
-1E+2
-1E+1
+100
+10
 1
 0.1
 0.01
-2E+2
-2E+1
+200
+20
 2
 0
 0.2
@@ -1689,17 +1826,17 @@ POSTHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4.4E+3
-1E+99
-1
+-4400
+NULL
+NULL
 0
-1E+2
-1E+1
+100
+10
 1
 1
 1
-2E+2
-2E+1
+200
+20
 2
 0
 1
@@ -1725,7 +1862,7 @@ POSTHOOK: Input: default@decimal_udf
 4
 4
 1
--1.23456789E+9
+-1234567890
 1234567891
 PREHOOK: query: -- floor
 EXPLAIN SELECT FLOOR(key) FROM DECIMAL_UDF
@@ -1772,17 +1909,17 @@ POSTHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4.4E+3
-1E+99
+-4400
+NULL
+NULL
 0
-0
-1E+2
-1E+1
+100
+10
 1
 0
 0
-2E+2
-2E+1
+200
+20
 2
 0
 0
@@ -1809,7 +1946,7 @@ POSTHOOK: Input: default@decimal_udf
 3
 0
 -1234567891
-1.23456789E+9
+1234567890
 PREHOOK: query: -- round
 EXPLAIN SELECT ROUND(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1855,17 +1992,17 @@ POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4.4E+3
-1E+99
+-4400
+NULL
+NULL
 0
-0
-1E+2
-1E+1
+100
+10
 1
 0.1
 0.01
-2E+2
-2E+1
+200
+20
 2
 0
 0.2
@@ -1938,17 +2075,17 @@ POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1.936E+7
-1E+198
-1E-198
+19360000
+NULL
+NULL
 0
-1E+4
-1E+2
+10000
+100
 1
 0.01
 0.0001
-4E+4
-4E+2
+40000
+400
 4
 0
 0.04
@@ -1973,7 +2110,7 @@ POSTHOOK: Input: default@decimal_udf
 9.8596
 9.8596
 9.8596
-0.99999999999999999999999980000000000000000000000001
+NULL
 1524157875323883675.019051998750190521
 1524157875323883652.7968299765279684
 PREHOOK: query: -- modulo
@@ -2022,7 +2159,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -2199
-1
+NULL
 NULL
 NULL
 1
@@ -2056,7 +2193,7 @@ NULL
 1
 1
 1
-1E-25
+0.0000000000000000000000001
 -617283944.0617283945
 1
 PREHOOK: query: -- stddev, var
@@ -2154,7 +2291,7 @@ POSTHOOK: Input: default@decimal_udf
 -1255	0.0	0.0
 -11	0.0	0.0
 -1	0.0	0.0
-0	2.5753937681885636E98	6.632653061224489E196
+0	0.23469892060538614	0.055083583333333345
 1	0.05928102563215321	0.0035142400000000066
 2	0.0	0.0
 3	0.0	0.0
@@ -2262,7 +2399,7 @@ POSTHOOK: Input: default@decimal_udf
 -1255	0.0	0.0
 -11	0.0	0.0
 -1	0.0	0.0
-0	2.6726124191242437E98	7.142857142857142E196
+0	0.24513502772590828	0.06009118181818183
 1	0.06627820154470102	0.004392800000000008
 2	0.0	0.0
 3	0.0	0.0
@@ -2344,7 +2481,217 @@ POSTHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-[{"x":-3.429369299009602E7,"y":36.0},{"x":1.2345678901234567E9,"y":1.0},{"x":1.0E99,"y":1.0}]
+[{"x":-1.2345678901234567E9,"y":1.0},{"x":-148.75058823529412,"y":34.0},{"x":1.2345678901234567E9,"y":1.0}]
+PREHOOK: query: -- min
+EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- min
+EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION MIN (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: min(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: decimal
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: min(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: decimal
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+-1234567890.123456789
+PREHOOK: query: -- max
+EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- max
+EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION MAX (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: max(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: decimal
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: max(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: decimal
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+1234567890.12345678
+PREHOOK: query: -- count
+EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+POSTHOOK: query: -- count
+EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT (TOK_TABLE_OR_COL key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_udf 
+          TableScan
+            alias: decimal_udf
+            Select Operator
+              expressions:
+                    expr: key
+                    type: decimal
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(key)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf
+#### A masked pattern was here ####
+36
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf

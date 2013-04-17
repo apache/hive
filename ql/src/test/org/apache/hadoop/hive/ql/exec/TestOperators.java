@@ -320,7 +320,7 @@ public class TestOperators extends TestCase {
       aliases.add("b");
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
         new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put("/testDir", aliases);
+      pathToAliases.put("hdfs:///testDir", aliases);
 
       // initialize pathToTableInfo
       // Default: treat the table as a single column "col"
@@ -328,7 +328,7 @@ public class TestOperators extends TestCase {
       PartitionDesc pd = new PartitionDesc(td, null);
       LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
         new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc>();
-      pathToPartitionInfo.put("/testDir", pd);
+      pathToPartitionInfo.put("hdfs:///testDir", pd);
 
       // initialize aliasToWork
       CollectDesc cd = new CollectDesc(Integer.valueOf(1));

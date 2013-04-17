@@ -23,6 +23,7 @@ import com.google.protobuf.CodedOutputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -306,7 +308,7 @@ class WriterImpl implements Writer {
     private final PositionedOutputStream rowIndexStream;
 
     /**
-     * Create a tree writer
+     * Create a tree writer.
      * @param columnId the column id of the column to write
      * @param inspector the object inspector to use
      * @param streamFactory limited access to the Writer's data.
@@ -867,7 +869,7 @@ class WriterImpl implements Writer {
       this.seconds = new RunLengthIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.DATA), true);
       this.nanos = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.NANO_DATA), false);
+          OrcProto.Stream.Kind.SECONDARY), false);
       recordPosition(rowIndexPosition);
     }
 
@@ -913,6 +915,51 @@ class WriterImpl implements Writer {
       super.recordPosition(recorder);
       seconds.getPosition(recorder);
       nanos.getPosition(recorder);
+    }
+  }
+
+  private static class DecimalTreeWriter extends TreeWriter {
+    private final PositionedOutputStream valueStream;
+    private final RunLengthIntegerWriter scaleStream;
+
+    DecimalTreeWriter(int columnId,
+                        ObjectInspector inspector,
+                        StreamFactory writer,
+                        boolean nullable) throws IOException {
+      super(columnId, inspector, writer, nullable);
+      valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
+      scaleStream = new RunLengthIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.SECONDARY), true);
+      recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    void write(Object obj) throws IOException {
+      super.write(obj);
+      if (obj != null) {
+        HiveDecimal decimal = ((HiveDecimalObjectInspector) inspector).
+            getPrimitiveJavaObject(obj);
+        SerializationUtils.writeBigInteger(valueStream,
+            decimal.unscaledValue());
+        scaleStream.write(decimal.scale());
+        indexStatistics.updateDecimal(decimal);
+      }
+    }
+
+    @Override
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      valueStream.flush();
+      scaleStream.flush();
+      recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    void recordPosition(PositionRecorder recorder) throws IOException {
+      super.recordPosition(recorder);
+      valueStream.getPosition(recorder);
+      scaleStream.getPosition(recorder);
     }
   }
 
@@ -1145,6 +1192,9 @@ class WriterImpl implements Writer {
           case TIMESTAMP:
             return new TimestampTreeWriter(streamFactory.getNextColumnId(),
                 inspector, streamFactory, nullable);
+          case DECIMAL:
+            return new DecimalTreeWriter(streamFactory.getNextColumnId(),
+                inspector, streamFactory,  nullable);
           default:
             throw new IllegalArgumentException("Bad primitive category " +
               ((PrimitiveObjectInspector) inspector).getPrimitiveCategory());
@@ -1203,6 +1253,9 @@ class WriterImpl implements Writer {
             break;
           case TIMESTAMP:
             type.setKind(OrcProto.Type.Kind.TIMESTAMP);
+            break;
+          case DECIMAL:
+            type.setKind(OrcProto.Type.Kind.DECIMAL);
             break;
           default:
             throw new IllegalArgumentException("Unknown primitive category: " +

@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -201,7 +201,7 @@ public class TestLazyBinarySerDe extends TestCase {
       Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
       String st = randField > 6 ? null : TestBinarySortableSerDe
           .getRandString(r);
-      BigDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
       MyTestInnerStruct is = randField > 7 ? null : new MyTestInnerStruct(r
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
@@ -269,7 +269,7 @@ public class TestLazyBinarySerDe extends TestCase {
       Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
       String st = randField > 6 ? null : TestBinarySortableSerDe
           .getRandString(r);
-      BigDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
       MyTestInnerStruct is = randField > 8 ? null : new MyTestInnerStruct(r
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 9 ? null : TestBinarySortableSerDe
@@ -325,7 +325,7 @@ public class TestLazyBinarySerDe extends TestCase {
       Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
       String st = randField > 6 ? null : TestBinarySortableSerDe
           .getRandString(r);
-      BigDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
       MyTestInnerStruct is = randField > 8 ? null : new MyTestInnerStruct(r
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 9 ? null : TestBinarySortableSerDe
@@ -381,7 +381,7 @@ public class TestLazyBinarySerDe extends TestCase {
       Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
       String st = randField > 6 ? null : TestBinarySortableSerDe
           .getRandString(r);
-      BigDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);
+      HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
       MyTestInnerStruct is = randField > 7 ? null : new MyTestInnerStruct(r
           .nextInt(5) - 2, r.nextInt(5) - 2);
 
@@ -500,7 +500,7 @@ public class TestLazyBinarySerDe extends TestCase {
         Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
         String st = randField > 6 ? null : TestBinarySortableSerDe
             .getRandString(r);
-        BigDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandBigDecimal(r);      
+        HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);      
         MyTestInnerStruct is = randField > 8 ? null : new MyTestInnerStruct(r
             .nextInt(5) - 2, r.nextInt(5) - 2);
         List<Integer> li = randField > 9 ? null : TestBinarySortableSerDe

@@ -43,8 +43,6 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -60,8 +58,6 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -146,8 +142,6 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 
@@ -169,8 +163,6 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 
@@ -192,8 +184,6 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 
@@ -223,8 +213,6 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 
@@ -246,8 +234,6 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 
@@ -290,8 +276,6 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 

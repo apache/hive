@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.profiler;
 import java.util.HashMap;
 import java.util.Map;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -58,7 +57,7 @@ public class HiveProfilerStatsAggregator {
   }
 
 
-  private void populateAggregateStats(HiveConf conf) {
+  private void populateAggregateStats(HiveConf conf) throws SQLException {
     int waitWindow = rawProfileConnInfo.getWaitWindow();
     int maxRetries = rawProfileConnInfo.getMaxRetries();
 
@@ -83,9 +82,10 @@ public class HiveProfilerStatsAggregator {
 
       populateAggregateStats(result);
       getProfileStatsStmt.close();
-      rawProfileConnInfo.getConnection().close();
     } catch(Exception e) {
       LOG.error("executing error: ", e);
+    } finally {
+      HiveProfilerUtils.closeConnection(rawProfileConnInfo);
     }
   }
 
@@ -110,7 +110,7 @@ public class HiveProfilerStatsAggregator {
           stats.put(levelAnnoName, curStat);
         }
       }
-    } catch (SQLException e) {
+    } catch (Exception e) {
       LOG.error("Error Aggregating Stats", e);
     }
   }

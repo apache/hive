@@ -15,25 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazybinary;
 
-import java.math.BigDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+public class LazyBinaryHiveDecimal extends
+    LazyBinaryPrimitive<WritableHiveDecimalObjectInspector, HiveDecimalWritable> {
 
-/**
- * A SettableDecimalObjectInspector can set a BigDecimal value to an object.
- */
-public interface SettableBigDecimalObjectInspector extends BigDecimalObjectInspector {
+  LazyBinaryHiveDecimal(WritableHiveDecimalObjectInspector oi) {
+    super(oi);
+    data = new HiveDecimalWritable();
+  }
 
-  Object set(Object o, byte[] bytes, int scale);
+  LazyBinaryHiveDecimal(LazyBinaryHiveDecimal copy) {
+    super(copy);
+    data = new HiveDecimalWritable(copy.data);
+  }
 
-  Object set(Object o, BigDecimal t);
-
-  Object set(Object o, BigDecimalWritable t);
-
-  Object create(byte[] bytes, int scale);
-
-  Object create (BigDecimal t);
+  @Override
+  public void init(ByteArrayRef bytes, int start, int length) {
+    data.setFromBytes(bytes.getData(), start, length);
+  }
 
 }

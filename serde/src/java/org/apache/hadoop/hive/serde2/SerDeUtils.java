@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BigDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -61,6 +61,9 @@ public final class SerDeUtils {
   public static final String RBRACKET = "]";
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
+
+  // lower case null is used within json objects
+  private static final String JSON_NULL = "null";
 
   private static ConcurrentHashMap<String, Class<?>> serdes =
     new ConcurrentHashMap<String, Class<?>>();
@@ -216,18 +219,32 @@ public final class SerDeUtils {
   }
 
   public static String getJSONString(Object o, ObjectInspector oi) {
+    return getJSONString(o, oi, JSON_NULL);
+  }
+
+  /**
+   * Use this if you need to have custom representation of top level null .
+   * (ie something other than 'null')
+   * eg, for hive output, we want to to print NULL for a null map object.
+   * @param o Object
+   * @param oi ObjectInspector
+   * @param nullStr The custom string used to represent null value
+   * @return
+   */
+  public static String getJSONString(Object o, ObjectInspector oi, String nullStr) {
     StringBuilder sb = new StringBuilder();
-    buildJSONString(sb, o, oi);
+    buildJSONString(sb, o, oi, nullStr);
     return sb.toString();
   }
 
-  static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi) {
+
+  static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi, String nullStr) {
 
     switch (oi.getCategory()) {
     case PRIMITIVE: {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
       if (o == null) {
-        sb.append("null");
+        sb.append(nullStr);
       } else {
         switch (poi.getPrimitiveCategory()) {
         case BOOLEAN: {
@@ -281,7 +298,7 @@ public final class SerDeUtils {
           break;
         }
         case DECIMAL: {
-          sb.append(((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
+          sb.append(((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o));
           break;
         }
         default:
@@ -297,14 +314,14 @@ public final class SerDeUtils {
           .getListElementObjectInspector();
       List<?> olist = loi.getList(o);
       if (olist == null) {
-        sb.append("null");
+        sb.append(nullStr);
       } else {
         sb.append(LBRACKET);
         for (int i = 0; i < olist.size(); i++) {
           if (i > 0) {
             sb.append(COMMA);
           }
-          buildJSONString(sb, olist.get(i), listElementObjectInspector);
+          buildJSONString(sb, olist.get(i), listElementObjectInspector, JSON_NULL);
         }
         sb.append(RBRACKET);
       }
@@ -317,7 +334,7 @@ public final class SerDeUtils {
           .getMapValueObjectInspector();
       Map<?, ?> omap = moi.getMap(o);
       if (omap == null) {
-        sb.append("null");
+        sb.append(nullStr);
       } else {
         sb.append(LBRACE);
         boolean first = true;
@@ -328,9 +345,9 @@ public final class SerDeUtils {
             sb.append(COMMA);
           }
           Map.Entry<?, ?> e = (Map.Entry<?, ?>) entry;
-          buildJSONString(sb, e.getKey(), mapKeyObjectInspector);
+          buildJSONString(sb, e.getKey(), mapKeyObjectInspector, JSON_NULL);
           sb.append(COLON);
-          buildJSONString(sb, e.getValue(), mapValueObjectInspector);
+          buildJSONString(sb, e.getValue(), mapValueObjectInspector, JSON_NULL);
         }
         sb.append(RBRACE);
       }
@@ -340,7 +357,7 @@ public final class SerDeUtils {
       StructObjectInspector soi = (StructObjectInspector) oi;
       List<? extends StructField> structFields = soi.getAllStructFieldRefs();
       if (o == null) {
-        sb.append("null");
+        sb.append(nullStr);
       } else {
         sb.append(LBRACE);
         for (int i = 0; i < structFields.size(); i++) {
@@ -352,7 +369,7 @@ public final class SerDeUtils {
           sb.append(QUOTE);
           sb.append(COLON);
           buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)),
-              structFields.get(i).getFieldObjectInspector());
+              structFields.get(i).getFieldObjectInspector(), JSON_NULL);
         }
         sb.append(RBRACE);
       }
@@ -361,13 +378,13 @@ public final class SerDeUtils {
     case UNION: {
       UnionObjectInspector uoi = (UnionObjectInspector) oi;
       if (o == null) {
-        sb.append("null");
+        sb.append(nullStr);
       } else {
         sb.append(LBRACE);
         sb.append(uoi.getTag(o));
         sb.append(COLON);
         buildJSONString(sb, uoi.getField(o),
-              uoi.getObjectInspectors().get(uoi.getTag(o)));
+              uoi.getObjectInspectors().get(uoi.getTag(o)), JSON_NULL);
         sb.append(RBRACE);
       }
       break;

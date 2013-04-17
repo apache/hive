@@ -57,3 +57,10 @@ select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part;
 
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;
+
+-- multi table insert test
+create table t1 (a1 int, b1 string); 
+create table t2 (a1 int, b1 string);
+from (select sum(i) over (), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
+select * from t1 limit 3;
+select * from t2 limit 3;

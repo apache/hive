@@ -81,6 +81,10 @@ public class JoinDesc extends AbstractOperatorDesc {
   protected Byte[] tagOrder;
   private TableDesc keyTableDesc;
 
+  // this operator cannot be converted to mapjoin cause output is expected to be sorted on join key
+  // it's resulted from RS-dedup optimization, which removes following RS under some condition
+  private boolean fixedAsSorted;
+
   public JoinDesc() {
   }
 
@@ -524,5 +528,13 @@ public class JoinDesc extends AbstractOperatorDesc {
       result[entry.getKey()] = entry.getValue();
     }
     return result;
+  }
+
+  public boolean isFixedAsSorted() {
+    return fixedAsSorted;
+  }
+
+  public void setFixedAsSorted(boolean fixedAsSorted) {
+    this.fixedAsSorted = fixedAsSorted;
   }
 }

@@ -485,6 +485,7 @@ public class HiveConf extends Configuration {
         "hive.merge.current.job.has.dynamic.partitions", false),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
+    HIVEUSERCFILESYNCCACHE("hive.exec.rcfile.use.sync.cache", true),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
@@ -522,7 +523,7 @@ public class HiveConf extends Configuration {
     HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false),
     HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR(
         "hive.auto.convert.sortmerge.join.bigtable.selection.policy",
-        "org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ"),
+        "org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ"),
 
     HIVESCRIPTOPERATORTRUST("hive.exec.script.trust", false),
     HIVEROWOFFSET("hive.exec.rowoffset", false),
@@ -543,6 +544,7 @@ public class HiveConf extends Configuration {
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
+    HIVEOPTREDUCEDEDUPLICATIONMINREDUCER("hive.optimize.reducededuplication.min.reducer", 4),
     // whether to optimize union followed by select followed by filesink
     // It creates sub-directories in the final output, so should not be turned on in systems
     // where MAPREDUCE-1501 is not present

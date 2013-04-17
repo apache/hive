@@ -129,8 +129,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
@@ -138,8 +136,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -160,8 +156,6 @@ PREHOOK: query: DESCRIBE EXTENDED test_table_like
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col1                	string              	None                
 	 	 
 #### A masked pattern was here ####
@@ -1344,8 +1338,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 

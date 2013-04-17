@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -135,7 +135,7 @@ public class RegexSerDe extends AbstractSerDe {
       } else if (typeName.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
       } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaBigDecimalObjectInspector);
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector);
       } else {
          throw new SerDeException(getClass().getName()
          + " doesn't allow column [" + c + "] named "
@@ -230,8 +230,8 @@ public class RegexSerDe extends AbstractSerDe {
           b = Boolean.valueOf(t);
           row.set(c, b);
         } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
-          BigDecimal bd;
-          bd = new BigDecimal(t);
+          HiveDecimal bd;
+          bd = new HiveDecimal(t);
           row.set(c, bd);
         }
       } catch (RuntimeException e) {

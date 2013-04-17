@@ -187,9 +187,10 @@ public class ExprNodeDescUtils {
     return result;
   }
 
-  private static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
+  public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
       Operator<?> terminal) throws SemanticException {
-    if (current == null || current == terminal) {
+    Operator<?> parent = getSingleParent(current, terminal);
+    if (parent == null) {
       return source;
     }
     if (source instanceof ExprNodeGenericFuncDesc) {
@@ -200,7 +201,7 @@ public class ExprNodeDescUtils {
     }
     if (source instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc column = (ExprNodeColumnDesc) source;
-      return backtrack(column, current, terminal);
+      return backtrack(column, parent, terminal);
     }
     if (source instanceof ExprNodeFieldDesc) {
       // field epression should be resolved
@@ -215,20 +216,19 @@ public class ExprNodeDescUtils {
   // Resolve column expression to input expression by using expression mapping in current operator
   private static ExprNodeDesc backtrack(ExprNodeColumnDesc column, Operator<?> current,
       Operator<?> terminal) throws SemanticException {
-    if (current == null || current == terminal) {
-      return column;
-    }
-    Operator<?> parent = getSingleParent(current, terminal);
     Map<String, ExprNodeDesc> mapping = current.getColumnExprMap();
     if (mapping == null || !mapping.containsKey(column.getColumn())) {
-      return backtrack(column, parent, terminal);  // forward
+      return backtrack((ExprNodeDesc)column, current, terminal);
     }
     ExprNodeDesc mapped = mapping.get(column.getColumn());
-    return backtrack(mapped, parent, terminal);    // forward with resolved expr
+    return backtrack(mapped, current, terminal);
   }
 
   public static Operator<?> getSingleParent(Operator<?> current, Operator<?> terminal)
       throws SemanticException {
+    if (current == terminal) {
+      return null;
+    }
     List<Operator<?>> parents = current.getParentOperators();
     if (parents == null || parents.isEmpty()) {
       if (terminal != null) {
@@ -236,9 +236,12 @@ public class ExprNodeDescUtils {
       }
       return null;
     }
-    if (current.getParentOperators().size() > 1) {
-      throw new SemanticException("Met multiple parent operators");
+    if (parents.size() == 1) {
+      return parents.get(0);
     }
-    return parents.get(0);
+    if (terminal != null && parents.contains(terminal)) {
+      return terminal;
+    }
+    throw new SemanticException("Met multiple parent operators");
   }
 }

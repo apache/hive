@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -92,12 +92,12 @@ public class UDFOPNegative extends UDFBaseNumericUnaryOp {
   }
 
   @Override
-  public BigDecimalWritable evaluate(BigDecimalWritable a) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable a) {
     if (a == null) {
       return null;
     }
-    bigDecimalWritable.set(a.getBigDecimal().negate());
-    return bigDecimalWritable;
+    decimalWritable.set(a.getHiveDecimal().negate());
+    return decimalWritable;
   }
 
 }

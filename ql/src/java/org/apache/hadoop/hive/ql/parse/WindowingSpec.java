@@ -237,10 +237,24 @@ public class WindowingSpec {
     OrderSpec orderSpec = wdwSpec.getOrder();
     if ( wFrame == null ) {
       if (!supportsWindowing ) {
-        wFrame = new WindowFrameSpec(
-            new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT),
-            new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT)
-            );
+
+        if ( wFn.getName().toLowerCase().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
+            && orderSpec != null ) {
+          /*
+           * last_value: when an Sort Key is specified, then last_value should return the
+           * last value among rows with the same Sort Key value.
+           */
+          wFrame = new WindowFrameSpec(
+              new CurrentRowSpec(),
+              new RangeBoundarySpec(Direction.FOLLOWING, 0)
+              );
+        }
+        else {
+          wFrame = new WindowFrameSpec(
+              new RangeBoundarySpec(Direction.PRECEDING, BoundarySpec.UNBOUNDED_AMOUNT),
+              new RangeBoundarySpec(Direction.FOLLOWING, BoundarySpec.UNBOUNDED_AMOUNT)
+              );
+        }
       }
       else if ( orderSpec == null ) {
         wFrame = new WindowFrameSpec(

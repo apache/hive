@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -34,7 +34,7 @@ import org.apache.hadoop.io.IntWritable;
     + "  > SELECT _FUNC_(2, 3) FROM src LIMIT 1;\n" + "  8")
 public class UDFPower extends UDF {
   private final DoubleWritable resultDouble = new DoubleWritable();
-  private final BigDecimalWritable resultBigDecimal = new BigDecimalWritable();
+  private final HiveDecimalWritable resultHiveDecimal = new HiveDecimalWritable();
 
   public UDFPower() {
   }
@@ -50,7 +50,7 @@ public class UDFPower extends UDF {
       return resultDouble;
     }
   }
-  
+
   /**
    * Raise a to the power of b.
    */
@@ -62,16 +62,20 @@ public class UDFPower extends UDF {
       return resultDouble;
     }
   }
-  
+
   /**
    * Raise a to the power of b
    */
-  public BigDecimalWritable evaluate(BigDecimalWritable a, IntWritable b) {
+  public HiveDecimalWritable evaluate(HiveDecimalWritable a, IntWritable b) {
     if (a == null || b == null) {
       return null;
     } else {
-      resultBigDecimal.set(a.getBigDecimal().pow(b.get()));
-      return resultBigDecimal;
+      try {
+        resultHiveDecimal.set(a.getHiveDecimal().pow(b.get()));
+      } catch (NumberFormatException e) {
+        return null;
+      }
+      return resultHiveDecimal;
     }
   }
 

@@ -7,8 +7,6 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -25,8 +23,6 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -78,8 +74,6 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 
@@ -96,8 +90,6 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 	 	 

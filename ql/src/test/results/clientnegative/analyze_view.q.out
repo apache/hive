@@ -4,9 +4,7 @@ POSTHOOK: query: DROP VIEW av
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW av AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW av AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@av
-#### A masked pattern was here ####
 FAILED: SemanticException [Error 10091]: ANALYZE is not supported for views

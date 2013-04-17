@@ -5,12 +5,10 @@ POSTHOOK: type: DROPVIEW
 PREHOOK: query: -- views and tables share the same namespace
 CREATE VIEW xxx4 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
-#### A masked pattern was here ####
 POSTHOOK: query: -- views and tables share the same namespace
 CREATE VIEW xxx4 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx4
-#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE xxx4(key int)
 PREHOOK: type: CREATETABLE
 FAILED: Error in metadata: AlreadyExistsException(message:Table xxx4 already exists)

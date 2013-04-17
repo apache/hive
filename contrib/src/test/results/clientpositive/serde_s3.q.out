@@ -15,8 +15,6 @@ PREHOOK: query: DESCRIBE s3log
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE s3log
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 #### A masked pattern was here ####
 bucketname          	string              	from deserializer   
 rdatetime           	string              	from deserializer   

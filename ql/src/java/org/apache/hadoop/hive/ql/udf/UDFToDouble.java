@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -184,11 +184,11 @@ public class UDFToDouble extends UDF {
     }
   }
 
-  public DoubleWritable evaluate(BigDecimalWritable i) {
+  public DoubleWritable evaluate(HiveDecimalWritable i) {
     if (i == null) {
       return null;
     } else {
-      doubleWritable.set(i.getBigDecimal().doubleValue());
+      doubleWritable.set(i.getHiveDecimal().doubleValue());
       return doubleWritable;
     }
   }

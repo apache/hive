@@ -18,24 +18,42 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.List;
+
 public class OperatorHookContext {
-  private String operatorName;
-  private String operatorId;
-  private Object currentRow;
+  private final String operatorName;
+  private final String operatorId;
+  private final Object currentRow;
+  private final int parentTag;
   private Operator operator;
-  public OperatorHookContext(Operator op, Object row) {
-    this(op.getName(), op.getIdentifier(), row);
+
+  public OperatorHookContext(Operator op) {
+    this(op, null, -1);
+  }
+
+  public OperatorHookContext(Operator op, Object row, int tag) {
+    this(op.getName(), op.getIdentifier(), row, tag);
     this.operator = op;
   }
 
-  private OperatorHookContext(String opName, String opId, Object row) {
+  private OperatorHookContext(String opName, String opId, Object row, int tag) {
     operatorName = opName;
     operatorId = opId;
     currentRow = row;
+    parentTag = tag;
   }
 
   public Operator getOperator() {
     return operator;
+  }
+
+  public Operator getParentOperator() {
+    List<Operator> parents = this.operator.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      return null;
+    }
+    return (Operator)(this.operator.getParentOperators().get(this.parentTag));
+
   }
 
   public String getOperatorName() {

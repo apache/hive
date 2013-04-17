@@ -1410,7 +1410,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
                 for (int _i150 = 0; _i150 < _map149.size; ++_i150)
                 {
                   String _key151; // required
-                  String _val152; // optional
+                  String _val152; // required
                   _key151 = iprot.readString();
                   _val152 = iprot.readString();
                   struct.parameters.put(_key151, _val152);
@@ -1734,7 +1734,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           for (int _i171 = 0; _i171 < _map170.size; ++_i171)
           {
             String _key172; // required
-            String _val173; // optional
+            String _val173; // required
             _key172 = iprot.readString();
             _val173 = iprot.readString();
             struct.parameters.put(_key172, _val173);

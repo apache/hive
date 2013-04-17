@@ -2,8 +2,6 @@ PREHOOK: query: DESCRIBE src_thrift
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE src_thrift
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 aint                	int                 	from deserializer   
 astring             	string              	from deserializer   
 lint                	array<int>          	from deserializer   
@@ -109,7 +107,7 @@ POSTHOOK: Input: default@src_thrift
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]
 -734328909	[{"myint":16,"mystring":"64","underscore_int":4}]
-0	null
+0	NULL
 336964413	[{"myint":81,"mystring":"729","underscore_int":9}]
 465985200	[{"myint":1,"mystring":"1","underscore_int":1}]
 477111222	[{"myint":9,"mystring":"27","underscore_int":3}]

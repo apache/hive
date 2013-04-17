@@ -21,15 +21,15 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
@@ -183,7 +183,7 @@ public final class PrimitiveObjectInspectorUtils {
       Timestamp.class, TimestampWritable.class);
   public static final PrimitiveTypeEntry decimalTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.DECIMAL, serdeConstants.DECIMAL_TYPE_NAME, null,
-      BigDecimal.class, BigDecimalWritable.class);
+      HiveDecimal.class, HiveDecimalWritable.class);
 
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
@@ -370,8 +370,8 @@ public final class PrimitiveObjectInspectorUtils {
           equals(((BinaryObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
     case DECIMAL: {
-      return ((BigDecimalObjectInspector) oi1).getPrimitiveJavaObject(o1)
-          .compareTo(((BigDecimalObjectInspector) oi2).getPrimitiveJavaObject(o2)) == 0;
+      return ((HiveDecimalObjectInspector) oi1).getPrimitiveJavaObject(o1)
+          .compareTo(((HiveDecimalObjectInspector) oi2).getPrimitiveJavaObject(o2)) == 0;
     }
     default:
       return false;
@@ -403,7 +403,7 @@ public final class PrimitiveObjectInspectorUtils {
       return ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getDouble();
     case DECIMAL:
-      return ((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o).doubleValue();
+      return ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o).doubleValue();
     default:
       throw new NumberFormatException();
     }
@@ -479,8 +479,8 @@ public final class PrimitiveObjectInspectorUtils {
           .getPrimitiveWritableObject(o).getSeconds() != 0);
       break;
     case DECIMAL:
-      result = BigDecimal.ZERO.compareTo(
-          ((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o)) != 0;
+      result = HiveDecimal.ZERO.compareTo(
+          ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o)) != 0;
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
@@ -563,7 +563,7 @@ public final class PrimitiveObjectInspectorUtils {
           .getPrimitiveWritableObject(o).getSeconds());
       break;
     case DECIMAL:
-      result = ((BigDecimalObjectInspector) oi)
+      result = ((HiveDecimalObjectInspector) oi)
           .getPrimitiveJavaObject(o).intValue();
       break;
     default: {
@@ -621,7 +621,7 @@ public final class PrimitiveObjectInspectorUtils {
           .getSeconds();
       break;
     case DECIMAL:
-      result = ((BigDecimalObjectInspector) oi)
+      result = ((HiveDecimalObjectInspector) oi)
           .getPrimitiveJavaObject(o).longValue();
       break;
     default:
@@ -672,7 +672,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getDouble();
       break;
     case DECIMAL:
-      result = ((BigDecimalObjectInspector) oi)
+      result = ((HiveDecimalObjectInspector) oi)
           .getPrimitiveJavaObject(o).doubleValue();
       break;
     default:
@@ -736,7 +736,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case DECIMAL:
-      result = ((BigDecimalObjectInspector) oi)
+      result = ((HiveDecimalObjectInspector) oi)
           .getPrimitiveJavaObject(o).toString();
       break;
     default:
@@ -772,54 +772,54 @@ public final class PrimitiveObjectInspectorUtils {
     }
   }
 
-  public static BigDecimal getBigDecimal(Object o, PrimitiveObjectInspector oi) {
+  public static HiveDecimal getHiveDecimal(Object o, PrimitiveObjectInspector oi) {
     if (o == null) {
       return null;
     }
 
-    BigDecimal result = null;
+    HiveDecimal result = null;
     switch (oi.getPrimitiveCategory()) {
     case VOID:
       result = null;
       break;
     case BOOLEAN:
       result = ((BooleanObjectInspector) oi).get(o) ?
-          BigDecimal.ONE : BigDecimal.ZERO;
+        HiveDecimal.ONE : HiveDecimal.ZERO;
       break;
     case BYTE:
-      result = new BigDecimal(((ByteObjectInspector) oi).get(o));
+      result = new HiveDecimal(((ByteObjectInspector) oi).get(o));
       break;
     case SHORT:
-      result = new BigDecimal(((ShortObjectInspector) oi).get(o));
+      result = new HiveDecimal(((ShortObjectInspector) oi).get(o));
       break;
     case INT:
-      result = new BigDecimal(((IntObjectInspector) oi).get(o));
+      result = new HiveDecimal(((IntObjectInspector) oi).get(o));
       break;
     case LONG:
-      result = new BigDecimal(((LongObjectInspector) oi).get(o));
+      result = new HiveDecimal(((LongObjectInspector) oi).get(o));
       break;
     case FLOAT:
       Float f = ((FloatObjectInspector) oi).get(o);
-      result = new BigDecimal(f.toString());
+      result = new HiveDecimal(f.toString());
       break;
     case DOUBLE:
       Double d = ((DoubleObjectInspector) oi).get(o);
-      result = new BigDecimal(d.toString());
+      result = new HiveDecimal(d.toString());
       break;
     case STRING:
-      result = new BigDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
+      result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
       break;
     case TIMESTAMP:
       Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
-          .getDouble();
-      result = new BigDecimal(ts.toString());
+        .getDouble();
+      result = new HiveDecimal(ts.toString());
       break;
     case DECIMAL:
-      result = ((BigDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
+      result = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
-          + oi.getTypeName());
+                                 + oi.getTypeName());
     }
     return result;
   }
@@ -856,7 +856,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
       break;
     case DECIMAL:
-      result = TimestampWritable.decimalToTimestamp(((BigDecimalObjectInspector) oi)
+      result = TimestampWritable.decimalToTimestamp(((HiveDecimalObjectInspector) oi)
                                                     .getPrimitiveJavaObject(o));
       break;
     case STRING:

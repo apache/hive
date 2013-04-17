@@ -766,17 +766,6 @@ public class TestJdbcDriver extends TestCase {
     assertNotNull("Statement is null", stmt);
 
     ResultSet res = stmt.executeQuery("describe " + tableName);
-
-    // "describe [table_name]" result format
-    // first line should be format name:
-    // "# col_name             data_type               comment"
-    // second line is empty
-    // the following lines contain the values
-    res.next();
-    assertEquals(true, res.getString(1).contains("col_name"));
-    assertEquals(true, res.getString(2).contains("data_type"));
-    assertEquals(true, res.getString(3).contains("comment"));
-    res.next();
     res.next();
     assertEquals(true, res.getString(1).contains("under_col"));
     assertEquals(true, res.getString(2).contains("int"));

@@ -15,19 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.math.BigDecimal;
+package org.apache.hive.service.server;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * A DecimalObjectInspector inspects an Object representing a BigDecimal.
+ * Test ServerOptionsProcessor
+ *
  */
-public interface BigDecimalObjectInspector extends PrimitiveObjectInspector {
+public class TestServerOptionsProcessor {
 
-  BigDecimalWritable getPrimitiveWritableObject(Object o);
+  @Test
+  public void test() {
+    ServerOptionsProcessor optProcessor = new ServerOptionsProcessor("HiveServer2");
+    final String key = "testkey";
+    final String value = "value123";
+    String []args = {"-hiveconf", key + "=" + value};
 
-  BigDecimal getPrimitiveJavaObject(Object o);
+    Assert.assertEquals(
+        "checking system property before processing options",
+        null,
+        System.getProperty(key));
+
+
+    boolean isSuccess = optProcessor.process(args);
+    Assert.assertTrue("options processor result", isSuccess);
+    Assert.assertEquals(
+        "checking system property after processing options",
+        value,
+        System.getProperty(key));
+
+
+
+
+  }
+
 }

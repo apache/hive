@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -37,11 +37,11 @@ public class TestFunctionRegistry extends TestCase {
 
   public class TestUDF {
     public void same(DoubleWritable x, DoubleWritable y) {}
-    public void same(BigDecimalWritable x, BigDecimalWritable y) {}
-    public void one(IntWritable x, BigDecimalWritable y) {}
+    public void same(HiveDecimalWritable x, HiveDecimalWritable y) {}
+    public void one(IntWritable x, HiveDecimalWritable y) {}
     public void one(IntWritable x, DoubleWritable y) {}
     public void one(IntWritable x, IntWritable y) {}
-    public void mismatch(TimestampWritable x, BigDecimalWritable y) {}
+    public void mismatch(TimestampWritable x, HiveDecimalWritable y) {}
     public void mismatch(BytesWritable x, DoubleWritable y) {}
   }
   
@@ -90,16 +90,16 @@ public class TestFunctionRegistry extends TestCase {
            DoubleWritable.class, DoubleWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           BigDecimalWritable.class, BigDecimalWritable.class, false);
+           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.decimalTypeInfo, TypeInfoFactory.doubleTypeInfo,
-           BigDecimalWritable.class, BigDecimalWritable.class, false);
+           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.decimalTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           BigDecimalWritable.class, BigDecimalWritable.class, false);
+           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "one", TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           IntWritable.class, BigDecimalWritable.class, false);
+           IntWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "one", TypeInfoFactory.intTypeInfo, TypeInfoFactory.floatTypeInfo,
            IntWritable.class, DoubleWritable.class, false);

@@ -69,6 +69,10 @@ SELECT key / '2.0' FROM DECIMAL_UDF;
 EXPLAIN SELECT abs(key) FROM DECIMAL_UDF;
 SELECT abs(key) FROM DECIMAL_UDF;
 
+-- avg
+EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
+SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
+
 -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF;
 SELECT -key FROM DECIMAL_UDF;
@@ -108,5 +112,17 @@ SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value;
 -- histogram
 EXPLAIN SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF; 
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF; 
+
+-- min
+EXPLAIN SELECT MIN(key) FROM DECIMAL_UDF;
+SELECT MIN(key) FROM DECIMAL_UDF;
+
+-- max
+EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF;
+SELECT MAX(key) FROM DECIMAL_UDF;
+
+-- count
+EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF;
+SELECT COUNT(key) FROM DECIMAL_UDF;
 
 DROP TABLE IF EXISTS DECIMAL_UDF;

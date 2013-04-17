@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
 
-import org.apache.hadoop.hive.serde2.io.BigDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -70,8 +70,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaTimestampObjectInspector();
   public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
       new JavaBinaryObjectInspector();
-  public static final JavaBigDecimalObjectInspector javaBigDecimalObjectInspector =
-      new JavaBigDecimalObjectInspector();
+  public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
+      new JavaHiveDecimalObjectInspector();
 
   public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
       new WritableBooleanObjectInspector();
@@ -95,8 +95,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableTimestampObjectInspector();
   public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
       new WritableBinaryObjectInspector();
-  public static final WritableBigDecimalObjectInspector writableBigDecimalObjectInspector =
-      new WritableBigDecimalObjectInspector();
+  public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
+      new WritableHiveDecimalObjectInspector();
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
       new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
@@ -124,7 +124,7 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BINARY,
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DECIMAL,
-        writableBigDecimalObjectInspector);
+        writableHiveDecimalObjectInspector);
   }
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
@@ -153,7 +153,7 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BINARY,
         javaByteArrayObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DECIMAL,
-        javaBigDecimalObjectInspector);
+        javaHiveDecimalObjectInspector);
   }
 
   /**
@@ -201,7 +201,7 @@ public final class PrimitiveObjectInspectorFactory {
     case TIMESTAMP:
       return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
     case DECIMAL:
-      return new WritableConstantBigDecimalObjectInspector((BigDecimalWritable)value);
+      return new WritableConstantHiveDecimalObjectInspector((HiveDecimalWritable)value);
     case BINARY:
       return new WritableConstantBinaryObjectInspector((BytesWritable)value);
     case VOID:

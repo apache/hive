@@ -515,7 +515,7 @@
         inheritAll="false"/>
     <mkdir dir="${build.dir.hive}/hcatalog"/>
     <copy todir="${build.dir.hive}/hcatalog">
-        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${version}"/>
+        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
     </copy>
 
     <!-- special case because builtins compilation depends on packaging
@@ -678,6 +678,7 @@
       <packageset dir="hcatalog/src/java"/>
       <packageset dir="cli/src/java"/>
       <packageset dir="beeline/src/java"/>
+      <packageset dir="beeline/src/test"/>
       <packageset dir="ql/src/java"/>
       <packageset dir="ql/src/test"/>
       <packageset dir="ql/src/gen/thrift/gen-javabean"/>
@@ -1081,7 +1082,7 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/hcatalog/hive-hcatalog-${version}.jar"
+    <copy file="${build.dir.hive}/hcatalog/hive-hcatalog-${hcatalog.version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
           todir="${mvn.jar.dir}" />
@@ -1116,7 +1117,7 @@
     <copy file="${build.dir.hive}/metastore/pom.xml"
           tofile="${mvn.pom.dir}/hive-metastore-${version}.pom" />
     <copy file="${build.dir.hive}/hcatalog/pom.xml"
-          tofile="${mvn.pom.dir}/hive-hcatalog-${version}.pom" />
+          tofile="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom" />
     <copy file="${build.dir.hive}/pdk/pom.xml"
           tofile="${mvn.pom.dir}/hive-pdk-${version}.pom" />
     <copy file="${build.dir.hive}/ql/pom.xml"
@@ -1375,12 +1376,12 @@
 
     <!-- hive-hcatalog -->
     <sign-artifact
-        input.file="${mvn.pom.dir}/hive-hcatalog-${version}.jar"
-        output.file="${mvn.pom.dir}/hive-hcatalog-${version}.jar.asc"
+        input.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.jar"
+        output.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
-        input.file="${mvn.pom.dir}/hive-hcatalog-${version}.pom"
-        output.file="${mvn.pom.dir}/hive-hcatalog-${version}.pom.asc"
+        input.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom"
+        output.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
 
     <!-- hive-pdk -->

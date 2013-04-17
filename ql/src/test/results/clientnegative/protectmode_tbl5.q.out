@@ -55,8 +55,6 @@ PREHOOK: query: desc extended tbl_protectmode_tbl5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode_tbl5
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 col                 	string              	None                
 p                   	string              	None                
 	 	 

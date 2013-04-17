@@ -1,0 +1,90 @@
+PREHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
+
+CREATE TABLE doctors4
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc:":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- verify that new joins bring in correct schemas (including evolved schemas)
+
+CREATE TABLE doctors4
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc:":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@doctors4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors4
+PREHOOK: type: LOAD
+PREHOOK: Output: default@doctors4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors4
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@doctors4
+PREHOOK: query: select count(*) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500
