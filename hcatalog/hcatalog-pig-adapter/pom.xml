@@ -32,7 +32,6 @@
     <groupId>org.apache.hcatalog</groupId>
     <artifactId>hcatalog-pig-adapter</artifactId>
     <packaging>jar</packaging>
-    <version>0.11.0-SNAPSHOT</version>
     <name>hcatalog-pig-adapter</name>
     <url>http://maven.apache.org</url>
 

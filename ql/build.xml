@@ -201,7 +201,7 @@
 	
   <!-- Override jar target to specify main class and compiler stuff -->
 
-  <target name="jar" depends="compile">
+  <target name="jar" depends="make-pom,compile">
     <echo message="Project: ${ant.project.name}"/>
     <unzip src="${build.ivy.lib.dir}/default/libthrift-${libthrift.version}.jar" dest="${build.dir.hive}/thrift/classes">
       <patternset>
