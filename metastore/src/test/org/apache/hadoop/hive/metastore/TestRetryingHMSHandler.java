@@ -68,7 +68,7 @@ public class TestRetryingHMSHandler extends TestCase {
   // Create a database and a table in that database.  Because the AlternateFailurePreListener is
   // being used each attempt to create something should require two calls by the RetryingHMSHandler
   public void testRetryingHMSHandler() throws Exception {
-    String dbName = "tmpdb";
+    String dbName = "hive4159";
     String tblName = "tmptbl";
 
     Database db = new Database();
