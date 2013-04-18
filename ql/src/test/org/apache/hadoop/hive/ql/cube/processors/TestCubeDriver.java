@@ -26,12 +26,19 @@ public class TestCubeDriver {
   public static String HOUR_FMT = "yyyy-MM-dd HH";
   public static final SimpleDateFormat HOUR_PARSER = new SimpleDateFormat(HOUR_FMT);
 
+  public static String MONTH_FMT = "yyyy-MM";
+  public static final SimpleDateFormat MONTH_PARSER = new SimpleDateFormat(MONTH_FMT);
+
   public static String getDateUptoHours(Date dt) {
     return HOUR_PARSER.format(dt);
   }
 
-  //@Test
-  public void testSimpleQuery1() throws Exception {
+  public static String getDateUptoMonth(Date dt) {
+    return MONTH_PARSER.format(dt);
+  }
+
+  @Test
+  public void testQueryWithNow() throws Exception {
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     Throwable th = null;
     try {
@@ -45,7 +52,7 @@ public class TestCubeDriver {
   }
 
   @Test
-  public void testSimpleQuery2() throws Exception {
+  public void testCubeWhereQuery() throws Exception {
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     Calendar cal = Calendar.getInstance();
     Date now = cal.getTime();
@@ -59,6 +66,30 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
     //Assert.assertEquals(queries[1], cubeql.toHQL());
+  }
+
+  @Test
+  public void testCubeWhereQueryForMonth() throws Exception {
+    driver = new CubeDriver(new HiveConf(new Configuration(), HiveConf.class));
+    Calendar cal = Calendar.getInstance();
+    Date now = cal.getTime();
+    System.out.println("Test now:" + now);
+    cal.add(Calendar.MONTH, -2);
+    Date twoMonthsBack = cal.getTime();
+    System.out.println("Test twoMonthsBack:" + twoMonthsBack);
+    System.out.println("Test from:" + getDateUptoHours(twoMonthsBack) + " to:" + getDateUptoHours(now));
+    String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
+        " where time_range_in('" + getDateUptoHours(twoMonthsBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+    //Assert.assertEquals(queries[1], cubeql.toHQL());
+
+    // TODO this should consider only two month partitions. Month weight needs
+    // to be fixed.
+   // hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
+   //     " where time_range_in('" + getDateUptoMonth(twoMonthsBack)
+   //     + "','" + getDateUptoMonth(now) + "')");
+
   }
 
   @Test
@@ -87,8 +118,7 @@ public class TestCubeDriver {
 
   @Test
   public void testLimitQuery() throws Exception {
-    conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C2");
-    driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
+    driver = new CubeDriver(new HiveConf(new Configuration(), HiveConf.class));
     String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
     System.out.println("cube hql:" + hqlQuery);
     //Assert.assertEquals(queries[1], cubeql.toHQL());

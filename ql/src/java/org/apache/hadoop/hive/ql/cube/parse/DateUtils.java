@@ -207,8 +207,6 @@ public class DateUtils {
       cal.set(Calendar.MONTH, 1);
     case MONTHLY :
       cal.set(Calendar.DAY_OF_MONTH, 1);
-    case WEEKLY :
-      cal.set(Calendar.DAY_OF_WEEK, 1);
     case DAILY :
       cal.set(Calendar.HOUR_OF_DAY, 0);
     case HOURLY :
@@ -216,7 +214,21 @@ public class DateUtils {
     case MINUTELY :
       cal.set(Calendar.SECOND, 0);
     case SECONDLY :
+      break;
+    case WEEKLY :
+      cal.set(Calendar.DAY_OF_WEEK, 1);
+      cal.set(Calendar.HOUR_OF_DAY, 0);
+      cal.set(Calendar.MINUTE, 0);
+      cal.set(Calendar.SECOND, 0);
+      break;
     }
+    System.out.println("Date:" + toDate + " Floordate for interval:" + interval + " is " + cal.getTime());
     return cal.getTime();
+  }
+
+  public static int getNumberofDaysInMonth(Date date) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+    return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
   }
 }

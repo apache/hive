@@ -14,7 +14,6 @@ import org.apache.hadoop.hive.ql.cube.metadata.BaseDimension;
 import org.apache.hadoop.hive.ql.cube.metadata.ColumnMeasure;
 import org.apache.hadoop.hive.ql.cube.metadata.Cube;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeDimension;
-import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMeasure;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMetastoreClient;
 import org.apache.hadoop.hive.ql.cube.metadata.ExprMeasure;
@@ -93,21 +92,42 @@ public class CubeTestSetup {
     // add one dimension of the cube
     factColumns.add(new FieldSchema("zipcode","int", "zip"));
 
-    Map<String, List<UpdatePeriod>> updatePeriods =
-        new HashMap<String, List<UpdatePeriod>>();
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();
     List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
     updates.add(UpdatePeriod.HOURLY);
     updates.add(UpdatePeriod.DAILY);
+    updates.add(UpdatePeriod.MONTHLY);
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
     storageAggregatePeriods.put(hdfsStorage, updates);
-    updatePeriods.put(hdfsStorage.getName(), updates);
 
-    CubeFactTable cubeFact = new CubeFactTable(cubeName, factName, factColumns,
-        updatePeriods);
+    // create cube fact
+    client.createCubeFactTable(cubeName, factName, factColumns,
+        storageAggregatePeriods);
+  }
+
+  private void createCubeFactMonthly(CubeMetastoreClient client) throws HiveException {
+    String factName = "testFactMonthly";
+    List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
+        cubeMeasures.size());
+    for (CubeMeasure measure : cubeMeasures) {
+      factColumns.add(measure.getColumn());
+    }
+
+    // add one dimension of the cube
+    factColumns.add(new FieldSchema("countryid","int", "country id"));
+
+    Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
+        new HashMap<Storage, List<UpdatePeriod>>();
+    List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
+    updates.add(UpdatePeriod.MONTHLY);
+    Storage hdfsStorage = new HDFSStorage("C2",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage, updates);
+
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,
         storageAggregatePeriods);
@@ -146,6 +166,7 @@ public class CubeTestSetup {
     createCube(client);
     createCubeFact(client);
     createDimWithTwoStorages(client);
+   // createCubeFactMonthly(client);
   }
 
 }

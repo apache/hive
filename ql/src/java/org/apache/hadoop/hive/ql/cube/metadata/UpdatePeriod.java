@@ -1,6 +1,9 @@
 package org.apache.hadoop.hive.ql.cube.metadata;
 
 import java.util.Calendar;
+import java.util.Date;
+
+import org.apache.hadoop.hive.ql.cube.parse.DateUtils;
 
 
 public enum UpdatePeriod implements Named {
@@ -30,6 +33,10 @@ public enum UpdatePeriod implements Named {
 
   public long weight() {
     return this.weight;
+  }
+
+  public long monthWeight(Date date) {
+    return DateUtils.getNumberofDaysInMonth(date) * DAILY.weight();
   }
 
   public String format() {

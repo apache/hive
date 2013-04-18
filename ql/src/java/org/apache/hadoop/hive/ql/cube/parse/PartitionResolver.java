@@ -65,8 +65,8 @@ public class PartitionResolver implements ContextRewriter {
       }
       parts.addAll(partitions);
     }
-    System.out.println("ceilFromDate:" + ceilFromDate);
-    System.out.println("floorToDate:" + floorToDate);
+    System.out.println("ceilFromDate for " + interval + " is " + ceilFromDate);
+    System.out.println("floorToDate for " + interval + " is " + floorToDate);
     getPartitions(fact, fromDate, ceilFromDate, partitionColMap);
     getPartitions(fact, floorToDate, toDate, partitionColMap);
   }
