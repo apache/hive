@@ -264,7 +264,7 @@
     </copy>
   </target>
 
-  <target name="jar" depends="compile">
+  <target name="jar" depends="make-pom,compile">
     <echo message="Project: ${ant.project.name}" />
     <jar
       jarfile="${build.dir}/hive-${ant.project.name}-${version}.jar"
@@ -528,7 +528,7 @@
     <available file="${basedir}/ivy.xml" property="ivy.present"/>
   </target>
 
-  <target name="make-pom" if="ivy.present" depends="check-ivy, jar">
+  <target name="make-pom" if="ivy.present" depends="check-ivy,ivy-resolve">
     <echo message="Project: ${ant.project.name}"/>
     <echo> Writing POM to ${build.dir}/pom.xml</echo>
 
