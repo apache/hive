@@ -44,21 +44,19 @@ public class CubeQueryRewriter {
 
   public CubeQueryContext rewritePhase1(ASTNode astnode)
       throws SemanticException, ParseException {
-    CubeQueryContext ctx;
       CubeSemanticAnalyzer analyzer =  new CubeSemanticAnalyzer(
           new HiveConf(conf, HiveConf.class));
       analyzer.analyzeInternal(astnode);
-      ctx = analyzer.getQueryContext();
+      CubeQueryContext ctx = analyzer.getQueryContext();
       rewrite(phase1Rewriters, ctx);
     return ctx;
   }
 
   public CubeQueryContext rewritePhase2(CubeQueryContext cubeql,
       List<String> storages) throws SemanticException {
-    CubeQueryContextWithStorage ctx = new CubeQueryContextWithStorage(
-        (CubeQueryContext)cubeql, storages);
-    rewrite(phase2Rewriters, ctx);
-    return ctx;
+    cubeql.setSupportedStorages(storages);
+    rewrite(phase2Rewriters, cubeql);
+    return cubeql;
   }
 
 

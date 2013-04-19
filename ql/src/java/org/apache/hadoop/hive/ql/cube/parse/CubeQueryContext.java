@@ -1,24 +1,30 @@
 package org.apache.hadoop.hive.ql.cube.parse;
 
+import static org.apache.hadoop.hive.ql.parse.HiveParser.DOT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.Identifier;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.KW_AND;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FUNCTION;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABLE_OR_COL;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.cube.metadata.AbstractCubeTable;
 import org.apache.hadoop.hive.ql.cube.metadata.Cube;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeDimensionTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMetastoreClient;
 import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
+import org.apache.hadoop.hive.ql.cube.parse.HQLParser.ASTNodeVisitor;
+import org.apache.hadoop.hive.ql.cube.parse.HQLParser.TreeNode;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.JoinCond;
@@ -49,11 +55,37 @@ public class CubeQueryContext {
   protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
       new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
 
+  private List<String> supportedStorages;
+  private boolean allStoragesSupported;
+  private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factStorageMap =
+      new HashMap<CubeFactTable, Map<UpdatePeriod,List<String>>>();
+  private final Map<CubeDimensionTable, List<String>> dimStorageMap =
+      new HashMap<CubeDimensionTable, List<String>>();
+  private final Map<String, String> storageTableToWhereClause =
+      new HashMap<String, String>();
+  private final Map<AbstractCubeTable, String> storageTableToQuery =
+      new HashMap<AbstractCubeTable, String>();
+  private ASTNode fromTree;
+  private ASTNode whereTree;
+  private ASTNode havingTree;
+  private ASTNode orderByTree;
+  private ASTNode selectTree;
+  private ASTNode groupbyTree;
+  private ASTNode limitTree;
+  private ASTNode joinTree;
+
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
     this.ast = ast;
     this.qb = qb;
     this.conf = conf;
+    this.clauseName = getClause();
+    this.whereTree = qb.getParseInfo().getWhrForClause(clauseName);
+    this.havingTree = qb.getParseInfo().getHavingForClause(clauseName);
+    this.orderByTree = qb.getParseInfo().getOrderByForClause(clauseName);
+    this.groupbyTree = qb.getParseInfo().getGroupByForClause(clauseName);
+    this.selectTree = qb.getParseInfo().getSelForClause(clauseName);
+    this.joinTree = qb.getParseInfo().getJoinExpr();
     extractMetaTables();
     extractTimeRange();
   }
@@ -171,13 +203,11 @@ public class CubeQueryContext {
     System.out.println("timeTo:" + timeTo);
   }
 
-/*  private void extractColumns() {
+  private void extractColumns() {
     //columnAliases = new ArrayList<String>();
-    tblToColumns = new LinkedHashMap<String, List<String>>();
-    ASTNode selectTree = qb.getParseInfo().getSelForClause(clauseName);
 
     // Check if its 'select *  from...'
-    if (selectTree.getChildCount() == 1) {
+   /* if (selectTree.getChildCount() == 1) {
       ASTNode star = HQLParser.findNodeByPath(selectTree, TOK_SELEXPR,
           TOK_ALLCOLREF);
       if (star == null) {
@@ -191,7 +221,7 @@ public class CubeQueryContext {
           selectAllColumns = true;
         }
       }
-    }
+    } */
 
     // Traverse select, where, groupby, having and orderby trees to get column
     // names
@@ -245,19 +275,12 @@ public class CubeQueryContext {
             if (!colList.contains(column)) {
               colList.add(column);
             }
-          } else if (node.getToken().getType() == TOK_SELEXPR) {
-            // Extract column aliases for the result set, only applies to select
-            // trees
-            ASTNode alias = HQLParser.findNodeByPath(node, Identifier);
-            if (alias != null) {
-              columnAliases.add(alias.getText());
-            }
           }
         }
       });
     }
   }
-*/
+
   public String getFromDateRaw() {
     return fromDateRaw;
   }
@@ -455,27 +478,27 @@ public class CubeQueryContext {
   }
 
   public ASTNode getSelectTree() {
-    return qb.getParseInfo().getSelForClause(getClause());
+    return selectTree;
   }
 
   public ASTNode getWhereTree() {
-    return qb.getParseInfo().getWhrForClause(getClause());
+    return whereTree;
   }
 
   public ASTNode getGroupbyTree() {
-    return qb.getParseInfo().getGroupByForClause(getClause());
+    return groupbyTree;
   }
 
   public ASTNode getHavingTree() {
-    return qb.getParseInfo().getHavingForClause(getClause());
+    return havingTree;
   }
 
   public ASTNode getJoinTree() {
-    return qb.getParseInfo().getJoinExpr();
+    return joinTree;
   }
 
   public ASTNode getOrderbyTree() {
-    return qb.getParseInfo().getOrderByForClause(getClause());
+    return orderByTree;
   }
 
   public ASTNode getFromTree() {
@@ -484,9 +507,6 @@ public class CubeQueryContext {
 
   public Integer getLimitValue() {
     return qb.getParseInfo().getDestLimit(getClause());
-  }
-  public String toHQL() throws SemanticException {
-    return null;
   }
 
   public Map<CubeFactTable, Map<UpdatePeriod, List<String>>> getFactPartitionMap() {
@@ -497,4 +517,171 @@ public class CubeQueryContext {
       Map<UpdatePeriod, List<String>>> factPartitionMap) {
     this.factPartitionMap.putAll(factPartitionMap);
   }
+
+  public List<String> getSupportedStorages() {
+    return supportedStorages;
+  }
+
+  public void setSupportedStorages(List<String> supportedStorages) {
+    this.supportedStorages = supportedStorages;
+    this.allStoragesSupported = (supportedStorages == null);
+  }
+
+  private final String baseQueryFormat = "SELECT %s FROM %s";
+
+  String getQueryFormat() {
+    StringBuilder queryFormat = new StringBuilder();
+    queryFormat.append(baseQueryFormat);
+    if (getWhereTree() != null || hasPartitions()) {
+      queryFormat.append(" WHERE %s");
+    }
+    if (getGroupbyTree() != null) {
+      queryFormat.append(" GROUP BY %s");
+    }
+    if (getHavingTree() != null) {
+      queryFormat.append(" HAVING %s");
+    }
+    if (getOrderbyTree() != null) {
+      queryFormat.append(" ORDER BY %s");
+    }
+    if (getLimitValue() != null) {
+      queryFormat.append(" LIMIT %s");
+    }
+    return queryFormat.toString();
+  }
+
+  private Object[] getQueryTreeStrings(String factStorageTable) {
+    List<String> qstrs = new ArrayList<String>();
+    qstrs.add(HQLParser.getString(getSelectTree()));
+    String fromString = HQLParser.getString(getFromTree()).toLowerCase();
+    String whereString = getWhereTree(factStorageTable);
+    for (Map.Entry<AbstractCubeTable, String> entry :
+        storageTableToQuery.entrySet()) {
+      String src = entry.getKey().getName().toLowerCase();
+      System.out.println("From string:" + fromString + " src:" + src + " value:" + entry.getValue());
+      fromString = fromString.replaceAll(src, entry.getValue() + " " + src);
+    }
+    qstrs.add(fromString);
+    if (whereString != null) {
+      qstrs.add(whereString);
+    }
+    if (getGroupbyTree() != null) {
+      qstrs.add(HQLParser.getString(getGroupbyTree()));
+    }
+    if (getHavingTree() != null) {
+      qstrs.add(HQLParser.getString(getHavingTree()));
+    }
+    if (getOrderbyTree() != null) {
+      qstrs.add(HQLParser.getString(getOrderbyTree()));
+    }
+    if (getLimitValue() != null) {
+      qstrs.add(String.valueOf(getLimitValue()));
+    }
+    return qstrs.toArray(new String[0]);
+  }
+
+  private String toHQL(String tableName) {
+    String qfmt = getQueryFormat();
+    System.out.println("qfmt:" + qfmt);
+    return String.format(qfmt, getQueryTreeStrings(tableName));
+  }
+
+  public String getWhereTree(String factStorageTable) {
+    String originalWhereString = HQLParser.getString(getWhereTree());
+    String whereWithoutTimerange;
+    if (factStorageTable != null) {
+      whereWithoutTimerange = originalWhereString.substring(0,
+          originalWhereString.indexOf(CubeQueryContext.TIME_RANGE_FUNC));
+    } else {
+      whereWithoutTimerange = originalWhereString;
+    }
+    // add where clause for all dimensions
+    for (CubeDimensionTable dim : dimensions) {
+      String storageTable = dimStorageMap.get(dim).get(0);
+      storageTableToQuery.put(dim, storageTable);
+      whereWithoutTimerange += storageTableToWhereClause.get(storageTable);
+    }
+    if (factStorageTable != null) {
+      // add where clause for fact;
+      return whereWithoutTimerange + storageTableToWhereClause.get(
+          factStorageTable);
+    } else {
+      return whereWithoutTimerange;
+    }
+  }
+
+  public String toHQL() throws SemanticException {
+    CubeFactTable fact = null;
+    if (hasCubeInQuery()) {
+      if (candidateFactTables.size() > 0) {
+        fact = candidateFactTables.iterator().next();
+      }
+    }
+    if (fact == null && !hasDimensionInQuery()) {
+      throw new SemanticException("No valid fact table available");
+    }
+
+    if (fact != null) {
+      Map<UpdatePeriod, List<String>> storageTableMap = factStorageMap.get(fact);
+      Map<UpdatePeriod, List<String>> partColMap = factPartitionMap.get(fact);
+
+      StringBuilder query = new StringBuilder();
+      Iterator<UpdatePeriod> it = partColMap.keySet().iterator();
+      while (it.hasNext()) {
+        UpdatePeriod updatePeriod = it.next();
+        String storageTable = storageTableMap.get(updatePeriod).get(0);
+        storageTableToQuery.put(getCube(), storageTable);
+        query.append(toHQL(storageTable));
+        if (it.hasNext()) {
+          query.append(" UNION ");
+        }
+      }
+      return query.toString();
+    } else {
+      return toHQL(null);
+    }
+  }
+
+  public Map<CubeFactTable, Map<UpdatePeriod, List<String>>> getFactStorageMap()
+  {
+    return factStorageMap;
+  }
+
+  public void setFactStorageMap(Map<CubeFactTable,
+      Map<UpdatePeriod, List<String>>> factStorageMap) {
+    this.factStorageMap.putAll(factStorageMap);
+  }
+
+  public void setDimStorageMap(
+      Map<CubeDimensionTable, List<String>> dimStorageMap) {
+    this.dimStorageMap.putAll(dimStorageMap);
+  }
+
+  public Map<CubeDimensionTable, List<String>> getDimStorageMap() {
+    return this.dimStorageMap;
+  }
+
+  public Map<String, String> getStorageTableToWhereClause() {
+    return storageTableToWhereClause;
+  }
+
+  public void setStorageTableToWhereClause(Map<String, String> whereClauseMap) {
+    storageTableToWhereClause.putAll(whereClauseMap);
+  }
+
+  public boolean hasPartitions() {
+    return !storageTableToWhereClause.isEmpty();
+  }
+
+  public boolean isStorageSupported(String storage) {
+    if (!allStoragesSupported) {
+      return supportedStorages.contains(storage);
+    }
+    return true;
+  }
+
+  public Map<String, List<String>> getTblToColumns() {
+    return tblToColumns;
+  }
+
 }

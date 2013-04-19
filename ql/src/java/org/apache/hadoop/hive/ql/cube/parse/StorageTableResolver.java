@@ -21,8 +21,6 @@ public class StorageTableResolver implements ContextRewriter {
   @Override
   public void rewriteContext(CubeQueryContext cubeql)
       throws SemanticException {
-    CubeQueryContextWithStorage cubeqlStorage =
-        (CubeQueryContextWithStorage) cubeql;
     Map<String, String> storageTableToWhereClause =
         new HashMap<String, String>();
 
@@ -42,7 +40,7 @@ public class StorageTableResolver implements ContextRewriter {
         storageTableMap.put(updatePeriod, storageTables);
         List<String> parts = partitionColMap.get(updatePeriod);
         for (String storage : fact.getStorages()) {
-          if (cubeqlStorage.isStorageSupported(storage)) {
+          if (cubeql.isStorageSupported(storage)) {
             String tableName = MetastoreUtil.getFactStorageTableName(
                 fact.getName(), updatePeriod, Storage.getPrefix(storage));
             storageTables.add(tableName);
@@ -54,7 +52,7 @@ public class StorageTableResolver implements ContextRewriter {
         }
       }
     }
-    cubeqlStorage.setFactStorageMap(factStorageMap);
+    cubeql.setFactStorageMap(factStorageMap);
 
     //resolve dimension tables
     Map<CubeDimensionTable, List<String>> dimStorageMap =
@@ -63,7 +61,7 @@ public class StorageTableResolver implements ContextRewriter {
         List<String> storageTables = new ArrayList<String>();
         dimStorageMap.put(dim, storageTables);
         for (String storage : dim.getStorages()) {
-          if (cubeqlStorage.isStorageSupported(storage)) {
+          if (cubeql.isStorageSupported(storage)) {
             String tableName = MetastoreUtil.getDimStorageTableName(
                 dim.getName(), Storage.getPrefix(storage));
             storageTables.add(tableName);
@@ -76,8 +74,8 @@ public class StorageTableResolver implements ContextRewriter {
           }
         }
       }
-    cubeqlStorage.setDimStorageMap(dimStorageMap);
-    cubeqlStorage.setStorageTableToWhereClause(storageTableToWhereClause);
+    cubeql.setDimStorageMap(dimStorageMap);
+    cubeql.setStorageTableToWhereClause(storageTableToWhereClause);
   }
 
   private String getWherePartClause(String tableName, List<String> parts) {

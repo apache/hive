@@ -14,7 +14,7 @@ import org.junit.Test;
 
 public class TestCubeDriver {
 
-  private final Configuration conf = new Configuration();
+  private Configuration conf;
   private CubeDriver driver;
 
   @BeforeClass
@@ -39,6 +39,7 @@ public class TestCubeDriver {
 
   @Test
   public void testQueryWithNow() throws Exception {
+    conf = new Configuration();
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     Throwable th = null;
     try {
@@ -53,6 +54,7 @@ public class TestCubeDriver {
 
   @Test
   public void testCubeWhereQuery() throws Exception {
+    conf = new Configuration();
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     Calendar cal = Calendar.getInstance();
     Date now = cal.getTime();
@@ -70,6 +72,7 @@ public class TestCubeDriver {
 
   @Test
   public void testCubeWhereQueryForMonth() throws Exception {
+    conf = new Configuration();
     driver = new CubeDriver(new HiveConf(new Configuration(), HiveConf.class));
     Calendar cal = Calendar.getInstance();
     Date now = cal.getTime();
@@ -94,6 +97,7 @@ public class TestCubeDriver {
 
   @Test
   public void testDimensionQueryWithMultipleStorages() throws Exception {
+    conf = new Configuration();
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable");
     System.out.println("cube hql:" + hqlQuery);
@@ -113,15 +117,23 @@ public class TestCubeDriver {
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     hqlQuery = driver.compileCubeQuery("select name, stateid from citytable");
     System.out.println("cube hql:" + hqlQuery);
-
   }
 
   @Test
-  public void testLimitQuery() throws Exception {
-    driver = new CubeDriver(new HiveConf(new Configuration(), HiveConf.class));
+  public void testLimitQueryOnDimension() throws Exception {
+    conf = new Configuration();
+    driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
     System.out.println("cube hql:" + hqlQuery);
     //Assert.assertEquals(queries[1], cubeql.toHQL());
+    conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C2");
+    driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
+    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
+    System.out.println("cube hql:" + hqlQuery);
+    conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C1");
+    driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
+    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
+    System.out.println("cube hql:" + hqlQuery);
   }
 
 }
