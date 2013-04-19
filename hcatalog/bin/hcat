@@ -119,8 +119,18 @@ done
 # Put external jars, hcat jar, and config file in the classpath
 HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_DIR}
 
-if [ -n "$HBASE_CONF_DIR" ] && [ -d $HBASE_CONF_DIR ]; then
-    HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HBASE_CONF_DIR}
+# Look for HBase in a BigTop-compatible way. Avoid thrift version
+# conflict with modern versions of HBase.
+HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
+HBASE_CONF_DIR=${HBASE_CONF_DIR:-"${HBASE_HOME}/conf"}
+if [ -d ${HBASE_HOME} ] ; then
+   for jar in $(find $HBASE_HOME -name *.jar -not -name thrift\*.jar); do
+      HBASE_CLASSPATH=$HBASE_CLASSPATH:${jar}
+   done
+   export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CLASSPATH}"
+fi
+if [ -d $HBASE_CONF_DIR ] ; then
+    HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CONF_DIR}"
 fi
 
 export HADOOP_CLASSPATH=$HADOOP_CLASSPATH
