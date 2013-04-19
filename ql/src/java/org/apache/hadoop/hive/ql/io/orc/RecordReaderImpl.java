@@ -733,8 +733,9 @@ class RecordReaderImpl implements RecordReader {
         } else {
           length = dictionaryBuffer.size() - offset;
         }
-        // If the column is just empty strings, the size will be zero, so the buffer will be null,
-        // in that case just return result as it will default to empty
+        // If the column is just empty strings, the size will be zero,
+        // so the buffer will be null, in that case just return result
+        // as it will default to empty
         if (dictionaryBuffer != null) {
           dictionaryBuffer.setText(result, offset, length);
         } else {
@@ -788,6 +789,13 @@ class RecordReaderImpl implements RecordReader {
           result = new OrcStruct(fields.length);
         } else {
           result = (OrcStruct) previous;
+
+          // If the input format was initialized with a file with a
+          // different number of fields, the number of fields needs to
+          // be updated to the correct number
+          if (result.getNumFields() != fields.length) {
+            result.setNumFields(fields.length);
+          }
         }
         for(int i=0; i < fields.length; ++i) {
           if (fields[i] != null) {

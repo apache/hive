@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,16 +38,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 final class OrcStruct implements Writable {
 
-  private final Object[] fields;
+  private Object[] fields;
 
   OrcStruct(int children) {
     fields = new Object[children];
@@ -52,6 +52,14 @@ final class OrcStruct implements Writable {
 
   void setFieldValue(int fieldIndex, Object value) {
     fields[fieldIndex] = value;
+  }
+
+  public int getNumFields() {
+    return fields.length;
+  }
+
+  public void setNumFields(int numFields) {
+    fields = new Object[numFields];
   }
 
    @Override
