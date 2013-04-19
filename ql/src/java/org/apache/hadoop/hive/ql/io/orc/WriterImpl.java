@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,14 +51,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -734,19 +735,8 @@ class WriterImpl implements Writer {
       int length = rows.size();
       int rowIndexEntry = 0;
       OrcProto.RowIndex.Builder rowIndex = getRowIndex();
-      // need to build the first index entry out here, to handle the case of
-      // not having any values.
-      if (buildIndex) {
-        while (0 == rowIndexValueCount.get(rowIndexEntry) &&
-            rowIndexEntry < savedRowIndex.size()) {
-          OrcProto.RowIndexEntry.Builder base =
-              savedRowIndex.get(rowIndexEntry++).toBuilder();
-          rowOutput.getPosition(new RowIndexPositionRecorder(base));
-          rowIndex.addEntry(base.build());
-        }
-      }
       // write the values translated into the dump order.
-      for(int i = 0; i < length; ++i) {
+      for(int i = 0; i <= length; ++i) {
         // now that we are writing out the row values, we can finalize the
         // row index
         if (buildIndex) {
@@ -758,7 +748,9 @@ class WriterImpl implements Writer {
             rowIndex.addEntry(base.build());
           }
         }
-        rowOutput.write(dumpOrder[rows.get(i)]);
+        if (i != length) {
+          rowOutput.write(dumpOrder[rows.get(i)]);
+        }
       }
       // we need to build the rowindex before calling super, since it
       // writes it out.
