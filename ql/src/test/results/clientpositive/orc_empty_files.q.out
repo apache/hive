@@ -1,0 +1,44 @@
+PREHOOK: query: CREATE TABLE test_orc (key STRING, cnt INT)
+CLUSTERED BY (key) INTO 3 BUCKETS
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_orc (key STRING, cnt INT)
+CLUSTERED BY (key) INTO 3 BUCKETS
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_orc
+PREHOOK: query: -- Creates a table bucketed into 3 buckets, but only one contains data, specifically bucket 1,
+-- buckets 0 and 2 are empty, so this tests reading from and empty file followed by a file
+-- containing data and a file containing data followed by an empty file.
+-- This can produce unexpected results with CombineHiveInputFormat
+
+INSERT OVERWRITE TABLE test_orc SELECT one, COUNT(*) FROM (SELECT 1 AS one FROM src) a GROUP BY one
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_orc
+POSTHOOK: query: -- Creates a table bucketed into 3 buckets, but only one contains data, specifically bucket 1,
+-- buckets 0 and 2 are empty, so this tests reading from and empty file followed by a file
+-- containing data and a file containing data followed by an empty file.
+-- This can produce unexpected results with CombineHiveInputFormat
+
+INSERT OVERWRITE TABLE test_orc SELECT one, COUNT(*) FROM (SELECT 1 AS one FROM src) a GROUP BY one
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_orc
+POSTHOOK: Lineage: test_orc.cnt EXPRESSION []
+POSTHOOK: Lineage: test_orc.key EXPRESSION []
+PREHOOK: query: SELECT count(*) FROM test_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM test_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_orc.cnt EXPRESSION []
+POSTHOOK: Lineage: test_orc.key EXPRESSION []
+1
