@@ -89,7 +89,6 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/snappy-@snappy.version@.jar"/>
   <classpathentry kind="lib" path="build/beeline/hive-beeline-@HIVE_VERSION@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/tempus-fugit-@tempus-fugit.version@.jar"/>
-  <classpathentry kind="lib" path="build/builtins/hive-builtins-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
   <classpathentry kind="lib" path="build/testutils/hive-testutils-@HIVE_VERSION@.jar"/>
@@ -97,7 +96,6 @@
   <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="beeline/src/java"/>
   <classpathentry kind="src" path="beeline/src/test"/>
-  <classpathentry kind="src" path="builtins/src"/>
   <classpathentry kind="src" path="cli/src/java"/>
   <classpathentry kind="src" path="cli/src/test"/>
   <classpathentry kind="src" path="common/src/java"/>
@@ -115,8 +113,6 @@
   <classpathentry kind="src" path="metastore/src/java"/>
   <classpathentry kind="src" path="metastore/src/model"/>
   <classpathentry kind="src" path="metastore/src/test"/>
-  <classpathentry kind="src" path="pdk/src/java"/>
-  <classpathentry kind="src" path="pdk/test-plugin/src"/>
   <classpathentry kind="src" path="ql/src/gen/thrift/gen-javabean"/>
   <classpathentry kind="src" path="ql/src/gen/protobuf/gen-java"/>
   <classpathentry kind="src" path="ql/src/java"/>
