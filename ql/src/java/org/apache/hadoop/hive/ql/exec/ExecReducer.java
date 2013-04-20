@@ -66,7 +66,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private long nextCntr = 1;
 
   private static String[] fieldNames;
-  private List<OperatorHook> opHooks;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
   private boolean isLogInfoEnabled = false;
 
@@ -152,7 +151,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     try {
       l4j.info(reducer.dump(0));
       reducer.initialize(jc, rowObjectInspector);
-      opHooks = OperatorHookUtils.getOperatorHooks(jc);
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -183,7 +181,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       rp = reporter;
       reducer.setOutputCollector(oc);
       reducer.setReporter(rp);
-      reducer.setOperatorHooks(opHooks);
       MapredContext.get().setReporter(reporter);
     }
 

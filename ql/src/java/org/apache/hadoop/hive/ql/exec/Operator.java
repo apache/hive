@@ -55,7 +55,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // Bean methods
 
   private static final long serialVersionUID = 1L;
-  List<OperatorHook> operatorHooks;
 
   private Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
@@ -239,17 +238,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public String getIdentifier() {
     return id;
-  }
-
-  public void setOperatorHooks(List<OperatorHook> opHooks){
-    operatorHooks = opHooks;
-    if (childOperators == null) {
-      return;
-    }
-
-    for (Operator<? extends OperatorDesc> op : childOperators) {
-      op.setOperatorHooks(opHooks);
-    }
   }
 
   public void setReporter(Reporter rep) {
@@ -436,34 +424,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  private void enterOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.enter(opHookContext);
-    }
-  }
-
-  private void exitOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.exit(opHookContext);
-    }
-  }
-
-  private void closeOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.close(opHookContext);
-    }
-  }
-
-
   /**
    * Collects all the parent's output object inspectors and calls actual
    * initialization method.
@@ -536,16 +496,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       beginTime = System.currentTimeMillis();
-      OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
-      enterOperatorHooks(opHookContext);
       processOp(row, tag);
-      exitOperatorHooks(opHookContext);
       totalTime += (System.currentTimeMillis() - beginTime);
     } else {
-      OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
-      enterOperatorHooks(opHookContext);
       processOp(row, tag);
-      exitOperatorHooks(opHookContext);
     }
   }
 
@@ -630,7 +584,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
-    closeOperatorHooks(new OperatorHookContext(this));
     // call the operator specific close routine
     closeOp(abort);
 
