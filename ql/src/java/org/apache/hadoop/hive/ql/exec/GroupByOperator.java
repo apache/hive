@@ -1076,7 +1076,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       try {
         // put the hash related stats in statsMap if applicable, so that they
         // are sent to jt as counters
-        if (hashAggr) {
+        if (hashAggr && counterNameToEnum != null) {
           incrCounter(counterNameHashOut, numRowsHashTbl);
         }
 
