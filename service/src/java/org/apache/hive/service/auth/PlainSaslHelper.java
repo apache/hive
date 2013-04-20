@@ -103,7 +103,7 @@ public class PlainSaslHelper {
       super(null);
       this.service = service;
       this.conf = service.getHiveConf();
-      this.doAsEnabled = conf.getBoolean("hive.server2.enable.doAs", false);
+      this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     }
 
     @Override
