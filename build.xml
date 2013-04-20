@@ -385,7 +385,6 @@
     <mkdir dir="${target.conf.dir}"/>
     <mkdir dir="${target.bin.dir}"/>
     <mkdir dir="${target.scripts.dir}/metastore/upgrade"/>
-    <mkdir dir="${target.scripts.dir}/pdk"/>
     <mkdir dir="${target.example.dir}"/>
     <mkdir dir="${target.example.dir}/files"/>
     <mkdir dir="${target.example.dir}/queries"/>
@@ -401,9 +400,6 @@
     </copy>
     <copy todir="${target.scripts.dir}/metastore/upgrade">
       <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${vcs.excludes}"/>
-    </copy>
-    <copy todir="${target.scripts.dir}/pdk">
-      <fileset dir="${hive.root}/pdk/scripts" excludes="${vcs.excludes},README"/>
     </copy>
     <copy file="${basedir}/conf/hive-default.xml.template" todir="${target.conf.dir}">
       <filterset>
@@ -492,9 +488,6 @@
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="${vcs.excludes}"/>
     </copy>
-    <copy todir="${target.example.dir}/test-plugin">
-      <fileset dir="${hive.root}/pdk/test-plugin"/>
-    </copy>
     <copy file="${basedir}/README.txt" todir="${target.dir}">
       <filterset>
         <filter token="VERSION" value="${version}"/>
@@ -516,14 +509,6 @@
     <mkdir dir="${build.dir.hive}/hcatalog"/>
     <copy todir="${build.dir.hive}/hcatalog">
         <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
-    </copy>
-
-    <!-- special case because builtins compilation depends on packaging
-         up everything else first -->
-    <ant antfile="${hive.root}/builtins/build.xml" target="package"
-         inheritAll="false" />
-    <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
-      <fileset file="${build.dir.hive}/builtins/hive-builtins-${version}.jar"/>
     </copy>
   </target>
 
@@ -684,8 +669,6 @@
       <packageset dir="ql/src/gen/thrift/gen-javabean"/>
       <packageset dir="${build.dir.hive}/ql/gen/antlr/gen-java"/>
       <packageset dir="shims/src/common/java"/>
-      <packageset dir="pdk/src/java"/>
-      <packageset dir="builtins/src"/>
 
       <link href="${javadoc.link.java}"/>
 
@@ -955,7 +938,6 @@
       
       <sourcePath path="${hive.root}/ant" />
       <sourcePath path="${hive.root}/beeline" />
-      <sourcePath path="${hive.root}/builtins" />
       <sourcePath path="${hive.root}/cli" />
       <sourcePath path="${hive.root}/common" />
       <sourcePath path="${hive.root}/contrib" />
@@ -965,14 +947,12 @@
       <sourcePath path="${hive.root}/metastore" />
       <sourcePath path="${hive.root}/hcatalog" />
       <sourcePath path="${hive.root}/odbc" />
-      <sourcePath path="${hive.root}/pdk" />
       <sourcePath path="${hive.root}/ql" />
       <sourcePath path="${hive.root}/serde" />
       <sourcePath path="${hive.root}/service" />
       <sourcePath path="${hive.root}/shims" />
       <class location="${build.dir.hive}/anttasks/classes" />
       <class location="${build.dir.hive}/beeline/classes" />
-      <class location="${build.dir.hive}/builtins/classes" />
       <class location="${build.dir.hive}/cli/classes" />
       <class location="${build.dir.hive}/common/classes" />
       <class location="${build.dir.hive}/contrib/classes" />
@@ -981,7 +961,6 @@
       <class location="${build.dir.hive}/jdbc/classes" />
       <class location="${build.dir.hive}/metastore/classes" />
       <class location="${build.dir.hive}/hcatalog/classes" />
-      <class location="${build.dir.hive}/pdk/classes" />
       <class location="${build.dir.hive}/ql/classes" />
       <class location="${build.dir.hive}/serde/classes" />
       <class location="${build.dir.hive}/service/classes" />
@@ -1066,8 +1045,6 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/beeline/hive-beeline-${version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/builtins/hive-builtins-${version}.jar"
-          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/cli/hive-cli-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/common/hive-common-${version}.jar"
@@ -1084,8 +1061,6 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/hcatalog/hive-hcatalog-${hcatalog.version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
-          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/ql/hive-exec-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/serde/hive-serde-${version}.jar"
@@ -1100,8 +1075,6 @@
           tofile="${mvn.pom.dir}/hive-anttasks-${version}.pom" />
     <copy file="${build.dir.hive}/beeline/pom.xml"
           tofile="${mvn.pom.dir}/hive-beeline-${version}.pom" />
-    <copy file="${build.dir.hive}/builtins/pom.xml"
-          tofile="${mvn.pom.dir}/hive-builtins-${version}.pom" />
     <copy file="${build.dir.hive}/cli/pom.xml"
           tofile="${mvn.pom.dir}/hive-cli-${version}.pom" />
     <copy file="${build.dir.hive}/common/pom.xml"
@@ -1118,9 +1091,7 @@
           tofile="${mvn.pom.dir}/hive-metastore-${version}.pom" />
     <copy file="${build.dir.hive}/hcatalog/pom.xml"
           tofile="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom" />
-    <copy file="${build.dir.hive}/pdk/pom.xml"
-          tofile="${mvn.pom.dir}/hive-pdk-${version}.pom" />
-    <copy file="${build.dir.hive}/ql/pom.xml"
+        <copy file="${build.dir.hive}/ql/pom.xml"
           tofile="${mvn.pom.dir}/hive-exec-${version}.pom" />
     <copy file="${build.dir.hive}/serde/pom.xml"
           tofile="${mvn.pom.dir}/hive-serde-${version}.pom" />
@@ -1208,9 +1179,6 @@
       <param name="hive.project" value="beeline" />
     </antcall>
     <antcall target="maven-publish-artifact">
-      <param name="hive.project" value="builtins" />
-    </antcall>
-    <antcall target="maven-publish-artifact">
       <param name="hive.project" value="cli" />
     </antcall>
     <antcall target="maven-publish-artifact">
@@ -1236,9 +1204,6 @@
     </antcall>
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="hcatalog" />
-    </antcall>
-    <antcall target="maven-publish-artifact">
-      <param name="hive.project" value="pdk" />
     </antcall>
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="serde" />
@@ -1382,16 +1347,6 @@
     <sign-artifact
         input.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom"
         output.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-
-    <!-- hive-pdk -->
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-pdk-${version}.jar"
-        output.file="${mvn.pom.dir}/hive-pdk-${version}.jar.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-pdk-${version}.pom"
-        output.file="${mvn.pom.dir}/hive-pdk-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
 
     <!-- hive-serde -->

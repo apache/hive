@@ -167,7 +167,6 @@ translate
 trim
 ucase
 unhex
-union_map
 unix_timestamp
 upper
 var_pop
