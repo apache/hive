@@ -693,6 +693,9 @@
                     </void> 
                    </object> 
                   </void> 
+                  <void property="distinct"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="groupByMemoryUsage"> 
                    <float>0.5</float> 
                   </void> 
@@ -1710,6 +1713,9 @@
            </object> 
           </void> 
          </object> 
+        </void> 
+        <void property="distinct"> 
+         <boolean>true</boolean> 
         </void> 
         <void property="groupByMemoryUsage"> 
          <float>0.5</float> 
