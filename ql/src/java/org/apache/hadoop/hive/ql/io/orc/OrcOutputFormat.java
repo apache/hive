@@ -71,8 +71,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     public void write(NullWritable nullWritable,
                       OrcSerdeRow row) throws IOException {
       if (writer == null) {
-        writer = OrcFile.createWriter(fs, path, row.getInspector(), stripeSize,
-          compress, compressionSize, rowIndexStride);
+        writer = OrcFile.createWriter(fs, path, this.conf, row.getInspector(),
+            stripeSize, compress, compressionSize, rowIndexStride);
       }
       writer.addRow(row.getRow());
     }
@@ -81,8 +81,9 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     public void write(Writable row) throws IOException {
       OrcSerdeRow serdeRow = (OrcSerdeRow) row;
       if (writer == null) {
-        writer = OrcFile.createWriter(fs, path, serdeRow.getInspector(),
-            stripeSize, compress, compressionSize, rowIndexStride);
+        writer = OrcFile.createWriter(fs, path, this.conf,
+            serdeRow.getInspector(), stripeSize, compress, compressionSize,
+            rowIndexStride);
       }
       writer.addRow(serdeRow.getRow());
     }
@@ -101,8 +102,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         ObjectInspector inspector = ObjectInspectorFactory.
             getStandardStructObjectInspector(new ArrayList<String>(),
                 new ArrayList<ObjectInspector>());
-        writer = OrcFile.createWriter(fs, path, inspector, stripeSize,
-            compress, compressionSize, rowIndexStride);
+        writer = OrcFile.createWriter(fs, path, this.conf, inspector,
+            stripeSize, compress, compressionSize, rowIndexStride);
       }
       writer.close();
     }

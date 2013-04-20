@@ -486,6 +486,9 @@ public class HiveConf extends Configuration {
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
     HIVEUSERCFILESYNCCACHE("hive.exec.rcfile.use.sync.cache", true),
 
+    // Maximum fraction of heap that can be used by ORC file writers
+    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
+
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", true),
     HIVECONVERTJOINNOCONDITIONALTASK("hive.auto.convert.join.noconditionaltask", true),
