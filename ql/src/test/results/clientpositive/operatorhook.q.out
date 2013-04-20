@@ -1,7 +1,0 @@
-PREHOOK: query: SELECT count(1) FROM src
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-TEST_OPERATOR_HOOK_EXIT: 7508
-TEST_OPERATOR_HOOK_ENTER: 7508
-500
