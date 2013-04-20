@@ -525,12 +525,28 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (fatalError) {
       return;
     }
-    OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
-    preProcessCounter();
-    enterOperatorHooks(opHookContext);
-    processOp(row, tag);
-    exitOperatorHooks(opHookContext);
-    postProcessCounter();
+
+    if (counterNameToEnum != null) {
+      inputRows++;
+      if ((inputRows % 1000) == 0) {
+        incrCounter(numInputRowsCntr, inputRows);
+        incrCounter(timeTakenCntr, totalTime);
+        inputRows = 0;
+        totalTime = 0;
+      }
+
+      beginTime = System.currentTimeMillis();
+      OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
+      enterOperatorHooks(opHookContext);
+      processOp(row, tag);
+      exitOperatorHooks(opHookContext);
+      totalTime += (System.currentTimeMillis() - beginTime);
+    } else {
+      OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
+      enterOperatorHooks(opHookContext);
+      processOp(row, tag);
+      exitOperatorHooks(opHookContext);
+    }
   }
 
   // If a operator wants to do some work at the beginning of a group
@@ -606,9 +622,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     state = State.CLOSE;
     LOG.info(id + " finished. closing... ");
 
-    incrCounter(numInputRowsCntr, inputRows);
-    incrCounter(numOutputRowsCntr, outputRows);
-    incrCounter(timeTakenCntr, totalTime);
+    if (counterNameToEnum != null) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(numOutputRowsCntr, outputRows);
+      incrCounter(timeTakenCntr, totalTime);
+    }
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
@@ -822,9 +840,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
 
-    if ((++outputRows % 1000) == 0) {
-      incrCounter(numOutputRowsCntr, outputRows);
-      outputRows = 0;
+    if (counterNameToEnum != null) {
+      if ((++outputRows % 1000) == 0) {
+        incrCounter(numOutputRowsCntr, outputRows);
+        outputRows = 0;
+      }
     }
 
     if (isLogInfoEnabled) {
@@ -1158,39 +1178,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient Object groupKeyObject;
 
   /**
-   * this is called before operator process to buffer some counters.
-   */
-  private void preProcessCounter() {
-    inputRows++;
-    if ((inputRows % 1000) == 0) {
-      incrCounter(numInputRowsCntr, inputRows);
-      incrCounter(timeTakenCntr, totalTime);
-      inputRows = 0;
-      totalTime = 0;
-    }
-    beginTime = System.currentTimeMillis();
-  }
-
-  /**
-   * this is called after operator process to buffer some counters.
-   */
-  private void postProcessCounter() {
-    if (counterNameToEnum != null) {
-      totalTime += (System.currentTimeMillis() - beginTime);
-    }
-  }
-
-  /**
    * this is called in operators in map or reduce tasks.
    *
    * @param name
    * @param amount
    */
   protected void incrCounter(String name, long amount) {
-    if(counterNameToEnum == null) {
-      return;
-    }
-
     String counterName = getWrappedCounterName(name);
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
