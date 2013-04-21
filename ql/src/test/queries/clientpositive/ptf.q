@@ -182,7 +182,6 @@ CREATE TABLE part_5(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
-s1 INT, 
 s2 INT, 
 r INT, 
 dr INT, 
@@ -197,8 +196,7 @@ rank() over (distribute by p_mfgr sort by p_name) as r,
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
-sum(p_size) over (distribute by p_mfgr sort by p_mfgr, p_name rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2,
+round(sum(p_size),1) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
 cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud, 
@@ -294,11 +292,11 @@ from noop(on
 
 -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 select p_mfgr, p_name,  
-rank() over (partition by p_mfgr order by p_mfgr) as r, 
-dense_rank() over (partition by p_mfgr order by p_mfgr) as dr, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
 p_size, 
-sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row) as s1, 
-sum(p_size) over (partition by p_mfgr order by p_mfgr rows between unbounded preceding and current row)  as s2
+sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row) as s1, 
+sum(p_size) over (partition by p_mfgr order by p_name range between unbounded preceding and current row)  as s2
 from noopwithmap(on 
         noop(on 
               noop(on part 

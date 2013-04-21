@@ -271,44 +271,44 @@ bob steinbeck	5	1
 tom allen	1	1
 bob steinbeck	1	1
 tom allen	7	2
-PREHOOK: query: select s, sum(f) over (partition by i), row_number() over () from over10k where s = 'tom allen' or s = 'bob steinbeck'
+PREHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by i), row_number() over () from over10k where s = 'tom allen' or s = 'bob steinbeck'
+POSTHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-bob steinbeck	47.810001373291016	1
-tom allen	11.069999694824219	2
-tom allen	54.00000190734863	3
-tom allen	54.00000190734863	4
-tom allen	26.239999771118164	5
-bob steinbeck	28.479999542236328	6
-tom allen	81.8499984741211	7
-tom allen	15.84000015258789	8
-bob steinbeck	83.52999877929688	9
-bob steinbeck	38.33000183105469	10
-bob steinbeck	83.52999877929688	11
-bob steinbeck	80.7300033569336	12
-bob steinbeck	9.699999809265137	13
-tom allen	89.88999938964844	14
-bob steinbeck	26.290000915527344	15
-bob steinbeck	36.209999084472656	16
-tom allen	52.779998779296875	17
-tom allen	11.300000190734863	18
-tom allen	77.77999877929688	19
-tom allen	40.5099983215332	20
-bob steinbeck	82.19000244140625	21
-tom allen	83.47000122070312	22
-tom allen	38.93000030517578	23
-tom allen	47.16999816894531	24
-tom allen	19.459999084472656	25
-tom allen	50.630001068115234	26
-bob steinbeck	27.959999084472656	27
-tom allen	2.8499999046325684	28
-tom allen	95.41000366210938	29
-tom allen	55.38999938964844	30
+tom allen	2.8499999046325684	1
+bob steinbeck	9.699999809265137	2
+tom allen	11.069999694824219	3
+tom allen	11.300000190734863	4
+tom allen	54.00000190734863	5
+tom allen	15.84000015258789	6
+tom allen	19.459999084472656	7
+tom allen	26.239999771118164	8
+bob steinbeck	26.290000915527344	9
+bob steinbeck	27.959999084472656	10
+bob steinbeck	28.479999542236328	11
+bob steinbeck	36.209999084472656	12
+bob steinbeck	38.33000183105469	13
+tom allen	38.93000030517578	14
+tom allen	54.00000190734863	15
+tom allen	40.5099983215332	16
+tom allen	47.16999816894531	17
+bob steinbeck	47.810001373291016	18
+tom allen	50.630001068115234	19
+tom allen	52.779998779296875	20
+tom allen	55.38999938964844	21
+tom allen	77.77999877929688	22
+bob steinbeck	80.7300033569336	23
+tom allen	81.8499984741211	24
+bob steinbeck	82.19000244140625	25
+tom allen	83.47000122070312	26
+bob steinbeck	83.52999877929688	27
+bob steinbeck	83.52999877929688	28
+tom allen	89.88999938964844	29
+tom allen	95.41000366210938	30
 PREHOOK: query: select s, rank() over w1, 
 rank() over w2 
 from over10k 
