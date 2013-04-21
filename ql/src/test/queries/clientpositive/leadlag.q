@@ -43,7 +43,7 @@ from part p1 join part p2 on p1.p_partkey = p2.p_partkey
 
 -- 4. testLagInSum
 select  p_mfgr,p_name, p_size,   
-sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_mfgr ) as deltaSum 
+sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_name ) as deltaSum 
 from part 
 window w1 as (rows between 2 preceding and 2 following) ;
 
@@ -51,7 +51,7 @@ window w1 as (rows between 2 preceding and 2 following) ;
 select  p_mfgr,p_name, p_size,   
 sum(p_size - lag(p_size,1)) over w1 as deltaSum 
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following) ;
+window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following) ;
 
 -- 6. testRankInLead
 select p_mfgr, p_name, p_size, r1,
@@ -76,7 +76,7 @@ order by p_name
 -- 8. testOverNoPartitionMultipleAggregate
 select p_name, p_retailprice,
 lead(p_retailprice) over() as l1 ,
-lag(p_retailprice)  over() as l2
+lag(p_retailprice) over() as l2
 from part
-order by p_name;
+where p_retailprice = 1173.15;
 

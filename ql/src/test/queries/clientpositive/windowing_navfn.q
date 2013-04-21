@@ -19,9 +19,9 @@ load data local inpath '../data/files/over10k' into table over10k;
 
 select s, row_number() over (partition by d order by dec) from over10k limit 100;
 
-select i, lead(s) over (partition by bin order by d desc) from over10k limit 100;
+select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100;
 
-select i, lag(dec) over (partition by i order by s) from over10k limit 100;
+select i, lag(dec) over (partition by i order by s,i,dec) from over10k limit 100;
 
 select s, last_value(t) over (partition by d order by f) from over10k limit 100;
 
