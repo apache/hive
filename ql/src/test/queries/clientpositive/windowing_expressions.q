@@ -35,7 +35,7 @@ create table over10k(
 load data local inpath '../data/files/over10k' into table over10k;
 
 select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
   over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
   over(distribute by p_mfgr sort by p_retailprice)
@@ -64,3 +64,9 @@ create table t2 (a1 int, b1 string);
 from (select sum(i) over (), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
 select * from t1 limit 3;
 select * from t2 limit 3;
+
+select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice)
+from part
+limit 11;
