@@ -143,6 +143,10 @@ public class BeeLine {
   private static final String SCRIPT_OUTPUT_PREFIX = ">>>";
   private static final int SCRIPT_OUTPUT_PAD_SIZE = 5;
 
+  private static final int ERRNO_OK = 0;
+  private static final int ERRNO_ARGS = 1;
+  private static final int ERRNO_OTHER = 2;
+
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
       "table", new TableOutputFormat(this),
@@ -367,6 +371,7 @@ public class BeeLine {
   /**
    * Starts the program with redirected input. For redirected output,
    * setOutputStream() and setErrorStream can be used.
+   * Exits with 0 on success, 1 on invalid arguments, and 2 on any other error
    *
    * @param args
    *          same as main()
@@ -377,12 +382,10 @@ public class BeeLine {
   public static void mainWithInputRedirection(String[] args, InputStream inputStream)
       throws IOException {
     BeeLine beeLine = new BeeLine();
-    beeLine.begin(args, inputStream);
+    int status = beeLine.begin(args, inputStream);
 
-    // exit the system: useful for Hypersonic and other
-    // badly-behaving systems
     if (!Boolean.getBoolean(BeeLineOpts.PROPERTY_NAME_EXIT)) {
-      System.exit(0);
+      System.exit(status);
     }
   }
 
@@ -608,7 +611,8 @@ public class BeeLine {
    * to the appropriate {@link CommandHandler} until the
    * global variable <code>exit</code> is true.
    */
-  public void begin(String[] args, InputStream inputStream) throws IOException {
+  public int begin(String[] args, InputStream inputStream) throws IOException {
+    int status = ERRNO_OK;
     try {
       // load the options first, so we can override on the command line
       getOpts().load();
@@ -618,7 +622,7 @@ public class BeeLine {
 
     if (!(initArgs(args))) {
       usage();
-      return;
+      return ERRNO_ARGS;
     }
 
     ConsoleReader reader = null;
@@ -630,6 +634,7 @@ public class BeeLine {
       } catch (Throwable t) {
         handleException(t);
         commands.quit(null);
+        status = ERRNO_OTHER;
       }
     } else {
       reader = getConsoleReader(inputStream);
@@ -646,17 +651,20 @@ public class BeeLine {
         // Execute one instruction; terminate on executing a script if there is an error
         if (!dispatch(reader.readLine(getPrompt())) && runningScript) {
           commands.quit(null);
+          status = ERRNO_OTHER;
         }
       } catch (EOFException eof) {
         // CTRL-D
         commands.quit(null);
       } catch (Throwable t) {
         handleException(t);
+        status = ERRNO_OTHER;
       }
     }
     // ### NOTE jvs 10-Aug-2004: Clean up any outstanding
     // connections automatically.
     commands.closeall(null);
+    return status;
   }
 
   public void close() {
