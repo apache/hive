@@ -19,10 +19,10 @@ STAGE PLANS:
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
-                  outputColumnNames: _col2
+                  outputColumnNames: _col4
                   Select Operator
                     expressions:
-                          expr: (1 + assert_true((_col2 < 2)))
+                          expr: (1 + assert_true((_col4 < 2)))
                           type: int
                     outputColumnNames: _col0
                     Limit
@@ -40,10 +40,10 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col2
+                    outputColumnNames: _col4
                     Select Operator
                       expressions:
-                            expr: (1 + assert_true((_col2 < 2)))
+                            expr: (1 + assert_true((_col4 < 2)))
                             type: int
                       outputColumnNames: _col0
                       Limit

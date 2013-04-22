@@ -74,12 +74,12 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
                     outputColumnNames: _col0, _col1
                     File Output Operator
@@ -98,12 +98,12 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
                       outputColumnNames: _col0, _col1
                       File Output Operator
@@ -121,12 +121,12 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
                     outputColumnNames: _col0, _col1
                     File Output Operator
@@ -145,12 +145,12 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
                       outputColumnNames: _col0, _col1
                       File Output Operator
@@ -286,9 +286,9 @@ POSTHOOK: Input: default@src_10
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -298,9 +298,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 238	239.0
 238	240.0
 86	87.0
@@ -330,9 +330,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 238	241.0
 238	242.0
 86	89.0
@@ -374,9 +374,9 @@ insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_lv1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL C)))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array (+ (TOK_TABLE_OR_COL key) 1) (+ (TOK_TABLE_OR_COL key) 2))) C (TOK_TABALIAS A)))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_lv2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL C)))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array (+ (TOK_TABLE_OR_COL key) 3) (+ (TOK_TABLE_OR_COL key) 4))) C (TOK_TABALIAS A)))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
@@ -402,17 +402,17 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Group By Operator
                       aggregations:
-                            expr: sum(_col2)
+                            expr: sum(_col4)
                       bucketGroup: false
                       keys:
                             expr: _col0
@@ -439,17 +439,17 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col4
                       Group By Operator
                         aggregations:
-                              expr: sum(_col2)
+                              expr: sum(_col4)
                         bucketGroup: false
                         keys:
                               expr: _col0
@@ -475,17 +475,17 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Group By Operator
                       aggregations:
-                            expr: sum(_col2)
+                            expr: sum(_col4)
                       bucketGroup: false
                       keys:
                             expr: _col0
@@ -506,17 +506,17 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col4
                       Group By Operator
                         aggregations:
-                              expr: sum(_col2)
+                              expr: sum(_col4)
                         bucketGroup: false
                         keys:
                               expr: _col0
@@ -640,12 +640,12 @@ POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -656,12 +656,12 @@ POSTHOOK: Input: default@src_lv1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 165	333.0
 238	479.0
 255	513.0
@@ -682,12 +682,12 @@ POSTHOOK: Input: default@src_lv2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 165	337.0
 238	483.0
 255	517.0
@@ -722,12 +722,12 @@ insert overwrite table src_lv3 select key, count(value) where key < 200 group by
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_lv1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL C)))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array (+ (TOK_TABLE_OR_COL key) 1) (+ (TOK_TABLE_OR_COL key) 2))) C (TOK_TABALIAS A)))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_lv2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 200)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_lv3))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value)))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 200)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
@@ -755,17 +755,17 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Group By Operator
                       aggregations:
-                            expr: sum(_col2)
+                            expr: sum(_col4)
                       bucketGroup: false
                       keys:
                             expr: _col0
@@ -792,17 +792,17 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col4
                       Group By Operator
                         aggregations:
-                              expr: sum(_col2)
+                              expr: sum(_col4)
                         bucketGroup: false
                         keys:
                               expr: _col0
@@ -1000,14 +1000,14 @@ POSTHOOK: Output: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -1022,14 +1022,14 @@ POSTHOOK: Input: default@src_lv1
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -1054,14 +1054,14 @@ POSTHOOK: Input: default@src_lv2
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -1082,14 +1082,14 @@ POSTHOOK: Input: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -1126,14 +1126,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -1165,20 +1165,20 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
-                          expr: _col2
+                          expr: _col4
                           type: double
                           expr: _col0
                           type: string
-                    outputColumnNames: _col2, _col0
+                    outputColumnNames: _col4, _col0
                     Group By Operator
                       aggregations:
                             expr: sum(DISTINCT _col0)
                       bucketGroup: false
                       keys:
-                            expr: _col2
+                            expr: _col4
                             type: double
                             expr: _col0
                             type: string
@@ -1206,20 +1206,20 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
-                            expr: _col2
+                            expr: _col4
                             type: double
                             expr: _col0
                             type: string
-                      outputColumnNames: _col2, _col0
+                      outputColumnNames: _col4, _col0
                       Group By Operator
                         aggregations:
                               expr: sum(DISTINCT _col0)
                         bucketGroup: false
                         keys:
-                              expr: _col2
+                              expr: _col4
                               type: double
                               expr: _col0
                               type: string
@@ -1246,20 +1246,20 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
-                          expr: _col2
+                          expr: _col4
                           type: double
                           expr: _col0
                           type: string
-                    outputColumnNames: _col2, _col0
+                    outputColumnNames: _col4, _col0
                     Group By Operator
                       aggregations:
                             expr: sum(DISTINCT _col0)
                       bucketGroup: false
                       keys:
-                            expr: _col2
+                            expr: _col4
                             type: double
                             expr: _col0
                             type: string
@@ -1279,20 +1279,20 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
-                            expr: _col2
+                            expr: _col4
                             type: double
                             expr: _col0
                             type: string
-                      outputColumnNames: _col2, _col0
+                      outputColumnNames: _col4, _col0
                       Group By Operator
                         aggregations:
                               expr: sum(DISTINCT _col0)
                         bucketGroup: false
                         keys:
-                              expr: _col2
+                              expr: _col4
                               type: double
                               expr: _col0
                               type: string
@@ -1503,17 +1503,17 @@ POSTHOOK: Output: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1531,17 +1531,17 @@ POSTHOOK: Input: default@src_lv1
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1579,17 +1579,17 @@ POSTHOOK: Input: default@src_lv2
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1627,17 +1627,17 @@ POSTHOOK: Input: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1662,17 +1662,17 @@ POSTHOOK: Output: default@src_lv4
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1698,17 +1698,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
@@ -1745,22 +1745,22 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Group By Operator
                       aggregations:
-                            expr: sum(DISTINCT _col2)
+                            expr: sum(DISTINCT _col4)
                       bucketGroup: false
                       keys:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
@@ -1786,22 +1786,22 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col4
                       Group By Operator
                         aggregations:
-                              expr: sum(DISTINCT _col2)
+                              expr: sum(DISTINCT _col4)
                         bucketGroup: false
                         keys:
                               expr: _col0
                               type: string
-                              expr: _col2
+                              expr: _col4
                               type: double
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
@@ -1826,22 +1826,22 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: key
                 Lateral View Join Operator
-                  outputColumnNames: _col0, _col2
+                  outputColumnNames: _col0, _col4
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col2
+                          expr: _col4
                           type: double
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Group By Operator
                       aggregations:
-                            expr: sum(DISTINCT _col2)
+                            expr: sum(DISTINCT _col4)
                       bucketGroup: false
                       keys:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
@@ -1859,22 +1859,22 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col4
                     Select Operator
                       expressions:
                             expr: _col0
                             type: string
-                            expr: _col2
+                            expr: _col4
                             type: double
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col4
                       Group By Operator
                         aggregations:
-                              expr: sum(DISTINCT _col2)
+                              expr: sum(DISTINCT _col4)
                         bucketGroup: false
                         keys:
                               expr: _col0
                               type: string
-                              expr: _col2
+                              expr: _col4
                               type: double
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
@@ -2123,23 +2123,23 @@ POSTHOOK: Output: default@src_lv4
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -2157,23 +2157,23 @@ POSTHOOK: Input: default@src_lv1
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -2201,23 +2201,23 @@ POSTHOOK: Input: default@src_lv2
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -2245,23 +2245,23 @@ POSTHOOK: Input: default@src_lv3
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
@@ -2285,23 +2285,23 @@ POSTHOOK: Input: default@src_lv4
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SIMPLE [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.null, ]
 POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
