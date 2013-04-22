@@ -472,6 +472,10 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       (BigTableSelectorForAutoSMJ) ReflectionUtils.newInstance(bigTableMatcherClass, null);
     int bigTablePosition =
       bigTableMatcher.getBigTablePosition(pGraphContext, joinOp);
+    if (bigTablePosition < 0) {
+      // contains aliases from sub-query
+      return false;
+    }
     context.setBigTablePosition(bigTablePosition);
     String joinAlias =
       bigTablePosition == 0 ?
