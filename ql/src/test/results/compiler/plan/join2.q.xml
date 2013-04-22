@@ -793,6 +793,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="inputAlias"> 
+                 <string>src3</string> 
+                </void> 
                 <void property="operatorId"> 
                  <string>RS_7</string> 
                 </void> 
@@ -2160,6 +2163,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="inputAlias"> 
+             <string>src2</string> 
+            </void> 
             <void property="operatorId"> 
              <string>RS_4</string> 
             </void> 
@@ -2451,6 +2457,9 @@
                <string>CNTR_NAME_RS_3_FATAL_ERROR</string> 
               </void> 
              </object> 
+            </void> 
+            <void property="inputAlias"> 
+             <string>src1</string> 
             </void> 
             <void property="operatorId"> 
              <string>RS_3</string> 
