@@ -16,3 +16,10 @@ SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'th
 
 SELECT src.key, myCol FROM src lateral view explode(array(1,2,3)) x AS myCol LIMIT 3;
 SELECT src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
+
+-- HIVE-4295
+SELECT BLOCK__OFFSET__INSIDE__FILE, src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
+
+set hive.optimize.cp=false;
+SELECT src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
+SELECT BLOCK__OFFSET__INSIDE__FILE, src.key, myKey, myVal FROM src lateral view explode(map(1,'one',2,'two',3,'three')) x AS myKey,myVal LIMIT 3;
