@@ -43,19 +43,19 @@ public class CodeGen {
       {"ScalarArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "long", "double", "*"},
       {"ScalarArithmeticColumn", "Divide", "long", "double", "/"},
-      //{"ScalarArithmeticColumn", "Modulo", "long", "double", "%"},
+      {"ScalarArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "long", "*"},
       {"ScalarArithmeticColumn", "Divide", "double", "long", "/"},
-      //{"ScalarArithmeticColumn", "Modulo", "double", "long", "%"},
+      {"ScalarArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "double", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
       {"ScalarArithmeticColumn", "Divide", "double", "double", "/"},
-      //{"ScalarArithmeticColumn", "Modulo", "double", "double", "%"},
+      {"ScalarArithmeticColumn", "Modulo", "double", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
@@ -252,6 +252,8 @@ public class CodeGen {
         generateColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareScalar")) {
         generateFilterColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("ScalarArithmeticColumn")) {
+        generateScalarArithmeticColumn(tdesc);
       } else {
         continue;
       }
