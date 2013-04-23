@@ -24,8 +24,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
-import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
+import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -89,7 +91,8 @@ public class MapJoinObjectValue implements Externalizable {
       metadataTag = in.readInt();
 
       // get the tableDesc from the map stored in the mapjoin operator
-      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(Integer.valueOf(metadataTag));
+      HashTableSinkObjectCtx ctx = MapJoinOperator.getMetadata().get(
+          Integer.valueOf(metadataTag));
       int sz = in.readInt();
       MapJoinRowContainer<Object[]> res = new MapJoinRowContainer<Object[]>();
       if (sz > 0) {
@@ -132,7 +135,8 @@ public class MapJoinObjectValue implements Externalizable {
       out.writeInt(metadataTag);
 
       // get the tableDesc from the map stored in the mapjoin operator
-      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(Integer.valueOf(metadataTag));
+      HashTableSinkObjectCtx ctx = HashTableSinkOperator.getMetadata().get(
+          Integer.valueOf(metadataTag));
 
       // Different processing for key and value
       MapJoinRowContainer<Object[]> v = obj;
