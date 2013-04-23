@@ -380,7 +380,7 @@ public final class Utilities {
 
   public static String getHiveJobID(Configuration job) {
     String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
-    if (planPath != null) {
+    if (planPath != null && !planPath.isEmpty()) {
       return (new Path(planPath)).getName();
     }
     return null;
