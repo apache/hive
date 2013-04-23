@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -83,6 +84,11 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   @Override
   public void configureTableJobProperties(TableDesc tableDesc,
                                           Map<String, String> jobProperties) {
+    //do nothing by default
+  }
+
+  @Override
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     //do nothing by default
   }
 

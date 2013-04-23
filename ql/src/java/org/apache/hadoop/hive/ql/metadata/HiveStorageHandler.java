@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
 /**
@@ -133,4 +134,12 @@ public interface HiveStorageHandler extends Configurable {
   public void configureTableJobProperties(
     TableDesc tableDesc,
     Map<String, String> jobProperties);
+
+  /**
+   * Called just before submitting MapReduce job.
+   *
+   * @param tableDesc descriptor for the table being accessed
+   * @param JobConf jobConf for MapReduce job
+   */
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf);
 }
