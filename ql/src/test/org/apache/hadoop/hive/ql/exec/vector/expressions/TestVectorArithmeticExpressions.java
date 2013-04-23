@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.junit.Test;
 
@@ -112,5 +116,65 @@ public class TestVectorArithmeticExpressions {
     Assert.assertTrue(out.isRepeating);
     Assert.assertFalse(out.noNulls);
     Assert.assertEquals(true, out.isNull[0]);
+  }
+
+  @Test
+  public void testLongColAddLongColumn() {
+    int seed = 17;
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        VectorizedRowBatch.DEFAULT_SIZE,
+        6, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrg.cols[0];
+    LongColumnVector lcv1 = (LongColumnVector) vrg.cols[1];
+    LongColumnVector lcv2 = (LongColumnVector) vrg.cols[2];
+    LongColumnVector lcv3 = (LongColumnVector) vrg.cols[3];
+    LongColumnVector lcv4 = (LongColumnVector) vrg.cols[4];
+    LongColumnVector lcv5 = (LongColumnVector) vrg.cols[5];
+    LongColAddLongColumn expr = new LongColAddLongColumn(0, 1, 2);
+    expr.evaluate(vrg);
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      assertEquals((i+1) * seed * 3, lcv2.vector[i]);
+    }
+    assertTrue(lcv2.noNulls);
+
+    //Now set one column nullable
+    lcv1.noNulls = false;
+    lcv1.isNull[1] = true;
+    expr.evaluate(vrg);
+    assertTrue(lcv2.isNull[1]);
+    assertFalse(lcv2.noNulls);
+
+    //Now set other column nullable too
+    lcv0.noNulls = false;
+    lcv0.isNull[1] = true;
+    lcv0.isNull[3] = true;
+    expr.evaluate(vrg);
+    assertTrue(lcv2.isNull[1]);
+    assertTrue(lcv2.isNull[3]);
+    assertFalse(lcv2.noNulls);
+
+    //Now test with repeating flag
+    lcv3.isRepeating = true;
+    LongColAddLongColumn expr2 = new LongColAddLongColumn(3, 4, 5);
+    expr2.evaluate(vrg);
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      assertEquals(seed * ( 4 + 5*(i+1)), lcv5.vector[i]);
+    }
+
+    //Repeating with other as nullable
+    lcv4.noNulls = false;
+    lcv4.isNull[0] = true;
+    expr2.evaluate(vrg);
+    assertTrue(lcv5.isNull[0]);
+    assertFalse(lcv5.noNulls);
+
+    //Repeating null value
+    lcv3.isRepeating = true;
+    lcv3.noNulls = false;
+    lcv3.isNull[0] = true;
+    expr2.evaluate(vrg);
+    assertFalse(lcv5.noNulls);
+    assertTrue(lcv5.isRepeating);
+    assertTrue(lcv5.isNull[0]);
   }
 }

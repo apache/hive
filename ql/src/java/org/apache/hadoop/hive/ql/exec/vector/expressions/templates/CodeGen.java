@@ -254,6 +254,10 @@ public class CodeGen {
         generateFilterColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("ScalarArithmeticColumn")) {
         generateScalarArithmeticColumn(tdesc);
+      } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
+        generateFilterColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("ColumnArithmeticColumn")) {
+        generateColumnArithmeticColumn(tdesc);
       } else {
         continue;
       }
