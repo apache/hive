@@ -246,6 +246,10 @@
     ===============================================================================
     -->
 
+    <!-- Placed here to make hive builds work.  It's a no-op as HCat already
+    constructs poms as part of its jar target. -->
+    <target name="make-pom"/>
+
     <target name="mvn-deploy" depends="mvn-init"
             description="Deploy artifacts to a Maven repository.">
         <artifact:deploy file="pom.xml">
