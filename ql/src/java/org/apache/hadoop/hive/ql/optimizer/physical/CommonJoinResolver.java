@@ -120,6 +120,8 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
    */
   class CommonJoinTaskDispatcher implements Dispatcher {
 
+    HashMap<String, Long> aliasToSize = null;
+
     private final PhysicalContext physicalContext;
 
     public CommonJoinTaskDispatcher(PhysicalContext context) {
@@ -145,7 +147,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
      * A task and its child task has been converted from join to mapjoin.
      * See if the two tasks can be merged.
      */
-    private void mergeMapJoinTaskWithChildMapJoinTask(MapRedTask task) {
+    private void mergeMapJoinTaskWithChildMapJoinTask(MapRedTask task, Configuration conf) {
       MapRedTask childTask = (MapRedTask)task.getChildTasks().get(0);
       MapredWork work = task.getWork();
       MapredLocalWork localWork = work.getMapLocalWork();
@@ -193,6 +195,33 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       // Merge the trees
       if (childWork.getAliasToWork().size() > 1) {
         return;
+      }
+      long mapJoinSize = HiveConf.getLongVar(conf,
+          HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+      long localTableTotalSize = 0;
+      for (String alias : localWork.getAliasToWork().keySet()) {
+        Long tabSize = aliasToSize.get(alias);
+        if (tabSize == null) {
+          /* if the size is unavailable, we need to assume a size 1 greater than mapJoinSize
+           * this implies that merge cannot happen so we can return.
+           */
+          return;
+        }
+        localTableTotalSize += tabSize;
+      }
+
+      for (String alias : childLocalWork.getAliasToWork().keySet()) {
+        Long tabSize = aliasToSize.get(alias);
+        if (tabSize == null) {
+          /* if the size is unavailable, we need to assume a size 1 greater than mapJoinSize
+           * this implies that merge cannot happen so we can return.
+           */
+          return;
+        }
+        localTableTotalSize += tabSize;
+        if (localTableTotalSize > mapJoinSize) {
+          return;
+        }
       }
 
       Operator<? extends Serializable> childAliasOp =
@@ -279,7 +308,10 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       int numAliases = order.length;
 
       long aliasTotalKnownInputSize = 0;
-      HashMap<String, Long> aliasToSize = new HashMap<String, Long>();
+
+      if (aliasToSize == null) {
+        aliasToSize = new HashMap<String, Long>();
+      }
       try {
         // go over all the input paths, and calculate a known total size, known
         // size for each input alias.
@@ -380,7 +412,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           // followed by a mapjoin can be performed in a single MR job.
           if ((newTask.getChildTasks() != null) && (newTask.getChildTasks().size() == 1)
               && (newTask.getChildTasks().get(0).getTaskTag() == Task.MAPJOIN_ONLY_NOBACKUP)) {
-            mergeMapJoinTaskWithChildMapJoinTask(newTask);
+            mergeMapJoinTaskWithChildMapJoinTask(newTask, conf);
           }
 
           return newTask;
