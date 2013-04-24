@@ -1,0 +1,77 @@
+PREHOOK: query: create external table dynPart (key string) partitioned by (value string) row format delimited fields terminated by '\\t' stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table dynPart (key string) partitioned by (value string) row format delimited fields terminated by '\\t' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dynPart
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@dynpart
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Output: default@dynpart@value=0
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@dynpart
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Output: default@dynpart@value=1
+PREHOOK: query: select count(*) from dynPart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynpart
+PREHOOK: Input: default@dynpart@value=0
+PREHOOK: Input: default@dynpart@value=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from dynPart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Input: default@dynpart@value=0
+POSTHOOK: Input: default@dynpart@value=1
+#### A masked pattern was here ####
+2
+PREHOOK: query: select key from dynPart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynpart
+PREHOOK: Input: default@dynpart@value=0
+PREHOOK: Input: default@dynpart@value=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key from dynPart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Input: default@dynpart@value=0
+POSTHOOK: Input: default@dynpart@value=1
+#### A masked pattern was here ####
+20
+10
+PREHOOK: query: select key from src where (key = 10) order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src where (key = 10) order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10
+PREHOOK: query: select key from src where (key = 20) order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key from src where (key = 20) order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+20
+#### A masked pattern was here ####
