@@ -429,9 +429,9 @@ public class TestHCatStorer extends HCatBaseTest {
         driver.getResults(res);
 
         Iterator<String> itr = res.iterator();
-        Assert.assertEquals("0\tNULL\tNULL\tNULL\tNULL\tnull\tnull", itr.next());
-        Assert.assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\tbinary-data\tnull", itr.next());
-        Assert.assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tbinary-data\tnull", itr.next());
+        Assert.assertEquals("0\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL", itr.next());
+        Assert.assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\tbinary-data\tNULL", itr.next());
+        Assert.assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tbinary-data\tNULL", itr.next()); 
         Assert.assertFalse(itr.hasNext());
 
         server.registerQuery("B = load 'junit_unparted' using " + HCatLoader.class.getName() + ";");
