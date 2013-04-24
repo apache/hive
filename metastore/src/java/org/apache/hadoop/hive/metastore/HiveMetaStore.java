@@ -1150,7 +1150,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new MetaException("Table metadata is corrupted");
         }
 
-        firePreEvent(new PreDropTableEvent(tbl, this));
+        firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
         isIndexTable = isIndexTable(tbl);
         if (isIndexTable) {
@@ -1200,7 +1200,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // ok even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
-          DropTableEvent dropTableEvent = new DropTableEvent(tbl, success, this);
+          DropTableEvent dropTableEvent = new DropTableEvent(tbl, success, deleteData, this);
           dropTableEvent.setEnvironmentContext(envContext);
           listener.onDropTable(dropTableEvent);
         }
@@ -1878,7 +1878,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         part = ms.getPartition(db_name, tbl_name, part_vals);
         tbl = get_table(db_name, tbl_name);
-        firePreEvent(new PreDropPartitionEvent(tbl, part, this));
+        firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
 
         if (part == null) {
           throw new NoSuchObjectException("Partition doesn't exist. "
@@ -1924,7 +1924,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         for (MetaStoreEventListener listener : listeners) {
-          DropPartitionEvent dropPartitionEvent = new DropPartitionEvent(tbl, part, success, this);
+          DropPartitionEvent dropPartitionEvent =
+            new DropPartitionEvent(tbl, part, success, deleteData, this);
           dropPartitionEvent.setEnvironmentContext(envContext);
           listener.onDropPartition(dropPartitionEvent);
         }
