@@ -138,20 +138,21 @@ public final class UnionProcFactory {
         }
         start--;
       }
+      assert parentUnionOperator != null;
 
       // default to false
       boolean mapOnly = false;
-      if (parentUnionOperator != null) {
-        UnionParseContext parentUCtx =
+      boolean rootTask = false;
+      UnionParseContext parentUCtx =
           ctx.getUnionParseContext(parentUnionOperator);
-        if (parentUCtx != null && parentUCtx.allMapOnlySubQSet()) {
-          mapOnly = parentUCtx.allMapOnlySubQ();
-        }
+      if (parentUCtx != null && parentUCtx.allMapOnlySubQSet()) {
+        mapOnly = parentUCtx.allMapOnlySubQ();
+        rootTask = parentUCtx.allRootTasks();
       }
 
       uCtx.setMapOnlySubq(pos, mapOnly);
 
-      uCtx.setRootTask(pos, false);
+      uCtx.setRootTask(pos, rootTask);
       ctx.setUnionParseContext(union, uCtx);
       return null;
     }
