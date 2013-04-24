@@ -7,7 +7,7 @@ create table exim_employee ( emp_id int comment "employee id")
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna");
-dfs -mkdir ../build/ql/test/data/exports/exim_employee/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_employee/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;
