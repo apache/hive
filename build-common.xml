@@ -406,9 +406,11 @@
       <equals arg1="${hadoop.mr.rev}" arg2="23" />
       <then>
         <property name="hadoop.opts" value="${hadoop.opts.23}" />
+        <property name="test.dfs.mkdir" value="-mkdir -p"/>
       </then>
       <else>
         <property name="hadoop.opts" value="${hadoop.opts.20}" />
+        <property name="test.dfs.mkdir" value="-mkdir"/>
       </else>
     </if>
     <!-- Set the OS specific settings to run junit tests on unix as well as on windows -->
@@ -438,6 +440,7 @@
       <env key="HADOOP_CLASSPATH" path="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
+      <sysproperty key="test.dfs.mkdir" value="${test.dfs.mkdir}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="test.service.disable.server" value="${disableserver}"/>
       <sysproperty key="log4j.configuration" value="file:///${test.src.data.dir}/conf/hive-log4j.properties"/>
