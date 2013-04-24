@@ -36,6 +36,9 @@
     </dependency>
     <dependency org="com.github.stephenc.high-scale-lib" name="high-scale-lib" rev="1.1.1"
                 transitive="false"/>
+    <dependency org="com.yammer.metrics" name="metrics-core" rev="${metrics-core.version}">
+      <exclude org="org.slf4j" module="slf4j-api"/><!--causes a dual slf4j presence otherwise-->
+    </dependency>
     <dependency org="org.codehaus.jackson" name="jackson-jaxrs" rev="${jackson.version}"/>
     <dependency org="org.codehaus.jackson" name="jackson-xc" rev="${jackson.version}"/>
   </dependencies>
