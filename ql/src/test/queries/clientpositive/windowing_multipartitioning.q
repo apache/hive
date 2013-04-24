@@ -30,7 +30,7 @@ select s, sum(i) over (partition by s), sum(f) over (partition by si) from over1
 select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
 where s = 'tom allen' or s = 'bob steinbeck';
 
-select s, sum(f) over (partition by i), row_number() over () from over10k where s = 'tom allen' or s = 'bob steinbeck';
+select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck';
 
 select s, rank() over w1, 
 rank() over w2 
