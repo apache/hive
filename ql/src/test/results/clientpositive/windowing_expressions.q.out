@@ -77,7 +77,7 @@ POSTHOOK: query: load data local inpath '../data/files/over10k' into table over1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
   over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
   over(distribute by p_mfgr sort by p_retailprice)
@@ -86,7 +86,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
   over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
   over(distribute by p_mfgr sort by p_retailprice)
@@ -718,3 +718,34 @@ POSTHOOK: Lineage: t2.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyi
 656584379	bob davidson
 656584379	alice zipper
 656584379	katie davidson
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice)
+from part
+limit 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice)
+from part
+limit 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t1.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t2.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1414.42	28	true
+Manufacturer#1	1602.59	6	true
+Manufacturer#1	1632.66	42	true
+Manufacturer#1	1753.76	34	true
+Manufacturer#2	1690.68	14	true
+Manufacturer#2	1698.66	25	true
+Manufacturer#2	1701.6	18	true
+Manufacturer#2	1800.7	40	true
+Manufacturer#2	2031.98	2	true
