@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestVectorFilterExpressions {
@@ -64,5 +66,70 @@ public class TestVectorFilterExpressions {
     expr.evaluate(vrg);
     assertEquals(1, vrg.size);
     assertEquals(5, vrg.selected[0]);
+  }
+
+  @Test
+  public void testColOpScalarNumericFilterNullAndRepeatingLogic()
+  {
+    // No nulls, not repeating
+    FilterLongColGreaterLongScalar f = new FilterLongColGreaterLongScalar(0, 1);
+    VectorizedRowBatch batch = this.getSimpleLongBatch();
+
+    batch.cols[0].noNulls = true;
+    batch.cols[0].isRepeating = false;
+    f.evaluate(batch);
+    // only last 2 rows qualify
+    Assert.assertEquals(2, batch.size);
+    // show that their positions are recorded
+    Assert.assertTrue(batch.selectedInUse);
+    Assert.assertEquals(2, batch.selected[0]);
+    Assert.assertEquals(3, batch.selected[1]);
+
+    // make everything qualify and ensure selected is not in use
+    f = new FilterLongColGreaterLongScalar(0, -1); // col > -1
+    batch = getSimpleLongBatch();
+    f.evaluate(batch);
+    Assert.assertFalse(batch.selectedInUse);
+    Assert.assertEquals(4, batch.size);
+
+    // has nulls, not repeating
+    batch = getSimpleLongBatch();
+    f = new FilterLongColGreaterLongScalar(0, 1); // col > 1
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isRepeating = false;
+    batch.cols[0].isNull[3] = true;
+    f.evaluate(batch);
+    Assert.assertTrue(batch.selectedInUse);
+    Assert.assertEquals(1, batch.size);
+    Assert.assertEquals(2, batch.selected[0]);
+
+    // no nulls, is repeating
+    batch = getSimpleLongBatch();
+    f = new FilterLongColGreaterLongScalar(0, -1); // col > -1
+    batch.cols[0].noNulls = true;
+    batch.cols[0].isRepeating = true;
+    f.evaluate(batch);
+    Assert.assertFalse(batch.selectedInUse);
+    Assert.assertEquals(4, batch.size); // everything qualifies (4 rows, all with value -1)
+
+    // has nulls, is repeating
+    batch = getSimpleLongBatch();
+    batch.cols[0].noNulls = false;
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].isNull[0] = true;
+    f.evaluate(batch);
+    Assert.assertEquals(0, batch.size); // all values are null so none qualify
+  }
+
+  private VectorizedRowBatch getSimpleLongBatch() {
+    VectorizedRowBatch batch = VectorizedRowGroupGenUtil
+        .getVectorizedRowBatch(4, 1, 1);
+    LongColumnVector lcv0 = (LongColumnVector) batch.cols[0];
+
+    lcv0.vector[0] = 0;
+    lcv0.vector[1] = 1;
+    lcv0.vector[2] = 2;
+    lcv0.vector[3] = 3;
+    return batch;
   }
 }
