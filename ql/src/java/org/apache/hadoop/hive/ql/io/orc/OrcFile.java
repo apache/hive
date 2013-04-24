@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -70,13 +71,23 @@ public final class OrcFile {
    */
   public static Writer createWriter(FileSystem fs,
                                     Path path,
+                                    Configuration conf,
                                     ObjectInspector inspector,
                                     long stripeSize,
                                     CompressionKind compress,
                                     int bufferSize,
                                     int rowIndexStride) throws IOException {
     return new WriterImpl(fs, path, inspector, stripeSize, compress,
-      bufferSize, rowIndexStride);
+      bufferSize, rowIndexStride, getMemoryManager(conf));
   }
 
+  private static MemoryManager memoryManager = null;
+
+  private static synchronized
+  MemoryManager getMemoryManager(Configuration conf) {
+    if (memoryManager == null) {
+      memoryManager = new MemoryManager(conf);
+    }
+    return memoryManager;
+  }
 }
