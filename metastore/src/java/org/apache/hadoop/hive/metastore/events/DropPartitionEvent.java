@@ -26,11 +26,16 @@ public class DropPartitionEvent extends ListenerEvent {
 
   private final Table table;
   private final Partition partition;
+  private final boolean deleteData;
 
-  public DropPartitionEvent (Table table, Partition partition, boolean status, HMSHandler handler) {
+  public DropPartitionEvent (Table table,
+      Partition partition, boolean status, boolean deleteData, HMSHandler handler) {
     super (status, handler);
     this.table = table;
     this.partition = partition;
+    // In HiveMetaStore, the deleteData flag indicates whether DFS data should be
+    // removed on a drop.
+    this.deleteData = deleteData;
   }
 
   /**
@@ -47,5 +52,13 @@ public class DropPartitionEvent extends ListenerEvent {
   public Table getTable() {
 
     return table;
+  }
+
+  /**
+   * @return the deleteData flag
+   */
+  public boolean getDeleteData() {
+
+    return deleteData;
   }
 }
