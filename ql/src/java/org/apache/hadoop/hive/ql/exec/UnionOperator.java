@@ -163,4 +163,12 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
   public boolean opAllowedAfterMapJoin() {
     return false;
   }
+
+  @Override
+  public boolean opAllowedBeforeSortMergeJoin() {
+    // If a union occurs before the sort-merge join, it is not useful to convert the the
+    // sort-merge join to a mapjoin. The number of inputs for the union is more than 1 so
+    // it would be difficult to figure out the big table for the mapjoin.
+    return false;
+  }
 }

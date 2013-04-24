@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -74,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -88,6 +90,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 public class MapJoinProcessor implements Transform {
 
   private static final Log LOG = LogFactory.getLog(MapJoinProcessor.class.getName());
+  // mapjoin table descriptor contains a key descriptor which needs the field schema
+  // (column type + column name). The column name is not really used anywhere, but it
+  // needs to be passed. Use the string defined below for that.
+  private static final String MAPJOINKEY_FIELDPREFIX = "mapjoinkey";
 
   private ParseContext pGraphContext;
 
@@ -220,14 +226,20 @@ public class MapJoinProcessor implements Transform {
   }
 
   public static String genMapJoinOpAndLocalWork(MapredWork newWork, JoinOperator op, int mapJoinPos)
-    throws SemanticException {
-    try {
-      LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
+      throws SemanticException {
+    LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
         newWork.getOpParseCtxMap();
-      QBJoinTree newJoinTree = newWork.getJoinTree();
-      // generate the map join operator; already checked the map join
-      MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
-          newJoinTree, mapJoinPos, true, false);
+    QBJoinTree newJoinTree = newWork.getJoinTree();
+    // generate the map join operator; already checked the map join
+    MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
+        newJoinTree, mapJoinPos, true, false);
+    return genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
+  }
+
+  public static String genLocalWorkForMapJoin(MapredWork newWork, MapJoinOperator newMapJoinOp,
+      int mapJoinPos)
+      throws SemanticException {
+    try {
       // generate the local work and return the big table alias
       String bigTableAlias = MapJoinProcessor
           .genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
@@ -422,7 +434,7 @@ public class MapJoinProcessor implements Transform {
     }
 
     TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(PlanUtils
-        .getFieldSchemasFromColumnList(keyCols, "mapjoinkey"));
+        .getFieldSchemasFromColumnList(keyCols, MAPJOINKEY_FIELDPREFIX));
 
     List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
     List<TableDesc> valueFiltedTableDescs = new ArrayList<TableDesc>();
@@ -497,6 +509,65 @@ public class MapJoinProcessor implements Transform {
     if (validateMapJoinTree) {
       validateMapJoinTypes(mapJoinOp);
     }
+
+    return mapJoinOp;
+  }
+
+  /**
+   * convert a sortmerge join to a a map-side join.
+   *
+   * @param opParseCtxMap
+   * @param smbJoinOp
+   *          join operator
+   * @param joinTree
+   *          qb join tree
+   * @param bigTablePos
+   *          position of the source to be read as part of map-reduce framework. All other sources
+   *          are cached in memory
+   * @param noCheckOuterJoin
+   */
+  public static MapJoinOperator convertSMBJoinToMapJoin(
+    Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
+    SMBMapJoinOperator smbJoinOp, QBJoinTree joinTree, int bigTablePos, boolean noCheckOuterJoin)
+    throws SemanticException {
+    // Create a new map join operator
+    SMBJoinDesc smbJoinDesc = smbJoinOp.getConf();
+    List<ExprNodeDesc> keyCols = smbJoinDesc.getKeys().get(Byte.valueOf((byte) 0));
+    TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(PlanUtils
+        .getFieldSchemasFromColumnList(keyCols, MAPJOINKEY_FIELDPREFIX));
+    MapJoinDesc mapJoinDesc = new MapJoinDesc(smbJoinDesc.getKeys(),
+        keyTableDesc, smbJoinDesc.getExprs(),
+        smbJoinDesc.getValueTblDescs(), smbJoinDesc.getValueTblDescs(),
+        smbJoinDesc.getOutputColumnNames(),
+        bigTablePos, smbJoinDesc.getConds(),
+        smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix());
+
+    RowResolver joinRS = opParseCtxMap.get(smbJoinOp).getRowResolver();
+    // The mapjoin has the same schema as the join operator
+    MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+        mapJoinDesc, joinRS.getRowSchema(),
+        new ArrayList<Operator<? extends OperatorDesc>>());
+
+    OpParseContext ctx = new OpParseContext(joinRS);
+    opParseCtxMap.put(mapJoinOp, ctx);
+
+    // change the children of the original join operator to point to the map
+    // join operator
+    List<Operator<? extends OperatorDesc>> childOps = smbJoinOp.getChildOperators();
+    for (Operator<? extends OperatorDesc> childOp : childOps) {
+      childOp.replaceParent(smbJoinOp, mapJoinOp);
+    }
+    mapJoinOp.setChildOperators(childOps);
+    smbJoinOp.setChildOperators(null);
+
+    // change the parent of the original SMBjoin operator to point to the map
+    // join operator
+    List<Operator<? extends OperatorDesc>> parentOps = smbJoinOp.getParentOperators();
+    for (Operator<? extends OperatorDesc> parentOp : parentOps) {
+      parentOp.replaceChild(smbJoinOp, mapJoinOp);
+    }
+    mapJoinOp.setParentOperators(parentOps);
+    smbJoinOp.setParentOperators(null);
 
     return mapJoinOp;
   }

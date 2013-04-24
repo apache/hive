@@ -167,5 +167,4 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   protected boolean hasAnyNulls(AbstractMapJoinKey key) {
     return key.hasAnyNulls(nullsafes);
   }
-
 }
