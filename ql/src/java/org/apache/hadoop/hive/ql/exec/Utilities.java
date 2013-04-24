@@ -690,11 +690,6 @@ public final class Utilities {
     return new PartitionDesc(part, tblDesc);
   }
 
-  public static void addMapWork(MapredWork mr, Table tbl, String alias, Operator<?> work) {
-    mr.addMapWork(tbl.getDataLocation().getPath(), alias, work, new PartitionDesc(
-        getTableDesc(tbl), (LinkedHashMap<String, String>) null));
-  }
-
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {
     if (op == null) {
       return "";
