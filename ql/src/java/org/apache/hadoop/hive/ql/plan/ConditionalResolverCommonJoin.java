@@ -71,7 +71,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     }
 
     public HashMap<String, Long> getAliasToKnownSize() {
-      return aliasToKnownSize;
+      return aliasToKnownSize == null ? new HashMap<String, Long>() : aliasToKnownSize;
     }
 
     public void setAliasToKnownSize(HashMap<String, Long> aliasToKnownSize) {

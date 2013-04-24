@@ -983,6 +983,20 @@
 </property>
 
 <property>
+  <name>hive.auto.convert.sortmerge.join.to.mapjoin</name>
+  <value>false</value>
+  <description>If hive.auto.convert.sortmerge.join is set to true, and a join was converted to a sort-merge join,
+    this parameter decides whether each table should be tried as a big table, and effectviely a map-join should be
+    tried. That would create a conditional task with n+1 children for a n-way join (1 child for each table as the
+    big table), and the backup task will be the sort-merge join. In some casess, a map-join would be faster than a
+    sort-merge join, if there is no advantage of having the output bucketed and sorted. For eg. if a very big sorted
+    and bucketed table with few files (say 10 files) are being joined with a very small sorter and bucketed table
+    with few files (10 files), the sort-merge join will only use 10 mappers, and a simple map-only join might be faster
+    if the complete small table can fit in memory, and a map-join can be performed.
+  </description>
+</property>
+
+<property>
   <name>hive.metastore.ds.connection.url.hook</name>
   <value></value>
   <description>Name of the hook to use for retriving the JDO connection URL. If empty, the value in javax.jdo.option.ConnectionURL is used </description>

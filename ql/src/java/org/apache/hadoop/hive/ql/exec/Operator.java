@@ -1471,6 +1471,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return true;
   }
 
+  /*
+   * If this task contains a sortmergejoin, it can be converted to a map-join task if this operator
+   * is present in the mapper. For eg. if a sort-merge join operator is present followed by a
+   * regular join, it cannot be converted to a auto map-join.
+   */
+  public boolean opAllowedBeforeSortMergeJoin() {
+    return true;
+  }
+
   public String toString() {
     return getName() + "[" + getIdentifier() + "]";
   }

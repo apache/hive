@@ -269,4 +269,14 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     // optimizations for now.
     return false;
   }
+
+  @Override
+  public boolean opAllowedBeforeSortMergeJoin() {
+    // If a join occurs before the sort-merge join, it is not useful to convert the the sort-merge
+    // join to a mapjoin. It might be simpler to perform the join and then a sort-merge join
+    // join. By converting the sort-merge join to a map-join, the job will be executed in 2
+    // mapjoins in the best case. The number of inputs for the join is more than 1 so it would
+    // be difficult to figure out the big table for the mapjoin.
+    return false;
+  }
 }

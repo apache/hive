@@ -526,6 +526,8 @@ public class HiveConf extends Configuration {
     HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR(
         "hive.auto.convert.sortmerge.join.bigtable.selection.policy",
         "org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ"),
+    HIVE_AUTO_SORTMERGE_JOIN_TOMAPJOIN(
+        "hive.auto.convert.sortmerge.join.to.mapjoin", false),
 
     HIVESCRIPTOPERATORTRUST("hive.exec.script.trust", false),
     HIVEROWOFFSET("hive.exec.rowoffset", false),
