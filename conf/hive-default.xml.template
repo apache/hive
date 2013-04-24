@@ -1841,7 +1841,6 @@
   </description>
 </property>
 
-
 <property>
   <name>hive.server2.authentication.ldap.baseDN</name>
   <value></value>
@@ -1849,6 +1848,16 @@
     LDAP base DN
   </description>
 </property>
+
+<property>
+  <name>hive.server2.enable.doAs</name>
+  <value>true</value>
+  <description>
+   Setting this property to true will have hive server2 execute
+    hive operations as the user making the calls to it.
+  </description>
+</property>
+
 
 </configuration>
 
