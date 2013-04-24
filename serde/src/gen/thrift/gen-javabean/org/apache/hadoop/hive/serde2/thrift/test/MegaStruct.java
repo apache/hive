@@ -6,6 +6,7 @@
  */
 package org.apache.hadoop.hive.serde2.thrift.test;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
@@ -1566,7 +1567,109 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_my_bool = true && (isSetMy_bool());
+    builder.append(present_my_bool);
+    if (present_my_bool)
+      builder.append(my_bool);
+
+    boolean present_my_byte = true && (isSetMy_byte());
+    builder.append(present_my_byte);
+    if (present_my_byte)
+      builder.append(my_byte);
+
+    boolean present_my_16bit_int = true && (isSetMy_16bit_int());
+    builder.append(present_my_16bit_int);
+    if (present_my_16bit_int)
+      builder.append(my_16bit_int);
+
+    boolean present_my_32bit_int = true && (isSetMy_32bit_int());
+    builder.append(present_my_32bit_int);
+    if (present_my_32bit_int)
+      builder.append(my_32bit_int);
+
+    boolean present_my_64bit_int = true && (isSetMy_64bit_int());
+    builder.append(present_my_64bit_int);
+    if (present_my_64bit_int)
+      builder.append(my_64bit_int);
+
+    boolean present_my_double = true && (isSetMy_double());
+    builder.append(present_my_double);
+    if (present_my_double)
+      builder.append(my_double);
+
+    boolean present_my_string = true && (isSetMy_string());
+    builder.append(present_my_string);
+    if (present_my_string)
+      builder.append(my_string);
+
+    boolean present_my_binary = true && (isSetMy_binary());
+    builder.append(present_my_binary);
+    if (present_my_binary)
+      builder.append(my_binary);
+
+    boolean present_my_string_string_map = true && (isSetMy_string_string_map());
+    builder.append(present_my_string_string_map);
+    if (present_my_string_string_map)
+      builder.append(my_string_string_map);
+
+    boolean present_my_string_enum_map = true && (isSetMy_string_enum_map());
+    builder.append(present_my_string_enum_map);
+    if (present_my_string_enum_map)
+      builder.append(my_string_enum_map);
+
+    boolean present_my_enum_string_map = true && (isSetMy_enum_string_map());
+    builder.append(present_my_enum_string_map);
+    if (present_my_enum_string_map)
+      builder.append(my_enum_string_map);
+
+    boolean present_my_enum_struct_map = true && (isSetMy_enum_struct_map());
+    builder.append(present_my_enum_struct_map);
+    if (present_my_enum_struct_map)
+      builder.append(my_enum_struct_map);
+
+    boolean present_my_enum_stringlist_map = true && (isSetMy_enum_stringlist_map());
+    builder.append(present_my_enum_stringlist_map);
+    if (present_my_enum_stringlist_map)
+      builder.append(my_enum_stringlist_map);
+
+    boolean present_my_enum_structlist_map = true && (isSetMy_enum_structlist_map());
+    builder.append(present_my_enum_structlist_map);
+    if (present_my_enum_structlist_map)
+      builder.append(my_enum_structlist_map);
+
+    boolean present_my_stringlist = true && (isSetMy_stringlist());
+    builder.append(present_my_stringlist);
+    if (present_my_stringlist)
+      builder.append(my_stringlist);
+
+    boolean present_my_structlist = true && (isSetMy_structlist());
+    builder.append(present_my_structlist);
+    if (present_my_structlist)
+      builder.append(my_structlist);
+
+    boolean present_my_enumlist = true && (isSetMy_enumlist());
+    builder.append(present_my_enumlist);
+    if (present_my_enumlist)
+      builder.append(my_enumlist);
+
+    boolean present_my_stringset = true && (isSetMy_stringset());
+    builder.append(present_my_stringset);
+    if (present_my_stringset)
+      builder.append(my_stringset);
+
+    boolean present_my_enumset = true && (isSetMy_enumset());
+    builder.append(present_my_enumset);
+    if (present_my_enumset)
+      builder.append(my_enumset);
+
+    boolean present_my_structset = true && (isSetMy_structset());
+    builder.append(present_my_structset);
+    if (present_my_structset)
+      builder.append(my_structset);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(MegaStruct other) {
@@ -2089,7 +2192,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i1 = 0; _i1 < _map0.size; ++_i1)
                 {
                   String _key2; // required
-                  String _val3; // optional
+                  String _val3; // required
                   _key2 = iprot.readString();
                   _val3 = iprot.readString();
                   struct.my_string_string_map.put(_key2, _val3);
@@ -2109,7 +2212,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i5 = 0; _i5 < _map4.size; ++_i5)
                 {
                   String _key6; // required
-                  MyEnum _val7; // optional
+                  MyEnum _val7; // required
                   _key6 = iprot.readString();
                   _val7 = MyEnum.findByValue(iprot.readI32());
                   struct.my_string_enum_map.put(_key6, _val7);
@@ -2129,7 +2232,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i9 = 0; _i9 < _map8.size; ++_i9)
                 {
                   MyEnum _key10; // required
-                  String _val11; // optional
+                  String _val11; // required
                   _key10 = MyEnum.findByValue(iprot.readI32());
                   _val11 = iprot.readString();
                   struct.my_enum_string_map.put(_key10, _val11);
@@ -2149,7 +2252,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i13 = 0; _i13 < _map12.size; ++_i13)
                 {
                   MyEnum _key14; // required
-                  MiniStruct _val15; // optional
+                  MiniStruct _val15; // required
                   _key14 = MyEnum.findByValue(iprot.readI32());
                   _val15 = new MiniStruct();
                   _val15.read(iprot);
@@ -2170,7 +2273,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i17 = 0; _i17 < _map16.size; ++_i17)
                 {
                   MyEnum _key18; // required
-                  List<String> _val19; // optional
+                  List<String> _val19; // required
                   _key18 = MyEnum.findByValue(iprot.readI32());
                   {
                     org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
@@ -2200,7 +2303,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
                 for (int _i24 = 0; _i24 < _map23.size; ++_i24)
                 {
                   MyEnum _key25; // required
-                  List<MiniStruct> _val26; // optional
+                  List<MiniStruct> _val26; // required
                   _key25 = MyEnum.findByValue(iprot.readI32());
                   {
                     org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
@@ -2852,7 +2955,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i77 = 0; _i77 < _map76.size; ++_i77)
           {
             String _key78; // required
-            String _val79; // optional
+            String _val79; // required
             _key78 = iprot.readString();
             _val79 = iprot.readString();
             struct.my_string_string_map.put(_key78, _val79);
@@ -2867,7 +2970,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i81 = 0; _i81 < _map80.size; ++_i81)
           {
             String _key82; // required
-            MyEnum _val83; // optional
+            MyEnum _val83; // required
             _key82 = iprot.readString();
             _val83 = MyEnum.findByValue(iprot.readI32());
             struct.my_string_enum_map.put(_key82, _val83);
@@ -2882,7 +2985,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i85 = 0; _i85 < _map84.size; ++_i85)
           {
             MyEnum _key86; // required
-            String _val87; // optional
+            String _val87; // required
             _key86 = MyEnum.findByValue(iprot.readI32());
             _val87 = iprot.readString();
             struct.my_enum_string_map.put(_key86, _val87);
@@ -2897,7 +3000,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i89 = 0; _i89 < _map88.size; ++_i89)
           {
             MyEnum _key90; // required
-            MiniStruct _val91; // optional
+            MiniStruct _val91; // required
             _key90 = MyEnum.findByValue(iprot.readI32());
             _val91 = new MiniStruct();
             _val91.read(iprot);
@@ -2913,7 +3016,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i93 = 0; _i93 < _map92.size; ++_i93)
           {
             MyEnum _key94; // required
-            List<String> _val95; // optional
+            List<String> _val95; // required
             _key94 = MyEnum.findByValue(iprot.readI32());
             {
               org.apache.thrift.protocol.TList _list96 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -2937,7 +3040,7 @@ public class MegaStruct implements org.apache.thrift.TBase<MegaStruct, MegaStruc
           for (int _i100 = 0; _i100 < _map99.size; ++_i100)
           {
             MyEnum _key101; // required
-            List<MiniStruct> _val102; // optional
+            List<MiniStruct> _val102; // required
             _key101 = MyEnum.findByValue(iprot.readI32());
             {
               org.apache.thrift.protocol.TList _list103 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
