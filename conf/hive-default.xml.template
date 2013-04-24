@@ -1123,42 +1123,6 @@
 </property>
 
 <property>
-  <name>hive.profiler.dbclass</name>
-  <value>jdbc:derby</value>
-  <description>The default database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.jdbcdriver</name>
-  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
-  <description>The JDBC driver for the database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=TempStatsStore;create=true</value>
-  <description>The default connection string for the database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.jdbc.timeout</name>
-  <value>30</value>
-  <description>Timeout value (number of seconds) used by JDBC connection and statements.</description>
-</property>
-
-<property>
-  <name>hive.profiler.retries.max</name>
-  <value>0</value>
-  <description>Maximum number of retries when profiler publisher/aggregator got an exception updating intermediate database. Default is no tries on failures.</description>
-</property>
-
-<property>
-  <name>hive.profiler.retries.wait</name>
-  <value>3000</value>
-  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues  baseWindow * (failure  1) * (random number between [0.0,1.0]).</description>
-</property>
-
-<property>
   <name>hive.stats.dbclass</name>
   <value>jdbc:derby</value>
   <description>The default database that stores temporary hive statistics.</description>

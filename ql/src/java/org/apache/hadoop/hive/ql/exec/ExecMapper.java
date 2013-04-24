@@ -50,7 +50,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private JobConf jc;
   private boolean abort = false;
   private Reporter rp;
-  private List<OperatorHook> opHooks;
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
 
@@ -99,7 +98,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
-      opHooks = OperatorHookUtils.getOperatorHooks(jc);
 
       if (localWork == null) {
         return;
@@ -132,7 +130,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       rp = reporter;
       mo.setOutputCollector(oc);
       mo.setReporter(rp);
-      mo.setOperatorHooks(opHooks);
       MapredContext.get().setReporter(reporter);
     }
     // reset the execContext for each new row

@@ -190,7 +190,6 @@ public class HiveConf extends Configuration {
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
     ONFAILUREHOOKS("hive.exec.failure.hooks", ""),
-    OPERATORHOOKS("hive.exec.operator.hooks", ""),
     CLIENTSTATSPUBLISHERS("hive.client.stats.publishers", ""),
     EXECPARALLEL("hive.exec.parallel", false), // parallel query launching
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),
@@ -564,18 +563,6 @@ public class HiveConf extends Configuration {
     HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES("hive.index.compact.query.max.entries", (long) 10000000), // 10M
     HIVE_INDEX_COMPACT_QUERY_MAX_SIZE("hive.index.compact.query.max.size", (long) 10 * 1024 * 1024 * 1024), // 10G
     HIVE_INDEX_COMPACT_BINARY_SEARCH("hive.index.compact.binary.search", true),
-
-    //Profiler
-    HIVEPROFILERDBCLASS("hive.profiler.dbclass","jdbc:derby"),
-    HIVEPROFILERJDBCDRIVER("hive.profiler.jdbcdriver", "org.apache.derby.jdbc.EmbeddedDriver"),
-    HIVEPROFILERDBCONNECTIONSTRING("hive.profiler.dbconnectionstring",
-        "jdbc:derby:;databaseName=TempProfilerStore;create=true"), // automatically create database
-    // default timeout for JDBC connection
-    HIVE_PROFILER_JDBC_TIMEOUT("hive.profiler.jdbc.timeout", 30),
-    HIVE_PROFILER_RETRIES_MAX("hive.stats.retries.max",
-        0),     // maximum # of retries to insert/select/delete the stats DB
-    HIVE_PROFILER_RETRIES_WAIT("hive.stats.retries.wait",
-        3000),  // # milliseconds to wait before the next retry
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true),
