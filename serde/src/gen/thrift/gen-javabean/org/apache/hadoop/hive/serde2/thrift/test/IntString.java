@@ -6,6 +6,7 @@
  */
 package org.apache.hadoop.hive.serde2.thrift.test;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
@@ -342,7 +343,24 @@ public class IntString implements org.apache.thrift.TBase<IntString, IntString._
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_myint = true;
+    builder.append(present_myint);
+    if (present_myint)
+      builder.append(myint);
+
+    boolean present_myString = true && (isSetMyString());
+    builder.append(present_myString);
+    if (present_myString)
+      builder.append(myString);
+
+    boolean present_underscore_int = true;
+    builder.append(present_underscore_int);
+    if (present_underscore_int)
+      builder.append(underscore_int);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(IntString other) {
