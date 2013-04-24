@@ -5976,6 +5976,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             reduceKeys.size(), numReds), new RowSchema(outputRS
             .getColumnInfos()), child), outputRS);
     rsOp.setColumnExprMap(colExprMap);
+    rsOp.setInputAlias(srcName);
     return rsOp;
   }
 
