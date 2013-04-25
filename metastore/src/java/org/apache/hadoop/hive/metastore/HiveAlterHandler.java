@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -100,6 +101,15 @@ public class HiveAlterHandler implements AlterHandler {
       if (oldt == null) {
         throw new InvalidOperationException("table " + newt.getDbName() + "."
             + newt.getTableName() + " doesn't exist");
+      }
+
+      if (HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+            false)) {
+        // Throws InvalidOperationException if the new column types are not
+        // compatible with the current column types.
+        MetaStoreUtils.throwExceptionIfIncompatibleColTypeChange(
+            oldt.getSd().getCols(), newt.getSd().getCols());
       }
 
       //check that partition keys have not changed, except for virtual views
