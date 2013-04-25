@@ -321,6 +321,13 @@ public enum ErrorMsg {
     "with distincts. Either set hive.new.job.grouping.set.cardinality to a high number " +
     "(higher than the number of rows per input row due to grouping sets in the query), or " +
     "rewrite the query to not use distincts."),
+  TRUNCATE_COLUMN_INDEXED_TABLE(10227, "Can not truncate columns from table with indexes"),
+  TRUNCATE_COLUMN_NOT_RC(10228, "Only RCFileFormat supports column truncation."),
+  TRUNCATE_COLUMN_ARCHIVED(10229, "Column truncation cannot be performed on archived partitions."),
+  TRUNCATE_BUCKETED_COLUMN(10230,
+      "A column on which a partition/table is bucketed cannot be truncated."),
+  TRUNCATE_LIST_BUCKETED_COLUMN(10231,
+      "A column on which a partition/table is list bucketed cannot be truncated."),
 
   OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),

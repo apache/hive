@@ -756,7 +756,7 @@ createTableStatement
 truncateTableStatement
 @init { msgs.push("truncate table statement"); }
 @after { msgs.pop(); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix -> ^(TOK_TRUNCATETABLE tablePartitionPrefix);
+    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
 
 createIndexStatement
 @init { msgs.push("create index statement");}
