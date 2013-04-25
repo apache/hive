@@ -301,7 +301,7 @@ public enum ErrorMsg {
     "Cannot ALTER VIEW AS SELECT if view currently does not exist\n"),
   REPLACE_VIEW_WITH_PARTITION(10217,
     "Cannot replace a view with CREATE VIEW or REPLACE VIEW or " +
-    "ALTER VIEW AS SELECT if the view has paritions\n"),
+    "ALTER VIEW AS SELECT if the view has partitions\n"),
   EXISTING_TABLE_IS_NOT_VIEW(10218,
     "Existing table is not a view\n"),
   NO_SUPPORTED_ORDERBY_ALLCOLREF_POS(10219,
@@ -345,6 +345,10 @@ public enum ErrorMsg {
             + "fails to construct aggregation for the partition "),
   ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
             "if hive.stats.autogather is set to false"),
+  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Parition values specifed are not continuous." +
+            " A subpartition value is specified without specififying the parent partition's value"),
+  TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
+            " cannot be exchanged."),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

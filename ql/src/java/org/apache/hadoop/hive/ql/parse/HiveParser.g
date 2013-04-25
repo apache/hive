@@ -295,6 +295,7 @@ TOK_WINDOWSPEC;
 TOK_WINDOWVALUES;
 TOK_WINDOWRANGE;
 TOK_IGNOREPROTECTION;
+TOK_EXCHANGEPARTITION;
 }
 
 
@@ -867,6 +868,7 @@ alterTableStatementSuffix
     | alterStatementSuffixProperties
     | alterTblPartitionStatement
     | alterStatementSuffixSkewedby
+    | alterStatementSuffixExchangePartition
     ;
 
 alterViewStatementSuffix
@@ -1102,6 +1104,13 @@ alterStatementSuffixSkewedby
 	name=identifier KW_NOT storedAsDirs
 	->^(TOK_ALTERTABLE_SKEWED $name storedAsDirs)
 	;
+
+alterStatementSuffixExchangePartition
+@init {msgs.push("alter exchange partition");}
+@after{msgs.pop();}
+    : name=tableName KW_EXCHANGE partitionSpec KW_WITH KW_TABLE exchangename=tableName
+    -> ^(TOK_EXCHANGEPARTITION $name partitionSpec $exchangename)
+    ;
 
 alterStatementSuffixProtectMode
 @init { msgs.push("alter partition protect mode statement"); }
