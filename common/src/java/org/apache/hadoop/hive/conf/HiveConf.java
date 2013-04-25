@@ -131,7 +131,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HMSHANDLERATTEMPTS,
       HiveConf.ConfVars.HMSHANDLERINTERVAL,
       HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF,
-      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN
+      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
+      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
       };
 
   /**
@@ -339,7 +340,8 @@ public class HiveConf extends Configuration {
     METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", false),
     METASTORE_PARTITION_NAME_WHITELIST_PATTERN(
         "hive.metastore.partition.name.whitelist.pattern", ""),
-
+    METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
+        "hive.metastore.disallow.incompatible.col.type.changes", false),
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", ""),
