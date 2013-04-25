@@ -16,33 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.Text;
-
-/**
- * UDFUpper.
- *
+/** 
+ * String expression evaluation helper functions
  */
-@Description(name = "upper,ucase",
-    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
-public class UDFUpper extends UDF implements IUDFUnaryString {
-
-  Text t = new Text();
-
-  public UDFUpper() {
-  }
-
-  public Text evaluate(Text s) {
-    if (s == null) {
-      return null;
+public class StringExpr {
+  
+  /* Compare two strings from two byte arrays each 
+   * with their own start position and length. 
+   * Use lexicographic unsigned byte value order. 
+   * This is what's used for UTF-8 sort order.
+   * Return negative value if arg1 < arg2, 0 if arg1 = arg2, 
+   * positive if arg1 > arg2.
+   */
+  public static int compare(byte[] arg1, int start1, int len1, byte[] arg2, int start2, int len2) {
+    for (int i = 0; i < len1 && i < len2; i++) {
+      int b1 = arg1[i + start1] & 0xff; 
+      int b2 = arg2[i + start2] & 0xff;
+      if (b1 != b2) {
+        return b1 - b2;
+      }
     }
-    t.set(s.toString().toUpperCase());
-    return t;
+    return len1 - len2;
   }
-
 }
