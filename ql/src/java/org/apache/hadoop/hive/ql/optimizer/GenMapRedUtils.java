@@ -32,6 +32,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -757,6 +759,41 @@ public final class GenMapRedUtils {
           setKeyAndValueDesc(plan, op);
         }
       }
+    }
+  }
+
+  /**
+   * Set the key and value description for all the tasks rooted at the given
+   * task. Loops over all the tasks recursively.
+   *
+   * @param task
+   */
+  public static void setKeyAndValueDescForTaskTree(Task<? extends Serializable> task) {
+
+    if (task instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
+          .getListTasks();
+      for (Task<? extends Serializable> tsk : listTasks) {
+        setKeyAndValueDescForTaskTree(tsk);
+      }
+    } else if (task instanceof ExecDriver) {
+      MapredWork work = (MapredWork) task.getWork();
+      work.deriveExplainAttributes();
+      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
+          .getAliasToWork();
+      if (opMap != null && !opMap.isEmpty()) {
+        for (Operator<? extends OperatorDesc> op : opMap.values()) {
+          setKeyAndValueDesc(work, op);
+        }
+      }
+    }
+
+    if (task.getChildTasks() == null) {
+      return;
+    }
+
+    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      setKeyAndValueDescForTaskTree(childTask);
     }
   }
 

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
@@ -239,6 +240,35 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         oldChildTask.getParentTasks().add(task);
       }
     }
+
+    boolean convertToSingleJob = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVEOPTIMIZEMAPJOINFOLLOWEDBYMR);
+    if (convertToSingleJob) {
+      copyReducerConf(task, childTask);
+    }
+  }
+
+  /**
+   * Copy reducer configuration if the childTask also has a reducer.
+   *
+   * @param task
+   * @param childTask
+   */
+  private void copyReducerConf(MapRedTask task, MapRedTask childTask) {
+    MapredWork childWork = childTask.getWork();
+    Operator childReducer = childWork.getReducer();
+    MapredWork work = task.getWork();
+    if (childReducer == null) {
+      return;
+    }
+    work.setReducer(childReducer);
+    work.setNumReduceTasks(childWork.getNumReduceTasks());
+    work.setJoinTree(childWork.getJoinTree());
+    work.setNeedsTagging(childWork.getNeedsTagging());
+
+    // Make sure the key configuration is correct, clear and regenerate.
+    work.getTagToValueDesc().clear();
+    GenMapRedUtils.setKeyAndValueDescForTaskTree(task);
   }
 
   // create map join task and set big table as bigTablePosition
@@ -253,6 +283,125 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     String bigTableAlias =
         MapJoinProcessor.genMapJoinOpAndLocalWork(newWork, newJoinOp, bigTablePosition);
     return new ObjectPair<MapRedTask, String>(newTask, bigTableAlias);
+  }
+
+  /*
+   * A task and its child task has been converted from join to mapjoin.
+   * See if the two tasks can be merged.
+   */
+  private void mergeMapJoinTaskWithMapReduceTask(MapRedTask mapJoinTask, Configuration conf) {
+    if (mapJoinTask.getChildTasks() == null
+        || mapJoinTask.getChildTasks().size() > 1) {
+      // No child-task to merge, nothing to do or there are more than one
+      // child-tasks in which case we don't want to do anything.
+      return;
+    }
+    Task<? extends Serializable> firstChildTask = mapJoinTask.getChildTasks().get(0);
+    if (!(firstChildTask instanceof MapRedTask)) {
+      // Nothing to do if it is not a mapreduce task.
+      return;
+    }
+    MapRedTask childTask = (MapRedTask) firstChildTask;
+    MapredWork mapJoinWork = mapJoinTask.getWork();
+    MapredWork childWork = childTask.getWork();
+    Operator childReducer = childWork.getReducer();
+    if (childReducer == null) {
+      // Not a MR job, nothing to merge.
+      return;
+    }
+
+    // Can this be merged
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork = mapJoinWork.getAliasToWork();
+    if (aliasToWork.size() > 1) {
+      return;
+    }
+    Map<String, ArrayList<String>> childPathToAliases = childWork.getPathToAliases();
+    if (childPathToAliases.size() > 1) {
+      return;
+    }
+
+    // Locate leaf operator of the map-join task. Start by initializing leaf
+    // operator to be root operator.
+    Operator<? extends OperatorDesc> mapJoinLeafOperator = aliasToWork.values().iterator().next();
+    while (mapJoinLeafOperator.getChildOperators() != null) {
+      // Dont perform this optimization for multi-table inserts
+      if (mapJoinLeafOperator.getChildOperators().size() > 1) {
+        return;
+      }
+      mapJoinLeafOperator = mapJoinLeafOperator.getChildOperators().get(0);
+    }
+
+    assert (mapJoinLeafOperator instanceof FileSinkOperator);
+    if (!(mapJoinLeafOperator instanceof FileSinkOperator)) {
+      // Sanity check, shouldn't happen.
+      return;
+    }
+
+    FileSinkOperator mapJoinTaskFileSinkOperator = (FileSinkOperator) mapJoinLeafOperator;
+
+    // The filesink writes to a different directory
+    String workDir = mapJoinTaskFileSinkOperator.getConf().getDirName();
+    if (!childPathToAliases.keySet().iterator().next().equals(workDir)) {
+      return;
+    }
+
+    MapredLocalWork mapJoinLocalWork = mapJoinWork.getMapLocalWork();
+    MapredLocalWork childLocalWork = childWork.getMapLocalWork();
+
+    // Either of them should not be bucketed
+    if ((mapJoinLocalWork != null && mapJoinLocalWork.getBucketMapjoinContext() != null) ||
+        (childLocalWork != null && childLocalWork.getBucketMapjoinContext() != null)) {
+      return;
+    }
+
+    if (childWork.getAliasToWork().size() > 1) {
+      return;
+    }
+
+    Operator<? extends Serializable> childAliasOp =
+        childWork.getAliasToWork().values().iterator().next();
+    if (mapJoinTaskFileSinkOperator.getParentOperators().size() > 1) {
+      return;
+    }
+
+    // Merge the 2 trees - remove the FileSinkOperator from the first tree pass it to the
+    // top of the second
+    Operator<? extends Serializable> parentFOp = mapJoinTaskFileSinkOperator
+        .getParentOperators().get(0);
+    parentFOp.getChildOperators().remove(mapJoinTaskFileSinkOperator);
+    parentFOp.getChildOperators().add(childAliasOp);
+    List<Operator<? extends OperatorDesc>> parentOps =
+        new ArrayList<Operator<? extends OperatorDesc>>();
+    parentOps.add(parentFOp);
+    childAliasOp.setParentOperators(parentOps);
+
+    mapJoinWork.getAliasToPartnInfo().putAll(childWork.getAliasToPartnInfo());
+    for (Map.Entry<String, PartitionDesc> childWorkEntry : childWork.getPathToPartitionInfo()
+        .entrySet()) {
+      if (childWork.getAliasToPartnInfo().containsValue(childWorkEntry.getKey())) {
+        mapJoinWork.getPathToPartitionInfo()
+            .put(childWorkEntry.getKey(), childWorkEntry.getValue());
+      }
+    }
+
+    // Fill up stuff in local work
+    if (mapJoinLocalWork != null && childLocalWork != null) {
+      mapJoinLocalWork.getAliasToFetchWork().putAll(childLocalWork.getAliasToFetchWork());
+      mapJoinLocalWork.getAliasToWork().putAll(childLocalWork.getAliasToWork());
+    }
+
+    // remove the child task
+    List<Task<? extends Serializable>> oldChildTasks = childTask.getChildTasks();
+    mapJoinTask.setChildTasks(oldChildTasks);
+    if (oldChildTasks != null) {
+      for (Task<? extends Serializable> oldChildTask : oldChildTasks) {
+        oldChildTask.getParentTasks().remove(childTask);
+        oldChildTask.getParentTasks().add(mapJoinTask);
+      }
+    }
+
+    // Copy the reducer conf.
+    copyReducerConf(mapJoinTask, childTask);
   }
 
   @Override
@@ -365,11 +514,21 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
         // Can this task be merged with the child task. This can happen if a big table is being
         // joined with multiple small tables on different keys
-        // Further optimizations are possible here, a join which has been converted to a mapjoin
-        // followed by a mapjoin can be performed in a single MR job.
-        if ((newTask.getChildTasks() != null) && (newTask.getChildTasks().size() == 1)
-            && (newTask.getChildTasks().get(0).getTaskTag() == Task.MAPJOIN_ONLY_NOBACKUP)) {
-          mergeMapJoinTaskWithChildMapJoinTask(newTask, conf);
+        if ((newTask.getChildTasks() != null) && (newTask.getChildTasks().size() == 1)) {
+          if (newTask.getChildTasks().get(0).getTaskTag() == Task.MAPJOIN_ONLY_NOBACKUP) {
+            // Merging two map-join tasks
+            mergeMapJoinTaskWithChildMapJoinTask(newTask, conf);
+          }
+
+          // Converted the join operator into a map-join. Now see if it can
+          // be merged into the following map-reduce job.
+          boolean convertToSingleJob = HiveConf.getBoolVar(conf,
+              HiveConf.ConfVars.HIVEOPTIMIZEMAPJOINFOLLOWEDBYMR);
+          if (convertToSingleJob) {
+            // Try merging a map-join task with a mapreduce job to have a
+            // single job.
+            mergeMapJoinTaskWithMapReduceTask(newTask, conf);
+          }
         }
 
         return newTask;
