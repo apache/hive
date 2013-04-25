@@ -89,8 +89,9 @@ public class CubeTestSetup {
       factColumns.add(measure.getColumn());
     }
 
-    // add one dimension of the cube
+    // add dimensions of the cube
     factColumns.add(new FieldSchema("zipcode","int", "zip"));
+    factColumns.add(new FieldSchema("cityid","int", "city id"));
 
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();

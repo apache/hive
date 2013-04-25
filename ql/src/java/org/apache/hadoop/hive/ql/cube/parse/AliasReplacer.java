@@ -27,5 +27,47 @@ public class AliasReplacer implements ContextRewriter {
     // 3: (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) srckey))))
 
     Map<String, List<String>> tblToColumns = cubeql.getTblToColumns();
+    for (Map.Entry<String, List<String>> entry : tblToColumns.entrySet()) {
+      System.out.println("Table: " + entry.getKey() + "Columns: " + entry.getValue());
+    }
+    Map<String, String> colToTableAlias = cubeql.getColumnsToTableAlias();
+    if (colToTableAlias == null) {
+      return;
+    }
+    String selectTree = cubeql.getSelectTree();
+    String whereTree = cubeql.getWhereTree();
+    String havingTree = cubeql.getHavingTree();
+    String orderByTree = cubeql.getOrderByTree();
+    String groupByTree = cubeql.getGroupByTree();
+
+    if (selectTree != null) {
+      cubeql.setSelectTree(replaceCols(selectTree, colToTableAlias));
+    }
+
+    if (whereTree != null) {
+      cubeql.setWhereTree(replaceCols(whereTree, colToTableAlias));
+    }
+
+    if (havingTree != null) {
+      cubeql.setHavingTree(replaceCols(havingTree, colToTableAlias));
+    }
+
+    if (orderByTree != null) {
+      cubeql.setOrderByTree(replaceCols(orderByTree, colToTableAlias));
+    }
+
+    if (groupByTree != null) {
+      cubeql.setGroupByTree(replaceCols(groupByTree, colToTableAlias));
+    }
+
+  }
+
+  private String replaceCols(String tree, Map<String, String> colToTableAlias) {
+    String srcTree = new String(tree);
+    for (Map.Entry<String, String> entry : colToTableAlias.entrySet()) {
+      srcTree = srcTree.replaceAll(entry.getKey(),
+          entry.getValue() + "." + entry.getKey());
+    }
+    return srcTree;
   }
 }

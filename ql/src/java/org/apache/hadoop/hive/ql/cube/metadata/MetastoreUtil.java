@@ -1,7 +1,11 @@
 package org.apache.hadoop.hive.ql.cube.metadata;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 public class MetastoreUtil implements MetastoreConstants {
 
@@ -200,5 +204,36 @@ public class MetastoreUtil implements MetastoreConstants {
     }
     valueStr.append(it.next());
     return valueStr.toString();
+  }
+
+  public static List<String> getColumnNames(AbstractCubeTable table) {
+    List<FieldSchema> fields = table.getColumns();
+    List<String> columns = new ArrayList<String>(fields.size());
+    for (FieldSchema f : fields) {
+      columns.add(f.getName().toLowerCase());
+    }
+    return columns;
+  }
+
+  public static List<String> getValidColumnNames(Cube table) {
+    List<String> columns = new ArrayList<String>();
+    for (CubeMeasure f : table.getMeasures()) {
+      columns.add(f.getName().toLowerCase());
+    }
+    for (CubeDimension f : table.getDimensions()) {
+      addColumnNames(f, columns);
+    }
+    return columns;
+  }
+
+  private static void addColumnNames(CubeDimension dim, List<String> cols) {
+    if (dim instanceof HierarchicalDimension) {
+      HierarchicalDimension h = (HierarchicalDimension) dim;
+      for (CubeDimension d : h.getHierarchy()) {
+        addColumnNames(d, cols);
+      }
+    } else {
+      cols.add(dim.getName().toLowerCase());
+    }
   }
 }
