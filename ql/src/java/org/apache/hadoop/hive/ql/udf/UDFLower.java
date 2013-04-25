@@ -30,7 +30,7 @@ import org.apache.hadoop.io.Text;
     value = "_FUNC_(str) - Returns str with all characters changed to lowercase",
     extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
-public class UDFLower extends UDF {
+public class UDFLower extends UDF implements IUDFUnaryString {
   private Text t = new Text();
 
   public UDFLower() {

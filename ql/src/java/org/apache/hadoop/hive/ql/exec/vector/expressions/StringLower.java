@@ -15,34 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-package org.apache.hadoop.hive.ql.udf;
+import org.apache.hadoop.hive.ql.udf.UDFLower;
+import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
 
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.Text;
-
-/**
- * UDFUpper.
- *
- */
-@Description(name = "upper,ucase",
-    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
-public class UDFUpper extends UDF implements IUDFUnaryString {
-
-  Text t = new Text();
-
-  public UDFUpper() {
+public class StringLower extends StringUnaryUDF {
+  StringLower(int colNum, int outputColumn) {
+    super(colNum, outputColumn, (IUDFUnaryString) new UDFLower());
   }
-
-  public Text evaluate(Text s) {
-    if (s == null) {
-      return null;
-    }
-    t.set(s.toString().toUpperCase());
-    return t;
-  }
-
 }
