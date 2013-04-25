@@ -258,6 +258,8 @@ public class CodeGen {
         generateFilterColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("ColumnArithmeticColumn")) {
         generateColumnArithmeticColumn(tdesc);
+      } else if (tdesc[0].equals("ColumnUnaryMinus")) {
+        generateColumnUnaryMinus(tdesc);
       } else {
         continue;
       }
