@@ -1863,6 +1863,73 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
+    public Partition exchange_partition(Map<String, String> partitionSpecs,
+        String sourceDbName, String sourceTableName, String destDbName,
+        String destTableName) throws MetaException, NoSuchObjectException,
+        InvalidObjectException, InvalidInputException, TException {
+      boolean success = false;
+      boolean pathCreated = false;
+      RawStore ms = getMS();
+      ms.openTransaction();
+      Table destinationTable = ms.getTable(destDbName, destTableName);
+      Table sourceTable = ms.getTable(sourceDbName, sourceTableName);
+      List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
+          partitionSpecs);
+      List<String> partValsPresent = new ArrayList<String> ();
+      List<FieldSchema> partitionKeysPresent = new ArrayList<FieldSchema> ();
+      int i = 0;
+      for (FieldSchema fs: sourceTable.getPartitionKeys()) {
+        String partVal = partVals.get(i);
+        if (partVal != null && !partVal.equals("")) {
+          partValsPresent.add(partVal);
+          partitionKeysPresent.add(fs);
+        }
+        i++;
+      }
+      List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
+          partVals, (short)-1);
+      boolean sameColumns = MetaStoreUtils.compareFieldColumns(
+          sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
+      boolean samePartitions = MetaStoreUtils.compareFieldColumns(
+          sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
+      if (!sameColumns || !samePartitions) {
+        throw new MetaException("The tables have different schemas." +
+            " Their partitions cannot be exchanged.");
+      }
+      Path sourcePath = new Path(sourceTable.getSd().getLocation(),
+          Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+      Path destPath = new Path(destinationTable.getSd().getLocation(),
+          Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+      try {
+        for (Partition partition: partitionsToExchange) {
+          Partition destPartition = new Partition(partition);
+          destPartition.setDbName(destDbName);
+          destPartition.setTableName(destinationTable.getTableName());
+          Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
+              Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
+          destPartition.getSd().setLocation(destPartitionPath.toString());
+          ms.addPartition(destPartition);
+          ms.dropPartition(partition.getDbName(), sourceTable.getTableName(),
+            partition.getValues());
+        }
+        /**
+         * TODO: Use the hard link feature of hdfs
+         * once https://issues.apache.org/jira/browse/HDFS-3370 is done
+         */
+        pathCreated = wh.renameDir(sourcePath, destPath);
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+          if (pathCreated) {
+            wh.renameDir(destPath, sourcePath);
+          }
+        }
+      }
+      return new Partition();
+    }
+
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
       List<String> part_vals, final boolean deleteData, final EnvironmentContext envContext)
       throws MetaException, NoSuchObjectException, IOException, InvalidObjectException,

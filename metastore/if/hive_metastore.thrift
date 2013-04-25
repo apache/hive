@@ -455,6 +455,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  Partition exchange_partition(1:map<string, string> partitionSpecs, 2:string source_db,
+      3:string source_table_name, 4:string dest_db, 5:string dest_table_name)
+      throws(1:MetaException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3,
+      4:InvalidInputException o4)
 
   Partition get_partition_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 
       4: string user_name, 5: list<string> group_names) throws(1:MetaException o1, 2:NoSuchObjectException o2)

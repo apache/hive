@@ -611,6 +611,25 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition failed: unknown result')
     end
 
+    def exchange_partition(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      send_exchange_partition(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      return recv_exchange_partition()
+    end
+
+    def send_exchange_partition(partitionSpecs, source_db, source_table_name, dest_db, dest_table_name)
+      send_message('exchange_partition', Exchange_partition_args, :partitionSpecs => partitionSpecs, :source_db => source_db, :source_table_name => source_table_name, :dest_db => dest_db, :dest_table_name => dest_table_name)
+    end
+
+    def recv_exchange_partition()
+      result = receive_message(Exchange_partition_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'exchange_partition failed: unknown result')
+    end
+
     def get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names)
       send_get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names)
       return recv_get_partition_with_auth()
@@ -1871,6 +1890,23 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partition', seqid)
+    end
+
+    def process_exchange_partition(seqid, iprot, oprot)
+      args = read_args(iprot, Exchange_partition_args)
+      result = Exchange_partition_result.new()
+      begin
+        result.success = @handler.exchange_partition(args.partitionSpecs, args.source_db, args.source_table_name, args.dest_db, args.dest_table_name)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'exchange_partition', seqid)
     end
 
     def process_get_partition_with_auth(seqid, iprot, oprot)
@@ -3830,6 +3866,54 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Exchange_partition_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PARTITIONSPECS = 1
+    SOURCE_DB = 2
+    SOURCE_TABLE_NAME = 3
+    DEST_DB = 4
+    DEST_TABLE_NAME = 5
+
+    FIELDS = {
+      PARTITIONSPECS => {:type => ::Thrift::Types::MAP, :name => 'partitionSpecs', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      SOURCE_DB => {:type => ::Thrift::Types::STRING, :name => 'source_db'},
+      SOURCE_TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'source_table_name'},
+      DEST_DB => {:type => ::Thrift::Types::STRING, :name => 'dest_db'},
+      DEST_TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'dest_table_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Exchange_partition_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
     }
 
     def struct_fields; FIELDS; end

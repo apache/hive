@@ -308,6 +308,28 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Given a list of partition columns and a partial mapping from
+   * some partition columns to values the function returns the values
+   * for the column.
+   * @param partCols the list of table partition columns
+   * @param partSpec the partial mapping from partition column to values
+   * @return list of values of for given partition columns, any missing
+   *         values in partSpec is replaced by an empty string
+   */
+  public static List<String> getPvals(List<FieldSchema> partCols,
+      Map<String, String> partSpec) {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : partCols) {
+      String val = partSpec.get(field.getName());
+      if (val == null) {
+        val = "";
+      }
+      pvals.add(val);
+    }
+    return pvals;
+  }
+
+  /**
    * validateName
    *
    * Checks the name conforms to our standars which are: "[a-zA-z_0-9]+". checks
@@ -1156,6 +1178,39 @@ public class MetaStoreUtils {
   public static boolean partitionNameHasValidCharacters(List<String> partVals,
       Pattern partitionValidationPattern) {
     return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  /**
+   * @param schema1: The first schema to be compared
+   * @param schema2: The second schema to be compared
+   * @return true if the two schemas are the same else false
+   *         for comparing a field we ignore the comment it has
+   */
+  public static boolean compareFieldColumns(List<FieldSchema> schema1, List<FieldSchema> schema2) {
+    if (schema1.size() != schema2.size()) {
+      return false;
+    }
+    for (int i = 0; i < schema1.size(); i++) {
+      FieldSchema f1 = schema1.get(i);
+      FieldSchema f2 = schema2.get(i);
+      // The default equals provided by thrift compares the comments too for
+      // equality, thus we need to compare the relevant fields here.
+      if (f1.getName() == null) {
+        if (f2.getName() != null) {
+          return false;
+        }
+      } else if (!f1.getName().equals(f2.getName())) {
+        return false;
+      }
+      if (f1.getType() == null) {
+        if (f2.getType() != null) {
+          return false;
+        }
+      } else if (!f1.getType().equals(f2.getType())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static String getPartitionValWithInvalidCharacter(List<String> partVals,

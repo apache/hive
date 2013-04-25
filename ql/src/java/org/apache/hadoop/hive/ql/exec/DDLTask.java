@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -429,6 +430,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       TruncateTableDesc truncateTableDesc = work.getTruncateTblDesc();
       if (truncateTableDesc != null) {
         return truncateTable(db, truncateTableDesc);
+      }
+
+      AlterTableExchangePartition alterTableExchangePartition =
+        work.getAlterTableExchangePartition();
+      if (alterTableExchangePartition != null) {
+        return exchangeTablePartition(db, alterTableExchangePartition);
       }
 
     } catch (InvalidTableException e) {
@@ -3983,6 +3990,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+    return 0;
+  }
+
+  private int exchangeTablePartition(Hive db,
+      AlterTableExchangePartition exchangePartition) throws HiveException {
+    Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
+    Table destTable = exchangePartition.getDestinationTable();
+    Table sourceTable = exchangePartition.getSourceTable();
+    db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
+        sourceTable.getTableName(),destTable.getDbName(),
+        destTable.getTableName());
     return 0;
   }
 

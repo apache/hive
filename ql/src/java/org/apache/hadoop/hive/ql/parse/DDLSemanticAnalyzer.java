@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -75,8 +76,10 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -126,7 +129,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 
 /**
  * DDLSemanticAnalyzer.
@@ -405,6 +407,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ALTERTABLE_SKEWED:
       analyzeAltertableSkewedby(ast);
       break;
+   case HiveParser.TOK_EXCHANGEPARTITION:
+      analyzeExchangePartition(ast);
+      break;
     default:
       throw new SemanticException("Unsupported command.");
     }
@@ -661,6 +666,69 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc),
         conf));
 
+  }
+
+  private void analyzeExchangePartition(ASTNode ast) throws SemanticException {
+    Table sourceTable =  getTable(getUnescapedName((ASTNode)ast.getChild(0)));
+    Table destTable = getTable(getUnescapedName((ASTNode)ast.getChild(2)));
+
+    // Get the partition specs
+    Map<String, String> partSpecs = getPartSpec((ASTNode) ast.getChild(1));
+    validatePartitionValues(partSpecs);
+    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
+        sourceTable.getAllCols(), destTable.getAllCols());
+    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
+        sourceTable.getPartitionKeys(), destTable.getPartitionKeys());
+    if (!sameColumns || !samePartitions) {
+      throw new SemanticException(ErrorMsg.TABLES_INCOMPATIBLE_SCHEMAS.getMsg());
+    }
+    List<Partition> partitions = getPartitions(sourceTable, partSpecs, true);
+
+    // Verify that the partitions specified are continuous
+    // If a subpartition value is specified without specifying a partition's value
+    // then we throw an exception
+    if (!isPartitionValueContinuous(sourceTable.getPartitionKeys(), partSpecs)) {
+      throw new SemanticException(
+          ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partSpecs.toString()));
+    }
+    List<Partition> destPartitions = null;
+    try {
+      destPartitions = getPartitions(destTable, partSpecs, true);
+    } catch (SemanticException ex) {
+      // We should expect a semantic exception being throw as this partition
+      // should not be present.
+    }
+    if (destPartitions != null) {
+      // If any destination partition is present then throw a Semantic Exception.
+      throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
+    }
+    AlterTableExchangePartition alterTableExchangePartition =
+      new AlterTableExchangePartition(sourceTable, destTable, partSpecs);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+      alterTableExchangePartition), conf));
+  }
+
+  /**
+   * @param partitionKeys the list of partition keys of the table
+   * @param partSpecs the partition specs given by the user
+   * @return true if no subpartition value is specified without a partition's
+   *         value being specified else it returns false
+   */
+  private boolean isPartitionValueContinuous(List<FieldSchema> partitionKeys,
+      Map<String, String> partSpecs) {
+    boolean partitionMissing = false;
+    for (FieldSchema partitionKey: partitionKeys) {
+      if (!partSpecs.containsKey(partitionKey.getName())) {
+        partitionMissing = true;
+      } else {
+        if (partitionMissing) {
+          // A subpartition value exists after a missing partition
+          // The partition value specified are not continuous, return false
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private void analyzeCreateDatabase(ASTNode ast) throws SemanticException {
