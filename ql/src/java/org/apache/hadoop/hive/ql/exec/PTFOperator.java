@@ -72,14 +72,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
 		hiveConf = new HiveConf(jobConf, PTFOperator.class);
 		// if the parent is ExtractOperator, this invocation is from reduce-side
 		Operator<? extends OperatorDesc> parentOp = getParentOperators().get(0);
-		if (parentOp instanceof ExtractOperator)
-		{
-			isMapOperator = false;
-		}
-		else
-		{
-			isMapOperator = true;
-		}
+		isMapOperator = conf.isMapSide();
 
 		reconstructQueryDef(hiveConf);
     inputPart = createFirstPartitionForChain(

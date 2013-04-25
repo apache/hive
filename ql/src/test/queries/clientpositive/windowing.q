@@ -224,6 +224,11 @@ window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand;
 
+select p_mfgr, p_brand, s, 
+round(sum(s),2) over w1  as s1
+from mfgr_price_view 
+window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
+
 -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
