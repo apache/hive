@@ -243,6 +243,12 @@ public class RCFile {
       this.numberRows = numberRows;
     }
 
+    public void nullColumn(int columnIndex) {
+      eachColumnValueLen[columnIndex] = 0;
+      eachColumnUncompressedValueLen[columnIndex] = 0;
+      allCellValLenBuffer[columnIndex] = new NonSyncDataOutputBuffer();
+    }
+
     /**
      * add in a new column's meta data.
      *
@@ -550,6 +556,14 @@ public class RCFile {
         for (NonSyncDataOutputBuffer currentBuf : loadedColumnsValueBuffer) {
           out.write(currentBuf.getData(), 0, currentBuf.getLength());
         }
+      }
+    }
+
+    public void nullColumn(int columnIndex) {
+      if (codec != null) {
+        compressedColumnsValueBuffer[columnIndex].reset();
+      } else {
+        loadedColumnsValueBuffer[columnIndex].reset();
       }
     }
 
@@ -1077,6 +1091,7 @@ public class RCFile {
       public int rowReadIndex;
       public int runLength;
       public int prvLength;
+      public boolean isNulled;
     }
     private final Path file;
     private final FSDataInputStream in;
@@ -1491,6 +1506,7 @@ public class RCFile {
         col.rowReadIndex = 0;
         col.runLength = 0;
         col.prvLength = -1;
+        col.isNulled = colValLenBufferReadIn[selIx].getLength() == 0;
       }
 
       return currentKeyLength;
@@ -1694,18 +1710,22 @@ public class RCFile {
           SelectedColumn col = selectedColumns[j];
           int i = col.colIndex;
 
-          BytesRefWritable ref = ret.unCheckedGet(i);
-
-          colAdvanceRow(j, col);
-
-          if (currentValue.decompressedFlag[j]) {
-            ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
-                col.rowReadIndex, col.prvLength);
+          if (col.isNulled) {
+            ret.set(i, null);
           } else {
-            ref.set(currentValue.lazyDecompressCallbackObjs[j],
-                col.rowReadIndex, col.prvLength);
+            BytesRefWritable ref = ret.unCheckedGet(i);
+
+            colAdvanceRow(j, col);
+
+            if (currentValue.decompressedFlag[j]) {
+              ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
+                  col.rowReadIndex, col.prvLength);
+            } else {
+              ref.set(currentValue.lazyDecompressCallbackObjs[j],
+                  col.rowReadIndex, col.prvLength);
+            }
+            col.rowReadIndex += col.prvLength;
           }
-          col.rowReadIndex += col.prvLength;
         }
       } else {
         // This version of the loop eliminates a condition check and branch
@@ -1714,12 +1734,16 @@ public class RCFile {
           SelectedColumn col = selectedColumns[j];
           int i = col.colIndex;
 
-          BytesRefWritable ref = ret.unCheckedGet(i);
+          if (col.isNulled) {
+            ret.set(i, null);
+          } else {
+            BytesRefWritable ref = ret.unCheckedGet(i);
 
-          colAdvanceRow(j, col);
-          ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
-                col.rowReadIndex, col.prvLength);
-          col.rowReadIndex += col.prvLength;
+            colAdvanceRow(j, col);
+            ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
+                  col.rowReadIndex, col.prvLength);
+            col.rowReadIndex += col.prvLength;
+          }
         }
       }
       rowFetched = true;
