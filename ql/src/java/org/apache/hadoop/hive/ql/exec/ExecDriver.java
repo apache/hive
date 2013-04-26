@@ -412,7 +412,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           LOG.info("Add 1 archive file to distributed cache. Archive file: " + hdfsFilePath.toUri());
         }
       }
-
+      work.configureJobConf(job);
       addInputPaths(job, work, emptyScratchDirStr, ctx);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());

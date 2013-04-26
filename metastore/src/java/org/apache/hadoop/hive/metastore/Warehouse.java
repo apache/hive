@@ -204,6 +204,18 @@ public class Warehouse {
     return false;
   }
 
+  public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
+    FileSystem fs = null;
+    try {
+      fs = getFs(sourcePath);
+      fs.rename(sourcePath, destPath);
+      return true;
+    } catch (Exception ex) {
+      MetaStoreUtils.logAndThrowMetaException(ex);
+    }
+    return false;
+  }
+
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, conf);

@@ -424,6 +424,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         partName, envContext));
   }
 
+  /**
+   * Exchange the partition between two tables
+   * @param partitionSpecs partitions specs of the parent partition to be exchanged
+   * @param destDb the db of the destination table
+   * @param destinationTableName the destination table name
+   @ @return new partition after exchanging
+   */
+  @Override
+  public Partition exchange_partition(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destDb,
+      String destinationTableName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, TException {
+    return client.exchange_partition(partitionSpecs, sourceDb, sourceTable,
+        destDb, destinationTableName);
+  }
+
   public void validatePartitionNameCharacters(List<String> partVals)
       throws TException, MetaException {
     client.partition_name_has_valid_characters(partVals, true);

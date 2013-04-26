@@ -347,6 +347,17 @@ public interface IMetaStoreClient {
       List<String> partVals) throws NoSuchObjectException, MetaException, TException;
 
   /**
+   * @param partition
+   * @param destdb
+   * @param destTableName
+   * @return partition object
+   */
+  public Partition exchange_partition(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destdb,
+      String destTableName) throws MetaException, NoSuchObjectException,
+      InvalidObjectException, TException;
+
+  /**
    * @param dbName
    * @param tblName
    * @param name - partition name i.e. 'ds=2010-02-03/ts=2010-02-03 18%3A16%3A01'

@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.serde.serdeConstants;;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -308,6 +310,28 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Given a list of partition columns and a partial mapping from
+   * some partition columns to values the function returns the values
+   * for the column.
+   * @param partCols the list of table partition columns
+   * @param partSpec the partial mapping from partition column to values
+   * @return list of values of for given partition columns, any missing
+   *         values in partSpec is replaced by an empty string
+   */
+  public static List<String> getPvals(List<FieldSchema> partCols,
+      Map<String, String> partSpec) {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : partCols) {
+      String val = partSpec.get(field.getName());
+      if (val == null) {
+        val = "";
+      }
+      pvals.add(val);
+    }
+    return pvals;
+  }
+
+  /**
    * validateName
    *
    * Checks the name conforms to our standars which are: "[a-zA-z_0-9]+". checks
@@ -338,6 +362,52 @@ public class MetaStoreUtils {
       }
     }
     return true;
+  }
+
+  static void throwExceptionIfIncompatibleColTypeChange(
+      List<FieldSchema> oldCols, List<FieldSchema> newCols)
+      throws InvalidOperationException {
+
+    List<String> incompatibleCols = new ArrayList<String>();
+    int maxCols = Math.min(oldCols.size(), newCols.size());
+    for (int i = 0; i < maxCols; i++) {
+      if (!areColTypesCompatible(oldCols.get(i).getType(), newCols.get(i).getType())) {
+        incompatibleCols.add(newCols.get(i).getName());
+      }
+    }
+    if (!incompatibleCols.isEmpty()) {
+      throw new InvalidOperationException(
+          "The following columns have types incompatible with the existing " +
+          "columns in their respective positions :\n" +
+          StringUtils.join(",", incompatibleCols)
+        );
+    }
+  }
+
+  /**
+   * @return true if oldType and newType are compatible.
+   * Two types are compatible if we have internal functions to cast one to another.
+   */
+  static private boolean areColTypesCompatible(String oldType, String newType) {
+    if (oldType.equals(newType)) {
+      return true;
+    }
+
+    /*
+     * RCFile default serde (ColumnarSerde) serializes the values in such a way that the
+     * datatypes can be converted from string to any type. The map is also serialized as
+     * a string, which can be read as a string as well. However, with any binary
+     * serialization, this is not true.
+     *
+     * Primitive types like INT, STRING, BIGINT, etc are compatible with each other and are
+     * not blocked.
+     */
+    if(serdeConstants.PrimitiveTypes.contains(oldType.toLowerCase()) &&
+        serdeConstants.PrimitiveTypes.contains(newType.toLowerCase())) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -451,7 +521,7 @@ public class MetaStoreUtils {
   static Set<String> hiveThriftTypeMap; //for validation
   static {
     hiveThriftTypeMap = new HashSet<String>();
-    hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.PrimitiveTypes);
+    hiveThriftTypeMap.addAll(serdeConstants.PrimitiveTypes);
     hiveThriftTypeMap.addAll(org.apache.hadoop.hive.serde.serdeConstants.CollectionTypes);
     hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME);
     hiveThriftTypeMap.add(org.apache.hadoop.hive.serde.serdeConstants.STRUCT_TYPE_NAME);
@@ -1156,6 +1226,39 @@ public class MetaStoreUtils {
   public static boolean partitionNameHasValidCharacters(List<String> partVals,
       Pattern partitionValidationPattern) {
     return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  /**
+   * @param schema1: The first schema to be compared
+   * @param schema2: The second schema to be compared
+   * @return true if the two schemas are the same else false
+   *         for comparing a field we ignore the comment it has
+   */
+  public static boolean compareFieldColumns(List<FieldSchema> schema1, List<FieldSchema> schema2) {
+    if (schema1.size() != schema2.size()) {
+      return false;
+    }
+    for (int i = 0; i < schema1.size(); i++) {
+      FieldSchema f1 = schema1.get(i);
+      FieldSchema f2 = schema2.get(i);
+      // The default equals provided by thrift compares the comments too for
+      // equality, thus we need to compare the relevant fields here.
+      if (f1.getName() == null) {
+        if (f2.getName() != null) {
+          return false;
+        }
+      } else if (!f1.getName().equals(f2.getName())) {
+        return false;
+      }
+      if (f1.getType() == null) {
+        if (f2.getType() != null) {
+          return false;
+        }
+      } else if (!f1.getType().equals(f2.getType())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static String getPartitionValWithInvalidCharacter(List<String> partVals,

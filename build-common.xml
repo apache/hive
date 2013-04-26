@@ -59,7 +59,7 @@
   <property name="test.output" value="true"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
-  <property name="minimr.query.files" value="list_bucket_dml_10.q,input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q,bucketmapjoin7.q,optrstat_groupby.q,bucket_num_reducers.q,bucket5.q,load_fs2.q,bucket_num_reducers2.q,operatorhook.q,infer_bucket_sort_merge.q,infer_bucket_sort_reducers_power_two.q,infer_bucket_sort_dyn_part.q,infer_bucket_sort_bucketed_table.q,infer_bucket_sort_map_operators.q,infer_bucket_sort_num_buckets.q,schemeAuthority.q"/>
+  <property name="minimr.query.files" value="list_bucket_dml_10.q,input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q,bucketmapjoin7.q,optrstat_groupby.q,bucket_num_reducers.q,bucket5.q,load_fs2.q,bucket_num_reducers2.q,infer_bucket_sort_merge.q,infer_bucket_sort_reducers_power_two.q,infer_bucket_sort_dyn_part.q,infer_bucket_sort_bucketed_table.q,infer_bucket_sort_map_operators.q,infer_bucket_sort_num_buckets.q,schemeAuthority.q,truncate_column_buckets.q"/>
   <property name="minimr.query.negative.files" value="cluster_tasklog_retrieval.q,minimr_broken_pipe.q,mapreduce_stack_trace.q,mapreduce_stack_trace_turnoff.q,mapreduce_stack_trace_hadoop20.q,mapreduce_stack_trace_turnoff_hadoop20.q" />
   <property name="test.silent" value="true"/>
   <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
@@ -264,7 +264,7 @@
     </copy>
   </target>
 
-  <target name="jar" depends="compile">
+  <target name="jar" depends="make-pom,compile">
     <echo message="Project: ${ant.project.name}" />
     <jar
       jarfile="${build.dir}/hive-${ant.project.name}-${version}.jar"
@@ -406,9 +406,11 @@
       <equals arg1="${hadoop.mr.rev}" arg2="23" />
       <then>
         <property name="hadoop.opts" value="${hadoop.opts.23}" />
+        <property name="test.dfs.mkdir" value="-mkdir -p"/>
       </then>
       <else>
         <property name="hadoop.opts" value="${hadoop.opts.20}" />
+        <property name="test.dfs.mkdir" value="-mkdir"/>
       </else>
     </if>
     <!-- Set the OS specific settings to run junit tests on unix as well as on windows -->
@@ -438,6 +440,7 @@
       <env key="HADOOP_CLASSPATH" path="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
+      <sysproperty key="test.dfs.mkdir" value="${test.dfs.mkdir}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="test.service.disable.server" value="${disableserver}"/>
       <sysproperty key="log4j.configuration" value="file:///${test.src.data.dir}/conf/hive-log4j.properties"/>
@@ -528,7 +531,7 @@
     <available file="${basedir}/ivy.xml" property="ivy.present"/>
   </target>
 
-  <target name="make-pom" if="ivy.present" depends="check-ivy, jar">
+  <target name="make-pom" if="ivy.present" depends="check-ivy,ivy-resolve">
     <echo message="Project: ${ant.project.name}"/>
     <echo> Writing POM to ${build.dir}/pom.xml</echo>
 

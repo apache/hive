@@ -60,7 +60,7 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
   private Table table = new Table();
   private final Partition partition = new Partition();
 
-  private static final String dbName = "tmpdb";
+  private static final String dbName = "hive3252";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
 

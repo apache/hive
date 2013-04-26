@@ -24,12 +24,12 @@ STAGE PLANS:
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
-                  outputColumnNames: _col2, _col3
+                  outputColumnNames: _col4, _col5
                   Select Operator
                     expressions:
-                          expr: _col2
+                          expr: _col4
                           type: string
-                          expr: _col3
+                          expr: _col5
                           type: array<int>
                     outputColumnNames: _col0, _col1
                     Limit
@@ -53,12 +53,12 @@ STAGE PLANS:
                 UDTF Operator
                   function name: stack
                   Lateral View Join Operator
-                    outputColumnNames: _col2, _col3
+                    outputColumnNames: _col4, _col5
                     Select Operator
                       expressions:
-                            expr: _col2
+                            expr: _col4
                             type: string
-                            expr: _col3
+                            expr: _col5
                             type: array<int>
                       outputColumnNames: _col0, _col1
                       Limit
@@ -95,12 +95,12 @@ STAGE PLANS:
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
-                  outputColumnNames: _col2, _col3
+                  outputColumnNames: _col4, _col5
                   Select Operator
                     expressions:
-                          expr: _col2
+                          expr: _col4
                           type: string
-                          expr: _col3
+                          expr: _col5
                           type: array<int>
                     outputColumnNames: _col0, _col1
                     Limit
@@ -126,12 +126,12 @@ STAGE PLANS:
                 UDTF Operator
                   function name: stack
                   Lateral View Join Operator
-                    outputColumnNames: _col2, _col3
+                    outputColumnNames: _col4, _col5
                     Select Operator
                       expressions:
-                            expr: _col2
+                            expr: _col4
                             type: string
-                            expr: _col3
+                            expr: _col5
                             type: array<int>
                       outputColumnNames: _col0, _col1
                       Limit

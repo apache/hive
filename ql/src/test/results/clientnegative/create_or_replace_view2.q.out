@@ -20,5 +20,5 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v@ds=1/hr=2
-FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has paritions
+FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions
  The following view has partition, it could not be replaced: v

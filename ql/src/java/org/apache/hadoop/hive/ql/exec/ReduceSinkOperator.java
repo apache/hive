@@ -80,6 +80,15 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient byte[] tagByte = new byte[1];
   transient protected int numDistributionKeys;
   transient protected int numDistinctExprs;
+  transient String inputAlias;  // input alias of this RS for join (used for PPD)
+
+  public void setInputAlias(String inputAlias) {
+    this.inputAlias = inputAlias;
+  }
+
+  public String getInputAlias() {
+    return inputAlias;
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

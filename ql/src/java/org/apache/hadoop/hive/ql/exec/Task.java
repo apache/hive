@@ -80,6 +80,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   // hive.auto.convert.join.noconditionaltask is set to true. No conditional task was
   // created in case the mapjoin failed.
   public static final int MAPJOIN_ONLY_NOBACKUP = 6;
+  public static final int CONVERTED_SORTMERGEJOIN = 7;
 
   // Descendants tasks who subscribe feeds from this task
   protected transient List<Task<? extends Serializable>> feedSubscribers;

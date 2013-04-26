@@ -147,119 +147,119 @@ david garcia	1
 holly hernandez	2
 tom white	3
 rachel ellison	1
-PREHOOK: query: select i, lead(s) over (partition by bin order by d desc) from over10k limit 100
+PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lead(s) over (partition by bin order by d desc) from over10k limit 100
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-65551	sarah steinbeck
-65575	holly underhill
-65779	yuri thompson
-65603	irene brown
-65700	alice ovid
-65761	zach polk
-65662	bob king
-65646	irene garcia
-65683	sarah underhill
-65732	bob underhill
-65683	david robinson
-65680	irene nixon
-65771	david young
-65698	ulysses johnson
-65776	priscilla nixon
-65677	jessica thompson
-65575	jessica ovid
-65546	irene zipper
-65689	nick king
-65732	katie laertes
-65559	bob quirinius
-65572	alice davidson
-65690	bob zipper
-65659	yuri ellison
-65536	ulysses garcia
-65762	mike hernandez
-65537	david laertes
-65720	tom johnson
-65536	wendy brown
-65728	alice steinbeck
-65599	ethan brown
-65598	gabriella zipper
-65738	oscar king
-65550	katie falkner
-65621	sarah hernandez
-65540	mike allen
-65646	sarah thompson
-65716	fred laertes
-65603	ulysses underhill
-65745	zach davidson
-65791	katie garcia
-65661	quinn carson
-65644	katie laertes
-65745	mike garcia
-65669	bob carson
-65775	irene van buren
-65589	sarah young
-65758	quinn nixon
-65677	wendy ichabod
-65725	ethan thompson
-65768	sarah king
-65784	irene polk
-65670	holly king
-65759	irene young
-65679	nick laertes
-65740	wendy nixon
-65746	holly van buren
-65572	xavier johnson
-65607	irene van buren
-65671	alice king
-65538	katie van buren
-65649	tom quirinius
-65540	quinn white
-65660	zach ellison
-65692	alice quirinius
-65577	ethan hernandez
-65553	calvin robinson
-65758	mike garcia
-65692	ethan nixon
-65766	mike ichabod
-65571	irene johnson
-65568	yuri xylophone
-65667	nick ellison
-65691	ethan brown
-65791	quinn ovid
-65573	zach thompson
-65551	alice garcia
-65759	ulysses king
-65732	gabriella laertes
-65609	bob garcia
-65585	priscilla robinson
-65640	xavier ellison
-65647	fred zipper
-65735	quinn polk
-65625	victor robinson
-65746	bob steinbeck
-65617	katie allen
-65658	quinn davidson
-65659	victor allen
-65707	alice falkner
-65775	zach nixon
-65752	tom polk
-65700	nick brown
-65587	bob van buren
-65661	katie polk
-65680	rachel polk
-65634	rachel king
-65756	xavier ichabod
-65783	luke garcia
-65650	tom carson
-PREHOOK: query: select i, lag(dec) over (partition by i order by s) from over10k limit 100
+65773	gabriella van buren
+65727	quinn steinbeck
+65649	katie laertes
+65643	luke young
+65712	xavier white
+65554	oscar garcia
+65715	katie ichabod
+65737	mike garcia
+65641	katie thompson
+65674	zach falkner
+65627	katie ovid
+65628	irene davidson
+65657	wendy van buren
+65686	yuri ichabod
+65594	ethan underhill
+65615	zach young
+65708	calvin falkner
+65674	nick xylophone
+65717	tom hernandez
+65713	tom ichabod
+65681	priscilla ichabod
+65654	victor laertes
+65580	victor van buren
+65711	holly xylophone
+65727	david garcia
+65692	yuri ovid
+65760	oscar xylophone
+65545	luke falkner
+65653	alice falkner
+65773	jessica robinson
+65756	fred davidson
+65698	tom hernandez
+65659	irene ellison
+65662	holly robinson
+65610	mike garcia
+65537	yuri hernandez
+65601	ulysses garcia
+65545	mike brown
+65538	ethan nixon
+65551	yuri falkner
+65709	rachel robinson
+65774	yuri polk
+65713	yuri nixon
+65613	sarah thompson
+65693	nick nixon
+65650	ethan carson
+65781	oscar king
+65675	priscilla ichabod
+65541	jessica thompson
+65719	mike polk
+65694	luke brown
+65538	victor young
+65746	oscar nixon
+65564	tom zipper
+65708	irene ellison
+65696	alice davidson
+65596	jessica garcia
+65586	victor miller
+65696	holly white
+65600	david robinson
+65785	jessica davidson
+65606	ulysses brown
+65734	ethan underhill
+65546	ethan miller
+65578	tom thompson
+65776	holly steinbeck
+65741	yuri underhill
+65770	priscilla king
+65562	bob white
+65605	victor van buren
+65764	bob allen
+65725	david underhill
+65700	holly king
+65648	victor ovid
+65733	priscilla xylophone
+65682	katie miller
+65694	victor xylophone
+65553	mike steinbeck
+65635	holly laertes
+65537	katie steinbeck
+65761	zach white
+65747	ethan falkner
+65601	ulysses king
+65590	rachel davidson
+65732	irene young
+65642	bob thompson
+65570	tom xylophone
+65692	sarah davidson
+65760	tom laertes
+65784	yuri johnson
+65630	zach laertes
+65774	nick polk
+65788	quinn xylophone
+65595	yuri white
+65765	xavier ellison
+65541	jessica ichabod
+65711	tom steinbeck
+65536	alice hernandez
+65545	tom zipper
+65789	ulysses hernandez
+PREHOOK: query: select i, lag(dec) over (partition by i order by s,i,dec) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lag(dec) over (partition by i order by s) from over10k limit 100
+POSTHOOK: query: select i, lag(dec) over (partition by i order by s,i,dec) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####

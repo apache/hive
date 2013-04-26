@@ -64,6 +64,7 @@ public class DDLWork implements Serializable {
   private AlterDatabaseDesc alterDbDesc;
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
   private TruncateTableDesc truncateTblDesc;
+  private AlterTableExchangePartition alterTableExchangePartition;
 
   private RoleDDLDesc roleDDLDesc;
   private GrantDesc grantDesc;
@@ -447,6 +448,12 @@ public class DDLWork implements Serializable {
       AlterTableAlterPartDesc alterPartDesc) {
     this(inputs, outputs);
     this.alterTableAlterPartDesc = alterPartDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterTableExchangePartition alterTableExchangePartition) {
+    this(inputs, outputs);
+    this.alterTableExchangePartition = alterTableExchangePartition;
   }
 
     /**
@@ -1024,5 +1031,21 @@ public class DDLWork implements Serializable {
 
   public void setTruncateTblDesc(TruncateTableDesc truncateTblDesc) {
     this.truncateTblDesc = truncateTblDesc;
+  }
+
+  /**
+   * @return information about the table partition to be exchanged
+   */
+  public AlterTableExchangePartition getAlterTableExchangePartition() {
+    return this.alterTableExchangePartition;
+  }
+
+  /**
+   * @param alterTableExchangePartition
+   *          set the value of the table partition to be exchanged
+   */
+  public void setAlterTableExchangePartition(
+      AlterTableExchangePartition alterTableExchangePartition) {
+    this.alterTableExchangePartition = alterTableExchangePartition;
   }
 }

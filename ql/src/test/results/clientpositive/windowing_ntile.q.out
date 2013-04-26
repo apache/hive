@@ -39,240 +39,240 @@ PREHOOK: Output: default@over10k
 POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k
-PREHOOK: query: select i, ntile(10) over (partition by s) from over10k limit 100
+PREHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select i, ntile(10) over (partition by s) from over10k limit 100
+POSTHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-65600	1
-65758	2
-65609	3
-65557	4
+65545	1
+65557	2
+65600	3
+65609	4
 65662	5
 65670	6
-65545	7
-65720	8
-65790	1
-65781	1
-65570	2
-65708	2
-65704	3
-65707	3
-65779	4
-65667	4
-65673	5
+65720	7
+65758	8
+65569	1
+65570	1
+65666	2
+65667	2
+65673	3
+65696	3
+65704	4
+65707	4
+65708	5
 65711	6
-65569	7
-65666	8
-65733	9
-65696	10
-65785	1
-65710	2
-65747	3
-65713	4
-65559	5
-65559	6
-65545	7
-65565	8
-65695	9
-65576	10
-65547	1
-65677	1
-65676	2
-65596	2
-65791	3
-65707	3
-65690	4
-65563	4
-65560	5
-65641	5
-65544	6
-65677	6
-65590	7
-65747	7
-65740	8
-65554	8
-65631	9
-65742	10
-65730	1
-65612	1
-65745	2
-65677	2
-65699	3
-65713	3
-65544	4
-65537	4
-65557	5
-65698	5
-65787	6
-65741	7
-65572	8
-65681	9
-65744	10
-65773	1
-65611	1
-65669	2
-65699	2
-65752	3
-65722	3
-65597	4
-65715	4
-65709	5
-65718	5
-65622	6
-65775	6
-65690	7
-65685	7
-65596	8
-65710	9
+65733	7
+65779	8
+65781	9
+65790	10
+65545	1
+65559	2
+65559	3
+65565	4
+65576	5
+65695	6
+65710	7
+65713	8
+65747	9
 65785	10
-65623	1
-65746	1
-65725	2
-65712	2
-65759	3
-65613	3
-65744	4
-65573	5
-65630	6
-65674	7
-65675	8
+65544	1
+65547	1
+65554	2
+65560	2
+65563	3
+65590	3
+65596	4
+65631	4
+65641	5
+65676	5
+65677	6
+65677	6
+65690	7
+65707	7
+65740	8
+65742	8
+65747	9
+65791	10
+65537	1
+65544	1
+65557	2
+65572	2
+65612	3
+65677	3
+65681	4
+65698	4
+65699	5
+65713	5
+65730	6
+65741	7
+65744	8
+65745	9
+65787	10
+65596	1
+65597	1
+65611	2
+65622	2
+65669	3
+65685	3
+65690	4
+65699	4
+65709	5
+65710	5
+65715	6
+65718	6
+65722	7
+65752	7
+65773	8
+65775	9
+65785	10
+65573	1
+65613	1
+65623	2
+65630	2
+65674	3
+65675	3
+65712	4
+65725	5
+65734	6
+65744	7
+65746	8
 65746	9
-65734	10
+65759	10
 65543	1
-65685	1
-65684	2
-65691	2
-65737	3
-PREHOOK: query: select s, ntile(100) over (partition by i) from over10k limit 100
+65545	1
+65569	2
+65603	2
+65633	3
+PREHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, ntile(100) over (partition by i) from over10k limit 100
+POSTHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-rachel ichabod	1
+alice ichabod	1
 alice robinson	2
-priscilla young	3
-david laertes	4
-david nixon	5
-wendy polk	6
-alice ichabod	7
-holly white	8
-xavier davidson	9
-oscar ovid	10
-sarah thompson	11
-ethan johnson	12
-tom steinbeck	13
-katie ellison	14
-gabriella garcia	15
-luke allen	16
-zach hernandez	17
+bob robinson	3
+calvin thompson	4
+david johnson	5
+david laertes	6
+david nixon	7
+david nixon	8
+ethan johnson	9
+ethan ovid	10
+ethan underhill	11
+fred miller	12
+fred miller	13
+gabriella garcia	14
+gabriella underhill	15
+holly white	16
+irene johnson	17
+katie ellison	18
+luke allen	19
+mike quirinius	20
+mike white	21
+nick davidson	22
+oscar allen	23
+oscar garcia	24
+oscar ichabod	25
+oscar ovid	26
+oscar steinbeck	27
+priscilla garcia	28
+priscilla white	29
+priscilla xylophone	30
+priscilla young	31
+rachel brown	32
+rachel ichabod	33
+rachel xylophone	34
+sarah thompson	35
+sarah thompson	36
+tom johnson	37
+tom steinbeck	38
+ulysses polk	39
+victor johnson	40
+wendy polk	41
+xavier davidson	42
+yuri ellison	43
+zach allen	44
+zach hernandez	45
+alice ellison	1
+bob carson	2
+calvin brown	3
+david xylophone	4
+ethan white	5
+fred johnson	6
+fred van buren	7
+gabriella ichabod	8
+holly laertes	9
+holly quirinius	10
+jessica hernandez	11
+katie robinson	12
+katie thompson	13
+luke nixon	14
+mike garcia	15
+mike hernandez	16
+nick carson	17
 nick davidson	18
-zach allen	19
-sarah thompson	20
-david johnson	21
-bob robinson	22
-ethan ovid	23
-calvin thompson	24
-rachel brown	25
-rachel xylophone	26
-tom johnson	27
-ulysses polk	28
-oscar allen	29
-irene johnson	30
-oscar ichabod	31
-yuri ellison	32
-fred miller	33
-mike white	34
-david nixon	35
-priscilla white	36
-oscar garcia	37
-fred miller	38
-victor johnson	39
-oscar steinbeck	40
-priscilla garcia	41
-gabriella underhill	42
-priscilla xylophone	43
-mike quirinius	44
-ethan underhill	45
-oscar carson	1
-nick carson	2
-katie thompson	3
-victor xylophone	4
-xavier underhill	5
-zach nixon	6
-bob carson	7
-yuri garcia	8
-fred van buren	9
-sarah ichabod	10
-oscar robinson	11
-david xylophone	12
-wendy garcia	13
-mike garcia	14
-ulysses falkner	15
-sarah falkner	16
-mike hernandez	17
-fred johnson	18
-katie robinson	19
-holly quirinius	20
-luke nixon	21
-alice ellison	22
-yuri quirinius	23
-zach falkner	24
-zach ovid	25
-gabriella ichabod	26
-priscilla white	27
-ethan white	28
-calvin brown	29
-jessica hernandez	30
-wendy van buren	31
-holly laertes	32
+oscar carson	19
+oscar robinson	20
+priscilla white	21
+sarah falkner	22
+sarah ichabod	23
+ulysses falkner	24
+victor xylophone	25
+wendy garcia	26
+wendy van buren	27
+xavier underhill	28
+yuri garcia	29
+yuri quirinius	30
+yuri white	31
+zach falkner	32
 zach ichabod	33
-nick davidson	34
-yuri white	35
-victor garcia	1
-sarah ichabod	2
-mike brown	3
-holly thompson	4
-alice king	5
-quinn garcia	6
-holly hernandez	7
-gabriella nixon	8
-zach van buren	9
+zach nixon	34
+zach ovid	35
+alice ichabod	1
+alice king	2
+alice robinson	3
+calvin allen	4
+gabriella johnson	5
+gabriella nixon	6
+holly falkner	7
+holly hernandez	8
+holly thompson	9
 katie nixon	10
-luke davidson	11
-rachel young	12
-alice robinson	13
-oscar white	14
-holly falkner	15
-tom polk	16
-quinn laertes	17
-calvin allen	18
-luke brown	19
-xavier davidson	20
-PREHOOK: query: select f, ntile(4) over (partition by d) from over10k limit 100
+luke brown	11
+luke davidson	12
+luke white	13
+mike brown	14
+nick quirinius	15
+oscar white	16
+priscilla xylophone	17
+quinn garcia	18
+quinn laertes	19
+rachel young	20
+PREHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select f, ntile(4) over (partition by d) from over10k limit 100
+POSTHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
 8.39	1
-25.5	1
-5.29	2
+5.29	1
+25.5	2
 37.59	3
 79.24	1
-60.0	1
-48.5	2
+48.5	1
+60.0	2
 77.84	3
-51.57	1
-14.36	2
+14.36	1
+51.57	2
 87.91	3
 40.91	1
 59.09	2
@@ -280,65 +280,65 @@ POSTHOOK: Input: default@over10k
 46.55	2
 92.71	3
 59.72	1
-98.89	2
-97.35	3
+97.35	2
+98.89	3
 19.11	1
-35.21	1
-13.33	2
+13.33	1
+35.21	2
 30.47	1
 90.04	1
-77.44	1
-15.36	2
-60.76	3
+15.36	1
+60.76	2
+77.44	3
 9.07	1
 50.08	1
 13.3	1
 87.05	1
-66.95	1
-3.94	2
-41.66	1
-75.93	2
+3.94	1
+66.95	2
+18.65	1
+41.66	2
 48.52	3
-18.65	4
-70.77	1
-84.83	2
-50.15	3
+75.93	4
+50.15	1
+70.77	2
+84.83	3
 64.79	1
 88.94	2
-96.71	1
-1.42	2
-94.14	1
-9.88	2
+1.42	1
+96.71	2
+9.88	1
+94.14	2
 25.69	1
 67.56	2
 85.72	3
-82.8	1
+30.0	1
 40.0	1
-95.11	2
-61.73	3
-30.0	4
+61.73	2
+82.8	3
+95.11	4
 80.65	1
-96.54	1
-7.96	2
-61.07	1
+7.96	1
+96.54	2
 20.74	1
-89.36	2
-49.61	3
-69.97	4
-61.71	1
+49.61	1
+61.07	2
+69.97	3
+89.36	4
+2.66	1
 38.69	2
-2.66	3
-58.25	4
+58.25	3
+61.71	4
 32.69	1
 98.29	2
-25.63	1
-0.62	2
+0.62	1
+25.63	2
 90.1	3
-69.42	1
-29.06	2
-85.03	1
-38.09	2
-68.81	3
+29.06	1
+69.42	2
+38.09	1
+68.81	2
+85.03	3
 75.75	1
 88.22	2
 24.02	1
@@ -346,100 +346,100 @@ POSTHOOK: Input: default@over10k
 76.99	1
 96.45	1
 1.09	1
-57.61	1
-84.92	2
-26.21	3
+26.21	1
+57.61	2
+84.92	3
 80.99	1
 39.16	1
 39.82	2
-44.57	1
-24.15	2
+24.15	1
+44.57	2
 38.05	1
 81.55	2
-74.45	1
-49.13	2
+49.13	1
+74.45	2
 42.49	1
-67.28	1
+37.63	1
 49.09	2
-37.63	3
+67.28	3
 10.6	1
-PREHOOK: query: select d, ntile(1000) over (partition by dec) from over10k limit 100
+PREHOOK: query: select d, ntile(1000) over (partition by dec order by d) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select d, ntile(1000) over (partition by dec) from over10k limit 100
+POSTHOOK: query: select d, ntile(1000) over (partition by dec order by d) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-41.04	1
-9.71	2
+9.71	1
+41.04	2
 43.7	1
-33.72	1
-1.42	2
+1.42	1
+33.72	2
 4.83	1
 12.49	1
 6.26	1
 14.11	2
 41.76	3
 6.55	1
-32.62	1
-11.27	2
+11.27	1
+32.62	2
 40.35	3
 41.23	1
 39.43	1
 21.2	1
 40.64	1
-43.97	1
-12.07	2
+12.07	1
+43.97	2
 27.64	1
-4.1	1
-0.7	2
+0.7	1
+4.1	2
 33.38	1
-33.65	1
-18.69	2
+18.69	1
+33.65	2
 2.2	1
 0.38	1
 15.83	1
-43.34	1
-11.38	2
-23.27	1
-38.18	2
-15.95	3
+11.38	1
+43.34	2
+15.95	1
+23.27	2
+38.18	3
 20.76	1
 5.63	1
 13.64	1
 34.33	2
 43.48	3
-46.79	1
-44.21	2
+44.21	1
+46.79	2
 6.52	1
 3.59	1
 40.26	2
-25.9	1
-16.31	2
+16.31	1
+25.9	2
 46.21	3
 45.08	1
 7.91	1
 24.37	2
 37.13	1
-39.25	1
-5.37	2
-7.64	1
-7.25	2
+5.37	1
+39.25	2
+7.25	1
+7.64	2
 16.09	3
 49.82	1
 16.08	1
 4.6	1
 14.12	1
-28.42	1
-27.58	2
+27.58	1
+28.42	2
 45.53	3
 48.56	4
 36.7	1
 32.68	1
-40.09	1
-3.17	2
-24.84	3
+3.17	1
+24.84	2
+40.09	3
 26.36	1
 33.49	1
 24.76	1
@@ -460,14 +460,14 @@ POSTHOOK: Input: default@over10k
 37.82	1
 15.27	1
 15.22	1
-40.54	1
-11.43	2
-22.64	1
-4.81	2
+11.43	1
+40.54	2
+4.81	1
+22.64	2
 14.18	1
 44.83	1
 5.15	1
-7.52	1
-2.78	2
-3.7	3
+2.78	1
+3.7	2
+7.52	3
 45.55	4

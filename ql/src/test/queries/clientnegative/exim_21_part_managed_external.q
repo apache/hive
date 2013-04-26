@@ -14,7 +14,7 @@ load data local inpath "../data/files/test.dat"
 	into table exim_employee partition (emp_country="us", emp_state="tn");	
 load data local inpath "../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka");		
-dfs -mkdir ../build/ql/test/data/exports/exim_employee/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_employee/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;

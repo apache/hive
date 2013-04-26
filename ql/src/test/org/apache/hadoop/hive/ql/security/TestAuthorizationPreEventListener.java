@@ -169,7 +169,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
   }
 
   public void testListener() throws Exception {
-    String dbName = "tmpdb";
+    String dbName = "hive3705";
     String tblName = "tmptbl";
     String renamed = "tmptbl2";
     int listSize = 0;
@@ -199,7 +199,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
     driver.run("alter table tmptbl add partition (b='2011')");
     listSize++;
-    Partition part = msc.getPartition("tmpdb", "tmptbl", "b=2011");
+    Partition part = msc.getPartition("hive3705", "tmptbl", "b=2011");
 
     Partition ptnFromEvent = (
         (org.apache.hadoop.hive.ql.metadata.Partition)

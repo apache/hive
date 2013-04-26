@@ -24,20 +24,21 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 
 public class MapJoinMetaData {
-  static transient Map<Integer, HashTableSinkObjectCtx> mapMetadata = new HashMap<Integer, HashTableSinkObjectCtx>();
+  transient Map<Integer, HashTableSinkObjectCtx> mapMetadata =
+      new HashMap<Integer, HashTableSinkObjectCtx>();
   static ArrayList<Object> list = new ArrayList<Object>();
 
   public MapJoinMetaData(){
 
   }
-  public static void put(Integer key, HashTableSinkObjectCtx value){
+  public void put(Integer key, HashTableSinkObjectCtx value){
     mapMetadata.put(key, value);
   }
-  public static HashTableSinkObjectCtx get(Integer key){
+  public HashTableSinkObjectCtx get(Integer key){
     return mapMetadata.get(key);
   }
 
-  public static void clear(){
+  public void clear(){
     mapMetadata.clear();
   }
 
@@ -45,5 +46,4 @@ public class MapJoinMetaData {
     list.clear();
     return list;
   }
-
 }

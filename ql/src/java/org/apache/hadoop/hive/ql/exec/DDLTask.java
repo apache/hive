@@ -40,10 +40,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,6 +86,8 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
+import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
@@ -111,8 +113,8 @@ import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -150,6 +152,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -427,6 +430,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       TruncateTableDesc truncateTableDesc = work.getTruncateTblDesc();
       if (truncateTableDesc != null) {
         return truncateTable(db, truncateTableDesc);
+      }
+
+      AlterTableExchangePartition alterTableExchangePartition =
+        work.getAlterTableExchangePartition();
+      if (alterTableExchangePartition != null) {
+        return exchangeTablePartition(db, alterTableExchangePartition);
       }
 
     } catch (InvalidTableException e) {
@@ -3951,6 +3960,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
+
+    if (truncateTableDesc.getColumnIndexes() != null) {
+      ColumnTruncateWork truncateWork = new ColumnTruncateWork(
+          truncateTableDesc.getColumnIndexes(), truncateTableDesc.getInputDir(),
+          truncateTableDesc.getOutputDir());
+      truncateWork.setListBucketingCtx(truncateTableDesc.getLbCtx());
+      truncateWork.setMapperCannotSpanPartns(true);
+      DriverContext driverCxt = new DriverContext();
+      ColumnTruncateTask taskExec = new ColumnTruncateTask();
+      taskExec.initialize(db.getConf(), null, driverCxt);
+      taskExec.setWork(truncateWork);
+      taskExec.setQueryPlan(this.getQueryPlan());
+      return taskExec.execute(driverCxt);
+    }
+
     String tableName = truncateTableDesc.getTableName();
     Map<String, String> partSpec = truncateTableDesc.getPartSpec();
 
@@ -3966,6 +3990,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+    return 0;
+  }
+
+  private int exchangeTablePartition(Hive db,
+      AlterTableExchangePartition exchangePartition) throws HiveException {
+    Map<String, String> partitionSpecs = exchangePartition.getPartitionSpecs();
+    Table destTable = exchangePartition.getDestinationTable();
+    Table sourceTable = exchangePartition.getSourceTable();
+    db.exchangeTablePartitions(partitionSpecs, sourceTable.getDbName(),
+        sourceTable.getTableName(),destTable.getDbName(),
+        destTable.getTableName());
     return 0;
   }
 

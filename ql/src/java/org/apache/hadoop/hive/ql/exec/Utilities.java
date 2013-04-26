@@ -380,7 +380,7 @@ public final class Utilities {
 
   public static String getHiveJobID(Configuration job) {
     String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
-    if (planPath != null) {
+    if (planPath != null && !planPath.isEmpty()) {
       return (new Path(planPath)).getName();
     }
     return null;
@@ -2415,8 +2415,5 @@ public final class Utilities {
 
     return sb.toString();
   }
-
-  public static Class getBuiltinUtilsClass() throws ClassNotFoundException {
-    return Class.forName("org.apache.hive.builtins.BuiltinUtils");
-  }
 }
+

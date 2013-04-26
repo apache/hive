@@ -67,11 +67,8 @@ public abstract class TableFunctionEvaluator
   transient protected PTFPartition outputPartition;
 
   static{
-    PTFUtils.makeTransient(TableFunctionEvaluator.class, "OI");
-    PTFUtils.makeTransient(TableFunctionEvaluator.class, "rawInputOI");
-    PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputPartition");
+    PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputOI", "rawInputOI");
   }
-
 
   public StructObjectInspector getOutputOI()
   {

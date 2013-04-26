@@ -1,0 +1,109 @@
+PREHOOK: query: -- Tests truncating a column from a table with multiple files, then merging those files
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests truncating a column from a table with multiple files, then merging those files
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- The value should be 2 indicating the table has 2 files
+SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- The value should be 2 indicating the table has 2 files
+SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+2
+PREHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE test_tab CONCATENATE
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: ALTER TABLE test_tab CONCATENATE
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- The first column (key) should be null for all 10 rows
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- The first column (key) should be null for all 10 rows
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	val_238
+NULL	val_86
+NULL	val_311
+NULL	val_27
+NULL	val_165
+NULL	val_238
+NULL	val_86
+NULL	val_311
+NULL	val_27
+NULL	val_165
+PREHOOK: query: -- The value should be 1 indicating the table has 1 file
+SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- The value should be 1 indicating the table has 1 file
+SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+1

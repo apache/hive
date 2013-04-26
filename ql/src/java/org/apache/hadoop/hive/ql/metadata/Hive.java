@@ -1671,7 +1671,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> names = null;
     Table t = getTable(dbName, tblName);
 
-    List<String> pvals = getPvals(t.getPartCols(), partSpec);
+    List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
     try {
       names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
@@ -1713,19 +1713,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public static List<String> getPvals(List<FieldSchema> partCols,
-      Map<String, String> partSpec) {
-    List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : partCols) {
-      String val = partSpec.get(field.getName());
-      if (val == null) {
-        val = "";
-      }
-      pvals.add(val);
-    }
-    return pvals;
-  }
-
   /**
    * get all the partitions of the table that matches the given partial
    * specification. partition columns whose value is can be anything should be
@@ -1745,7 +1732,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           "partitioned table");
     }
 
-    List<String> partialPvals = getPvals(tbl.getPartCols(), partialPartSpec);
+    List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
 
     List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
     try {
@@ -2248,6 +2235,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
+    }
+  }
+
+  public void exchangeTablePartitions(Map<String, String> partitionSpecs,
+      String sourceDb, String sourceTable, String destDb,
+      String destinationTableName) throws HiveException {
+    try {
+      getMSC().exchange_partition(partitionSpecs, sourceDb, sourceTable, destDb,
+        destinationTableName);
+    } catch (Exception ex) {
+      LOG.error(StringUtils.stringifyException(ex));
+      throw new HiveException(ex);
     }
   }
 

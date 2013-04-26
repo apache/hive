@@ -49,6 +49,9 @@ implements BigTableSelectorForAutoSMJ {
       getListTopOps(joinOp, topOps);
       int currentPos = 0;
       for (TableScanOperator topOp : topOps) {
+        if (topOp == null) {
+          return -1;
+        }
         Table table = parseCtx.getTopToTable().get(topOp);
         long currentSize = 0;
 

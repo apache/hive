@@ -196,7 +196,7 @@ select * from src_multi2 order by key, value;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
-dfs -mkdir ${system:test.tmp.dir}/hive_test/multiins_local/temp;
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/hive_test/multiins_local/temp;
 dfs -rmr ${system:test.tmp.dir}/hive_test/multiins_local;
 
 explain

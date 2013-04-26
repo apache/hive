@@ -31,8 +31,6 @@
     <dependency org="org.mortbay.jetty" name="jetty" rev="${jetty.version}" />
 
     <!-- Test Dependencies -->
-    <dependency org="org.apache.hive" name="hive-builtins" rev="${version}"
-                conf="test->default" transitive="false"/>
     <dependency org="commons-httpclient" name="commons-httpclient" rev="${commons-httpclient.version}"
                 conf="test->default"
                 transitive="false"/>

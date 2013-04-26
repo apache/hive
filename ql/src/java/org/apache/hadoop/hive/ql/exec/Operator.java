@@ -55,7 +55,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // Bean methods
 
   private static final long serialVersionUID = 1L;
-  List<OperatorHook> operatorHooks;
 
   private Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
@@ -239,17 +238,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public String getIdentifier() {
     return id;
-  }
-
-  public void setOperatorHooks(List<OperatorHook> opHooks){
-    operatorHooks = opHooks;
-    if (childOperators == null) {
-      return;
-    }
-
-    for (Operator<? extends OperatorDesc> op : childOperators) {
-      op.setOperatorHooks(opHooks);
-    }
   }
 
   public void setReporter(Reporter rep) {
@@ -436,34 +424,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  private void enterOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.enter(opHookContext);
-    }
-  }
-
-  private void exitOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.exit(opHookContext);
-    }
-  }
-
-  private void closeOperatorHooks(OperatorHookContext opHookContext) throws HiveException {
-    if (this.operatorHooks == null) {
-      return;
-    }
-    for(OperatorHook opHook : this.operatorHooks) {
-      opHook.close(opHookContext);
-    }
-  }
-
-
   /**
    * Collects all the parent's output object inspectors and calls actual
    * initialization method.
@@ -525,12 +485,22 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (fatalError) {
       return;
     }
-    OperatorHookContext opHookContext = new OperatorHookContext(this, row, tag);
-    preProcessCounter();
-    enterOperatorHooks(opHookContext);
-    processOp(row, tag);
-    exitOperatorHooks(opHookContext);
-    postProcessCounter();
+
+    if (counterNameToEnum != null) {
+      inputRows++;
+      if ((inputRows % 1000) == 0) {
+        incrCounter(numInputRowsCntr, inputRows);
+        incrCounter(timeTakenCntr, totalTime);
+        inputRows = 0;
+        totalTime = 0;
+      }
+
+      beginTime = System.currentTimeMillis();
+      processOp(row, tag);
+      totalTime += (System.currentTimeMillis() - beginTime);
+    } else {
+      processOp(row, tag);
+    }
   }
 
   // If a operator wants to do some work at the beginning of a group
@@ -606,13 +576,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     state = State.CLOSE;
     LOG.info(id + " finished. closing... ");
 
-    incrCounter(numInputRowsCntr, inputRows);
-    incrCounter(numOutputRowsCntr, outputRows);
-    incrCounter(timeTakenCntr, totalTime);
+    if (counterNameToEnum != null) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(numOutputRowsCntr, outputRows);
+      incrCounter(timeTakenCntr, totalTime);
+    }
 
     LOG.info(id + " forwarded " + cntr + " rows");
 
-    closeOperatorHooks(new OperatorHookContext(this));
     // call the operator specific close routine
     closeOp(abort);
 
@@ -822,9 +793,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
 
-    if ((++outputRows % 1000) == 0) {
-      incrCounter(numOutputRowsCntr, outputRows);
-      outputRows = 0;
+    if (counterNameToEnum != null) {
+      if ((++outputRows % 1000) == 0) {
+        incrCounter(numOutputRowsCntr, outputRows);
+        outputRows = 0;
+      }
     }
 
     if (isLogInfoEnabled) {
@@ -1158,39 +1131,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient Object groupKeyObject;
 
   /**
-   * this is called before operator process to buffer some counters.
-   */
-  private void preProcessCounter() {
-    inputRows++;
-    if ((inputRows % 1000) == 0) {
-      incrCounter(numInputRowsCntr, inputRows);
-      incrCounter(timeTakenCntr, totalTime);
-      inputRows = 0;
-      totalTime = 0;
-    }
-    beginTime = System.currentTimeMillis();
-  }
-
-  /**
-   * this is called after operator process to buffer some counters.
-   */
-  private void postProcessCounter() {
-    if (counterNameToEnum != null) {
-      totalTime += (System.currentTimeMillis() - beginTime);
-    }
-  }
-
-  /**
    * this is called in operators in map or reduce tasks.
    *
    * @param name
    * @param amount
    */
   protected void incrCounter(String name, long amount) {
-    if(counterNameToEnum == null) {
-      return;
-    }
-
     String counterName = getWrappedCounterName(name);
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
@@ -1522,6 +1468,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * join, it cannot be converted to a auto map-join.
    */
   public boolean opAllowedConvertMapJoin() {
+    return true;
+  }
+
+  /*
+   * If this task contains a sortmergejoin, it can be converted to a map-join task if this operator
+   * is present in the mapper. For eg. if a sort-merge join operator is present followed by a
+   * regular join, it cannot be converted to a auto map-join.
+   */
+  public boolean opAllowedBeforeSortMergeJoin() {
     return true;
   }
 

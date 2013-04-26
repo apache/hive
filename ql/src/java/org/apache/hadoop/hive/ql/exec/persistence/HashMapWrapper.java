@@ -158,8 +158,6 @@ public class HashMapWrapper<K, V> implements Serializable {
   }
 
   public boolean isAbort(long numRows,LogHelper console) {
-    System.gc();
-    System.gc();
     int size = mHash.size();
     long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
     double rate = (double) usedMemory / (double) maxMemory;

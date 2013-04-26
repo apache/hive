@@ -755,7 +755,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // check # of dp
         if (valToPaths.size() > maxPartitions) {
           // throw fatal error
-          incrCounter(fatalErrorCntr, 1);
+          if (counterNameToEnum != null) {
+            incrCounter(fatalErrorCntr, 1);
+          }
           fatalError = true;
           LOG.error("Fatal error was thrown due to exceeding number of dynamic partitions");
         }

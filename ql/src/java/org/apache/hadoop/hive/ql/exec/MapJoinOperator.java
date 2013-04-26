@@ -54,6 +54,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   protected transient HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>[] mapJoinTables;
 
+  protected static MapJoinMetaData metadata = new MapJoinMetaData();
+  public static MapJoinMetaData getMetadata() {
+    return metadata;
+  }
+
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
       "Mapside join exceeds available memory. "
@@ -117,7 +122,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
         null);
     keySerializer.initialize(null, keyTableDesc.getProperties());
-    MapJoinMetaData.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
+    metadata.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
         ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
             ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, false, hconf));
 
@@ -136,7 +141,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       valueSerDe.initialize(null, valueTableDesc.getProperties());
 
       ObjectInspector inspector = valueSerDe.getObjectInspector();
-      MapJoinMetaData.put(Integer.valueOf(pos), new HashTableSinkObjectCtx(ObjectInspectorUtils
+      metadata.put(Integer.valueOf(pos), new HashTableSinkObjectCtx(ObjectInspectorUtils
           .getStandardObjectInspector(inspector, ObjectInspectorCopyOption.WRITABLE),
           valueSerDe, valueTableDesc, hasFilter(pos), hconf));
     }
@@ -189,8 +194,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         hashtable.initilizePersistentHash(path.toUri().getPath());
       }
     } catch (Exception e) {
-      LOG.error("Load Distributed Cache Error");
-      throw new HiveException(e.getMessage());
+      LOG.error("Load Distributed Cache Error", e);
+      throw new HiveException(e);
     }
   }
 

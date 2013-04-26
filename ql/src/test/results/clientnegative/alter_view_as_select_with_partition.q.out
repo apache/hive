@@ -61,5 +61,5 @@ WHERE key=86
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
 FROM `default`.`src`	 	 
 WHERE `src`.`key`=86	 	 
-FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has paritions
+FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions
  The following view has partition, it could not be replaced: testViewPart

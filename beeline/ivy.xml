@@ -45,8 +45,6 @@
                 conf="compile->default" />
     <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
                 conf="runtime" transitive="false"/>
-    <dependency org="org.apache.hive" name="hive-builtins" rev="${version}"
-                conf="runtime" transitive="false"/>
     
     <!-- Test Dependencies -->
     <dependency org="junit" name="junit"
