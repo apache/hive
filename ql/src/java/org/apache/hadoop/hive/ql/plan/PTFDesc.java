@@ -255,10 +255,7 @@ public class PTFDesc extends AbstractOperatorDesc
     transient TypeCheckCtx typeCheckCtx;
 
     static{
-      PTFUtils.makeTransient(ShapeDetails.class, "serde");
-      PTFUtils.makeTransient(ShapeDetails.class, "OI");
-      PTFUtils.makeTransient(ShapeDetails.class, "rr");
-      PTFUtils.makeTransient(ShapeDetails.class, "typeCheckCtx");
+      PTFUtils.makeTransient(ShapeDetails.class, "OI", "serde", "rr", "typeCheckCtx");
     }
 
     public String getSerdeClassName() {
@@ -588,8 +585,7 @@ public class PTFDesc extends AbstractOperatorDesc
     transient ObjectInspector OI;
 
     static{
-      PTFUtils.makeTransient(PTFExpressionDef.class, "exprEvaluator");
-      PTFUtils.makeTransient(PTFExpressionDef.class, "OI");
+      PTFUtils.makeTransient(PTFExpressionDef.class, "exprEvaluator", "OI");
     }
 
     public PTFExpressionDef() {}

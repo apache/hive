@@ -37,14 +37,14 @@ public abstract class GenericUDFLeadLag extends GenericUDF
 {
 	transient ExprNodeEvaluator exprEvaluator;
 	transient PTFPartitionIterator<Object> pItr;
-	ObjectInspector firstArgOI;
-	ObjectInspector defaultArgOI;
-	Converter defaultValueConverter;
+	transient ObjectInspector firstArgOI;
+	transient ObjectInspector defaultArgOI;
+	transient Converter defaultValueConverter;
 	int amt;
 
 	static{
-		PTFUtils.makeTransient(GenericUDFLeadLag.class, "exprEvaluator");
-		PTFUtils.makeTransient(GenericUDFLeadLag.class, "pItr");
+		PTFUtils.makeTransient(GenericUDFLeadLag.class, "exprEvaluator", "pItr",
+        "firstArgOI", "defaultArgOI", "defaultValueConverter");
 	}
 
 	@Override
