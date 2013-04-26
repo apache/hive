@@ -28,18 +28,59 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-exec" rev="${version}"
                 conf="compile->default" />
+    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
+                transitive="false"/>
+    <dependency org="log4j" name="log4j" rev="${log4j.version}"
+                transitive="false"/>
     <dependency org="org.apache.hbase" name="hbase" rev="${hbase.version}"
                 transitive="false">
       <artifact name="hbase" type="jar"/>
       <artifact name="hbase" type="test-jar" ext="jar"
                 m:classifier="tests"/>
     </dependency>
+    <!-- dependency for hbase 0.23 -->
+   <dependency org="com.yammer.metrics" name="metrics-core" rev="2.1.2"
+                transitive="false"/>
     <dependency org="com.github.stephenc.high-scale-lib" name="high-scale-lib" rev="1.1.1"
                 transitive="false"/>
-    <dependency org="com.yammer.metrics" name="metrics-core" rev="${metrics-core.version}">
-      <exclude org="org.slf4j" module="slf4j-api"/><!--causes a dual slf4j presence otherwise-->
-    </dependency>
+    <dependency org="org.apache.zookeeper" name="zookeeper" rev="${zookeeper.version}"
+                transitive="false"/>
     <dependency org="org.codehaus.jackson" name="jackson-jaxrs" rev="${jackson.version}"/>
     <dependency org="org.codehaus.jackson" name="jackson-xc" rev="${jackson.version}"/>
+
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-jobclient" rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default" transitive="false">
+      <artifact name="hadoop-mapreduce-client-jobclient" ext="jar" />
+      <artifact name="hadoop-mapreduce-client-jobclient" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-server-tests"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <artifact name="hadoop-yarn-server-tests" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-app"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-hs"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop23.test->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
+
   </dependencies>
 </ivy-module>

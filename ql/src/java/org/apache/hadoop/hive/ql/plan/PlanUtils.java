@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +38,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -722,6 +725,10 @@ public final class PlanUtils {
         // for native tables, leave it null to avoid cluttering up
         // plans.
         if (!jobProperties.isEmpty()) {
+          if (tableDesc.getOutputFileFormatClass().getName() == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
+            // get the real output format when we register this for the table
+            jobProperties.put("StorageHandlerOF",HiveFileFormatUtils.getRealOutputFormatClassName(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME));
+          }
           tableDesc.setJobProperties(jobProperties);
         }
       }

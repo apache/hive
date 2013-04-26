@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * An util class for various Hive file format tasks.
@@ -70,9 +72,15 @@ public final class HiveFileFormatUtils {
         SequenceFileOutputFormat.class, HiveSequenceFileOutputFormat.class);
   }
 
+  static {
+    realoutputFormatMap = new HashMap< String, String >();
+  }
+
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>
   outputFormatSubstituteMap;
+
+  private static Map<String,String>  realoutputFormatMap;
 
   /**
    * register a substitute.
@@ -93,14 +101,46 @@ public final class HiveFileFormatUtils {
    */
   @SuppressWarnings("unchecked")
   public static synchronized Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
-      Class<?> origin) {
+      Class<?> origin, boolean storagehandlerflag) {
     if (HiveOutputFormat.class.isAssignableFrom(origin)) {
       return (Class<? extends HiveOutputFormat>) origin;
     }
     Class<? extends HiveOutputFormat> result = outputFormatSubstituteMap
         .get(origin);
+    //register this output format into the map for the first time
+    if ((storagehandlerflag == true) && (result == null)) {
+      HiveFileFormatUtils.setRealOutputFormatClassName(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME,origin.getName());
+      result = HivePassThroughOutputFormat.class;
+      HiveFileFormatUtils.registerOutputFormatSubstitute((Class<? extends OutputFormat>) origin,HivePassThroughOutputFormat.class);
+    }
     return result;
   }
+
+  /**
+   * get a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
+   */
+  @SuppressWarnings("unchecked")
+  public static synchronized String getRealOutputFormatClassName(
+      String origin) {
+    if (origin != null) {
+      return realoutputFormatMap.get(origin);
+    }
+    return null;
+  }
+
+  /**
+   * set a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
+   */
+  public static synchronized void setRealOutputFormatClassName(
+      String origin, String destination) {
+    if ((origin != null) && (destination != null )){
+      realoutputFormatMap.put(origin, destination);
+    }
+    else {
+      return;
+    }
+  }
+
 
   /**
    * get the final output path of a given FileOutputFormat.
@@ -215,9 +255,21 @@ public final class HiveFileFormatUtils {
   public static RecordWriter getHiveRecordWriter(JobConf jc,
       TableDesc tableInfo, Class<? extends Writable> outputClass,
       FileSinkDesc conf, Path outPath, Reporter reporter) throws HiveException {
+    boolean storagehandlerofhivepassthru = false;
+    HiveOutputFormat<?, ?> hiveOutputFormat;
     try {
-      HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo
-          .getOutputFileFormatClass().newInstance();
+      if (tableInfo.getJobProperties() != null) {
+        if (tableInfo.getJobProperties().get("StorageHandlerOF") != null) {
+            jc.set("StorageHandlerOF",tableInfo.getJobProperties().get("StorageHandlerOF"));
+            storagehandlerofhivepassthru  = true;
+         }
+      }
+      if (storagehandlerofhivepassthru) {
+         hiveOutputFormat = ReflectionUtils.newInstance(tableInfo.getOutputFileFormatClass(),jc);
+      }
+      else {
+         hiveOutputFormat = tableInfo.getOutputFileFormatClass().newInstance();
+      }
       boolean isCompressed = conf.getCompressed();
       JobConf jc_output = jc;
       if (isCompressed) {

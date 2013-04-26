@@ -35,8 +35,8 @@ dfs -cp /build/ql/test/data/warehouse/hbpartition/* /tmp/hbpartition.lst;
 
 set mapred.reduce.tasks=3;
 set hive.mapred.partitioner=org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
-set total.order.partitioner.natural.order=false;
-set total.order.partitioner.path=/tmp/hbpartition.lst;
+set mapreduce.totalorderpartitioner.naturalorder=false;
+set mapreduce.totalorderpartitioner.path=/tmp/hbpartition.lst;
 
 -- this should produce three files in /tmp/hbsort/cf
 -- include some trailing blanks and nulls to make sure we handle them correctly

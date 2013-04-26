@@ -403,7 +403,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
         Class<?> origin = Class.forName(this.getOutputFormat(), true,
           JavaUtils.getClassLoader());
         Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin);
+          .getOutputFormatSubstitute(origin,false);
         if (replaced == null) {
           throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
             .getMsg());

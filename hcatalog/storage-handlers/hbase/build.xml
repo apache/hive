@@ -18,21 +18,20 @@
     under the License.
 -->
 
-<project name="hbase-storage-handler" default="jar"
+<project name="hbase-storage-handler" default="test"
          xmlns:artifact="artifact:org.apache.maven.artifact.ant">
 
     <property name="path.to.basedir" location="${basedir}/../.."/>
     <loadproperties srcfile="${path.to.basedir}/build.properties"/>
+
+    <import file="../../build-support/ant/deploy.xml"/>
 
     <!--
     ================================================================================
     Properties and Classpaths Section
     ================================================================================
     -->
-    <!-- name and version -->
-    <property name="handler.version" value="0.1.0"/>
-    <property name="handler.jar" value="${ant.project.name}-${handler.version}.jar"/>
-    <property name="final.name" value="${ant.project.name}-${handler.version}" />
+    <!-- basic -->
     <property name="hcatalog.dir" value="${basedir}/../.." />
 
     <!-- hive properties -->
@@ -78,45 +77,18 @@
         <pathelement location="conf"/>
     </path>
 
-    <target name="init" depends="mvn-dependencies">
+    <target name="init" depends="clean,mvn-dependencies">
         <mkdir dir="${dist.dir}" />
         <mkdir dir="${build.classes}" />
         <mkdir dir="${test.build.classes}" />
     </target>
     <!--
     ================================================================================
-    Main Build and Jar Section
-    ================================================================================
-    -->
-    <!-- Compile src files -->
-    <target name="compile-src" depends="init">
-        <javac encoding="${build.encoding}" srcdir="${src.dir}:${basedir}/src/gen-java:${basedir}/src/resources" excludes="${excludes}"
-               includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}"
-               optimize="${javac.optimize}" target="${javac.version}"
-               source="${javac.version}" deprecation="${javac.deprecation}"
-               includeantruntime="false">
-            <compilerarg line="${javac.args}"/>
-            <classpath refid="compile.class.path"/>
-        </javac>
-    </target>
-
-    <!-- Build the jar -->
-    <target name="jar" depends="compile-src">
-        <copy todir="${build.classes}" includeEmptyDirs="false">
-            <fileset dir="${resources.dir}">
-                <include name="*"/>
-            </fileset>
-        </copy>
-        <jar jarfile="${build.dir}/${handler.jar}" basedir="${build.classes}"/>
-    </target>
-
-    <!--
-    ================================================================================
     Test Section
     ================================================================================
     -->
     <!-- Build test files -->
-    <target name="compile-test" depends="jar">
+    <target name="compile-test" depends="init">
         <javac encoding="${build.encoding}" srcdir="${test.src.dir}" excludes="${excludes}"
                includes="**/*.java" destdir="${test.build.classes}" debug="${javac.debug}"
                optimize="${javac.optimize}" target="${javac.version}"
@@ -177,41 +149,5 @@
     <target name="clean-test" description="Cleanup build artifacts">
         <delete dir="${test.build.dir}" />
     </target>
-
-
-    <!--
-    ===============================================================================
-    Distribution Section
-    ===============================================================================
-    -->
-    <target name="package" depends="jar" description="Create an HCatalog release">
-        <mkdir dir="${dist.dir}" />
-        <mkdir dir="${dist.dir}/conf" />
-        <mkdir dir="${dist.dir}/lib" />
-
-        <copy todir="${dist.dir}/lib" includeEmptyDirs="false">
-            <fileset dir="${build.dir}">
-                <include name="hbase-storage-handler-*.jar"/>
-            </fileset>
-        </copy>
-
-        <copy todir="${dist.dir}/conf">
-            <fileset dir="${basedir}/conf" />
-        </copy>
-
-        <antcall target="package-to-handlers"/>
-    </target>
-
-    <target name="package-to-handlers" if="dist.handlers.dir">
-        <mkdir dir="${dist.handlers.dir}/hbase"/>
-        <copy todir="${dist.handlers.dir}/hbase" includeEmptyDirs="true">
-            <fileset dir="${dist.dir}">
-              <include name="**/lib/hbase-storage-handler-*.jar"/>
-              <include name="**/conf/**/*"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <import file="${path.to.basedir}/build-support/ant/deploy.xml"/>
 
 </project>

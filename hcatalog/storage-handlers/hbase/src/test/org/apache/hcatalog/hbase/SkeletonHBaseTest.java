@@ -177,7 +177,6 @@ public abstract class SkeletonHBaseTest {
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to generate testDir", e);
             }
-            System.out.println("Cluster work directory: " + testDir);
         }
 
         public void start() {
@@ -201,7 +200,6 @@ public abstract class SkeletonHBaseTest {
                     cluster.stop();
                     cluster = null;
                 } finally {
-                    System.out.println("Trying to cleanup: " + testDir);
                     try {
                         FileSystem fs = FileSystem.get(jobConf);
                         fs.delete(new Path(testDir), true);

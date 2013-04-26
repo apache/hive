@@ -301,7 +301,7 @@ public class Partition implements Serializable {
   public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
     this.outputFormatClass = outputFormatClass;
     tPartition.getSd().setOutputFormat(HiveFileFormatUtils
-      .getOutputFormatSubstitute(outputFormatClass).toString());
+        .getOutputFormatSubstitute(outputFormatClass, false).toString());
   }
 
   final public Class<? extends InputFormat> getInputFormatClass()
@@ -339,7 +339,7 @@ public class Partition implements Serializable {
             JavaUtils.getClassLoader()));
         // Replace FileOutputFormat for backward compatibility
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
-          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
+          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,false);
         } else {
           outputFormatClass = (Class<? extends HiveOutputFormat>)c;
         }

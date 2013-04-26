@@ -77,9 +77,6 @@
         <ant target="jar" dir="webhcat/java-client" inheritAll="false">
           <property name="_mvn.hadoop.profile" value="${mvn.hadoop.profile}"/>
         </ant>
-        <ant target="jar" dir="storage-handlers/hbase" inheritAll="false">
-          <property name="_mvn.hadoop.profile" value="${mvn.hadoop.profile}"/>
-        </ant>
     </target>
 
     <!--
@@ -215,8 +212,6 @@
             <packageset dir="core/src/main/java"/>
             <packageset dir="hcatalog-pig-adapter/src/main/java"/>
             <packageset dir="server-extensions/src/main/java"/>
-            <packageset dir="storage-handlers/hbase/src/gen-java"/>
-            <packageset dir="storage-handlers/hbase/src/java"/>
             <packageset dir="webhcat/svr/src/main/java"/>
             <packageset dir="webhcat/java-client/src/main/java"/>
             <classpath>
@@ -225,8 +220,6 @@
                 <fileset dir="hcatalog-pig-adapter/build/lib/provided"/>
                 <fileset dir="server-extensions/build/lib/compile"/>
                 <fileset dir="server-extensions/build/lib/provided"/>
-                <fileset dir="storage-handlers/hbase/build/lib/compile"/>
-                <fileset dir="storage-handlers/hbase/build/lib/provided"/>
                 <fileset dir="webhcat/svr/build/lib/compile"/>
                 <fileset dir="webhcat/svr/build/lib/provided"/>
             </classpath>
@@ -398,13 +391,6 @@
             <fileset dir="${dist.dir}/bin"/>
             <fileset dir="${dist.dir}/sbin"/>
         </chmod>
-
-        <!--package storage-handlers -->
-        <property name="handlers.dir" value="${dist.dir}/share/hcatalog/storage-handlers"/>
-        <mkdir dir="${handlers.dir}"/>
-        <ant target="package" dir="storage-handlers/hbase" inheritAll="false">
-            <property name="dist.handlers.dir" value="${handlers.dir}"/>
-        </ant>
 
         <!--
         While ant has a native tar task, we call out to the command-line

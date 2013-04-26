@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,7 +35,9 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapred.TableOutputFormat;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -45,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -55,6 +59,11 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.thrift.TBase;
+import org.apache.zookeeper.ZooKeeper;
+
+import com.facebook.fb303.FacebookBase;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
@@ -65,6 +74,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   final static public String DEFAULT_PREFIX = "default.";
 
+  //Check if the configure job properties is called from input or output for setting asymmetric properties
+  String CONFIGURE_JOB_PROPERTIES = "INPUT";
+
+  private Configuration jobConf;
   private Configuration hbaseConf;
   private HBaseAdmin admin;
 
@@ -85,11 +98,16 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     // for backwards compatibility with the original specs).
     String tableName = tbl.getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
     if (tableName == null) {
+      //convert to lower case in case we are getting from serde
       tableName = tbl.getSd().getSerdeInfo().getParameters().get(
         HBaseSerDe.HBASE_TABLE_NAME);
+      //standardize to lower case
+      if (tableName != null) {
+        tableName = tableName.toLowerCase();
+      }
     }
     if (tableName == null) {
-      tableName = tbl.getDbName() + "." + tbl.getTableName();
+      tableName = (tbl.getDbName() + "." + tbl.getTableName()).toLowerCase();
       if (tableName.startsWith(DEFAULT_PREFIX)) {
         tableName = tableName.substring(DEFAULT_PREFIX.length());
       }
@@ -230,8 +248,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     return hbaseConf;
   }
 
+  public Configuration getJobConf() {
+    return jobConf;
+  }
+
   @Override
   public void setConf(Configuration conf) {
+    jobConf = conf;
     hbaseConf = HBaseConfiguration.create(conf);
   }
 
@@ -242,7 +265,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
-    return HiveHBaseTableOutputFormat.class;
+    return org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat.class;
   }
 
   @Override
@@ -257,16 +280,18 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public void configureInputJobProperties(
-    TableDesc tableDesc,
-    Map<String, String> jobProperties) {
-      configureTableJobProperties(tableDesc, jobProperties);
+      TableDesc tableDesc,
+      Map<String, String> jobProperties) {
+    CONFIGURE_JOB_PROPERTIES = "INPUT";
+    configureTableJobProperties(tableDesc, jobProperties);
   }
 
   @Override
   public void configureOutputJobProperties(
-    TableDesc tableDesc,
-    Map<String, String> jobProperties) {
-      configureTableJobProperties(tableDesc, jobProperties);
+      TableDesc tableDesc,
+      Map<String, String> jobProperties) {
+    CONFIGURE_JOB_PROPERTIES = "OUTPUT";
+    configureTableJobProperties(tableDesc, jobProperties);
   }
 
   @Override
@@ -287,14 +312,70 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     if (tableName == null) {
       tableName =
         tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+        tableName = tableName.toLowerCase();
       if (tableName.startsWith(DEFAULT_PREFIX)) {
         tableName = tableName.substring(DEFAULT_PREFIX.length());
       }
     }
     jobProperties.put(HBaseSerDe.HBASE_TABLE_NAME, tableName);
+
+    // do this for reconciling HBaseStorageHandler for use in HCatalog
+    // check to see if this an input job or an outputjob
+    if (CONFIGURE_JOB_PROPERTIES == "INPUT") {
+      try {
+        Configuration jobConf = getJobConf();
+        addResources(jobConf, jobProperties);
+        JobConf copyOfConf = new JobConf(jobConf);
+        HBaseConfiguration.addHbaseResources(copyOfConf);
+        //Getting hbase delegation token in getInputSplits does not work with PIG.
+        if (jobConf instanceof JobConf) { //Should be the case
+          addHBaseDelegationToken(copyOfConf);
+          ((JobConf)jobConf).getCredentials().addAll(copyOfConf.getCredentials());
+        }
+      }//try
+      catch (IOException e) {
+        throw new IllegalStateException("Error while configuring input job properties", e);
+      }
+    }
+    else {
+      //find out a method of populating HCat specific info here
+      Map<String, String> tableJobProperties = tableDesc.getJobProperties();
+      Configuration jobConf = getJobConf();
+      addResources(jobConf, jobProperties);
+      JobConf copyOfConf = new JobConf(jobConf);
+      HBaseConfiguration.addHbaseResources(copyOfConf);
+      jobProperties.put(TableOutputFormat.OUTPUT_TABLE, tableName);
+    }
   }
 
-  @Override
+  /**
+   * Utility method to add hbase-default.xml and hbase-site.xml properties to a new map
+   * if they are not already present in the jobConf.
+   * @param jobConf Job configuration
+   * @param newJobProperties  Map to which new properties should be added
+   */
+  private void addResources(Configuration jobConf,
+      Map<String, String> newJobProperties) {
+    Configuration conf = new Configuration(false);
+    HBaseConfiguration.addHbaseResources(conf);
+    for (Entry<String, String> entry : conf) {
+      if (jobConf.get(entry.getKey()) == null) {
+        newJobProperties.put(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  private void addHBaseDelegationToken(JobConf job) throws IOException {
+    if (User.isHBaseSecurityEnabled(job)) {
+      try {
+        User.getCurrent().obtainAuthTokenForJob(job);
+      } catch (InterruptedException e) {
+        throw new IOException("Error while obtaining hbase delegation token", e);
+      }
+    }
+  }
+
+@Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     try {
       TableMapReduceUtil.addDependencyJars(jobConf);

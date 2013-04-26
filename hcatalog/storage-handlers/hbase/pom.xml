@@ -35,6 +35,116 @@
   <name>hbase-storage-handler</name>
   <url>http://maven.apache.org</url>
 
+    <profiles>
+    <profile>
+      <id>hadoop20</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-tools</artifactId>
+          <version>${hadoop20.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-test</artifactId>
+          <version>${hadoop20.version}</version>
+          <scope>test</scope>
+        </dependency>
+          <dependency>
+              <groupId>org.apache.pig</groupId>
+              <artifactId>pig</artifactId>
+              <version>${pig.version}</version>
+              <scope>compile</scope>
+          </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>hadoop23</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-archives</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client-app</artifactId>
+                    <version>${hadoop23.version}</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-tests</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>test</scope>
+                  <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>test</scope>
+                  <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop23.version}</version>
+                  <scope>test</scope>
+                  <type>test-jar</type>
+        </dependency>
+              <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-core</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <version>${hadoop23.version}</version>
+          <scope>test</scope>
+                  <type>test-jar</type>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop23.version}</version>
+                  <scope>test</scope>
+                  <type>test-jar</type>
+        </dependency>
+
+          <dependency>
+              <groupId>org.apache.pig</groupId>
+              <artifactId>pig</artifactId>
+              <version>${pig.version}</version>
+              <scope>compile</scope>
+              <classifier>h2</classifier>
+          </dependency>
+
+      </dependencies>
+    </profile>
+  </profiles>
+                                                           
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -55,15 +165,15 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
-      <version>${zookeeper.version}</version>
+      <groupId>org.apache.hcatalog</groupId>
+      <artifactId>hcatalog-pig-adapter</artifactId>
+      <version>${hcatalog.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase</artifactId>
-      <version>${hbase.version}</version>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+      <version>${zookeeper.version}</version>
       <scope>compile</scope>
     </dependency>
 
@@ -78,7 +188,6 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase</artifactId>
       <version>${hbase.version}</version>
-      <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -88,16 +197,24 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
-      <version>${zookeeper.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
+        <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase</artifactId>
+          <version>${hbase.version}</version>
+          <scope>test</scope>
+              <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>com.yammer.metrics</groupId>
       <artifactId>metrics-core</artifactId>
       <version>${metrics-core.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zookeeper</groupId>
+      <artifactId>zookeeper</artifactId>
+      <version>${zookeeper.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>

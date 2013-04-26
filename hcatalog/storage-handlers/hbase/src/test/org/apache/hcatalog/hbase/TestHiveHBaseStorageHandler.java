@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -9,12 +9,11 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hcatalog.hbase;
 
@@ -38,12 +37,10 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.cli.HCatDriver;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.junit.Test;
 
-public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
+public class TestHiveHBaseStorageHandler extends SkeletonHBaseTest {
 
     private static HiveConf   hcatConf;
     private static HCatDriver hcatDriver;
@@ -66,10 +63,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
                 hcatConf.set(el.getKey(), el.getValue());
             }
         }
-        HBaseConfiguration.merge(
-                hcatConf,
-                RevisionManagerConfiguration.create());
-
+        
         SessionState.start(new CliSessionState(hcatConf));
         hcatDriver = new HCatDriver();
 
@@ -82,8 +76,8 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_table(key int, value string) STORED BY " +
-                		     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+                		     "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
 
@@ -92,21 +86,30 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
 
         assertTrue(doesTableExist);
 
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("test_table", "cf1");
-
         hcatDriver.run("drop table test_table");
         doesTableExist = hAdmin.tableExists("test_table");
         assertTrue(doesTableExist == false);
 
-        try {
-            rm.getAbortedWriteTransactions("test_table", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
+    }
+    public void testHBaseTableCreateDrop() throws Exception {
+        Initialize();
+
+        hcatDriver.run("drop table test_table");
+        CommandProcessorResponse response = hcatDriver
+                .run("create table test_table(key int, value string) STORED BY " +
+                		     "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+
+        assertEquals(0, response.getResponseCode());
+
+        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+        boolean doesTableExist = hAdmin.tableExists("test_table");
+
+        assertTrue(doesTableExist);
+
+        hcatDriver.run("drop table test_table");
+        doesTableExist = hAdmin.tableExists("test_table");
+        assertTrue(doesTableExist == false);
 
     }
 
@@ -117,33 +120,20 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_Table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+                             "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
 
-        //HBase table gets created with lower case unless specified as a table property.
+        //HBase table gets created with the specific case
         HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
         boolean doesTableExist = hAdmin.tableExists("test_table");
 
         assertTrue(doesTableExist);
 
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("test_table", "cf1");
-
         hcatDriver.run("drop table test_table");
         doesTableExist = hAdmin.tableExists("test_table");
         assertTrue(doesTableExist == false);
-
-        try {
-            rm.getAbortedWriteTransactions("test_table", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
-
     }
 
     @Test
@@ -153,9 +143,9 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_Table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val'," +
-                    " 'hbase.table.name'='CaseSensitiveTable')");
+                             "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')" +
+                    " TBLPROPERTIES ('hbase.table.name'='CaseSensitiveTable')");
 
         assertEquals(0, response.getResponseCode());
 
@@ -164,21 +154,10 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
 
         assertTrue(doesTableExist);
 
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
 
         hcatDriver.run("drop table test_table");
         doesTableExist = hAdmin.tableExists("CaseSensitiveTable");
         assertTrue(doesTableExist == false);
-
-        try {
-            rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
 
     }
 
@@ -189,8 +168,8 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table mytable");
         CommandProcessorResponse response = hcatDriver
                 .run("create table mytable(key int, value string) STORED BY " +
-                     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+                     "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
 
@@ -207,7 +186,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         assertTrue(doesTableExist == false);
 
         CommandProcessorResponse responseTwo = hcatDriver.run("drop table mytable");
-        assertTrue(responseTwo.getResponseCode() == 0);
+        assertTrue(responseTwo.getResponseCode() != 0);
 
     }
 
@@ -229,9 +208,9 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table mytabletwo");
         CommandProcessorResponse response = hcatDriver
                 .run("create external table mytabletwo(key int, valueone string, valuetwo string) STORED BY " +
-                     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,familyone:val,familytwo:val'," +
-                    "'hbase.table.name'='testTable')");
+                     "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
+                    + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,familyone:val,familytwo:val') " +
+                      " TBLPROPERTIES ('hbase.table.name'='testTable')");
 
         assertEquals(0, response.getResponseCode());
 

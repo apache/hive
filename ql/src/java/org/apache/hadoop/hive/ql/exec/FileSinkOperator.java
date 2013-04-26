@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -926,8 +927,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
     if (hiveOutputFormat == null) {
-      try {
-        hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+      try {        
+        if (getConf().getTableInfo().getJobProperties() != null) {
+             //Setting only for Storage Handler
+             if (getConf().getTableInfo().getJobProperties().get("StorageHandlerOF") != null) {
+                 job.set("StorageHandlerOF",getConf().getTableInfo().getJobProperties().get("StorageHandlerOF"));
+                 hiveOutputFormat = ReflectionUtils.newInstance(conf.getTableInfo().getOutputFileFormatClass(),job);
+           }
+          else {
+                 hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance(); 
+          }
+        }
+        else {
+              hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+        }
       } catch (Exception ex) {
         throw new IOException(ex);
       }

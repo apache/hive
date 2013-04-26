@@ -47,9 +47,10 @@ public class TempletonJobTracker {
     public JobProfile getJobProfile(JobID jobid)
         throws IOException {
         RunningJob rj = jc.getJob(jobid);
-        JobStatus jobStatus = rj.getJobStatus();
-        JobProfile jobProfile = new JobProfile(jobStatus.getUsername(), jobStatus.getJobID(), 
-                jobStatus.getJobFile(), jobStatus.getTrackingUrl(), jobStatus.getJobName());
+        //JobStatus jobStatus = rj.getJobStatus();
+        //JobProfile jobProfile = new JobProfile(jobStatus.getUsername(), jobStatus.getJobID(), 
+        //        jobStatus.getJobFile(), jobStatus.getTrackingUrl(), jobStatus.getJobName());
+        JobProfile jobProfile = null;
         return jobProfile;
     }
 
@@ -61,7 +62,8 @@ public class TempletonJobTracker {
     public JobStatus getJobStatus(JobID jobid)
         throws IOException {
         RunningJob rj = jc.getJob(jobid);
-        JobStatus jobStatus = rj.getJobStatus();
+        //JobStatus jobStatus = rj.getJobStatus();
+        JobStatus jobStatus = null;
         return jobStatus;
     }
 
