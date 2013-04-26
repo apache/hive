@@ -13,8 +13,6 @@ PREHOOK: query: describe extended ba_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended ba_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 ba_key              	binary              	None                
 ba_val              	binary              	None                
 	 	 

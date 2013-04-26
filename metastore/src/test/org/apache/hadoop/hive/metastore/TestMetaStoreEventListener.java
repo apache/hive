@@ -65,7 +65,7 @@ public class TestMetaStoreEventListener extends TestCase {
   private HiveMetaStoreClient msc;
   private Driver driver;
 
-  private static final String dbName = "tmpdb";
+  private static final String dbName = "hive2038";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
 
@@ -217,7 +217,7 @@ public class TestMetaStoreEventListener extends TestCase {
 
     driver.run("alter table tmptbl add partition (b='2011')");
     listSize++;
-    Partition part = msc.getPartition("tmpdb", "tmptbl", "b=2011");
+    Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     assertEquals(notifyList.size(), listSize);
     assertEquals(preNotifyList.size(), listSize);
 
@@ -304,7 +304,7 @@ public class TestMetaStoreEventListener extends TestCase {
 
     Map<String,String> kvs = new HashMap<String, String>(1);
     kvs.put("b", "2011");
-    msc.markPartitionForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    msc.markPartitionForEvent("hive2038", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     assertEquals(preNotifyList.size(), listSize);

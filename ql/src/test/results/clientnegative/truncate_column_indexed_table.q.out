@@ -1,0 +1,27 @@
+PREHOOK: query: -- Tests truncating a column from an indexed table
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests truncating a column from an indexed table
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE INDEX test_tab_index ON TABLE test_tab (key) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX test_tab_index ON TABLE test_tab (key) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__test_tab_test_tab_index__
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Can not truncate columns from table with indexes

@@ -2428,6 +2428,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       posn++;
     }
 
+    boolean subQuery = qb.getParseInfo().getIsSubQ();
     boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() ==
         HiveParser.TOK_TRANSFORM);
     if (isInTransform) {
@@ -2462,6 +2463,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isUDTF && !fi.isNative()) {
         unparseTranslator.addIdentifierTranslation((ASTNode) udtfExpr
             .getChild(0));
+      }
+      if (isUDTF && (selectStar = udtfExprType == HiveParser.TOK_FUNCTIONSTAR)) {
+        genColListRegex(".*", null, (ASTNode) udtfExpr.getChild(0),
+            col_list, inputRR, pos, out_rwsch, qb.getAliases(), subQuery);
       }
     }
 
@@ -2567,7 +2572,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       }
 
-      boolean subQuery = qb.getParseInfo().getIsSubQ();
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
             : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
@@ -5982,6 +5986,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             reduceKeys.size(), numReds), new RowSchema(outputRS
             .getColumnInfos()), child), outputRS);
     rsOp.setColumnExprMap(colExprMap);
+    rsOp.setInputAlias(srcName);
     return rsOp;
   }
 
@@ -8075,9 +8080,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver lvForwardRR = new RowResolver();
     RowResolver source = opParseCtx.get(op).getRowResolver();
     for (ColumnInfo col : source.getColumnInfos()) {
-      if (col.getIsVirtualCol() && col.isHiddenVirtualCol()) {
-        continue;
-      }
       String[] tabCol = source.reverseLookup(col.getInternalName());
       lvForwardRR.put(tabCol[0], tabCol[1], col);
     }
@@ -8161,7 +8163,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String internalName = getColumnInternalName(outputInternalColNames.size());
       outputInternalColNames.add(internalName);
       ColumnInfo newCol = new ColumnInfo(internalName, c.getType(), c
-          .getTabAlias(), c.getIsVirtualCol());
+          .getTabAlias(), c.getIsVirtualCol(), c.isHiddenVirtualCol());
       String[] tableCol = source.reverseLookup(c.getInternalName());
       String tableAlias = tableCol[0];
       String colAlias = tableCol[1];
@@ -8371,7 +8373,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // For each task, set the key descriptor for the reducer
     for (Task<? extends Serializable> rootTask : rootTasks) {
-      setKeyDescTaskTree(rootTask);
+      GenMapRedUtils.setKeyAndValueDescForTaskTree(rootTask);
     }
 
     // If a task contains an operator which instructs bucketizedhiveinputformat
@@ -8594,36 +8596,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (Task<? extends Serializable> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
-    }
-  }
-
-  // loop over all the tasks recursviely
-  private void setKeyDescTaskTree(Task<? extends Serializable> task) {
-
-    if (task instanceof ExecDriver) {
-      MapredWork work = (MapredWork) task.getWork();
-      work.deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
-          .getAliasToWork();
-      if (!opMap.isEmpty()) {
-        for (Operator<? extends OperatorDesc> op : opMap.values()) {
-          GenMapRedUtils.setKeyAndValueDesc(work, op);
-        }
-      }
-    } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
-          .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
-        setKeyDescTaskTree(tsk);
-      }
-    }
-
-    if (task.getChildTasks() == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      setKeyDescTaskTree(childTask);
     }
   }
 
@@ -10661,6 +10633,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       {
         RowResolver ptfMapRR = tabDef.getRawInputShape().getRr();
 
+        ptfDesc.setMapSide(true);
         input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
             new RowSchema(ptfMapRR.getColumnInfos()),
             input), ptfMapRR);

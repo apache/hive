@@ -249,6 +249,7 @@ public class BucketingSortingReduceSinkOptimizer implements Transform {
       fsOp.getConf().setMultiFileSpray(false);
       fsOp.getConf().setTotalFiles(1);
       fsOp.getConf().setNumFiles(1);
+      fsOp.getConf().setRemovedReduceSinkBucketSort(true);
       tsOp.setUseBucketizedHiveInputFormat(true);
     }
 

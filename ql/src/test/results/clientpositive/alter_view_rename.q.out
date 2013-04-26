@@ -12,8 +12,6 @@ PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 foo                 	int                 	None                
 bar                 	string              	None                
 ds                  	string              	None                
@@ -32,8 +30,6 @@ PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 foo                 	int                 	None                
 bar                 	string              	None                
 ds                  	string              	None                

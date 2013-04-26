@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -29,13 +30,16 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * MapredWork.
@@ -239,6 +243,12 @@ public class MapredWork extends AbstractOperatorDesc {
     return keyDesc;
   }
 
+  /**
+   * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
+   * to keySerializeInfo of the ReduceSink
+   *
+   * @param keyDesc
+   */
   public void setKeyDesc(final TableDesc keyDesc) {
     this.keyDesc = keyDesc;
   }
@@ -556,5 +566,20 @@ public class MapredWork extends AbstractOperatorDesc {
 
   public void setFinalMapRed(boolean finalMapRed) {
     this.finalMapRed = finalMapRed;
+  }
+
+  public void configureJobConf(JobConf jobConf) {
+    for (PartitionDesc partition : aliasToPartnInfo.values()) {
+      PlanUtils.configureJobConf(partition.getTableDesc(), jobConf);
+    }
+    Collection<Operator<?>> mappers = aliasToWork.values();
+    for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
+      PlanUtils.configureJobConf(fs.getConf().getTableInfo(), jobConf);
+    }
+    if (reducer != null) {
+      for (FileSinkOperator fs : OperatorUtils.findOperators(reducer, FileSinkOperator.class)) {
+        PlanUtils.configureJobConf(fs.getConf().getTableInfo(), jobConf);
+      }
+    }
   }
 }

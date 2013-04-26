@@ -100,6 +100,7 @@ class BeeLineOpts implements Completor {
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
 
+  private String scriptFile = null;
 
   public BeeLineOpts(BeeLine beeLine, Properties props) {
     this.beeLine = beeLine;
@@ -349,6 +350,14 @@ class BeeLineOpts implements Completor {
 
   public String getHistoryFile() {
     return historyFile;
+  }
+
+  public void setScriptFile(String scriptFile) {
+    this.scriptFile = scriptFile;
+  }
+
+  public String getScriptFile() {
+    return scriptFile;
   }
 
   public void setColor(boolean color) {

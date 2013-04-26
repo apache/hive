@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -144,7 +145,7 @@ public class Table implements Serializable {
       SkewedInfo skewInfo = new SkewedInfo();
       skewInfo.setSkewedColNames(new ArrayList<String>());
       skewInfo.setSkewedColValues(new ArrayList<List<String>>());
-      skewInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
+      skewInfo.setSkewedColValueLocationMaps(new HashMap<SkewedValueList, String>());
       sd.setSkewedInfo(skewInfo);
     }
 
@@ -518,20 +519,20 @@ public class Table implements Serializable {
 
   public void setSkewedValueLocationMap(List<String> valList, String dirName)
       throws HiveException {
-    Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
+    Map<SkewedValueList, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
-      mappings = new HashMap<List<String>, String>();
+      mappings = new HashMap<SkewedValueList, String>();
       tTable.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
     }
 
     // Add or update new mapping
-    mappings.put(valList, dirName);
+    mappings.put(new SkewedValueList(valList), dirName);
   }
 
-  public Map<List<String>,String> getSkewedColValueLocationMaps() {
+  public Map<SkewedValueList,String> getSkewedColValueLocationMaps() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
+        .getSkewedColValueLocationMaps() : new HashMap<SkewedValueList, String>();
   }
 
   public void setSkewedColValues(List<List<String>> skewedValues) throws HiveException {

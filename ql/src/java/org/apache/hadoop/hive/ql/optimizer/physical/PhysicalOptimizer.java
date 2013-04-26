@@ -51,7 +51,15 @@ public class PhysicalOptimizer {
     }
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
       resolvers.add(new CommonJoinResolver());
+
+      // The joins have been automatically converted to map-joins.
+      // However, if the joins were converted to sort-merge joins automatically,
+      // they should also be tried as map-joins.
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN_TOMAPJOIN)) {
+        resolvers.add(new SortMergeJoinResolver());
+      }
     }
+
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
       resolvers.add(new IndexWhereResolver());
     }
@@ -61,7 +69,7 @@ public class PhysicalOptimizer {
     }
 
     // Physical optimizers which follow this need to be careful not to invalidate the inferences
-    // made by this optimizer.  Only optimizers which depend on the results of this one should
+    // made by this optimizer. Only optimizers which depend on the results of this one should
     // follow it.
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT)) {
       resolvers.add(new BucketingSortingInferenceOptimizer());

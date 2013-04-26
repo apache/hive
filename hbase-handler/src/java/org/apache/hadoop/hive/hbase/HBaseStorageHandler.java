@@ -34,6 +34,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -268,6 +269,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       configureTableJobProperties(tableDesc, jobProperties);
   }
 
+  @Override
   public void configureTableJobProperties(
     TableDesc tableDesc,
     Map<String, String> jobProperties) {
@@ -290,6 +292,17 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       }
     }
     jobProperties.put(HBaseSerDe.HBASE_TABLE_NAME, tableName);
+  }
+
+  @Override
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    try {
+      TableMapReduceUtil.addDependencyJars(jobConf);
+      org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil.addDependencyJars(jobConf,
+          HBaseStorageHandler.class);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

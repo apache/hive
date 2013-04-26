@@ -1,0 +1,606 @@
+PREHOOK: query: -- HIVE-4342
+-- Maponly union(UNION-13) is merged into non-maponly union(UNION-15)
+-- In this case, task for UNION-13 should be removed from top-task and merged into task for UNION-15
+-- TS[2]-SEL[3]-RS[5]-JOIN[6]-SEL[7]-UNION[15]-SEL[16]-RS[17]-EX[18]-FS[19]
+-- TS[0]-SEL[1]-RS[4]-JOIN[6]
+-- TS[8]-SEL[9]-UNION[13]-SEL[14]-UNION[15]
+-- TS[11]-SEL[12]-UNION[13]
+
+create table src10_1 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- HIVE-4342
+-- Maponly union(UNION-13) is merged into non-maponly union(UNION-15)
+-- In this case, task for UNION-13 should be removed from top-task and merged into task for UNION-15
+-- TS[2]-SEL[3]-RS[5]-JOIN[6]-SEL[7]-UNION[15]-SEL[16]-RS[17]-EX[18]-FS[19]
+-- TS[0]-SEL[1]-RS[4]-JOIN[6]
+-- TS[8]-SEL[9]-UNION[13]-SEL[14]-UNION[15]
+-- TS[11]-SEL[12]-UNION[13]
+
+create table src10_1 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src10_1
+PREHOOK: query: create table src10_2 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src10_2 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src10_2
+PREHOOK: query: create table src10_3 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src10_3 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src10_3
+PREHOOK: query: create table src10_4 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src10_4 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src10_4
+PREHOOK: query: from (select * from src limit 10) a
+insert overwrite table src10_1 select *
+insert overwrite table src10_2 select *
+insert overwrite table src10_3 select *
+insert overwrite table src10_4 select *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src10_1
+PREHOOK: Output: default@src10_2
+PREHOOK: Output: default@src10_3
+PREHOOK: Output: default@src10_4
+POSTHOOK: query: from (select * from src limit 10) a
+insert overwrite table src10_1 select *
+insert overwrite table src10_2 select *
+insert overwrite table src10_3 select *
+insert overwrite table src10_4 select *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src10_1
+POSTHOOK: Output: default@src10_2
+POSTHOOK: Output: default@src10_3
+POSTHOOK: Output: default@src10_4
+POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub0) (= (. (TOK_TABLE_OR_COL sub0) key) (. (TOK_TABLE_OR_COL sub1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL sub1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL sub1) value))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) alias0)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))) alias1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+
+STAGE DEPENDENCIES:
+  Stage-7 is a root stage
+  Stage-6 depends on stages: Stage-7
+  Stage-2 depends on stages: Stage-6
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery1:alias1-subquery1:sub1:src10_1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery1:alias1-subquery1:sub1:src10_1 
+          TableScan
+            alias: src10_1
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              HashTable Sink Operator
+                condition expressions:
+                  0 {_col0} {_col1}
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 [Column[_col0]]
+                  1 [Column[_col0]]
+                Position of Big Table: 1
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:alias1-subquery1:sub0:src10_2 
+          TableScan
+            alias: src10_2
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 {_col0} {_col1}
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 [Column[_col0]]
+                  1 [Column[_col0]]
+                outputColumnNames: _col0, _col1
+                Position of Big Table: 1
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+        null-subquery2:alias1-subquery2-subquery1:alias0-subquery1:sub2:src10_3 
+          TableScan
+            alias: src10_3
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+        null-subquery2:alias1-subquery2-subquery2:alias0-subquery2:src10_4 
+          TableScan
+            alias: src10_4
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1
+PREHOOK: Input: default@src10_2
+PREHOOK: Input: default@src10_3
+PREHOOK: Input: default@src10_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1
+POSTHOOK: Input: default@src10_2
+POSTHOOK: Input: default@src10_3
+POSTHOOK: Input: default@src10_4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+165	val_165
+165	val_165
+165	val_165
+238	val_238
+238	val_238
+238	val_238
+255	val_255
+255	val_255
+255	val_255
+27	val_27
+27	val_27
+27	val_27
+278	val_278
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+311	val_311
+409	val_409
+409	val_409
+409	val_409
+484	val_484
+484	val_484
+484	val_484
+86	val_86
+86	val_86
+86	val_86
+98	val_98
+98	val_98
+98	val_98
+PREHOOK: query: explain
+SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub0) (= (. (TOK_TABLE_OR_COL sub0) key) (. (TOK_TABLE_OR_COL sub1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL sub1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL sub1) value))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) sub2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src10_4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) alias0)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))) alias1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:alias1-subquery1:sub0:src10_2 
+          TableScan
+            alias: src10_2
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 1
+        null-subquery1:alias1-subquery1:sub1:src10_1 
+          TableScan
+            alias: src10_1
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+        null-subquery2:alias1-subquery2-subquery1:alias0-subquery1:sub2:src10_3 
+          TableScan
+            alias: src10_3
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+        null-subquery2:alias1-subquery2-subquery2:alias0-subquery2:src10_4 
+          TableScan
+            alias: src10_4
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1
+PREHOOK: Input: default@src10_2
+PREHOOK: Input: default@src10_3
+PREHOOK: Input: default@src10_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  UNION ALL
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+) alias1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1
+POSTHOOK: Input: default@src10_2
+POSTHOOK: Input: default@src10_3
+POSTHOOK: Input: default@src10_4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+165	val_165
+165	val_165
+165	val_165
+238	val_238
+238	val_238
+238	val_238
+255	val_255
+255	val_255
+255	val_255
+27	val_27
+27	val_27
+27	val_27
+278	val_278
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+311	val_311
+409	val_409
+409	val_409
+409	val_409
+484	val_484
+484	val_484
+484	val_484
+86	val_86
+86	val_86
+86	val_86
+98	val_98
+98	val_98
+98	val_98

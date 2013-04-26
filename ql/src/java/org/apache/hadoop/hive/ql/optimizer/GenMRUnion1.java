@@ -259,12 +259,17 @@ public class GenMRUnion1 implements NodeProcessor {
     // Copy into the current union task plan if
     if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)) {
       processSubQueryUnionMerge(ctx, uCtxTask, union, stack);
+      if (ctx.getRootTasks().contains(currTask)) {
+        ctx.getRootTasks().remove(currTask);
+      }
     }
     // If it a map-reduce job, create a temporary file
     else {
       // is the current task a root task
       if (shouldBeRootTask(currTask)
-          && (!ctx.getRootTasks().contains(currTask))) {
+          && !ctx.getRootTasks().contains(currTask)
+          && (currTask.getParentTasks() == null
+              || currTask.getParentTasks().isEmpty())) {
         ctx.getRootTasks().add(currTask);
       }
 

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -302,8 +303,8 @@ public final class PlanUtils {
     return new TableDesc(MetadataTypedColumnsetSerDe.class,
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
         .makeProperties(
-        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
-        separatorCode));
+            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
+            separatorCode));
   }
 
   /**
@@ -726,6 +727,19 @@ public final class PlanUtils {
       }
     } catch (HiveException ex) {
       throw new RuntimeException(ex);
+    }
+  }
+
+  public static void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    String handlerClass = tableDesc.getProperties().getProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+    try {
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(jobConf, handlerClass);
+      if (storageHandler != null) {
+        storageHandler.configureJobConf(tableDesc, jobConf);
+      }
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
     }
   }
 

@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -185,8 +186,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       skewInfor.setSkewedColNames(Arrays.asList("name"));
       List<String> skv = Arrays.asList("1");
       skewInfor.setSkewedColValues(Arrays.asList(skv));
-      Map<List<String>, String> scvlm = new HashMap<List<String>, String>();
-      scvlm.put(skv, "location1");
+      Map<SkewedValueList, String> scvlm = new HashMap<SkewedValueList, String>();
+      scvlm.put(new SkewedValueList(skv), "location1");
       skewInfor.setSkewedColValueLocationMaps(scvlm);
       sd.setSkewedInfo(skewInfor);
 

@@ -69,7 +69,7 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
     /* Objective here is to ensure that when exceptions are thrown in HiveMetaStore in API methods
      * they bubble up and are stored in the MetaStoreEndFunctionContext objects
      */
-    String dbName = "tmpdb";
+    String dbName = "hive3524";
     String tblName = "tmptbl";
     int listSize = 0;
 
@@ -109,7 +109,7 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
     assertEquals(context.getInputTableName(), tableName);
 
     try {
-      msc.getPartition("tmpdb", tblName, "b=2012");
+      msc.getPartition("hive3524", tblName, "b=2012");
     }
     catch (Exception e2) {
     }

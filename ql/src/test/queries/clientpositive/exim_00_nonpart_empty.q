@@ -5,7 +5,7 @@ set hive.test.mode.nosamplelist=exim_department,exim_employee;
 create table exim_department ( dep_id int comment "department id") 	
 	stored as textfile	
 	tblproperties("creator"="krishna");
-dfs -mkdir ../build/ql/test/data/exports/exim_department/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_department/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_department;
 export table exim_department to 'ql/test/data/exports/exim_department';
 drop table exim_department;

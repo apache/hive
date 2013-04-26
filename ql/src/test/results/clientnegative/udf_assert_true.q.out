@@ -24,10 +24,10 @@ STAGE PLANS:
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
-                  outputColumnNames: _col2
+                  outputColumnNames: _col4
                   Select Operator
                     expressions:
-                          expr: assert_true((_col2 > 0))
+                          expr: assert_true((_col4 > 0))
                           type: void
                     outputColumnNames: _col0
                     Limit
@@ -45,10 +45,10 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col2
+                    outputColumnNames: _col4
                     Select Operator
                       expressions:
-                            expr: assert_true((_col2 > 0))
+                            expr: assert_true((_col4 > 0))
                             type: void
                       outputColumnNames: _col0
                       Limit
@@ -95,10 +95,10 @@ STAGE PLANS:
             Lateral View Forward
               Select Operator
                 Lateral View Join Operator
-                  outputColumnNames: _col2
+                  outputColumnNames: _col4
                   Select Operator
                     expressions:
-                          expr: assert_true((_col2 < 2))
+                          expr: assert_true((_col4 < 2))
                           type: void
                     outputColumnNames: _col0
                     Limit
@@ -116,10 +116,10 @@ STAGE PLANS:
                 UDTF Operator
                   function name: explode
                   Lateral View Join Operator
-                    outputColumnNames: _col2
+                    outputColumnNames: _col4
                     Select Operator
                       expressions:
-                            expr: assert_true((_col2 < 2))
+                            expr: assert_true((_col4 < 2))
                             type: void
                       outputColumnNames: _col0
                       Limit

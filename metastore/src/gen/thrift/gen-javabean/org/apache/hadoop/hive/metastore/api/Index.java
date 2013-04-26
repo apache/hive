@@ -1145,7 +1145,7 @@ public class Index implements org.apache.thrift.TBase<Index, Index._Fields>, jav
                 for (int _i211 = 0; _i211 < _map210.size; ++_i211)
                 {
                   String _key212; // required
-                  String _val213; // optional
+                  String _val213; // required
                   _key212 = iprot.readString();
                   _val213 = iprot.readString();
                   struct.parameters.put(_key212, _val213);
@@ -1362,7 +1362,7 @@ public class Index implements org.apache.thrift.TBase<Index, Index._Fields>, jav
           for (int _i217 = 0; _i217 < _map216.size; ++_i217)
           {
             String _key218; // required
-            String _val219; // optional
+            String _val219; // required
             _key218 = iprot.readString();
             _val219 = iprot.readString();
             struct.parameters.put(_key218, _val219);

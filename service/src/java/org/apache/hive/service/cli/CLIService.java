@@ -309,7 +309,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public synchronized String getDelegationTokenFromMetaStore(String owner)
       throws HiveSQLException, UnsupportedOperationException, LoginException, IOException {
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||
-        !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_IMPERSONATION)) {
+        !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       throw new UnsupportedOperationException(
         "delegation token is can only be obtained for a secure remote metastore");
     }

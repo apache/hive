@@ -4,8 +4,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe a list structure in a thrift table
 describe src_thrift.lint
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 lint                	array<int>          	from deserializer   
 PREHOOK: query: -- Describe the element of a list
 describe src_thrift.lint.$elem$
@@ -13,8 +11,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe the element of a list
 describe src_thrift.lint.$elem$
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 $elem$              	int                 	from deserializer   
 PREHOOK: query: -- Describe the key of a map
 describe src_thrift.mStringString.$key$
@@ -22,8 +18,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe the key of a map
 describe src_thrift.mStringString.$key$
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 $key$               	string              	from deserializer   
 PREHOOK: query: -- Describe the value of a map
 describe src_thrift.mStringString.$value$
@@ -31,8 +25,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe the value of a map
 describe src_thrift.mStringString.$value$
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 $value$             	string              	from deserializer   
 PREHOOK: query: -- Describe a complex element of a list
 describe src_thrift.lintString.$elem$
@@ -40,8 +32,6 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe a complex element of a list
 describe src_thrift.lintString.$elem$
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
@@ -51,6 +41,4 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- Describe a member of an element of a list
 describe src_thrift.lintString.$elem$.myint
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 myint               	int                 	from deserializer   

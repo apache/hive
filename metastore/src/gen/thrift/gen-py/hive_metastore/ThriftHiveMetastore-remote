@@ -58,6 +58,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool drop_partition_by_name(string db_name, string tbl_name, string part_name, bool deleteData)'
   print '  bool drop_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, bool deleteData, EnvironmentContext environment_context)'
   print '  Partition get_partition(string db_name, string tbl_name,  part_vals)'
+  print '  Partition exchange_partition( partitionSpecs, string source_db, string source_table_name, string dest_db, string dest_table_name)'
   print '  Partition get_partition_with_auth(string db_name, string tbl_name,  part_vals, string user_name,  group_names)'
   print '  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '   get_partitions(string db_name, string tbl_name, i16 max_parts)'
@@ -364,6 +365,12 @@ elif cmd == 'get_partition':
     print 'get_partition requires 3 args'
     sys.exit(1)
   pp.pprint(client.get_partition(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'exchange_partition':
+  if len(args) != 5:
+    print 'exchange_partition requires 5 args'
+    sys.exit(1)
+  pp.pprint(client.exchange_partition(eval(args[0]),args[1],args[2],args[3],args[4],))
 
 elif cmd == 'get_partition_with_auth':
   if len(args) != 5:

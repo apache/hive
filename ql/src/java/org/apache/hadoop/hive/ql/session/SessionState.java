@@ -191,19 +191,6 @@ public class SessionState {
     ls = new LineageState();
     overriddenConfigurations = new HashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
-
-    // Register the Hive builtins jar and all of its functions
-    try {
-      Class<?> pluginClass = Utilities.getBuiltinUtilsClass();
-      URL jarLocation = pluginClass.getProtectionDomain().getCodeSource()
-        .getLocation();
-      add_builtin_resource(
-        ResourceType.JAR, jarLocation.toString());
-      FunctionRegistry.registerFunctionsFromPluginJar(
-        jarLocation, pluginClass.getClassLoader());
-    } catch (Exception ex) {
-      throw new RuntimeException("Failed to load Hive builtin functions", ex);
-    }
   }
 
   public void setCmd(String cmdString) {

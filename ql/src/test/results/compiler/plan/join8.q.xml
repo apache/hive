@@ -482,6 +482,9 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="inputAlias"> 
+                     <string>a</string> 
+                    </void> 
                     <void property="operatorId"> 
                      <string>RS_6</string> 
                     </void> 
@@ -1114,6 +1117,9 @@
                        <string>CNTR_NAME_RS_7_FATAL_ERROR</string> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="inputAlias"> 
+                     <string>b</string> 
                     </void> 
                     <void property="operatorId"> 
                      <string>RS_7</string> 

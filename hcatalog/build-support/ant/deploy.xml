@@ -21,6 +21,8 @@
 
 <project xmlns:artifact="artifact:org.apache.maven.artifact.ant">
 
+    <loadproperties srcfile="${path.to.basedir}/build.properties"/>
+
     <macrodef name="_sign">
         <attribute name="inputFile"/>
         <sequential>
@@ -38,6 +40,35 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="_mvnpublish">
+      <attribute name="module"/>
+      <attribute name="jarname" default="@{module}"/>
+      <sequential>
+        <echo message="Installing local artifact for maven : @{module}" />
+        <artifact:install file="${path.to.basedir}/../build/@{module}/hive-@{jarname}-${hive.version}.jar">
+          <artifact:pom file="${path.to.basedir}/../build/@{module}/pom.xml"/>
+          <artifact:localRepository path="${mvn.local.repo}"/>
+        </artifact:install>
+      </sequential>
+    </macrodef>
+
+    <target name="hive-mvn-publish">
+      <!-- Pick built jars for all the hive artifacts and install them to local maven cache -->
+      <_mvnpublish module="shims" />
+      <_mvnpublish module="common" />
+      <_mvnpublish module="serde" />
+      <_mvnpublish module="metastore" />
+      <_mvnpublish module="ql" jarname="exec"/>
+      <_mvnpublish module="contrib" />
+      <_mvnpublish module="service" />
+      <_mvnpublish module="cli" />
+      <_mvnpublish module="jdbc" />
+      <_mvnpublish module="beeline" />
+      <_mvnpublish module="hwi" />
+      <_mvnpublish module="hbase-handler" />
+      <_mvnpublish module="testutils" />
+    </target>
+
     <target name="mvn-init" unless="mvn-init.complete">
         <echo message="${ant.project.name}"/>
         <get src="${mvnrepo}/org/apache/maven/maven-ant-tasks/${maven-ant-tasks.version}/maven-ant-tasks-${maven-ant-tasks.version}.jar"
@@ -47,6 +78,7 @@
         <taskdef resource="org/apache/maven/artifact/ant/antlib.xml"
                  uri="artifact:org.apache.maven.artifact.ant"
                  classpath="${path.to.basedir}/build/maven-ant-tasks-${maven-ant-tasks.version}.jar"/>
+        <antcall target="hive-mvn-publish" />
         <artifact:dependencies>
             <dependency groupId="org.apache.hcatalog" artifactId="hcatalog" version="${hcatalog.version}" scope="system" systemPath="${path.to.basedir}/pom.xml"/>
         </artifact:dependencies>

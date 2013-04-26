@@ -11,8 +11,6 @@ PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    
@@ -26,8 +24,6 @@ PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_8__
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    

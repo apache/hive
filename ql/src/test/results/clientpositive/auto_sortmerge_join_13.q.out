@@ -1,0 +1,776 @@
+PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: insert overwrite table tbl1 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert overwrite table tbl1 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) value2)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key1)) (TOK_SELEXPR (TOK_TABLE_OR_COL key2)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value1)) (TOK_SELEXPR (TOK_TABLE_OR_COL value2)))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq:a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0, _col1, _col4, _col5
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
+                      expr: _col4
+                      type: int
+                      expr: _col5
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col2
+                        type: int
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+                Select Operator
+                  expressions:
+                        expr: _col1
+                        type: string
+                        expr: _col3
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 2
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+
+PREHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+2	2
+4	4
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+8	8
+9	9
+PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_2	val_2
+val_4	val_4
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_8	val_8
+val_9	val_9
+PREHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) value2)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key1)) (TOK_SELEXPR (TOK_TABLE_OR_COL key2)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value1)) (TOK_SELEXPR (TOK_TABLE_OR_COL value2)))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq:a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0, _col1, _col4, _col5
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
+                      expr: _col4
+                      type: int
+                      expr: _col5
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col2
+                        type: int
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+                Select Operator
+                  expressions:
+                        expr: _col1
+                        type: string
+                        expr: _col3
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 2
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+
+PREHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+2	2
+4	4
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+8	8
+9	9
+PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_2	val_2
+val_4	val_4
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_8	val_8
+val_9	val_9
+PREHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+POSTHOOK: query: -- A SMB join followed by a mutli-insert
+explain 
+from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value) value2)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key1)) (TOK_SELEXPR (TOK_TABLE_OR_COL key2)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value1)) (TOK_SELEXPR (TOK_TABLE_OR_COL value2)))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq:a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0, _col1, _col4, _col5
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
+                      expr: _col4
+                      type: int
+                      expr: _col5
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col2
+                        type: int
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
+                Select Operator
+                  expressions:
+                        expr: _col1
+                        type: string
+                        expr: _col3
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 2
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+
+PREHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: from (
+  SELECT a.key key1, a.value value1, b.key key2, b.value value2 
+  FROM tbl1 a JOIN tbl2 b 
+  ON a.key = b.key ) subq
+INSERT OVERWRITE TABLE dest1 select key1, key2
+INSERT OVERWRITE TABLE dest2 select value1, value2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest1 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest1 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+2	2
+4	4
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+5	5
+8	8
+9	9
+PREHOOK: query: select * from dest2 order by k1, k2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest2 order by k1, k2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_0	val_0
+val_2	val_2
+val_4	val_4
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_5	val_5
+val_8	val_8
+val_9	val_9

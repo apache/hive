@@ -6,6 +6,7 @@
  */
 package org.apache.hadoop.hive.serde2.thrift.test;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
@@ -286,7 +287,19 @@ public class MiniStruct implements org.apache.thrift.TBase<MiniStruct, MiniStruc
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_my_string = true && (isSetMy_string());
+    builder.append(present_my_string);
+    if (present_my_string)
+      builder.append(my_string);
+
+    boolean present_my_enum = true && (isSetMy_enum());
+    builder.append(present_my_enum);
+    if (present_my_enum)
+      builder.append(my_enum.getValue());
+
+    return builder.toHashCode();
   }
 
   public int compareTo(MiniStruct other) {

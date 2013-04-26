@@ -290,6 +290,24 @@
 </property>
 
 <property>
+  <name>hive.metastore.disallow.incompatible.col.type.change</name>
+  <value></value>
+  <description>If true (default is false), ALTER TABLE operations which change the type of 
+    a column (say STRING) to an incompatible type (say MAP<STRING, STRING>) are disallowed.  
+    RCFile default serde (ColumnarSerde) serializes the values in such a way that the
+    datatypes can be converted from string to any type. The map is also serialized as
+    a string, which can be read as a string as well. However, with any binary 
+    serialization, this is not true. Blocking the ALTER TABLE prevents ClassCastExceptions
+    when subsequently trying to access old partitions. 
+      
+    Primitive types like INT, STRING, BIGINT, etc are compatible with each other and are 
+    not blocked.  
+
+    See HIVE-4409 for more details.
+</description>
+</property>
+
+<property>
   <name>hive.metastore.end.function.listeners</name>
   <value></value>
   <description>list of comma separated listeners for the end of metastore functions.</description>
@@ -842,6 +860,16 @@
 </property>
 
 <property>
+  <name>hive.optimize.mapjoin.mapreduce</name>
+  <value>false</value>
+  <description>If hive.auto.convert.join is off, this parameter does not take
+    affect. If it is on, and if there are map-join jobs followed by a map-reduce
+    job (for e.g a group by), each map-only job is merged with the following
+    map-reduce job.
+  </description>
+</property>
+
+<property>
   <name>hive.script.auto.progress</name>
   <value>false</value>
   <description>Whether Hive Tranform/Map/Reduce Clause should automatically send progress information to TaskTracker to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is outputting to stderr.  This option removes the need of periodically producing stderr messages, but users should be cautious because this may prevent infinite loops in the scripts to be killed by TaskTracker.  </description>
@@ -983,6 +1011,20 @@
 </property>
 
 <property>
+  <name>hive.auto.convert.sortmerge.join.to.mapjoin</name>
+  <value>false</value>
+  <description>If hive.auto.convert.sortmerge.join is set to true, and a join was converted to a sort-merge join,
+    this parameter decides whether each table should be tried as a big table, and effectviely a map-join should be
+    tried. That would create a conditional task with n+1 children for a n-way join (1 child for each table as the
+    big table), and the backup task will be the sort-merge join. In some casess, a map-join would be faster than a
+    sort-merge join, if there is no advantage of having the output bucketed and sorted. For eg. if a very big sorted
+    and bucketed table with few files (say 10 files) are being joined with a very small sorter and bucketed table
+    with few files (10 files), the sort-merge join will only use 10 mappers, and a simple map-only join might be faster
+    if the complete small table can fit in memory, and a map-join can be performed.
+  </description>
+</property>
+
+<property>
   <name>hive.metastore.ds.connection.url.hook</name>
   <value></value>
   <description>Name of the hook to use for retriving the JDO connection URL. If empty, the value in javax.jdo.option.ConnectionURL is used </description>
@@ -1120,42 +1162,6 @@
   <name>hive.exec.default.partition.name</name>
   <value>__HIVE_DEFAULT_PARTITION__</value>
   <description>The default partition name in case the dynamic partition column value is null/empty string or anyother values that cannot be escaped. This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). The user has to be aware that the dynamic partition value should not contain this value to avoid confusions.</description>
-</property>
-
-<property>
-  <name>hive.profiler.dbclass</name>
-  <value>jdbc:derby</value>
-  <description>The default database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.jdbcdriver</name>
-  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
-  <description>The JDBC driver for the database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.dbconnectionstring</name>
-  <value>jdbc:derby:;databaseName=TempStatsStore;create=true</value>
-  <description>The default connection string for the database that stores temporary hive statistics.</description>
-</property>
-
-<property>
-  <name>hive.profiler.jdbc.timeout</name>
-  <value>30</value>
-  <description>Timeout value (number of seconds) used by JDBC connection and statements.</description>
-</property>
-
-<property>
-  <name>hive.profiler.retries.max</name>
-  <value>0</value>
-  <description>Maximum number of retries when profiler publisher/aggregator got an exception updating intermediate database. Default is no tries on failures.</description>
-</property>
-
-<property>
-  <name>hive.profiler.retries.wait</name>
-  <value>3000</value>
-  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues  baseWindow * (failure  1) * (random number between [0.0,1.0]).</description>
 </property>
 
 <property>
@@ -1877,7 +1883,6 @@
   </description>
 </property>
 
-
 <property>
   <name>hive.server2.authentication.ldap.baseDN</name>
   <value></value>
@@ -1885,6 +1890,16 @@
     LDAP base DN
   </description>
 </property>
+
+<property>
+  <name>hive.server2.enable.doAs</name>
+  <value>true</value>
+  <description>
+   Setting this property to true will have hive server2 execute
+    hive operations as the user making the calls to it.
+  </description>
+</property>
+
 
 </configuration>
 

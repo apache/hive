@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -43,9 +44,10 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
 
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
       if (parentOp instanceof TableScanOperator) {
-        topOps.add((TableScanOperator)parentOp);
-      }
-      else {
+        topOps.add((TableScanOperator) parentOp);
+      } else if (parentOp instanceof CommonJoinOperator) {
+        topOps.add(null);
+      } else {
         getListTopOps(parentOp, topOps);
       }
     }

@@ -19,7 +19,7 @@ alter table exim_employee set fileformat
 	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat";
 
 alter table exim_employee add partition (emp_country='in', emp_state='ka');
-dfs -mkdir ../build/ql/test/data/exports/exim_employee/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_employee/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;

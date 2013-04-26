@@ -19,9 +19,9 @@ load data local inpath '../data/files/over10k' into table over10k;
 
 select s, rank() over (partition by f order by t) from over10k limit 100;
 
-select s, dense_rank() over (partition by ts order by i desc) from over10k limit 100;
+select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100;
 
-select s, cume_dist() over (partition by bo order by b) from over10k limit 100;
+select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100;
 
 select s, percent_rank() over (partition by dec order by f) from over10k limit 100;
 
@@ -30,7 +30,7 @@ select s, percent_rank() over (partition by dec order by f) from over10k limit 1
 select ts, dec, rnk
 from
   (select ts, dec,
-          rank() over (partition by ts)  as rnk
+          rank() over (partition by ts order by dec)  as rnk
           from
             (select other.ts, other.dec
              from over10k other
@@ -54,7 +54,7 @@ where dec = 89.5 limit 10;
 select ts, dec, rnk
 from
   (select ts, dec,
-          rank() over (partition by ts)  as rnk
+          rank() over (partition by ts order by dec)  as rnk
           from
             (select other.ts, other.dec
              from over10k other

@@ -23,8 +23,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
-import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -95,7 +96,7 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
       ClassNotFoundException {
     try {
       // get the tableDesc from the map stored in the mapjoin operator
-      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(
+      HashTableSinkObjectCtx ctx = MapJoinOperator.getMetadata().get(
           Integer.valueOf(metadataTag));
 
       Writable val = ctx.getSerDe().getSerializedClass().newInstance();
@@ -119,7 +120,7 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
   public void writeExternal(ObjectOutput out) throws IOException {
     try {
       // get the tableDesc from the map stored in the mapjoin operator
-      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(
+      HashTableSinkObjectCtx ctx = HashTableSinkOperator.getMetadata().get(
           Integer.valueOf(metadataTag));
 
       // Different processing for key and value

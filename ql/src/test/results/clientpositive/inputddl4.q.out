@@ -23,8 +23,6 @@ PREHOOK: query: DESCRIBE INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL4
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 viewtime            	string              	None                
 userid              	int                 	None                
 page_url            	string              	None                
@@ -44,8 +42,6 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 viewtime            	string              	None                
 userid              	int                 	None                
 page_url            	string              	None                

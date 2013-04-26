@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -501,12 +503,19 @@ public final class OpProcFactory {
         Object... nodeOutputs) throws SemanticException {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
+      ReduceSinkOperator rs = (ReduceSinkOperator) nd;
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
-      Set<String> aliases = owi.getRowResolver(nd).getTableNames();
+
+      Set<String> aliases;
       boolean ignoreAliases = false;
-      if (aliases.size() == 1 && aliases.contains("")) {
-        // Reduce sink of group by operator
-        ignoreAliases = true;
+      if (rs.getInputAlias() != null) {
+        aliases = new HashSet<String>(Arrays.asList(rs.getInputAlias()));
+      } else {
+        aliases = owi.getRowResolver(nd).getTableNames();
+        if (aliases.size() == 1 && aliases.contains("")) {
+          // Reduce sink of group by operator
+          ignoreAliases = true;
+        }
       }
       boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, aliases, ignoreAliases);
       if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
