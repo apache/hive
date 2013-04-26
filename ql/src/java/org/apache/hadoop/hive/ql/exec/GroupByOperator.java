@@ -58,12 +58,12 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringOb
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -90,8 +90,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   protected transient ObjectInspector[][] aggregationParameterObjectInspectors;
   protected transient ObjectInspector[][] aggregationParameterStandardObjectInspectors;
   protected transient Object[][] aggregationParameterObjects;
-  // In the future, we may allow both count(DISTINCT a) and sum(DISTINCT a) in
-  // the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number.
   protected transient boolean[] aggregationIsDistinct;
   // Map from integer tag to distinct aggrs
@@ -887,8 +885,15 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
     // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual) {
-      forward(currentKeys.getKeyArray(), aggregations);
-      countAfterReport = 0;
+      // This is to optimize queries of the form:
+      // select count(distinct key) from T
+      // where T is sorted and bucketized by key
+      // Partial aggregation is performed on the mapper, and the
+      // reducer gets 1 row (partial result) per mapper.
+      if (!conf.isDontResetAggrsDistinct()) {
+        forward(currentKeys.getKeyArray(), aggregations);
+        countAfterReport = 0;
+      }
     }
 
     // Need to update the keys?
@@ -900,7 +905,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       }
 
       // Reset the aggregations
-      resetAggregations(aggregations);
+      // For distincts optimization with sorting/bucketing, perform partial aggregation
+      if (!conf.isDontResetAggrsDistinct()) {
+        resetAggregations(aggregations);
+      }
 
       // clear parameters in last-invoke
       for (int i = 0; i < aggregationsParametersLastInvoke.length; i++) {
@@ -1076,7 +1084,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       try {
         // put the hash related stats in statsMap if applicable, so that they
         // are sent to jt as counters
-        if (hashAggr) {
+        if (hashAggr && counterNameToEnum != null) {
           incrCounter(counterNameHashOut, numRowsHashTbl);
         }
 

@@ -7,7 +7,7 @@ load data local inpath "../data/files/test.dat" into table exim_department;
 set hive.security.authorization.enabled=true;
 
 grant Select on table exim_department to user hive_test_user;
-dfs -mkdir ../build/ql/test/data/exports/exim_department/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_department/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_department;
 export table exim_department to 'ql/test/data/exports/exim_department';
 

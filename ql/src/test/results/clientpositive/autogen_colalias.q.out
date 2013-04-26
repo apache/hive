@@ -19,8 +19,6 @@ PREHOOK: query: describe dest_grouped_old1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe dest_grouped_old1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 _c0                 	int                 	None                
 zz                  	int                 	None                
 key                 	string              	None                
@@ -42,8 +40,6 @@ PREHOOK: query: describe dest_grouped_old2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe dest_grouped_old2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 PREHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), unix_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
 	(src.key +5) % 2,
@@ -62,8 +58,6 @@ PREHOOK: query: describe dest_grouped_new1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe dest_grouped_new1
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 column_0            	int                 	None                
 zz                  	int                 	None                
 column_2            	double              	None                
@@ -85,8 +79,6 @@ PREHOOK: query: describe dest_grouped_new2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe dest_grouped_new2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
 DROP TEMPORARY FUNCTION test_max

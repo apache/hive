@@ -57,6 +57,9 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
       getListTopOps(joinOp, topOps);
       int currentPos = 0;
       for (TableScanOperator topOp : topOps) {
+        if (topOp == null) {
+          return -1;
+        }
         int numPartitions = 1; // in case the sizes match, preference is
                                // given to the table with fewer partitions
         Table table = parseCtx.getTopToTable().get(topOp);

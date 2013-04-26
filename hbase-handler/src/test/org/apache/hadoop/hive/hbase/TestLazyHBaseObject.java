@@ -546,6 +546,12 @@ public class TestLazyHBaseObject extends TestCase {
         + "'c':null,'d':'no'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
+    // This is intentionally duplicated because of HIVE-3179
+    assertEquals(
+      ("{'key':'test-row','a':null,'b':['','a','',''],"
+       + "'c':null,'d':'no'}").replace("'", "\""),
+      SerDeUtils.getJSONString(o, oi));
+
     kvs.clear();
     kvs.add(new KeyValue(Bytes.toBytes("test-row"),
         Bytes.toBytes("cfa"), Bytes.toBytes("a"), Bytes.toBytes("123")));

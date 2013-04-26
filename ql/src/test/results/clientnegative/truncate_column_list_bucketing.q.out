@@ -1,0 +1,32 @@
+PREHOOK: query: -- Tests truncating a column on which a table is list bucketed
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests truncating a column on which a table is list bucketed
+
+CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: ALTER TABLE test_tab
+SKEWED BY (key) ON ("484")
+STORED AS DIRECTORIES
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: ALTER TABLE test_tab
+SKEWED BY (key) ON ("484")
+STORED AS DIRECTORIES
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: A column on which a partition/table is list bucketed cannot be truncated. key

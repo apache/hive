@@ -47,8 +47,6 @@ PREHOOK: query: describe extended exim_department
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended exim_department
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 dep_id              	int                 	department id       
 	 	 
 #### A masked pattern was here ####

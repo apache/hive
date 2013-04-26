@@ -78,11 +78,6 @@ if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
   exit 1;
 fi
 
-if [ ! -f ${HIVE_LIB}/hive-builtins-*.jar ]; then
-  echo "Missing Hive Builtins Jar: ${HIVE_LIB}/hive-builtins-*.jar"
-  exit 1;
-fi
-
 if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
   echo "Missing Hive MetaStore Jar"
   exit 2;

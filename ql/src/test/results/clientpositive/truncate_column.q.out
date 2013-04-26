@@ -1,0 +1,765 @@
+PREHOOK: query: -- Tests truncating column(s) from a table, also tests that stats are updated
+
+CREATE TABLE test_tab (key STRING, value STRING) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests truncating column(s) from a table, also tests that stats are updated
+
+CREATE TABLE test_tab (key STRING, value STRING) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_tab
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	185                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: -- Truncate 1 column
+TRUNCATE TABLE test_tab COLUMNS (key)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Truncate 1 column
+TRUNCATE TABLE test_tab COLUMNS (key)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	150                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- First column should be null
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- First column should be null
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	val_238
+NULL	val_86
+NULL	val_311
+NULL	val_27
+NULL	val_165
+NULL	val_409
+NULL	val_255
+NULL	val_278
+NULL	val_98
+NULL	val_484
+PREHOOK: query: -- Truncate multiple columns
+INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Truncate multiple columns
+INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key, value)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key, value)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	75                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: -- Truncate columns again
+TRUNCATE TABLE test_tab COLUMNS (key, value)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Truncate columns again
+TRUNCATE TABLE test_tab COLUMNS (key, value)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	75                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: -- Test truncating with a binary serde
+ALTER TABLE test_tab SET SERDE 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Test truncating with a binary serde
+ALTER TABLE test_tab SET SERDE 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	185                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: -- Truncate 1 column
+TRUNCATE TABLE test_tab COLUMNS (key)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Truncate 1 column
+TRUNCATE TABLE test_tab COLUMNS (key)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	150                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- First column should be null
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- First column should be null
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	val_238
+NULL	val_86
+NULL	val_311
+NULL	val_27
+NULL	val_165
+NULL	val_409
+NULL	val_255
+NULL	val_278
+NULL	val_98
+NULL	val_484
+PREHOOK: query: -- Truncate 2 columns
+TRUNCATE TABLE test_tab COLUMNS (key, value)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab
+PREHOOK: Output: default@test_tab
+POSTHOOK: query: -- Truncate 2 columns
+TRUNCATE TABLE test_tab COLUMNS (key, value)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab
+POSTHOOK: Output: default@test_tab
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	75                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: query: -- Both columns should be null
+SELECT * FROM test_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: -- Test truncating a partition
+CREATE TABLE test_tab_part (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test truncating a partition
+CREATE TABLE test_tab_part (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_tab_part
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_tab_part@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_tab_part@part=1
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	test_tab_part       	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	185                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM test_tab_part WHERE part = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_part
+PREHOOK: Input: default@test_tab_part@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_tab_part WHERE part = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_part
+POSTHOOK: Input: default@test_tab_part@part=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238	1
+86	val_86	1
+311	val_311	1
+27	val_27	1
+165	val_165	1
+409	val_409	1
+255	val_255	1
+278	val_278	1
+98	val_98	1
+484	val_484	1
+PREHOOK: query: TRUNCATE TABLE test_tab_part PARTITION (part = '1') COLUMNS (key)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Input: default@test_tab_part
+PREHOOK: Output: default@test_tab_part@part=1
+POSTHOOK: query: TRUNCATE TABLE test_tab_part PARTITION (part = '1') COLUMNS (key)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Input: default@test_tab_part
+POSTHOOK: Output: default@test_tab_part@part=1
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	test_tab_part       	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	94                  
+	totalSize           	150                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- First column should be null
+SELECT * FROM test_tab_part WHERE part = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tab_part
+PREHOOK: Input: default@test_tab_part@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: -- First column should be null
+SELECT * FROM test_tab_part WHERE part = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tab_part
+POSTHOOK: Input: default@test_tab_part@part=1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+NULL	val_238	1
+NULL	val_86	1
+NULL	val_311	1
+NULL	val_27	1
+NULL	val_165	1
+NULL	val_409	1
+NULL	val_255	1
+NULL	val_278	1
+NULL	val_98	1
+NULL	val_484	1

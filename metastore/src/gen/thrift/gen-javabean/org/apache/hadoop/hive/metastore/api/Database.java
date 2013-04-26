@@ -708,7 +708,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
                 for (int _i79 = 0; _i79 < _map78.size; ++_i79)
                 {
                   String _key80; // required
-                  String _val81; // optional
+                  String _val81; // required
                   _key80 = iprot.readString();
                   _val81 = iprot.readString();
                   struct.parameters.put(_key80, _val81);
@@ -858,7 +858,7 @@ public class Database implements org.apache.thrift.TBase<Database, Database._Fie
           for (int _i85 = 0; _i85 < _map84.size; ++_i85)
           {
             String _key86; // required
-            String _val87; // optional
+            String _val87; // required
             _key86 = iprot.readString();
             _val87 = iprot.readString();
             struct.parameters.put(_key86, _val87);

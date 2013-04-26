@@ -37,7 +37,6 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.zookeeper.Watcher;
@@ -49,7 +48,6 @@ import org.apache.zookeeper.Watcher;
 public class HBaseTestSetup extends TestSetup {
 
   private MiniHBaseCluster hbaseCluster;
-  private MiniZooKeeperCluster zooKeeperCluster;
   private int zooKeeperPort;
   private String hbaseRoot;
 
@@ -60,32 +58,36 @@ public class HBaseTestSetup extends TestSetup {
   }
 
   void preTest(HiveConf conf) throws Exception {
-    if (hbaseCluster == null) {
-      // We set up fixtures on demand for the first testcase, and leave
-      // them allocated for reuse across all others.  Then tearDown
-      // will get called once at the very end after all testcases have
-      // run, giving us a guaranteed opportunity to shut them down.
-      setUpFixtures(conf);
-    }
+	
+    setUpFixtures(conf);
+	
     conf.set("hbase.rootdir", hbaseRoot);
     conf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
     conf.set("hbase.zookeeper.property.clientPort", Integer.toString(zooKeeperPort));
     String auxJars = conf.getAuxJars();
-    auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"
+    auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file:///"
       + new JobConf(conf, HBaseConfiguration.class).getJar();
-    auxJars += ",file://" + new JobConf(conf, HBaseSerDe.class).getJar();
-    auxJars += ",file://" + new JobConf(conf, Watcher.class).getJar();
+    auxJars += ",file:///" + new JobConf(conf, HBaseSerDe.class).getJar();
+    auxJars += ",file:///" + new JobConf(conf, Watcher.class).getJar();
     conf.setAuxJars(auxJars);
   }
 
   private void setUpFixtures(HiveConf conf) throws Exception {
-    conf.set("hbase.master", "local");
+    /* We are not starting zookeeper server here because 
+     * QTestUtil already starts it.
+     */
+    int zkPort = conf.getInt("hive.zookeeper.client.port", -1);
+    if ((zkPort == zooKeeperPort) && (hbaseCluster != null)) {
+    	return;
+    }
+    zooKeeperPort = zkPort;
     String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
-    hbaseRoot = "file://" + tmpdir + "/hbase";
+    this.tearDown();
+    conf.set("hbase.master", "local");
+
+    hbaseRoot = "file:///" + tmpdir + "/hbase";
     conf.set("hbase.rootdir", hbaseRoot);
-    zooKeeperCluster = new MiniZooKeeperCluster();
-    zooKeeperPort = zooKeeperCluster.startup(
-      new File(tmpdir, "zookeeper"));
+
     conf.set("hbase.zookeeper.property.clientPort",
       Integer.toString(zooKeeperPort));
     Configuration hbaseConf = HBaseConfiguration.create(conf);
@@ -154,10 +156,6 @@ public class HBaseTestSetup extends TestSetup {
       HConnectionManager.deleteAllConnections(true);
       hbaseCluster.shutdown();
       hbaseCluster = null;
-    }
-    if (zooKeeperCluster != null) {
-      zooKeeperCluster.shutdown();
-      zooKeeperCluster = null;
     }
   }
 }

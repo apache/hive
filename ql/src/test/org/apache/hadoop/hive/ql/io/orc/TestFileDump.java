@@ -94,7 +94,7 @@ public class TestFileDump {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
           (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    Writer writer = OrcFile.createWriter(fs, testFilePath, inspector,
+    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
         100000, CompressionKind.ZLIB, 10000, 10000);
     Random r1 = new Random(1);
     String[] words = new String[]{"It", "was", "the", "best", "of", "times,",

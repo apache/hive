@@ -202,6 +202,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
       case HiveParser.TOK_ALTERTABLE_SKEWED:
       case HiveParser.TOK_TRUNCATETABLE:
+      case HiveParser.TOK_EXCHANGEPARTITION:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_ALTERTABLE_PARTITION:
         HiveOperation commandType = null;

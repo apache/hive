@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,14 +51,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -62,7 +63,7 @@ import java.util.TreeMap;
  * sub-types. Each of the TreeWriters writes the column's data as a set of
  * streams.
  */
-class WriterImpl implements Writer {
+class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
@@ -97,6 +98,7 @@ class WriterImpl implements Writer {
   private final OrcProto.RowIndex.Builder rowIndex =
       OrcProto.RowIndex.newBuilder();
   private final boolean buildIndex;
+  private final MemoryManager memoryManager;
 
   WriterImpl(FileSystem fs,
              Path path,
@@ -104,13 +106,15 @@ class WriterImpl implements Writer {
              long stripeSize,
              CompressionKind compress,
              int bufferSize,
-             int rowIndexStride) throws IOException {
+             int rowIndexStride,
+             MemoryManager memoryManager) throws IOException {
     this.fs = fs;
     this.path = path;
     this.stripeSize = stripeSize;
     this.compress = compress;
     this.bufferSize = bufferSize;
     this.rowIndexStride = rowIndexStride;
+    this.memoryManager = memoryManager;
     buildIndex = rowIndexStride > 0;
     codec = createCodec(compress);
     treeWriter = createTreeWriter(inspector, streamFactory, false);
@@ -118,6 +122,8 @@ class WriterImpl implements Writer {
       throw new IllegalArgumentException("Row stride must be at least " +
           MIN_ROW_INDEX_STRIDE);
     }
+    // ensure that we are able to handle callbacks before we register ourselves
+    memoryManager.addWriter(path, stripeSize, this);
   }
 
   static CompressionCodec createCodec(CompressionKind kind) {
@@ -144,6 +150,13 @@ class WriterImpl implements Writer {
       default:
         throw new IllegalArgumentException("Unknown compression codec: " +
             kind);
+    }
+  }
+
+  @Override
+  public void checkMemory(double newScale) throws IOException {
+    if (estimateStripeSize() > Math.round(stripeSize * newScale)) {
+     flushStripe();
     }
   }
 
@@ -734,19 +747,8 @@ class WriterImpl implements Writer {
       int length = rows.size();
       int rowIndexEntry = 0;
       OrcProto.RowIndex.Builder rowIndex = getRowIndex();
-      // need to build the first index entry out here, to handle the case of
-      // not having any values.
-      if (buildIndex) {
-        while (0 == rowIndexValueCount.get(rowIndexEntry) &&
-            rowIndexEntry < savedRowIndex.size()) {
-          OrcProto.RowIndexEntry.Builder base =
-              savedRowIndex.get(rowIndexEntry++).toBuilder();
-          rowOutput.getPosition(new RowIndexPositionRecorder(base));
-          rowIndex.addEntry(base.build());
-        }
-      }
       // write the values translated into the dump order.
-      for(int i = 0; i < length; ++i) {
+      for(int i = 0; i <= length; ++i) {
         // now that we are writing out the row values, we can finalize the
         // row index
         if (buildIndex) {
@@ -758,7 +760,9 @@ class WriterImpl implements Writer {
             rowIndex.addEntry(base.build());
           }
         }
-        rowOutput.write(dumpOrder[rows.get(i)]);
+        if (i != length) {
+          rowOutput.write(dumpOrder[rows.get(i)]);
+        }
       }
       // we need to build the rowindex before calling super, since it
       // writes it out.
@@ -1453,8 +1457,8 @@ class WriterImpl implements Writer {
       }
     }
     // once every 1000 rows, check the size to see if we should spill
-    if (rowsInStripe % 1000 == 0 && estimateStripeSize() > stripeSize) {
-      flushStripe();
+    if (rowsInStripe % 1000 == 0) {
+      checkMemory(memoryManager.getAllocationScale());
     }
   }
 
@@ -1464,5 +1468,6 @@ class WriterImpl implements Writer {
     int footerLength = writeFooter(rawWriter.getPos());
     rawWriter.writeByte(writePostScript(footerLength));
     rawWriter.close();
+    memoryManager.removeWriter(path);
   }
 }

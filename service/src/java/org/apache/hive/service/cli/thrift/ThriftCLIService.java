@@ -18,9 +18,12 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.cli.GetInfoValue;
@@ -35,7 +39,6 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.thrift.TException;
@@ -110,28 +113,7 @@ public class ThriftCLIService extends AbstractService implements TCLIService.Ifa
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
-      String userName;
-      if (hiveAuthFactory != null
-          && hiveAuthFactory.getRemoteUser() != null) {
-        userName = hiveAuthFactory.getRemoteUser();
-      } else {
-        userName = req.getUsername();
-      }
-      SessionHandle sessionHandle = null;
-      if (cliService.getHiveConf().
-          getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_IMPERSONATION)) {
-        String delegationTokenStr = null;
-        try {
-          delegationTokenStr = cliService.getDelegationTokenFromMetaStore(userName);
-        } catch (UnsupportedOperationException e) {
-          // The delegation token is not applicable in the given deployment mode
-        }
-        sessionHandle = cliService.openSessionWithImpersonation(userName, req.getPassword(),
-              req.getConfiguration(), delegationTokenStr);
-      } else {
-        sessionHandle = cliService.openSession(userName, req.getPassword(),
-              req.getConfiguration());
-      }
+      SessionHandle sessionHandle = getSessionHandle(req);
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       // TODO: set real configuration map
       resp.setConfiguration(new HashMap<String, String>());
@@ -141,6 +123,44 @@ public class ThriftCLIService extends AbstractService implements TCLIService.Ifa
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
+  }
+
+  private String getUserName(TOpenSessionReq req) {
+    if (hiveAuthFactory != null
+        && hiveAuthFactory.getRemoteUser() != null) {
+      return hiveAuthFactory.getRemoteUser();
+    } else {
+      return req.getUsername();
+    }
+  }
+
+  SessionHandle getSessionHandle(TOpenSessionReq req)
+      throws HiveSQLException, LoginException, IOException {
+
+    String userName = getUserName(req);
+
+    SessionHandle sessionHandle = null;
+    if (
+        cliService.getHiveConf().getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION)
+        .equals(HiveAuthFactory.AuthTypes.KERBEROS.toString())
+        &&
+        cliService.getHiveConf().
+        getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)
+        )
+    {
+      String delegationTokenStr = null;
+      try {
+        delegationTokenStr = cliService.getDelegationTokenFromMetaStore(userName);
+      } catch (UnsupportedOperationException e) {
+        // The delegation token is not applicable in the given deployment mode
+      }
+      sessionHandle = cliService.openSessionWithImpersonation(userName, req.getPassword(),
+            req.getConfiguration(), delegationTokenStr);
+    } else {
+      sessionHandle = cliService.openSession(userName, req.getPassword(),
+            req.getConfiguration());
+    }
+    return sessionHandle;
   }
 
   @Override

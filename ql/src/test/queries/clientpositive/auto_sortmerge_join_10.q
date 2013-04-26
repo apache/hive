@@ -17,7 +17,7 @@ set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 set hive.auto.convert.sortmerge.join=true;
-
+set hive.auto.convert.sortmerge.join.to.mapjoin=false;
 -- One of the subqueries contains a union, so it should not be converted to a sort-merge join.
 explain
 select count(*) from 

@@ -295,6 +295,7 @@ TOK_WINDOWSPEC;
 TOK_WINDOWVALUES;
 TOK_WINDOWRANGE;
 TOK_IGNOREPROTECTION;
+TOK_EXCHANGEPARTITION;
 }
 
 
@@ -756,7 +757,7 @@ createTableStatement
 truncateTableStatement
 @init { msgs.push("truncate table statement"); }
 @after { msgs.pop(); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix -> ^(TOK_TRUNCATETABLE tablePartitionPrefix);
+    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
 
 createIndexStatement
 @init { msgs.push("create index statement");}
@@ -867,6 +868,7 @@ alterTableStatementSuffix
     | alterStatementSuffixProperties
     | alterTblPartitionStatement
     | alterStatementSuffixSkewedby
+    | alterStatementSuffixExchangePartition
     ;
 
 alterViewStatementSuffix
@@ -1102,6 +1104,13 @@ alterStatementSuffixSkewedby
 	name=identifier KW_NOT storedAsDirs
 	->^(TOK_ALTERTABLE_SKEWED $name storedAsDirs)
 	;
+
+alterStatementSuffixExchangePartition
+@init {msgs.push("alter exchange partition");}
+@after{msgs.pop();}
+    : name=tableName KW_EXCHANGE partitionSpec KW_WITH KW_TABLE exchangename=tableName
+    -> ^(TOK_EXCHANGEPARTITION $name partitionSpec $exchangename)
+    ;
 
 alterStatementSuffixProtectMode
 @init { msgs.push("alter partition protect mode statement"); }

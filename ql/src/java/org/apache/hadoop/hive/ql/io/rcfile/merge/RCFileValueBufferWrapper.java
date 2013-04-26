@@ -48,4 +48,12 @@ public class RCFileValueBufferWrapper implements
     return this.valueBuffer.compareTo(o.valueBuffer);
   }
 
+  public ValueBuffer getValueBuffer() {
+    return valueBuffer;
+  }
+
+  public void setValueBuffer(ValueBuffer valueBuffer) {
+    this.valueBuffer = valueBuffer;
+  }
+
 }

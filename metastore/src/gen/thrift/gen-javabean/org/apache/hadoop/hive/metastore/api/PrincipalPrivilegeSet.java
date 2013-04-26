@@ -580,7 +580,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                 for (int _i25 = 0; _i25 < _map24.size; ++_i25)
                 {
                   String _key26; // required
-                  List<PrivilegeGrantInfo> _val27; // optional
+                  List<PrivilegeGrantInfo> _val27; // required
                   _key26 = iprot.readString();
                   {
                     org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
@@ -611,7 +611,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                 for (int _i32 = 0; _i32 < _map31.size; ++_i32)
                 {
                   String _key33; // required
-                  List<PrivilegeGrantInfo> _val34; // optional
+                  List<PrivilegeGrantInfo> _val34; // required
                   _key33 = iprot.readString();
                   {
                     org.apache.thrift.protocol.TList _list35 = iprot.readListBegin();
@@ -642,7 +642,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
                 for (int _i39 = 0; _i39 < _map38.size; ++_i39)
                 {
                   String _key40; // required
-                  List<PrivilegeGrantInfo> _val41; // optional
+                  List<PrivilegeGrantInfo> _val41; // required
                   _key40 = iprot.readString();
                   {
                     org.apache.thrift.protocol.TList _list42 = iprot.readListBegin();
@@ -827,7 +827,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
           for (int _i58 = 0; _i58 < _map57.size; ++_i58)
           {
             String _key59; // required
-            List<PrivilegeGrantInfo> _val60; // optional
+            List<PrivilegeGrantInfo> _val60; // required
             _key59 = iprot.readString();
             {
               org.apache.thrift.protocol.TList _list61 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -852,7 +852,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
           for (int _i65 = 0; _i65 < _map64.size; ++_i65)
           {
             String _key66; // required
-            List<PrivilegeGrantInfo> _val67; // optional
+            List<PrivilegeGrantInfo> _val67; // required
             _key66 = iprot.readString();
             {
               org.apache.thrift.protocol.TList _list68 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -877,7 +877,7 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
           for (int _i72 = 0; _i72 < _map71.size; ++_i72)
           {
             String _key73; // required
-            List<PrivilegeGrantInfo> _val74; // optional
+            List<PrivilegeGrantInfo> _val74; // required
             _key73 = iprot.readString();
             {
               org.apache.thrift.protocol.TList _list75 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());

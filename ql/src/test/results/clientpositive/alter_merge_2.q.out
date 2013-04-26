@@ -14,8 +14,6 @@ PREHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03',
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_rc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	int                 	None                
 value               	string              	None                
 ds                  	string              	None                

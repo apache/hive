@@ -77,7 +77,5 @@ select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c
 explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key;
 select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key;
 
-
-
-
-
+explain select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100;
+select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100;

@@ -1,0 +1,382 @@
+PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: insert overwrite table tbl1 select * from src where key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert overwrite table tbl1 select * from src where key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
+explain
+select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
+explain
+select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage , consists of Stage-5, Stage-1
+  Stage-5 has a backup stage: Stage-1
+  Stage-3 depends on stages: Stage-5
+  Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+32
+PREHOOK: query: insert overwrite table tbl2 select * from src where key < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Since tbl2 is the bigger table, tbl1 Right Outer Join tbl2 can be performed
+explain
+select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Since tbl2 is the bigger table, tbl1 Right Outer Join tbl2 can be performed
+explain
+select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage , consists of Stage-5, Stage-1
+  Stage-5 has a backup stage: Stage-1
+  Stage-3 depends on stages: Stage-5
+  Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 1
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Map Join Operator
+              condition map:
+                   Right Outer Join0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 1
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Right Outer Join0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 1
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+207

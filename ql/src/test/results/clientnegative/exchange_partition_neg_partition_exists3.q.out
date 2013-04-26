@@ -1,0 +1,51 @@
+PREHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@exchange_part_test1
+PREHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+PREHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05', hr='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05', hr='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@exchange_part_test1
+POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05/hr=1
+PREHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05', hr='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05', hr='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@exchange_part_test1
+POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05/hr=2
+PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@exchange_part_test2
+POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@exchange_part_test2
+POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=1
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+ds=2013-04-05/hr=1
+ds=2013-04-05/hr=2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+ds=2013-04-05/hr=1
+FAILED: SemanticException [Error 10118]: Partition already exists [exchange_part_test2(ds=2013-04-05/hr=1)]

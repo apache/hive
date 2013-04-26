@@ -77,7 +77,7 @@ POSTHOOK: query: load data local inpath '../data/files/over10k' into table over1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k
 PREHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
   over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
   over(distribute by p_mfgr sort by p_retailprice)
@@ -86,7 +86,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round((sum(lag(p_retailprice,1)) - first_value(p_retailprice)) + last_value(p_retailprice),2) 
+round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
   over(distribute by p_mfgr sort by p_retailprice),
 max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
   over(distribute by p_mfgr sort by p_retailprice)
@@ -162,119 +162,119 @@ Manufacturer#5	1464.48	23	2	2482.58	2477.58
 Manufacturer#5	1611.66	6	3	4094.24	4089.24
 Manufacturer#5	1788.73	2	4	5882.969999999999	5877.969999999999
 Manufacturer#5	1789.69	31	5	7672.66	7667.66
-PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100
+PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo desc) from over10k limit 100
+POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-david hernandez	408	81.68	352.41
-mike allen	465	83.39	441.78
-sarah miller	386	58.81	297.22
-luke king	337	55.59	256.35
-nick robinson	350	23.22	349.17
-katie ichabod	469	88.78	400.27
-gabriella brown	498	80.65	415.26
-oscar davidson	432	0.83	350.05
-holly nixon	505	68.73	502.74
-holly polk	268	82.74	202.5
-rachel davidson	507	81.95	498.63
-mike polk	500	2.26	443.8
-yuri xylophone	430	65.5	357.74
-bob ellison	339	8.37	254.25
-luke ichabod	289	56.2	203.04001
-nick nixon	335	72.26	282.7
-holly thompson	387	84.75	331.59
-jessica miller	299	85.96	298.44
-calvin white	280	52.3	232.49
-oscar johnson	469	55.41	406.88
-rachel thompson	344	0.56	279.71
-david falkner	469	47.51	374.78
-mike white	454	62.12	431.65
-irene young	458	64.29	396.19
-oscar johnson	315	94.22	300.77
-bob johnson	374	22.35	345.22
-victor robinson	415	61.81	333.03
-ethan underhill	339	14.23	257.36
-xavier ovid	280	28.78	198.61
-mike xylophone	448	81.97	429.56
-tom hernandez	467	81.64	428.95
-tom steinbeck	414	81.39	316.12
-alice falkner	280	18.44	182.48999
-david carson	270	38.05	217.87
-sarah zipper	376	97.88	368.9
-tom hernandez	477	97.51	438.78
-victor thompson	344	52.13	332.93
-ulysses carson	343	7.1	282.72
-sarah xylophone	275	38.22	268.2
-oscar miller	324	11.07	251.7
-quinn polk	507	60.28	463.6
-luke young	451	6.8	422.25
-bob underhill	465	72.3	452.88
-victor allen	337	43.4	330.17
-xavier garcia	493	28.75	396.22
-zach thompson	386	12.12	293.29
-bob van buren	433	6.83	423.14
-fred ellison	376	96.78	304.03
-jessica king	459	92.71	399.93
+alice allen	400	76.31	337.23
+alice davidson	384	71.97	357.79
+alice king	455	2.48	395.93
+alice king	458	62.77	384.16998
+alice xylophone	485	26.21	464.05
+bob falkner	260	59.07	242.4
+bob ichabod	454	73.83	381.7
+bob polk	264	20.95	257.17
+bob underhill	454	17.6	424.94
+bob underhill	465	72.3	453.17
+bob van buren	433	6.83	398.4
+calvin ichabod	431	29.06	334.22
+david garcia	485	11.83	421.51
+ethan steinbeck	298	34.6	288.14
+fred ellison	376	96.78	330.76
+holly steinbeck	384	63.49	293.7
 holly underhill	318	9.86	269.91
-alice davidson	384	71.97	340.31
-bob falkner	260	59.07	237.66
-jessica johnson	494	48.09	468.5
-victor hernandez	447	43.69	427.06
-ulysses steinbeck	333	22.34	273.66
-wendy quirinius	279	25.5	257.0
-quinn ellison	266	19.94	181.61
-ulysses ellison	381	59.34	377.18
-priscilla laertes	316	22.0	244.22
-sarah robinson	320	84.39	298.66
-luke garcia	311	3.82	290.05
-wendy robinson	275	71.78	231.27
-priscilla zipper	485	21.34	422.19
-bob polk	264	20.95	187.69
-oscar garcia	362	43.73	351.74
-jessica white	284	62.81	238.76
-alice allen	400	76.31	370.94
-ulysses quirinius	303	10.26	268.4
-irene ellison	458	45.24	394.51
-calvin ichabod	431	29.06	356.08002
-ethan steinbeck	298	34.6	234.81
-holly steinbeck	384	63.49	365.73
-mike king	275	74.92	261.33
-priscilla quirinius	423	63.19	360.61
-zach young	286	18.27	223.23
-wendy xylophone	314	13.67	223.7
-victor xylophone	438	62.39	420.4
-alice king	458	62.77	455.52
-irene underhill	307	90.3	295.17
-bob underhill	454	17.6	427.79
-alice king	455	2.48	381.16998
-david garcia	485	11.83	428.95
-alice xylophone	485	26.21	459.33
-bob ichabod	454	73.83	NULL
-tom polk	346	56.05	NULL
-ulysses robinson	313	25.67	NULL
-nick laertes	502	48.26	462.38
-oscar zipper	445	35.62	420.6
-nick falkner	384	1.65	378.41
-irene ichabod	409	39.62	321.22
-wendy ichabod	387	24.4	310.48
-ethan quirinius	503	5.59	431.97
-alice carson	473	87.78	455.91
-quinn laertes	340	76.52	295.12
-tom xylophone	352	71.03	295.24
-tom ellison	420	17.09	346.94
-fred ichabod	371	44.88	298.41
-luke xylophone	395	56.76	319.22
-quinn hernandez	456	73.06	439.65
-ethan falkner	261	72.59	212.26
-PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100
+irene ellison	458	45.24	365.29
+irene underhill	307	90.3	244.19
+jessica johnson	494	48.09	490.18
+jessica king	459	92.71	452.2
+jessica white	284	62.81	209.08
+luke garcia	311	3.82	267.27
+luke young	451	6.8	429.0
+mike king	275	74.92	211.81
+oscar garcia	362	43.73	340.66
+priscilla laertes	316	22.0	296.06
+priscilla quirinius	423	63.19	362.72
+priscilla zipper	485	21.34	400.61
+quinn ellison	266	19.94	209.95
+quinn polk	507	60.28	447.66
+sarah robinson	320	84.39	309.74
+tom polk	346	56.05	320.33
+ulysses ellison	381	59.34	358.66
+ulysses quirinius	303	10.26	259.6
+ulysses robinson	313	25.67	269.31
+ulysses steinbeck	333	22.34	270.61
+victor allen	337	43.4	311.5
+victor hernandez	447	43.69	375.22
+victor xylophone	438	62.39	424.33
+wendy quirinius	279	25.5	250.25
+wendy robinson	275	71.78	262.88
+wendy xylophone	314	13.67	295.73
+xavier garcia	493	28.75	474.56
+zach thompson	386	12.12	377.63
+zach young	286	18.27	263.65
+alice falkner	280	18.44	227.7
+bob ellison	339	8.37	300.95
+bob johnson	374	22.35	326.49
+calvin white	280	52.3	198.32
+david carson	270	38.05	255.77
+david falkner	469	47.51	388.35
+david hernandez	408	81.68	339.27
+ethan underhill	339	14.23	256.26
+gabriella brown	498	80.65	413.25
+holly nixon	505	68.73	440.71
+holly polk	268	82.74	182.04001
+holly thompson	387	84.75	298.22
+irene young	458	64.29	401.8
+jessica miller	299	85.96	243.41
+katie ichabod	469	88.78	385.61
+luke ichabod	289	56.2	286.74
+luke king	337	55.59	274.88
+mike allen	465	83.39	383.03
+mike polk	500	2.26	427.74
+mike white	454	62.12	430.78
+mike xylophone	448	81.97	447.17
+nick nixon	335	72.26	240.78
+nick robinson	350	23.22	294.59
+oscar davidson	432	0.83	420.93
+oscar johnson	315	94.22	233.05
+oscar johnson	469	55.41	468.44
+oscar miller	324	11.07	265.19
+rachel davidson	507	81.95	468.78
+rachel thompson	344	0.56	246.12
+sarah miller	386	58.81	304.36
+sarah xylophone	275	38.22	177.48999
+sarah zipper	376	97.88	294.61
+tom hernandez	467	81.64	459.9
+tom hernandez	477	97.51	415.19
+tom steinbeck	414	81.39	361.87
+ulysses carson	343	7.1	314.22
+victor robinson	415	61.81	349.5
+victor thompson	344	52.13	NULL
+xavier ovid	280	28.78	NULL
+yuri xylophone	430	65.5	NULL
+alice underhill	389	26.68	368.06
+alice underhill	446	6.49	444.21
+bob ovid	331	67.12	236.43
+bob van buren	406	20.94	383.32
+david falkner	406	1.79	374.34
+david miller	450	94.57	380.13
+ethan allen	380	22.68	375.6
+ethan king	395	31.66	361.51
+ethan nixon	475	69.87	431.39
+ethan polk	283	4.4	243.82
+fred allen	331	33.49	281.68
+fred king	511	43.61	457.22
+fred polk	261	39.18	248.73
+fred young	303	49.32	221.51001
+PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i) from over10k limit 100
+POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -288,8 +288,8 @@ ethan falkner	65586	-18
 victor davidson	65596	-17
 xavier quirinius	65599	-14
 fred quirinius	65604	-11
-xavier van buren	65613	-3
-nick zipper	65613	-7
+nick zipper	65613	-3
+xavier van buren	65613	-7
 victor johnson	65615	-12
 alice ovid	65616	-24
 xavier ovid	65620	-23
@@ -307,8 +307,8 @@ zach white	65733	-8
 fred hernandez	65737	-7
 rachel ellison	65738	-6
 oscar steinbeck	65741	-6
-tom allen	65744	-8
-alice ellison	65744	-19
+alice ellison	65744	-8
+tom allen	65744	-19
 quinn quirinius	65747	-31
 victor hernandez	65752	-26
 holly xylophone	65763	-26
@@ -328,14 +328,14 @@ victor xylophone	65578	-16
 gabriella ellison	65584	-26
 nick quirinius	65588	-22
 holly robinson	65594	-18
-yuri brown	65610	-16
-alice xylophone	65610	-21
+alice xylophone	65610	-16
+yuri brown	65610	-21
 sarah hernandez	65612	-26
 katie garcia	65626	-28
 jessica laertes	65631	-23
 ethan underhill	65638	-17
-priscilla thompson	65654	-37
-irene young	65654	-40
+irene young	65654	-37
+priscilla thompson	65654	-40
 luke quirinius	65655	-44
 david brown	65691	-20
 luke falkner	65694	-18
@@ -351,16 +351,16 @@ ulysses young	65748	-23
 nick davidson	65752	-19
 fred zipper	65756	-15
 yuri nixon	65771	-10
-zach zipper	65771	-19
-zach hernandez	65771	65771
+zach hernandez	65771	-19
+zach zipper	65771	65771
 alice underhill	65781	65781
 oscar laertes	65790	65790
 sarah zipper	65546	-19
-luke ovid	65551	-17
 bob falkner	65551	-17
+luke ovid	65551	-17
 katie allen	65565	-4
-zach steinbeck	65568	-5
-nick falkner	65568	-11
+nick falkner	65568	-5
+zach steinbeck	65568	-11
 oscar van buren	65569	-13
 gabriella young	65573	-11
 jessica ichabod	65579	-24
@@ -373,16 +373,16 @@ jessica laertes	65617	-62
 fred king	65656	-61
 priscilla underhill	65669	-48
 priscilla zipper	65679	-45
-sarah polk	65717	-11
-nick king	65717	-17
+nick king	65717	-11
+sarah polk	65717	-17
 irene quirinius	65724	-28
 tom laertes	65728	-25
 yuri johnson	65734	-27
-PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si) from over10k limit 100
+PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si) from over10k limit 100
+POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -420,18 +420,18 @@ ethan ellison	453	47.92	405.78
 irene nixon	454	48.03	421.40999999999997
 bob steinbeck	462	47.04	442.37
 luke robinson	462	47.48	414.08
-tom hernandez	467	29.36	418.97
-gabriella steinbeck	467	9.35	419.96
+gabriella steinbeck	467	9.35	418.97
+tom hernandez	467	29.36	419.96
 irene polk	485	14.26	437.52
-mike xylophone	494	36.92	464.64
-calvin allen	499	39.99	489.65
+mike xylophone	494	36.92	484.65
+calvin allen	499	39.99	469.64
 quinn steinbeck	503	16.62	488.74
-ulysses garcia	263	31.85	NULL
 calvin thompson	263	30.87	NULL
 rachel quirinius	263	29.46	NULL
-mike steinbeck	266	48.57	234.15
-rachel young	275	14.75	244.13
-tom king	278	31.11	248.54
+ulysses garcia	263	31.85	NULL
+mike steinbeck	266	48.57	235.13
+rachel young	275	14.75	245.54
+tom king	278	31.11	246.15
 oscar robinson	283	30.35	234.43
 zach allen	284	1.88	269.25
 bob king	308	27.61	276.89
@@ -455,11 +455,11 @@ sarah xylophone	507	16.09	499.97
 rachel thompson	267	46.87	NULL
 gabriella van buren	271	41.04	NULL
 mike steinbeck	284	11.44	NULL
-luke falkner	293	40.67	246.13
-ethan ovid	293	2.08	251.96
+ethan ovid	293	2.08	246.13
+luke falkner	293	40.67	251.96
 irene nixon	321	24.35	309.56
-mike van buren	327	2.58	286.33
-ulysses robinson	329	26.64	326.92
+mike van buren	327	2.58	324.92
+ulysses robinson	329	26.64	288.33
 quinn laertes	332	10.71	307.65
 tom polk	346	34.03	343.42
 jessica johnson	352	45.71	325.36
@@ -674,12 +674,12 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table t2 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t2
-PREHOOK: query: from (select sum(i) over (), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 PREHOOK: Output: default@t1
 PREHOOK: Output: default@t2
-POSTHOOK: query: from (select sum(i) over (), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 POSTHOOK: Output: default@t1
@@ -700,9 +700,9 @@ POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyi
 POSTHOOK: Lineage: t1.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: t2.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-656584379	bob davidson
-656584379	alice zipper
-656584379	katie davidson
+65542	rachel thompson
+131088	oscar brown
+262258	wendy steinbeck
 PREHOOK: query: select * from t2 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
@@ -715,6 +715,37 @@ POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyi
 POSTHOOK: Lineage: t1.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: t2.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-656584379	bob davidson
-656584379	alice zipper
-656584379	katie davidson
+65542	rachel thompson
+131088	oscar brown
+262258	wendy steinbeck
+PREHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice)
+from part
+limit 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
+  over(distribute by p_mfgr sort by p_retailprice)
+from part
+limit 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t1.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: t2.b1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal, comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), (over10k)over10k.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), (over10k)over10k.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1173.15	2	true
+Manufacturer#1	1414.42	28	true
+Manufacturer#1	1602.59	6	true
+Manufacturer#1	1632.66	42	true
+Manufacturer#1	1753.76	34	true
+Manufacturer#2	1690.68	14	true
+Manufacturer#2	1698.66	25	true
+Manufacturer#2	1701.6	18	true
+Manufacturer#2	1800.7	40	true
+Manufacturer#2	2031.98	2	true

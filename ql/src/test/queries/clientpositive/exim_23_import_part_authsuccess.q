@@ -9,7 +9,7 @@ create table exim_employee ( emp_id int comment "employee id")
 	tblproperties("creator"="krishna");
 load data local inpath "../data/files/test.dat" 
 	into table exim_employee partition (emp_country="in", emp_state="tn");
-dfs -mkdir ../build/ql/test/data/exports/exim_employee/temp;
+dfs ${system:test.dfs.mkdir} ../build/ql/test/data/exports/exim_employee/temp;
 dfs -rmr ../build/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;

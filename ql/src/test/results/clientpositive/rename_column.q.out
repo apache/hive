@@ -7,8 +7,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -24,8 +22,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -41,8 +37,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a1                  	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -58,8 +52,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a2                  	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -75,8 +67,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a                   	int                 	None                
 c                   	int                 	None                
@@ -92,8 +82,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a1                  	int                 	test comment1       
 c                   	int                 	None                
@@ -109,8 +97,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a2                  	int                 	test comment2       
 b                   	int                 	None                
 c                   	int                 	None                
@@ -126,8 +112,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a                   	int                 	test comment2       
 c                   	int                 	None                
@@ -170,8 +154,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -187,8 +169,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	string              	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -204,8 +184,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a1                  	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -221,8 +199,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a2                  	int                 	None                
 b                   	int                 	None                
 c                   	int                 	None                
@@ -238,8 +214,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a                   	int                 	None                
 c                   	int                 	None                
@@ -255,8 +229,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a1                  	int                 	test comment1       
 c                   	int                 	None                
@@ -272,8 +244,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a2                  	int                 	test comment2       
 b                   	int                 	None                
 c                   	int                 	None                
@@ -289,8 +259,6 @@ PREHOOK: query: DESCRIBE kv_rename_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE kv_rename_test
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 b                   	int                 	None                
 a                   	int                 	test comment2       
 c                   	int                 	None                

@@ -31,6 +31,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -261,25 +262,26 @@ public class PTFUtils {
     }
   }
 
-  public static void makeTransient(Class<?> beanClass, String pdName)
-  {
-    BeanInfo info;
-    try
-    {
-      info = Introspector.getBeanInfo(beanClass);
-      PropertyDescriptor[] propertyDescriptors = info
-          .getPropertyDescriptors();
-      for (int i = 0; i < propertyDescriptors.length; ++i)
-      {
-        PropertyDescriptor pd = propertyDescriptors[i];
-        if (pd.getName().equals(pdName))
-        {
-          pd.setValue("transient", Boolean.TRUE);
+  public static void makeTransient(Class<?> beanClass, String... pdNames) {
+    try {
+      BeanInfo info = Introspector.getBeanInfo(beanClass);
+      PropertyDescriptor[] descs = info.getPropertyDescriptors();
+      if (descs == null) {
+        throw new RuntimeException("Cannot access property descriptor for class " + beanClass);
+      }
+      Map<String, PropertyDescriptor> mapping = new HashMap<String, PropertyDescriptor>();
+      for (PropertyDescriptor desc : descs) {
+        mapping.put(desc.getName(), desc);
+      }
+      for (String pdName : pdNames) {
+        PropertyDescriptor desc = mapping.get(pdName);
+        if (desc == null) {
+          throw new RuntimeException("Property " + pdName + " does not exist in " + beanClass);
         }
+        desc.setValue("transient", Boolean.TRUE);
       }
     }
-    catch (IntrospectionException ie)
-    {
+    catch (IntrospectionException ie) {
       throw new RuntimeException(ie);
     }
   }

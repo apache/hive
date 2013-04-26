@@ -177,7 +177,7 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	-23
 PREHOOK: query: -- 4. testLagInSum
 select  p_mfgr,p_name, p_size,   
-sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_mfgr ) as deltaSum 
+sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_name ) as deltaSum 
 from part 
 window w1 as (rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
@@ -185,43 +185,43 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 4. testLagInSum
 select  p_mfgr,p_name, p_size,   
-sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_mfgr ) as deltaSum 
+sum(p_size - lag(p_size,1)) over(distribute by p_mfgr  sort by p_name ) as deltaSum 
 from part 
 window w1 as (rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	2	40
-Manufacturer#1	almond antique chartreuse lavender yellow	34	40
-Manufacturer#1	almond antique burnished rose metallic	2	40
-Manufacturer#1	almond antique salmon chartreuse burlywood	6	40
-Manufacturer#1	almond aquamarine burnished black steel	28	40
+Manufacturer#1	almond antique burnished rose metallic	2	0
+Manufacturer#1	almond antique burnished rose metallic	2	0
+Manufacturer#1	almond antique chartreuse lavender yellow	34	32
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	4
+Manufacturer#1	almond aquamarine burnished black steel	28	26
 Manufacturer#1	almond aquamarine pink moccasin thistle	42	40
-Manufacturer#2	almond antique violet chocolate turquoise	14	4
-Manufacturer#2	almond antique violet turquoise frosted	40	4
-Manufacturer#2	almond aquamarine midnight light salmon	2	4
-Manufacturer#2	almond aquamarine rose maroon antique	25	4
+Manufacturer#2	almond antique violet chocolate turquoise	14	NULL
+Manufacturer#2	almond antique violet turquoise frosted	40	26
+Manufacturer#2	almond aquamarine midnight light salmon	2	-12
+Manufacturer#2	almond aquamarine rose maroon antique	25	11
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	4
-Manufacturer#3	almond antique metallic orange dim	19	26
-Manufacturer#3	almond antique chartreuse khaki white	17	26
-Manufacturer#3	almond antique forest lavender goldenrod	14	26
-Manufacturer#3	almond antique misty red olive	1	26
-Manufacturer#3	almond antique olive coral navajo	45	26
-Manufacturer#4	almond antique gainsboro frosted violet	10	2
-Manufacturer#4	almond antique violet mint lemon	39	2
-Manufacturer#4	almond aquamarine floral ivory bisque	27	2
-Manufacturer#4	almond aquamarine yellow dodger mint	7	2
+Manufacturer#3	almond antique chartreuse khaki white	17	NULL
+Manufacturer#3	almond antique forest lavender goldenrod	14	-3
+Manufacturer#3	almond antique metallic orange dim	19	2
+Manufacturer#3	almond antique misty red olive	1	-16
+Manufacturer#3	almond antique olive coral navajo	45	28
+Manufacturer#4	almond antique gainsboro frosted violet	10	NULL
+Manufacturer#4	almond antique violet mint lemon	39	29
+Manufacturer#4	almond aquamarine floral ivory bisque	27	17
+Manufacturer#4	almond aquamarine yellow dodger mint	7	-3
 Manufacturer#4	almond azure aquamarine papaya violet	12	2
-Manufacturer#5	almond antique blue firebrick mint	31	-8
-Manufacturer#5	almond antique medium spring khaki	6	-8
-Manufacturer#5	almond antique sky peru orange	2	-8
-Manufacturer#5	almond aquamarine dodger light gainsboro	46	-8
+Manufacturer#5	almond antique blue firebrick mint	31	NULL
+Manufacturer#5	almond antique medium spring khaki	6	-25
+Manufacturer#5	almond antique sky peru orange	2	-29
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	15
 Manufacturer#5	almond azure blanched chiffon midnight	23	-8
 PREHOOK: query: -- 5. testLagInSumOverWindow
 select  p_mfgr,p_name, p_size,   
 sum(p_size - lag(p_size,1)) over w1 as deltaSum 
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following)
+window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
@@ -229,26 +229,26 @@ POSTHOOK: query: -- 5. testLagInSumOverWindow
 select  p_mfgr,p_name, p_size,   
 sum(p_size - lag(p_size,1)) over w1 as deltaSum 
 from part 
-window w1 as (distribute by p_mfgr sort by p_mfgr rows between 2 preceding and 2 following)
+window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	2	0
-Manufacturer#1	almond antique chartreuse lavender yellow	34	4
-Manufacturer#1	almond antique burnished rose metallic	2	26
-Manufacturer#1	almond antique salmon chartreuse burlywood	6	8
-Manufacturer#1	almond aquamarine burnished black steel	28	40
+Manufacturer#1	almond antique burnished rose metallic	2	32
+Manufacturer#1	almond antique burnished rose metallic	2	4
+Manufacturer#1	almond antique chartreuse lavender yellow	34	26
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	40
+Manufacturer#1	almond aquamarine burnished black steel	28	8
 Manufacturer#1	almond aquamarine pink moccasin thistle	42	36
 Manufacturer#2	almond antique violet chocolate turquoise	14	-12
 Manufacturer#2	almond antique violet turquoise frosted	40	11
 Manufacturer#2	almond aquamarine midnight light salmon	2	4
 Manufacturer#2	almond aquamarine rose maroon antique	25	-22
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	16
-Manufacturer#3	almond antique metallic orange dim	19	-5
-Manufacturer#3	almond antique chartreuse khaki white	17	-18
-Manufacturer#3	almond antique forest lavender goldenrod	14	26
-Manufacturer#3	almond antique misty red olive	1	28
-Manufacturer#3	almond antique olive coral navajo	45	31
+Manufacturer#3	almond antique chartreuse khaki white	17	2
+Manufacturer#3	almond antique forest lavender goldenrod	14	-16
+Manufacturer#3	almond antique metallic orange dim	19	28
+Manufacturer#3	almond antique misty red olive	1	31
+Manufacturer#3	almond antique olive coral navajo	45	26
 Manufacturer#4	almond antique gainsboro frosted violet	10	17
 Manufacturer#4	almond antique violet mint lemon	39	-3
 Manufacturer#4	almond aquamarine floral ivory bisque	27	2
@@ -360,44 +360,20 @@ Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	0
 PREHOOK: query: -- 8. testOverNoPartitionMultipleAggregate
 select p_name, p_retailprice,
 lead(p_retailprice) over() as l1 ,
-lag(p_retailprice)  over() as l2
+lag(p_retailprice) over() as l2
 from part
-order by p_name
+where p_retailprice = 1173.15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: -- 8. testOverNoPartitionMultipleAggregate
 select p_name, p_retailprice,
 lead(p_retailprice) over() as l1 ,
-lag(p_retailprice)  over() as l2
+lag(p_retailprice) over() as l2
 from part
-order by p_name
+where p_retailprice = 1173.15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-almond antique blue firebrick mint	1789.69	1611.66	1290.35
-almond antique burnished rose metallic	1173.15	1753.76	1173.15
 almond antique burnished rose metallic	1173.15	1173.15	NULL
-almond antique chartreuse khaki white	1671.68	1190.27	1701.6
-almond antique chartreuse lavender yellow	1753.76	1602.59	1173.15
-almond antique forest lavender goldenrod	1190.27	1410.39	1671.68
-almond antique gainsboro frosted violet	1620.67	1375.42	1337.29
-almond antique medium spring khaki	1611.66	1788.73	1789.69
-almond antique metallic orange dim	1410.39	1922.98	1190.27
-almond antique misty red olive	1922.98	1337.29	1410.39
-almond antique olive coral navajo	1337.29	1620.67	1922.98
-almond antique salmon chartreuse burlywood	1602.59	1414.42	1753.76
-almond antique sky peru orange	1788.73	1018.1	1611.66
-almond antique violet chocolate turquoise	1690.68	1800.7	1632.66
-almond antique violet mint lemon	1375.42	1206.26	1620.67
-almond antique violet turquoise frosted	1800.7	2031.98	1690.68
-almond aquamarine burnished black steel	1414.42	1632.66	1602.59
-almond aquamarine dodger light gainsboro	1018.1	1464.48	1788.73
-almond aquamarine floral ivory bisque	1206.26	1844.92	1375.42
-almond aquamarine midnight light salmon	2031.98	1698.66	1800.7
-almond aquamarine pink moccasin thistle	1632.66	1690.68	1414.42
-almond aquamarine rose maroon antique	1698.66	1701.6	2031.98
-almond aquamarine sandy cyan gainsboro	1701.6	1671.68	1698.66
-almond aquamarine yellow dodger mint	1844.92	1290.35	1206.26
-almond azure aquamarine papaya violet	1290.35	1789.69	1844.92
-almond azure blanched chiffon midnight	1464.48	NULL	1018.1
+almond antique burnished rose metallic	1173.15	NULL	1173.15

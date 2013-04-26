@@ -13,8 +13,6 @@ PREHOOK: query: desc extended tstsrc
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tstsrc
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
@@ -32,8 +30,6 @@ PREHOOK: query: desc extended tstsrc
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tstsrc
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
@@ -94,8 +90,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -120,8 +114,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -146,8 +138,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -191,8 +181,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -217,8 +205,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                
@@ -243,8 +229,6 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 ds                  	string              	None                

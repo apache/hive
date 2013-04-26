@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.hcatalog</groupId>
         <artifactId>hcatalog</artifactId>
-        <version>0.11.0-SNAPSHOT</version>
+        <version>0.12.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,6 @@
     <groupId>org.apache.hcatalog</groupId>
     <artifactId>hcatalog-server-extensions</artifactId>
     <packaging>jar</packaging>
-    <version>0.11.0-SNAPSHOT</version>
     <name>server-extensions</name>
     <url>http://maven.apache.org</url>
 

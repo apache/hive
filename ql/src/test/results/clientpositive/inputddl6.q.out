@@ -27,8 +27,6 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 ds                  	string              	None                
@@ -43,8 +41,6 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 key                 	string              	None                
 value               	string              	None                
 ds                  	string              	None                

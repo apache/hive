@@ -133,7 +133,6 @@ public class LazyHBaseRow extends LazyStruct {
     boolean [] fieldsInited = getFieldInited();
 
     if (!fieldsInited[fieldID]) {
-      fieldsInited[fieldID] = true;
       ByteArrayRef ref = null;
       ColumnMapping colMap = columnsMapping.get(fieldID);
 
@@ -163,6 +162,9 @@ public class LazyHBaseRow extends LazyStruct {
         fields[fieldID].init(ref, 0, ref.getData().length);
       }
     }
+
+    // Has to be set last because of HIVE-3179: NULL fields would not work otherwise
+    fieldsInited[fieldID] = true;
 
     return fields[fieldID].getObject();
   }

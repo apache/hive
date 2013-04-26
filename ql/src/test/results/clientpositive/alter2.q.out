@@ -7,8 +7,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -34,8 +32,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -62,8 +58,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -97,8 +91,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -124,8 +116,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -152,8 +142,6 @@ PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -217,8 +205,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -244,8 +230,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -272,8 +256,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -307,8 +289,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -334,8 +314,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
@@ -362,8 +340,6 @@ PREHOOK: query: DESCRIBE EXTENDED alter2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter2
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
 a                   	int                 	None                
 b                   	int                 	None                
 insertdate          	string              	None                
