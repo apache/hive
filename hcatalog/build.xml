@@ -91,18 +91,23 @@
     <target name="gen-test" description="Generate tests, a no-op for hcat"/>
 
     <target name="test" depends="jar" description="run unit tests">
-        <ant target="test" dir="core" inheritAll="false"/>
-        <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false"/>
-        <ant target="test" dir="server-extensions" inheritAll="false"/>
-        <ant target="test" dir="webhcat/svr" inheritAll="false"/>
-        <ant target="test" dir="webhcat/java-client" inheritAll="false"/>
-        <ant target="test" dir="storage-handlers/hbase" inheritAll="false"/>
-        <!-- One checkstyle run for the whole repo. Runs after junit tests
-        to piggyback on resolved jars. -->
-        <path id="checkstyle.class.path">
-          <fileset dir="core/build/lib/test"/>
-        </path>
-        <antcall target="checkstyle" inheritRefs="true"/>
+        <!-- Placed in a parallel structure so that the tests keep going
+             even if some fail.  Otherwise a failure in one of the earlier ant
+             call terminates the target and the rest do not run.  -->
+        <parallel threadCount="1">
+            <ant target="test" dir="core" inheritAll="false"/>
+            <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false"/>
+            <ant target="test" dir="server-extensions" inheritAll="false"/>
+            <ant target="test" dir="webhcat/svr" inheritAll="false"/>
+            <ant target="test" dir="webhcat/java-client" inheritAll="false"/>
+            <ant target="test" dir="storage-handlers/hbase" inheritAll="false"/>
+            <!-- One checkstyle run for the whole repo. Runs after junit tests
+            to piggyback on resolved jars. -->
+            <path id="checkstyle.class.path">
+                <fileset dir="core/build/lib/test"/>
+            </path>
+            <antcall target="checkstyle" inheritRefs="true"/>
+        </parallel>
     </target>
 
     <target name="compile-test" depends="jar" description="compile unit tests">
