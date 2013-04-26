@@ -215,11 +215,16 @@ public class MetastoreUtil implements MetastoreConstants {
     return columns;
   }
 
-  public static List<String> getValidColumnNames(Cube table) {
+  public static List<String> getCubeMeasureNames(Cube table) {
     List<String> columns = new ArrayList<String>();
     for (CubeMeasure f : table.getMeasures()) {
       columns.add(f.getName().toLowerCase());
     }
+    return columns;
+  }
+
+  public static List<String> getCubeDimensionNames(Cube table) {
+    List<String> columns = new ArrayList<String>();
     for (CubeDimension f : table.getDimensions()) {
       addColumnNames(f, columns);
     }

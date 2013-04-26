@@ -70,8 +70,15 @@ public class CubeQueryContext {
   private final Map<AbstractCubeTable, String> storageTableToQuery =
       new HashMap<AbstractCubeTable, String>();
   private final Map<String, String> columnToTabAlias = new HashMap<String, String>();
+  private List<String> cubeMeasureNames;
+  private List<String> cubeDimNames;
   private final Map<AbstractCubeTable, List<String>> cubeTabToCols =
       new HashMap<AbstractCubeTable, List<String>>();
+  private final Map<CubeQueryExpr, Set<String>> exprToCols = new HashMap<CubeQueryExpr, Set<String>>();
+  private final Map<CubeQueryExpr, Set<String>> queryExprToExprs = new HashMap<CubeQueryExpr, Set<String>>();
+  private final Map<String, String> exprToAlias = new HashMap<String, String>();
+  private final Set<String> aggregateCols = new HashSet<String>();
+  private final Set<String> aggregateExprs = new HashSet<String>();
   private ASTNode fromTree;
   private String whereTree;
   private String havingTree;
@@ -135,12 +142,16 @@ public class CubeQueryContext {
             }
           }
           cube = client.getCube(tblName);
-          cubeTabToCols.put(cube, MetastoreUtil.getValidColumnNames(cube));
+          cubeMeasureNames = MetastoreUtil.getCubeMeasureNames(cube);
+          cubeDimNames = MetastoreUtil.getCubeDimensionNames(cube);
+          List<String> cubeCols = new ArrayList<String>();
+          cubeCols.addAll(cubeMeasureNames);
+          cubeCols.addAll(cubeDimNames);
+          cubeTabToCols.put(cube, cubeCols);
         } else if (client.isDimensionTable(tblName)) {
           CubeDimensionTable dim = client.getDimensionTable(tblName);
           dimensions.add(dim);
           cubeTabToCols.put(dim, MetastoreUtil.getColumnNames(dim));
-
         }
       }
       if (cube == null && dimensions.size() == 0) {
@@ -148,6 +159,9 @@ public class CubeQueryContext {
       }
       if (cube != null) {
         candidateFactTables.addAll(client.getAllFactTables(cube));
+        for (CubeFactTable fact : candidateFactTables) {
+          cubeTabToCols.put(fact, MetastoreUtil.getColumnNames(fact));
+        }
       }
     } catch (HiveException e) {
       throw new SemanticException(e);
@@ -231,80 +245,117 @@ public class CubeQueryContext {
       }
     }
 
-    // Traverse select, where, groupby, having and orderby trees to get column
-    // names
-    ASTNode trees[] = { qb.getParseInfo().getSelForClause(clauseName),
-        qb.getParseInfo().getWhrForClause(clauseName),
-        qb.getParseInfo().getHavingForClause(clauseName),
-        qb.getParseInfo().getGroupByForClause(clauseName),
-        qb.getParseInfo().getOrderByForClause(clauseName),
-        qb.getParseInfo().getJoinExpr()};
+    for (CubeQueryExpr expr : CubeQueryExpr.values()) {
+      Set<String> columns = new HashSet<String>();
+      exprToCols.put(expr, columns);
+      getColsForTree(getExprTree(expr), columns, tblToColumns, exprToAlias);
+    }
 
-    for (ASTNode tree : trees) {
-      if (tree == null) {
-        continue;
-      }
-      // Traverse the tree to get column names
-      // We are doing a complete traversal so that expressions of columns
-      // are also captured ex: f(cola + colb/tab1.colc)
-      HQLParser.bft(tree, new ASTNodeVisitor() {
-        @Override
-        public void visit(TreeNode visited) {
-          ASTNode node = visited.getNode();
-          ASTNode parent = null;
-          if (visited.getParent() != null) {
-            parent = visited.getParent().getNode();
-          }
+    for (ASTNode aggrTree : qb.getParseInfo().getAggregationExprsForClause(clauseName).values()) {
+      getColsForTree(aggrTree, aggregateCols, null, null);
+      String aggr = HQLParser.getString(aggrTree);
+      System.out.println("Adding aggr expr:" + aggr);
+      aggregateExprs.add(aggr.toLowerCase());
+    }
+  }
 
-          if (node.getToken().getType() == TOK_TABLE_OR_COL
-              && (parent != null && parent.getToken().getType() != DOT)) {
-            // Take child ident.totext
-            ASTNode ident = (ASTNode) node.getChild(0);
-            List<String> colList = tblToColumns.get(DEFAULT_TABLE);
+  private ASTNode getExprTree(CubeQueryExpr expr) {
+    switch (expr) {
+    case SELECT : return qb.getParseInfo().getSelForClause(clauseName);
+    case WHERE : return qb.getParseInfo().getWhrForClause(clauseName);
+    case HAVING : return qb.getParseInfo().getHavingForClause(clauseName);
+    case GROUPBY : return qb.getParseInfo().getGroupByForClause(clauseName);
+    case ORDERBY : qb.getParseInfo().getOrderByForClause(clauseName);
+    case JOIN : return qb.getParseInfo().getJoinExpr();
+    default : return null;
+    }
+  }
+
+  private static void getColsForTree(ASTNode tree, final Set<String> columns,
+      final Map<String, List<String>> tblToCols, final Map<String,String> exprToAlias) {
+    if (tree == null) {
+      return;
+    }
+    // Traverse the tree to get column names
+    // We are doing a complete traversal so that expressions of columns
+    // are also captured ex: f(cola + colb/tab1.colc)
+    HQLParser.bft(tree, new ASTNodeVisitor() {
+      @Override
+      public void visit(TreeNode visited) {
+        ASTNode node = visited.getNode();
+        ASTNode parent = null;
+        if (visited.getParent() != null) {
+          parent = visited.getParent().getNode();
+        }
+
+        if (node.getToken().getType() == TOK_TABLE_OR_COL
+            && (parent != null && parent.getToken().getType() != DOT)) {
+          // Take child ident.totext
+          ASTNode ident = (ASTNode) node.getChild(0);
+          if (tblToCols != null) {
+            List<String> colList = tblToCols.get(DEFAULT_TABLE);
             if (colList == null) {
               colList = new ArrayList<String>();
-              tblToColumns.put(DEFAULT_TABLE, colList);
+              tblToCols.put(DEFAULT_TABLE, colList);
             }
             if (!colList.contains(ident.getText())) {
               colList.add(ident.getText());
             }
-          } else if (node.getToken().getType() == DOT) {
-            // This is for the case where column name is prefixed by table name
-            // or table alias
-            // For example 'select fact.id, dim2.id ...'
-            // Right child is the column name, left child.ident is table name
-            ASTNode tabident = HQLParser.findNodeByPath(node, TOK_TABLE_OR_COL,
-                Identifier);
-            ASTNode colIdent = (ASTNode) node.getChild(1);
+          }
+          columns.add(ident.getText());
+        } else if (node.getToken().getType() == DOT) {
+          // This is for the case where column name is prefixed by table name
+          // or table alias
+          // For example 'select fact.id, dim2.id ...'
+          // Right child is the column name, left child.ident is table name
+          ASTNode tabident = HQLParser.findNodeByPath(node, TOK_TABLE_OR_COL,
+              Identifier);
+          ASTNode colIdent = (ASTNode) node.getChild(1);
 
-            String column = colIdent.getText();
-            String table = tabident.getText();
-            List<String> colList = tblToColumns.get(table);
+          String column = colIdent.getText();
+          String table = tabident.getText();
+          if (tblToCols != null) {
+            List<String> colList = tblToCols.get(table);
             if (colList == null) {
               colList = new ArrayList<String>();
-              tblToColumns.put(table, colList);
+              tblToCols.put(table, colList);
             }
             if (!colList.contains(column)) {
               colList.add(column);
             }
           }
+          columns.add(table + "." + column);
+        } else if (node.getToken().getType() == TOK_SELEXPR) {
+          if (exprToAlias != null) {
+            // Extract column aliases for the result set, only applies to select
+            // trees
+            ASTNode alias = HQLParser.findNodeByPath(node, Identifier);
+            if (alias != null) {
+              exprToAlias.put(HQLParser.getString(node).trim().toLowerCase(),
+                  alias.getText());
+            }
+          }
         }
-      });
-    }
+      }
+    });
   }
-
   private void extractTabAliasForCol() throws SemanticException {
     List<String> columns = tblToColumns.get(DEFAULT_TABLE);
     if (columns == null) {
       return;
     }
     for (String col : columns) {
-      for (Map.Entry<AbstractCubeTable, List<String>> entry :
-        cubeTabToCols.entrySet()) {
-        System.out.println("table columns:" + entry.getValue());
-        if (entry.getValue().contains(col.toLowerCase())) {
-          System.out.println("Found table " + entry.getKey());
-          columnToTabAlias.put(col, entry.getKey().getName());
+      if (cube != null) {
+        List<String> cols = cubeTabToCols.get(cube);
+        if (cols.contains(col.toLowerCase())) {
+          System.out.println("Found table " + cube.getName());
+          columnToTabAlias.put(col, getAliasForTabName(cube.getName()));
+        }
+      }
+      for (CubeDimensionTable dim: dimensions) {
+        if (cubeTabToCols.get(dim).contains(col.toLowerCase())) {
+          System.out.println("Found table " + dim.getName());
+          columnToTabAlias.put(col, dim.getName());
           break;
         }
       }
@@ -314,6 +365,7 @@ public class CubeQueryContext {
       }
     }
   }
+
   public String getFromDateRaw() {
     return fromDateRaw;
   }
@@ -412,7 +464,6 @@ public class CubeQueryContext {
         builder.append("\n\t expr: " + entry.getKey().dump() + " ColumnAlias: " + entry.getValue());
       }
     }
-    //builder.append("\n selectStar: " + parseInfo.isSelectStarQuery());
     if (parseInfo.getAggregationExprsForClause(clause) != null) {
       builder.append("\n aggregateexprs:");
       for (Map.Entry<String, ASTNode> entry : parseInfo.getAggregationExprsForClause(clause).entrySet()) {
@@ -602,7 +653,6 @@ public class CubeQueryContext {
     List<String> qstrs = new ArrayList<String>();
     qstrs.add(getSelectTree());
     String fromString = HQLParser.getString(getFromTree()).toLowerCase();
-    String whereString = getWhereTree(factStorageTable);
     for (Map.Entry<AbstractCubeTable, String> entry :
       storageTableToQuery.entrySet()) {
       String src = entry.getKey().getName().toLowerCase();
@@ -614,6 +664,7 @@ public class CubeQueryContext {
     if (joinTree != null) {
       qstrs.add(HQLParser.getString(joinTree));
     }
+    String whereString = getWhereTree(factStorageTable);
     if (whereString != null) {
       qstrs.add(whereString);
     }
@@ -635,7 +686,6 @@ public class CubeQueryContext {
   private String toHQL(String tableName) {
     String qfmt = getQueryFormat();
     System.out.println("qfmt:" + qfmt);
-    //print();
     return String.format(qfmt, getQueryTreeStrings(tableName));
   }
 
@@ -691,6 +741,7 @@ public class CubeQueryContext {
     if (fact == null && !hasDimensionInQuery()) {
       throw new SemanticException("No valid fact table available");
     }
+    //print();
 
     if (fact != null) {
       Map<UpdatePeriod, List<String>> storageTableMap = factStorageMap.get(fact);
@@ -777,5 +828,39 @@ public class CubeQueryContext {
 
   public void setOrderByTree(String orderByTree) {
     this.orderByTree = orderByTree;
+  }
+
+  public Map<CubeQueryExpr, Set<String>> getExprToCols() {
+    return exprToCols;
+  }
+
+  public boolean isCubeMeasure(String col) {
+    String[] split = col.split("\\.");
+    System.out.println("Looking for col" + col + " split" + split.length);
+    if (split.length <= 1) {
+      return cubeMeasureNames.contains(col);
+    } else {
+      if (split[0].equalsIgnoreCase(cube.getName()) ||
+          split[0].equalsIgnoreCase(getAliasForTabName(cube.getName()))) {
+        return cubeMeasureNames.contains(split[1]);
+      } else {
+        return false;
+      }
+    }
+  }
+
+  public boolean hasAggregateOnCol(String col) {
+    return aggregateCols.contains(col);
+  }
+
+  public boolean isAggregateExpr(String expr) {
+    return aggregateExprs.contains(expr);
+  }
+
+  public boolean hasAggregates() {
+    return !aggregateExprs.isEmpty() || (cube !=null);
+  }
+  public String getAlias(String expr) {
+    return exprToAlias.get(expr);
   }
 }

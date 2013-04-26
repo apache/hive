@@ -92,6 +92,67 @@ public class TestCubeDriver {
   }
 
   @Test
+  public void testCubeGroupbyQuery() throws Exception {
+    conf = new Configuration();
+    driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
+    Calendar cal = Calendar.getInstance();
+    Date now = cal.getTime();
+    System.out.println("Test now:" + now);
+    cal.add(Calendar.DAY_OF_MONTH, -2);
+    Date twodaysBack = cal.getTime();
+    System.out.println("Test twodaysBack:" + twodaysBack);
+    System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" + getDateUptoHours(now));
+    //String expected = "select SUM(testCube.msr2) from "
+    String hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from testCube"
+        + " join citytable on testCube.cityid = citytable.id"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube"
+        + " join citytable on testCube.cityid = citytable.id"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')"
+        + " group by name");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select cityid, SUM(msr2) from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')"
+        + " group by round(zipcode)");
+
+    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')"
+        + " group by zipcode");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select cityid, SUM(msr2) from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')"
+        + " group by round(zipcode)");
+    System.out.println("cube hql:" + hqlQuery);
+
+    // TODO to be tested after aggregate resolver
+    /*hqlQuery = driver.compileCubeQuery("select cityid, msr2 from testCube"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')"
+        + " group by round(zipcode)");
+    System.out.println("cube hql:" + hqlQuery);
+   */
+  }
+
+  @Test
   public void testCubeQueryWithAilas() throws Exception {
     conf = new Configuration();
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));

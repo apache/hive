@@ -120,13 +120,10 @@ public final class CubeFactTable extends AbstractCubeTable {
     if (fmt != null) {
       Calendar cal = Calendar.getInstance();
       cal.setTime(fromDate);
-      System.out.println(" getPartitions fromDate :" + cal.getTime());
       List<String> partitions = new ArrayList<String>();
       Date dt = cal.getTime();
       while (dt.compareTo(toDate) < 0) {
-        System.out.println(" getPartitions nextDate :" + cal.getTime());
         String part = new SimpleDateFormat(fmt).format(cal.getTime());
-        System.out.println("Adding partition:" + part + " for table:" + getName());
         partitions.add(part);
         cal.add(interval.calendarField(), 1);
         dt = cal.getTime();
