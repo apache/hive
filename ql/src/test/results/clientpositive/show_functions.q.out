@@ -110,7 +110,10 @@ month
 named_struct
 negative
 ngrams
+noop
+noopwithmap
 not
+npath
 ntile
 nvl
 or
@@ -174,6 +177,7 @@ var_samp
 variance
 weekofyear
 when
+windowingtablefunction
 xpath
 xpath_boolean
 xpath_double
