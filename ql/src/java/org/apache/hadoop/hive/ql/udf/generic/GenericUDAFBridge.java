@@ -147,7 +147,7 @@ public class GenericUDAFBridge extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing UDAFEvaluator value. */
-    static class UDAFAgg implements AggregationBuffer {
+    static class UDAFAgg extends AbstractAggregationBuffer {
       UDAFEvaluator ueObject;
 
       UDAFAgg(UDAFEvaluator ueObject) {

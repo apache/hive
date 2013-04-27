@@ -151,35 +151,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   private List<FastBitSet> groupingSetsBitSet;
   transient private List<Object> newKeysGroupingSets;
 
-  /**
-   * This is used to store the position and field names for variable length
-   * fields.
-   **/
-  class varLenFields {
-    int aggrPos;
-    List<Field> fields;
-
-    varLenFields(int aggrPos, List<Field> fields) {
-      this.aggrPos = aggrPos;
-      this.fields = fields;
-    }
-
-    int getAggrPos() {
-      return aggrPos;
-    }
-
-    List<Field> getFields() {
-      return fields;
-    }
-  };
-
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
   transient List<Integer> keyPositionsSize;
 
   // for these positions, some variable primitive type (String) is used for the
   // aggregation classes
-  transient List<varLenFields> aggrPositions;
+  transient List<Field>[] aggrPositions;
 
   transient int fixedRowSize;
   transient long maxHashTblMemory;
@@ -383,7 +361,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       aggregations = newAggregations();
       hashAggr = true;
       keyPositionsSize = new ArrayList<Integer>();
-      aggrPositions = new ArrayList<varLenFields>();
+      aggrPositions = new List[aggregations.length];
       groupbyMapAggrInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
 
@@ -523,21 +501,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
 
     if (c.isInstance(new String()) || c.isInstance(new ByteArrayRef())) {
-      int idx = 0;
-      varLenFields v = null;
-      for (idx = 0; idx < aggrPositions.size(); idx++) {
-        v = aggrPositions.get(idx);
-        if (v.getAggrPos() == pos) {
-          break;
-        }
+      if (aggrPositions[pos] == null) {
+        aggrPositions[pos] = new ArrayList<Field>();
       }
-
-      if (idx == aggrPositions.size()) {
-        v = new varLenFields(pos, new ArrayList<Field>());
-        aggrPositions.add(v);
-      }
-
-      v.getFields().add(f);
+      aggrPositions[pos].add(f);
       return javaObjectOverHead;
     }
 
@@ -582,9 +549,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     for (int i = 0; i < aggregationEvaluators.length; i++) {
 
       fixedRowSize += javaObjectOverHead;
-      Class<? extends AggregationBuffer> agg = aggregationEvaluators[i]
-          .getNewAggregationBuffer().getClass();
-      Field[] fArr = ObjectInspectorUtils.getDeclaredNonStaticFields(agg);
+      AggregationBuffer agg = aggregationEvaluators[i].getNewAggregationBuffer();
+      if (GenericUDAFEvaluator.isEstimable(agg)) {
+        continue;
+      }
+      Field[] fArr = ObjectInspectorUtils.getDeclaredNonStaticFields(agg.getClass());
       for (Field f : fArr) {
         fixedRowSize += getSize(i, f.getType(), f);
       }
@@ -968,29 +937,15 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         }
       }
 
-      AggregationBuffer[] aggs = null;
-      if (aggrPositions.size() > 0) {
-        KeyWrapper newKeyProber = newKeys.copyKey();
-        aggs = hashAggregations.get(newKeyProber);
-      }
-
-      for (varLenFields v : aggrPositions) {
-        int aggrPos = v.getAggrPos();
-        List<Field> fieldsVarLen = v.getFields();
-        AggregationBuffer agg = aggs[aggrPos];
-
-        try {
-          for (Field f : fieldsVarLen) {
-            Object o = f.get(agg);
-            if (o instanceof String){
-              totalVariableSize += ((String)o).length();
-            }
-            else if (o instanceof ByteArrayRef){
-              totalVariableSize += ((ByteArrayRef)o).getData().length;
-            }
-          }
-        } catch (IllegalAccessException e) {
-          assert false;
+      AggregationBuffer[] aggs = hashAggregations.get(newKeys);
+      for (int i = 0; i < aggs.length; i++) {
+        AggregationBuffer agg = aggs[i];
+        if (GenericUDAFEvaluator.isEstimable(agg)) {
+          totalVariableSize += ((GenericUDAFEvaluator.AbstractAggregationBuffer)agg).estimate();
+          continue;
+        }
+        if (aggrPositions[i] != null) {
+          totalVariableSize += estimateSize(agg, aggrPositions[i]);
         }
       }
 
@@ -1008,6 +963,24 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       return true;
     }
     return false;
+  }
+
+  private int estimateSize(AggregationBuffer agg, List<Field> fields) {
+    int length = 0;
+    for (Field f : fields) {
+      try {
+        Object o = f.get(agg);
+        if (o instanceof String){
+          length += ((String)o).length();
+        }
+        else if (o instanceof ByteArrayRef){
+          length += ((ByteArrayRef)o).getData().length;
+        }
+      } catch (Exception e) {
+        // continue.. null out the field?
+      }
+    }
+    return length;
   }
 
   private void flush(boolean complete) throws HiveException {
