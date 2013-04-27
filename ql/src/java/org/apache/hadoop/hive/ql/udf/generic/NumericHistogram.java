@@ -313,4 +313,8 @@ public class NumericHistogram {
 
     return result;
   }
+
+  public int getNumBins() {
+    return bins == null ? 0 : bins.size();
+  }
 }

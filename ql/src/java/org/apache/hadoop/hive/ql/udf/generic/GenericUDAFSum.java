@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -96,7 +97,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing decimal sum value. */
-    static class SumHiveDecimalAgg implements AggregationBuffer {
+    @AggregationType(estimable = false) // hard to know exactly for decimals
+    static class SumHiveDecimalAgg extends AbstractAggregationBuffer {
       boolean empty;
       HiveDecimal sum;
     }
@@ -188,9 +190,12 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing double sum value. */
-    static class SumDoubleAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    static class SumDoubleAgg extends AbstractAggregationBuffer {
       boolean empty;
       double sum;
+      @Override
+      public int estimate() { return JavaDataModel.PRIMITIVES1 + JavaDataModel.PRIMITIVES2; }
     }
 
     @Override
@@ -270,9 +275,12 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing double sum value. */
-    static class SumLongAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    static class SumLongAgg extends AbstractAggregationBuffer {
       boolean empty;
       long sum;
+      @Override
+      public int estimate() { return JavaDataModel.PRIMITIVES1 + JavaDataModel.PRIMITIVES2; }
     }
 
     @Override

@@ -400,7 +400,7 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
 
 
     // Aggregation buffer methods. 
-    static class NGramAggBuf implements AggregationBuffer {
+    static class NGramAggBuf extends AbstractAggregationBuffer {
       ArrayList<String> context;
       NGramEstimator nge;
     };

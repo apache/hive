@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -185,11 +186,17 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
             foi);
     }
 
-    public static class BooleanStatsAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    public static class BooleanStatsAgg extends AbstractAggregationBuffer {
       public String columnType;                        /* Datatype of column */
       public long countTrues;  /* Count of number of true values seen so far */
       public long countFalses; /* Count of number of false values seen so far */
       public long countNulls;  /* Count of number of null values seen so far */
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.primitive2() * 3 + model.lengthFor(columnType);
+      }
     };
 
     @Override
@@ -426,7 +433,9 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
     }
 
-    public static class LongStatsAgg implements AggregationBuffer {
+
+    @AggregationType(estimable = true)
+    public static class LongStatsAgg extends AbstractAggregationBuffer {
       public String columnType;
       public long min;                              /* Minimum value seen so far */
       public long max;                              /* Maximum value seen so far */
@@ -434,6 +443,12 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       public LongNumDistinctValueEstimator numDV;    /* Distinct value estimator */
       public boolean firstItem;                     /* First item in the aggBuf? */
       public int numBitVectors;
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.primitive1() * 2 + model.primitive2() * 3 +
+            model.lengthFor(columnType) + model.lengthFor(numDV);
+      }
     };
 
     @Override
@@ -738,7 +753,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
     }
 
-    public static class DoubleStatsAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    public static class DoubleStatsAgg extends AbstractAggregationBuffer {
       public String columnType;
       public double min;                            /* Minimum value seen so far */
       public double max;                            /* Maximum value seen so far */
@@ -746,6 +762,12 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       public DoubleNumDistinctValueEstimator numDV;  /* Distinct value estimator */
       public boolean firstItem;                     /* First item in the aggBuf? */
       public int numBitVectors;
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.primitive1() * 2 + model.primitive2() * 3 +
+            model.lengthFor(columnType) + model.lengthFor(numDV);
+      }
     };
 
     @Override
@@ -1061,7 +1083,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
     }
 
-    public static class StringStatsAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    public static class StringStatsAgg extends AbstractAggregationBuffer {
       public String columnType;
       public long maxLength;                           /* Maximum length seen so far */
       public long sumLength;             /* Sum of lengths of all values seen so far */
@@ -1070,6 +1093,12 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       public StringNumDistinctValueEstimator numDV;      /* Distinct value estimator */
       public int numBitVectors;
       public boolean firstItem;
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.primitive1() * 2 + model.primitive2() * 4 +
+            model.lengthFor(columnType) + model.lengthFor(numDV);
+      }
     };
 
     @Override
@@ -1377,12 +1406,18 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       }
     }
 
-    public static class BinaryStatsAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    public static class BinaryStatsAgg extends AbstractAggregationBuffer {
       public String columnType;
       public long maxLength;                           /* Maximum length seen so far */
       public long sumLength;             /* Sum of lengths of all values seen so far */
       public long count;                          /* Count of all values seen so far */
       public long countNulls;          /* Count of number of null values seen so far */
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.primitive2() * 4 + model.lengthFor(columnType);
+      }
     };
 
     @Override

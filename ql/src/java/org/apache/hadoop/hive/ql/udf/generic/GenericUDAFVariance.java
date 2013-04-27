@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -171,10 +172,13 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
       }
     }
 
-    static class StdAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    static class StdAgg extends AbstractAggregationBuffer {
       long count; // number of elements
       double sum; // sum of elements
       double variance; // sum[x-avg^2] (this is actually n times the variance)
+      @Override
+      public int estimate() { return JavaDataModel.PRIMITIVES2 * 3; }
     };
 
     @Override

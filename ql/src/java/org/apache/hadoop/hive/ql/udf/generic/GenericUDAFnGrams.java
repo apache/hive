@@ -338,7 +338,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     }
 
     // Aggregation buffer methods. 
-    static class NGramAggBuf implements AggregationBuffer {
+    static class NGramAggBuf extends AbstractAggregationBuffer {
       NGramEstimator nge;
       int n;
     };
