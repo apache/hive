@@ -239,6 +239,12 @@ public class MapredWork extends AbstractOperatorDesc {
     return keyDesc;
   }
 
+  /**
+   * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
+   * to keySerializeInfo of the ReduceSink
+   *
+   * @param keyDesc
+   */
   public void setKeyDesc(final TableDesc keyDesc) {
     this.keyDesc = keyDesc;
   }

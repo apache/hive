@@ -8341,7 +8341,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // For each task, set the key descriptor for the reducer
     for (Task<? extends Serializable> rootTask : rootTasks) {
-      setKeyDescTaskTree(rootTask);
+      GenMapRedUtils.setKeyAndValueDescForTaskTree(rootTask);
     }
 
     // If a task contains an operator which instructs bucketizedhiveinputformat
@@ -8564,36 +8564,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (Task<? extends Serializable> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
-    }
-  }
-
-  // loop over all the tasks recursviely
-  private void setKeyDescTaskTree(Task<? extends Serializable> task) {
-
-    if (task instanceof ExecDriver) {
-      MapredWork work = (MapredWork) task.getWork();
-      work.deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
-          .getAliasToWork();
-      if (!opMap.isEmpty()) {
-        for (Operator<? extends OperatorDesc> op : opMap.values()) {
-          GenMapRedUtils.setKeyAndValueDesc(work, op);
-        }
-      }
-    } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
-          .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
-        setKeyDescTaskTree(tsk);
-      }
-    }
-
-    if (task.getChildTasks() == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      setKeyDescTaskTree(childTask);
     }
   }
 

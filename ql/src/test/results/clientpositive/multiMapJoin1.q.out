@@ -285,7 +285,9 @@ POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 580
-PREHOOK: query: explain
+PREHOOK: query: -- Now run a query with two-way join, which should be converted into a
+-- map-join followed by groupby - two MR jobs overall 
+explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
@@ -294,7 +296,9 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- Now run a query with two-way join, which should be converted into a
+-- map-join followed by groupby - two MR jobs overall 
+explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
@@ -469,6 +473,207 @@ POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 580
+PREHOOK: query: -- Now run a query with two-way join, which should first be converted into a
+-- map-join followed by groupby and then finally into a single MR job.
+
+#### A masked pattern was here ####
+select count(*) FROM
+(select bigTbl.key as key, bigTbl.value as value1,
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ on (bigTbl.key = smallTbl1.key)
+) firstjoin
+JOIN                                                                  
+smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+group by smallTbl2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Now run a query with two-way join, which should first be converted into a
+-- map-join followed by groupby and then finally into a single MR job.
+
+#### A masked pattern was here ####
+select count(*) FROM
+(select bigTbl.key as key, bigTbl.value as value1,
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ on (bigTbl.key = smallTbl1.key)
+) firstjoin
+JOIN                                                                  
+smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+group by smallTbl2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+#### A masked pattern was here ####
+
+STAGE DEPENDENCIES:
+  Stage-7 is a root stage
+  Stage-6 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-6
+
+STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+        smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            HashTable Sink Operator
+              condition expressions:
+                0 {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+        smalltbl2 
+          TableScan
+            alias: smalltbl2
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 {key}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[value]]
+              Position of Big Table: 0
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        firstjoin:bigtbl 
+          TableScan
+            alias: bigtbl
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col1
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 
+                      1 {key}
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col1]]
+                      1 [Column[value]]
+                    outputColumnNames: _col3
+                    Position of Big Table: 0
+                    Select Operator
+                      expressions:
+                            expr: _col3
+                            type: string
+                      outputColumnNames: _col3
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col3
+                              type: string
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                          Reduce Output Operator
+                            key expressions:
+                                  expr: _col0
+                                  type: string
+                            sort order: +
+                            Map-reduce partition columns:
+                                  expr: _col0
+                                  type: string
+                            tag: -1
+                            value expressions:
+                                  expr: _col1
+                                  type: bigint
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+
+#### A masked pattern was here ####
+select count(*) FROM
+(select bigTbl.key as key, bigTbl.value as value1,
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ on (bigTbl.key = smallTbl1.key)
+) firstjoin
+JOIN                                                                  
+smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+group by smallTbl2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
+select count(*) FROM
+(select bigTbl.key as key, bigTbl.value as value1,
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ on (bigTbl.key = smallTbl1.key)
+) firstjoin
+JOIN                                                                  
+smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+group by smallTbl2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table smallTbl3(key string, value string)
@@ -588,6 +793,577 @@ POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME bigTbl)) (TOK_TABREF (TOK_TABNAME smallTbl1)) (= (. (TOK_TABLE_OR_COL bigTbl) key1) (. (TOK_TABLE_OR_COL smallTbl1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) key1) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) key2) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) value) value2)))) firstjoin) (TOK_TABREF (TOK_TABNAME smallTbl2)) (= (. (TOK_TABLE_OR_COL firstjoin) value1) (. (TOK_TABLE_OR_COL smallTbl2) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) key1) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) key2) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL smallTbl2) key) key3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) value1) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) value2) value2)))) secondjoin) (TOK_TABREF (TOK_TABNAME smallTbl3)) (= (. (TOK_TABLE_OR_COL secondjoin) key2) (. (TOK_TABLE_OR_COL smallTbl3) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-16 is a root stage , consists of Stage-21, Stage-22, Stage-1
+  Stage-21 has a backup stage: Stage-1
+  Stage-14 depends on stages: Stage-21
+  Stage-13 depends on stages: Stage-1, Stage-14, Stage-15 , consists of Stage-19, Stage-20, Stage-2
+  Stage-19 has a backup stage: Stage-2
+  Stage-11 depends on stages: Stage-19
+  Stage-10 depends on stages: Stage-2, Stage-11, Stage-12 , consists of Stage-17, Stage-18, Stage-3
+  Stage-17 has a backup stage: Stage-3
+  Stage-8 depends on stages: Stage-17
+  Stage-4 depends on stages: Stage-3, Stage-8, Stage-9
+  Stage-18 has a backup stage: Stage-3
+  Stage-9 depends on stages: Stage-18
+  Stage-3
+  Stage-20 has a backup stage: Stage-2
+  Stage-12 depends on stages: Stage-20
+  Stage-2
+  Stage-22 has a backup stage: Stage-1
+  Stage-15 depends on stages: Stage-22
+  Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-16
+    Conditional Operator
+
+  Stage: Stage-21
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        secondjoin:firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        secondjoin:firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-14
+    Map Reduce
+      Alias -> Map Operator Tree:
+        secondjoin:firstjoin:bigtbl 
+          TableScan
+            alias: bigtbl
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              outputColumnNames: _col1, _col2
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                      expr: _col2
+                      type: string
+                outputColumnNames: _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-13
+    Conditional Operator
+
+  Stage: Stage-19
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        secondjoin:smalltbl2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        secondjoin:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col1}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col2]]
+                1 [Column[value]]
+              Position of Big Table: 0
+
+  Stage: Stage-11
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col1}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col2]]
+                1 [Column[value]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-10
+    Conditional Operator
+
+  Stage: Stage-17
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        smalltbl3 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        smalltbl3 
+          TableScan
+            alias: smalltbl3
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-18
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[key]]
+              Position of Big Table: 1
+
+  Stage: Stage-9
+    Map Reduce
+      Alias -> Map Operator Tree:
+        smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[key]]
+              Position of Big Table: 1
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col1
+                    type: string
+              tag: 0
+        smalltbl3 
+          TableScan
+            alias: smalltbl3
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 
+          handleSkewJoin: false
+          Select Operator
+            Group By Operator
+              aggregations:
+                    expr: count()
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-20
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col1}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col2]]
+                1 [Column[value]]
+              Position of Big Table: 1
+
+  Stage: Stage-12
+    Map Reduce
+      Alias -> Map Operator Tree:
+        secondjoin:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col1}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col2]]
+                1 [Column[value]]
+              outputColumnNames: _col1
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                outputColumnNames: _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col2
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col2
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col1
+                    type: string
+        secondjoin:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+              tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col1
+          Select Operator
+            expressions:
+                  expr: _col1
+                  type: string
+            outputColumnNames: _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-22
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        secondjoin:firstjoin:bigtbl 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        secondjoin:firstjoin:bigtbl 
+          TableScan
+            alias: bigtbl
+            HashTable Sink Operator
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              Position of Big Table: 1
+
+  Stage: Stage-15
+    Map Reduce
+      Alias -> Map Operator Tree:
+        secondjoin:firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              outputColumnNames: _col1, _col2
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                      expr: _col2
+                      type: string
+                outputColumnNames: _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        secondjoin:firstjoin:bigtbl 
+          TableScan
+            alias: bigtbl
+            Reduce Output Operator
+              key expressions:
+                    expr: key1
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key1
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key2
+                    type: string
+                    expr: value
+                    type: string
+        secondjoin:firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1} {VALUE._col2}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: string
+            outputColumnNames: _col1, _col2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
 PREHOOK: query: select count(*) FROM
  (
    SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
@@ -638,7 +1414,8 @@ POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type
 POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1660
-PREHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job
+PREHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job,
+-- So, overall two jobs - one for multi-way join and one for count(*)
 explain
 select count(*) FROM
  (
@@ -654,7 +1431,8 @@ select count(*) FROM
  ) secondjoin
  JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job
+POSTHOOK: query: -- join with 4 tables on different keys is also executed as a single MR job,
+-- So, overall two jobs - one for multi-way join and one for count(*)
 explain
 select count(*) FROM
  (
@@ -820,6 +1598,252 @@ STAGE PLANS:
               value expressions:
                     expr: _col0
                     type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bigtbl
+PREHOOK: Input: default@smalltbl1
+PREHOOK: Input: default@smalltbl2
+PREHOOK: Input: default@smalltbl3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bigtbl
+POSTHOOK: Input: default@smalltbl1
+POSTHOOK: Input: default@smalltbl2
+POSTHOOK: Input: default@smalltbl3
+#### A masked pattern was here ####
+POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+1660
+PREHOOK: query: -- Now run the above query with M-MR optimization
+-- This should be a single MR job end-to-end.
+explain
+select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Now run the above query with M-MR optimization
+-- This should be a single MR job end-to-end.
+explain
+select count(*) FROM
+ (
+   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
+          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
+    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
+            bigTbl.value as value1, bigTbl.value as value2 
+     FROM bigTbl JOIN smallTbl1 
+     on (bigTbl.key1 = smallTbl1.key)
+    ) firstjoin
+    JOIN                                                                  
+    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
+ ) secondjoin
+ JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: bigtbl.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME bigTbl)) (TOK_TABREF (TOK_TABNAME smallTbl1)) (= (. (TOK_TABLE_OR_COL bigTbl) key1) (. (TOK_TABLE_OR_COL smallTbl1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) key1) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) key2) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL bigTbl) value) value2)))) firstjoin) (TOK_TABREF (TOK_TABNAME smallTbl2)) (= (. (TOK_TABLE_OR_COL firstjoin) value1) (. (TOK_TABLE_OR_COL smallTbl2) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) key1) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) key2) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL smallTbl2) key) key3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) value1) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL firstjoin) value2) value2)))) secondjoin) (TOK_TABREF (TOK_TABNAME smallTbl3)) (= (. (TOK_TABLE_OR_COL secondjoin) key2) (. (TOK_TABLE_OR_COL smallTbl3) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-11 is a root stage
+  Stage-10 depends on stages: Stage-11
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        secondjoin:firstjoin:smalltbl1 
+          Fetch Operator
+            limit: -1
+        secondjoin:smalltbl2 
+          Fetch Operator
+            limit: -1
+        smalltbl3 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        secondjoin:firstjoin:smalltbl1 
+          TableScan
+            alias: smalltbl1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              Position of Big Table: 0
+        secondjoin:smalltbl2 
+          TableScan
+            alias: smalltbl2
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col1}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col2]]
+                1 [Column[value]]
+              Position of Big Table: 0
+        smalltbl3 
+          TableScan
+            alias: smalltbl3
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col1]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-10
+    Map Reduce
+      Alias -> Map Operator Tree:
+        secondjoin:firstjoin:bigtbl 
+          TableScan
+            alias: bigtbl
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key2} {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key1]]
+                1 [Column[key]]
+              outputColumnNames: _col1, _col2
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col1
+                      type: string
+                      expr: _col2
+                      type: string
+                outputColumnNames: _col1, _col2
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col1}
+                      1 
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col2]]
+                      1 [Column[value]]
+                    outputColumnNames: _col1
+                    Position of Big Table: 0
+                    Select Operator
+                      expressions:
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col1
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          condition expressions:
+                            0 
+                            1 
+                          handleSkewJoin: false
+                          keys:
+                            0 [Column[_col1]]
+                            1 [Column[key]]
+                          Position of Big Table: 0
+                          Select Operator
+                            Group By Operator
+                              aggregations:
+                                    expr: count()
+                              bucketGroup: false
+                              mode: hash
+                              outputColumnNames: _col0
+                                Reduce Output Operator
+                                  sort order: 
+                                  tag: -1
+                                  value expressions:
+                                        expr: _col0
+                                        type: bigint
+      Local Work:
+        Map Reduce Local Work
       Reduce Operator Tree:
         Group By Operator
           aggregations:
