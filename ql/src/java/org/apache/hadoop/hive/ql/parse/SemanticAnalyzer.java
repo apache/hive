@@ -10631,6 +10631,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       {
         RowResolver ptfMapRR = tabDef.getRawInputShape().getRr();
 
+        ptfDesc.setMapSide(true);
         input = putOpInsertMap(OperatorFactory.getAndMakeChild(ptfDesc,
             new RowSchema(ptfMapRR.getColumnInfos()),
             input), ptfMapRR);
