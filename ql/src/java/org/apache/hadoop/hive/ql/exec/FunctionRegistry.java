@@ -182,7 +182,6 @@ public final class FunctionRegistry {
   public static final String NOOP_TABLE_FUNCTION = "noop";
   public static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
 
-  static Map<String, PTFFunctionInfo> tableFunctions = Collections.synchronizedMap(new LinkedHashMap<String, PTFFunctionInfo>());
   static Map<String, WindowFunctionInfo> windowFunctions = Collections.synchronizedMap(new LinkedHashMap<String, WindowFunctionInfo>());
 
   /*
@@ -1294,6 +1293,9 @@ public final class FunctionRegistry {
       FunctionRegistry.registerTemporaryGenericUDAF(
         functionName, (GenericUDAFResolver)
         ReflectionUtils.newInstance(udfClass, null));
+    } else if(TableFunctionResolver.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTableFunction(
+        functionName, (Class<? extends TableFunctionResolver>)udfClass);
     } else {
       return false;
     }
@@ -1406,14 +1408,17 @@ public final class FunctionRegistry {
 
   public static boolean isTableFunction(String name)
   {
-    PTFFunctionInfo tFInfo = tableFunctions.get(name.toLowerCase());
-     return tFInfo != null && !tFInfo.isInternal();
+    FunctionInfo tFInfo = mFunctions.get(name.toLowerCase());
+    return tFInfo != null && !tFInfo.isInternalTableFunction() && tFInfo.isTableFunction();
   }
 
   public static TableFunctionResolver getTableFunctionResolver(String name)
   {
-    PTFFunctionInfo tfInfo = tableFunctions.get(name.toLowerCase());
-    return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionResolver(), null);
+    FunctionInfo tfInfo = mFunctions.get(name.toLowerCase());
+    if(tfInfo.isTableFunction()) {
+      return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionClass(), null);
+    }
+    return null;
   }
 
   public static TableFunctionResolver getWindowingTableFunction()
@@ -1428,8 +1433,8 @@ public final class FunctionRegistry {
 
   public static void registerTableFunction(String name, Class<? extends TableFunctionResolver> tFnCls)
   {
-    PTFFunctionInfo tInfo = new PTFFunctionInfo(name, tFnCls);
-    tableFunctions.put(name.toLowerCase(), tInfo);
+    FunctionInfo tInfo = new FunctionInfo(name, tFnCls);
+    mFunctions.put(name.toLowerCase(), tInfo);
   }
 
 }
