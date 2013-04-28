@@ -19,8 +19,10 @@
 package org.apache.hive.service.cli.session;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -64,6 +66,7 @@ public class HiveSessionImpl implements HiveSession {
   private SessionManager sessionManager;
   private OperationManager operationManager;
   private IMetaStoreClient metastoreClient = null;
+  private final Set<OperationHandle> opHandleSet = new HashSet<OperationHandle>();
 
   public HiveSessionImpl(String username, String password, Map<String, String> sessionConf) {
     this.username = username;
@@ -164,7 +167,9 @@ public class HiveSessionImpl implements HiveSession {
       ExecuteStatementOperation operation = getOperationManager()
           .newExecuteStatementOperation(getSession(), statement, confOverlay);
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -176,7 +181,9 @@ public class HiveSessionImpl implements HiveSession {
     try {
       GetTypeInfoOperation operation = getOperationManager().newGetTypeInfoOperation(getSession());
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -188,7 +195,9 @@ public class HiveSessionImpl implements HiveSession {
     try {
       GetCatalogsOperation operation = getOperationManager().newGetCatalogsOperation(getSession());
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -201,7 +210,9 @@ public class HiveSessionImpl implements HiveSession {
       GetSchemasOperation operation =
           getOperationManager().newGetSchemasOperation(getSession(), catalogName, schemaName);
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -215,7 +226,9 @@ public class HiveSessionImpl implements HiveSession {
       MetadataOperation operation =
           getOperationManager().newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -227,7 +240,9 @@ public class HiveSessionImpl implements HiveSession {
     try {
       GetTableTypesOperation operation = getOperationManager().newGetTableTypesOperation(getSession());
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -240,7 +255,9 @@ public class HiveSessionImpl implements HiveSession {
     GetColumnsOperation operation = getOperationManager().newGetColumnsOperation(getSession(),
         catalogName, schemaName, tableName, columnName);
     operation.run();
-    return operation.getHandle();
+    OperationHandle opHandle = operation.getHandle();
+    opHandleSet.add(opHandle);
+    return opHandle;
     } finally {
       release();
     }
@@ -253,7 +270,9 @@ public class HiveSessionImpl implements HiveSession {
       GetFunctionsOperation operation = getOperationManager()
           .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
       operation.run();
-      return operation.getHandle();
+      OperationHandle opHandle = operation.getHandle();
+      opHandleSet.add(opHandle);
+      return opHandle;
     } finally {
       release();
     }
@@ -270,6 +289,11 @@ public class HiveSessionImpl implements HiveSession {
       if (metastoreClient != null) {
         metastoreClient.close();
       }
+      // Iterate through the opHandles and close their operations
+      for (OperationHandle opHandle : opHandleSet) {
+        operationManager.closeOperation(opHandle);
+      }
+      opHandleSet.clear();
     } finally {
       release();
     }
@@ -300,7 +324,8 @@ public class HiveSessionImpl implements HiveSession {
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
     acquire();
     try {
-      sessionManager.getOperationManager().closeOperation(opHandle);
+      operationManager.closeOperation(opHandle);
+      opHandleSet.remove(opHandle);
     } finally {
       release();
     }
