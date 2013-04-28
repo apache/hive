@@ -46,6 +46,10 @@ public class PTFDesc extends AbstractOperatorDesc
 
   PartitionedTableFunctionDef funcDef;
   LeadLagInfo llInfo;
+  /*
+   * is this PTFDesc for a Map-Side PTF Operation?
+   */
+  boolean isMapSide = false;
 
   static{
     PTFUtils.makeTransient(PTFDesc.class, "llInfo");
@@ -73,6 +77,14 @@ public class PTFDesc extends AbstractOperatorDesc
 
   public boolean forWindowing() {
     return funcDef != null && (funcDef instanceof WindowTableFunctionDef);
+  }
+
+  public boolean isMapSide() {
+    return isMapSide;
+  }
+
+  public void setMapSide(boolean isMapSide) {
+    this.isMapSide = isMapSide;
   }
 
   public abstract static class PTFInputDef {

@@ -1066,6 +1066,38 @@ Manufacturer#4	Brand#42	2581.68	7337.62
 Manufacturer#5	Brand#51	1611.66	7672.66
 Manufacturer#5	Brand#52	3254.17	7672.66
 Manufacturer#5	Brand#53	2806.83	7672.66
+PREHOOK: query: select p_mfgr, p_brand, s, 
+round(sum(s),2) over w1  as s1
+from mfgr_price_view 
+window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mfgr_price_view
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_brand, s, 
+round(sum(s),2) over w1  as s1
+from mfgr_price_view 
+window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mfgr_price_view
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+Manufacturer#1	Brand#12	4800.84	4800.84
+Manufacturer#1	Brand#14	2346.3	7147.14
+Manufacturer#1	Brand#15	1602.59	8749.73
+Manufacturer#2	Brand#22	3491.38	3491.38
+Manufacturer#2	Brand#23	2031.98	5523.36
+Manufacturer#2	Brand#24	1698.66	7222.02
+Manufacturer#2	Brand#25	1701.6	5432.24
+Manufacturer#3	Brand#31	1671.68	1671.68
+Manufacturer#3	Brand#32	3333.37	5005.05
+Manufacturer#3	Brand#34	1337.29	6342.34
+Manufacturer#3	Brand#35	1190.27	5860.93
+Manufacturer#4	Brand#41	4755.94	4755.94
+Manufacturer#4	Brand#42	2581.68	7337.62
+Manufacturer#5	Brand#51	1611.66	1611.66
+Manufacturer#5	Brand#52	3254.17	4865.83
+Manufacturer#5	Brand#53	2806.83	7672.66
 PREHOOK: query: -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
