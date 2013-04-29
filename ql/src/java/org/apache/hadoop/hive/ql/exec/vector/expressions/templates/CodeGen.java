@@ -258,7 +258,7 @@ public class CodeGen {
         generateFilterColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("ColumnArithmeticColumn")) {
         generateColumnArithmeticColumn(tdesc);
-	  } else if (tdesc[0].equals("ColumnUnaryMinus")) {
+      } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("VectorUDAFCount")) {
         generateVectorUDAFCount(tdesc);
@@ -268,6 +268,8 @@ public class CodeGen {
         generateVectorUDAFAvg(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
+      } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
+        generateFilterStringColumnCompareScalar(tdesc);
       } else {
         continue;
       }
