@@ -571,8 +571,9 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
               // single job.
               mergeMapJoinTaskWithMapReduceTask(newTask, conf);
             }
-            return newTask;
           }
+
+          return newTask;
         }
 
         long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
