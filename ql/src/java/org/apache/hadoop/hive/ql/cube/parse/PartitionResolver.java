@@ -53,8 +53,8 @@ public class PartitionResolver implements ContextRewriter {
     }
 
     System.out.println("fact: " + fact.getName() + " max interval:" + interval);
-    Date ceilFromDate = DateUtils.getCeilDate(fromDate, interval);
-    Date floorToDate = DateUtils.getFloorDate(toDate, interval);
+    Date ceilFromDate = DateUtil.getCeilDate(fromDate, interval);
+    Date floorToDate = DateUtil.getFloorDate(toDate, interval);
     List<String> partitions = fact.getPartitions(ceilFromDate, floorToDate,
         interval);
     if (partitions != null) {

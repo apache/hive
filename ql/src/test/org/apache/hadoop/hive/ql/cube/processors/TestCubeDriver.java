@@ -219,9 +219,9 @@ public class TestCubeDriver {
 
     // TODO this should consider only two month partitions. Month weight needs
     // to be fixed.
-   // hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
-   //     " where time_range_in('" + getDateUptoMonth(twoMonthsBack)
-   //     + "','" + getDateUptoMonth(now) + "')");
+    hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
+        " where time_range_in('" + getDateUptoMonth(twoMonthsBack)
+        + "','" + getDateUptoMonth(now) + "')");
 
   }
 

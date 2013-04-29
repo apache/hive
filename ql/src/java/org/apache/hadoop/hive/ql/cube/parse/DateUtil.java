@@ -7,14 +7,15 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Strings;
 
-public class DateUtils {
-  public static final Logger LOG = Logger.getLogger(DateUtils.class);
+
+public class DateUtil {
+  public static final Logger LOG = Logger.getLogger(DateUtil.class);
 
   /*
    * NOW -> new java.util.Date()
@@ -97,7 +98,7 @@ public class DateUtils {
   }
 
   private static Date resolveRelativeDate(String str, Date now) throws HiveException {
-    if (Strings.isNullOrEmpty(str)) {
+    if (!(str == null || str.isEmpty())) {
       throw new HiveException("date value cannot be null or empty:" + str);
     }
     // Get rid of whitespace
@@ -230,5 +231,62 @@ public class DateUtils {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(date);
     return calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+  }
+
+  public static int getMonthsBetween(Date from, Date to) {
+    from = DateUtils.round(from, Calendar.MONTH);
+    to = DateUtils.truncate(to, Calendar.MONTH);
+
+    int months = 0;
+    from = DateUtils.addMonths(from, 1);
+
+    while (to.after(from)) {
+      from = DateUtils.addMonths(from, 1);
+      months++;
+    }
+    return months;
+  }
+
+  public static int getQuartersBetween(Date from, Date to) {
+
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(from);
+    int fromQtr = cal.get(Calendar.MONTH) / 3 + 1;
+    int fromYear = cal.get(Calendar.YEAR);
+    cal.setTime(to);
+    int toQtr = cal.get(Calendar.MONTH) / 3 + 1;
+    int toYear = cal.get(Calendar.YEAR);
+
+
+    if (fromYear == toYear) {
+      if (fromQtr == toQtr) {
+        return 0;
+      } else {
+        return toQtr - fromQtr - 1;
+      }
+    } else {
+      from = DateUtils.round(from, Calendar.YEAR);
+      to = DateUtils.truncate(to, Calendar.YEAR);
+      int quarters = 0;
+      from = DateUtils.addYears(from, 1);
+      while (to.after(from)) {
+        from = DateUtils.addYears(from, 1);
+        quarters += 4;
+      }
+      return quarters + (4 - fromQtr) + (toQtr - 1);
+    }
+  }
+
+  public static int getYearsBetween(Date from, Date to) {
+    from = DateUtils.round(from, Calendar.YEAR);
+    to = DateUtils.truncate(to, Calendar.YEAR);
+    int years = 0;
+    from = DateUtils.addYears(from, 1);
+
+    while (to.after(from)) {
+      from = DateUtils.addYears(from, 1);
+      years++;
+    }
+    return years;
   }
 }

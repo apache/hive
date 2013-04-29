@@ -99,6 +99,8 @@ public class CubeTestSetup {
     updates.add(UpdatePeriod.HOURLY);
     updates.add(UpdatePeriod.DAILY);
     updates.add(UpdatePeriod.MONTHLY);
+    updates.add(UpdatePeriod.QUARTERLY);
+    updates.add(UpdatePeriod.YEARLY);
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
@@ -156,7 +158,7 @@ public class CubeTestSetup {
     Map<Storage, UpdatePeriod> snapshotDumpPeriods =
         new HashMap<Storage, UpdatePeriod>();
     snapshotDumpPeriods.put(hdfsStorage1, UpdatePeriod.HOURLY);
-    snapshotDumpPeriods.put(hdfsStorage2, null);
+    snapshotDumpPeriods.put(hdfsStorage2, UpdatePeriod.MINUTELY);
     client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
         snapshotDumpPeriods);
   }

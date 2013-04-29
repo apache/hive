@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod.UpdatePeriodComparator;
+import org.apache.hadoop.hive.ql.cube.parse.DateUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public final class CubeFactTable extends AbstractCubeTable {
@@ -134,27 +136,48 @@ public final class CubeFactTable extends AbstractCubeTable {
     }
   }
 
+
   public UpdatePeriod maxIntervalInRange(Date from, Date to) {
+    UpdatePeriod max = null;
+
     long diff = to.getTime() - from.getTime();
     if (diff < UpdatePeriod.MIN_INTERVAL) {
       return null;
     }
-    UpdatePeriod max = null;
-    long minratio = diff / UpdatePeriod.MIN_INTERVAL;
 
     Set<UpdatePeriod> updatePeriods = new HashSet<UpdatePeriod>();
+
     for (List<UpdatePeriod> value : storageUpdatePeriods.values()) {
       updatePeriods.addAll(value);
     }
+
+    // Use weight only till UpdatePeriod.DAILY
+    // Above Daily, check if at least one full update period is present between the dates
+    UpdatePeriodComparator cmp = new UpdatePeriodComparator();
     for (UpdatePeriod i : updatePeriods) {
-      long tmpratio = diff / i.weight();
-      if (tmpratio == 0) {
-        // Interval larger than date difference
-        continue;
-      }
-      if (minratio > tmpratio) {
-        minratio = tmpratio;
-        max = i;
+      if (UpdatePeriod.YEARLY == i || UpdatePeriod.QUARTERLY == i || UpdatePeriod.MONTHLY == i) {
+        int intervals = 0;
+        switch (i) {
+        case YEARLY:  intervals = DateUtil.getYearsBetween(from, to); break;
+        case QUARTERLY: intervals = DateUtil.getQuartersBetween(from, to); break;
+        case MONTHLY: intervals = DateUtil.getMonthsBetween(from, to); break;
+        }
+
+        if (intervals > 0) {
+          if (cmp.compare(i, max) > 0) {
+            max = i;
+          }
+        }
+      } else {
+        // Below MONTHLY, we can use weight to find out the correct period
+        if (diff < i.weight()) {
+          // interval larger than time diff
+          continue;
+        }
+
+        if (cmp.compare(i, max) > 0) {
+          max = i;
+        }
       }
     }
     return max;
