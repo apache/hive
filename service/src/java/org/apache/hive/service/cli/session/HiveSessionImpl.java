@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.cli.GetInfoValue;
@@ -144,7 +145,7 @@ public class HiveSessionImpl implements HiveSession {
       case CLI_DBMS_NAME:
         return new GetInfoValue("Apache Hive");
       case CLI_DBMS_VER:
-        return new GetInfoValue("0.10.0");
+        return new GetInfoValue(HiveVersionInfo.getVersion());
       case CLI_MAX_COLUMN_NAME_LEN:
         return new GetInfoValue(128);
       case CLI_MAX_SCHEMA_NAME_LEN:
