@@ -1878,7 +1878,7 @@ destination
 @init { msgs.push("destination specification"); }
 @after { msgs.pop(); }
    :
-     KW_LOCAL KW_DIRECTORY StringLiteral -> ^(TOK_LOCAL_DIR StringLiteral)
+     KW_LOCAL KW_DIRECTORY StringLiteral tableRowFormat? tableFileFormat? -> ^(TOK_LOCAL_DIR StringLiteral tableRowFormat? tableFileFormat?)
    | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
    | KW_TABLE tableOrPartition -> tableOrPartition
    ;

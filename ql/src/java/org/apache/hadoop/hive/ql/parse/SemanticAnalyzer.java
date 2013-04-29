@@ -1192,6 +1192,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
+      RowFormatParams rowFormatParams = new RowFormatParams();
+      AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
+      StorageFormat storageFormat = new StorageFormat();
+
       LOG.info("Get metadata for destination tables");
       // Go over all the destination structures and populate the related
       // metadata
@@ -1279,6 +1283,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           qb.getMetaData().setDestForAlias(name, fname,
               (ast.getToken().getType() == HiveParser.TOK_DIR));
+
+          CreateTableDesc localDirectoryDesc = new CreateTableDesc();
+          boolean localDirectoryDescIsSet = false;
+          int numCh = ast.getChildCount();
+          for (int num = 1; num < numCh ; num++){
+            ASTNode child = (ASTNode) ast.getChild(num);
+            if (ast.getChild(num) != null){
+              switch (child.getToken().getType()) {
+                case HiveParser.TOK_TABLEROWFORMAT:
+                  rowFormatParams.analyzeRowFormat(shared, child);
+                  localDirectoryDesc.setFieldDelim(rowFormatParams.fieldDelim);
+                  localDirectoryDesc.setLineDelim(rowFormatParams.lineDelim);
+                  localDirectoryDesc.setCollItemDelim(rowFormatParams.collItemDelim);
+                  localDirectoryDesc.setMapKeyDelim(rowFormatParams.mapKeyDelim);
+                  localDirectoryDesc.setFieldEscape(rowFormatParams.fieldEscape);
+                  localDirectoryDescIsSet=true;
+                  break;
+                case HiveParser.TOK_TABLESERIALIZER:
+                  ASTNode serdeChild = (ASTNode) child.getChild(0);
+                  shared.serde = unescapeSQLString(serdeChild.getChild(0).getText());
+                  localDirectoryDesc.setSerName(shared.serde);
+                  localDirectoryDescIsSet=true;
+                  break;
+                case HiveParser.TOK_TBLSEQUENCEFILE:
+                case HiveParser.TOK_TBLTEXTFILE:
+                case HiveParser.TOK_TBLRCFILE:
+                case HiveParser.TOK_TBLORCFILE:
+                case HiveParser.TOK_TABLEFILEFORMAT:
+                  storageFormat.fillStorageFormat(child, shared);
+                  localDirectoryDesc.setOutputFormat(storageFormat.outputFormat);
+                  localDirectoryDesc.setSerName(shared.serde);
+                  localDirectoryDescIsSet=true;
+                  break;
+              }
+            }
+          }
+          if (localDirectoryDescIsSet){
+            qb.setLocalDirectoryDesc(localDirectoryDesc);
+          }
           break;
         }
         default:
@@ -5180,8 +5223,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
           table_desc = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat);
         } else {
-          table_desc = PlanUtils.getDefaultTableDesc(Integer
-              .toString(Utilities.ctrlaCode), cols, colTypes, false);
+          table_desc = PlanUtils.getDefaultTableDesc(qb.getLLocalDirectoryDesc(), cols, colTypes);
         }
       } else {
         table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
