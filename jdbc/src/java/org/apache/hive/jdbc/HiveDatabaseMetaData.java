@@ -28,12 +28,16 @@ import java.util.Comparator;
 import java.util.jar.Attributes;
 
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hive.service.cli.GetInfoType;
+import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TGetCatalogsReq;
 import org.apache.hive.service.cli.thrift.TGetCatalogsResp;
 import org.apache.hive.service.cli.thrift.TGetColumnsReq;
 import org.apache.hive.service.cli.thrift.TGetColumnsResp;
 import org.apache.hive.service.cli.thrift.TGetFunctionsReq;
 import org.apache.hive.service.cli.thrift.TGetFunctionsResp;
+import org.apache.hive.service.cli.thrift.TGetInfoReq;
+import org.apache.hive.service.cli.thrift.TGetInfoResp;
 import org.apache.hive.service.cli.thrift.TGetSchemasReq;
 import org.apache.hive.service.cli.thrift.TGetSchemasResp;
 import org.apache.hive.service.cli.thrift.TGetTableTypesReq;
@@ -42,7 +46,6 @@ import org.apache.hive.service.cli.thrift.TGetTablesReq;
 import org.apache.hive.service.cli.thrift.TGetTablesResp;
 import org.apache.hive.service.cli.thrift.TGetTypeInfoReq;
 import org.apache.hive.service.cli.thrift.TGetTypeInfoResp;
-import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 
@@ -249,8 +252,17 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getDatabaseProductVersion() throws SQLException {
-    // TODO: Fetch this from the server side
-    return "0.10.0";
+
+    TGetInfoReq req = new TGetInfoReq(sessHandle, GetInfoType.CLI_DBMS_VER.toTGetInfoType());
+    TGetInfoResp resp;
+    try {
+      resp = client.GetInfo(req);
+    } catch (TException e) {
+      throw new SQLException(e.getMessage(), "08S01", e);
+    }
+    Utils.verifySuccess(resp.getStatus());
+
+    return resp.getInfoValue().getStringValue();
   }
 
   public int getDefaultTransactionIsolation() throws SQLException {
