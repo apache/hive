@@ -35,11 +35,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.common.util.HiveVersionInfo;
 
 /**
  * TestJdbcDriver2
@@ -833,7 +835,11 @@ public class TestJdbcDriver2 extends TestCase {
     DatabaseMetaData meta = con.getMetaData();
 
     assertEquals("Hive", meta.getDatabaseProductName());
-    assertEquals("0.10.0", meta.getDatabaseProductVersion());
+    assertEquals(HiveVersionInfo.getVersion(), meta.getDatabaseProductVersion());
+    assertEquals(System.getProperty("hive.version"), meta.getDatabaseProductVersion());
+    assertTrue("verifying hive version pattern. got " + meta.getDatabaseProductVersion(),
+        Pattern.matches("\\d+\\.\\d+\\.\\d+.*", meta.getDatabaseProductVersion()) );
+
     assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertFalse(meta.supportsCatalogsInTableDefinitions());
     assertFalse(meta.supportsSchemasInTableDefinitions());
