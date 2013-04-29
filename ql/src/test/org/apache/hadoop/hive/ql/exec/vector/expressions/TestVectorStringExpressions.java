@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import junit.framework.Assert;
@@ -5,23 +23,29 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.
+  FilterStringColGreaterEqualStringScalar;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import org.apache.hadoop.io.Text;
 
+/**
+ * Test vectorized expression and filter evaluation for strings.
+ */
 public class TestVectorStringExpressions {
   
-  static byte[] red; 
-  static byte[] red2; // second copy of red, different object
-  static byte[] green;
-  static byte[] emptyString;
-  static byte[] mixedUp;
-  static byte[] mixedUpLower;
-  static byte[] mixedUpUpper;
-  static byte[] multiByte;
-  static byte[] mixPercentPattern;
+  private static byte[] red; 
+  private static byte[] red2; // second copy of red, different object
+  private static byte[] green;
+  private static byte[] emptyString;
+  private static byte[] mixedUp;
+  private static byte[] mixedUpLower;
+  private static byte[] mixedUpUpper;
+  private static byte[] multiByte;
+  private static byte[] mixPercentPattern;
   
   static {
     try {
@@ -102,9 +126,39 @@ public class TestVectorStringExpressions {
     }
   }
 
+  @Test
+  // Test string column to string literal comparison
+  public void testStringColCompareStringScalarFilter() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterStringColEqualStringScalar(0, red2);
+    expr.evaluate(batch);
+    
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+    
+    batch = makeStringBatch();
+    expr = new FilterStringColLessStringScalar(0, red2);
+    expr.evaluate(batch);
+    
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1); 
+    Assert.assertTrue(batch.selected[0] == 1);   
+    
+    batch = makeStringBatch();
+    expr = new FilterStringColGreaterEqualStringScalar(0, green);
+    expr.evaluate(batch);
+    
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2); 
+    Assert.assertTrue(batch.selected[0] == 0);   
+    Assert.assertTrue(batch.selected[1] == 1); 
+  }
+  
   VectorizedRowBatch makeStringBatch() {
     // create a batch with one string ("Bytes") column
-    VectorizedRowBatch batch = new VectorizedRowBatch(1,VectorizedRowBatch.DEFAULT_SIZE);
+    VectorizedRowBatch batch = new VectorizedRowBatch(1, VectorizedRowBatch.DEFAULT_SIZE);
     BytesColumnVector v = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     batch.cols[0] = v;
     /*
@@ -129,7 +183,7 @@ public class TestVectorStringExpressions {
   
   VectorizedRowBatch makeStringBatchMixedCase() {
     // create a batch with two string ("Bytes") columns
-    VectorizedRowBatch batch = new VectorizedRowBatch(2,VectorizedRowBatch.DEFAULT_SIZE);
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, VectorizedRowBatch.DEFAULT_SIZE);
     BytesColumnVector v = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     batch.cols[0] = v;
     BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -156,7 +210,7 @@ public class TestVectorStringExpressions {
   VectorizedRowBatch makeStringBatchMixedCharSize() {
     // create a new batch with one char column (for input) 
     // and one long column (for output)
-    VectorizedRowBatch batch = new VectorizedRowBatch(2,VectorizedRowBatch.DEFAULT_SIZE);
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, VectorizedRowBatch.DEFAULT_SIZE);
     BytesColumnVector v = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     batch.cols[0] = v;
     LongColumnVector outV = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -188,22 +242,25 @@ public class TestVectorStringExpressions {
   public void testColLower() {
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatchMixedCase();
-    StringLower expr = new StringLower(0,1);
+    StringLower expr = new StringLower(0, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
-    int cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], outCol.start[0], outCol.length[0]);
-    Assert.assertEquals(0,cmp);
+    int cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], 
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
     Assert.assertTrue(outCol.isNull[2]);
-    int cmp2 = StringExpr.compare(green, 0, green.length, outCol.vector[1], outCol.start[1], outCol.length[1]);
-    Assert.assertEquals(0,cmp2);
+    int cmp2 = StringExpr.compare(green, 0, green.length, outCol.vector[1], 
+        outCol.start[1], outCol.length[1]);
+    Assert.assertEquals(0, cmp2);
     
     // no nulls, not repeating
     batch = makeStringBatchMixedCase();
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
-    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], outCol.start[0], outCol.length[0]);
-    Assert.assertEquals(0,cmp);
+    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], 
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
     Assert.assertTrue(outCol.noNulls);
     
     // has nulls, is repeating
@@ -211,8 +268,9 @@ public class TestVectorStringExpressions {
     batch.cols[0].isRepeating = true;
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
-    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], outCol.start[0], outCol.length[0]);
-    Assert.assertEquals(0,cmp);
+    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], 
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
     Assert.assertTrue(outCol.isRepeating);
     Assert.assertFalse(outCol.noNulls);
     
@@ -222,8 +280,9 @@ public class TestVectorStringExpressions {
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
-    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], outCol.start[0], outCol.length[0]);
-    Assert.assertEquals(0,cmp);
+    cmp = StringExpr.compare(mixedUpLower, 0, mixedUpLower.length, outCol.vector[0], 
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
     Assert.assertTrue(outCol.isRepeating);
     Assert.assertTrue(outCol.noNulls);   
   }
@@ -235,12 +294,13 @@ public class TestVectorStringExpressions {
     // We don't test all the combinations because (at least currently)
     // the logic is inherited to be the same as testColLower, which checks all the cases).
     VectorizedRowBatch batch = makeStringBatchMixedCase();
-    StringUpper expr = new StringUpper(0,1);
+    StringUpper expr = new StringUpper(0, 1);
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
-    int cmp = StringExpr.compare(mixedUpUpper, 0, mixedUpUpper.length, outCol.vector[0], outCol.start[0], outCol.length[0]);
-    Assert.assertEquals(0,cmp);
+    int cmp = StringExpr.compare(mixedUpUpper, 0, mixedUpUpper.length, outCol.vector[0], 
+        outCol.start[0], outCol.length[0]);
+    Assert.assertEquals(0, cmp);
     Assert.assertTrue(outCol.noNulls);
   }
   
@@ -249,12 +309,12 @@ public class TestVectorStringExpressions {
     
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatchMixedCharSize();
-    StringLength expr = new StringLength(0,1);
+    StringLength expr = new StringLength(0, 1);
     expr.evaluate(batch);
     LongColumnVector outCol = (LongColumnVector) batch.cols[1];
-    Assert.assertEquals(5,outCol.vector[1]); // length of green is 5
+    Assert.assertEquals(5, outCol.vector[1]); // length of green is 5
     Assert.assertTrue(outCol.isNull[2]);
-    Assert.assertEquals(4,outCol.vector[3]); // this one has the mixed-size chars
+    Assert.assertEquals(4, outCol.vector[3]); // this one has the mixed-size chars
 
     // no nulls, not repeating
     batch = makeStringBatchMixedCharSize();
@@ -262,7 +322,7 @@ public class TestVectorStringExpressions {
     expr.evaluate(batch);
     outCol = (LongColumnVector) batch.cols[1];
     Assert.assertTrue(outCol.noNulls);
-    Assert.assertEquals(4,outCol.vector[3]); // this one has the mixed-size chars
+    Assert.assertEquals(4, outCol.vector[3]); // this one has the mixed-size chars
     
     // has nulls, is repeating
     batch = makeStringBatchMixedCharSize();
