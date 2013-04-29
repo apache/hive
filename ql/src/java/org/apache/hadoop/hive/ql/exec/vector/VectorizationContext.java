@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColumnExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterNotExpr;
@@ -36,7 +37,27 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFCountDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFCountLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -66,8 +87,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+/**
+ * Context class for vectorization execution.
+ * Main role is to map column names to column indices and serves as a
+ * factory class for building vectorized expressions out of descriptors.
+ *
+ */
 public class VectorizationContext {
-
   private static final Log LOG = LogFactory.getLog(
       VectorizationContext.class.getName());
 
@@ -85,7 +111,7 @@ public class VectorizationContext {
     this.nextOutputColumn = initialOutputCol;
     this.outputColumnTypes = new HashMap<Integer, String>();
   }
-
+  
   public int allocateOutputColumn (String columnName, String columnType) {
     int newColumnIndex = nextOutputColumn++;
     columnMap.put(columnName, newColumnIndex);
@@ -748,6 +774,77 @@ public class VectorizationContext {
     return b.toString();
   }
 
+  static Object[][] aggregatesDefinition = {
+    {"min",       "Long",   VectorUDAFMinLong.class},
+    {"min",       "Double", VectorUDAFMinDouble.class},
+    {"max",       "Long",   VectorUDAFMaxLong.class},
+    {"max",       "Double", VectorUDAFMaxDouble.class},
+    {"count",     "Long",   VectorUDAFCountLong.class},
+    {"count",     "Double", VectorUDAFCountDouble.class},
+    {"sum",       "Long",   VectorUDAFSumLong.class},
+    {"sum",       "Double", VectorUDAFSumDouble.class},
+    {"avg",       "Long",   VectorUDAFAvgLong.class},
+    {"avg",       "Double", VectorUDAFAvgDouble.class},
+    {"variance",  "Long",   VectorUDAFVarPopLong.class},
+    {"var_pop",   "Long",   VectorUDAFVarPopLong.class},
+    {"variance",  "Double", VectorUDAFVarPopDouble.class},
+    {"var_pop",   "Double", VectorUDAFVarPopDouble.class},
+    {"var_samp",  "Long",   VectorUDAFVarSampLong.class},
+    {"var_samp" , "Double", VectorUDAFVarSampDouble.class},
+    {"std",       "Long",   VectorUDAFStdPopLong.class},
+    {"stddev",    "Long",   VectorUDAFStdPopLong.class},
+    {"stddev_pop","Long",   VectorUDAFStdPopLong.class},
+    {"std",       "Long",   VectorUDAFStdPopDouble.class},
+    {"stddev",    "Long",   VectorUDAFStdPopDouble.class},
+    {"stddev_pop","Long",   VectorUDAFStdPopDouble.class},
+    {"stddev_samp","Long",  VectorUDAFStdSampLong.class},
+    {"stddev_samp","Double",VectorUDAFStdSampDouble.class},
+  };
+  
+  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc) 
+      throws HiveException {
+    ArrayList<ExprNodeDesc> paramDescList = desc.getParameters();
+    VectorExpression[] vectorParams = new VectorExpression[paramDescList.size()];
+
+    for (int i = 0; i< paramDescList.size(); ++i) {
+      ExprNodeDesc exprDesc = paramDescList.get(i);
+      vectorParams[i] = this.getVectorExpression(exprDesc);
+    }
+    
+    String aggregateName = desc.getGenericUDAFName();
+    List<ExprNodeDesc> params = desc.getParameters();
+    //TODO: handle length != 1
+    assert (params.size() == 1);
+    ExprNodeDesc inputExpr = params.get(0);
+    String inputType = getNormalizedTypeName(inputExpr.getTypeString());
+
+    for (Object[] aggDef : aggregatesDefinition) {
+      if (aggDef[0].equals (aggregateName) &&
+          aggDef[1].equals(inputType)) {
+        Class<? extends VectorAggregateExpression> aggClass = 
+            (Class<? extends VectorAggregateExpression>) (aggDef[2]);
+        try
+        {
+          Constructor<? extends VectorAggregateExpression> ctor = 
+              aggClass.getConstructor(VectorExpression.class);
+          VectorAggregateExpression aggExpr = ctor.newInstance(vectorParams[0]);
+          return aggExpr;
+        }
+        // TODO: change to 1.7 syntax when possible
+        //catch (InvocationTargetException | IllegalAccessException 
+        // | NoSuchMethodException | InstantiationException)
+        catch (Exception e)
+        {
+          throw new HiveException("Internal exception for vector aggregate : \"" + 
+               aggregateName + "\" for type: \"" + inputType + "", e);
+        }
+      }
+    }
+
+    throw new HiveException("Vector aggregate not implemented: \"" + aggregateName + 
+        "\" for type: \"" + inputType + "");
+  }
+  
   static Object[][] columnTypes = {
     {"Double",  DoubleColumnVector.class},
     {"Long",    LongColumnVector.class},
@@ -808,3 +905,4 @@ public class VectorizationContext {
     return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, oids);
   }
 }
+
