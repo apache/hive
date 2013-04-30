@@ -17,7 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSerde;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -27,23 +35,19 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Properties;
-
 /**
  * A serde class for ORC.
  * It transparently passes the object to/from the ORC file reader/writer.
  */
-public class OrcSerde implements SerDe {
+public class OrcSerde implements SerDe, VectorizedSerde {
   private final OrcSerdeRow row = new OrcSerdeRow();
   private ObjectInspector inspector = null;
 
+  private VectorizedOrcSerde vos = null;
+
   final class OrcSerdeRow implements Writable {
-    private Object realRow;
-    private ObjectInspector inspector;
+    Object realRow;
+    ObjectInspector inspector;
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
@@ -128,5 +132,14 @@ public class OrcSerde implements SerDe {
   @Override
   public SerDeStats getSerDeStats() {
     return null;
+  }
+
+  @Override
+  public Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
+      throws SerDeException {
+    if (vos == null) {
+      vos = new VectorizedOrcSerde();
+    }
+    return vos.serialize(vrg, objInspector);
   }
 }
