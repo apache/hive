@@ -70,7 +70,6 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
 
   protected transient int posBigTableAlias = -1; // one of the tables that is not in memory
-  transient int mapJoinRowsKey; // rows for a given key
 
   protected transient RowContainer<ArrayList<Object>> emptyList = null;
 
