@@ -30,6 +30,11 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -164,6 +169,31 @@ class RecordReaderImpl implements RecordReader {
       }
       return previous;
     }
+    /**
+     * Populates the isNull vector array in the previousVector object based on
+     * the present stream values. This function is called from all the child
+     * readers, and they all set the values based on isNull field value.
+     * @param previousVector The columnVector object whose isNull value is populated
+     * @param batchSize Size of the column vector
+     * @return
+     * @throws IOException
+     */
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      if (present != null) {
+
+        // Set noNulls and isNull vector of the ColumnVector based on
+        // present stream
+        ColumnVector result = (ColumnVector) previousVector;
+        result.noNulls = true;
+        for (int i = 0; i < batchSize; i++) {
+          result.isNull[i] = (present.next() != 1);
+          if (result.noNulls && result.isNull[i]) {
+            result.noNulls = false;
+          }
+        }
+      }
+      return previousVector;
+    }
   }
 
   private static class BooleanTreeReader extends TreeReader{
@@ -207,6 +237,12 @@ class RecordReaderImpl implements RecordReader {
       }
       return result;
     }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation on Boolean type");
+    }
   }
 
   private static class ByteTreeReader extends TreeReader{
@@ -244,6 +280,12 @@ class RecordReaderImpl implements RecordReader {
         result.set(reader.next());
       }
       return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for Byte type");
     }
 
     @Override
@@ -287,6 +329,23 @@ class RecordReaderImpl implements RecordReader {
         }
         result.set((short) reader.next());
       }
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
       return result;
     }
 
@@ -335,6 +394,23 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
+      return result;
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       reader.skip(countNonNulls(items));
     }
@@ -375,6 +451,23 @@ class RecordReaderImpl implements RecordReader {
         }
         result.set(reader.next());
       }
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
       return result;
     }
 
@@ -423,6 +516,39 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      DoubleColumnVector result = null;
+      if (previousVector == null) {
+        result = new DoubleColumnVector();
+      } else {
+        result = (DoubleColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      for (int i = 0; i < batchSize; i++) {
+        if (!result.isNull[i]) {
+          result.vector[i] = SerializationUtils.readDouble(stream);
+        } else {
+
+          // If the value is not present then set NaN
+          result.vector[i] = Double.NaN;
+        }
+      }
+
+      // Set isRepeating flag
+      result.isRepeating = true;
+      for (int i = 0; (i < batchSize - 1 && result.isRepeating); i++) {
+        if (result.vector[i] != result.vector[i + 1]) {
+          result.isRepeating = false;
+        }
+      }
+      return result;
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(int i=0; i < items; ++i) {
@@ -466,6 +592,38 @@ class RecordReaderImpl implements RecordReader {
           result = (DoubleWritable) previous;
         }
         result.set(SerializationUtils.readDouble(stream));
+      }
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      DoubleColumnVector result = null;
+      if (previousVector == null) {
+        result = new DoubleColumnVector();
+      } else {
+        result = (DoubleColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      for (int i = 0; i < batchSize; i++) {
+        if (!result.isNull[i]) {
+          result.vector[i] = SerializationUtils.readDouble(stream);
+        } else {
+          // If the value is not present then set NaN
+          result.vector[i] = Double.NaN;
+        }
+      }
+
+      // Set isRepeating flag
+      result.isRepeating = true;
+      for (int i = 0; (i < batchSize - 1 && result.isRepeating); i++) {
+        if (result.vector[i] != result.vector[i + 1]) {
+          result.isRepeating = false;
+        }
       }
       return result;
     }
@@ -531,6 +689,12 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextBatch is not supported operation for Binary type");
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       long lengthToSkip = 0;
@@ -592,6 +756,12 @@ class RecordReaderImpl implements RecordReader {
       return result;
     }
 
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for TimeStamp type");
+    }
+
     private static int parseNanos(long serialized) {
       int zeros = 7 & (int) serialized;
       int result = (int) serialized >>> 3;
@@ -648,6 +818,12 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for Decimal type");
+    }
+
+    @Override
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(int i=0; i < items; i++) {
@@ -663,8 +839,11 @@ class RecordReaderImpl implements RecordReader {
     private int[] dictionaryOffsets;
     private RunLengthIntegerReader reader;
 
+    private final LongColumnVector scratchlcv;
+
     StringTreeReader(int columnId) {
       super(columnId);
+      scratchlcv = new LongColumnVector();
     }
 
     @Override
@@ -725,14 +904,7 @@ class RecordReaderImpl implements RecordReader {
           result = (Text) previous;
         }
         int offset = dictionaryOffsets[entry];
-        int length;
-        // if it isn't the last entry, subtract the offsets otherwise use
-        // the buffer length.
-        if (entry < dictionaryOffsets.length - 1) {
-          length = dictionaryOffsets[entry + 1] - offset;
-        } else {
-          length = dictionaryBuffer.size() - offset;
-        }
+        int length = getDictionaryEntryLength(entry, offset);
         // If the column is just empty strings, the size will be zero,
         // so the buffer will be null, in that case just return result
         // as it will default to empty
@@ -743,6 +915,62 @@ class RecordReaderImpl implements RecordReader {
         }
       }
       return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      BytesColumnVector result = null;
+      int offset = 0, length = 0;
+      if (previousVector == null) {
+        result = new BytesColumnVector();
+      } else {
+        result = (BytesColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      byte[] dictionaryBytes = dictionaryBuffer.get();
+
+      // Read string offsets
+      scratchlcv.isNull = result.isNull;
+      reader.nextVector(scratchlcv, batchSize);
+      if (!scratchlcv.isRepeating) {
+
+        // The vector has non-repeating strings. Iterate thru the batch
+        // and set strings one by one
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            offset = dictionaryOffsets[(int) scratchlcv.vector[i]];
+            length = getDictionaryEntryLength((int) scratchlcv.vector[i], offset);
+            result.setRef(i, dictionaryBytes, offset, length);
+          } else {
+            // If the value is null then set offset and length to zero (null string)
+            result.setRef(i, dictionaryBytes, 0, 0);
+          }
+        }
+      } else {
+        // If the value is repeating then just set the first value in the
+        // vector and set the isRepeating flag to true. No need to iterate thru and
+        // set all the elements to the same value
+        offset = dictionaryOffsets[(int) scratchlcv.vector[0]];
+        length = getDictionaryEntryLength((int) scratchlcv.vector[0], offset);
+        result.setRef(0, dictionaryBytes, offset, length);
+      }
+      result.isRepeating = scratchlcv.isRepeating;
+      return result;
+    }
+
+    int getDictionaryEntryLength(int entry, int offset) {
+      int length = 0;
+      // if it isn't the last entry, subtract the offsets otherwise use
+      // the buffer length.
+      if (entry < dictionaryOffsets.length - 1) {
+        length = dictionaryOffsets[entry + 1] - offset;
+      } else {
+        length = dictionaryBuffer.size() - offset;
+      }
+      return length;
     }
 
     @Override
@@ -800,6 +1028,28 @@ class RecordReaderImpl implements RecordReader {
         for(int i=0; i < fields.length; ++i) {
           if (fields[i] != null) {
             result.setFieldValue(i, fields[i].next(result.getFieldValue(i)));
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      ColumnVector[] result = null;
+      if (previousVector == null) {
+        result = new ColumnVector[fields.length];
+      } else {
+        result = (ColumnVector[]) previousVector;
+      }
+
+      // Read all the members of struct as column vectors
+      for (int i = 0; i < fields.length; i++) {
+        if (fields[i] != null) {
+          if (result[i] == null) {
+            result[i] = (ColumnVector) fields[i].nextVector(null, batchSize);
+          } else {
+            fields[i].nextVector(result[i], batchSize);
           }
         }
       }
@@ -871,6 +1121,12 @@ class RecordReaderImpl implements RecordReader {
             previousVal : null));
       }
       return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for Union type");
     }
 
     @Override
@@ -950,6 +1206,12 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    Object nextVector(Object previous, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for List type");
+    }
+
+    @Override
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encodings
                     ) throws IOException {
@@ -1024,6 +1286,12 @@ class RecordReaderImpl implements RecordReader {
         }
       }
       return result;
+    }
+
+    @Override
+    Object nextVector(Object previous, long batchSize) throws IOException {
+      throw new UnsupportedOperationException(
+          "NextVector is not supported operation for Map type");
     }
 
     @Override
@@ -1212,6 +1480,29 @@ class RecordReaderImpl implements RecordReader {
     }
     rowInStripe += 1;
     return reader.next(previous);
+  }
+
+  @Override
+  public VectorizedRowBatch nextBatch(VectorizedRowBatch previous) throws IOException {
+    VectorizedRowBatch result = null;
+    if (rowInStripe >= rowCountInStripe) {
+      currentStripe += 1;
+      readStripe();
+    }
+
+    long batchSize = Math.min(VectorizedRowBatch.DEFAULT_SIZE, (rowCountInStripe - rowInStripe));
+    rowInStripe += batchSize;
+    if (previous == null) {
+      ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
+      result = new VectorizedRowBatch(cols.length);
+      result.cols = cols;
+    } else {
+      result = (VectorizedRowBatch) previous;
+      reader.nextVector(result.cols, (int) batchSize);
+    }
+
+    result.size = (int) batchSize;
+    return result;
   }
 
   @Override

@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.io.Text;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+
+import org.apache.hadoop.io.Text;
 
 /**
  * A class that is a growable array of bytes. Growth is managed in terms of
@@ -237,6 +237,7 @@ final class DynamicByteArray {
     }
   }
 
+  @Override
   public String toString() {
     int i;
     StringBuilder sb = new StringBuilder(length * 3);
@@ -266,5 +267,30 @@ final class DynamicByteArray {
       currentLength = Math.min(length, chunkSize - currentOffset);
     }
   }
-}
 
+  /**
+   * Gets all the bytes of the array.
+   *
+   * @return Bytes of the array
+   */
+  public byte[] get() {
+    byte[] result = null;
+    if (length > 0) {
+      int currentChunk = 0;
+      int currentOffset = 0;
+      int currentLength = Math.min(length, chunkSize);
+      int destOffset = 0;
+      result = new byte[length];
+      int totalLength = length;
+      while (totalLength > 0) {
+        System.arraycopy(data[currentChunk], currentOffset, result, destOffset, currentLength);
+        destOffset += currentLength;
+        totalLength -= currentLength;
+        currentChunk += 1;
+        currentOffset = 0;
+        currentLength = Math.min(totalLength, chunkSize - currentOffset);
+      }
+    }
+    return result;
+  }
+}
