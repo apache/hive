@@ -99,7 +99,7 @@ public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
       }
     }
     
-    static class MkArrayAggregationBuffer implements AggregationBuffer {
+    static class MkArrayAggregationBuffer extends AbstractAggregationBuffer {
       Set<Object> container;
     }
     

@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
+import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 
 /**
  * FunctionInfo.
@@ -32,6 +34,8 @@ public class FunctionInfo {
 
   private final boolean isNative;
 
+  private final boolean isInternalTableFunction;
+
   private final String displayName;
 
   private GenericUDF genericUDF;
@@ -40,11 +44,14 @@ public class FunctionInfo {
 
   private GenericUDAFResolver genericUDAFResolver;
 
+  private Class<? extends TableFunctionResolver>  tableFunctionResolver;
+
   public FunctionInfo(boolean isNative, String displayName,
       GenericUDF genericUDF) {
     this.isNative = isNative;
     this.displayName = displayName;
     this.genericUDF = genericUDF;
+    this.isInternalTableFunction = false;
   }
 
   public FunctionInfo(boolean isNative, String displayName,
@@ -52,6 +59,7 @@ public class FunctionInfo {
     this.isNative = isNative;
     this.displayName = displayName;
     this.genericUDAFResolver = genericUDAFResolver;
+    this.isInternalTableFunction = false;
   }
 
   public FunctionInfo(boolean isNative, String displayName,
@@ -59,6 +67,16 @@ public class FunctionInfo {
     this.isNative = isNative;
     this.displayName = displayName;
     this.genericUDTF = genericUDTF;
+    this.isInternalTableFunction = false;
+  }
+
+  public FunctionInfo(String displayName, Class<? extends TableFunctionResolver> tFnCls)
+  {
+    this.displayName = displayName;
+    this.tableFunctionResolver = tFnCls;
+    PartitionTableFunctionDescription def = tableFunctionResolver.getAnnotation(PartitionTableFunctionDescription.class);
+    this.isNative = (def == null) ? false : def.isInternal();
+    this.isInternalTableFunction = isNative;
   }
 
   /**
@@ -90,6 +108,8 @@ public class FunctionInfo {
     return genericUDAFResolver;
   }
 
+
+
   /**
    * Get the Class of the UDF.
    */
@@ -108,6 +128,9 @@ public class FunctionInfo {
       }
     } else if (isGenericUDTF()) {
       return genericUDTF.getClass();
+    }
+    if(isTableFunction()) {
+      return this.tableFunctionResolver;
     }
     return null;
   }
@@ -131,6 +154,14 @@ public class FunctionInfo {
   }
 
   /**
+   * Internal table functions cannot be used in the language.
+   * {@link WindowingTableFunction}
+   */
+  public boolean isInternalTableFunction() {
+    return isInternalTableFunction;
+  }
+
+  /**
    * @return TRUE if the function is a GenericUDF
    */
   public boolean isGenericUDF() {
@@ -149,5 +180,12 @@ public class FunctionInfo {
    */
   public boolean isGenericUDTF() {
     return null != genericUDTF;
+  }
+
+  /**
+   * @return TRUE if the function is a Table Function
+   */
+  public boolean isTableFunction() {
+    return null != tableFunctionResolver;
   }
 }

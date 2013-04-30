@@ -43,17 +43,17 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@input4
 PREHOOK: query: EXPLAIN FORMATTED
-SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FORMATTED
-SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 POSTHOOK: type: QUERY
-{"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Split Sample:":{},"Alias -> Map Operator Tree:":{"input4":{"TS_0":{"SEL_1":{"FS_2":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}}}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1"}}},"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"ROOT STAGE":"TRUE"}},"ABSTRACT SYNTAX TREE":"(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME INPUT4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT4) VALUE)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT4) KEY)))))"}
-PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+{"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Split Sample:":{},"Alias -> Map Operator Tree:":{"input4alias":{"TS_0":{"SEL_1":{"FS_2":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}}}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1"}}},"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"ROOT STAGE":"TRUE"}},"ABSTRACT SYNTAX TREE":"(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME INPUT4) Input4Alias)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL Input4Alias) VALUE)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL Input4Alias) KEY)))))"}
+PREHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+POSTHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
 #### A masked pattern was here ####

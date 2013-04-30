@@ -53,7 +53,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
 
   protected transient byte posBigTable = -1; // one of the tables that is not in memory
-  transient int mapJoinRowsKey; // rows for a given key
 
   protected transient RowContainer<ArrayList<Object>> emptyList = null;
 
@@ -103,9 +102,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
         posBigTable, joinCacheSize,spillTableDesc, conf,
         !hasFilter(posBigTable), reporter);
     storage[posBigTable] = bigPosRC;
-
-    mapJoinRowsKey = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
 
     List<? extends StructField> structFields = ((StructObjectInspector) outputObjInspector)
         .getAllStructFieldRefs();

@@ -1385,21 +1385,31 @@ public class RCFile {
 
       try {
         seek(position + 4); // skip escape
-        in.readFully(syncCheck);
-        int syncLen = sync.length;
-        for (int i = 0; in.getPos() < end; i++) {
-          int j = 0;
-          for (; j < syncLen; j++) {
-            if (sync[j] != syncCheck[(i + j) % syncLen]) {
-              break;
+
+        int prefix = sync.length;
+        int n = conf.getInt("io.bytes.per.checksum", 512);
+        byte[] buffer = new byte[prefix+n];
+        n = (int)Math.min(n, end - in.getPos());
+        /* fill array with a pattern that will never match sync */
+        Arrays.fill(buffer, (byte)(~sync[0])); 
+        while(n > 0 && (in.getPos() + n) <= end) {
+          position = in.getPos();
+          in.readFully(buffer, prefix, n);
+          /* the buffer has n+sync bytes */
+          for(int i = 0; i < n; i++) {
+            int j;
+            for(j = 0; j < sync.length && sync[j] == buffer[i+j]; j++) {
+              /* nothing */
+            }
+            if(j == sync.length) {
+              /* simplified from (position + (i - prefix) + sync.length) - SYNC_SIZE */
+              in.seek(position + i - SYNC_SIZE);
+              return;
             }
           }
-          if (j == syncLen) {
-            in.seek(in.getPos() - SYNC_SIZE); // position before
-            // sync
-            return;
-          }
-          syncCheck[i % syncLen] = in.readByte();
+          /* move the last 16 bytes to the prefix area */
+          System.arraycopy(buffer, buffer.length - prefix - 1, buffer, 0, prefix);
+          n = (int)Math.min(n, end - in.getPos());
         }
       } catch (ChecksumException e) { // checksum failure
         handleChecksumException(e);

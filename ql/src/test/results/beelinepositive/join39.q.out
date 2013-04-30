@@ -1,10 +1,5 @@
 Saving all output to "!!{outputDirectory}!!/join39.q.raw". Enter "record" with no arguments to stop it.
 >>>  !run !!{qFileDirectory}!!/join39.q
->>>  set hive.mapjoin.cache.numrows = 2;
-No rows affected 
->>>  
->>>  
->>>  
 >>>  CREATE TABLE dest_j1(key STRING, value STRING, key1 string, val2 STRING) STORED AS TEXTFILE;
 No rows affected 
 >>>  
