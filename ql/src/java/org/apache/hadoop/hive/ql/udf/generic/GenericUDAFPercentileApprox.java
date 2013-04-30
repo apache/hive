@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -33,15 +34,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * Computes an approximate percentile (quantile) from an approximate histogram, for very
@@ -353,9 +348,16 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
 
     // Aggregation buffer methods. We wrap GenericUDAFHistogramNumeric's aggregation buffer
     // inside our own, so that we can also store requested quantile values between calls
-    static class PercentileAggBuf implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    static class PercentileAggBuf extends AbstractAggregationBuffer {
       NumericHistogram histogram;   // histogram used for quantile approximation
       double[] quantiles;           // the quantiles requested
+      @Override
+      public int estimate() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.lengthFor(histogram) +
+            model.array() + JavaDataModel.PRIMITIVES2 * quantiles.length;
+      }
     };
 
     @Override
