@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+
 /**
  * A reader that reads a sequence of integers.
  * */
@@ -87,6 +89,24 @@ class RunLengthIntegerReader {
     }
     return result;
   }
+
+  void nextVector(LongColumnVector previous, long previousLen)
+      throws IOException {
+    previous.isRepeating = true;
+    for (int i = 0; i < previousLen; i++) {
+      if (!previous.isNull[i]) {
+        previous.vector[i] = next();
+      } else {
+        // The default value of null for int type in vectorized
+        // processing is 1, so set that if the value is null
+        previous.vector[i] = 1;
+      }
+      if (previous.isRepeating && (delta != 0 || !repeat)) {
+        previous.isRepeating = false;
+      }
+    }
+  }
+
 
   void seek(PositionProvider index) throws IOException {
     input.seek(index);
