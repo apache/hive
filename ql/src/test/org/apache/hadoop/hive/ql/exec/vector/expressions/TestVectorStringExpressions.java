@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import org.apache.hadoop.io.Text;
 
 /**
  * Test vectorized expression and filter evaluation for strings.
@@ -64,14 +65,14 @@ public class TestVectorStringExpressions {
     red2 = new byte[red.length];
     System.arraycopy(red, 0, red2, 0, red.length);
   }
-  
+
   // add some multi-byte characters to test length routine later.
   // total characters = 4; byte length = 10
   static void addMultiByteChars(byte[] b) {
     int i = 0;
     b[i++] = (byte) 0x41; // letter "A" (1 byte)
     b[i++] = (byte) 0xC3; // Latin capital A with grave (2 bytes)
-    b[i++] = (byte) 0x80; 
+    b[i++] = (byte) 0x80;
     b[i++] = (byte) 0xE2; // Euro sign (3 bytes)
     b[i++] = (byte) 0x82;
     b[i++] = (byte) 0xAC;
@@ -80,9 +81,9 @@ public class TestVectorStringExpressions {
     b[i++] = (byte) 0xAD;
     b[i++] = (byte) 0xA2;
   }
-  
+
   @Test
-  // Load a BytesColumnVector by copying in large data, enough to force 
+  // Load a BytesColumnVector by copying in large data, enough to force
   // the buffer to expand.
   public void testLoadBytesColumnVectorByValueLargeData()  {
     BytesColumnVector bcv = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -102,7 +103,7 @@ public class TestVectorStringExpressions {
     }
     Assert.assertTrue(bcv.bufferSize() >= b.length * VectorizedRowBatch.DEFAULT_SIZE);
   }
-  
+
   @Test
   // set values by reference, copy the data out, and verify equality
   public void testLoadBytesColumnVectorByRef() {
@@ -208,8 +209,8 @@ public class TestVectorStringExpressions {
   }
   
   VectorizedRowBatch makeStringBatchMixedCharSize() {
-    // create a new batch with one char column (for input) 
-    // and one long column (for output)
+
+    // create a new batch with one char column (for input) and one long column (for output) 
     VectorizedRowBatch batch = new VectorizedRowBatch(2, VectorizedRowBatch.DEFAULT_SIZE);
     BytesColumnVector v = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     batch.cols[0] = v;
@@ -289,10 +290,12 @@ public class TestVectorStringExpressions {
   
   @Test
   public void testColUpper() {
+
     // no nulls, not repeating
     
-    // We don't test all the combinations because (at least currently)
-    // the logic is inherited to be the same as testColLower, which checks all the cases).
+    /* We don't test all the combinations because (at least currently)
+     * the logic is inherited to be the same as testColLower, which checks all the cases).
+     */
     VectorizedRowBatch batch = makeStringBatchMixedCase();
     StringUpper expr = new StringUpper(0, 1);
     batch.cols[0].noNulls = true;
@@ -332,7 +335,7 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(outCol.isRepeating);
     Assert.assertFalse(outCol.noNulls);
     Assert.assertEquals(7, outCol.vector[0]); // length of "mixedUp"
-    
+
     // no nulls, is repeating
     batch = makeStringBatchMixedCharSize();
     batch.cols[0].isRepeating = true;
@@ -341,6 +344,60 @@ public class TestVectorStringExpressions {
     outCol = (LongColumnVector) batch.cols[1];
     Assert.assertEquals(7, outCol.vector[0]); // length of "mixedUp"
     Assert.assertTrue(outCol.isRepeating);
-    Assert.assertTrue(outCol.noNulls);   
+    Assert.assertTrue(outCol.noNulls);
+  }
+
+  @Test
+  public void testStringLike() {
+
+    // has nulls, not repeating
+    VectorizedRowBatch batch;
+    Text pattern;
+    int initialBatchSize;
+    batch = makeStringBatchMixedCharSize();
+    pattern = new Text(mixPercentPattern);
+    FilterStringColLikeStringScalar expr = new FilterStringColLikeStringScalar(0, pattern);
+    expr.evaluate(batch);
+
+    // verify that the beginning entry is the only one that matches
+    Assert.assertEquals(1, batch.size);
+    Assert.assertEquals(0, batch.selected[0]);
+
+    // no nulls, not repeating
+    batch = makeStringBatchMixedCharSize();
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+
+    // verify that the beginning entry is the only one that matches
+    Assert.assertEquals(1, batch.size);
+    Assert.assertEquals(0, batch.selected[0]);
+
+    // has nulls, is repeating
+    batch = makeStringBatchMixedCharSize();
+    initialBatchSize = batch.size;
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+
+    // all rows qualify
+    Assert.assertEquals(initialBatchSize, batch.size);
+
+    // same, but repeating value is null
+    batch = makeStringBatchMixedCharSize();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].isNull[0] = true;
+    expr.evaluate(batch);
+
+    // no rows qualify
+    Assert.assertEquals(0, batch.size);
+
+    // no nulls, is repeating
+    batch = makeStringBatchMixedCharSize();
+    initialBatchSize = batch.size;
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+
+    // all rows qualify
+    Assert.assertEquals(initialBatchSize, batch.size);
   }
 }
