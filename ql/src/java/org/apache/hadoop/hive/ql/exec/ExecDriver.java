@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExecMapper;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -273,7 +274,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     ShimLoader.getHadoopShims().prepareJobOutput(job);
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
-    job.setMapperClass(ExecMapper.class);
+
+
+    boolean vectorPath = HiveConf.getBoolVar(job,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+
+    if (vectorPath) {
+      System.out.println("Going down the vectorization path");
+      job.setMapperClass(VectorExecMapper.class);
+    } else {
+      job.setMapperClass(ExecMapper.class);
+    }
 
     job.setMapOutputKeyClass(HiveKey.class);
     job.setMapOutputValueClass(BytesWritable.class);

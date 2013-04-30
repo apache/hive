@@ -99,7 +99,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   protected transient State state = State.UNINIT;
 
-  static transient boolean fatalError = false; // fatalError is shared acorss
+  protected static transient boolean fatalError = false; // fatalError is shared acorss
   // all operators
 
   static {
@@ -1480,6 +1480,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return true;
   }
 
+  @Override
   public String toString() {
     return getName() + "[" + getIdentifier() + "]";
   }
