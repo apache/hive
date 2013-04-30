@@ -3205,8 +3205,6 @@ SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value;
 '9','val_9','9','val_9','9','val_9'
 548 rows selected 
 >>>  
->>>  set hive.mapjoin.cache.numrows=2;
-No rows affected 
 >>>  
 >>>  EXPLAIN 
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value 

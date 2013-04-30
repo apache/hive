@@ -1,8 +1,5 @@
 Saving all output to "!!{outputDirectory}!!/mapjoin1.q.raw". Enter "record" with no arguments to stop it.
 >>>  !run !!{qFileDirectory}!!/mapjoin1.q
->>>  set hive.mapjoin.cache.numrows=100;
-No rows affected 
->>>  
 >>>  SELECT  /*+ MAPJOIN(b) */ sum(a.key) as sum_a 
 FROM srcpart a 
 JOIN src b ON a.key = b.key where a.ds is not null;
