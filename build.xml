@@ -1213,7 +1213,7 @@
     <if>
       <equals arg1="${mvn.publish.repo}" arg2="staging" />
       <then>
-        <ant antfile="hcatalog" target="mvn-publish">
+        <ant dir="hcatalog" target="mvn-deploy-signed">
           <property name="mvn.deploy.repo.id" value="${mvn.staging.repo.id}"/>
           <property name="mvn.deploy.repo.url" value="${mvn.staging.repo.url}"/>
         </ant>
@@ -1225,7 +1225,7 @@
         </then>
       </elseif>
       <else>
-        <ant antfile="hcatalog" target="mvn-publish">
+        <ant dir="hcatalog" target="mvn-deploy-signed">
           <property name="mvn.deploy.repo.id" value="${mvn.deploy.id}"/>
           <property name="mvn.deploy.repo.url" value="${mvn.deploy.url}"/>
         </ant>
