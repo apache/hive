@@ -223,7 +223,6 @@ public class DateUtil {
       cal.set(Calendar.SECOND, 0);
       break;
     }
-    System.out.println("Date:" + toDate + " Floordate for interval:" + interval + " is " + cal.getTime());
     return cal.getTime();
   }
 

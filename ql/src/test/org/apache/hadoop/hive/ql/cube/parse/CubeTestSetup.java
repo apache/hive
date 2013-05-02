@@ -96,6 +96,7 @@ public class CubeTestSetup {
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();
     List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
+    updates.add(UpdatePeriod.MINUTELY);
     updates.add(UpdatePeriod.HOURLY);
     updates.add(UpdatePeriod.DAILY);
     updates.add(UpdatePeriod.MONTHLY);
@@ -158,7 +159,7 @@ public class CubeTestSetup {
     Map<Storage, UpdatePeriod> snapshotDumpPeriods =
         new HashMap<Storage, UpdatePeriod>();
     snapshotDumpPeriods.put(hdfsStorage1, UpdatePeriod.HOURLY);
-    snapshotDumpPeriods.put(hdfsStorage2, UpdatePeriod.MINUTELY);
+    snapshotDumpPeriods.put(hdfsStorage2, null);
     client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
         snapshotDumpPeriods);
   }
@@ -169,7 +170,7 @@ public class CubeTestSetup {
     createCube(client);
     createCubeFact(client);
     createDimWithTwoStorages(client);
-   // createCubeFactMonthly(client);
+    createCubeFactMonthly(client);
   }
 
 }

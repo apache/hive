@@ -45,20 +45,36 @@ public class CubeQueryContext {
 
   private final ASTNode ast;
   private final QB qb;
+  private String clauseName = null;
   private final HiveConf conf;
+
   private String fromDateRaw;
   private String toDateRaw;
-  private Cube cube;
-  protected Set<CubeDimensionTable> dimensions = new HashSet<CubeDimensionTable>();
-  protected Set<CubeFactTable> candidateFactTables = new HashSet<CubeFactTable>();
-  private final Map<String, List<String>> tblToColumns = new HashMap<String, List<String>>();
   private Date timeFrom;
   private Date timeTo;
-  private String clauseName = null;
-  private Map<String, List<String>> partitionCols;
+
+  // metadata
+  private Cube cube;
+  private List<String> cubeMeasureNames;
+  private List<String> cubeDimNames;
+  protected Set<CubeDimensionTable> dimensions = new HashSet<CubeDimensionTable>();
+  private final Map<AbstractCubeTable, List<String>> cubeTabToCols =
+      new HashMap<AbstractCubeTable, List<String>>();
+  protected Set<CubeFactTable> candidateFactTables = new HashSet<CubeFactTable>();
+
+  // fields queried
+  private final Map<String, List<String>> tblAliasToColumns = new HashMap<String, List<String>>();
+  private final Set<String> cubeColumnsQueried = new HashSet<String>();
+  private final Map<String, String> columnToTabAlias = new HashMap<String, String>();
   protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
       new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
+  private final Map<CubeQueryExpr, Set<String>> exprToCols = new HashMap<CubeQueryExpr, Set<String>>();
+  private final Map<CubeQueryExpr, Set<String>> queryExprToExprs = new HashMap<CubeQueryExpr, Set<String>>();
+  private final Map<String, String> exprToAlias = new HashMap<String, String>();
+  private final Set<String> aggregateCols = new HashSet<String>();
+  private final Set<String> aggregateExprs = new HashSet<String>();
 
+  // storage specific
   private List<String> supportedStorages;
   private boolean allStoragesSupported;
   private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factStorageMap =
@@ -69,16 +85,8 @@ public class CubeQueryContext {
       new HashMap<String, String>();
   private final Map<AbstractCubeTable, String> storageTableToQuery =
       new HashMap<AbstractCubeTable, String>();
-  private final Map<String, String> columnToTabAlias = new HashMap<String, String>();
-  private List<String> cubeMeasureNames;
-  private List<String> cubeDimNames;
-  private final Map<AbstractCubeTable, List<String>> cubeTabToCols =
-      new HashMap<AbstractCubeTable, List<String>>();
-  private final Map<CubeQueryExpr, Set<String>> exprToCols = new HashMap<CubeQueryExpr, Set<String>>();
-  private final Map<CubeQueryExpr, Set<String>> queryExprToExprs = new HashMap<CubeQueryExpr, Set<String>>();
-  private final Map<String, String> exprToAlias = new HashMap<String, String>();
-  private final Set<String> aggregateCols = new HashSet<String>();
-  private final Set<String> aggregateExprs = new HashSet<String>();
+
+  // query trees
   private ASTNode fromTree;
   private String whereTree;
   private String havingTree;
@@ -119,6 +127,7 @@ public class CubeQueryContext {
     extractTimeRange();
     extractColumns();
     extractTabAliasForCol();
+    findCandidateFactTables();
   }
 
   public boolean hasCubeInQuery() {
@@ -215,13 +224,11 @@ public class CubeQueryContext {
     Date now = new Date();
 
     try {
-      timeFrom = DateUtils.resolveDate(fromDateRaw, now);
-      timeTo = DateUtils.resolveDate(toDateRaw, now);
+      timeFrom = DateUtil.resolveDate(fromDateRaw, now);
+      timeTo = DateUtil.resolveDate(toDateRaw, now);
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
-    System.out.println("timeFrom:" + timeFrom);
-    System.out.println("timeTo:" + timeTo);
   }
 
   private void extractColumns() throws SemanticException {
@@ -248,14 +255,19 @@ public class CubeQueryContext {
     for (CubeQueryExpr expr : CubeQueryExpr.values()) {
       Set<String> columns = new HashSet<String>();
       exprToCols.put(expr, columns);
-      getColsForTree(getExprTree(expr), columns, tblToColumns, exprToAlias);
+      getColsForTree(getExprTree(expr), columns, tblAliasToColumns, exprToAlias);
     }
 
     for (ASTNode aggrTree : qb.getParseInfo().getAggregationExprsForClause(clauseName).values()) {
       getColsForTree(aggrTree, aggregateCols, null, null);
       String aggr = HQLParser.getString(aggrTree);
-      System.out.println("Adding aggr expr:" + aggr);
       aggregateExprs.add(aggr.toLowerCase());
+    }
+    if (cube != null) {
+      String cubeAlias = getAliasForTabName(cube.getName());
+      if (tblAliasToColumns.get(cubeAlias) != null) {
+        cubeColumnsQueried.addAll(tblAliasToColumns.get(cubeAlias));
+      }
     }
   }
 
@@ -340,7 +352,7 @@ public class CubeQueryContext {
     });
   }
   private void extractTabAliasForCol() throws SemanticException {
-    List<String> columns = tblToColumns.get(DEFAULT_TABLE);
+    List<String> columns = tblAliasToColumns.get(DEFAULT_TABLE);
     if (columns == null) {
       return;
     }
@@ -348,13 +360,12 @@ public class CubeQueryContext {
       if (cube != null) {
         List<String> cols = cubeTabToCols.get(cube);
         if (cols.contains(col.toLowerCase())) {
-          System.out.println("Found table " + cube.getName());
           columnToTabAlias.put(col, getAliasForTabName(cube.getName()));
+          cubeColumnsQueried.add(col);
         }
       }
       for (CubeDimensionTable dim: dimensions) {
         if (cubeTabToCols.get(dim).contains(col.toLowerCase())) {
-          System.out.println("Found table " + dim.getName());
           columnToTabAlias.put(col, dim.getName());
           break;
         }
@@ -362,6 +373,29 @@ public class CubeQueryContext {
       if (columnToTabAlias.get(col) == null) {
         throw new SemanticException("Could not find the table containing" +
             " column:" + col);
+      }
+    }
+  }
+
+  private void findCandidateFactTables() throws SemanticException {
+    if (cube != null) {
+      // go over the columns accessed in the query and find out which tables
+      // can answer the query
+      for (Iterator<CubeFactTable> i = candidateFactTables.iterator(); i.hasNext();) {
+        CubeFactTable fact = i.next();
+        List<String> factCols = cubeTabToCols.get(fact);
+        for (String col : cubeColumnsQueried) {
+          if (!factCols.contains(col)) {
+            System.out.println("Not considering the fact table:" + fact +
+                " as column " + col + " is not available");
+            i.remove();
+            break;
+          }
+        }
+      }
+      if (candidateFactTables.size() == 0) {
+        throw new SemanticException("No candidate fact table available to" +
+            " answer the query");
       }
     }
   }
@@ -390,7 +424,7 @@ public class CubeQueryContext {
     return qb;
   }
 
-  public Set<CubeFactTable> getFactTables() {
+  public Set<CubeFactTable> getCandidateFactTables() {
     return candidateFactTables;
   }
 
@@ -595,7 +629,6 @@ public class CubeQueryContext {
 
   public ASTNode getFromTree() {
     if (cube != null) {
-      System.out.println("alias:" + getAliasForTabName(cube.getName()));
       return qb.getParseInfo().getSrcForAlias(getAliasForTabName(cube.getName()));
     }
     return qb.getParseInfo().getSrcForAlias(qb.getTabAliases().iterator().next());
@@ -653,6 +686,7 @@ public class CubeQueryContext {
     List<String> qstrs = new ArrayList<String>();
     qstrs.add(getSelectTree());
     String fromString = HQLParser.getString(getFromTree()).toLowerCase();
+    String whereString = getWhereTree(factStorageTable);
     for (Map.Entry<AbstractCubeTable, String> entry :
       storageTableToQuery.entrySet()) {
       String src = entry.getKey().getName().toLowerCase();
@@ -664,7 +698,6 @@ public class CubeQueryContext {
     if (joinTree != null) {
       qstrs.add(HQLParser.getString(joinTree));
     }
-    String whereString = getWhereTree(factStorageTable);
     if (whereString != null) {
       qstrs.add(whereString);
     }
@@ -689,46 +722,63 @@ public class CubeQueryContext {
     return String.format(qfmt, getQueryTreeStrings(tableName));
   }
 
-  public String getWhereTree(String factStorageTable) {
-    String originalWhereString = getWhereTree();
-    String whereWithoutTimerange;
-    if (factStorageTable != null) {
-      whereWithoutTimerange = originalWhereString.substring(0,
-          originalWhereString.indexOf(CubeQueryContext.TIME_RANGE_FUNC));
-    } else {
-      whereWithoutTimerange = originalWhereString;
+  private void appendWhereClause(StringBuilder whereWithoutTimerange,
+      String whereClause, boolean hasMore) {
+    if (hasMore) {
+      whereWithoutTimerange.append(" AND ");
     }
-    boolean dimensionsAdded = false;
+    appendWhereClause(whereWithoutTimerange, whereClause);
+  }
+
+  private void appendWhereClause(CubeDimensionTable dim, StringBuilder whereString,
+      boolean hasMore) {
+    String storageTable = dimStorageMap.get(dim).get(0);
+    storageTableToQuery.put(dim, storageTable);
+    String whereClause = storageTableToWhereClause.get(storageTable);
+    if ( whereClause != null) {
+      appendWhereClause(whereString, whereClause, hasMore);
+    }
+  }
+
+  private void appendWhereClause(StringBuilder whereWithoutTimerange,
+      String whereClause) {
+    whereWithoutTimerange.append("(");
+    whereWithoutTimerange.append(whereClause);
+    whereWithoutTimerange.append(")");
+  }
+
+  private String getWhereTree(String factStorageTable) {
+    String originalWhereString = getWhereTree();
+    StringBuilder whereWithoutTimerange;
+
+    if (factStorageTable != null) {
+      whereWithoutTimerange = new StringBuilder(originalWhereString.substring(0,
+          originalWhereString.indexOf(CubeQueryContext.TIME_RANGE_FUNC)));
+      // add where clause for fact;
+      appendWhereClause(whereWithoutTimerange, storageTableToWhereClause.get(
+          factStorageTable));
+    } else {
+      if (originalWhereString != null) {
+      whereWithoutTimerange = new StringBuilder(originalWhereString);
+      } else {
+        whereWithoutTimerange = new StringBuilder();
+      }
+    }
+
     // add where clause for all dimensions
     Iterator<CubeDimensionTable> it = dimensions.iterator();
     if (it.hasNext()) {
-      dimensionsAdded = true;
       CubeDimensionTable dim = it.next();
+      appendWhereClause(dim, whereWithoutTimerange, factStorageTable != null);
       while (it.hasNext()) {
-        String storageTable = dimStorageMap.get(dim).get(0);
-        storageTableToQuery.put(dim, storageTable);
-        whereWithoutTimerange += "(";
-        whereWithoutTimerange += storageTableToWhereClause.get(storageTable);
-        whereWithoutTimerange += ") AND";
+        appendWhereClause(dim, whereWithoutTimerange, true);
         dim = it.next();
       }
-      String storageTable = dimStorageMap.get(dim).get(0);
-      storageTableToQuery.put(dim, storageTable);
-      whereWithoutTimerange += "(";
-      whereWithoutTimerange += storageTableToWhereClause.get(storageTable);
-      whereWithoutTimerange += ") ";
     }
-    if (factStorageTable != null) {
-      if (dimensionsAdded) {
-        whereWithoutTimerange += " AND ";
-      }
-      // add where clause for fact;
-      whereWithoutTimerange += "(";
-      whereWithoutTimerange +=  storageTableToWhereClause.get(
-          factStorageTable);
-      whereWithoutTimerange += ") ";
+    if (whereWithoutTimerange.length() == 0) {
+      return null;
     }
-    return whereWithoutTimerange;
+    return whereWithoutTimerange.toString();
   }
 
   public String toHQL() throws SemanticException {
@@ -803,7 +853,7 @@ public class CubeQueryContext {
   }
 
   public Map<String, List<String>> getTblToColumns() {
-    return tblToColumns;
+    return tblAliasToColumns;
   }
 
   public Map<String, String> getColumnsToTableAlias() {
@@ -836,7 +886,6 @@ public class CubeQueryContext {
 
   public boolean isCubeMeasure(String col) {
     String[] split = col.split("\\.");
-    System.out.println("Looking for col" + col + " split" + split.length);
     if (split.length <= 1) {
       return cubeMeasureNames.contains(col);
     } else {
@@ -863,4 +912,17 @@ public class CubeQueryContext {
   public String getAlias(String expr) {
     return exprToAlias.get(expr);
   }
+
+  public Set<String> getCubeColumnsQueried() {
+    return cubeColumnsQueried;
+  }
+
+  public Map<AbstractCubeTable, List<String>> getCubeTabToCols() {
+    return cubeTabToCols;
+  }
+
+  public void removeCandidateFact(CubeFactTable fact) {
+    candidateFactTables.remove(fact);
+  }
+
 }

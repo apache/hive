@@ -34,14 +34,12 @@ public class GroupbyResolver implements ContextRewriter {
     for (String expr : selectExprs) {
       if (cubeql.hasAggregates()) {
         String alias = cubeql.getAlias(expr);
-        System.out.println("expr:" + expr + "alias:" + alias);
         if (alias != null) {
           expr = expr.substring(0, (expr.length()-alias.length())).trim();
         }
         if (!groupByExprs.contains(expr)) {
           if (!cubeql.isAggregateExpr(expr)) {
             String groupbyExpr = expr;
-            System.out.println("groupby expr:" + groupbyExpr);
             if (groupByTree != null) {
               groupByTree += ", ";
               groupByTree += groupbyExpr;

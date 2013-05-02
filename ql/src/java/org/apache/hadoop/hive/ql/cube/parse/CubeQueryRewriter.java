@@ -30,7 +30,6 @@ public class CubeQueryRewriter {
     phase1Rewriters.add(new GroupbyResolver(conf));
     //Rewrite base trees (groupby, having, orderby, limit) using aliases
     phase1Rewriters.add(new AliasReplacer(conf));
-    phase1Rewriters.add(new CandidateTableResolver(conf));
     //Resolve partition columns and table names
     phase1Rewriters.add(new PartitionResolver(conf));
   }

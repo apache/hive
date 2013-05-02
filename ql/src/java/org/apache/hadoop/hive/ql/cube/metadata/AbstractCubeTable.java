@@ -73,4 +73,9 @@ public abstract class AbstractCubeTable implements Named {
     }
     return true;
   }
+
+  @Override
+  public String toString() {
+    return getName();
+  }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class PartitionResolver implements ContextRewriter {
 
   @Override
   public void rewriteContext(CubeQueryContext cubeql) throws SemanticException {
-    if (!cubeql.getFactTables().isEmpty()) {
+    if (!cubeql.getCandidateFactTables().isEmpty()) {
       Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
           new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
       Date fromDate = cubeql.getFromDate();
@@ -27,32 +28,34 @@ public class PartitionResolver implements ContextRewriter {
 
       Calendar cal = Calendar.getInstance();
       cal.setTime(fromDate);
-      for (CubeFactTable fact : cubeql.getFactTables()) {
+      for (Iterator<CubeFactTable> i = cubeql.getCandidateFactTables().iterator(); i.hasNext();) {
+        CubeFactTable fact = i.next();
         Map<UpdatePeriod, List<String>> partitionColMap =
             new HashMap<UpdatePeriod, List<String>>();
         factPartitionMap.put(fact, partitionColMap);
-        getPartitions(fact, fromDate, toDate, partitionColMap);
+        if (!getPartitions(fact, fromDate, toDate, partitionColMap, cubeql)) {
+          i.remove();
+        }
       }
       // set partition cols map in cubeql
       cubeql.setFactPartitionMap(factPartitionMap);
     }
   }
 
-  void getPartitions(CubeFactTable fact, Date fromDate, Date toDate,
-      Map<UpdatePeriod, List<String>> partitionColMap)
+  private boolean getPartitions(CubeFactTable fact, Date fromDate, Date toDate,
+      Map<UpdatePeriod, List<String>> partitionColMap, CubeQueryContext cubeql)
           throws SemanticException {
-    System.out.println("getPartitions fromDate:" + fromDate + " toDate:" + toDate);
     if (fromDate.equals(toDate) || fromDate.after(toDate)) {
-      return;
+      return true;
     }
 
     UpdatePeriod interval = fact.maxIntervalInRange(fromDate, toDate);
     if (interval == null) {
-      throw new SemanticException("Could not find a partition for given range:"
-          + fromDate + "-" + toDate);
+      System.err.println("Could not find a partition for given range:"
+          + fromDate + "-" + toDate + " in fact:" + fact.getName());
+      return false;
     }
 
-    System.out.println("fact: " + fact.getName() + " max interval:" + interval);
     Date ceilFromDate = DateUtil.getCeilDate(fromDate, interval);
     Date floorToDate = DateUtil.getFloorDate(toDate, interval);
     List<String> partitions = fact.getPartitions(ceilFromDate, floorToDate,
@@ -65,9 +68,7 @@ public class PartitionResolver implements ContextRewriter {
       }
       parts.addAll(partitions);
     }
-    System.out.println("ceilFromDate for " + interval + " is " + ceilFromDate);
-    System.out.println("floorToDate for " + interval + " is " + floorToDate);
-    getPartitions(fact, fromDate, ceilFromDate, partitionColMap);
-    getPartitions(fact, floorToDate, toDate, partitionColMap);
+    return (getPartitions(fact, fromDate, ceilFromDate, partitionColMap, cubeql)
+        && getPartitions(fact, floorToDate, toDate, partitionColMap, cubeql));
   }
 }
