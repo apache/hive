@@ -140,9 +140,12 @@ public class TestVectorArithmeticExpressions {
     //Now set one column nullable
     lcv1.noNulls = false;
     lcv1.isNull[1] = true;
+    lcv2.isRepeating = true;   // set output isRepeating to true to make sure it gets over-written
+    lcv2.noNulls = true;       // similarly with noNulls
     expr.evaluate(vrg);
     assertTrue(lcv2.isNull[1]);
     assertFalse(lcv2.noNulls);
+    assertFalse(lcv2.isRepeating);
 
     //Now set other column nullable too
     lcv0.noNulls = false;

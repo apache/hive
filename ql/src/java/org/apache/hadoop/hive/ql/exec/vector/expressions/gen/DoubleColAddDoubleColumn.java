@@ -54,6 +54,11 @@ public class DoubleColAddDoubleColumn extends VectorExpression {
     if (n == 0) {
       return;
     }
+    
+    /* Set repeating property to false (the default).
+     * It will be set to true later if needed later.
+     */
+    outputColVector.isRepeating = false;
 
     //Handle nulls first
     if (inputColVector1.noNulls && !inputColVector2.noNulls) {
