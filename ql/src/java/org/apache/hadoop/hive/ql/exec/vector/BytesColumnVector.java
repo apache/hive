@@ -150,6 +150,34 @@ public class BytesColumnVector extends ColumnVector {
   }
 
   /**
+   * Set a field to the concatenation of two string values. Result data is copied
+   * into the internal buffer.
+   *
+   * @param elementNum index within column vector to set
+   * @param leftSourceBuf container of left argument
+   * @param leftStart start of left argument
+   * @param leftLen length of left argument
+   * @param rightSourceBuf container of right argument
+   * @param rightStart start of right argument
+   * @param rightLen length of right arugment
+   */
+  public void setConcat(int elementNum, byte[] leftSourceBuf, int leftStart, int leftLen,
+      byte[] rightSourceBuf, int rightStart, int rightLen) {
+    int newLen = leftLen + rightLen;
+    if ((nextFree + newLen) > buffer.length) {
+      increaseBufferSpace(newLen);
+    }
+    vector[elementNum] = buffer;
+    this.start[elementNum] = nextFree;
+    this.length[elementNum] = newLen;
+
+    System.arraycopy(leftSourceBuf, leftStart, buffer, nextFree, leftLen);
+    nextFree += leftLen;
+    System.arraycopy(rightSourceBuf, rightStart, buffer, nextFree, rightLen);
+    nextFree += rightLen;
+  }
+
+  /**
    * Increase buffer space enough to accommodate next element.
    * This uses an exponential increase mechanism to rapidly
    * increase buffer size to enough to hold all data.
