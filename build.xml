@@ -506,8 +506,8 @@
     <!-- Package the hcat stuff and pull it up into Hive's build dir -->
     <ant antfile="${hive.root}/hcatalog/build.xml" target="package"
         inheritAll="false"/>
-    <mkdir dir="${build.dir.hive}/hcatalog"/>
-    <copy todir="${build.dir.hive}/hcatalog">
+    <mkdir dir="${target.dir}/hcatalog"/>
+    <copy todir="${target.dir}/hcatalog">
         <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
     </copy>
   </target>
@@ -711,6 +711,7 @@
         <tarfileset dir="${hive.root}" mode="664" prefix="${tar.final.name}/src"
                     excludes="${vcs.excludes}">
           <exclude name="build/**" />
+          <exclude name="hcatalog/**/build/**" />
           <exclude name="bin/**" />
           <exclude name="**/py/**/*-remote" />
           <exclude name="data/scripts/**" />
@@ -720,6 +721,7 @@
         <tarfileset dir="${hive.root}" mode="755" prefix="${tar.final.name}/src"
                     excludes="${vcs.excludes}">
           <exclude name="build/**" />
+          <exclude name="hcatalog/**/build/**" />
           <include name="bin/**" />
           <include name="**/py/**/*-remote" />
           <include name="data/scripts/**" />
@@ -749,9 +751,6 @@
           <exclude name="bin/**"/>
           <exclude name="docs/**"/>
           <exclude name="lib/py/**/*-remote"/>
-        </tarfileset>
-        <tarfileset dir="${build.dir.hive}/hcatalog" mode="755" prefix="${bin.final.name}"
-                    excludes="${vcs.excludes}">
         </tarfileset>
       </param.listofitems>
     </macro_tar>
