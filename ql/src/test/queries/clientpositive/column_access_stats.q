@@ -8,11 +8,15 @@ LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1;
 
 CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;
 CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING);
 
 -- Simple select queries
 SELECT key FROM T1 ORDER BY key;
 SELECT key, val FROM T1 ORDER BY key, val;
 SELECT 1 FROM T1;
+SELECT key, val from T4 where p=1;
+SELECT val FROM T4 where p=1;
+SELECT p, val FROM T4 where p=1;
 
 -- More complicated select queries
 EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key;
