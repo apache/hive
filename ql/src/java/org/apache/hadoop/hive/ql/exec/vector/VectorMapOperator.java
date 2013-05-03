@@ -96,6 +96,8 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     new HashMap<Operator<? extends OperatorDesc>, MapOpCtx>();
 
   private ArrayList<Operator<? extends OperatorDesc>> extraChildrenToClose = null;
+  private VectorizationContext vectorizationContext = null;
+  private boolean outputColumnsInitialized = false;;
 
   private static class MapInputPath {
     String path;
@@ -500,9 +502,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         Path onepath = new Path(new Path(onefile).toUri().getPath());
         List<String> aliases = conf.getPathToAliases().get(onefile);
 
-        VectorizationContext vectorizationContext = new VectorizationContext
-            (columnMap,
-            columnCount);
+        vectorizationContext  = new VectorizationContext(columnMap, columnCount);
 
         for (String onealias : aliases) {
           Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(
@@ -785,6 +785,21 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     // So, use tblOI (and not partOI) for forwarding
     try {
       if (value instanceof VectorizedRowBatch) {
+        if (!outputColumnsInitialized ) {
+          VectorizedRowBatch vrg = (VectorizedRowBatch) value;
+          Map<Integer, String> outputColumnTypes =
+              vectorizationContext.getOutputColumnTypeMap();
+          if (!outputColumnTypes.isEmpty()) {
+            int origNumCols = vrg.numCols;
+            int newNumCols = vrg.cols.length+outputColumnTypes.keySet().size();
+            vrg.cols = Arrays.copyOf(vrg.cols, newNumCols);
+            for (int i = origNumCols; i < newNumCols; i++) {
+              vrg.cols[i] = vectorizationContext.allocateColumnVector(outputColumnTypes.get(i),
+                  VectorizedRowBatch.DEFAULT_SIZE);
+            }
+          }
+          outputColumnsInitialized = true;
+        }
         forward(value, null);
       } else {
         Object row = null;

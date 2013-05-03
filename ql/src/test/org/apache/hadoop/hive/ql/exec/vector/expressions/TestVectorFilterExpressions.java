@@ -152,7 +152,7 @@ public class TestVectorFilterExpressions {
     //Basic case
     lcv0.vector[0] = 10;
     lcv0.vector[1] = 20;
-    lcv0.vector[2] = 10;
+    lcv0.vector[2] = 9;
     lcv0.vector[3] = 20;
     lcv0.vector[4] = 10;
 
@@ -162,16 +162,9 @@ public class TestVectorFilterExpressions {
     lcv1.vector[3] = 10;
     lcv1.vector[4] = 20;
 
-    childExpr.evaluate(vrg);
-
-    assertEquals(20, lcv2.vector[0]);
-    assertEquals(30, lcv2.vector[1]);
-    assertEquals(20, lcv2.vector[2]);
-    assertEquals(30, lcv2.vector[3]);
-    assertEquals(20, lcv2.vector[4]);
-
     expr.evaluate(vrg);
 
-    assertEquals(0, vrg.size);
+    assertEquals(1, vrg.size);
+    assertEquals(2, vrg.selected[0]);
   }
 }
