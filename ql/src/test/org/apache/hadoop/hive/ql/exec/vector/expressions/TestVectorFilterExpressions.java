@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -131,5 +133,45 @@ public class TestVectorFilterExpressions {
     lcv0.vector[2] = 2;
     lcv0.vector[3] = 3;
     return batch;
+  }
+
+  @Test
+  public void testFilterLongColLessLongColumn() {
+    int seed = 17;
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 3, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrg.cols[0];
+    LongColumnVector lcv1 = (LongColumnVector) vrg.cols[1];
+    LongColumnVector lcv2 = (LongColumnVector) vrg.cols[2];
+    FilterLongColLessLongColumn expr = new FilterLongColLessLongColumn(2, 1);
+
+    LongColAddLongScalar childExpr = new LongColAddLongScalar(0, 10, 2);
+
+    expr.setChildExpressions(new VectorExpression[] {childExpr});
+
+    //Basic case
+    lcv0.vector[0] = 10;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 10;
+    lcv0.vector[3] = 20;
+    lcv0.vector[4] = 10;
+
+    lcv1.vector[0] = 20;
+    lcv1.vector[1] = 10;
+    lcv1.vector[2] = 20;
+    lcv1.vector[3] = 10;
+    lcv1.vector[4] = 20;
+
+    childExpr.evaluate(vrg);
+
+    assertEquals(20, lcv2.vector[0]);
+    assertEquals(30, lcv2.vector[1]);
+    assertEquals(20, lcv2.vector[2]);
+    assertEquals(30, lcv2.vector[3]);
+    assertEquals(20, lcv2.vector[4]);
+
+    expr.evaluate(vrg);
+
+    assertEquals(0, vrg.size);
   }
 }

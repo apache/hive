@@ -51,6 +51,11 @@ public class LongScalarSubtractDoubleColumn extends VectorExpression {
    * @batch a package of rows with each column stored in a vector
    */
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;

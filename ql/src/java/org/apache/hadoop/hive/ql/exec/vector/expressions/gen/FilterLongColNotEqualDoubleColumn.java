@@ -33,6 +33,11 @@ public class FilterLongColNotEqualDoubleColumn extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
     DoubleColumnVector inputColVector2 = (DoubleColumnVector) batch.cols[colNum2];
     int[] sel = batch.selected;
