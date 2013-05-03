@@ -66,8 +66,6 @@ public class CubeQueryContext {
   private final Map<String, List<String>> tblAliasToColumns = new HashMap<String, List<String>>();
   private final Set<String> cubeColumnsQueried = new HashSet<String>();
   private final Map<String, String> columnToTabAlias = new HashMap<String, String>();
-  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
-      new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
   private final Map<CubeQueryExpr, Set<String>> exprToCols = new HashMap<CubeQueryExpr, Set<String>>();
   private final Map<CubeQueryExpr, Set<String>> queryExprToExprs = new HashMap<CubeQueryExpr, Set<String>>();
   private final Map<String, String> exprToAlias = new HashMap<String, String>();
@@ -75,6 +73,8 @@ public class CubeQueryContext {
   private final Set<String> aggregateExprs = new HashSet<String>();
 
   // storage specific
+  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
+      new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
   private List<String> supportedStorages;
   private boolean allStoragesSupported;
   private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factStorageMap =

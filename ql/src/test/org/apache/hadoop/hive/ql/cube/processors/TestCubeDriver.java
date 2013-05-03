@@ -89,7 +89,9 @@ public class TestCubeDriver {
     conf = new Configuration();
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" + getDateUptoHours(now));
-    //String expected = "select SUM(testCube.msr2) from "
+    //String expected = " sum( testcube.msr2 ) FROM  C1_testfact_HOURLY testcube  WHERE " + whereClause(HOURLY) + " UNION " +
+    // SELECT sum( testcube.msr2 ) FROM  C1_testfact_DAILY testcube  WHERE + whereClause(DAILY)
+
     String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
