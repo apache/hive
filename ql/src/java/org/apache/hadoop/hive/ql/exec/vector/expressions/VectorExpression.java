@@ -70,4 +70,24 @@ public abstract class VectorExpression {
       }
     }
   }
+
+  @Override
+  public String toString() {
+    StringBuilder b = new StringBuilder();
+    b.append(this.getClass().getSimpleName());
+    b.append("[");
+    b.append(this.getOutputColumn());
+    b.append("]");
+    if (childExpressions != null) {
+      b.append("(");
+      for (int i = 0; i < childExpressions.length; i++) {
+        b.append(childExpressions[i].toString());
+        if (i < childExpressions.length-1) {
+          b.append(" ");
+        }
+      }
+      b.append(")");
+    }
+    return b.toString();
+  }
 }

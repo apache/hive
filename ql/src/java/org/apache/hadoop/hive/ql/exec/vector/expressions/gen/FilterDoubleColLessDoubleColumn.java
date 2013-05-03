@@ -33,6 +33,11 @@ public class FilterDoubleColLessDoubleColumn extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     DoubleColumnVector inputColVector1 = (DoubleColumnVector) batch.cols[colNum1];
     DoubleColumnVector inputColVector2 = (DoubleColumnVector) batch.cols[colNum2];
     int[] sel = batch.selected;

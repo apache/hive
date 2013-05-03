@@ -51,6 +51,11 @@ public class LongScalarAddLongColumn extends VectorExpression {
    * @batch a package of rows with each column stored in a vector
    */
   public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
