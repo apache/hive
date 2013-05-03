@@ -20,14 +20,16 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.ColumnExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterNotExpr;
@@ -83,8 +85,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
@@ -99,24 +99,80 @@ public class VectorizationContext {
 
   //columnName to column position map
   private final Map<String, Integer> columnMap;
-  //Next column to be used for intermediate output
-  private int nextOutputColumn;
+  private final int firstOutputColumnIndex;
+
   private OperatorType opType;
   //Map column number to type
-  private final Map<Integer, String> outputColumnTypes;
+  private final OutputColumnManager ocm;
 
   public VectorizationContext(Map<String, Integer> columnMap,
       int initialOutputCol) {
     this.columnMap = columnMap;
-    this.nextOutputColumn = initialOutputCol;
-    this.outputColumnTypes = new HashMap<Integer, String>();
+    this.ocm = new OutputColumnManager(initialOutputCol);
+    this.firstOutputColumnIndex = initialOutputCol;
   }
-  
-  public int allocateOutputColumn (String columnName, String columnType) {
-    int newColumnIndex = nextOutputColumn++;
-    columnMap.put(columnName, newColumnIndex);
-    outputColumnTypes.put(newColumnIndex, columnType);
-    return newColumnIndex;
+
+
+  private class OutputColumnManager {
+    private final int initialOutputCol;
+    private int outputColCount = 0;
+
+    OutputColumnManager(int initialOutputCol) {
+      this.initialOutputCol = initialOutputCol;
+    }
+
+    //The complete list of output columns. These should be added to the
+    //Vectorized row batch for processing. The index in the row batch is
+    //equal to the index in this array plus initialOutputCol.
+    //Start with size 100 and double when needed.
+    private String [] outputColumnsTypes = new String[100];
+
+    private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
+
+    int allocateOutputColumn(String columnType) {
+      return initialOutputCol + allocateOutputColumnInternal(columnType);
+    }
+
+    private int allocateOutputColumnInternal(String columnType) {
+      for (int i = 0; i < outputColCount; i++) {
+        if (usedOutputColumns.contains(i) ||
+            !(outputColumnsTypes)[i].equals(columnType)) {
+          continue;
+        }
+        //Use i
+        usedOutputColumns.add(i);
+        return i;
+      }
+      //Out of allocated columns
+      if (outputColCount < outputColumnsTypes.length) {
+        int newIndex = outputColCount;
+        outputColumnsTypes[outputColCount++] = columnType;
+        usedOutputColumns.add(newIndex);
+        return newIndex;
+      } else {
+        //Expand the array
+        outputColumnsTypes = Arrays.copyOf(outputColumnsTypes, 2*outputColCount);
+        int newIndex = outputColCount;
+        outputColumnsTypes[outputColCount++] = columnType;
+        usedOutputColumns.add(newIndex);
+        return newIndex;
+      }
+    }
+
+    void freeOutputColumn(int index) {
+      int colIndex = index-initialOutputCol;
+      if (colIndex >= 0) {
+        usedOutputColumns.remove(index-initialOutputCol);
+      }
+    }
+
+    String getOutputColumnType(int index) {
+      return outputColumnsTypes[index-initialOutputCol];
+    }
+
+    int getNumOfOutputColumn() {
+      return outputColCount;
+    }
   }
 
   public void setOperatorType(OperatorType opType) {
@@ -151,23 +207,30 @@ public class VectorizationContext {
     return ret;
   }
 
+  /**
+   * Returns a vector expression for a given expression
+   * description.
+   * @param exprDesc, Expression description
+   * @return {@link VectorExpression}
+   */
   public VectorExpression getVectorExpression(ExprNodeDesc exprDesc) {
+    VectorExpression ve = null;
     if (exprDesc instanceof ExprNodeColumnDesc) {
-      return getVectorExpression((ExprNodeColumnDesc) exprDesc);
+      ve = getVectorExpression((ExprNodeColumnDesc) exprDesc);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      return getVectorExpression(expr.getGenericUDF(),
+      ve = getVectorExpression(expr.getGenericUDF(),
           expr.getChildExprs());
     }
-    return null;
+    System.out.println("VectorExpression = "+ve.toString());
+    return ve;
   }
 
-  public VectorExpression getUnaryMinusExpression(List<ExprNodeDesc> childExprList) {
+  private VectorExpression getUnaryMinusExpression(List<ExprNodeDesc> childExprList) {
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
     String colType;
     VectorExpression v1 = null;
-    int outputCol = this.nextOutputColumn++;
     if (childExpr instanceof ExprNodeGenericFuncDesc) {
       v1 = getVectorExpression(childExpr);
       inputCol = v1.getOutputColumn();
@@ -179,8 +242,8 @@ public class VectorizationContext {
     } else {
       throw new RuntimeException("Expression not supported: "+childExpr);
     }
+    int outputCol = ocm.allocateOutputColumn(colType);
     String className = getNormalizedTypeName(colType) + "colUnaryMinus";
-    this.nextOutputColumn = outputCol+1;
     VectorExpression expr;
     try {
       expr = (VectorExpression) Class.forName(className).
@@ -190,11 +253,12 @@ public class VectorizationContext {
     }
     if (v1 != null) {
       expr.setChildExpressions(new VectorExpression [] {v1});
+      ocm.freeOutputColumn(v1.getOutputColumn());
     }
     return expr;
   }
 
-  public VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList) {
+  private VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList) {
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
     String colType;
@@ -274,6 +338,9 @@ public class VectorizationContext {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
+    VectorExpression v1 = null;
+    VectorExpression v2 = null;
+
     VectorExpression expr = null;
     if ( (leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeConstantDesc) ) {
@@ -284,7 +351,8 @@ public class VectorizationContext {
       String scalarType = constDesc.getTypeString();
       String className = getBinaryColumnScalarExpressionClassName(colType,
           scalarType, method);
-      int outputCol = this.nextOutputColumn++;
+      int outputCol = ocm.allocateOutputColumn(getOutputColType(colType,
+          scalarType, method));
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol,
@@ -301,7 +369,8 @@ public class VectorizationContext {
       String scalarType = constDesc.getTypeString();
       String className = getBinaryColumnScalarExpressionClassName(colType,
           scalarType, method);
-      int outputCol = this.nextOutputColumn++;
+      String outputColType = getOutputColType(colType, scalarType, method);
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol,
@@ -317,9 +386,10 @@ public class VectorizationContext {
       int inputCol2 = columnMap.get(leftColDesc.getColumn());
       String colType1 = rightColDesc.getTypeString();
       String colType2 = leftColDesc.getTypeString();
+      String outputColType = getOutputColType(colType1, colType2, method);
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
-      int outputCol = this.nextOutputColumn++;
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
@@ -330,15 +400,15 @@ public class VectorizationContext {
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc)
         && (rightExpr instanceof ExprNodeColumnDesc)) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) rightExpr;
-      int outputCol = this.nextOutputColumn++;
-      VectorExpression v1 = getVectorExpression(leftExpr);
+      v1 = getVectorExpression(leftExpr);
       int inputCol1 = v1.getOutputColumn();
       int inputCol2 = columnMap.get(colDesc.getColumn());
       String colType1 = v1.getOutputType();
       String colType2 = colDesc.getTypeString();
+      String outputColType = getOutputColType(colType1, colType2, method);
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
-      this.nextOutputColumn = outputCol+1;
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
@@ -350,14 +420,14 @@ public class VectorizationContext {
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc)
         && (rightExpr instanceof ExprNodeConstantDesc)) {
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
-      int outputCol = this.nextOutputColumn++;
-      VectorExpression v1 = getVectorExpression(leftExpr);
+      v1 = getVectorExpression(leftExpr);
       int inputCol1 = v1.getOutputColumn();
       String colType1 = v1.getOutputType();
       String scalarType = constDesc.getTypeString();
+      String outputColType = getOutputColType(colType1, scalarType, method);
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       String className = getBinaryColumnScalarExpressionClassName(colType1,
           scalarType, method);
-      this.nextOutputColumn = outputCol+1;
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1,
@@ -369,15 +439,15 @@ public class VectorizationContext {
     } else if ((leftExpr instanceof ExprNodeColumnDesc)
         && (rightExpr instanceof ExprNodeGenericFuncDesc)) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leftExpr;
-      int outputCol = this.nextOutputColumn++;
-      VectorExpression v2 = getVectorExpression(rightExpr);
+      v2 = getVectorExpression(rightExpr);
       int inputCol1 = columnMap.get(colDesc.getColumn());
       int inputCol2 = v2.getOutputColumn();
       String colType1 = colDesc.getTypeString();
       String colType2 = v2.getOutputType();
+      String outputColType = getOutputColType(colType1, colType2, method);
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
-      this.nextOutputColumn = outputCol+1;
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
@@ -389,14 +459,14 @@ public class VectorizationContext {
     } else if ((leftExpr instanceof ExprNodeConstantDesc)
         && (rightExpr instanceof ExprNodeGenericFuncDesc)) {
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
-      int outputCol = this.nextOutputColumn++;
-      VectorExpression v2 = getVectorExpression(rightExpr);
+      v2 = getVectorExpression(rightExpr);
       int inputCol2 = v2.getOutputColumn();
       String colType2 = v2.getOutputType();
       String scalarType = constDesc.getTypeString();
+      String outputColType = getOutputColType(colType2, scalarType, method);
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       String className = getBinaryScalarColumnExpressionClassName(colType2,
           scalarType, method);
-      this.nextOutputColumn = outputCol+1;
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol2,
@@ -409,17 +479,16 @@ public class VectorizationContext {
         && (rightExpr instanceof ExprNodeGenericFuncDesc)) {
       //For arithmetic expression, the child expressions must be materializing
       //columns
-      int outputCol = this.nextOutputColumn++;
-      VectorExpression v1 = getVectorExpression(leftExpr);
-      VectorExpression v2 = getVectorExpression(rightExpr);
+      v1 = getVectorExpression(leftExpr);
+      v2 = getVectorExpression(rightExpr);
       int inputCol1 = v1.getOutputColumn();
       int inputCol2 = v2.getOutputColumn();
       String colType1 = v1.getOutputType();
       String colType2 = v2.getOutputType();
+      String outputColType = getOutputColType(colType1, colType2, method);
+      int outputCol = ocm.allocateOutputColumn(outputColType);
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
-      //Reclaim the output columns
-      this.nextOutputColumn = outputCol+1;
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
@@ -429,8 +498,14 @@ public class VectorizationContext {
       }
       expr.setChildExpressions(new VectorExpression [] {v1, v2});
     }
+    //Reclaim output columns of children to be re-used later
+    if (v1 != null) {
+      ocm.freeOutputColumn(v1.getOutputColumn());
+    }
+    if (v2 != null) {
+      ocm.freeOutputColumn(v2.getOutputColumn());
+    }
     return expr;
-
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPOr udf,
@@ -543,6 +618,8 @@ public class VectorizationContext {
     ExprNodeDesc rightExpr = childExpr.get(1);
 
     VectorExpression expr = null;
+    VectorExpression v1 = null;
+    VectorExpression v2 = null;
     if ( (leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
@@ -593,14 +670,16 @@ public class VectorizationContext {
       }
     } else if ( (leftExpr instanceof ExprNodeGenericFuncDesc) &&
         (rightExpr instanceof ExprNodeColumnDesc) ) {
-      VectorExpression v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
-      ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
+      v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
+      ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) rightExpr;
       int inputCol1 = v1.getOutputColumn();
       int inputCol2 = columnMap.get(leftColDesc.getColumn());
       String colType1 = v1.getOutputType();
       String colType2 = leftColDesc.getTypeString();
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
+      System.out.println("In the context, Input column 1: "+inputCol1+
+          ", column 2: "+inputCol2);
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
@@ -611,7 +690,7 @@ public class VectorizationContext {
     } else if ( (leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeGenericFuncDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) leftExpr;
-      VectorExpression v2 = getVectorExpression((ExprNodeGenericFuncDesc) rightExpr);
+      v2 = getVectorExpression((ExprNodeGenericFuncDesc) rightExpr);
       int inputCol1 = columnMap.get(rightColDesc.getColumn());
       int inputCol2 = v2.getOutputColumn();
       String colType1 = rightColDesc.getTypeString();
@@ -627,8 +706,8 @@ public class VectorizationContext {
       expr.setChildExpressions(new VectorExpression [] {v2});
     } else if ( (leftExpr instanceof ExprNodeGenericFuncDesc) &&
         (rightExpr instanceof ExprNodeConstantDesc) ) {
-      VectorExpression v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
-      ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
+      v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
+      ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
       int inputCol1 = v1.getOutputColumn();
       String colType1 = v1.getOutputType();
       String scalarType = constDesc.getTypeString();
@@ -645,7 +724,7 @@ public class VectorizationContext {
     } else if ( (leftExpr instanceof ExprNodeConstantDesc) &&
         (rightExpr instanceof ExprNodeGenericFuncDesc) ) {
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
-      VectorExpression v2 = getVectorExpression((ExprNodeGenericFuncDesc) rightExpr);
+      v2 = getVectorExpression((ExprNodeGenericFuncDesc) rightExpr);
       int inputCol2 = v2.getOutputColumn();
       String scalarType = constDesc.getTypeString();
       String colType = v2.getOutputType();
@@ -662,8 +741,8 @@ public class VectorizationContext {
     } else {
       //For comparison expression, the child expressions must be materializing
       //columns
-      VectorExpression v1 = getVectorExpression(leftExpr);
-      VectorExpression v2 = getVectorExpression(rightExpr);
+      v1 = getVectorExpression(leftExpr);
+      v2 = getVectorExpression(rightExpr);
       int inputCol1 = v1.getOutputColumn();
       int inputCol2 = v2.getOutputColumn();
       String colType1 = v1.getOutputType();
@@ -677,6 +756,12 @@ public class VectorizationContext {
         throw new RuntimeException((ex));
       }
       expr.setChildExpressions(new VectorExpression [] {v1, v2});
+    }
+    if (v1 != null) {
+      ocm.freeOutputColumn(v1.getOutputColumn());
+    }
+    if (v2 != null) {
+      ocm.freeOutputColumn(v2.getOutputColumn());
     }
     return expr;
   }
@@ -774,6 +859,29 @@ public class VectorizationContext {
     return b.toString();
   }
 
+  private String getOutputColType(String inputType1, String inputType2, String method) {
+    if (method.equalsIgnoreCase("divide") || inputType1.equalsIgnoreCase("double") ||
+        inputType2.equalsIgnoreCase("double")) {
+      return "double";
+    } else {
+      if (inputType1.equalsIgnoreCase("string") || inputType2.equalsIgnoreCase("string")) {
+        return "string";
+      } else {
+        return "long";
+      }
+    }
+  }
+
+  private String getOutputColType(String inputType, String method) {
+    if (inputType.equalsIgnoreCase("float") || inputType.equalsIgnoreCase("double")) {
+      return "double";
+    } else if (inputType.equalsIgnoreCase("string")) {
+      return "string";
+    } else {
+      return "long";
+    }
+  }
+
   static Object[][] aggregatesDefinition = {
     {"min",       "Long",   VectorUDAFMinLong.class},
     {"min",       "Double", VectorUDAFMinDouble.class},
@@ -800,8 +908,8 @@ public class VectorizationContext {
     {"stddev_samp","Long",  VectorUDAFStdSampLong.class},
     {"stddev_samp","Double",VectorUDAFStdSampDouble.class},
   };
-  
-  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc) 
+
+  public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc)
       throws HiveException {
     ArrayList<ExprNodeDesc> paramDescList = desc.getParameters();
     VectorExpression[] vectorParams = new VectorExpression[paramDescList.size()];
@@ -810,7 +918,7 @@ public class VectorizationContext {
       ExprNodeDesc exprDesc = paramDescList.get(i);
       vectorParams[i] = this.getVectorExpression(exprDesc);
     }
-    
+
     String aggregateName = desc.getGenericUDAFName();
     List<ExprNodeDesc> params = desc.getParameters();
     //TODO: handle length != 1
@@ -821,43 +929,41 @@ public class VectorizationContext {
     for (Object[] aggDef : aggregatesDefinition) {
       if (aggDef[0].equals (aggregateName) &&
           aggDef[1].equals(inputType)) {
-        Class<? extends VectorAggregateExpression> aggClass = 
+        Class<? extends VectorAggregateExpression> aggClass =
             (Class<? extends VectorAggregateExpression>) (aggDef[2]);
         try
         {
-          Constructor<? extends VectorAggregateExpression> ctor = 
+          Constructor<? extends VectorAggregateExpression> ctor =
               aggClass.getConstructor(VectorExpression.class);
           VectorAggregateExpression aggExpr = ctor.newInstance(vectorParams[0]);
           return aggExpr;
         }
         // TODO: change to 1.7 syntax when possible
-        //catch (InvocationTargetException | IllegalAccessException 
+        //catch (InvocationTargetException | IllegalAccessException
         // | NoSuchMethodException | InstantiationException)
         catch (Exception e)
         {
-          throw new HiveException("Internal exception for vector aggregate : \"" + 
+          throw new HiveException("Internal exception for vector aggregate : \"" +
                aggregateName + "\" for type: \"" + inputType + "", e);
         }
       }
     }
 
-    throw new HiveException("Vector aggregate not implemented: \"" + aggregateName + 
+    throw new HiveException("Vector aggregate not implemented: \"" + aggregateName +
         "\" for type: \"" + inputType + "");
   }
-  
+
   static Object[][] columnTypes = {
     {"Double",  DoubleColumnVector.class},
     {"Long",    LongColumnVector.class},
     {"String",  BytesColumnVector.class},
   };
 
-  public VectorizedRowBatch allocateRowBatch(int rowCount) throws HiveException {
-    VectorizedRowBatch ret = new VectorizedRowBatch(nextOutputColumn, rowCount);
-    for (int i=0; i < nextOutputColumn; ++i) {
-      if (false == outputColumnTypes.containsKey(i)) {
-        continue;
-      }
-      String columnTypeName = outputColumnTypes.get(i);
+  private VectorizedRowBatch allocateRowBatch(int rowCount) throws HiveException {
+    int columnCount = firstOutputColumnIndex + ocm.getNumOfOutputColumn();
+    VectorizedRowBatch ret = new VectorizedRowBatch(columnCount, rowCount);
+    for (int i=0; i < columnCount; ++i) {
+      String columnTypeName = ocm.getOutputColumnType(i);
       for (Object[] columnType: columnTypes) {
         if (columnTypeName.equalsIgnoreCase((String)columnType[0])) {
           Class<? extends ColumnVector> columnTypeClass = (Class<? extends ColumnVector>)columnType[1];
@@ -883,26 +989,23 @@ public class VectorizationContext {
       {"long", PrimitiveObjectInspectorFactory.writableLongObjectInspector},
   };
 
-  public ObjectInspector getVectorRowObjectInspector(List<String> columnNames) throws HiveException {
-    List<ObjectInspector> oids = new ArrayList<ObjectInspector>();
-    for(String columnName: columnNames) {
-      int columnIndex = columnMap.get(columnName);
-      String outputType = outputColumnTypes.get(columnIndex);
-      ObjectInspector oi = null;
-      for(Object[] moi: mapObjectInspectors) {
-        if (outputType.equalsIgnoreCase((String) moi[0])) {
-          oi = (ObjectInspector) moi[1];
-          break;
-        }
-      }
-      if (oi == null) {
-        throw new HiveException(String.format("Unsuported type: %s for column %d:%s",
-            outputType, columnIndex, columnName));
-      }
-      oids.add(oi);
+  public Map<Integer, String> getOutputColumnTypeMap() {
+    Map<Integer, String> map = new HashMap<Integer, String>();
+    for (int i = 0; i < ocm.outputColCount; i++) {
+      String type = ocm.outputColumnsTypes[i];
+      map.put(i+this.firstOutputColumnIndex, type);
     }
+    return map;
+  }
 
-    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, oids);
+  public ColumnVector allocateColumnVector(String type, int defaultSize) {
+    if (type.equalsIgnoreCase("double")) {
+      return new DoubleColumnVector(defaultSize);
+    } else if (type.equalsIgnoreCase("string")) {
+      return new BytesColumnVector(defaultSize);
+    } else {
+      return new LongColumnVector(defaultSize);
+    }
   }
 }
 
