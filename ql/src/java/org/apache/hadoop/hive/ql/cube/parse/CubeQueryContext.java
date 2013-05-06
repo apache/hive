@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cube.metadata.AbstractCubeTable;
 import org.apache.hadoop.hive.ql.cube.metadata.Cube;
@@ -95,6 +96,8 @@ public class CubeQueryContext {
   private String groupByTree;
   private ASTNode limitTree;
   private final ASTNode joinTree;
+  private ASTNode havingAST;
+  private ASTNode selectAST;
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
@@ -109,6 +112,8 @@ public class CubeQueryContext {
     if (qb.getParseInfo().getHavingForClause(clauseName) != null) {
       this.havingTree = HQLParser.getString(qb.getParseInfo().getHavingForClause(
           clauseName)).toLowerCase();
+      this.havingAST = qb.getParseInfo().getHavingForClause(
+          clauseName);
     }
     if (qb.getParseInfo().getOrderByForClause(clauseName) != null) {
       this.orderByTree = HQLParser.getString(qb.getParseInfo()
@@ -121,6 +126,8 @@ public class CubeQueryContext {
     if (qb.getParseInfo().getSelForClause(clauseName) != null) {
       this.selectTree = HQLParser.getString(qb.getParseInfo().getSelForClause(
           clauseName)).toLowerCase();
+      this.selectAST = qb.getParseInfo().getSelForClause(
+          clauseName);
     }
     this.joinTree = qb.getParseInfo().getJoinExpr();
     extractMetaTables();
@@ -550,9 +557,9 @@ public class CubeQueryContext {
     if (joinTree.getJoinCond() != null) {
       builder.append("\n joinConds:");
       for (JoinCond cond: joinTree.getJoinCond()) {
-        builder.append("\n\t left: " + cond.getLeft() + " right: "
-            + cond.getRight() + " type:" + cond.getJoinType()
-            + " preserved:" + cond.getPreserved());
+        builder.append("\n\t left: " + cond.getLeft() + " right: " +
+            cond.getRight() + " type:" + cond.getJoinType() +
+            " preserved:" + cond.getPreserved());
       }
     }
     if (joinTree.getExpressions() != null) {
@@ -759,7 +766,7 @@ public class CubeQueryContext {
           factStorageTable));
     } else {
       if (originalWhereString != null) {
-      whereWithoutTimerange = new StringBuilder(originalWhereString);
+        whereWithoutTimerange = new StringBuilder(originalWhereString);
       } else {
         whereWithoutTimerange = new StringBuilder();
       }
@@ -885,13 +892,23 @@ public class CubeQueryContext {
   }
 
   public boolean isCubeMeasure(String col) {
-    String[] split = col.split("\\.");
+    // Take care of brackets added around col names in HQLParsrer.getString
+    if (col.startsWith("(") && col.endsWith(")") && col.length() > 2) {
+      col = col.substring(1, col.length() -1);
+    }
+
+    String[] split = StringUtils.split(col, ".");
+    System.out.println("Looking for col [" + col + "] split: " + split.length);
     if (split.length <= 1) {
       return cubeMeasureNames.contains(col);
     } else {
-      if (split[0].equalsIgnoreCase(cube.getName()) ||
-          split[0].equalsIgnoreCase(getAliasForTabName(cube.getName()))) {
-        return cubeMeasureNames.contains(split[1]);
+      String cubeName = split[0].trim();
+      String colName = split[1].trim();
+      if (cubeName.equalsIgnoreCase(cube.getName()) ||
+          cubeName.equalsIgnoreCase(getAliasForTabName(cube.getName()))) {
+        boolean ismeasure = cubeMeasureNames.contains(colName);
+        System.out.println(colName + " IS MEASURE? " + ismeasure);
+        return cubeMeasureNames.contains(colName);
       } else {
         return false;
       }
@@ -923,6 +940,18 @@ public class CubeQueryContext {
 
   public void removeCandidateFact(CubeFactTable fact) {
     candidateFactTables.remove(fact);
+  }
+
+  public void addAggregateExpr(String expr) {
+    aggregateExprs.add(expr);
+  }
+
+  public ASTNode getHavingAST() {
+    return havingAST;
+  }
+
+  public ASTNode getSelectAST() {
+    return selectAST;
   }
 
 }

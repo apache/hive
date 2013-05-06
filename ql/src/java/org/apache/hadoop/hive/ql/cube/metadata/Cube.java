@@ -16,6 +16,10 @@ public final class Cube extends AbstractCubeTable {
   private final Set<CubeMeasure> measures;
   private final Set<CubeDimension> dimensions;
   private static final List<FieldSchema> columns = new ArrayList<FieldSchema>();
+  private final Map<String, CubeMeasure> measureMap;
+  private final Map<String, CubeDimension> dimMap;
+
+
   static {
     columns.add(new FieldSchema("dummy", "string", "dummy column"));
   }
@@ -25,6 +29,17 @@ public final class Cube extends AbstractCubeTable {
     super(name, columns, new HashMap<String, String>());
     this.measures = measures;
     this.dimensions = dimensions;
+
+    measureMap = new HashMap<String, CubeMeasure>();
+    for (CubeMeasure m : measures) {
+      measureMap.put(m.getName(), m);
+    }
+
+    dimMap = new HashMap<String, CubeDimension>();
+    for (CubeDimension dim : dimensions) {
+      dimMap.put(dim.getName(), dim);
+    }
+
     addProperties();
   }
 
@@ -32,6 +47,15 @@ public final class Cube extends AbstractCubeTable {
     super(tbl);
     this.measures = getMeasures(getName(), getProperties());
     this.dimensions = getDimensions(getName(), getProperties());
+    measureMap = new HashMap<String, CubeMeasure>();
+    for (CubeMeasure m : measures) {
+      measureMap.put(m.getName(), m);
+    }
+
+    dimMap = new HashMap<String, CubeDimension>();
+    for (CubeDimension dim : dimensions) {
+      dimMap.put(dim.getName(), dim);
+    }
   }
 
   public Set<CubeMeasure> getMeasures() {
@@ -168,5 +192,13 @@ public final class Cube extends AbstractCubeTable {
       return false;
     }
     return true;
+  }
+
+  public CubeDimension getDimensionByName(String dimension) {
+    return dimMap.get(dimension);
+  }
+
+  public CubeMeasure getMeasureByName(String measure) {
+    return measureMap.get(measure);
   }
 }

@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.cube.processors;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -272,6 +273,42 @@ public class TestCubeDriver {
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
     System.out.println("cube hql:" + hqlQuery);
+  }
+
+  @Test
+  public void testAggregateResolver() throws Exception {
+    conf = new Configuration();
+    driver = new CubeDriver(new HiveConf(new Configuration(), HiveConf.class));
+
+    String timeRange = " where  time_range_in('2013-05-01', '2013-05-03')";
+    System.out.println("#$AGGREGATE_RESOLVER_ TIME_RANGE:" + timeRange);
+    String q1 = "SELECT countryid, testCube.msr2 from testCube " + timeRange;
+    String q2 = "SELECT countryid, testCube.msr2 * testCube.msr2 from testCube " + timeRange;
+    String q3 = "SELECT countryid, sum(testCube.msr2) from testCube " + timeRange;
+    String q4 = "SELECT countryid, sum(testCube.msr2) from testCube "  + timeRange
+        + " having testCube.msr2 > 100";
+    String q5 = "SELECT countryid, testCube.msr2 from testCube " + timeRange
+        + " having testCube.msr2 + testCube.msr2 > 100";
+    String q6 = "SELECT countryid, testCube.msr2 from testCube " + timeRange
+        + " having testCube.msr2 > 100 AND testCube.msr2 < 100";
+    String q7 = "SELECT countryid, sum(testCube.msr2) from testCube " + timeRange
+        + " having (testCube.msr2 > 100) OR (testcube.msr2 < 100 AND SUM(testcube.msr3) > 1000)";
+
+    String tests[] = {q1, q2, q3, q4, q5, q6, q7};
+
+    int exceptions[] = new int[tests.length];
+    for (int i = 0; i < tests.length; i++) {
+      String hql = null;
+      try {
+        hql = driver.compileCubeQuery(tests[i]);
+      } catch (SemanticException exc) {
+        exceptions[i] = i;
+        exc.printStackTrace();
+      }
+      System.out.println("##----AGGREGATE_RESOLVER_CUBEQL----#" + i + " [" + tests[i] + " ]");
+      System.out.println("##----AGGREGATE_RESOLVER_HQL-----#" + i + " [ " + hql + " ]");
+    }
+    System.out.println("##---AGGREGATE_RESOLVER_ exceptions=" + Arrays.toString(exceptions) );
   }
 
 }

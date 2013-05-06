@@ -32,9 +32,10 @@ public class PartitionResolver implements ContextRewriter {
         CubeFactTable fact = i.next();
         Map<UpdatePeriod, List<String>> partitionColMap =
             new HashMap<UpdatePeriod, List<String>>();
-        factPartitionMap.put(fact, partitionColMap);
         if (!getPartitions(fact, fromDate, toDate, partitionColMap, cubeql)) {
           i.remove();
+        } else {
+          factPartitionMap.put(fact, partitionColMap);
         }
       }
       // set partition cols map in cubeql
@@ -51,7 +52,7 @@ public class PartitionResolver implements ContextRewriter {
 
     UpdatePeriod interval = fact.maxIntervalInRange(fromDate, toDate);
     if (interval == null) {
-      System.err.println("Could not find a partition for given range:"
+      System.err.println("Could not find partition for given range:"
           + fromDate + "-" + toDate + " in fact:" + fact.getName());
       return false;
     }

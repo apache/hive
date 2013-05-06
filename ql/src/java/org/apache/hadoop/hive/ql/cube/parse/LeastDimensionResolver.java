@@ -17,7 +17,7 @@ public class LeastDimensionResolver implements ContextRewriter {
   @Override
   public void rewriteContext(CubeQueryContext cubeql)
       throws SemanticException {
-    if (cubeql.getCube() != null) {
+    if (cubeql.getCube() != null && !cubeql.getCandidateFactTables().isEmpty()) {
       Map<CubeFactTable, Integer> dimWeightMap =
           new HashMap<CubeFactTable, Integer>();
 
