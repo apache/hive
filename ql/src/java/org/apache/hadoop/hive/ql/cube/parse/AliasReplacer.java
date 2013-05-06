@@ -1,6 +1,5 @@
 package org.apache.hadoop.hive.ql.cube.parse;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -8,7 +7,6 @@ import org.apache.hadoop.conf.Configuration;
 public class AliasReplacer implements ContextRewriter {
 
   public AliasReplacer(Configuration conf) {
-    // TODO Auto-generated constructor stub
   }
 
   @Override
@@ -25,11 +23,6 @@ public class AliasReplacer implements ContextRewriter {
     // 2: (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))
     // (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) value))))
     // 3: (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) srckey))))
-
-    Map<String, List<String>> tblToColumns = cubeql.getTblToColumns();
-    for (Map.Entry<String, List<String>> entry : tblToColumns.entrySet()) {
-      System.out.println("Table: " + entry.getKey() + "Columns: " + entry.getValue());
-    }
     Map<String, String> colToTableAlias = cubeql.getColumnsToTableAlias();
     if (colToTableAlias == null) {
       return;
