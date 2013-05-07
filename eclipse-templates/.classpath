@@ -45,7 +45,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/oro-2.0.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/servlet-api-2.5-6.1.14.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/xmlenc-0.52.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/guava-@guava-hadoop20.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-mapred-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jline-@jline.version@.jar"/>

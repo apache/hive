@@ -20,7 +20,7 @@
 <document>
   <properties>
     <title>Hadoop Hive</title>
-    <author email="hive-user@hadoop.apache.org">Hadoop Hive Documentation Team</author>
+    <author email="user@hive.apache.org">Hadoop Hive Documentation Team</author>
   </properties>
   <body>
     <section name="What is Hive?" href="WhatisHive?">
