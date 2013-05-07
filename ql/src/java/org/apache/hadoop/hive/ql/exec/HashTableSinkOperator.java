@@ -54,6 +54,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(HashTableSinkOperator.class.getName());
 
+  protected static MapJoinMetaData metadata = new MapJoinMetaData();
   // from abstract map join operator
   /**
    * The expressions for join inputs's join keys.
@@ -162,6 +163,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       return conf;
     }
 
+  }
+
+  public static MapJoinMetaData getMetadata() {
+    return metadata;
   }
 
   private static final transient String[] FATAL_ERR_MSG = {
@@ -301,8 +306,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         null);
     keySerializer.initialize(null, keyTableDesc.getProperties());
 
-    MapJoinMetaData.clear();
-    MapJoinMetaData.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
+    metadata.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
         ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
             ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, false, hconf));
   }
@@ -349,7 +353,8 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
         // Construct externalizable objects for key and value
         if (needNewKey) {
-          MapJoinObjectValue valueObj = new MapJoinObjectValue(metadataValueTag[tag], res);
+          MapJoinObjectValue valueObj = new MapJoinObjectValue(
+              metadataValueTag[tag], res);
 
           rowNumber++;
           if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
@@ -391,7 +396,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         .getStandardStructObjectInspector(newNames, newFields);
 
     int alias = Integer.valueOf(metadataValueTag[tag]);
-    MapJoinMetaData.put(alias, new HashTableSinkObjectCtx(
+    metadata.put(Integer.valueOf(metadataValueTag[tag]), new HashTableSinkObjectCtx(
         standardOI, valueSerDe, valueTableDesc, hasFilter(alias), hconf));
   }
 
@@ -435,7 +440,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
       super.closeOp(abort);
     } catch (Exception e) {
-      LOG.error("Generate Hashtable error");
+      LOG.error("Generate Hashtable error", e);
       e.printStackTrace();
     }
   }
