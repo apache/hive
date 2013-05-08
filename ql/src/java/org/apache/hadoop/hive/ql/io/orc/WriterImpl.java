@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -62,8 +64,14 @@ import com.google.protobuf.CodedOutputStream;
  * type of column. TreeWriters may have children TreeWriters that handle the
  * sub-types. Each of the TreeWriters writes the column's data as a set of
  * streams.
+ *
+ * This class is synchronized so that multi-threaded access is ok. In
+ * particular, because the MemoryManager is shared between writers, this class
+ * assumes that checkMemory may be called from a separate thread.
  */
 class WriterImpl implements Writer, MemoryManager.Callback {
+
+  private static final Log LOG = LogFactory.getLog(WriterImpl.class);
 
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
@@ -154,10 +162,18 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @Override
-  public void checkMemory(double newScale) throws IOException {
-    if (estimateStripeSize() > Math.round(stripeSize * newScale)) {
-     flushStripe();
+  public synchronized boolean checkMemory(double newScale) throws IOException {
+    long limit = (long) Math.round(stripeSize * newScale);
+    long size = estimateStripeSize();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("ORC writer " + path + " size = " + size + " limit = " +
+                limit);
     }
+    if (size > limit) {
+      flushStripe();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -183,6 +199,18 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     @Override
     public void output(ByteBuffer buffer) {
       output.add(buffer);
+    }
+
+    /**
+     * Get the number of bytes in buffers that are allocated to this stream.
+     * @return number of bytes in buffers
+     */
+    public long getBufferSize() {
+      long result = 0;
+      for(ByteBuffer buf: output) {
+        result += buf.capacity();
+      }
+      return outStream.getBufferSize() + result;
     }
 
     /**
@@ -214,12 +242,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       }
     }
 
-    /**
-     * Get the size of compressed and uncompressed data in the stream's buffers.
-     * @return the number of bytes in the buffers.
-     */
-    long getSize() {
-      return outStream.getSize();
+    @Override
+    public String toString() {
+      return outStream.toString();
     }
   }
 
@@ -681,11 +706,12 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private static class StringTreeWriter extends TreeWriter {
+    private static final int INITIAL_DICTIONARY_SIZE = 4096;
     private final PositionedOutputStream stringOutput;
     private final RunLengthIntegerWriter lengthOutput;
     private final RunLengthIntegerWriter rowOutput;
-    private final RunLengthIntegerWriter countOutput;
-    private final StringRedBlackTree dictionary = new StringRedBlackTree();
+    private final StringRedBlackTree dictionary =
+        new StringRedBlackTree(INITIAL_DICTIONARY_SIZE);
     private final DynamicIntArray rows = new DynamicIntArray();
     private final List<OrcProto.RowIndexEntry> savedRowIndex =
         new ArrayList<OrcProto.RowIndexEntry>();
@@ -703,12 +729,6 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.LENGTH), false);
       rowOutput = new RunLengthIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.DATA), false);
-      if (writer.buildIndex()) {
-        countOutput = new RunLengthIntegerWriter(writer.createStream(id,
-            OrcProto.Stream.Kind.DICTIONARY_COUNT), false);
-      } else {
-        countOutput = null;
-      }
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(0L);
       buildIndex = writer.buildIndex();
@@ -739,9 +759,6 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           context.writeBytes(stringOutput);
           lengthOutput.write(context.getLength());
           dumpOrder[context.getOriginalPosition()] = currentId++;
-          if (countOutput != null) {
-            countOutput.write(context.getCount());
-          }
         }
       });
       int length = rows.size();
@@ -770,9 +787,6 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       stringOutput.flush();
       lengthOutput.flush();
       rowOutput.flush();
-      if (countOutput != null) {
-        countOutput.flush();
-      }
       // reset all of the fields to be ready for the next stripe.
       dictionary.clear();
       rows.clear();
@@ -809,7 +823,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
     @Override
     long estimateMemory() {
-      return rows.size() * 4 + dictionary.getByteSize();
+      return rows.getSizeInBytes() + dictionary.getSizeInBytes();
     }
   }
 
@@ -1434,40 +1448,43 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private long estimateStripeSize() {
     long result = 0;
     for(BufferedStream stream: streams.values()) {
-      result += stream.getSize();
+      result += stream.getBufferSize();
     }
     result += treeWriter.estimateMemory();
     return result;
   }
 
   @Override
-  public void addUserMetadata(String name, ByteBuffer value) {
+  public synchronized void addUserMetadata(String name, ByteBuffer value) {
     userMetadata.put(name, ByteString.copyFrom(value));
   }
 
   @Override
   public void addRow(Object row) throws IOException {
-    treeWriter.write(row);
-    rowsInStripe += 1;
-    if (buildIndex) {
-      rowsInIndex += 1;
+    synchronized (this) {
+      treeWriter.write(row);
+      rowsInStripe += 1;
+      if (buildIndex) {
+        rowsInIndex += 1;
 
-      if (rowsInIndex >= rowIndexStride) {
-        createRowIndexEntry();
+        if (rowsInIndex >= rowIndexStride) {
+          createRowIndexEntry();
+        }
       }
     }
-    // once every 1000 rows, check the size to see if we should spill
-    if (rowsInStripe % 1000 == 0) {
-      checkMemory(memoryManager.getAllocationScale());
-    }
+    memoryManager.addedRow();
   }
 
   @Override
   public void close() throws IOException {
-    flushStripe();
-    int footerLength = writeFooter(rawWriter.getPos());
-    rawWriter.writeByte(writePostScript(footerLength));
-    rawWriter.close();
+    // remove us from the memory manager so that we don't get any callbacks
     memoryManager.removeWriter(path);
+    // actually close the file
+    synchronized (this) {
+      flushStripe();
+      int footerLength = writeFooter(rawWriter.getPos());
+      rawWriter.writeByte(writePostScript(footerLength));
+      rawWriter.close();
+    }
   }
 }

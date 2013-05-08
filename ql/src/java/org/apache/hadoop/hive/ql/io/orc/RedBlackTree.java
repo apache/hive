@@ -25,26 +25,17 @@ package org.apache.hadoop.hive.ql.io.orc;
  */
 abstract class RedBlackTree {
   public static final int NULL = -1;
-  private static final int DEFAULT_INITIAL_CAPACITY = 16 * 1024;
 
   // Various values controlling the offset of the data within the array.
   private static final int LEFT_OFFSET = 0;
   private static final int RIGHT_OFFSET = 1;
-  private static final int COUNT_OFFSET = 2;
-  private static final int ELEMENT_SIZE = 3;
+  private static final int ELEMENT_SIZE = 2;
 
   protected int size = 0;
   private final DynamicIntArray data;
   protected int root = NULL;
   protected int lastAdd = 0;
   private boolean wasAdd = false;
-
-  /**
-   * Create a set with a default initial capacity.
-   */
-  public RedBlackTree() {
-    data = new DynamicIntArray(DEFAULT_INITIAL_CAPACITY * ELEMENT_SIZE);
-  }
 
   /**
    * Create a set with the given initial capacity.
@@ -63,7 +54,6 @@ abstract class RedBlackTree {
     size += 1;
     setLeft(position, left, isRed);
     setRight(position, right);
-    setCount(position, 1);
     return position;
   }
 
@@ -107,18 +97,6 @@ abstract class RedBlackTree {
    */
   protected int getRight(int position) {
     return data.get(position * ELEMENT_SIZE + RIGHT_OFFSET);
-  }
-
-  protected int getCount(int position) {
-    return data.get(position * ELEMENT_SIZE + COUNT_OFFSET);
-  }
-
-  private void setCount(int position, int value) {
-    data.set(position * ELEMENT_SIZE + COUNT_OFFSET, value);
-  }
-
-  private void incrementCount(int position, int value) {
-    data.increment(position * ELEMENT_SIZE + COUNT_OFFSET, value);
   }
 
   /**
@@ -200,7 +178,6 @@ abstract class RedBlackTree {
       } else {
         lastAdd = node;
         wasAdd = false;
-        incrementCount(node, 1);
         return false;
       }
 
@@ -322,5 +299,11 @@ abstract class RedBlackTree {
     data.clear();
   }
 
+  /**
+   * Get the buffer size in bytes.
+   */
+  public long getSizeInBytes() {
+    return data.getSizeInBytes();
+  }
 }
 
