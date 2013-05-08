@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -43,6 +44,33 @@ public class TestVectorScalarColArithmetic {
     return batch;
   }
 
+  private VectorizedRowBatch getBatchSingleLongVectorPositiveNonZero() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    final int size = VectorizedRowBatch.DEFAULT_SIZE;
+    LongColumnVector lcv = new LongColumnVector();
+    for (int i = 0; i < size; i++) {
+      lcv.vector[i] = (i + 1) * 37;
+    }
+    batch.cols[0] = lcv;
+    batch.cols[1] = new LongColumnVector();
+    batch.size = size;
+    return batch;
+  }
+  
+  @Test
+  public void testLongScalarModuloLongColNoNulls()  {
+    VectorizedRowBatch batch = getBatchSingleLongVectorPositiveNonZero();
+    LongScalarModuloLongColumn expr = new LongScalarModuloLongColumn(100, 0, 1);
+    expr.evaluate(batch);
+    
+    // verify
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      Assert.assertEquals(100 % ((i + 1) * 37), ((LongColumnVector) batch.cols[1]).vector[i]);
+    }
+    Assert.assertTrue(((LongColumnVector)batch.cols[1]).noNulls);
+    Assert.assertFalse(((LongColumnVector)batch.cols[1]).isRepeating);
+  }
+  
   @Test
   public void testLongScalarSubtractLongColNoNulls()  {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(

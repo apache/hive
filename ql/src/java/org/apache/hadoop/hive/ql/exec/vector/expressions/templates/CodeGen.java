@@ -21,17 +21,19 @@ public class CodeGen {
       {"ColumnArithmeticScalar", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "double", "*"},
       {"ColumnArithmeticScalar", "Divide", "long", "double", "/"},
-      // TODO add Modulo for all the long/double, double/double, and double/long combinations
+      {"ColumnArithmeticScalar", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "long", "*"},
       {"ColumnArithmeticScalar", "Divide", "double", "long", "/"},
+      {"ColumnArithmeticScalar", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "double", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "double", "*"},
       {"ColumnArithmeticScalar", "Divide", "double", "double", "/"},
+      {"ColumnArithmeticScalar", "Modulo", "double", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "long", "long", "-"},
@@ -67,16 +69,19 @@ public class CodeGen {
       {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
       {"ColumnArithmeticColumn", "Divide", "long", "double", "/"},
+      {"ColumnArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
       {"ColumnArithmeticColumn", "Divide", "double", "long", "/"},
+      {"ColumnArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
       {"ColumnArithmeticColumn", "Divide", "double", "double", "/"},
+      {"ColumnArithmeticColumn", "Modulo", "double", "double", "%"},
 
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
