@@ -41,6 +41,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 @UDFType(deterministic = true)
 public abstract class GenericUDAFEvaluator implements Closeable {
 
+  public static @interface AggregationType {
+    boolean estimable() default false;
+  }
+
+  public static boolean isEstimable(AggregationBuffer buffer) {
+    if (buffer instanceof AbstractAggregationBuffer) {
+      Class<? extends AggregationBuffer> clazz = buffer.getClass();
+      AggregationType annotation = clazz.getAnnotation(AggregationType.class);
+      return annotation != null && annotation.estimable();
+    }
+    return false;
+  }
+
   /**
    * Mode.
    *
@@ -123,9 +136,20 @@ public abstract class GenericUDAFEvaluator implements Closeable {
    * 
    * In the future, we may completely hide this class inside the Evaluator and
    * use integer numbers to identify which aggregation we are looking at.
+   *
+   * @deprecated use {@link AbstractAggregationBuffer} instead
    */
   public static interface AggregationBuffer {
   };
+
+  public static abstract class AbstractAggregationBuffer implements AggregationBuffer {
+    /**
+     * Estimate the size of memory which is occupied by aggregation buffer.
+     * Currently, hive assumes that primitives types occupies 16 byte and java object has
+     * 64 byte overhead for each. For map, each entry also has 64 byte overhead.
+     */
+    public int estimate() { return -1; }
+  }
 
   /**
    * Get a new aggregation object.

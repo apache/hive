@@ -1,7 +1,3 @@
-set hive.mapjoin.cache.numrows = 2;
-
-
-
 CREATE TABLE dest_j1(key STRING, value STRING, key1 string, val2 STRING) STORED AS TEXTFILE;
 
 explain

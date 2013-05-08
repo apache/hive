@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -302,6 +303,14 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         return getSumFieldWritableObjectInspector();
       }
     }
+
+    @AggregationType(estimable = true)
+    static class AverageAgg extends AbstractAggregationBuffer {
+      long count;
+      double sum;
+      @Override
+      public int estimate() { return JavaDataModel.PRIMITIVES2 * 2; }
+    };
 
     @Override
     public void reset(AggregationBuffer aggregation) throws HiveException {

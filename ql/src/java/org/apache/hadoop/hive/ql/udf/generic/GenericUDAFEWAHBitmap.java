@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javaewah.EWAHCompressedBitmap;
 
@@ -109,8 +108,13 @@ public class GenericUDAFEWAHBitmap extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing the current partial result aggregation */
-    static class BitmapAgg implements AggregationBuffer {
+    @AggregationType(estimable = true)
+    static class BitmapAgg extends AbstractAggregationBuffer {
       EWAHCompressedBitmap bitmap;
+      @Override
+      public int estimate() {
+        return bitmap.sizeInBytes();
+      }
     }
 
     @Override

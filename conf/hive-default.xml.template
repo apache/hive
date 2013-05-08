@@ -595,12 +595,6 @@
 </property>
 
 <property>
-  <name>hive.mapjoin.cache.numrows</name>
-  <value>25000</value>
-  <description>How many rows should be cached by jdbm for map join. </description>
-</property>
-
-<property>
   <name>hive.optimize.skewjoin</name>
   <value>false</value>
   <description>Whether to enable skew join optimization.

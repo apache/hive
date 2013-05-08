@@ -71,7 +71,7 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing the current max value */
-    static class MinAgg implements AggregationBuffer {
+    static class MinAgg extends AbstractAggregationBuffer {
       Object o;
     }
 

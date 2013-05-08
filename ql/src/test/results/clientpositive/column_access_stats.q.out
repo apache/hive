@@ -9,6 +9,8 @@ PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING)
+PREHOOK: type: CREATETABLE
 PREHOOK: query: -- Simple select queries
 SELECT key FROM T1 ORDER BY key
 PREHOOK: type: QUERY
@@ -46,6 +48,27 @@ PREHOOK: Input: default@t1
 1
 1
 1
+PREHOOK: query: SELECT key, val from T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:key,val
+
+PREHOOK: query: SELECT val FROM T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:val
+
+PREHOOK: query: SELECT p, val FROM T4 where p=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+Table:default@t4
+Columns:val
+
 PREHOOK: query: -- More complicated select queries
 EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
 PREHOOK: type: QUERY
