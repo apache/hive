@@ -70,6 +70,10 @@
   <property name="hadoop.opts.23" value="-D mapreduce.framework.name=local" />
   <property name="hadoop.opts.20" value="" />
 
+  <condition property="test.halt.on.failure" value="no" else="yes">
+    <equals arg1="${test.continue.on.failure}" arg2="true"/>
+  </condition>
+
   <target name="set-test-classpath">
     <typedef name="distinctelementsclasspath" classname="org.apache.hadoop.hive.ant.DistinctElementsClassPath"
       classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar"/>
@@ -429,7 +433,8 @@
         <echo message="Test Classpath: ${hadoop.testcp}"/>
       </then>
     </if>
-    <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
+
+    <junit showoutput="${test.output}" printsummary="yes" haltonfailure="${test.halt.on.failure}"
            fork="yes" maxmemory="${test.junit.maxmemory}" dir="${basedir}" timeout="${test.junit.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
       <jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>

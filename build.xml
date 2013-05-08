@@ -70,6 +70,10 @@
     <equals arg1="${mvn.publish.repo}" arg2="staging"/>
   </condition>
 
+  <condition property="test.halt.on.failure" value="no" else="yes">
+    <equals arg1="${test.continue.on.failure}" arg2="true"/>
+  </condition>
+
   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
     <classpath>
       <pathelement location="${hive.root}/testlibs/ant-contrib-1.0b3.jar"/>
@@ -293,7 +297,7 @@
     <condition property="target.module" value="${module}" else="${iterate.hive.test}">
       <isset property="module"/>
     </condition>
-    <for list="${target.module}" param="module">
+    <for keepgoing="${test.continue.on.failure}" list="${target.module}" param="module">
       <sequential>
         <ant antfile="@{module}/build.xml" target="test" inheritAll="false" inheritRefs="true">
           <property name="build.dir.hive" location="${build.dir.hive}"/>
@@ -305,7 +309,7 @@
 
   <target name="test-shims">
     <echo message="Project: ${ant.project.name}"/>
-    <subant target="test" failonerror="${failonerror}">
+    <subant target="test" failonerror="${test.halt.on.failure}">
       <property name="hadoop.version" value="${hadoop.security.version}"/>
       <property name="hadoop.security.version" value="${hadoop.security.version}"/>
       <fileset dir="${hive.root}/shims" includes="build.xml"/>

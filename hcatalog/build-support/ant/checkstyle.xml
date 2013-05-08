@@ -31,6 +31,7 @@
     <checkstyle classpathref="checkstyle.class.path"
                 config="${path.to.basedir}/build-support/checkstyle/coding_style.xml">
       <fileset dir="${basedir}">
+          <exclude name="**/.*"/>
           <exclude name="**/build/**"/>
           <exclude name=".idea/**"/>
           <exclude name="historical/**"/>
