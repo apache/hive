@@ -32,7 +32,7 @@ import org.apache.hive.service.cli.session.HiveSession;
 
 
 public abstract class Operation {
-  private final HiveSession parentSession;
+  protected final HiveSession parentSession;
   private OperationState state = OperationState.INITIALIZED;
   private final OperationHandle opHandle;
   private HiveConf configuration;
