@@ -3,8 +3,6 @@ package org.apache.hadoop.hive.ql.cube.parse;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.Identifier;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABLE_OR_COL;
 
-import java.util.Arrays;
-
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -45,7 +43,6 @@ public class AggregateResolver implements ContextRewriter {
   @Override
   public void rewriteContext(CubeQueryContext cubeql) throws SemanticException {
     if (cubeql.getCube() == null) {
-      LOG.warn("AggregateResolver called without a cube setup. Returning");
       return;
     }
 
@@ -154,12 +151,9 @@ public class AggregateResolver implements ContextRewriter {
       return "";
     }
 
-    System.out.println("resolveAggregatesForExpr - " + exprTree);
-
     String exprTokens[] = StringUtils.split(exprTree, ",");
     for (int i = 0; i < exprTokens.length; i++) {
       String token = exprTokens[i].trim();
-      System.out.println("_NEW_TOKEN_[" + token + "]");
       String tokenAlias = cubeql.getAlias(token);
       boolean hasAlias = false;
       if (StringUtils.isNotBlank(tokenAlias)) {
@@ -179,14 +173,12 @@ public class AggregateResolver implements ContextRewriter {
             splits[j] = splits[j].trim();
           }
 
-          System.out.println(">> TOKEN:" + token + " SPLITS:" + Arrays.toString(splits));
           String msrName = (splits.length <= 1) ? splits[0] : splits[1];
           CubeMeasure measure = cubeql.getCube().getMeasureByName(msrName);
           if (measure != null) {
             String msrAggregate = measure.getAggregate();
 
             if (StringUtils.isNotBlank(msrAggregate)) {
-              System.out.println("#replace msrName:["+msrName+"] "+ " with msrAggregate["+msrAggregate+"]");
               exprTokens[i] = msrAggregate + "( " + token + ")" + (hasAlias ? " " + tokenAlias : "");
               exprTokens[i] = exprTokens[i].toLowerCase();
               // Add this expression to aggregate expr set so that group by resolver can skip
@@ -197,8 +189,6 @@ public class AggregateResolver implements ContextRewriter {
             }
           }
         }
-      } else {
-        System.out.println("Aggregate already specified: " + token);
       }
     }
 

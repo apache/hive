@@ -163,7 +163,8 @@ public class CubeTestSetup {
         storageAggregatePeriods);
   }
 
-  private void createDimWithTwoStorages(CubeMetastoreClient client)
+  //DimWithTwoStorages
+  private void createCityTbale(CubeMetastoreClient client)
       throws HiveException {
     String dimName = "citytable";
 
@@ -171,10 +172,12 @@ public class CubeTestSetup {
     dimColumns.add(new FieldSchema("id", "int", "code"));
     dimColumns.add(new FieldSchema("name", "string", "field1"));
     dimColumns.add(new FieldSchema("stateid", "int", "state id"));
+    dimColumns.add(new FieldSchema("zipcode", "int", "zip code"));
 
     Map<String, TableReference> dimensionReferences =
         new HashMap<String, TableReference>();
     dimensionReferences.put("stateid", new TableReference("statetable", "id"));
+    dimensionReferences.put("zipcode", new TableReference("ziptable", "code"));
 
     Storage hdfsStorage1 = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
@@ -190,14 +193,83 @@ public class CubeTestSetup {
         snapshotDumpPeriods);
   }
 
+  private void createZiptable(CubeMetastoreClient client) throws Exception {
+    String dimName = "ziptable";
+
+    List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
+    dimColumns.add(new FieldSchema("code", "int", "code"));
+    dimColumns.add(new FieldSchema("f1", "string", "field1"));
+    dimColumns.add(new FieldSchema("f2", "string", "field2"));
+
+    Map<String, TableReference> dimensionReferences =
+        new HashMap<String, TableReference>();
+    Map<Storage, UpdatePeriod> snapshotDumpPeriods =
+        new HashMap<Storage, UpdatePeriod>();
+    Map<String, UpdatePeriod> dumpPeriods = new HashMap<String, UpdatePeriod>();
+    Storage hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    snapshotDumpPeriods.put(hdfsStorage, UpdatePeriod.HOURLY);
+    dumpPeriods.put(hdfsStorage.getName(), UpdatePeriod.HOURLY);
+    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
+        snapshotDumpPeriods);
+  }
+
+  private void createCountryTable(CubeMetastoreClient client) throws Exception {
+    String dimName = "countrytable";
+
+    List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
+    dimColumns.add(new FieldSchema("id", "int", "code"));
+    dimColumns.add(new FieldSchema("name", "string", "field1"));
+    dimColumns.add(new FieldSchema("capital", "string", "field2"));
+    dimColumns.add(new FieldSchema("region", "string", "region name"));
+
+    Storage hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    Map<String, TableReference> dimensionReferences =
+        new HashMap<String, TableReference>();
+    Map<Storage, UpdatePeriod> snapshotDumpPeriods =
+        new HashMap<Storage, UpdatePeriod>();
+    snapshotDumpPeriods.put(hdfsStorage, null);
+    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
+        snapshotDumpPeriods);
+  }
+
+  private void createStateTable(CubeMetastoreClient client) throws Exception {
+    String dimName = "statetable";
+
+    List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
+    dimColumns.add(new FieldSchema("id", "int", "code"));
+    dimColumns.add(new FieldSchema("name", "string", "field1"));
+    dimColumns.add(new FieldSchema("capital", "string", "field2"));
+    dimColumns.add(new FieldSchema("countryid", "string", "region name"));
+
+    Map<String, TableReference> dimensionReferences =
+        new HashMap<String, TableReference>();
+    dimensionReferences.put("countryid", new TableReference("countrytable", "id"));
+
+    Storage hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    Map<Storage, UpdatePeriod> snapshotDumpPeriods =
+        new HashMap<Storage, UpdatePeriod>();
+    snapshotDumpPeriods.put(hdfsStorage, UpdatePeriod.HOURLY);
+    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
+        snapshotDumpPeriods);
+  }
+
   public void createSources() throws Exception {
     CubeMetastoreClient client =  CubeMetastoreClient.getInstance(
         new HiveConf(this.getClass()));
     createCube(client);
     createCubeFact(client);
     createCubeFactOnlyHourly(client);
-    createDimWithTwoStorages(client);
+    createCityTbale(client);
     createCubeFactMonthly(client);
+    createZiptable(client);
+    createCountryTable(client);
+    createStateTable(client);
   }
 
 }

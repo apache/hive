@@ -1,7 +1,6 @@
 package org.apache.hadoop.hive.ql.cube.processors;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -60,7 +59,7 @@ public class TestCubeDriver {
     Throwable th = null;
     try {
       String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
-    		" where time_range_in('NOW - 2DAYS', 'NOW')");
+          " where time_range_in('NOW - 2DAYS', 'NOW')");
     } catch (SemanticException e) {
       th = e;
       e.printStackTrace();
@@ -75,9 +74,9 @@ public class TestCubeDriver {
     Throwable th = null;
     try {
       String hqlQuery = driver.compileCubeQuery("select dim1, SUM(msr2)" +
-        " from testCube" +
-        " where time_range_in('" + getDateUptoHours(twodaysBack)
-        + "','" + getDateUptoHours(now) + "')");
+          " from testCube" +
+          " where time_range_in('" + getDateUptoHours(twodaysBack)
+          + "','" + getDateUptoHours(now) + "')");
     } catch (SemanticException e) {
       th = e;
       e.printStackTrace();
@@ -109,6 +108,20 @@ public class TestCubeDriver {
         + " join citytable on testCube.cityid = citytable.id"
         + " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select statetable.name, SUM(msr2) from testCube"
+        + " join citytable on testCube.cityid = citytable.id"
+        + " left outer join statetable on statetable.id = citytable.stateid"
+        + " right outer join ziptable on citytable.zipcode = ziptable.code"
+        + " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+    hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube"
+        + " join countrytable on testCube.countryid = countrytable.id"
+        + " where time_range_in('" + getDateUptoMonth(twoMonthsBack)
+        + "','" + getDateUptoMonth(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
 
   }
@@ -171,7 +184,7 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')"
         + " group by round(zipcode)");
     System.out.println("cube hql:" + hqlQuery);
-   */
+     */
   }
 
   @Test
@@ -186,13 +199,16 @@ public class TestCubeDriver {
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
+    try {
     hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from testCube" +
-    		" join citytable" +
+        " join citytable" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')" +
         " group by name");
     System.out.println("cube hql:" + hqlQuery);
-
+    } catch (SemanticException e) {
+      e.printStackTrace();
+    }
     hqlQuery = driver.compileCubeQuery("select SUM(mycube.msr2) from testCube mycube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
@@ -241,6 +257,9 @@ public class TestCubeDriver {
     String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable");
     System.out.println("cube hql:" + hqlQuery);
 
+    hqlQuery = driver.compileCubeQuery("select name, c.stateid from citytable c");
+    System.out.println("cube hql:" + hqlQuery);
+
     conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C2");
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
     hqlQuery = driver.compileCubeQuery("select name, stateid from citytable");
@@ -282,33 +301,28 @@ public class TestCubeDriver {
 
     String timeRange = " where  time_range_in('2013-05-01', '2013-05-03')";
     System.out.println("#$AGGREGATE_RESOLVER_ TIME_RANGE:" + timeRange);
-    String q1 = "SELECT countryid, testCube.msr2 from testCube " + timeRange;
-    String q2 = "SELECT countryid, testCube.msr2 * testCube.msr2 from testCube " + timeRange;
-    String q3 = "SELECT countryid, sum(testCube.msr2) from testCube " + timeRange;
-    String q4 = "SELECT countryid, sum(testCube.msr2) from testCube "  + timeRange
+    String q1 = "SELECT cityid, testCube.msr2 from testCube " + timeRange;
+    String q2 = "SELECT cityid, testCube.msr2 * testCube.msr2 from testCube " + timeRange;
+    String q3 = "SELECT cityid, sum(testCube.msr2) from testCube " + timeRange;
+    String q4 = "SELECT cityid, sum(testCube.msr2) from testCube "  + timeRange
         + " having testCube.msr2 > 100";
-    String q5 = "SELECT countryid, testCube.msr2 from testCube " + timeRange
+    String q5 = "SELECT cityid, testCube.msr2 from testCube " + timeRange
         + " having testCube.msr2 + testCube.msr2 > 100";
-    String q6 = "SELECT countryid, testCube.msr2 from testCube " + timeRange
+    String q6 = "SELECT cityid, testCube.msr2 from testCube " + timeRange
         + " having testCube.msr2 > 100 AND testCube.msr2 < 100";
-    String q7 = "SELECT countryid, sum(testCube.msr2) from testCube " + timeRange
+    String q7 = "SELECT cityid, sum(testCube.msr2) from testCube " + timeRange
         + " having (testCube.msr2 > 100) OR (testcube.msr2 < 100 AND SUM(testcube.msr3) > 1000)";
 
     String tests[] = {q1, q2, q3, q4, q5, q6, q7};
 
-    int exceptions[] = new int[tests.length];
-    for (int i = 0; i < tests.length; i++) {
-      String hql = null;
-      try {
-        hql = driver.compileCubeQuery(tests[i]);
-      } catch (SemanticException exc) {
-        exceptions[i] = i;
-        exc.printStackTrace();
+    try {
+      for (int i = 0; i < tests.length; i++) {
+        String hql = driver.compileCubeQuery(tests[i]);
+        System.out.println("cube hql:" + hql);
       }
-      System.out.println("##----AGGREGATE_RESOLVER_CUBEQL----#" + i + " [" + tests[i] + " ]");
-      System.out.println("##----AGGREGATE_RESOLVER_HQL-----#" + i + " [ " + hql + " ]");
+    } catch (SemanticException e) {
+      e.printStackTrace();
     }
-    System.out.println("##---AGGREGATE_RESOLVER_ exceptions=" + Arrays.toString(exceptions) );
   }
 
 }
