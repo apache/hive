@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -33,19 +35,25 @@ import java.util.Map;
  * dynamic partitions, it is easy to end up with many writers in the same task.
  * By managing the size of each allocation, we try to cut down the size of each
  * allocation and keep the task from running out of memory.
+ *
+ * This class is thread safe and uses synchronization around the shared state
+ * to prevent race conditions.
  */
 class MemoryManager {
+
+  private static final Log LOG = LogFactory.getLog(MemoryManager.class);
+
   /**
-   * How much does the pool need to change between notifications?
+   * How often should we check the memory sizes? Measured in rows added
+   * to all of the writers.
    */
-  private static final double NOTIFICATION_FACTOR = 1.1;
+  private static final int ROWS_BETWEEN_CHECKS = 5000;
   private final long totalMemoryPool;
-  private long notificationTrigger;
   private final Map<Path, WriterInfo> writerList =
       new HashMap<Path, WriterInfo>();
   private long totalAllocation = 0;
   private double currentScale = 1;
-  private double lastNotificationScale = 1;
+  private int rowsAddedSinceCheck = 0;
 
   private static class WriterInfo {
     long allocation;
@@ -57,7 +65,13 @@ class MemoryManager {
   }
 
   public interface Callback {
-    void checkMemory(double newScale) throws IOException;
+    /**
+     * The writer needs to check its memory usage
+     * @param newScale the current scale factor for memory allocations
+     * @return true if the writer was over the limit
+     * @throws IOException
+     */
+    boolean checkMemory(double newScale) throws IOException;
   }
 
   /**
@@ -70,22 +84,26 @@ class MemoryManager {
     double maxLoad = conf.getFloat(poolVar.varname, poolVar.defaultFloatVal);
     totalMemoryPool = Math.round(ManagementFactory.getMemoryMXBean().
         getHeapMemoryUsage().getMax() * maxLoad);
-    notificationTrigger = Math.round(totalMemoryPool * NOTIFICATION_FACTOR);
   }
 
   /**
-   * Add a new writer's memory allocation to the pool
+   * Add a new writer's memory allocation to the pool. We use the path
+   * as a unique key to ensure that we don't get duplicates.
    * @param path the file that is being written
    * @param requestedAllocation the requested buffer size
    */
   synchronized void addWriter(Path path, long requestedAllocation,
                               Callback callback) throws IOException {
     WriterInfo oldVal = writerList.get(path);
+    // this should always be null, but we handle the case where the memory
+    // manager wasn't told that a writer wasn't still in use and the task
+    // starts writing to the same path.
     if (oldVal == null) {
       oldVal = new WriterInfo(requestedAllocation, callback);
       writerList.put(path, oldVal);
       totalAllocation += requestedAllocation;
     } else {
+      // handle a new writer that is writing to the same path
       totalAllocation += requestedAllocation - oldVal.allocation;
       oldVal.allocation = requestedAllocation;
       oldVal.callback = callback;
@@ -125,6 +143,31 @@ class MemoryManager {
   }
 
   /**
+   * Give the memory manager an opportunity for doing a memory check.
+   * @throws IOException
+   */
+  synchronized void addedRow() throws IOException {
+    if (++rowsAddedSinceCheck >= ROWS_BETWEEN_CHECKS) {
+      notifyWriters();
+    }
+  }
+
+  /**
+   * Notify all of the writers that they should check their memory usage.
+   * @throws IOException
+   */
+  private void notifyWriters() throws IOException {
+    LOG.debug("Notifying writers after " + rowsAddedSinceCheck);
+    for(WriterInfo writer: writerList.values()) {
+      boolean flushed = writer.callback.checkMemory(currentScale);
+      if (LOG.isDebugEnabled() && flushed) {
+        LOG.debug("flushed " + writer.toString());
+      }
+    }
+    rowsAddedSinceCheck = 0;
+  }
+
+  /**
    * Update the currentScale based on the current allocation and pool size.
    * This also updates the notificationTrigger.
    * @param isAllocate is this an allocation?
@@ -134,22 +177,6 @@ class MemoryManager {
       currentScale = 1;
     } else {
       currentScale = (double) totalMemoryPool / totalAllocation;
-    }
-    if (!isAllocate) {
-      // ensure that we notify if we drop 10% from the high water mark
-      notificationTrigger =
-          Math.min(notificationTrigger,
-              Math.round(totalMemoryPool * NOTIFICATION_FACTOR / currentScale));
-    } else {
-      // we've allocated a new writer, so check to see if we need to notify
-      if (totalAllocation > notificationTrigger) {
-        for(WriterInfo writer: writerList.values()) {
-          writer.callback.checkMemory(currentScale);
-        }
-        // set the next notification trigger
-        notificationTrigger =
-            Math.round(totalMemoryPool * NOTIFICATION_FACTOR / currentScale);
-      }
     }
   }
 }
