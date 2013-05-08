@@ -64,10 +64,13 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException("New table is invalid: " + newt);
     }
 
-    if (!MetaStoreUtils.validateName(newt.getTableName())
-        || !MetaStoreUtils.validateTblColumns(newt.getSd().getCols())) {
+    if (!MetaStoreUtils.validateName(newt.getTableName())) {
       throw new InvalidOperationException(newt.getTableName()
           + " is not a valid object name");
+    }
+    String validate = MetaStoreUtils.validateTblColumns(newt.getSd().getCols());
+    if (validate != null) {
+      throw new InvalidOperationException("Invalid column " + validate);
     }
 
     Path srcPath = null;

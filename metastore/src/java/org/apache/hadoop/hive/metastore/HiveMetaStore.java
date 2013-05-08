@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -1003,19 +1004,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
 
-      if (!MetaStoreUtils.validateName(tbl.getTableName())
-          || !MetaStoreUtils.validateTblColumns(tbl.getSd().getCols())
-          || (tbl.getPartitionKeys() != null && !MetaStoreUtils
-              .validateTblColumns(tbl.getPartitionKeys()))
-          || !MetaStoreUtils.validateSkewedColNames(
-              (null == tbl.getSd().getSkewedInfo()) ?
-                  null : tbl.getSd().getSkewedInfo().getSkewedColNames())
-          || !MetaStoreUtils.validateSkewedColNamesSubsetCol(
-              (null == tbl.getSd().getSkewedInfo()) ?
-                  null : tbl.getSd().getSkewedInfo().getSkewedColNames(),
-              tbl.getSd().getCols())) {
+      if (!MetaStoreUtils.validateName(tbl.getTableName())) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
+      }
+      String validate = MetaStoreUtils.validateTblColumns(tbl.getSd().getCols());
+      if (validate != null) {
+        throw new InvalidObjectException("Invalid column " + validate);
+      }
+      if (tbl.getPartitionKeys() != null) {
+        validate = MetaStoreUtils.validateTblColumns(tbl.getPartitionKeys());
+        if (validate != null) {
+          throw new InvalidObjectException("Invalid partition column " + validate);
+        }
+      }
+      SkewedInfo skew = tbl.getSd().getSkewedInfo();
+      if (skew != null) {
+        validate = MetaStoreUtils.validateSkewedColNames(skew.getSkewedColNames());
+        if (validate != null) {
+          throw new InvalidObjectException("Invalid skew column " + validate);
+        }
+        validate = MetaStoreUtils.validateSkewedColNamesSubsetCol(
+            skew.getSkewedColNames(), tbl.getSd().getCols());
+        if (validate != null) {
+          throw new InvalidObjectException("Invalid skew column " + validate);
+        }
       }
 
       Path tblPath = null;

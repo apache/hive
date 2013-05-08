@@ -1050,8 +1050,7 @@ public class PTFTranslator {
       }
       ColumnInfo cInfo = new ColumnInfo(wFnDef.getAlias(),
           TypeInfoUtils.getTypeInfoFromObjectInspector(wFnOI),
-          null,
-          false);
+          null, true, true);
       rr.putExpression(ast, cInfo);
     }
 
