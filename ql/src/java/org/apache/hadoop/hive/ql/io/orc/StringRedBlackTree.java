@@ -24,19 +24,16 @@ import java.io.OutputStream;
 
 /**
  * A red-black tree that stores strings. The strings are stored as UTF-8 bytes
- * and an offset/length for each entry.
+ * and an offset for each entry.
  */
 class StringRedBlackTree extends RedBlackTree {
   private final DynamicByteArray byteArray = new DynamicByteArray();
-  private final DynamicIntArray keySizes = new DynamicIntArray();
+  private final DynamicIntArray keyOffsets;
   private final Text newKey = new Text();
-
-  public StringRedBlackTree() {
-    // PASS
-  }
 
   public StringRedBlackTree(int initialCapacity) {
     super(initialCapacity);
+    keyOffsets = new DynamicIntArray(initialCapacity);
   }
 
   public int add(String value) {
@@ -44,16 +41,22 @@ class StringRedBlackTree extends RedBlackTree {
     // if the key is new, add it to our byteArray and store the offset & length
     if (add()) {
       int len = newKey.getLength();
-      keySizes.add(byteArray.add(newKey.getBytes(), 0, len));
-      keySizes.add(len);
+      keyOffsets.add(byteArray.add(newKey.getBytes(), 0, len));
     }
     return lastAdd;
   }
 
   @Override
   protected int compareValue(int position) {
+    int start = keyOffsets.get(position);
+    int end;
+    if (position + 1 == keyOffsets.size()) {
+      end = byteArray.size();
+    } else {
+      end = keyOffsets.get(position+1);
+    }
     return byteArray.compare(newKey.getBytes(), 0, newKey.getLength(),
-      keySizes.get(2 * position), keySizes.get(2 * position + 1));
+                             start, end - start);
   }
 
   /**
@@ -84,12 +87,6 @@ class StringRedBlackTree extends RedBlackTree {
      * @return the string's length in bytes
      */
     int getLength();
-
-    /**
-     * Get the count for this key.
-     * @return the number of times this key was added
-     */
-    int getCount();
   }
 
   /**
@@ -106,6 +103,8 @@ class StringRedBlackTree extends RedBlackTree {
 
   private class VisitorContextImpl implements VisitorContext {
     private int originalPosition;
+    private int start;
+    private int end;
     private final Text text = new Text();
 
     public int getOriginalPosition() {
@@ -113,20 +112,26 @@ class StringRedBlackTree extends RedBlackTree {
     }
 
     public Text getText() {
-      byteArray.setText(text, keySizes.get(originalPosition * 2), getLength());
+      byteArray.setText(text, start, end - start);
       return text;
     }
 
     public void writeBytes(OutputStream out) throws IOException {
-      byteArray.write(out, keySizes.get(originalPosition * 2), getLength());
+      byteArray.write(out, start, end - start);
     }
 
     public int getLength() {
-      return keySizes.get(originalPosition * 2 + 1);
+      return end - start;
     }
 
-    public int getCount() {
-      return StringRedBlackTree.this.getCount(originalPosition);
+    void setPosition(int position) {
+      originalPosition = position;
+      start = keyOffsets.get(originalPosition);
+      if (position + 1 == keyOffsets.size()) {
+        end = byteArray.size();
+      } else {
+        end = keyOffsets.get(originalPosition + 1);
+      }
     }
   }
 
@@ -134,7 +139,7 @@ class StringRedBlackTree extends RedBlackTree {
                       ) throws IOException {
     if (node != NULL) {
       recurse(getLeft(node), visitor, context);
-      context.originalPosition = node;
+      context.setPosition(node);
       visitor.visit(context);
       recurse(getRight(node), visitor, context);
     }
@@ -155,7 +160,7 @@ class StringRedBlackTree extends RedBlackTree {
   public void clear() {
     super.clear();
     byteArray.clear();
-    keySizes.clear();
+    keyOffsets.clear();
   }
 
   /**
@@ -170,7 +175,8 @@ class StringRedBlackTree extends RedBlackTree {
    * Calculate the approximate size in memory.
    * @return the number of bytes used in storing the tree.
    */
-  public long getByteSize() {
-    return byteArray.size() + 5 * 4 * size();
+  public long getSizeInBytes() {
+    return byteArray.getSizeInBytes() + keyOffsets.getSizeInBytes() +
+      super.getSizeInBytes();
   }
 }
