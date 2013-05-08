@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
@@ -85,6 +86,12 @@ public abstract class HiveCommandOperation extends ExecuteStatementOperation {
     }
   }
 
+
+  private void tearDownSessionIO() {
+    IOUtils.cleanup(LOG, parentSession.getSessionState().out);
+    IOUtils.cleanup(LOG, parentSession.getSessionState().err);
+  }
+
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.operation.Operation#run()
    */
@@ -121,6 +128,7 @@ public abstract class HiveCommandOperation extends ExecuteStatementOperation {
   @Override
   public void close() throws HiveSQLException {
     setState(OperationState.CLOSED);
+    tearDownSessionIO();
     cleanTmpFile();
   }
 
@@ -187,6 +195,7 @@ public abstract class HiveCommandOperation extends ExecuteStatementOperation {
     if (resultReader != null) {
       SessionState sessionState = getParentSession().getSessionState();
       File tmp = sessionState.getTmpOutputFile();
+      IOUtils.cleanup(LOG, resultReader);
       tmp.delete();
       resultReader = null;
     }

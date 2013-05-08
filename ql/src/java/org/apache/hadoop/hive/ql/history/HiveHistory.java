@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.Counters.Group;
@@ -532,11 +533,14 @@ public class HiveHistory {
     return null;
 
   }
+
+  public void closeStream() {
+    IOUtils.cleanup(LOG, histStream);
+  }
+
   @Override
   public void finalize() throws Throwable {
-    if (histStream !=null){
-      histStream.close();
-    }
+    closeStream();
     super.finalize();
   }
 }
