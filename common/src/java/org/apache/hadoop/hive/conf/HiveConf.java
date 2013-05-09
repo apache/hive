@@ -636,6 +636,8 @@ public class HiveConf extends Configuration {
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 
+    HIVEEXPREVALUATIONCACHE("hive.cache.expr.evaluation", true),
+
     // Hive Variables
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),
     HIVEVARIABLESUBSTITUTEDEPTH("hive.variable.substitute.depth", 40),
