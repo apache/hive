@@ -2,6 +2,69 @@ PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_create_complex
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_create_complex
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_create_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_create_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: DESCRIBE FORMATTED orc_create_staging
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+str                 	string              	None                
+mp                  	map<string,string>  	None                
+lst                 	array<string>       	None                
+strct               	struct<A:string,B:string>	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	colelction.delim    	,                   
+	field.delim         	|                   
+	mapkey.delim        	:                   
+	serialization.format	|                   
 PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
    STORED AS ORC
@@ -185,6 +248,156 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create_complex
+PREHOOK: query: DESCRIBE FORMATTED orc_create_complex
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+str                 	string              	from deserializer   
+mp                  	map<string,string>  	from deserializer   
+lst                 	array<string>       	from deserializer   
+strct               	struct<A:string,B:string>	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: type: LOAD
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: SELECT * from orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+#### A masked pattern was here ####
+line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"a":"one","b":"two"}
+line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}
+line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: SELECT * from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+line1	{"key12":"value12","key11":"value11","key13":"value13"}	["a","b","c"]	{"A":"one","B":"two"}
+line2	{"key21":"value21","key23":"value23","key22":"value22"}	["d","e","f"]	{"A":"three","B":"four"}
+line3	{"key33":"value33","key31":"value31","key32":"value32"}	["g","h","i"]	{"A":"five","B":"six"}
+PREHOOK: query: SELECT str from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT str from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+line1
+line2
+line3
+PREHOOK: query: SELECT mp from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT mp from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+{"key12":"value12","key11":"value11","key13":"value13"}
+{"key21":"value21","key23":"value23","key22":"value22"}
+{"key33":"value33","key31":"value31","key32":"value32"}
+PREHOOK: query: SELECT lst from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lst from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+["a","b","c"]
+["d","e","f"]
+["g","h","i"]
+PREHOOK: query: SELECT strct from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT strct from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+{"a":"one","b":"two"}
+{"a":"three","b":"four"}
+{"a":"five","b":"six"}
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
@@ -193,3 +406,31 @@ POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create
 POSTHOOK: Output: default@orc_create
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: DROP TABLE orc_create_complex
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_complex
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: DROP TABLE orc_create_complex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: DROP TABLE orc_create_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: DROP TABLE orc_create_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_staging
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]

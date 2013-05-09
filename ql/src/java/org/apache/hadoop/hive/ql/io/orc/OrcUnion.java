@@ -134,5 +134,25 @@ final class OrcUnion implements UnionObject {
     public Category getCategory() {
       return Category.UNION;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null || o.getClass() != getClass()) {
+        return false;
+      } else if (o == this) {
+        return true;
+      } else {
+        List<ObjectInspector> other = ((OrcUnionObjectInspector) o).children;
+        if (other.size() != children.size()) {
+          return false;
+        }
+        for(int i = 0; i < children.size(); ++i) {
+          if (!other.get(i).equals(children.get(i))) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
   }
 }

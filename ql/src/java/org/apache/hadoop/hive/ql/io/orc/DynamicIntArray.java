@@ -135,5 +135,8 @@ final class DynamicIntArray {
     return sb.toString();
   }
 
+  public int getSizeInBytes() {
+    return 4 * initializedChunks * chunkSize;
+  }
 }
 

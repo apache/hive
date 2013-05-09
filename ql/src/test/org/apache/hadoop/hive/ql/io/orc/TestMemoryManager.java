@@ -39,8 +39,8 @@ public class TestMemoryManager {
   private static final double ERROR = 0.000001;
 
   private static class NullCallback implements MemoryManager.Callback {
-    public void checkMemory(double newScale) {
-      // PASS
+    public boolean checkMemory(double newScale) {
+      return false;
     }
   }
 
@@ -120,17 +120,13 @@ public class TestMemoryManager {
       calls[i] = mock(MemoryManager.Callback.class);
       mgr.addWriter(new Path(Integer.toString(i)), pool/4, calls[i]);
     }
-    double[] spills = new double[]{0, 0, 0, 0, 0.8, 0.666666666667,
-                                   0.571428571429, 0.5, 0.444444444444,
-                                   0.4, 0, 0.333333333333, 0, 0.285714285714,
-                                   0, 0.25, 0, 0.222222222222, 0, 0.2};
-    for(int spill=0; spill < spills.length; ++spill) {
-      if (spills[spill] != 0) {
-        for(int call=0; call < spill + 1; ++call) {
-          verify(calls[call], times(1))
-            .checkMemory(doubleThat(closeTo(spills[spill], ERROR)));
-        }
-      }
+    // add enough rows to get the memory manager to check the limits
+    for(int i=0; i < 10000; ++i) {
+      mgr.addedRow();
+    }
+    for(int call=0; call < calls.length; ++call) {
+      verify(calls[call], times(2))
+          .checkMemory(doubleThat(closeTo(0.2, ERROR)));
     }
   }
 }
