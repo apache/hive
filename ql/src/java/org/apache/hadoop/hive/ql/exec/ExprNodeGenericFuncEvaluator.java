@@ -35,16 +35,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
  * ExprNodeGenericFuncEvaluator.
  *
  */
-public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
+public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGenericFuncDesc> {
 
   private static final Log LOG = LogFactory
       .getLog(ExprNodeGenericFuncEvaluator.class.getName());
 
-  protected ExprNodeGenericFuncDesc expr;
-
   transient GenericUDF genericUDF;
   transient Object rowObject;
-  transient ObjectInspector outputOI;
   transient ExprNodeEvaluator[] children;
   transient GenericUDF.DeferredObject[] deferredChildren;
   transient boolean isEager;
@@ -54,42 +51,38 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
    */
   class DeferredExprObject implements GenericUDF.DeferredObject {
 
-    ExprNodeEvaluator eval;
+    private final boolean eager;
+    private final ExprNodeEvaluator eval;
 
-    DeferredExprObject(ExprNodeEvaluator eval) {
+    private transient boolean evaluated;
+    private transient int version;
+    private transient Object obj;
+
+    DeferredExprObject(ExprNodeEvaluator eval, boolean eager) {
       this.eval = eval;
+      this.eager = eager;
+    }
+
+    @Override
+    public void prepare(int version) throws HiveException {
+      this.version = version;
+      this.evaluated = false;
+      if (eager) {
+        get();
+      }
     }
 
     public Object get() throws HiveException {
-      return eval.evaluate(rowObject);
-    }
-  }
-
-  /**
-   * Class to force eager evaluation for GenericUDF in cases where
-   * it is warranted.
-   */
-  class EagerExprObject implements GenericUDF.DeferredObject {
-
-    ExprNodeEvaluator eval;
-
-    transient Object obj;
-
-    EagerExprObject(ExprNodeEvaluator eval) {
-      this.eval = eval;
-    }
-
-    void evaluate() throws HiveException {
-      obj = eval.evaluate(rowObject);
-    }
-
-    public Object get() throws HiveException {
+      if (!evaluated) {
+        obj = eval.evaluate(rowObject, version);
+        evaluated = true;
+      }
       return obj;
     }
   }
 
-  public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr) {
-    this.expr = expr;
+  public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr) throws HiveException {
+    super(expr);
     children = new ExprNodeEvaluator[expr.getChildExprs().size()];
     isEager = false;
     for (int i = 0; i < children.length; i++) {
@@ -109,37 +102,29 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
         }
       }
     }
-    deferredChildren =
-      new GenericUDF.DeferredObject[expr.getChildExprs().size()];
-    for (int i = 0; i < deferredChildren.length; i++) {
-      if (isEager) {
-        deferredChildren[i] = new EagerExprObject(children[i]);
-      } else {
-        deferredChildren[i] = new DeferredExprObject(children[i]);
-      }
+    genericUDF = expr.getGenericUDF();
+    if (isEager &&
+        (genericUDF instanceof GenericUDFCase || genericUDF instanceof GenericUDFWhen)) {
+      throw new HiveException("Stateful expressions cannot be used inside of CASE");
     }
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
+    deferredChildren = new GenericUDF.DeferredObject[children.length];
+    for (int i = 0; i < deferredChildren.length; i++) {
+      deferredChildren[i] = new DeferredExprObject(children[i], isEager);
+    }
     // Initialize all children first
     ObjectInspector[] childrenOIs = new ObjectInspector[children.length];
     for (int i = 0; i < children.length; i++) {
       childrenOIs[i] = children[i].initialize(rowInspector);
     }
-    genericUDF = expr.getGenericUDF();
-    if (isEager &&
-      ((genericUDF instanceof GenericUDFCase)
-        || (genericUDF instanceof GenericUDFWhen))) {
-      throw new HiveException(
-        "Stateful expressions cannot be used inside of CASE");
-    }
     MapredContext context = MapredContext.get();
     if (context != null) {
       context.setup(genericUDF);
     }
-    this.outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
-    return this.outputOI;
+    return outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
   }
 
   @Override
@@ -152,17 +137,20 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public Object evaluate(Object row) throws HiveException {
+  public ExprNodeEvaluator[] getChildren() {
+    return children;
+  }
+
+  @Override
+  protected Object _evaluate(Object row, int version) throws HiveException {
     rowObject = row;
     if (ObjectInspectorUtils.isConstantObjectInspector(outputOI) &&
         isDeterministic()) {
       // The output of this UDF is constant, so don't even bother evaluating.
       return ((ConstantObjectInspector)outputOI).getWritableConstantValue();
     }
-    if (isEager) {
-      for (int i = 0; i < deferredChildren.length; i++) {
-        ((EagerExprObject) deferredChildren[i]).evaluate();
-      }
+    for (int i = 0; i < deferredChildren.length; i++) {
+      deferredChildren[i].prepare(version);
     }
     return genericUDF.evaluate(deferredChildren);
   }
@@ -191,10 +179,8 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
     }
 
     rowObject = row;
-    if (isEager) {
-      for (int i = 0; i < deferredChildren.length; i++) {
-        ((EagerExprObject) deferredChildren[i]).evaluate();
-      }
+    for (int i = 0; i < deferredChildren.length; i++) {
+      deferredChildren[i].prepare(-1);
     }
     return ((GenericUDFBaseCompare)genericUDF).compare(deferredChildren);
   }

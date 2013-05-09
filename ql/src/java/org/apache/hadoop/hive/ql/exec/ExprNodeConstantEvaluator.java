@@ -27,13 +27,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * ExprNodeConstantEvaluator.
  *
  */
-public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
+public class ExprNodeConstantEvaluator extends ExprNodeEvaluator<ExprNodeConstantDesc> {
 
-  protected ExprNodeConstantDesc expr;
   transient ConstantObjectInspector writableObjectInspector;
 
   public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr) {
-    this.expr = expr;
+    super(expr);
     writableObjectInspector = expr.getWritableObjectInspector();
   }
 
@@ -43,7 +42,7 @@ public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public Object evaluate(Object row) throws HiveException {
+  protected Object _evaluate(Object row, int version) throws HiveException {
     return writableObjectInspector.getWritableConstantValue();
   }
 

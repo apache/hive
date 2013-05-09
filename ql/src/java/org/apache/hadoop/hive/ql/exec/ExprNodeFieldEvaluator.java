@@ -34,9 +34,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * is struct, then s.f is the field. If s is list of struct, then s.f is the
  * list of struct field.
  */
-public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
+public class ExprNodeFieldEvaluator extends ExprNodeEvaluator<ExprNodeFieldDesc> {
 
-  protected ExprNodeFieldDesc desc;
   transient ExprNodeEvaluator leftEvaluator;
   transient ObjectInspector leftInspector;
   transient StructObjectInspector structObjectInspector;
@@ -44,42 +43,41 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
   transient ObjectInspector structFieldObjectInspector;
   transient ObjectInspector resultObjectInspector;
 
-  public ExprNodeFieldEvaluator(ExprNodeFieldDesc desc) {
-    this.desc = desc;
+  public ExprNodeFieldEvaluator(ExprNodeFieldDesc desc) throws HiveException {
+    super(desc);
     leftEvaluator = ExprNodeEvaluatorFactory.get(desc.getDesc());
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
-
     leftInspector = leftEvaluator.initialize(rowInspector);
-    if (desc.getIsList()) {
+    if (expr.getIsList()) {
       structObjectInspector = (StructObjectInspector) ((ListObjectInspector) leftInspector)
           .getListElementObjectInspector();
     } else {
       structObjectInspector = (StructObjectInspector) leftInspector;
     }
-    field = structObjectInspector.getStructFieldRef(desc.getFieldName());
+    field = structObjectInspector.getStructFieldRef(expr.getFieldName());
     structFieldObjectInspector = field.getFieldObjectInspector();
 
-    if (desc.getIsList()) {
+    if (expr.getIsList()) {
       resultObjectInspector = ObjectInspectorFactory
           .getStandardListObjectInspector(structFieldObjectInspector);
     } else {
       resultObjectInspector = structFieldObjectInspector;
     }
-    return resultObjectInspector;
+    return outputOI = resultObjectInspector;
   }
 
   private List<Object> cachedList = new ArrayList<Object>();
 
   @Override
-  public Object evaluate(Object row) throws HiveException {
+  protected Object _evaluate(Object row, int version) throws HiveException {
 
     // Get the result in leftInspectableObject
-    Object left = leftEvaluator.evaluate(row);
+    Object left = leftEvaluator.evaluate(row, version);
 
-    if (desc.getIsList()) {
+    if (expr.getIsList()) {
       List<?> list = ((ListObjectInspector) leftInspector).getList(left);
       if (list == null) {
         return null;
