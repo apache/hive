@@ -117,15 +117,15 @@ public abstract class CubeMeasure implements Named {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((getName() == null) ? 0 :
-      getName().toLowerCase().hashCode());
+        getName().toLowerCase().hashCode());
     result = prime * result + ((getType() == null) ? 0 :
-      getType().toLowerCase().hashCode());
+        getType().toLowerCase().hashCode());
     result = prime * result + ((unit == null) ? 0 :
-      unit.toLowerCase().hashCode());
+        unit.toLowerCase().hashCode());
     result = prime * result + ((aggregate == null) ? 0 :
-      aggregate.toLowerCase().hashCode());
+        aggregate.toLowerCase().hashCode());
     result = prime * result + ((formatString == null) ? 0 :
-      formatString.toLowerCase().hashCode());
+        formatString.toLowerCase().hashCode());
     return result;
   }
 

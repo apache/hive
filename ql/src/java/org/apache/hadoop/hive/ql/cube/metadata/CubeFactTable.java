@@ -61,8 +61,7 @@ public final class CubeFactTable extends AbstractCubeTable {
     if (updatePeriods != null) {
       props.put(MetastoreUtil.getFactStorageListKey(name),
           MetastoreUtil.getStr(updatePeriods.keySet()));
-      for (Map.Entry<String, List<UpdatePeriod>> entry :
-        updatePeriods.entrySet()) {
+      for (Map.Entry<String, List<UpdatePeriod>> entry : updatePeriods.entrySet()) {
         props.put(MetastoreUtil.getFactUpdatePeriodKey(name, entry.getKey()),
             MetastoreUtil.getNamedStr(entry.getValue()));
       }
@@ -98,7 +97,7 @@ public final class CubeFactTable extends AbstractCubeTable {
       return false;
     }
 
-    CubeFactTable other = (CubeFactTable)obj;
+    CubeFactTable other = (CubeFactTable) obj;
     if (this.getUpdatePeriods() == null) {
       if (other.getUpdatePeriods() != null) {
         return false;
@@ -158,9 +157,15 @@ public final class CubeFactTable extends AbstractCubeTable {
       if (UpdatePeriod.YEARLY == i || UpdatePeriod.QUARTERLY == i || UpdatePeriod.MONTHLY == i) {
         int intervals = 0;
         switch (i) {
-        case YEARLY:  intervals = DateUtil.getYearsBetween(from, to); break;
-        case QUARTERLY: intervals = DateUtil.getQuartersBetween(from, to); break;
-        case MONTHLY: intervals = DateUtil.getMonthsBetween(from, to); break;
+        case YEARLY:
+          intervals = DateUtil.getYearsBetween(from, to);
+          break;
+        case QUARTERLY:
+          intervals = DateUtil.getQuartersBetween(from, to);
+          break;
+        case MONTHLY:
+          intervals = DateUtil.getMonthsBetween(from, to);
+          break;
         }
 
         if (intervals > 0) {

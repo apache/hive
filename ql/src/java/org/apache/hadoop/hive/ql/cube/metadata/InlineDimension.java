@@ -30,7 +30,8 @@ public class InlineDimension extends BaseDimension {
 
   public InlineDimension(String name, Map<String, String> props) {
     super(name, props);
-    String valueStr = props.get(MetastoreUtil.getInlineDimensionValuesKey(name));
+    String valueStr = props.get(MetastoreUtil.getInlineDimensionValuesKey(
+        name));
     this.values = Arrays.asList(valueStr.split(","));
   }
 
@@ -39,7 +40,7 @@ public class InlineDimension extends BaseDimension {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((getValues() == null) ? 0 :
-      getValues().hashCode());
+        getValues().hashCode());
     return result;
   }
 
@@ -48,7 +49,7 @@ public class InlineDimension extends BaseDimension {
     if (!super.equals(obj)) {
       return false;
     }
-    InlineDimension other = (InlineDimension)obj;
+    InlineDimension other = (InlineDimension) obj;
     if (this.getValues() == null) {
       if (other.getValues() != null) {
         return false;

@@ -50,7 +50,7 @@ public class CubeDriver extends Driver {
     return super.compile(query);
   }
 
-  String compileCubeQuery(String query)
+  protected String compileCubeQuery(String query)
       throws SemanticException, ParseException, IOException {
     System.out.println("Query :" + query);
     ctx = new Context(getConf());

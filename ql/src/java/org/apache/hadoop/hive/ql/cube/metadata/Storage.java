@@ -15,12 +15,13 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 public abstract class Storage implements Named {
 
   private final TableType tableType;
-  private final Map<String, String> tableParameters = new HashMap<String, String>();
+  private final Map<String, String> tableParameters =
+      new HashMap<String, String>();
   private final List<FieldSchema> partCols = new ArrayList<FieldSchema>();
   protected Map<String, String> serdeParameters = new HashMap<String, String>();
   private final String name;
 
-  protected Storage(String name,TableType type) {
+  protected Storage(String name, TableType type) {
     this.tableType = type;
     this.name = name;
   }
@@ -65,7 +66,7 @@ public abstract class Storage implements Named {
 
   public abstract void addPartition(String storageTableName,
       Map<String, String> partSpec, HiveConf conf, boolean makeLatest)
-          throws HiveException;
+      throws HiveException;
 
 
   public static String getDatePartitionKey() {
@@ -74,7 +75,8 @@ public abstract class Storage implements Named {
 
   private static Map<String, String> latestSpec = new HashMap<String, String>();
   static {
-    latestSpec.put(getDatePartitionKey(), StorageConstants.LATEST_PARTITION_VALUE);
+    latestSpec.put(getDatePartitionKey(),
+        StorageConstants.LATEST_PARTITION_VALUE);
   }
 
   public static Map<String, String> getLatestPartSpec() {

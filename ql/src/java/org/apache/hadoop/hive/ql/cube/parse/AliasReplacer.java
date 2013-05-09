@@ -17,7 +17,7 @@ public class AliasReplacer implements ContextRewriter {
     // If tab1 is already aliased say with t1, col1 is changed as t1.col1
     // replace the columns in select, groupby, having, orderby by
     // prepending the table alias to the col
-    //sample select trees
+    // sample select trees
     // 1: (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))
     // (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL value))))
     // 2: (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))

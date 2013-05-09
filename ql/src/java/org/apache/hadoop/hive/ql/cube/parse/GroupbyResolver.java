@@ -35,7 +35,7 @@ public class GroupbyResolver implements ContextRewriter {
       if (cubeql.hasAggregates()) {
         String alias = cubeql.getAlias(expr);
         if (alias != null) {
-          expr = expr.substring(0, (expr.length()-alias.length())).trim();
+          expr = expr.substring(0, (expr.length() - alias.length())).trim();
         }
         if (!groupByExprs.contains(expr)) {
           if (!cubeql.isAggregateExpr(expr)) {

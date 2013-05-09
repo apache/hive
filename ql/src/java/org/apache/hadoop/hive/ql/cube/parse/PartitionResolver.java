@@ -28,7 +28,8 @@ public class PartitionResolver implements ContextRewriter {
 
       Calendar cal = Calendar.getInstance();
       cal.setTime(fromDate);
-      for (Iterator<CubeFactTable> i = cubeql.getCandidateFactTables().iterator(); i.hasNext();) {
+      for (Iterator<CubeFactTable> i = cubeql.getCandidateFactTables()
+          .iterator(); i.hasNext();) {
         CubeFactTable fact = i.next();
         Map<UpdatePeriod, List<String>> partitionColMap =
             new HashMap<UpdatePeriod, List<String>>();
@@ -45,7 +46,7 @@ public class PartitionResolver implements ContextRewriter {
 
   private boolean getPartitions(CubeFactTable fact, Date fromDate, Date toDate,
       Map<UpdatePeriod, List<String>> partitionColMap, CubeQueryContext cubeql)
-          throws SemanticException {
+      throws SemanticException {
     if (fromDate.equals(toDate) || fromDate.after(toDate)) {
       return true;
     }
@@ -70,6 +71,6 @@ public class PartitionResolver implements ContextRewriter {
       parts.addAll(partitions);
     }
     return (getPartitions(fact, fromDate, ceilFromDate, partitionColMap, cubeql)
-        && getPartitions(fact, floorToDate, toDate, partitionColMap, cubeql));
+    && getPartitions(fact, floorToDate, toDate, partitionColMap, cubeql));
   }
 }

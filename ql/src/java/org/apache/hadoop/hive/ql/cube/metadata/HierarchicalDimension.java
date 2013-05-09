@@ -24,7 +24,7 @@ public class HierarchicalDimension extends CubeDimension {
   @Override
   public void addProperties(Map<String, String> props) {
     super.addProperties(props);
-    for (int i =0; i < hierarchy.size(); i++) {
+    for (int i = 0; i < hierarchy.size(); i++) {
       CubeDimension dim = hierarchy.get(i);
       props.put(MetastoreUtil.getHierachyElementKeyName(getName(), i),
           getHierarchyElement(dim));
@@ -63,7 +63,7 @@ public class HierarchicalDimension extends CubeDimension {
         Constructor<?> constructor;
         constructor = clazz.getConstructor(String.class, Map.class);
         dim = (CubeDimension) constructor.newInstance(new Object[]
-            {dimName, props});
+        {dimName, props});
       } catch (ClassNotFoundException e) {
         throw new IllegalArgumentException("Invalid Dimension", e);
       } catch (SecurityException e) {
@@ -89,7 +89,7 @@ public class HierarchicalDimension extends CubeDimension {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((getHierarchy() == null) ? 0 :
-      getHierarchy().hashCode());
+        getHierarchy().hashCode());
     return result;
   }
 
@@ -98,7 +98,7 @@ public class HierarchicalDimension extends CubeDimension {
     if (!super.equals(obj)) {
       return false;
     }
-    HierarchicalDimension other = (HierarchicalDimension)obj;
+    HierarchicalDimension other = (HierarchicalDimension) obj;
     if (this.getHierarchy() == null) {
       if (other.getHierarchy() != null) {
         return false;

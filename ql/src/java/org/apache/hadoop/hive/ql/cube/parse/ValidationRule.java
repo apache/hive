@@ -11,7 +11,8 @@ public abstract class ValidationRule {
     this.conf = conf;
   }
 
-  public abstract boolean validate(CubeQueryContext ctx) throws SemanticException;
+  public abstract boolean validate(CubeQueryContext ctx)
+      throws SemanticException;
 
   public String getErrorMessage() {
     return error;

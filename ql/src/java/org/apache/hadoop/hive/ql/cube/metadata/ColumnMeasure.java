@@ -35,5 +35,4 @@ public final class ColumnMeasure extends CubeMeasure {
     }
     return true;
   }
-
 }

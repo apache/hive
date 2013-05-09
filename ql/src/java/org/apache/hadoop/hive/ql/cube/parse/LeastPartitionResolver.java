@@ -19,13 +19,14 @@ public class LeastPartitionResolver implements ContextRewriter {
   @Override
   public void rewriteContext(CubeQueryContext cubeql)
       throws SemanticException {
-    if (cubeql.getCube() != null && !cubeql.getCandidateFactTables().isEmpty()) {
+    if (cubeql.getCube() != null && !cubeql.getCandidateFactTables().isEmpty())
+    {
       Map<CubeFactTable, Integer> numPartitionsMap =
           new HashMap<CubeFactTable, Integer>();
 
       for (CubeFactTable fact : cubeql.getCandidateFactTables()) {
-         numPartitionsMap.put(fact, getTotalPartitions(
-             cubeql.getFactPartitionMap().get(fact)));
+        numPartitionsMap.put(fact, getTotalPartitions(
+            cubeql.getFactPartitionMap().get(fact)));
       }
 
       int minPartitions = Collections.min(numPartitionsMap.values());
@@ -36,7 +37,7 @@ public class LeastPartitionResolver implements ContextRewriter {
         if (numPartitionsMap.get(fact) > minPartitions) {
           System.out.println("Removing fact:" + fact +
               " from candidate fact tables as it requires more partitions to" +
-              " be queried:" +  numPartitionsMap.get(fact) + " minimum:"
+              " be queried:" + numPartitionsMap.get(fact) + " minimum:"
               + minPartitions);
           i.remove();
         }

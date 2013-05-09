@@ -37,7 +37,7 @@ public class BaseDimension extends CubeDimension {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((getType() == null) ? 0 :
-      getType().toLowerCase().hashCode());
+        getType().toLowerCase().hashCode());
     return result;
   }
 
@@ -46,7 +46,7 @@ public class BaseDimension extends CubeDimension {
     if (!super.equals(obj)) {
       return false;
     }
-    BaseDimension other = (BaseDimension)obj;
+    BaseDimension other = (BaseDimension) obj;
     if (this.getType() == null) {
       if (other.getType() != null) {
         return false;

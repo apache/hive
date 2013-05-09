@@ -12,8 +12,6 @@ import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.log4j.Logger;
 
-
-
 public class DateUtil {
   public static final Logger LOG = Logger.getLogger(DateUtil.class);
 
@@ -21,10 +19,11 @@ public class DateUtil {
    * NOW -> new java.util.Date()
    * NOW-7DAY -> a date one week earlier
    * NOW (+-) <NUM>UNIT
-   * or Hardcoded dates in  DD-MM-YYYY hh:mm:ss,sss
+   * or Hardcoded dates in DD-MM-YYYY hh:mm:ss,sss
    */
   public static final String RELATIVE = "(now){1}";
-  public static final Pattern P_RELATIVE = Pattern.compile(RELATIVE, Pattern.CASE_INSENSITIVE);
+  public static final Pattern P_RELATIVE = Pattern.compile(RELATIVE,
+      Pattern.CASE_INSENSITIVE);
 
   public static final String WSPACE = "\\s+";
   public static final Pattern P_WSPACE = Pattern.compile(WSPACE);
@@ -36,17 +35,19 @@ public class DateUtil {
   public static final Pattern P_QUANTITY = Pattern.compile(QUANTITY);
 
   public static final String UNIT = "year|month|week|day|hour|minute|second";
-  public static final Pattern P_UNIT = Pattern.compile(UNIT, Pattern.CASE_INSENSITIVE);
+  public static final Pattern P_UNIT = Pattern.compile(UNIT,
+      Pattern.CASE_INSENSITIVE);
 
 
   public static final String RELDATE_VALIDATOR_STR = RELATIVE
       + "(" + WSPACE + ")?"
-      + "((" + SIGNAGE +")"
+      + "((" + SIGNAGE + ")"
       + "(" + WSPACE + ")?"
       + "(" + QUANTITY + ")(" + UNIT + ")){0,1}"
-      +"(s?)";
+      + "(s?)";
 
-  public static final Pattern RELDATE_VALIDATOR = Pattern.compile(RELDATE_VALIDATOR_STR, Pattern.CASE_INSENSITIVE);
+  public static final Pattern RELDATE_VALIDATOR = Pattern.compile(
+      RELDATE_VALIDATOR_STR, Pattern.CASE_INSENSITIVE);
 
   public static String YEAR_FMT = "[0-9]{4}";
   public static String MONTH_FMT = YEAR_FMT + "-[0-9]{2}";
@@ -55,7 +56,8 @@ public class DateUtil {
   public static String MINUTE_FMT = HOUR_FMT + ":[0-9]{2}";
   public static String SECOND_FMT = MINUTE_FMT + ":[0-9]{2}";
   public static final String ABSDATE_FMT = "yyyy-MM-dd HH:mm:ss,SSS";
-  public static final SimpleDateFormat ABSDATE_PARSER = new SimpleDateFormat(ABSDATE_FMT);
+  public static final SimpleDateFormat ABSDATE_PARSER =
+      new SimpleDateFormat(ABSDATE_FMT);
 
   public static String formatDate(Date dt) {
     return ABSDATE_PARSER.format(dt);
@@ -97,7 +99,8 @@ public class DateUtil {
     }
   }
 
-  private static Date resolveRelativeDate(String str, Date now) throws HiveException {
+  private static Date resolveRelativeDate(String str, Date now)
+      throws HiveException {
     if (!(str == null || str.isEmpty())) {
       throw new HiveException("date value cannot be null or empty:" + str);
     }
@@ -111,7 +114,7 @@ public class DateUtil {
     Matcher qtyMatcher = P_QUANTITY.matcher(raw);
     int qty = 1;
     if (qtyMatcher.find() && true) {
-      qty =  Integer.parseInt(qtyMatcher.group());
+      qty = Integer.parseInt(qtyMatcher.group());
     }
 
     Matcher signageMatcher = P_SIGNAGE.matcher(raw);
@@ -143,7 +146,7 @@ public class DateUtil {
       } else if ("second".equals(unit)) {
         calendar.add(Calendar.SECOND, qty);
       } else {
-        throw new HiveException("invalid time unit: "+ unit);
+        throw new HiveException("invalid time unit: " + unit);
       }
     }
 
@@ -155,37 +158,37 @@ public class DateUtil {
     cal.setTime(fromDate);
     boolean hasFraction = false;
     switch (interval) {
-    case YEARLY :
+    case YEARLY:
       if (cal.get(Calendar.MONTH) != 1) {
         hasFraction = true;
         break;
       }
-    case MONTHLY :
+    case MONTHLY:
       if (cal.get(Calendar.DAY_OF_MONTH) != 1) {
         hasFraction = true;
         break;
       }
-    case WEEKLY :
+    case WEEKLY:
       if (cal.get(Calendar.DAY_OF_WEEK) != 1) {
         hasFraction = true;
         break;
       }
-    case DAILY :
+    case DAILY:
       if (cal.get(Calendar.HOUR_OF_DAY) != 0) {
         hasFraction = true;
         break;
       }
-    case HOURLY :
+    case HOURLY:
       if (cal.get(Calendar.MINUTE) != 0) {
         hasFraction = true;
         break;
       }
-    case MINUTELY :
+    case MINUTELY:
       if (cal.get(Calendar.SECOND) != 0) {
         hasFraction = true;
         break;
       }
-    case SECONDLY :
+    case SECONDLY:
       if (cal.get(Calendar.MILLISECOND) != 0) {
         hasFraction = true;
         break;
@@ -204,19 +207,19 @@ public class DateUtil {
     Calendar cal = Calendar.getInstance();
     cal.setTime(toDate);
     switch (interval) {
-    case YEARLY :
+    case YEARLY:
       cal.set(Calendar.MONTH, 1);
-    case MONTHLY :
+    case MONTHLY:
       cal.set(Calendar.DAY_OF_MONTH, 1);
-    case DAILY :
+    case DAILY:
       cal.set(Calendar.HOUR_OF_DAY, 0);
-    case HOURLY :
+    case HOURLY:
       cal.set(Calendar.MINUTE, 0);
-    case MINUTELY :
+    case MINUTELY:
       cal.set(Calendar.SECOND, 0);
-    case SECONDLY :
+    case SECONDLY:
       break;
-    case WEEKLY :
+    case WEEKLY:
       cal.set(Calendar.DAY_OF_WEEK, 1);
       cal.set(Calendar.HOUR_OF_DAY, 0);
       cal.set(Calendar.MINUTE, 0);

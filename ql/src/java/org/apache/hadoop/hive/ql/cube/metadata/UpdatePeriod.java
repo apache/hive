@@ -7,15 +7,15 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.cube.parse.DateUtil;
 
 
-public enum UpdatePeriod implements Named{
-  SECONDLY (Calendar.SECOND, 1000, "yyyy-MM-dd-HH-mm-ss"),
-  MINUTELY (Calendar.MINUTE, 60 * SECONDLY.weight(), "yyyy-MM-dd-HH-mm"),
-  HOURLY (Calendar.HOUR_OF_DAY, 60 * MINUTELY.weight(), "yyyy-MM-dd-HH"),
-  DAILY (Calendar.DAY_OF_MONTH, 24 * HOURLY.weight(), "yyyy-MM-dd"),
-  WEEKLY (Calendar.WEEK_OF_YEAR, 7 * DAILY.weight(), "yyyy-'W'ww-u"),
-  MONTHLY (Calendar.MONTH, 30 * DAILY.weight(), "yyyy-MM"),
-  QUARTERLY (Calendar.MONTH, 3 * MONTHLY.weight(), "yyyy-M"),
-  YEARLY (Calendar.YEAR, 12 * MONTHLY.weight(), "yyyy");
+public enum UpdatePeriod implements Named {
+  SECONDLY(Calendar.SECOND, 1000, "yyyy-MM-dd-HH-mm-ss"),
+  MINUTELY(Calendar.MINUTE, 60 * SECONDLY.weight(), "yyyy-MM-dd-HH-mm"),
+  HOURLY(Calendar.HOUR_OF_DAY, 60 * MINUTELY.weight(), "yyyy-MM-dd-HH"),
+  DAILY(Calendar.DAY_OF_MONTH, 24 * HOURLY.weight(), "yyyy-MM-dd"),
+  WEEKLY(Calendar.WEEK_OF_YEAR, 7 * DAILY.weight(), "yyyy-'W'ww-u"),
+  MONTHLY(Calendar.MONTH, 30 * DAILY.weight(), "yyyy-MM"),
+  QUARTERLY(Calendar.MONTH, 3 * MONTHLY.weight(), "yyyy-M"),
+  YEARLY(Calendar.YEAR, 12 * MONTHLY.weight(), "yyyy");
 
   public static final long MIN_INTERVAL = SECONDLY.weight();
   private final int calendarField;
@@ -49,7 +49,8 @@ public enum UpdatePeriod implements Named{
     return name();
   }
 
-  public static class UpdatePeriodComparator implements Comparator<UpdatePeriod> {
+  public static class UpdatePeriodComparator
+      implements Comparator<UpdatePeriod> {
     @Override
     public int compare(UpdatePeriod o1, UpdatePeriod o2) {
       if (o1 == null && o2 != null) {

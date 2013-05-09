@@ -34,7 +34,7 @@ public class ReferencedDimension extends BaseDimension {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((getReference() == null) ? 0 :
-      getReference().hashCode());
+        getReference().hashCode());
     return result;
   }
 
@@ -43,7 +43,7 @@ public class ReferencedDimension extends BaseDimension {
     if (!super.equals(obj)) {
       return false;
     }
-    ReferencedDimension other = (ReferencedDimension)obj;
+    ReferencedDimension other = (ReferencedDimension) obj;
     if (this.getReference() == null) {
       if (other.getReference() != null) {
         return false;

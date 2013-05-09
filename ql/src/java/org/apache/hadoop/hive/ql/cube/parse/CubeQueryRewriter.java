@@ -23,14 +23,14 @@ public class CubeQueryRewriter {
   }
 
   private void setupPhase1Rewriters() {
-    //Resolve joins and generate base join tree
+    // Resolve joins and generate base join tree
     phase1Rewriters.add(new JoinResolver(conf));
-    //Resolve aggregations and generate base select tree
+    // Resolve aggregations and generate base select tree
     phase1Rewriters.add(new AggregateResolver(conf));
     phase1Rewriters.add(new GroupbyResolver(conf));
-    //Rewrite base trees (groupby, having, orderby, limit) using aliases
+    // Rewrite base trees (groupby, having, orderby, limit) using aliases
     phase1Rewriters.add(new AliasReplacer(conf));
-    //Resolve partition columns and table names
+    // Resolve partition columns and table names
     phase1Rewriters.add(new PartitionResolver(conf));
   }
 
@@ -38,16 +38,16 @@ public class CubeQueryRewriter {
     phase2Rewriters.add(new StorageTableResolver(conf));
     phase2Rewriters.add(new LeastPartitionResolver(conf));
     phase2Rewriters.add(new LeastDimensionResolver(conf));
-   // phase2Rewriters.add(new WhereConditionRewriter(conf));
+    // phase2Rewriters.add(new WhereConditionRewriter(conf));
   }
 
   public CubeQueryContext rewritePhase1(ASTNode astnode)
       throws SemanticException, ParseException {
-      CubeSemanticAnalyzer analyzer =  new CubeSemanticAnalyzer(
-          new HiveConf(conf, HiveConf.class));
-      analyzer.analyzeInternal(astnode);
-      CubeQueryContext ctx = analyzer.getQueryContext();
-      rewrite(phase1Rewriters, ctx);
+    CubeSemanticAnalyzer analyzer = new CubeSemanticAnalyzer(
+        new HiveConf(conf, HiveConf.class));
+    analyzer.analyzeInternal(astnode);
+    CubeQueryContext ctx = analyzer.getQueryContext();
+    rewrite(phase1Rewriters, ctx);
     return ctx;
   }
 
@@ -64,10 +64,5 @@ public class CubeQueryRewriter {
     for (ContextRewriter rewriter : rewriters) {
       rewriter.rewriteContext(ctx);
     }
-  }
-
-  public static void main(String[] args) throws SemanticException, ParseException {
-   // CubeQueryRewriter writer = new CubeQueryRewriter(new Configuration());
-   // writer.rewritePhase1("select * from cube");
   }
 }

@@ -38,7 +38,7 @@ public final class ExprMeasure extends CubeMeasure {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((getExpr() == null) ? 0 :
-      getExpr().toLowerCase().hashCode());
+        getExpr().toLowerCase().hashCode());
     return result;
   }
 
@@ -47,7 +47,7 @@ public final class ExprMeasure extends CubeMeasure {
     if (!super.equals(obj)) {
       return false;
     }
-    ExprMeasure other = (ExprMeasure)obj;
+    ExprMeasure other = (ExprMeasure) obj;
     if (this.getExpr() == null) {
       if (other.getExpr() != null) {
         return false;

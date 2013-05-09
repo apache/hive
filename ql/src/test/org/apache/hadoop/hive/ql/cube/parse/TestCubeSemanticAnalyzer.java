@@ -19,7 +19,7 @@ public class TestCubeSemanticAnalyzer {
   }
 
   String queries[] = { "SELECT t1.c1 rsalias0, f(t1.c2) rsalias1," +
-  		" (t2.c3 + t2.c4) rsalias2, avg(fc5/fc6) * fc7 " +
+      " (t2.c3 + t2.c4) rsalias2, avg(fc5/fc6) * fc7 " +
       " FROM facttab t1" +
       " WHERE ( fc1='foo' and fc2 = 250 or sin(fc3)=1.0 ) " +
       " and time_range_in('NOW-7DAYS', 'NOW')" +
@@ -44,7 +44,8 @@ public class TestCubeSemanticAnalyzer {
 
   @Test
   public void testSimpleQuery() throws Exception {
-    astRoot = HQLParser.parseHQL("select SUM(msr2) from testCube where time_range_in('NOW - 2DAYS', 'NOW')");
+    astRoot = HQLParser.parseHQL("select SUM(msr2) from testCube where" +
+        " time_range_in('NOW - 2DAYS', 'NOW')");
     analyzer.analyzeInternal(astRoot);
     CubeQueryContext cubeql = analyzer.getQueryContext();
     //System.out.println("cube hql:" + cubeql.toHQL());

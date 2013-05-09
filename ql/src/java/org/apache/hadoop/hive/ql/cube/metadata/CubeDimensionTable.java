@@ -73,7 +73,7 @@ public final class CubeDimensionTable extends AbstractCubeTable {
       {
         if (entry.getValue() != null) {
           props.put(MetastoreUtil.getDimensionDumpPeriodKey(name, entry.getKey()),
-            entry.getValue().name());
+              entry.getValue().name());
         }
       }
     }
@@ -82,8 +82,7 @@ public final class CubeDimensionTable extends AbstractCubeTable {
   public static void addDimensionReferenceProperties(Map<String, String> props,
       Map<String, TableReference> dimensionReferences) {
     if (dimensionReferences != null) {
-      for (Map.Entry<String, TableReference> entry :
-        dimensionReferences.entrySet()) {
+      for (Map.Entry<String, TableReference> entry : dimensionReferences.entrySet()) {
         props.put(MetastoreUtil.getDimensionSrcReferenceKey(entry.getKey()),
             MetastoreUtil.getDimensionDestReference(entry.getValue()));
       }
@@ -134,7 +133,7 @@ public final class CubeDimensionTable extends AbstractCubeTable {
     if (!super.equals(obj)) {
       return false;
     }
-    CubeDimensionTable other = (CubeDimensionTable)obj;
+    CubeDimensionTable other = (CubeDimensionTable) obj;
 
     if (this.getDimensionReferences() == null) {
       if (other.getDimensionReferences() != null) {

@@ -26,10 +26,10 @@ public class StorageTableResolver implements ContextRewriter {
 
     // resolve fact tables
     Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factStorageMap =
-        new HashMap<CubeFactTable, Map<UpdatePeriod,List<String>>>();
+        new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
     Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartMap =
         cubeql.getFactPartitionMap();
-    //Find candidate tables wrt supported storages
+    // Find candidate tables wrt supported storages
     for (CubeFactTable fact : factPartMap.keySet()) {
       Map<UpdatePeriod, List<String>> storageTableMap =
           new HashMap<UpdatePeriod, List<String>>();
@@ -54,26 +54,27 @@ public class StorageTableResolver implements ContextRewriter {
     }
     cubeql.setFactStorageMap(factStorageMap);
 
-    //resolve dimension tables
+    // resolve dimension tables
     Map<CubeDimensionTable, List<String>> dimStorageMap =
         new HashMap<CubeDimensionTable, List<String>>();
     for (CubeDimensionTable dim : cubeql.getDimensionTables()) {
-        List<String> storageTables = new ArrayList<String>();
-        dimStorageMap.put(dim, storageTables);
-        for (String storage : dim.getStorages()) {
-          if (cubeql.isStorageSupported(storage)) {
-            String tableName = MetastoreUtil.getDimStorageTableName(
-                dim.getName(), Storage.getPrefix(storage));
-            storageTables.add(tableName);
-            if (dim.hasStorageSnapshots(storage)) {
-              storageTableToWhereClause.put(tableName,
-                getWherePartClause(dim.getName(), Storage.getPartitionsForLatest()));
-            }
-          } else {
-            System.out.println("Storage:" + storage + " is not supported");
+      List<String> storageTables = new ArrayList<String>();
+      dimStorageMap.put(dim, storageTables);
+      for (String storage : dim.getStorages()) {
+        if (cubeql.isStorageSupported(storage)) {
+          String tableName = MetastoreUtil.getDimStorageTableName(
+              dim.getName(), Storage.getPrefix(storage));
+          storageTables.add(tableName);
+          if (dim.hasStorageSnapshots(storage)) {
+            storageTableToWhereClause.put(tableName,
+                getWherePartClause(dim.getName(), Storage
+                    .getPartitionsForLatest()));
           }
+        } else {
+          System.out.println("Storage:" + storage + " is not supported");
         }
       }
+    }
     cubeql.setDimStorageMap(dimStorageMap);
     cubeql.setStorageTableToWhereClause(storageTableToWhereClause);
   }

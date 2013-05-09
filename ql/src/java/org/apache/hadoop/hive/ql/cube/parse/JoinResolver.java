@@ -21,7 +21,7 @@ public class JoinResolver implements ContextRewriter {
 
   @Override
   public void rewriteContext(CubeQueryContext cubeql) throws SemanticException {
-    resolveJoins((CubeQueryContext)cubeql);
+    resolveJoins((CubeQueryContext) cubeql);
   }
 
   public void resolveJoins(CubeQueryContext cubeql) throws SemanticException {
@@ -34,7 +34,8 @@ public class JoinResolver implements ContextRewriter {
     }
   }
 
-  private QBJoinTree genJoinTree(QB qb, ASTNode joinParseTree, CubeQueryContext cubeql)
+  private QBJoinTree genJoinTree(QB qb, ASTNode joinParseTree,
+      CubeQueryContext cubeql)
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
     JoinCond[] condn = new JoinCond[1];
@@ -75,7 +76,7 @@ public class JoinResolver implements ContextRewriter {
       String alias = left.getChildCount() == 1 ? tableName
           : SemanticAnalyzer.unescapeIdentifier(
               left.getChild(left.getChildCount() - 1)
-              .getText().toLowerCase());
+                  .getText().toLowerCase());
       joinTree.setLeftAlias(alias);
       String[] leftAliases = new String[1];
       leftAliases[0] = alias;

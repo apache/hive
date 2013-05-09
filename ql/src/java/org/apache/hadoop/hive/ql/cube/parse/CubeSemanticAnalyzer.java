@@ -12,7 +12,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class CubeSemanticAnalyzer extends SemanticAnalyzer {
   private final HiveConf conf;
-  private final List<ValidationRule> validationRules = new ArrayList<ValidationRule>();
+  private final List<ValidationRule> validationRules =
+      new ArrayList<ValidationRule>();
   private CubeQueryContext cubeQl;
 
   public CubeSemanticAnalyzer(HiveConf conf) throws SemanticException {
@@ -38,23 +39,23 @@ public class CubeSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException("Create table/view is not allowed");
     }
 
-    //analyzing from the ASTNode.
+    // analyzing from the ASTNode.
     if (!doPhase1(ast, qb, initPhase1Ctx())) {
       // if phase1Result false return
       return;
     }
     cubeQl = new CubeQueryContext(ast, qb, conf);
-    //cubeQl.init();
-    //validate();
+    // cubeQl.init();
+    // validate();
 
     // TODO Move this to a validation Rule
-    //QBParseInfo qbp = qb.getParseInfo();
-    //TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
-    //if (ks.size() > 1) {
-    //  throw new SemanticException("nested/sub queries not allowed yet");
-    //}
-    //Operator sinkOp = genPlan(qb);
-    //System.out.println(sinkOp.toString());
+    // QBParseInfo qbp = qb.getParseInfo();
+    // TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
+    // if (ks.size() > 1) {
+    // throw new SemanticException("nested/sub queries not allowed yet");
+    // }
+    // Operator sinkOp = genPlan(qb);
+    // System.out.println(sinkOp.toString());
   }
 
   @Override

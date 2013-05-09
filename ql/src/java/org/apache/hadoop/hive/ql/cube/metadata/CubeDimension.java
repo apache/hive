@@ -19,13 +19,13 @@ public abstract class CubeDimension implements Named {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((getName() == null) ? 0 :
-      getName().toLowerCase().hashCode());
+        getName().toLowerCase().hashCode());
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    CubeDimension other = (CubeDimension)obj;
+    CubeDimension other = (CubeDimension) obj;
     if (this.getName() == null) {
       if (other.getName() != null) {
         return false;

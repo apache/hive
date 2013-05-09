@@ -93,7 +93,7 @@ public class HDFSStorage extends Storage {
 
   public HDFSStorage(Table table) {
     super("HDFS", TableType.EXTERNAL_TABLE);
-    //TODO
+    // TODO
   }
 
   private HDFSStorage(String name, String inputFormat, String outputFormat,
@@ -176,12 +176,12 @@ public class HDFSStorage extends Storage {
       }
     }
     client.createPartition(storageTbl, partSpec,
-        location, getTableParameters(),  inputFormat, outputFormat, -1,
+        location, getTableParameters(), inputFormat, outputFormat, -1,
         storageTbl.getCols(), serdeClassName, serdeParameters, null, null);
     if (makeLatest) {
       // symlink this partition to latest
       client.createPartition(storageTbl, getLatestPartSpec(),
-          location, getTableParameters(),  inputFormat, outputFormat, -1,
+          location, getTableParameters(), inputFormat, outputFormat, -1,
           storageTbl.getCols(), serdeClassName, serdeParameters, null, null);
     }
   }

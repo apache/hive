@@ -35,9 +35,9 @@ public class MetastoreUtil implements MetastoreConstants {
     return virtualName.substring(type.name().length() + 1);
   }
 
-  /////////////////////////
+  // ///////////////////////
   // Dimension properties//
-  /////////////////////////
+  // ///////////////////////
   public static final String getDimTypePropertyKey(String dimName) {
     return getDimensionKeyPrefix(dimName) + TYPE_SFX;
   }
@@ -45,6 +45,7 @@ public class MetastoreUtil implements MetastoreConstants {
   public static String getHierachyElementKeyPFX(String dimName) {
     return getDimensionKeyPrefix(dimName) + HIERARCHY_SFX;
   }
+
   public static String getHierachyElementKeyName(String dimName, int index) {
     return getHierachyElementKeyPFX(dimName) + index;
   }
@@ -84,20 +85,20 @@ public class MetastoreUtil implements MetastoreConstants {
 
   public static String getDimensionDumpPeriodKey(String name, String storage) {
     return getDimensionKeyPrefix(name) + "." + storage.toLowerCase() +
-        DUMP_PERIOD_SFX ;
+        DUMP_PERIOD_SFX;
   }
 
   public static String getDimensionStorageListKey(String name) {
-    return getDimensionKeyPrefix(name) +  STORAGE_LIST_SFX;
+    return getDimensionKeyPrefix(name) + STORAGE_LIST_SFX;
   }
 
   public static final String getDimensionClassPropertyKey(String dimName) {
     return getDimensionKeyPrefix(dimName) + CLASS_SFX;
   }
 
-  ////////////////////////////
-  // Measure properties  ///
-  ///////////////////////////
+  // //////////////////////////
+  // Measure properties ///
+  // /////////////////////////
   public static final String getMeasurePrefix(String measureName) {
     return MEASURE_KEY_PFX + measureName.toLowerCase();
   }
@@ -126,9 +127,9 @@ public class MetastoreUtil implements MetastoreConstants {
     return getMeasurePrefix(measureName) + EXPR_SFX;
   }
 
-  ////////////////////////////
-  // Cube properties  ///
-  ///////////////////////////
+  // //////////////////////////
+  // Cube properties ///
+  // /////////////////////////
   public static final String getCubePrefix(String cubeName) {
     return CUBE_KEY_PFX + cubeName.toLowerCase();
   }
@@ -141,11 +142,11 @@ public class MetastoreUtil implements MetastoreConstants {
     return getCubePrefix(cubeName) + DIMENSIONS_LIST_SFX;
   }
 
-  ////////////////////////////
-  // Fact propertes  ///
-  ///////////////////////////
+  // //////////////////////////
+  // Fact propertes ///
+  // /////////////////////////
   public static String getFactStorageListKey(String name) {
-    return getFactKeyPrefix(name) +  STORAGE_LIST_SFX;
+    return getFactKeyPrefix(name) + STORAGE_LIST_SFX;
   }
 
   public static String getFactKeyPrefix(String factName) {
@@ -153,7 +154,7 @@ public class MetastoreUtil implements MetastoreConstants {
   }
 
   public static String getFactUpdatePeriodKey(String name, String storage) {
-    return getFactKeyPrefix(name) +  "." + storage.toLowerCase()
+    return getFactKeyPrefix(name) + "." + storage.toLowerCase()
         + UPDATE_PERIOD_SFX;
   }
 
@@ -161,16 +162,16 @@ public class MetastoreUtil implements MetastoreConstants {
     return getFactKeyPrefix(name) + CUBE_NAME_SFX;
   }
 
-  ////////////////////////////
-  // Utils  ///
-  ///////////////////////////
+  // //////////////////////////
+  // Utils ///
+  // /////////////////////////
   public static <E extends Named> String getNamedStr(Collection<E> set) {
     if (set == null || set.isEmpty()) {
       return "";
     }
     StringBuilder valueStr = new StringBuilder();
     Iterator<E> it = set.iterator();
-    for (int i = 0; i < (set.size()-1) ; i++) {
+    for (int i = 0; i < (set.size() - 1); i++) {
       valueStr.append(it.next().getName());
       valueStr.append(",");
     }
@@ -184,7 +185,7 @@ public class MetastoreUtil implements MetastoreConstants {
     }
     StringBuilder valueStr = new StringBuilder();
     Iterator<?> it = set.iterator();
-    for (int i = 0; i < (set.size()-1) ; i++) {
+    for (int i = 0; i < (set.size() - 1); i++) {
       valueStr.append(it.next().toString());
       valueStr.append(",");
     }
@@ -198,7 +199,7 @@ public class MetastoreUtil implements MetastoreConstants {
     }
     StringBuilder valueStr = new StringBuilder();
     Iterator<String> it = set.iterator();
-    for (int i = 0; i < (set.size()-1) ; i++) {
+    for (int i = 0; i < (set.size() - 1); i++) {
       valueStr.append(it.next());
       valueStr.append(",");
     }

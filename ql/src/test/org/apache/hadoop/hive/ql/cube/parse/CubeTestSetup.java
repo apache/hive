@@ -77,12 +77,13 @@ public class CubeTestSetup {
     cubeDimensions.add(new BaseDimension(new FieldSchema("dim1", "string",
         "basedim")));
     // Added for ambiguity test
-    cubeDimensions.add(new BaseDimension(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity")));
+    cubeDimensions.add(new BaseDimension(new FieldSchema("ambigdim1", "string",
+        "used in testColumnAmbiguity")));
     cubeDimensions.add(new ReferencedDimension(
-            new FieldSchema("dim2", "string", "ref dim"),
-            new TableReference("testdim2", "id")));
+        new FieldSchema("dim2", "string", "ref dim"),
+        new TableReference("testdim2", "id")));
     cubeDimensions.add(new InlineDimension(
-            new FieldSchema("region", "string", "region dim"), regions));
+        new FieldSchema("region", "string", "region dim"), regions));
     cube = new Cube(cubeName, cubeMeasures, cubeDimensions);
     client.createCube(cubeName, cubeMeasures, cubeDimensions);
   }
@@ -98,7 +99,8 @@ public class CubeTestSetup {
     // add dimensions of the cube
     factColumns.add(new FieldSchema("zipcode","int", "zip"));
     factColumns.add(new FieldSchema("cityid","int", "city id"));
-    factColumns.add(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity"));
+    factColumns.add(new FieldSchema("ambigdim1", "string", "used in" +
+        " testColumnAmbiguity"));
 
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();
@@ -119,7 +121,8 @@ public class CubeTestSetup {
         storageAggregatePeriods);
   }
 
-  private void createCubeFactOnlyHourly(CubeMetastoreClient client) throws HiveException {
+  private void createCubeFactOnlyHourly(CubeMetastoreClient client)
+      throws HiveException {
     String factName = "testFact2";
     List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
         cubeMeasures.size());
@@ -145,7 +148,8 @@ public class CubeTestSetup {
         storageAggregatePeriods);
   }
 
-  private void createCubeFactMonthly(CubeMetastoreClient client) throws HiveException {
+  private void createCubeFactMonthly(CubeMetastoreClient client)
+      throws HiveException {
     String factName = "testFactMonthly";
     List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
         cubeMeasures.size());
@@ -180,8 +184,10 @@ public class CubeTestSetup {
     dimColumns.add(new FieldSchema("name", "string", "field1"));
     dimColumns.add(new FieldSchema("stateid", "int", "state id"));
     dimColumns.add(new FieldSchema("zipcode", "int", "zip code"));
-    dimColumns.add(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity"));
-    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in testColumnAmbiguity"));
+    dimColumns.add(new FieldSchema("ambigdim1", "string", "used in" +
+        " testColumnAmbiguity"));
+    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in " +
+        "testColumnAmbiguity"));
     Map<String, TableReference> dimensionReferences =
         new HashMap<String, TableReference>();
     dimensionReferences.put("stateid", new TableReference("statetable", "id"));
@@ -231,7 +237,8 @@ public class CubeTestSetup {
     dimColumns.add(new FieldSchema("name", "string", "field1"));
     dimColumns.add(new FieldSchema("capital", "string", "field2"));
     dimColumns.add(new FieldSchema("region", "string", "region name"));
-    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in testColumnAmbiguity"));
+    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in" +
+        " testColumnAmbiguity"));
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
@@ -255,7 +262,8 @@ public class CubeTestSetup {
 
     Map<String, TableReference> dimensionReferences =
         new HashMap<String, TableReference>();
-    dimensionReferences.put("countryid", new TableReference("countrytable", "id"));
+    dimensionReferences.put("countryid", new TableReference("countrytable",
+        "id"));
 
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),

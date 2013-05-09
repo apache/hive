@@ -46,10 +46,12 @@ public class TestCubeDriver {
   }
 
   public static String HOUR_FMT = "yyyy-MM-dd HH";
-  public static final SimpleDateFormat HOUR_PARSER = new SimpleDateFormat(HOUR_FMT);
+  public static final SimpleDateFormat HOUR_PARSER = new SimpleDateFormat(
+      HOUR_FMT);
 
   public static String MONTH_FMT = "yyyy-MM";
-  public static final SimpleDateFormat MONTH_PARSER = new SimpleDateFormat(MONTH_FMT);
+  public static final SimpleDateFormat MONTH_PARSER = new SimpleDateFormat(
+      MONTH_FMT);
 
   public static String getDateUptoHours(Date dt) {
     return HOUR_PARSER.format(dt);
@@ -63,8 +65,8 @@ public class TestCubeDriver {
   public void testQueryWithNow() throws Exception {
     Throwable th = null;
     try {
-      String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
-          " where time_range_in('NOW - 2DAYS', 'NOW')");
+      String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube"
+          + " where time_range_in('NOW - 2DAYS', 'NOW')");
     } catch (SemanticException e) {
       th = e;
       e.printStackTrace();
@@ -89,9 +91,12 @@ public class TestCubeDriver {
 
   @Test
   public void testCubeWhereQuery() throws Exception {
-    System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" + getDateUptoHours(now));
-    //String expected = " sum( testcube.msr2 ) FROM  C1_testfact_HOURLY testcube  WHERE " + whereClause(HOURLY) + " UNION " +
-    // SELECT sum( testcube.msr2 ) FROM  C1_testfact_DAILY testcube  WHERE + whereClause(DAILY)
+    System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" +
+        getDateUptoHours(now));
+    //String expected = " sum( testcube.msr2 ) FROM  C1_testfact_HOURLY
+    //testcube  WHERE " + whereClause(HOURLY) + " UNION " +
+    // SELECT sum( testcube.msr2 ) FROM  C1_testfact_DAILY testcube
+    //WHERE + whereClause(DAILY)
 
     String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
@@ -109,7 +114,8 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
 
-    hqlQuery = driver.compileCubeQuery("select statetable.name, SUM(msr2) from testCube"
+    hqlQuery = driver.compileCubeQuery("select statetable.name, SUM(msr2) from"
+        + " testCube"
         + " join citytable on testCube.cityid = citytable.id"
         + " left outer join statetable on statetable.id = citytable.stateid"
         + " right outer join ziptable on citytable.zipcode = ziptable.code"
@@ -133,9 +139,11 @@ public class TestCubeDriver {
     cal.add(Calendar.DAY_OF_MONTH, -2);
     Date twodaysBack = cal.getTime();
     System.out.println("Test twodaysBack:" + twodaysBack);
-    System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" + getDateUptoHours(now));
+    System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" +
+        getDateUptoHours(now));
     //String expected = "select SUM(testCube.msr2) from "
-    String hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from testCube"
+    String hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from" +
+        " testCube"
         + " join citytable on testCube.cityid = citytable.id"
         + " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
@@ -153,7 +161,8 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
 
-    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from testCube"
+    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from" +
+        " testCube"
         + " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
@@ -163,7 +172,8 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')"
         + " group by round(zipcode)");
 
-    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from testCube"
+    hqlQuery = driver.compileCubeQuery("select round(cityid), SUM(msr2) from" +
+        " testCube"
         + " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')"
         + " group by zipcode");
@@ -195,27 +205,30 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
     try {
-    hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from testCube" +
-        " join citytable" +
-        " where time_range_in('" + getDateUptoHours(twodaysBack)
-        + "','" + getDateUptoHours(now) + "')" +
-        " group by name");
-    System.out.println("cube hql:" + hqlQuery);
+      hqlQuery = driver.compileCubeQuery("select name, SUM(msr2) from testCube"
+          + " join citytable" +
+          " where time_range_in('" + getDateUptoHours(twodaysBack)
+          + "','" + getDateUptoHours(now) + "')" +
+          " group by name");
+      System.out.println("cube hql:" + hqlQuery);
     } catch (SemanticException e) {
       e.printStackTrace();
     }
-    hqlQuery = driver.compileCubeQuery("select SUM(mycube.msr2) from testCube mycube" +
+    hqlQuery = driver.compileCubeQuery("select SUM(mycube.msr2) from" +
+        " testCube mycube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
     //Assert.assertEquals(queries[1], cubeql.toHQL());
 
-    hqlQuery = driver.compileCubeQuery("select SUM(testCube.msr2) from testCube" +
+    hqlQuery = driver.compileCubeQuery("select SUM(testCube.msr2) from" +
+        " testCube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
 
-    hqlQuery = driver.compileCubeQuery("select mycube.msr2 m2 from testCube mycube" +
+    hqlQuery = driver.compileCubeQuery("select mycube.msr2 m2 from testCube" +
+        " mycube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
@@ -228,7 +241,8 @@ public class TestCubeDriver {
 
   @Test
   public void testCubeWhereQueryForMonth() throws Exception {
-    System.out.println("Test from:" + getDateUptoHours(twoMonthsBack) + " to:" + getDateUptoHours(now));
+    System.out.println("Test from:" + getDateUptoHours(twoMonthsBack) + " to:" +
+        getDateUptoHours(now));
     String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
         " where time_range_in('" + getDateUptoHours(twoMonthsBack)
         + "','" + getDateUptoHours(now) + "')");
@@ -245,7 +259,8 @@ public class TestCubeDriver {
 
   @Test
   public void testDimensionQueryWithMultipleStorages() throws Exception {
-    String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable");
+    String hqlQuery = driver.compileCubeQuery("select name, stateid from" +
+        " citytable");
     System.out.println("cube hql:" + hqlQuery);
 
     hqlQuery = driver.compileCubeQuery("select name, c.stateid from citytable c");
@@ -270,16 +285,19 @@ public class TestCubeDriver {
 
   @Test
   public void testLimitQueryOnDimension() throws Exception {
-    String hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
+    String hqlQuery = driver.compileCubeQuery("select name, stateid from" +
+        " citytable limit 100");
     System.out.println("cube hql:" + hqlQuery);
     //Assert.assertEquals(queries[1], cubeql.toHQL());
     conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C2");
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
-    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
+    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable " +
+        "limit 100");
     System.out.println("cube hql:" + hqlQuery);
     conf.set(HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString(), "C1");
     driver = new CubeDriver(new HiveConf(conf, HiveConf.class));
-    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable limit 100");
+    hqlQuery = driver.compileCubeQuery("select name, stateid from citytable" +
+        " limit 100");
     System.out.println("cube hql:" + hqlQuery);
   }
 
@@ -288,7 +306,8 @@ public class TestCubeDriver {
     String timeRange = " where  time_range_in('2013-05-01', '2013-05-03')";
     System.out.println("#$AGGREGATE_RESOLVER_ TIME_RANGE:" + timeRange);
     String q1 = "SELECT cityid, testCube.msr2 from testCube " + timeRange;
-    String q2 = "SELECT cityid, testCube.msr2 * testCube.msr2 from testCube " + timeRange;
+    String q2 = "SELECT cityid, testCube.msr2 * testCube.msr2 from testCube "
+        + timeRange;
     String q3 = "SELECT cityid, sum(testCube.msr2) from testCube " + timeRange;
     String q4 = "SELECT cityid, sum(testCube.msr2) from testCube "  + timeRange
         + " having testCube.msr2 > 100";
@@ -297,7 +316,8 @@ public class TestCubeDriver {
     String q6 = "SELECT cityid, testCube.msr2 from testCube " + timeRange
         + " having testCube.msr2 > 100 AND testCube.msr2 < 100";
     String q7 = "SELECT cityid, sum(testCube.msr2) from testCube " + timeRange
-        + " having (testCube.msr2 > 100) OR (testcube.msr2 < 100 AND SUM(testcube.msr3) > 1000)";
+        + " having (testCube.msr2 > 100) OR (testcube.msr2 < 100 AND " +
+        "SUM(testcube.msr3) > 1000)";
 
     String tests[] = {q1, q2, q3, q4, q5, q6, q7};
 
@@ -312,7 +332,8 @@ public class TestCubeDriver {
 
     String q8 = "SELECT cityid, testCube.noAggrMsr FROM testCube " + timeRange;
     try {
-      // Should throw exception in aggregate resolver because noAggrMsr does not have a default aggregate defined.s
+      // Should throw exception in aggregate resolver because noAggrMsr does
+      //not have a default aggregate defined.s
       String hql = driver.compileCubeQuery(q8);
       Assert.assertTrue("Should not reach here", false);
     } catch (SemanticException exc) {
@@ -353,7 +374,8 @@ public class TestCubeDriver {
     try {
       // this query should go through
       String q1Hql =
-          driver.compileCubeQuery("SELECT cityid, msr2 from testCube " + timeRange);
+          driver.compileCubeQuery("SELECT cityid, msr2 from testCube " +
+              timeRange);
     } catch (SemanticException exc) {
       exc.printStackTrace();
       Assert.assertTrue("Exception not expected here", false);
@@ -362,7 +384,8 @@ public class TestCubeDriver {
     try {
       // this query should through exception because invalidMsr is invalid
       String q2Hql =
-          driver.compileCubeQuery("SELECT cityid, invalidMsr from testCube " + timeRange);
+          driver.compileCubeQuery("SELECT cityid, invalidMsr from testCube " +
+              timeRange);
       Assert.assertTrue("Should not reach here", false);
     } catch (SemanticException exc) {
       exc.printStackTrace();
@@ -375,7 +398,8 @@ public class TestCubeDriver {
     String timeRange1 = " where  time_range_in('2013-05-01', '2013-05-03')";
 
     try {
-      String hql = driver.compileCubeQuery("SELECT cityid, testCube.msr2 from testCube " + timeRange1);
+      String hql = driver.compileCubeQuery("SELECT cityid, testCube.msr2 from" +
+          " testCube " + timeRange1);
     } catch (SemanticException exc) {
       exc.printStackTrace(System.out);
       Assert.assertTrue("Exception not expected here", false);
@@ -385,7 +409,8 @@ public class TestCubeDriver {
     String timeRange2 = " where  time_range_in('2013-05-03', '2013-05-01')";
     try {
       // this should throw exception because from date is after to date
-      String hql = driver.compileCubeQuery("SELECT cityid, testCube.msr2 from testCube " + timeRange2);
+      String hql = driver.compileCubeQuery("SELECT cityid, testCube.msr2 from" +
+          " testCube " + timeRange2);
       Assert.assertTrue("Should not reach here", false);
     } catch (SemanticException exc) {
       exc.printStackTrace(System.out);
