@@ -352,16 +352,16 @@ public class MetaStoreUtils {
     return false;
   }
 
-  static public boolean validateTblColumns(List<FieldSchema> cols) {
+  static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateName(fieldSchema.getName())) {
-        return false;
+        return "name: " + fieldSchema.getName();
       }
       if (!validateColumnType(fieldSchema.getType())) {
-        return false;
+        return "type: " + fieldSchema.getType();
       }
     }
-    return true;
+    return null;
   }
 
   static void throwExceptionIfIncompatibleColTypeChange(
@@ -434,22 +434,22 @@ public class MetaStoreUtils {
     return true;
   }
 
-  public static  boolean validateSkewedColNames(List<String> cols) {
+  public static String validateSkewedColNames(List<String> cols) {
     if (null == cols) {
-      return true;
+      return null;
     }
     for (String col : cols) {
       if (!validateName(col)) {
-        return false;
+        return col;
       }
     }
-    return true;
+    return null;
   }
 
-  public static boolean validateSkewedColNamesSubsetCol(List<String> skewedColNames,
+  public static String validateSkewedColNamesSubsetCol(List<String> skewedColNames,
       List<FieldSchema> cols) {
     if (null == skewedColNames) {
-      return true;
+      return null;
     }
     List<String> colNames = new ArrayList<String>();
     for (FieldSchema fieldSchema : cols) {
@@ -459,7 +459,10 @@ public class MetaStoreUtils {
     List<String> copySkewedColNames = new ArrayList<String>(skewedColNames);
     // remove valid columns
     copySkewedColNames.removeAll(colNames);
-    return (copySkewedColNames.size() > 0) ? false : true;
+    if (copySkewedColNames.isEmpty()) {
+      return null;
+    }
+    return copySkewedColNames.toString();
   }
 
   public static String getListType(String t) {

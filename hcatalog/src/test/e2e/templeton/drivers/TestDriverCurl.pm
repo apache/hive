@@ -699,7 +699,9 @@ sub compare
     }
 
     
-    if (defined $testCmd->{'check_job_created'} || defined  $testCmd->{'check_job_complete'}) {
+    if ( (defined $testCmd->{'check_job_created'})
+         || (defined $testCmd->{'check_job_complete'})
+         || (defined $testCmd->{'check_job_exit_value'}) ) {
       my $jobid = $json_hash->{'id'};
       if (!defined $jobid) {
         print $log "$0::$subName INFO check failed: " 
@@ -714,7 +716,7 @@ sub compare
             . "jobresult not defined ";
           $result = 0;
         }
-        if ($testCmd->{'check_job_complete'}) {
+        if (defined($testCmd->{'check_job_complete'}) || defined($testCmd->{'check_job_exit_value'})) {
           my $jobComplete;
           my $NUM_RETRIES = 60;
           my $SLEEP_BETWEEN_RETRIES = 5;
@@ -736,11 +738,21 @@ sub compare
             $result = 0;
           } else { 
             # job has completed, check the runState value
-            my $runState = $res_hash->{'status'}->{'runState'};
-            my $runStateVal = $self->getRunStateNum($testCmd->{'check_job_complete'});
-            if ( (!defined $runState) || $runState ne $runStateVal) {
-              print $log "check_job_complete failed. got runState  $runState,  expected  $runStateVal";
-              $result = 0;
+            if (defined($testCmd->{'check_job_complete'})) {
+              my $runState = $res_hash->{'status'}->{'runState'};
+              my $runStateVal = $self->getRunStateNum($testCmd->{'check_job_complete'});
+              if ( (!defined $runState) || $runState ne $runStateVal) {
+                print $log "check_job_complete failed. got runState  $runState,  expected  $runStateVal";
+                $result = 0;
+              }
+            }
+            if (defined($testCmd->{'check_job_exit_value'})) {
+              my $exitValue = $res_hash->{'exitValue'};
+              my $expectedExitValue = $testCmd->{'check_job_exit_value'};
+              if ( (!defined $exitValue) || $exitValue ne $expectedExitValue) {
+                print $log "check_job_exit_value failed. got exitValue $exitValue,  expected  $expectedExitValue";
+                $result = 0;
+              }
             }
           }
         }

@@ -103,7 +103,7 @@ final class DynamicByteArray {
    * @param value the array to copy from
    * @param valueOffset the first location to copy from value
    * @param valueLength the number of bytes to copy from value
-   * @return
+   * @return the offset of the start of the value
    */
   public int add(byte[] value, int valueOffset, int valueLength) {
     int i = length / chunkSize;
@@ -292,5 +292,12 @@ final class DynamicByteArray {
       }
     }
     return result;
+  }
+
+  /**
+   * Get the size of the buffers.
+   */
+  public long getSizeInBytes() {
+    return initializedChunks * chunkSize;
   }
 }

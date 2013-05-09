@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -295,6 +296,10 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.closeOperation(opHandle);
       }
       opHandleSet.clear();
+      HiveHistory hiveHist = sessionState.getHiveHistory();
+      if (null != hiveHist) {
+        hiveHist.closeStream();
+      }
     } finally {
       release();
     }

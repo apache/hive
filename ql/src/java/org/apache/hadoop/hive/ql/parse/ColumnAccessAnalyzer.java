@@ -44,7 +44,7 @@ public class ColumnAccessAnalyzer {
     for (TableScanOperator op : topOps.keySet()) {
       Table table = topOps.get(op);
       String tableName = table.getCompleteName();
-      List<FieldSchema> tableCols = table.getAllCols();
+      List<FieldSchema> tableCols = table.getCols();
       for (int i : op.getNeededColumnIDs()) {
         columnAccessInfo.add(tableName, tableCols.get(i).getName());
       }
