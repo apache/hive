@@ -143,7 +143,7 @@ public class AggregateResolver implements ContextRewriter {
     }
   }
 
-  private String resolveForSelect(CubeQueryContext cubeql, String exprTree) {
+  private String resolveForSelect(CubeQueryContext cubeql, String exprTree) throws SemanticException {
     // Aggregate resolver needs cube to be resolved first
     assert cubeql.getCube() != null;
 
@@ -185,8 +185,11 @@ public class AggregateResolver implements ContextRewriter {
               // over expressions changed during aggregate resolver.
               cubeql.addAggregateExpr(exprTokens[i]);
             } else {
-              LOG.warn("Default aggregate not specified. measure:" + msrName + " token:" + token);
+              throw new SemanticException("Default aggregate is not set for measure: " + msrName);
             }
+          } else {
+            // should not be here, since if it is a measure, we should get a cube measure object
+            throw new SemanticException("Measure not found for " + msrName);
           }
         }
       }
@@ -197,7 +200,7 @@ public class AggregateResolver implements ContextRewriter {
 
   // We need to traverse the AST for Having clause.
   // We need to skip any columns that are inside an aggregate UDAF or inside an arithmetic expression
-  private String resolveForHaving(CubeQueryContext cubeql) {
+  private String resolveForHaving(CubeQueryContext cubeql) throws SemanticException {
     ASTNode havingTree = cubeql.getHavingAST();
     String havingTreeStr = cubeql.getHavingTree();
 
@@ -212,7 +215,7 @@ public class AggregateResolver implements ContextRewriter {
     return HQLParser.getString(havingTree);
   }
 
-  private void transform(CubeQueryContext cubeql, ASTNode parent, ASTNode node, int nodePos) {
+  private void transform(CubeQueryContext cubeql, ASTNode parent, ASTNode node, int nodePos) throws SemanticException {
     if (parent == null || node == null) {
       return;
     }
@@ -253,7 +256,7 @@ public class AggregateResolver implements ContextRewriter {
   }
 
   // Wrap an aggregate function around the node if its a measure, leave it unchanged otherwise
-  private ASTNode wrapAggregate(CubeQueryContext cubeql, ASTNode node) {
+  private ASTNode wrapAggregate(CubeQueryContext cubeql, ASTNode node) throws SemanticException {
 
     String tabname = null;
     String colname = null;
@@ -275,6 +278,10 @@ public class AggregateResolver implements ContextRewriter {
     if (cubeql.isCubeMeasure(msrname)) {
       CubeMeasure measure = cubeql.getCube().getMeasureByName(colname);
       String aggregateFn = measure.getAggregate();
+
+      if (StringUtils.isBlank(aggregateFn)) {
+        throw new SemanticException("Default aggregate is not set for measure: " + colname);
+      }
       ASTNode fnroot = new ASTNode(new CommonToken(HiveParser.TOK_FUNCTION));
       fnroot.setParent(node.getParent());
 

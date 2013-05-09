@@ -54,6 +54,10 @@ public class CubeTestSetup {
     cubeMeasures.add(new ExprMeasure(new FieldSchema("msr6", "bigint",
         "sixth measure"),
         "(msr1 + msr2)/ msr4", "", "SUM", "RS"));
+    cubeMeasures.add(new ColumnMeasure(new FieldSchema("noAggrMsr", "bigint",
+        "measure without a default aggregate"),
+        null, null, null
+        ));
 
     cubeDimensions = new HashSet<CubeDimension>();
     List<CubeDimension> locationHierarchy = new ArrayList<CubeDimension>();
@@ -72,6 +76,8 @@ public class CubeTestSetup {
     cubeDimensions.add(new HierarchicalDimension("location", locationHierarchy));
     cubeDimensions.add(new BaseDimension(new FieldSchema("dim1", "string",
         "basedim")));
+    // Added for ambiguity test
+    cubeDimensions.add(new BaseDimension(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity")));
     cubeDimensions.add(new ReferencedDimension(
             new FieldSchema("dim2", "string", "ref dim"),
             new TableReference("testdim2", "id")));
@@ -92,6 +98,7 @@ public class CubeTestSetup {
     // add dimensions of the cube
     factColumns.add(new FieldSchema("zipcode","int", "zip"));
     factColumns.add(new FieldSchema("cityid","int", "city id"));
+    factColumns.add(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity"));
 
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();
@@ -173,7 +180,8 @@ public class CubeTestSetup {
     dimColumns.add(new FieldSchema("name", "string", "field1"));
     dimColumns.add(new FieldSchema("stateid", "int", "state id"));
     dimColumns.add(new FieldSchema("zipcode", "int", "zip code"));
-
+    dimColumns.add(new FieldSchema("ambigdim1", "string", "used in testColumnAmbiguity"));
+    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in testColumnAmbiguity"));
     Map<String, TableReference> dimensionReferences =
         new HashMap<String, TableReference>();
     dimensionReferences.put("stateid", new TableReference("statetable", "id"));
@@ -223,7 +231,7 @@ public class CubeTestSetup {
     dimColumns.add(new FieldSchema("name", "string", "field1"));
     dimColumns.add(new FieldSchema("capital", "string", "field2"));
     dimColumns.add(new FieldSchema("region", "string", "region name"));
-
+    dimColumns.add(new FieldSchema("ambigdim2", "string", "used in testColumnAmbiguity"));
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());

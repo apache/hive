@@ -241,6 +241,12 @@ public class CubeQueryContext {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
+
+    assert timeFrom != null && timeTo != null;
+
+    if (timeFrom.after(timeTo)) {
+      throw new SemanticException("From date: " + fromDateRaw + " is after to date:" + toDateRaw);
+    }
   }
 
   private void extractColumns() throws SemanticException {
@@ -369,20 +375,33 @@ public class CubeQueryContext {
       return;
     }
     for (String col : columns) {
+      boolean inCube = false;
       if (cube != null) {
         List<String> cols = cubeTabToCols.get(cube);
         if (cols.contains(col.toLowerCase())) {
-          columnToTabAlias.put(col, getAliasForTabName(cube.getName()));
+          columnToTabAlias.put(col.toLowerCase(), getAliasForTabName(cube.getName()));
           cubeColumnsQueried.add(col);
+          inCube = true;
         }
       }
       for (CubeDimensionTable dim: dimensions) {
         if (cubeTabToCols.get(dim).contains(col.toLowerCase())) {
-          columnToTabAlias.put(col, dim.getName());
-          break;
+          if (!inCube) {
+            String prevDim = columnToTabAlias.get(col.toLowerCase());
+            if (prevDim != null && !prevDim.equals(dim.getName())) {
+              throw new SemanticException("Ambiguous column:" + col
+                  + " in dimensions '" + prevDim + "' and '" + dim.getName()+"'");
+            }
+            columnToTabAlias.put(col.toLowerCase(), dim.getName());
+            break;
+          } else {
+            // throw error because column is in both cube and dimension table
+            throw new SemanticException("Ambiguous column:" + col
+                + " in cube: " + cube.getName() + " and dimension: " + dim.getName());
+          }
         }
       }
-      if (columnToTabAlias.get(col) == null) {
+      if (columnToTabAlias.get(col.toLowerCase()) == null) {
         throw new SemanticException("Could not find the table containing" +
             " column:" + col);
       }
@@ -397,7 +416,7 @@ public class CubeQueryContext {
         CubeFactTable fact = i.next();
         List<String> factCols = cubeTabToCols.get(fact);
         for (String col : cubeColumnsQueried) {
-          if (!factCols.contains(col)) {
+          if (!factCols.contains(col.toLowerCase())) {
             System.out.println("Not considering the fact table:" + fact +
                 " as column " + col + " is not available");
             i.remove();

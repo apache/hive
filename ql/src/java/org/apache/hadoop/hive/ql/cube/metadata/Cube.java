@@ -32,12 +32,12 @@ public final class Cube extends AbstractCubeTable {
 
     measureMap = new HashMap<String, CubeMeasure>();
     for (CubeMeasure m : measures) {
-      measureMap.put(m.getName(), m);
+      measureMap.put(m.getName().toLowerCase(), m);
     }
 
     dimMap = new HashMap<String, CubeDimension>();
     for (CubeDimension dim : dimensions) {
-      dimMap.put(dim.getName(), dim);
+      dimMap.put(dim.getName().toLowerCase(), dim);
     }
 
     addProperties();
@@ -49,12 +49,12 @@ public final class Cube extends AbstractCubeTable {
     this.dimensions = getDimensions(getName(), getProperties());
     measureMap = new HashMap<String, CubeMeasure>();
     for (CubeMeasure m : measures) {
-      measureMap.put(m.getName(), m);
+      measureMap.put(m.getName().toLowerCase(), m);
     }
 
     dimMap = new HashMap<String, CubeDimension>();
     for (CubeDimension dim : dimensions) {
-      dimMap.put(dim.getName(), dim);
+      dimMap.put(dim.getName().toLowerCase(), dim);
     }
   }
 
