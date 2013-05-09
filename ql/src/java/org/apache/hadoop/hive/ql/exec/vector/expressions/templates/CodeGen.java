@@ -154,6 +154,13 @@ public class CodeGen {
       {"FilterStringColumnCompareScalar", "LessEqual", "<="},
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
+      
+      {"FilterStringColumnCompareColumn", "Equal", "=="},
+      {"FilterStringColumnCompareColumn", "NotEqual", "!="},
+      {"FilterStringColumnCompareColumn", "Less", "<"},
+      {"FilterStringColumnCompareColumn", "LessEqual", "<="},
+      {"FilterStringColumnCompareColumn", "Greater", ">"},
+      {"FilterStringColumnCompareColumn", "GreaterEqual", ">="},
 
       {"FilterColumnCompareColumn", "Equal", "long", "double", "=="},
       {"FilterColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -267,6 +274,8 @@ public class CodeGen {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
         generateFilterStringColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringColumnCompareColumn")) {
+        generateFilterStringColumnCompareColumn(tdesc);
       } else {
         continue;
       }
@@ -374,6 +383,12 @@ public class CodeGen {
   private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringScalar";
+    generateFilterStringColumnCompareScalar(tdesc,className);
+  }
+  
+  private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterStringCol" + operatorName + "StringCol";
     generateFilterStringColumnCompareScalar(tdesc,className);
   }
 
