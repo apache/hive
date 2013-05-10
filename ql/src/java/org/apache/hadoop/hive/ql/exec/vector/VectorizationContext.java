@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterNotExpr;
@@ -241,7 +242,20 @@ public class VectorizationContext {
 
   private VectorExpression getConstantVectorExpression(ExprNodeConstantDesc exprDesc)
       throws HiveException {
-    return null;
+    String type = exprDesc.getTypeString();
+    String colVectorType = this.getOutputColType(type, "constant");
+    int outCol = ocm.allocateOutputColumn(colVectorType);
+    if (type.equalsIgnoreCase("long") || type.equalsIgnoreCase("int") ||
+        type.equalsIgnoreCase("short") || type.equalsIgnoreCase("byte")) {
+      return new ConstantVectorExpression(outCol,
+          ((Number) exprDesc.getValue()).longValue());
+    } else if (type.equalsIgnoreCase("double") || type.equalsIgnoreCase("float")) {
+      return new ConstantVectorExpression(outCol, ((Number) exprDesc.getValue()).doubleValue());
+    } else if (type.equalsIgnoreCase("string")) {
+      return new ConstantVectorExpression(outCol, ((String) exprDesc.getValue()).getBytes());
+    } else {
+      throw new HiveException("Unsupported constant type");
+    }
   }
 
   private VectorExpression getUnaryMinusExpression(List<ExprNodeDesc> childExprList)

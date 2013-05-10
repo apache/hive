@@ -56,7 +56,12 @@ public class VectorizedOrcSerde extends OrcSerde {
         index = i;
       }
       for (int k = 0; k < batch.numCols; k++) {
-        Writable w = batch.cols[k].getWritableObject(index);
+        Writable w;
+        if (batch.cols[k].isRepeating) {
+          w = batch.cols[k].getWritableObject(0);
+        } else {
+          w = batch.cols[k].getWritableObject(index);
+        }
         ost.setFieldValue(k, w);
       }
       OrcSerdeRow row = (OrcSerdeRow) orcRowArray[i];
