@@ -112,6 +112,14 @@ public class VectorizationContext {
     this.firstOutputColumnIndex = initialOutputCol;
   }
 
+  private int getInputColumnIndex(String name) {
+    if (columnMap == null) {
+      //Null is treated as test call, is used for validation test.
+      return 0;
+    } else {
+      return columnMap.get(name);
+    }
+  }
 
   private class OutputColumnManager {
     private final int initialOutputCol;
@@ -182,7 +190,7 @@ public class VectorizationContext {
   private VectorExpression getVectorExpression(ExprNodeColumnDesc
       exprDesc) {
 
-    int columnNum = columnMap.get(exprDesc.getColumn());
+    int columnNum = getInputColumnIndex(exprDesc.getColumn());
     VectorExpression expr = null;
     switch (opType) {
       case FILTER:
@@ -198,7 +206,7 @@ public class VectorizationContext {
     return expr;
   }
 
-  public VectorExpression[] getVectorExpressions(List<ExprNodeDesc> exprNodes) {
+  public VectorExpression[] getVectorExpressions(List<ExprNodeDesc> exprNodes) throws HiveException {
     int i = 0;
     VectorExpression[] ret = new VectorExpression[exprNodes.size()];
     for (ExprNodeDesc e : exprNodes) {
@@ -212,8 +220,9 @@ public class VectorizationContext {
    * description.
    * @param exprDesc, Expression description
    * @return {@link VectorExpression}
+   * @throws HiveException
    */
-  public VectorExpression getVectorExpression(ExprNodeDesc exprDesc) {
+  public VectorExpression getVectorExpression(ExprNodeDesc exprDesc) throws HiveException {
     VectorExpression ve = null;
     if (exprDesc instanceof ExprNodeColumnDesc) {
       ve = getVectorExpression((ExprNodeColumnDesc) exprDesc);
@@ -221,12 +230,22 @@ public class VectorizationContext {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
       ve = getVectorExpression(expr.getGenericUDF(),
           expr.getChildExprs());
+    } else if (exprDesc instanceof ExprNodeConstantDesc) {
+      ve = getConstantVectorExpression((ExprNodeConstantDesc) exprDesc);
     }
-    System.out.println("VectorExpression = "+ve.toString());
+    if (ve == null) {
+      throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
+    }
     return ve;
   }
 
-  private VectorExpression getUnaryMinusExpression(List<ExprNodeDesc> childExprList) {
+  private VectorExpression getConstantVectorExpression(ExprNodeConstantDesc exprDesc)
+      throws HiveException {
+    return null;
+  }
+
+  private VectorExpression getUnaryMinusExpression(List<ExprNodeDesc> childExprList)
+      throws HiveException {
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
     String colType;
@@ -240,7 +259,7 @@ public class VectorizationContext {
       inputCol = columnMap.get(colDesc.getColumn());
       colType = colDesc.getTypeString();
     } else {
-      throw new RuntimeException("Expression not supported: "+childExpr);
+      throw new HiveException("Expression not supported: "+childExpr);
     }
     int outputCol = ocm.allocateOutputColumn(colType);
     String className = getNormalizedTypeName(colType) + "colUnaryMinus";
@@ -249,7 +268,7 @@ public class VectorizationContext {
       expr = (VectorExpression) Class.forName(className).
           getDeclaredConstructors()[0].newInstance(inputCol, outputCol);
     } catch (Exception ex) {
-      throw new RuntimeException((ex));
+      throw new HiveException(ex);
     }
     if (v1 != null) {
       expr.setChildExpressions(new VectorExpression [] {v1});
@@ -258,7 +277,8 @@ public class VectorizationContext {
     return expr;
   }
 
-  private VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList) {
+  private VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList)
+      throws HiveException {
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
     String colType;
@@ -269,10 +289,10 @@ public class VectorizationContext {
       colType = v1.getOutputType();
     } else if (childExpr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) childExpr;
-      inputCol = columnMap.get(colDesc.getColumn());
+      inputCol = getInputColumnIndex(colDesc.getColumn());
       colType = colDesc.getTypeString();
     } else {
-      throw new RuntimeException("Expression not supported: "+childExpr);
+      throw new HiveException("Expression not supported: "+childExpr);
     }
     VectorExpression expr = new IdentityExpression(inputCol, colType);
     if (v1 != null) {
@@ -282,7 +302,7 @@ public class VectorizationContext {
   }
 
   private VectorExpression getVectorExpression(GenericUDF udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     if (udf instanceof GenericUDFOPLessThan) {
       return getVectorBinaryComparisonFilterExpression("Less", childExpr);
     } else if (udf instanceof GenericUDFOPEqualOrLessThan) {
@@ -308,11 +328,11 @@ public class VectorizationContext {
     } else if (udf instanceof GenericUDFBridge) {
       return getVectorExpression((GenericUDFBridge) udf, childExpr);
     }
-    return null;
+    throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
 
   private VectorExpression getVectorExpression(GenericUDFBridge udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     Class<? extends UDF> cl = udf.getUdfClass();
     // (UDFBaseNumericOp.class.isAssignableFrom(cl)) == true
     if (cl.equals(UDFOPPlus.class)) {
@@ -330,11 +350,11 @@ public class VectorizationContext {
     } else if (cl.equals(UDFOPPositive.class)) {
       return getUnaryPlusExpression(childExpr);
     }
-    return null;
+    throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
 
   private VectorExpression getBinaryArithmeticExpression(String method,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
@@ -346,7 +366,7 @@ public class VectorizationContext {
         (rightExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
-      int inputCol = columnMap.get(leftColDesc.getColumn());
+      int inputCol = getInputColumnIndex(leftColDesc.getColumn());
       String colType = leftColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
       String className = getBinaryColumnScalarExpressionClassName(colType,
@@ -358,13 +378,13 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
-      int inputCol = columnMap.get(rightColDesc.getColumn());
+      int inputCol = getInputColumnIndex(rightColDesc.getColumn());
       String colType = rightColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
       String className = getBinaryColumnScalarExpressionClassName(colType,
@@ -376,14 +396,14 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeColumnDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol1 = columnMap.get(rightColDesc.getColumn());
-      int inputCol2 = columnMap.get(leftColDesc.getColumn());
+      int inputCol1 = getInputColumnIndex(rightColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
       String colType1 = rightColDesc.getTypeString();
       String colType2 = leftColDesc.getTypeString();
       String outputColType = getOutputColType(colType1, colType2, method);
@@ -395,14 +415,14 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc)
         && (rightExpr instanceof ExprNodeColumnDesc)) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) rightExpr;
       v1 = getVectorExpression(leftExpr);
       int inputCol1 = v1.getOutputColumn();
-      int inputCol2 = columnMap.get(colDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(colDesc.getColumn());
       String colType1 = v1.getOutputType();
       String colType2 = colDesc.getTypeString();
       String outputColType = getOutputColType(colType1, colType2, method);
@@ -414,7 +434,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException((ex));
       }
       expr.setChildExpressions(new VectorExpression [] {v1});
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc)
@@ -433,14 +453,14 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException((ex));
       }
       expr.setChildExpressions(new VectorExpression [] {v1});
     } else if ((leftExpr instanceof ExprNodeColumnDesc)
         && (rightExpr instanceof ExprNodeGenericFuncDesc)) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leftExpr;
       v2 = getVectorExpression(rightExpr);
-      int inputCol1 = columnMap.get(colDesc.getColumn());
+      int inputCol1 = getInputColumnIndex(colDesc.getColumn());
       int inputCol2 = v2.getOutputColumn();
       String colType1 = colDesc.getTypeString();
       String colType2 = v2.getOutputType();
@@ -453,7 +473,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v2});
     } else if ((leftExpr instanceof ExprNodeConstantDesc)
@@ -472,7 +492,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol2,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v2});
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc)
@@ -494,7 +514,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v1, v2});
     }
@@ -509,7 +529,7 @@ public class VectorizationContext {
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPOr udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
@@ -517,7 +537,7 @@ public class VectorizationContext {
     VectorExpression ve2;
     if (leftExpr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve1 = new SelectColumnIsTrue(inputCol);
     } else {
       ve1 = getVectorExpression(leftExpr);
@@ -525,7 +545,7 @@ public class VectorizationContext {
 
     if (rightExpr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) rightExpr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve2 = new SelectColumnIsTrue(inputCol);
     } else {
       ve2 = getVectorExpression(leftExpr);
@@ -535,22 +555,21 @@ public class VectorizationContext {
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPNot udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc expr = childExpr.get(0);
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) expr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       VectorExpression ve = new SelectColumnIsFalse(inputCol);
       return ve;
     } else {
       VectorExpression ve = getVectorExpression(expr);
-      new FilterNotExpr(ve);
+      return new FilterNotExpr(ve);
     }
-    return null;
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPAnd udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
@@ -558,7 +577,7 @@ public class VectorizationContext {
     VectorExpression ve2;
     if (leftExpr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve1 = new SelectColumnIsTrue(inputCol);
     } else {
       ve1 = getVectorExpression(leftExpr);
@@ -566,7 +585,7 @@ public class VectorizationContext {
 
     if (rightExpr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) rightExpr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve2 = new SelectColumnIsTrue(inputCol);
     } else {
       ve2 = getVectorExpression(leftExpr);
@@ -576,31 +595,30 @@ public class VectorizationContext {
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPNull udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc expr = childExpr.get(0);
     VectorExpression ve = null;
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) expr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve = new SelectColumnIsNull(inputCol);
     } else {
-      //TODO
+      throw new HiveException("Not supported");
     }
     return ve;
   }
 
   private VectorExpression getVectorExpression(GenericUDFOPNotNull udf,
-      List<ExprNodeDesc> childExpr) {
+      List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc expr = childExpr.get(0);
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) expr;
-      int inputCol = columnMap.get(colDesc.getColumn());
+      int inputCol = getInputColumnIndex(colDesc.getColumn());
       VectorExpression ve = new SelectColumnIsNotNull(inputCol);
       return ve;
     } else {
-      //TODO
+      throw new HiveException("Not supported");
     }
-    return null;
   }
 
   private Object getScalarValue(ExprNodeConstantDesc constDesc) {
@@ -612,7 +630,7 @@ public class VectorizationContext {
   }
 
   private VectorExpression getVectorBinaryComparisonFilterExpression(String
-      opName, List<ExprNodeDesc> childExpr) {
+      opName, List<ExprNodeDesc> childExpr) throws HiveException {
 
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
@@ -624,7 +642,7 @@ public class VectorizationContext {
         (rightExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
-      int inputCol = columnMap.get(leftColDesc.getColumn());
+      int inputCol = getInputColumnIndex(leftColDesc.getColumn());
       String colType = leftColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
       String className = getFilterColumnScalarExpressionClassName(colType,
@@ -634,13 +652,13 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol,
             getScalarValue(constDesc));
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
-      int inputCol = columnMap.get(rightColDesc.getColumn());
+      int inputCol = getInputColumnIndex(rightColDesc.getColumn());
       String colType = rightColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
       String className = getFilterColumnScalarExpressionClassName(colType,
@@ -650,14 +668,14 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol,
             getScalarValue(constDesc));
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeColumnDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol1 = columnMap.get(rightColDesc.getColumn());
-      int inputCol2 = columnMap.get(leftColDesc.getColumn());
+      int inputCol1 = getInputColumnIndex(rightColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
       String colType1 = rightColDesc.getTypeString();
       String colType2 = leftColDesc.getTypeString();
       String className = getFilterColumnColumnExpressionClassName(colType1,
@@ -666,14 +684,14 @@ public class VectorizationContext {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
     } else if ( (leftExpr instanceof ExprNodeGenericFuncDesc) &&
         (rightExpr instanceof ExprNodeColumnDesc) ) {
       v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) rightExpr;
       int inputCol1 = v1.getOutputColumn();
-      int inputCol2 = columnMap.get(leftColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
       String colType1 = v1.getOutputType();
       String colType2 = leftColDesc.getTypeString();
       String className = getFilterColumnColumnExpressionClassName(colType1,
@@ -684,14 +702,14 @@ public class VectorizationContext {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v1});
     } else if ( (leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeGenericFuncDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) leftExpr;
       v2 = getVectorExpression((ExprNodeGenericFuncDesc) rightExpr);
-      int inputCol1 = columnMap.get(rightColDesc.getColumn());
+      int inputCol1 = getInputColumnIndex(rightColDesc.getColumn());
       int inputCol2 = v2.getOutputColumn();
       String colType1 = rightColDesc.getTypeString();
       String colType2 = v2.getOutputType();
@@ -701,7 +719,7 @@ public class VectorizationContext {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v2});
     } else if ( (leftExpr instanceof ExprNodeGenericFuncDesc) &&
@@ -718,7 +736,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol1,
             getScalarValue(constDesc));
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v1});
     } else if ( (leftExpr instanceof ExprNodeConstantDesc) &&
@@ -735,7 +753,7 @@ public class VectorizationContext {
             getDeclaredConstructors()[0].newInstance(inputCol2,
             getScalarValue(constDesc));
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v2});
     } else {
@@ -753,7 +771,7 @@ public class VectorizationContext {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
-        throw new RuntimeException((ex));
+        throw new HiveException(ex);
       }
       expr.setChildExpressions(new VectorExpression [] {v1, v2});
     }

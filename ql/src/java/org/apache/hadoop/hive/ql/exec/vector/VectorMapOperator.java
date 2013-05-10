@@ -35,14 +35,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -54,7 +52,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -149,10 +146,10 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     private final boolean isPartitioned;
     private final StructObjectInspector tblRawRowObjectInspector; // without partition
     private final StructObjectInspector partObjectInspector; // partition
-    private StructObjectInspector rowObjectInspector;
+    private final StructObjectInspector rowObjectInspector;
     private final Converter partTblObjectInspectorConverter;
     private final Object[] rowWithPart;
-    private Object[] rowWithPartAndVC;
+    private final Object[] rowWithPartAndVC;
     private final Deserializer deserializer;
     private String tableName;
     private String partName;
@@ -325,73 +322,6 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     return opCtx;
   }
 
-  /**
-   * Set the inspectors given a input. Since a mapper can span multiple partitions, the inspectors
-   * need to be changed if the input changes
-   **/
-  private void setInspectorInput(MapInputPath inp) {
-    Operator<? extends OperatorDesc> op = inp.getOp();
-
-    deserializer = opCtxMap.get(inp).getDeserializer();
-    isPartitioned = opCtxMap.get(inp).isPartitioned();
-    rowWithPart = opCtxMap.get(inp).getRowWithPart();
-    rowWithPartAndVC = opCtxMap.get(inp).getRowWithPartAndVC();
-    tblRowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
-    partTblObjectInspectorConverter = opCtxMap.get(inp).getPartTblObjectInspectorConverter();
-    if (listInputPaths.contains(inp)) {
-      return;
-    }
-
-    listInputPaths.add(inp);
-
-    // The op may not be a TableScan for mapjoins
-    // Consider the query: select /*+MAPJOIN(a)*/ count(*) FROM T1 a JOIN T2 b ON a.key = b.key;
-    // In that case, it will be a Select, but the rowOI need not be ammended
-    if (op instanceof TableScanOperator) {
-      StructObjectInspector tblRawRowObjectInspector =
-          opCtxMap.get(inp).getTblRawRowObjectInspector();
-      StructObjectInspector partObjectInspector = opCtxMap.get(inp).partObjectInspector;
-      TableScanOperator tsOp = (TableScanOperator) op;
-      TableScanDesc tsDesc = tsOp.getConf();
-      if (tsDesc != null) {
-        this.vcs = tsDesc.getVirtualCols();
-        if (vcs != null && vcs.size() > 0) {
-          List<String> vcNames = new ArrayList<String>(vcs.size());
-          this.vcValues = new Writable[vcs.size()];
-          List<ObjectInspector> vcsObjectInspectors = new ArrayList<ObjectInspector>(vcs.size());
-          for (int i = 0; i < vcs.size(); i++) {
-            VirtualColumn vc = vcs.get(i);
-            vcsObjectInspectors.add(
-                PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                    ((PrimitiveTypeInfo) vc.getTypeInfo()).getPrimitiveCategory()));
-            vcNames.add(vc.getName());
-          }
-          StructObjectInspector vcStructObjectInspector = ObjectInspectorFactory
-              .getStandardStructObjectInspector(vcNames,
-                                              vcsObjectInspectors);
-          if (isPartitioned) {
-            this.rowWithPartAndVC = new Object[3];
-            this.rowWithPartAndVC[1] = this.rowWithPart[1];
-          } else {
-            this.rowWithPartAndVC = new Object[2];
-          }
-          if (partObjectInspector == null) {
-            this.tblRowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
-                                        .asList(new StructObjectInspector[] {
-                                            tblRowObjectInspector, vcStructObjectInspector}));
-          } else {
-            this.tblRowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
-                                        .asList(new StructObjectInspector[] {
-                                            tblRawRowObjectInspector, partObjectInspector,
-                                            vcStructObjectInspector}));
-          }
-          opCtxMap.get(inp).rowObjectInspector = this.tblRowObjectInspector;
-          opCtxMap.get(inp).rowWithPartAndVC = this.rowWithPartAndVC;
-        }
-      }
-    }
-  }
-
   // Return the mapping for table descriptor to the expected table OI
   /**
    * Traverse all the partitions for a table, and get the OI for the table.
@@ -532,7 +462,6 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
             LOG.info("dump " + op.getName() + " "
                 + opCtxMap.get(inp).getRowObjectInspector().getTypeName());
           }
-          setInspectorInput(inp);
         }
       }
 
@@ -551,9 +480,9 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     }
   }
 
-  private Operator<? extends OperatorDesc> vectorizeOperator
+  public static Operator<? extends OperatorDesc> vectorizeOperator
       (Operator<? extends OperatorDesc> op, VectorizationContext
-          vectorizationContext) throws HiveException {
+          vectorizationContext) throws HiveException, CloneNotSupportedException {
 
     Operator<? extends OperatorDesc> vectorOp;
     boolean recursive = true;
@@ -574,7 +503,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
             op.getConf());
         break;
       case TABLESCAN:
-        vectorOp = op;
+        vectorOp = op.clone();
         break;
       default:
         throw new HiveException("Operator: " + op.getName() + ", " +
@@ -587,8 +516,8 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         List<Operator<? extends OperatorDesc>> vectorizedChildren = new
             ArrayList<Operator<? extends OperatorDesc>>(children.size());
         for (Operator<? extends OperatorDesc> childOp : children) {
-          Operator<? extends OperatorDesc> vectorizedChild = this
-              .vectorizeOperator(childOp, vectorizationContext);
+          Operator<? extends OperatorDesc> vectorizedChild =
+              vectorizeOperator(childOp, vectorizationContext);
           List<Operator<? extends OperatorDesc>> parentList =
               new ArrayList<Operator<? extends OperatorDesc>>();
           parentList.add(vectorOp);
@@ -695,25 +624,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
   // multiple files/partitions.
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
-    Path fpath = new Path((new Path(this.getExecContext().getCurrentInputFile()))
-                          .toUri().getPath());
 
-    for (String onefile : conf.getPathToAliases().keySet()) {
-      Path onepath = new Path(new Path(onefile).toUri().getPath());
-      // check for the operators who will process rows coming to this Map
-      // Operator
-      if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
-        String onealias = conf.getPathToAliases().get(onefile).get(0);
-        Operator<? extends OperatorDesc> op =
-            conf.getAliasToWork().get(onealias);
-
-        LOG.info("Processing alias " + onealias + " for file " + onefile);
-
-        MapInputPath inp = new MapInputPath(onefile, onealias, op);
-        setInspectorInput(inp);
-        break;
-      }
-    }
   }
 
   public static Writable[] populateVirtualColumnValues(ExecMapperContext ctx,
