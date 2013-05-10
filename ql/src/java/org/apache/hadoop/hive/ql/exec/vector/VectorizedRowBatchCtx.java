@@ -50,8 +50,10 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 
 /**
- * Context for Vectorized row batch. this calss does eager deserialization of row data using serde in the RecordReader layer.
- * It has supports partitions in this layer so that the vectorized batch is populated correctly with the partition column.
+ * Context for Vectorized row batch. this calss does eager deserialization of row data using serde
+ * in the RecordReader layer.
+ * It has supports partitions in this layer so that the vectorized batch is populated correctly with
+ * the partition column.
  * VectorizedRowBatchCtx.
  *
  */
@@ -356,10 +358,22 @@ public class VectorizedRowBatchCtx {
     }
   }
 
-  public void ConvertRowBatchBlobToVectorizedBatch(Writable[] rowBlobs, VectorizedRowBatch batch) {
-    // No reader supports this operation. If a reader returns a set of rows then
-    // this function can be used to converts that row blob batch into vectorized batch.
-    throw new UnsupportedOperationException();
+  /**
+   * Deserialized set of rows and populates the batch
+   * @param rowBlob to deserialize
+   * @param batch Vectorized row batch which contains deserialized data
+   * @throws SerDeException
+   */
+  public void ConvertRowBatchBlobToVectorizedBatch(Object rowBlob, VectorizedRowBatch batch)
+      throws SerDeException {
+
+    if (deserializer instanceof VectorizedSerde) {
+      batch = ((VectorizedSerde) deserializer).deserializeVector(rowBlob,
+          deserializer.getObjectInspector(), batch);
+    } else {
+      throw new SerDeException(
+          "Not able to deserialize row batch. Serde does not implement VectorizedSerde");
+    }
   }
 
   private int GetColIndexBasedOnColName(String colName) throws HiveException
@@ -384,14 +398,16 @@ public class VectorizedRowBatchCtx {
     int colIndex;
     String value;
     BytesColumnVector bcv;
-    for (String key : partitionValues.keySet()) {
-      colIndex = GetColIndexBasedOnColName(key);
-      value = partitionValues.get(key);
-      bcv = (BytesColumnVector) batch.cols[colIndex];
-      bcv.setRef(0, value.getBytes(), 0, value.length());
-      bcv.isRepeating = true;
-      bcv.isNull[0] = false;
-      bcv.noNulls = true;
+    if (partitionValues != null) {
+      for (String key : partitionValues.keySet()) {
+        colIndex = GetColIndexBasedOnColName(key);
+        value = partitionValues.get(key);
+        bcv = (BytesColumnVector) batch.cols[colIndex];
+        bcv.setRef(0, value.getBytes(), 0, value.length());
+        bcv.isRepeating = true;
+        bcv.isNull[0] = false;
+        bcv.noNulls = true;
+      }
     }
   }
 

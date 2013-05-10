@@ -27,4 +27,7 @@ public interface VectorizedSerde {
   Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
       throws SerDeException;
 
+  VectorizedRowBatch deserializeVector(Object rowBlob, ObjectInspector objInspector,
+      VectorizedRowBatch reuseBatch)
+      throws SerDeException;
 }
