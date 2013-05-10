@@ -142,4 +142,10 @@ public class OrcSerde implements SerDe, VectorizedSerde {
     }
     return vos.serialize(vrg, objInspector);
   }
+
+  @Override
+  public VectorizedRowBatch deserializeVector(Object rowBlob, ObjectInspector objInspector,
+      VectorizedRowBatch reuseBatch) throws SerDeException {
+    return ((VectorizedRowBatch) rowBlob);
+  }
 }

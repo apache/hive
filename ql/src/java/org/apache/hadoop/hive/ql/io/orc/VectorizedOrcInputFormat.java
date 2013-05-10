@@ -29,8 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -50,24 +53,23 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
     private final long offset;
     private final long length;
-    private final int numColumns;
     private float progress = 0.0f;
-    private final OrcStruct rowObj;
-    private final List<OrcProto.Type> types;
+    private VectorizedRowBatchCtx rbCtx;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
-                    long offset, long length) throws IOException {
+        FileSplit fileSplit) throws IOException {
+
+      this.offset = fileSplit.getStart();
+      this.length = fileSplit.getLength();
       this.reader = file.rows(offset, length,
           findIncludedColumns(file.getTypes(), conf));
-      types = file.getTypes();
-      if (types.size() == 0) {
-        numColumns = 0;
-      } else {
-        numColumns = types.get(0).getSubtypesCount();
+
+      try {
+        rbCtx = new VectorizedRowBatchCtx();
+        rbCtx.Init(conf, fileSplit);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
-      this.offset = offset;
-      this.length = length;
-      rowObj = new OrcStruct(numColumns);
     }
 
     @Override
@@ -77,6 +79,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         return false;
       }
       reader.nextBatch(value);
+      try {
+        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object)value, value);
+      } catch (SerDeException e) {
+        new RuntimeException(e);
+      }
       progress = reader.getProgress();
       return true;
     }
@@ -88,8 +95,17 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      return new VectorizedRowBatch(numColumns,
-          VectorizedRowBatch.DEFAULT_SIZE);
+      VectorizedRowBatch result = null;
+      try {
+        result = rbCtx.CreateVectorizedRowBatch();
+        // Since the record reader works only on one split and
+        // given a split the partition cannot change, we are setting the partition
+        // values only once during batch creation
+        rbCtx.AddPartitionColsToBatch(result);
+      } catch (HiveException e) {
+        new RuntimeException("Error creating a batch", e);
+      }
+      return result;
     }
 
     @Override
@@ -171,8 +187,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
     reporter.setStatus(fileSplit.toString());
-    return new VectorizedOrcRecordReader(OrcFile.createReader(fs, path), conf,
-                               fileSplit.getStart(), fileSplit.getLength());
+    return new VectorizedOrcRecordReader(OrcFile.createReader(fs, path), conf, fileSplit);
   }
 
   @Override
