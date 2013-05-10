@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -56,6 +57,9 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExecMapper;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -280,8 +284,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
 
     if (vectorPath) {
-      System.out.println("Going down the vectorization path");
-      job.setMapperClass(VectorExecMapper.class);
+      if (validateVectorPath()) {
+        System.out.println("Going down the vectorization path");
+        job.setMapperClass(VectorExecMapper.class);
+      } else {
+        //fall back to non-vector mode
+        HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+        job.setMapperClass(ExecMapper.class);
+      }
     } else {
       job.setMapperClass(ExecMapper.class);
     }
@@ -520,6 +530,68 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
+  }
+
+  private boolean validateVectorPath() {
+    System.out.println("Validating if vectorized execution is applicable");
+    LOG.info("Validating if vectorized execution is applicable");
+    MapredWork thePlan = this.getWork();
+
+    for (String path : thePlan.getPathToPartitionInfo().keySet()) {
+      PartitionDesc pd = thePlan.getPathToPartitionInfo().get(path);
+      List<Class<?>> interfaceList =
+          Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
+      if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
+        System.out.println("Input format: " + pd.getInputFileFormatClassName()
+            + ", doesn't provide vectorized input");
+        LOG.info("Input format: " + pd.getInputFileFormatClassName()
+            + ", doesn't provide vectorized input");
+        return false;
+      }
+    }
+    VectorizationContext vc = new VectorizationContext(null, 0);
+    for (String onefile : thePlan.getPathToAliases().keySet()) {
+      List<String> aliases = thePlan.getPathToAliases().get(onefile);
+      for (String onealias : aliases) {
+        Operator<? extends OperatorDesc> op = thePlan.getAliasToWork().get(
+            onealias);
+        Operator<? extends OperatorDesc> vectorOp = null;
+        try {
+          vectorOp = VectorMapOperator.vectorizeOperator(op, vc);
+        } catch (Exception e) {
+          LOG.info("Cannot vectorize the plan", e);
+          System.out.println("Cannot vectorize the plan: "+ e);
+          return false;
+        }
+        if (vectorOp == null) {
+          LOG.info("Cannot vectorize the plan");
+          System.out.println("Cannot vectorize the plan");
+          return false;
+        }
+        //verify the expressions contained in the operators
+        try {
+          validateVectorOperator(vectorOp);
+        } catch (HiveException e) {
+          LOG.info("Cannot vectorize the plan", e);
+          System.out.println("Cannot vectorize the plan");
+          return false;
+        }
+      }
+    }
+    System.out.println("Query can be vectorized");
+    return true;
+  }
+
+  private void validateVectorOperator(Operator<? extends OperatorDesc> vectorOp)
+      throws HiveException {
+    if (!vectorOp.getName().equals("TS")) {
+      vectorOp.initialize(job, null);
+    }
+    if (vectorOp.getChildOperators() != null) {
+      for (Operator<? extends OperatorDesc> vop : vectorOp.getChildOperators()) {
+        validateVectorOperator(vop);
+      }
+    }
   }
 
   /**
