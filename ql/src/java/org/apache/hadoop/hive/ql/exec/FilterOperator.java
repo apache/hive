@@ -68,6 +68,10 @@ public class FilterOperator extends Operator<FilterDesc> implements
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
       conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
+      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
+        conditionEvaluator = ExprNodeEvaluatorFactory.toCachedEval(conditionEvaluator);
+      }
+
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;

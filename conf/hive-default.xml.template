@@ -1716,6 +1716,17 @@
 </property>
 
 <property>
+  <name>hive.cache.expr.evaluation</name>
+  <value>true</value>
+  <description>
+    If true, evaluation result of deterministic expression referenced twice or more will be cached.
+    For example, in filter condition like ".. where key + 10 > 10 or key + 10 = 0"
+    "key + 10" will be evaluated/cached once and reused for following expression ("key + 10 = 0").
+    Currently, this is applied only to expressions in select or filter operator.
+  </description>
+</property>
+
+<property>
   <name>hive.hmshandler.retry.attempts</name>
   <value>1</value>
   <description>The number of times to retry a HMSHandler call if there were a connection error</description>

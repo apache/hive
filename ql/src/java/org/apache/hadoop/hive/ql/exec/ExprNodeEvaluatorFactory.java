@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -34,7 +38,7 @@ public final class ExprNodeEvaluatorFactory {
   private ExprNodeEvaluatorFactory() {
   }
 
-  public static ExprNodeEvaluator get(ExprNodeDesc desc) {
+  public static ExprNodeEvaluator get(ExprNodeDesc desc) throws HiveException {
     // Constant node
     if (desc instanceof ExprNodeConstantDesc) {
       return new ExprNodeConstantEvaluator((ExprNodeConstantDesc) desc);
@@ -58,5 +62,57 @@ public final class ExprNodeEvaluatorFactory {
 
     throw new RuntimeException(
         "Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
+  }
+
+  /**
+   * Should be called before eval is initialized
+   */
+  public static ExprNodeEvaluator toCachedEval(ExprNodeEvaluator eval) {
+    if (eval instanceof ExprNodeGenericFuncEvaluator) {
+      EvaluatorContext context = new EvaluatorContext();
+      iterate(eval, context);
+      if (context.hasReference) {
+        return new ExprNodeEvaluatorHead(eval);
+      }
+    }
+    // has nothing to be cached
+    return eval;
+  }
+
+  private static ExprNodeEvaluator iterate(ExprNodeEvaluator eval, EvaluatorContext context) {
+    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isDeterministic()) {
+      ExprNodeEvaluator replace = context.getEvaluated(eval);
+      if (replace != null) {
+        return replace;
+      }
+    }
+    ExprNodeEvaluator[] children = eval.getChildren();
+    if (children != null && children.length > 0) {
+      for (int i = 0; i < children.length; i++) {
+        ExprNodeEvaluator replace = iterate(children[i], context);
+        if (replace != null) {
+          children[i] = replace;
+        }
+      }
+    }
+    return null;
+  }
+
+  private static class EvaluatorContext {
+
+    private final Map<String, ExprNodeEvaluator> cached = new HashMap<String, ExprNodeEvaluator>();
+
+    private boolean hasReference;
+
+    public ExprNodeEvaluator getEvaluated(ExprNodeEvaluator eval) {
+      String key = eval.getExpr().getExprString();
+      ExprNodeEvaluator prev = cached.get(key);
+      if (prev == null) {
+        cached.put(key, eval);
+        return null;
+      }
+      hasReference = true;
+      return new ExprNodeEvaluatorRef(prev);
+    }
   }
 }
