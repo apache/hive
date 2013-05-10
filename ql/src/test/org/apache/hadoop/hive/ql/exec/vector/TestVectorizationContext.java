@@ -14,6 +14,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColum
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -30,7 +31,7 @@ import org.junit.Test;
 public class TestVectorizationContext {
 
   @Test
-  public void testArithmeticExpressionVectorization() {
+  public void testArithmeticExpressionVectorization() throws HiveException {
     /**
      * Create original expression tree for following
      * (plus (minus (plus col1 col2) col3) (multiply col4 (mod col5 col6)) )
@@ -119,7 +120,7 @@ public class TestVectorizationContext {
   }
 
   @Test
-  public void testStringFilterExpressions() {
+  public void testStringFilterExpressions() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(String.class, "col1", "table", false);
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc("Alpha");
 

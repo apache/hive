@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -42,7 +43,7 @@ import org.apache.hadoop.mapred.Reporter;
  * A MapReduce/Hive input format for ORC files.
  */
 public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, VectorizedRowBatch>
-  implements InputFormatChecker {
+  implements InputFormatChecker, VectorizedInputFormatInterface {
 
   private static class VectorizedOrcRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch> {

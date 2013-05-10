@@ -35,41 +35,41 @@ public class VectorizedRowBatch implements Writable {
   public ColumnVector[] cols;   // a vector for each column
   public int size;              // number of rows that qualify (i.e. haven't been filtered out)
   public int[] selected;        // array of positions of selected values
-  
+
   /*
    * If no filtering has been applied yet, selectedInUse is false,
    * meaning that all rows qualify. If it is true, then the selected[] array
    * records the offsets of qualifying rows.
    */
-  public boolean selectedInUse; 
-  
+  public boolean selectedInUse;
+
   // If this is true, then there is no data in the batch -- we have hit the end of input.
-  public boolean endOfFile; 
-  
-  /* 
-   * This number is carefully chosen to minimize overhead and typically allows 
+  public boolean endOfFile;
+
+  /*
+   * This number is carefully chosen to minimize overhead and typically allows
    * one VectorizedRowBatch to fit in cache.
    */
-  public static final int DEFAULT_SIZE = 1024; 
+  public static final int DEFAULT_SIZE = 1024;
 
-  private Writable[] writableRow;
+  private final Writable[] writableRow;
   private int rowIteratorIndex = 0;
 
-  /** 
+  /**
    * Return a batch with the specified number of columns.
    * This is the standard constructor -- all batches should be the same size
-   * 
+   *
    * @param numCols the number of columns to include in the batch
    */
   public VectorizedRowBatch(int numCols) {
     this(numCols, DEFAULT_SIZE);
   }
-  
+
   /**
    * Return a batch with the specified number of columns and rows.
    * Only call this constructor directly for testing purposes.
    * Batch size should normally always be defaultSize.
-   * 
+   *
    * @param numCols the number of columns to include in the batch
    * @param size  the number of rows to include in the batch
    */
@@ -104,13 +104,13 @@ public class VectorizedRowBatch implements Writable {
     return writableRow;
   }
 
-  /** 
+  /**
    * Return count of qualifying rows.
-   * 
+   *
    * @return number of rows that have not been filtered out
    */
   public long count() {
-    return size; 
+    return size;
   }
 
   @Override
@@ -124,7 +124,11 @@ public class VectorizedRowBatch implements Writable {
         int i = selected[j];
         int colIndex = 0;
         for (ColumnVector cv : cols) {
-          b.append(cv.getWritableObject(i).toString());
+          if (cv.isRepeating) {
+            b.append(cv.getWritableObject(0).toString());
+          } else {
+            b.append(cv.getWritableObject(i).toString());
+          }
           colIndex++;
           if (colIndex < cols.length) {
             b.append('\u0001');
@@ -138,7 +142,11 @@ public class VectorizedRowBatch implements Writable {
       for (int i = 0; i < size; i++) {
         int colIndex = 0;
         for (ColumnVector cv : cols) {
-          b.append(cv.getWritableObject(i).toString());
+          if (cv.isRepeating) {
+            b.append(cv.getWritableObject(0).toString());
+          } else {
+            b.append(cv.getWritableObject(i).toString());
+          }
           colIndex++;
           if (colIndex < cols.length) {
             b.append('\u0001');
