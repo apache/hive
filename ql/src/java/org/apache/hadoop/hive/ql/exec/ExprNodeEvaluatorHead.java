@@ -19,29 +19,32 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-// This function will not be used currently, since the function expressions
-// change the void to the first matching argument
 /**
- * ExprNodeNullEvaluator.
- *
+ * Increases version number of each evaluations for correct caching
  */
-public class ExprNodeNullEvaluator extends ExprNodeEvaluator<ExprNodeNullDesc> {
+public class ExprNodeEvaluatorHead extends ExprNodeEvaluator {
 
-  public ExprNodeNullEvaluator(ExprNodeNullDesc expr) {
-    super(expr);
+  private int counter;
+  private final ExprNodeEvaluator referencing;
+
+  public ExprNodeEvaluatorHead(ExprNodeEvaluator referencing) {
+    super(referencing.getExpr());
+    this.referencing = referencing;
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
-    return outputOI = PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
+    return outputOI = referencing.initialize(rowInspector);
   }
 
   @Override
   protected Object _evaluate(Object row, int version) throws HiveException {
-    return null;
+    return referencing.evaluate(row, next());
+  }
+
+  private int next() {
+    return ++counter < 0 ? counter = 0 : counter;
   }
 }
