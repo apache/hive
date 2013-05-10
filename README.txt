@@ -1,5 +1,5 @@
 Apache Hive (TM) @VERSION@
-=======================
+======================
 
 The Apache Hive (TM) data warehouse software facilitates querying and
 managing large datasets residing in distributed storage. Built on top
@@ -69,10 +69,8 @@ Requirements
 ============
 
 - Java 1.6
-  Recommended: 1.6.0u31
 
-- Hadoop (> 0.20.1)
-  Recommended: 0.20.2, 1.1.2, 0.23.7, or 2.0.4
+- Hadoop 0.20.x (x >= 1)
 
 
 Upgrading from older versions of Hive
@@ -87,6 +85,12 @@ Upgrading from older versions of Hive
   We have provided upgrade scripts for Derby and MySQL databases. If
   you are using a different database for your MetaStore you will need
   to provide your own upgrade script.
+
+- Hive @VERSION@ includes new configuration properties. If you
+  are upgrading from an earlier version of Hive it is imperative
+  that you replace all of the old copies of the hive-default.xml
+  configuration file with the new version located in the conf/
+  directory.
 
 
 Useful mailing lists
