@@ -45,7 +45,6 @@
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/oro-2.0.8.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/servlet-api-2.5-6.1.14.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/xmlenc-0.52.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/guava-@guava-hadoop20.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/avro-mapred-@avro.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/jline-@jline.version@.jar"/>
@@ -59,6 +58,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/derby-@derby.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@-tests.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libthrift-@libthrift.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/protobuf-java-@protobuf.version@.jar"/>
@@ -107,8 +107,6 @@
   <classpathentry kind="src" path="hwi/src/test"/>
   <classpathentry kind="src" path="jdbc/src/java"/>
   <classpathentry kind="src" path="jdbc/src/test"/>
-  <classpathentry kind="src" path="hcatalog/src/java"/>
-  <classpathentry kind="src" path="hcatalog/src/test"/>
   <classpathentry kind="src" path="metastore/src/gen/thrift/gen-javabean"/>
   <classpathentry kind="src" path="metastore/src/java"/>
   <classpathentry kind="src" path="metastore/src/model"/>
