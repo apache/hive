@@ -18,13 +18,19 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -64,6 +70,8 @@ public class HiveSessionImpl implements HiveSession {
 
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
+  private static final Log LOG = LogFactory.getLog(HiveSessionImpl.class);
+
 
   private SessionManager sessionManager;
   private OperationManager operationManager;
@@ -79,7 +87,9 @@ public class HiveSessionImpl implements HiveSession {
         hiveConf.set(entry.getKey(), entry.getValue());
       }
     }
-
+    // set an explicit session name to control the download directory name
+    hiveConf.set(ConfVars.HIVESESSIONID.varname,
+        sessionHandle.getHandleIdentifier().toString());
     sessionState = new SessionState(hiveConf);
   }
 
@@ -300,8 +310,11 @@ public class HiveSessionImpl implements HiveSession {
       if (null != hiveHist) {
         hiveHist.closeStream();
       }
-    } finally {
+      sessionState.close();
       release();
+    } catch (IOException ioe) {
+      release();
+      throw new HiveSQLException("Failure to close", ioe);
     }
   }
 
