@@ -267,6 +267,7 @@ Release Notes - Hive - Version 0.11.0
     * [HIVE-4498] - TestBeeLineWithArgs.testPositiveScriptFile fails
     * [HIVE-4500] - HS2 holding too many file handles of hive_job_log_hive_*.txt files
     * [HIVE-4505] - Hive can't load transforms added using 'ADD FILE'
+    * [HIVE-4527] - Fix eclipse project template
 
 ** Improvement
     * [HIVE-581] - improve group by syntax
