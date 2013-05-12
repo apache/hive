@@ -80,7 +80,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       }
       reader.nextBatch(value);
       try {
-        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object)value, value);
+        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object)value, value.size, value);
       } catch (SerDeException e) {
         new RuntimeException(e);
       }

@@ -27,18 +27,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -141,7 +141,7 @@ public final class LazyUtils {
    *          if escaped, whether a specific character needs escaping. This
    *          array should have size of 128.
    */
-  private static void writeEscaped(OutputStream out, byte[] bytes, int start,
+  public static void writeEscaped(OutputStream out, byte[] bytes, int start,
       int len, boolean escaped, byte escapeChar, boolean[] needsEscape)
       throws IOException {
     if (escaped) {

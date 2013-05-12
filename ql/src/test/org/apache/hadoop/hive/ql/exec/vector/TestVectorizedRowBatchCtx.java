@@ -46,7 +46,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,7 +149,7 @@ public class TestVectorizedRowBatchCtx {
         bytes.set(4, cu);
 
         cu = new BytesRefWritable(("Test string").getBytes("UTF-8"), 0,
-            ("NULL").getBytes("UTF-8").length);
+            ("Test string").getBytes("UTF-8").length);
         bytes.set(5, cu);
       }
       writer.append(bytes);
@@ -169,7 +171,7 @@ public class TestVectorizedRowBatchCtx {
     // Create the context
     VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null);
     VectorizedRowBatch batch = ctx.CreateVectorizedRowBatch();
-    ctx.SetNoNullFields(true, batch);
+    VectorizedBatchUtil.SetNoNullFields(true, batch);
 
     // Iterate thru the rows and populate the batch
     LongWritable rowID = new LongWritable();
@@ -272,9 +274,19 @@ public class TestVectorizedRowBatchCtx {
 
   @Test
   public void TestCtx() throws Exception {
+
       InitSerde();
       WriteRCFile(this.fs, this.testFilePath, this.conf);
       VectorizedRowBatch batch = GetRowBatch();
+      ValidateRowBatch(batch);
+
+      // Test VectorizedColumnarSerDe
+      VectorizedColumnarSerDe vcs = new VectorizedColumnarSerDe();
+      vcs.initialize(this.conf, tbl);
+      Writable w = vcs.serializeVector(batch, (StructObjectInspector) serDe
+          .getObjectInspector());
+      BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[])((ObjectWritable)w).get();
+      vcs.deserializeVector(refArray, 10, batch);
       ValidateRowBatch(batch);
   }
 }

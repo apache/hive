@@ -26,11 +26,9 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -72,13 +70,14 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   public ColumnarSerDe() throws SerDeException {
   }
 
-  SerDeParameters serdeParams = null;
+  protected SerDeParameters serdeParams = null;
 
   /**
    * Initialize the SerDe given the parameters.
    *
    * @see SerDe#initialize(Configuration, Properties)
    */
+  @Override
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass().getName());
@@ -114,6 +113,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
    * @return The serialized Writable object
    * @see SerDe#serialize(Object, ObjectInspector)
    */
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
