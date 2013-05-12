@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreate
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.util.*;
 import org.junit.Assert;
 import org.junit.Test;
 
