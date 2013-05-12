@@ -33,19 +33,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 
@@ -239,6 +232,9 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
+
+
+
   /**
    * Adds the row to the batch after deserializing the row
    *
@@ -254,122 +250,25 @@ public class VectorizedRowBatchCtx {
   public void AddRowToBatch(int rowIndex, Writable rowBlob, VectorizedRowBatch batch)
       throws HiveException, SerDeException
   {
-    List<? extends StructField> fieldRefs = rawRowOI.getAllStructFieldRefs();
     Object row = this.deserializer.deserialize(rowBlob);
-    // Iterate thru the cols and load the batch
-    for (int i = 0; i < fieldRefs.size(); i++) {
-      Object fieldData = rawRowOI.getStructFieldData(row, fieldRefs.get(i));
-      ObjectInspector foi = fieldRefs.get(i).getFieldObjectInspector();
-
-      // Vectorization only supports PRIMITIVE data types. Assert the same
-      assert (foi.getCategory() == Category.PRIMITIVE);
-
-      // Get writable object
-      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
-      Object writableCol = poi.getPrimitiveWritableObject(fieldData);
-
-      // NOTE: The default value for null fields in vectorization is -1 for int types
-      switch (poi.getPrimitiveCategory()) {
-      case SHORT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          lcv.vector[rowIndex] = ((ShortWritable) writableCol).get();
-          lcv.isNull[rowIndex] = false;
-        } else {
-          lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
-        }
-      }
-        break;
-      case INT: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          lcv.vector[rowIndex] = ((IntWritable) writableCol).get();
-          lcv.isNull[rowIndex] = false;
-        } else {
-          lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
-        }
-      }
-        break;
-      case LONG: {
-        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          lcv.vector[rowIndex] = ((LongWritable) writableCol).get();
-          lcv.isNull[rowIndex] = false;
-        } else {
-          lcv.vector[rowIndex] = 1;
-          SetNullColIsNullValue(lcv, rowIndex);
-        }
-      }
-        break;
-      case FLOAT: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          dcv.vector[rowIndex] = ((FloatWritable) writableCol).get();
-          dcv.isNull[rowIndex] = false;
-        } else {
-          dcv.vector[rowIndex] = Double.NaN;
-          SetNullColIsNullValue(dcv, rowIndex);
-        }
-      }
-        break;
-      case DOUBLE: {
-        DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          dcv.vector[rowIndex] = ((DoubleWritable) writableCol).get();
-          dcv.isNull[rowIndex] = false;
-        } else {
-          dcv.vector[rowIndex] = Double.NaN;
-          SetNullColIsNullValue(dcv, rowIndex);
-        }
-      }
-        break;
-      case STRING: {
-        BytesColumnVector bcv = (BytesColumnVector) batch.cols[i];
-        if (writableCol != null) {
-          bcv.isNull[rowIndex] = false;
-          Text colText = (Text) writableCol;
-          bcv.setRef(rowIndex, colText.getBytes(), 0, colText.getLength());
-        } else {
-          SetNullColIsNullValue(bcv, rowIndex);
-        }
-      }
-        break;
-      default:
-        throw new HiveException("Vectorizaton is not supported for datatype:"
-            + poi.getPrimitiveCategory());
-      }
-    }
-  }
-
-  /**
-   * Iterates thru all the column vectors and sets noNull to
-   * specified value.
-   *
-   * @param valueToSet
-   *          noNull value to set
-   * @param batch
-   *          Batch on which noNull is set
-   */
-  public void SetNoNullFields(boolean valueToSet, VectorizedRowBatch batch) {
-    for (int i = 0; i < batch.numCols; i++) {
-      batch.cols[i].noNulls = true;
-    }
+    VectorizedBatchUtil.AddRowToBatch(row, this.rawRowOI, rowIndex, batch);
   }
 
   /**
    * Deserialized set of rows and populates the batch
-   * @param rowBlob to deserialize
-   * @param batch Vectorized row batch which contains deserialized data
+   *
+   * @param rowBlob
+   *          to deserialize
+   * @param batch
+   *          Vectorized row batch which contains deserialized data
    * @throws SerDeException
    */
-  public void ConvertRowBatchBlobToVectorizedBatch(Object rowBlob, VectorizedRowBatch batch)
+  public void ConvertRowBatchBlobToVectorizedBatch(Object rowBlob, int rowsInBlob,
+      VectorizedRowBatch batch)
       throws SerDeException {
 
     if (deserializer instanceof VectorizedSerde) {
-      batch = ((VectorizedSerde) deserializer).deserializeVector(rowBlob,
-          deserializer.getObjectInspector(), batch);
+      ((VectorizedSerde) deserializer).deserializeVector(rowBlob, rowsInBlob, batch);
     } else {
       throw new SerDeException(
           "Not able to deserialize row batch. Serde does not implement VectorizedSerde");
@@ -410,12 +309,4 @@ public class VectorizedRowBatchCtx {
       }
     }
   }
-
-  private void SetNullColIsNullValue(ColumnVector cv, int rowIndex) {
-    cv.isNull[rowIndex] = true;
-    if (cv.noNulls) {
-      cv.noNulls = false;
-    }
-  }
-
 }

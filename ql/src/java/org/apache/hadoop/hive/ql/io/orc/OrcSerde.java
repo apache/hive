@@ -78,7 +78,7 @@ public class OrcSerde implements SerDe, VectorizedSerde {
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<String>();
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      for(String name: columnNameProperty.split(",")) {
+      for (String name : columnNameProperty.split(",")) {
         columnNames.add(name);
       }
     }
@@ -95,7 +95,7 @@ public class OrcSerde implements SerDe, VectorizedSerde {
     }
 
     ArrayList<TypeInfo> fieldTypes =
-      TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+        TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     StructTypeInfo rootType = new StructTypeInfo();
     rootType.setAllStructFieldNames(columnNames);
     rootType.setAllStructFieldTypeInfos(fieldTypes);
@@ -127,6 +127,7 @@ public class OrcSerde implements SerDe, VectorizedSerde {
   /**
    * Always returns null, since serialized size doesn't make sense in the
    * context of ORC files.
+   *
    * @return null
    */
   @Override
@@ -144,8 +145,8 @@ public class OrcSerde implements SerDe, VectorizedSerde {
   }
 
   @Override
-  public VectorizedRowBatch deserializeVector(Object rowBlob, ObjectInspector objInspector,
-      VectorizedRowBatch reuseBatch) throws SerDeException {
-    return ((VectorizedRowBatch) rowBlob);
+  public void deserializeVector(Object rowBlob, int rowsInBatch, VectorizedRowBatch reuseBatch)
+      throws SerDeException {
+    // nothing to do here
   }
 }
