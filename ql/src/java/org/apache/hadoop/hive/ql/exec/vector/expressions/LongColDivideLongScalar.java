@@ -15,41 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-/*
- * Because of the templatized nature of the code, either or both
- * of these ColumnVector imports may be needed. Listing both of them
- * rather than using ....vectorization.*;
- */
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-/**
- * Implements a vectorized arithmetic operator with a scalar on the left and a
- * column vector on the right. The result is output to an output column vector.
- */
-public class LongScalarDivideLongColumn extends VectorExpression {
-  private int colNum;
-  private long value;
-  private int outputColumn;
+public class LongColDivideLongScalar extends VectorExpression {
+  private final int colNum;
+  private final double value;
+  private final int outputColumn;
 
-  public LongScalarDivideLongColumn(long value, int colNum, int outputColumn) {
+  public LongColDivideLongScalar(int colNum, long value, int outputColumn) {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
   }
 
   @Override
-  /**
-   * Method to evaluate scalar-column operation in vectorized fashion.
-   *
-   * @batch a package of rows with each column stored in a vector
-   */
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -57,53 +41,49 @@ public class LongScalarDivideLongColumn extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
     long[] vector = inputColVector.vector;
-    long[] outputVector = outputColVector.vector;
-    
+    double[] outputVector = outputColVector.vector;
+
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
     if (inputColVector.isRepeating) {
-    
-      /*
-       * All must be selected otherwise size would be zero
-       * Repeating property will not change.
-       */
-      outputVector[0] = value / vector[0];
-      
+      //All must be selected otherwise size would be zero
+      //Repeating property will not change.
+      outputVector[0] = vector[0] / value;
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0]; 
+      outputIsNull[0] = inputIsNull[0];
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
+        for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = value / vector[i];
+          outputVector[i] = vector[i] / value;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = value / vector[i];
+          outputVector[i] = vector[i] / value;
         }
       }
       outputColVector.isRepeating = false;
-    } else {                         /* there are nulls */ 
+    } else /* there are nulls */ {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
+        for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = value / vector[i];
+          outputVector[i] = vector[i] / value;
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = value / vector[i];
+          outputVector[i] = vector[i] / value;
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
@@ -115,9 +95,9 @@ public class LongScalarDivideLongColumn extends VectorExpression {
   public int getOutputColumn() {
     return outputColumn;
   }
-  
+
   @Override
   public String getOutputType() {
-    return "long";
+    return "double";
   }
 }

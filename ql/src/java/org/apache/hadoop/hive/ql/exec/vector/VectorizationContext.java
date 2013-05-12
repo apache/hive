@@ -414,12 +414,12 @@ public class VectorizationContext {
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeColumnDesc) ) {
-      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol1 = getInputColumnIndex(rightColDesc.getColumn());
-      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
-      String colType1 = rightColDesc.getTypeString();
-      String colType2 = leftColDesc.getTypeString();
+      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
+      int inputCol1 = getInputColumnIndex(leftColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(rightColDesc.getColumn());
+      String colType1 = leftColDesc.getTypeString();
+      String colType2 = rightColDesc.getTypeString();
       String outputColType = getOutputColType(colType1, colType2, method);
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
@@ -686,12 +686,12 @@ public class VectorizationContext {
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeColumnDesc) ) {
-      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
-      int inputCol1 = getInputColumnIndex(rightColDesc.getColumn());
-      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
-      String colType1 = rightColDesc.getTypeString();
-      String colType2 = leftColDesc.getTypeString();
+      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
+      int inputCol1 = getInputColumnIndex(leftColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(rightColDesc.getColumn());
+      String colType1 = leftColDesc.getTypeString();
+      String colType2 = rightColDesc.getTypeString();
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
       try {
@@ -703,15 +703,13 @@ public class VectorizationContext {
     } else if ( (leftExpr instanceof ExprNodeGenericFuncDesc) &&
         (rightExpr instanceof ExprNodeColumnDesc) ) {
       v1 = getVectorExpression((ExprNodeGenericFuncDesc) leftExpr);
-      ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) rightExpr;
+      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       int inputCol1 = v1.getOutputColumn();
-      int inputCol2 = getInputColumnIndex(leftColDesc.getColumn());
+      int inputCol2 = getInputColumnIndex(rightColDesc.getColumn());
       String colType1 = v1.getOutputType();
-      String colType2 = leftColDesc.getTypeString();
+      String colType2 = rightColDesc.getTypeString();
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
-      System.out.println("In the context, Input column 1: "+inputCol1+
-          ", column 2: "+inputCol2);
       try {
         expr = (VectorExpression) Class.forName(className).
             getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
@@ -858,11 +856,18 @@ public class VectorizationContext {
   private String getBinaryColumnScalarExpressionClassName(String colType,
       String scalarType, String method) {
     StringBuilder b = new StringBuilder();
-    b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
-    b.append(getNormalizedTypeName(colType));
+    String normColType = getNormalizedTypeName(colType);
+    String normScalarType = getNormalizedTypeName(scalarType);
+    if (normColType.equalsIgnoreCase("long") && normScalarType.equalsIgnoreCase("long")
+        && method.equalsIgnoreCase("divide")) {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.");
+    } else {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
+    }
+    b.append(normColType);
     b.append("Col");
     b.append(method);
-    b.append(getNormalizedTypeName(scalarType));
+    b.append(normScalarType);
     b.append("Scalar");
     return b.toString();
   }
@@ -870,11 +875,18 @@ public class VectorizationContext {
   private String getBinaryScalarColumnExpressionClassName(String colType,
       String scalarType, String method) {
     StringBuilder b = new StringBuilder();
-    b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
-    b.append(this.getNormalizedTypeName(scalarType));
+    String normColType = getNormalizedTypeName(colType);
+    String normScalarType = getNormalizedTypeName(scalarType);
+    if (normColType.equalsIgnoreCase("long") && normScalarType.equalsIgnoreCase("long")
+        && method.equalsIgnoreCase("divide")) {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.");
+    } else {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
+    }
+    b.append(normScalarType);
     b.append("Scalar");
     b.append(method);
-    b.append(this.getNormalizedTypeName(colType));
+    b.append(normColType);
     b.append("Column");
     return b.toString();
   }
@@ -882,11 +894,18 @@ public class VectorizationContext {
   private String getBinaryColumnColumnExpressionClassName(String colType1,
       String colType2, String method) {
     StringBuilder b = new StringBuilder();
-    b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
-    b.append(getNormalizedTypeName(colType1));
+    String normColType1 = getNormalizedTypeName(colType1);
+    String normColType2 = getNormalizedTypeName(colType2);
+    if (normColType1.equalsIgnoreCase("long") && normColType2.equalsIgnoreCase("long")
+        && method.equalsIgnoreCase("divide")) {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.");
+    } else {
+      b.append("org.apache.hadoop.hive.ql.exec.vector.expressions.gen.");
+    }
+    b.append(normColType1);
     b.append("Col");
     b.append(method);
-    b.append(getNormalizedTypeName(colType2));
+    b.append(normColType2);
     b.append("Column");
     return b.toString();
   }

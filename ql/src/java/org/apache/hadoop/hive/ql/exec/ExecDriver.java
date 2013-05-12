@@ -573,20 +573,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           validateVectorOperator(vectorOp);
         } catch (HiveException e) {
           LOG.info("Cannot vectorize the plan", e);
-          System.out.println("Cannot vectorize the plan");
+          System.out.println("Cannot vectorize the plan: "+e.getMessage());
           return false;
         }
       }
     }
-    System.out.println("Query can be vectorized");
     return true;
   }
 
   private void validateVectorOperator(Operator<? extends OperatorDesc> vectorOp)
       throws HiveException {
-    if (!vectorOp.getName().equals("TS")) {
-      vectorOp.initialize(job, null);
-    }
+    vectorOp.initialize(job, null);
     if (vectorOp.getChildOperators() != null) {
       for (Operator<? extends OperatorDesc> vop : vectorOp.getChildOperators()) {
         validateVectorOperator(vop);

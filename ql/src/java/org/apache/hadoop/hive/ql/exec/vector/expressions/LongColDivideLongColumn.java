@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.*;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
+
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 public class LongColDivideLongColumn extends VectorExpression {
@@ -42,19 +42,19 @@ public class LongColDivideLongColumn extends VectorExpression {
 
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector1 = inputColVector1.vector;
     long[] vector2 = inputColVector2.vector;
 
-    long[] outputVector = outputColVector.vector;
-    
+    double[] outputVector = outputColVector.vector;
+
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
-    
+
     /* Set repeating property to false (the default).
      * It will be set to true later if needed later.
      */
@@ -125,42 +125,42 @@ public class LongColDivideLongColumn extends VectorExpression {
 
 
     //Disregard nulls for processing
-    if (inputColVector1.isRepeating && inputColVector2.isRepeating) { 
+    if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      outputVector[0] = vector1[0] / vector2[0];
+      outputVector[0] = vector1[0] / (double) vector2[0];
       outputColVector.isRepeating = true;
     } else if (inputColVector1.isRepeating) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[0] / vector2[i];
+          outputVector[i] = vector1[0] / (double) vector2[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[0] / vector2[i];
+          outputVector[i] = vector1[0] / (double) vector2[i];
         }
       }
     } else if (inputColVector2.isRepeating) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[i] / vector2[0];
+          outputVector[i] = vector1[i] / (double) vector2[0];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[i] / vector2[0];
+          outputVector[i] = vector1[i] / (double) vector2[0];
         }
       }
     } else {
       if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[i] / vector2[i];
+          outputVector[i] = vector1[i] / (double) vector2[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[i] /  vector2[i];
+          outputVector[i] = vector1[i] / (double) vector2[i];
         }
       }
     }
@@ -173,6 +173,6 @@ public class LongColDivideLongColumn extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "long";
+    return "double";
   }
 }
