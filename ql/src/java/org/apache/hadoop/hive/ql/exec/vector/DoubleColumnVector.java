@@ -27,13 +27,13 @@ import org.apache.hadoop.io.Writable;
  * During copy-in/copy-out, smaller types (i.e. float) will be converted as needed. This will
  * reduce the amount of code that needs to be generated and also will run fast since the
  * machine operates with 64-bit words.
- * 
+ *
  * The vector[] field is public by design for high-performance access in the inner
  * loop of query execution.
  */
 public class DoubleColumnVector extends ColumnVector {
   public double[] vector;
-  private DoubleWritable writableObj = new DoubleWritable();
+  private final DoubleWritable writableObj = new DoubleWritable();
 
   /**
    * Use this constructor by default. All column vectors
@@ -42,10 +42,10 @@ public class DoubleColumnVector extends ColumnVector {
   public DoubleColumnVector() {
     this(VectorizedRowBatch.DEFAULT_SIZE);
   }
-  
-  /** 
+
+  /**
    * Don't use this except for testing purposes.
-   * 
+   *
    * @param len
    */
   public DoubleColumnVector(int len) {
@@ -55,6 +55,9 @@ public class DoubleColumnVector extends ColumnVector {
 
   @Override
   public Writable getWritableObject(int index) {
+    if (this.isRepeating) {
+      index = 0;
+    }
     if (!noNulls && isNull[index]) {
       return null;
     } else {

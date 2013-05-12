@@ -68,7 +68,6 @@ public class VectorFilterOperator extends Operator<FilterDesc> implements
       ExprNodeDesc oldExpression = conf.getPredicate();
       vContext.setOperatorType(OperatorType.FILTER);
       conditionEvaluator = vContext.getVectorExpression(oldExpression);
-      System.out.println("Filter class name ="+conditionEvaluator.getClass().getCanonicalName());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
     } catch (Throwable e) {

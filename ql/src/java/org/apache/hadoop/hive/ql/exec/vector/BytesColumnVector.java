@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -202,10 +203,14 @@ public class BytesColumnVector extends ColumnVector {
 
   @Override
   public Writable getWritableObject(int index) {
-    Text result = null;
-    if (!isNull[index]) {
-      result = new Text();
-      result.append(vector[index], start[index], length[index]);
+    if (this.isRepeating) {
+      index = 0;
+    }
+    Writable result = null;
+    if (!isNull[index] && vector[index] != null) {
+      result = new Text(vector[index]);
+    } else {
+      result = NullWritable.get();
     }
     return result;
   }

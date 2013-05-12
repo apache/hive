@@ -14,7 +14,6 @@ public class CodeGen {
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "long", "*"},
-      {"ColumnArithmeticScalar", "Divide", "long", "long", "/"},
       {"ColumnArithmeticScalar", "Modulo", "long", "long", "%"},
 
       {"ColumnArithmeticScalar", "Add", "long", "double", "+"},
@@ -38,7 +37,6 @@ public class CodeGen {
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "long", "long", "-"},
       {"ScalarArithmeticColumn", "Multiply", "long", "long", "*"},
-      {"ScalarArithmeticColumn", "Divide", "long", "long", "/"},
       {"ScalarArithmeticColumn", "Modulo", "long", "long", "%"},
 
       {"ScalarArithmeticColumn", "Add", "long", "double", "+"},
@@ -62,7 +60,6 @@ public class CodeGen {
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticColumn", "Multiply", "long", "long", "*"},
-      {"ColumnArithmeticColumn", "Divide", "long", "long", "/"},
       {"ColumnArithmeticColumn", "Modulo", "long", "long", "%"},
 
       {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
@@ -154,7 +151,7 @@ public class CodeGen {
       {"FilterStringColumnCompareScalar", "LessEqual", "<="},
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
-      
+
       {"FilterStringColumnCompareColumn", "Equal", "=="},
       {"FilterStringColumnCompareColumn", "NotEqual", "!="},
       {"FilterStringColumnCompareColumn", "Less", "<"},
@@ -385,7 +382,7 @@ public class CodeGen {
     String className = "FilterStringCol" + operatorName + "StringScalar";
     generateFilterStringColumnCompareScalar(tdesc,className);
   }
-  
+
   private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringCol";

@@ -27,14 +27,14 @@ import org.apache.hadoop.io.Writable;
  * During copy-in/copy-out, smaller int types will be converted as needed. This will
  * reduce the amount of code that needs to be generated and also will run fast since the
  * machine operates with 64-bit words.
- * 
+ *
  * The vector[] field is public by design for high-performance access in the inner
  * loop of query execution.
  */
 public class LongColumnVector extends ColumnVector {
   public long[] vector;
-  private LongWritable writableObj = new LongWritable();
-  
+  private final LongWritable writableObj = new LongWritable();
+
   /**
    * Use this constructor by default. All column vectors
    * should normally be the default size.
@@ -45,7 +45,7 @@ public class LongColumnVector extends ColumnVector {
 
   /**
    * Don't use this except for testing purposes.
-   * 
+   *
    * @param len
    */
   public LongColumnVector(int len) {
@@ -55,6 +55,9 @@ public class LongColumnVector extends ColumnVector {
 
   @Override
   public Writable getWritableObject(int index) {
+    if (this.isRepeating) {
+      index = 0;
+    }
     if (!noNulls && isNull[index]) {
       return null;
     } else {
