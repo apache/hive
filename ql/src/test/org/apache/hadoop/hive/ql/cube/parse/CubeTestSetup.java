@@ -118,7 +118,7 @@ public class CubeTestSetup {
 
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,
-        storageAggregatePeriods);
+        storageAggregatePeriods, 0L);
   }
 
   private void createCubeFactOnlyHourly(CubeMetastoreClient client)
@@ -145,7 +145,7 @@ public class CubeTestSetup {
 
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,
-        storageAggregatePeriods);
+        storageAggregatePeriods, 0L);
   }
 
   private void createCubeFactMonthly(CubeMetastoreClient client)
@@ -171,7 +171,7 @@ public class CubeTestSetup {
 
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,
-        storageAggregatePeriods);
+        storageAggregatePeriods, 0L);
   }
 
   //DimWithTwoStorages
@@ -203,8 +203,8 @@ public class CubeTestSetup {
         new HashMap<Storage, UpdatePeriod>();
     snapshotDumpPeriods.put(hdfsStorage1, UpdatePeriod.HOURLY);
     snapshotDumpPeriods.put(hdfsStorage2, null);
-    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
-        snapshotDumpPeriods);
+    client.createCubeDimensionTable(dimName, dimColumns, 0L,
+        dimensionReferences, snapshotDumpPeriods);
   }
 
   private void createZiptable(CubeMetastoreClient client) throws Exception {
@@ -225,8 +225,8 @@ public class CubeTestSetup {
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
     snapshotDumpPeriods.put(hdfsStorage, UpdatePeriod.HOURLY);
     dumpPeriods.put(hdfsStorage.getName(), UpdatePeriod.HOURLY);
-    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
-        snapshotDumpPeriods);
+    client.createCubeDimensionTable(dimName, dimColumns, 0L,
+        dimensionReferences, snapshotDumpPeriods);
   }
 
   private void createCountryTable(CubeMetastoreClient client) throws Exception {
@@ -247,8 +247,8 @@ public class CubeTestSetup {
     Map<Storage, UpdatePeriod> snapshotDumpPeriods =
         new HashMap<Storage, UpdatePeriod>();
     snapshotDumpPeriods.put(hdfsStorage, null);
-    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
-        snapshotDumpPeriods);
+    client.createCubeDimensionTable(dimName, dimColumns, 0L,
+        dimensionReferences, snapshotDumpPeriods);
   }
 
   private void createStateTable(CubeMetastoreClient client) throws Exception {
@@ -271,8 +271,8 @@ public class CubeTestSetup {
     Map<Storage, UpdatePeriod> snapshotDumpPeriods =
         new HashMap<Storage, UpdatePeriod>();
     snapshotDumpPeriods.put(hdfsStorage, UpdatePeriod.HOURLY);
-    client.createCubeDimensionTable(dimName, dimColumns, dimensionReferences,
-        snapshotDumpPeriods);
+    client.createCubeDimensionTable(dimName, dimColumns, 0L,
+        dimensionReferences, snapshotDumpPeriods);
   }
 
   public void createSources() throws Exception {

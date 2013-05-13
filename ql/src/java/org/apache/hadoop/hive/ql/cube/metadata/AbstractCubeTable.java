@@ -12,11 +12,18 @@ public abstract class AbstractCubeTable implements Named {
   private final String name;
   private final List<FieldSchema> columns;
   private final Map<String, String> properties = new HashMap<String, String>();
+  private final double weight;
 
   protected AbstractCubeTable(String name, List<FieldSchema> columns,
       Map<String, String> props) {
+    this(name, columns, props, 0L);
+  }
+
+  protected AbstractCubeTable(String name, List<FieldSchema> columns,
+      Map<String, String> props, double weight) {
     this.name = name;
     this.columns = columns;
+    this.weight = weight;
     this.properties.putAll(props);
   }
 
@@ -24,6 +31,7 @@ public abstract class AbstractCubeTable implements Named {
     this.name = hiveTable.getTableName();
     this.columns = hiveTable.getCols();
     this.properties.putAll(hiveTable.getParameters());
+    this.weight = getWeight(getProperties(), getName());
   }
 
   public abstract CubeTableType getTableType();
@@ -34,8 +42,15 @@ public abstract class AbstractCubeTable implements Named {
     return properties;
   }
 
+  public static double getWeight(Map<String, String> properties, String name) {
+    String wtStr = properties.get(MetastoreUtil.getCubeTableWeightKey(name));
+     return wtStr == null ? 0L : Double.parseDouble(wtStr);
+  }
+
   protected void addProperties() {
     properties.put(MetastoreConstants.TABLE_TYPE_KEY, getTableType().name());
+    properties.put(MetastoreUtil.getCubeTableWeightKey(name),
+        String.valueOf(weight));
   }
 
   public String getName() {
@@ -44,6 +59,10 @@ public abstract class AbstractCubeTable implements Named {
 
   public List<FieldSchema> getColumns() {
     return columns;
+  }
+
+  public double weight() {
+    return weight;
   }
 
   @Override
@@ -70,6 +89,9 @@ public abstract class AbstractCubeTable implements Named {
       if (!this.getColumns().equals(other.getColumns())) {
         return false;
       }
+    }
+    if (this.weight() != other.weight()) {
+      return false;
     }
     return true;
   }

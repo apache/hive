@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,20 +155,28 @@ public class CubeMetastoreClient {
 
   public void createCubeFactTable(String cubeName, String factName,
       List<FieldSchema> columns,
-      Map<Storage, List<UpdatePeriod>> storageAggregatePeriods)
+      Map<Storage, List<UpdatePeriod>> storageAggregatePeriods, double weight)
       throws HiveException {
     CubeFactTable factTable = new CubeFactTable(cubeName, factName, columns,
-        getUpdatePeriods(storageAggregatePeriods));
+        getUpdatePeriods(storageAggregatePeriods), weight);
     createCubeTable(factTable, storageAggregatePeriods);
   }
 
   public void createCubeDimensionTable(String dimName,
-      List<FieldSchema> columns,
+      List<FieldSchema> columns, double weight,
       Map<String, TableReference> dimensionReferences, Set<Storage> storages)
-      throws HiveException {
+          throws HiveException {
     CubeDimensionTable dimTable = new CubeDimensionTable(dimName, columns,
-        dimensionReferences);
+        weight, getStorageNames(storages), dimensionReferences);
     createCubeTable(dimTable, storages);
+  }
+
+  private Set<String> getStorageNames(Set<Storage> storages) {
+    Set<String> storageNames = new HashSet<String>();
+    for (Storage storage : storages) {
+      storageNames.add(storage.getName());
+    }
+    return storageNames;
   }
 
   private Map<String, UpdatePeriod> getDumpPeriods(
@@ -186,14 +195,14 @@ public class CubeMetastoreClient {
   }
 
   public void createCubeDimensionTable(String dimName,
-      List<FieldSchema> columns,
+      List<FieldSchema> columns, double weight,
       Map<String, TableReference> dimensionReferences,
       Map<Storage, UpdatePeriod> dumpPeriods)
-      throws HiveException {
+          throws HiveException {
     // add date partitions for storages with dumpPeriods
     addDatePartitions(dumpPeriods);
     CubeDimensionTable dimTable = new CubeDimensionTable(dimName, columns,
-        dimensionReferences, getDumpPeriods(dumpPeriods));
+        weight, getDumpPeriods(dumpPeriods), dimensionReferences);
     createCubeTable(dimTable, dumpPeriods.keySet());
   }
 

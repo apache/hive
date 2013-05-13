@@ -19,11 +19,6 @@ public final class CubeFactTable extends AbstractCubeTable {
   private final String cubeName;
   private final Map<String, List<UpdatePeriod>> storageUpdatePeriods;
 
-  public CubeFactTable(String cubeName, String factName,
-      List<FieldSchema> columns) {
-    this(cubeName, factName, columns, new HashMap<String, List<UpdatePeriod>>());
-  }
-
   public CubeFactTable(Table hiveTable) {
     super(hiveTable);
     this.storageUpdatePeriods = getUpdatePeriods(getName(), getProperties());
@@ -34,15 +29,23 @@ public final class CubeFactTable extends AbstractCubeTable {
   public CubeFactTable(String cubeName, String factName,
       List<FieldSchema> columns,
       Map<String, List<UpdatePeriod>> storageUpdatePeriods) {
-    this(cubeName, factName, columns, storageUpdatePeriods,
+    this(cubeName, factName, columns, storageUpdatePeriods, 0L,
+        new HashMap<String, String>());
+  }
+
+  public CubeFactTable(String cubeName, String factName,
+      List<FieldSchema> columns,
+      Map<String, List<UpdatePeriod>> storageUpdatePeriods, double weight) {
+    this(cubeName, factName, columns, storageUpdatePeriods, weight,
         new HashMap<String, String>());
   }
 
   public CubeFactTable(String cubeName, String factName,
       List<FieldSchema> columns,
       Map<String, List<UpdatePeriod>> storageUpdatePeriods,
+      double weight,
       Map<String, String> properties) {
-    super(factName, columns, properties);
+    super(factName, columns, properties, weight);
     this.cubeName = cubeName;
     this.storageUpdatePeriods = storageUpdatePeriods;
     addProperties();

@@ -142,6 +142,10 @@ public class MetastoreUtil implements MetastoreConstants {
     return getCubePrefix(cubeName) + DIMENSIONS_LIST_SFX;
   }
 
+  public static final String getCubeTableKeyPrefix(String tableName) {
+    return CUBE_TABLE_PFX + tableName.toLowerCase();
+  }
+
   // //////////////////////////
   // Fact propertes ///
   // /////////////////////////
@@ -160,6 +164,10 @@ public class MetastoreUtil implements MetastoreConstants {
 
   public static String getFactCubeNameKey(String name) {
     return getFactKeyPrefix(name) + CUBE_NAME_SFX;
+  }
+
+  public static String getCubeTableWeightKey(String name) {
+    return getCubeTableKeyPrefix(name) + WEIGHT_KEY_SFX;
   }
 
   // //////////////////////////

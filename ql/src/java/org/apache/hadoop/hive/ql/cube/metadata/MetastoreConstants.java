@@ -2,6 +2,8 @@ package org.apache.hadoop.hive.ql.cube.metadata;
 
 public interface MetastoreConstants {
   public static final String TABLE_TYPE_KEY = "cube.table.type";
+  public static final String CUBE_TABLE_PFX = "cube.table.";
+  public static final String WEIGHT_KEY_SFX = ".weight";
 
   // Cube constants
   public static final String CUBE_KEY_PFX = "cube.";

@@ -12,30 +12,51 @@ public final class CubeDimensionTable extends AbstractCubeTable {
   private final Map<String, TableReference> dimensionReferences;
   private final Map<String, UpdatePeriod> snapshotDumpPeriods;
 
-  public CubeDimensionTable(String dimName, List<FieldSchema> columns) {
-    this(dimName, columns, new HashMap<String, TableReference>());
+  public CubeDimensionTable(String dimName, List<FieldSchema> columns,
+      double weight, Map<String, UpdatePeriod> snapshotDumpPeriods) {
+    this(dimName, columns, weight, snapshotDumpPeriods,
+        new HashMap<String, TableReference>(), new HashMap<String, String>());
   }
 
   public CubeDimensionTable(String dimName, List<FieldSchema> columns,
+      double weight, Set<String> storages) {
+    this(dimName, columns, weight, getSnapshotDumpPeriods(storages),
+        new HashMap<String, TableReference>(), new HashMap<String, String>());
+  }
+
+  public CubeDimensionTable(String dimName, List<FieldSchema> columns,
+      double weight, Map<String, UpdatePeriod> snapshotDumpPeriods,
       Map<String, TableReference> dimensionReferences) {
-    this(dimName, columns, dimensionReferences, null);
+    this(dimName, columns, weight, snapshotDumpPeriods, dimensionReferences,
+        new HashMap<String, String>());
   }
 
   public CubeDimensionTable(String dimName, List<FieldSchema> columns,
-      Map<String, TableReference> dimensionReferences,
-      Map<String, UpdatePeriod> snapshotDumpPeriods) {
-    this(dimName, columns, dimensionReferences, new HashMap<String, String>(),
-        snapshotDumpPeriods);
+      double weight, Set<String> storages,
+      Map<String, TableReference> dimensionReferences) {
+    this(dimName, columns, weight, getSnapshotDumpPeriods(storages),
+        dimensionReferences, new HashMap<String, String>());
   }
 
   public CubeDimensionTable(String dimName, List<FieldSchema> columns,
+      double weight,
+      Map<String, UpdatePeriod> snapshotDumpPeriods,
       Map<String, TableReference> dimensionReferences,
-      Map<String, String> properties,
-      Map<String, UpdatePeriod> snapshotDumpPeriods) {
-    super(dimName, columns, properties);
+      Map<String, String> properties) {
+    super(dimName, columns, properties, weight);
     this.dimensionReferences = dimensionReferences;
     this.snapshotDumpPeriods = snapshotDumpPeriods;
     addProperties();
+  }
+
+  private static Map<String, UpdatePeriod> getSnapshotDumpPeriods(
+      Set<String> storages) {
+    Map<String, UpdatePeriod> snapshotDumpPeriods =
+        new HashMap<String, UpdatePeriod>();
+    for (String storage : storages) {
+      snapshotDumpPeriods.put(storage, null);
+    }
+    return snapshotDumpPeriods;
   }
 
   public CubeDimensionTable(Table tbl) {
