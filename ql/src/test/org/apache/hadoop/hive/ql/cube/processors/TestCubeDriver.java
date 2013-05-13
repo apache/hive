@@ -335,7 +335,7 @@ public class TestCubeDriver {
       // Should throw exception in aggregate resolver because noAggrMsr does
       //not have a default aggregate defined.s
       String hql = driver.compileCubeQuery(q8);
-      Assert.assertTrue("Should not reach here", false);
+      Assert.assertTrue("Should not reach here: " + hql, false);
     } catch (SemanticException exc) {
       Assert.assertNotNull(exc);
       exc.printStackTrace();
@@ -349,7 +349,7 @@ public class TestCubeDriver {
 
     try {
       String hql = driver.compileCubeQuery(query);
-      Assert.assertTrue("Should not reach here", false);
+      Assert.assertTrue("Should not reach here:" + hql, false);
     } catch (SemanticException exc) {
       Assert.assertNotNull(exc);
       exc.printStackTrace();
@@ -358,7 +358,7 @@ public class TestCubeDriver {
     String q2 = "SELECT ambigdim2, testCube.msr1 FROM testCube " + timeRange;
     try {
       String hql = driver.compileCubeQuery(q2);
-      Assert.assertTrue("Should not reach here", false);
+      Assert.assertTrue("Should not reach here: " + hql, false);
     } catch (SemanticException exc) {
       Assert.assertNotNull(exc);
       exc.printStackTrace();
@@ -415,6 +415,28 @@ public class TestCubeDriver {
     } catch (SemanticException exc) {
       exc.printStackTrace(System.out);
       Assert.assertNotNull(exc);
+    }
+  }
+
+  @Test
+  public void testAliasReplacer() throws Exception {
+    String timeRange = " where  time_range_in('2013-05-01', '2013-05-03')";
+
+    System.out.println("##TEST_ALIAS_REPLACER");
+    String queries[] = {
+        "SELECT cityid, t.msr2 FROM testCube t" + timeRange,
+        "SELECT cityid, msr2 FROM testCube " + timeRange + " and msr2 > 100 HAVING msr2 < 1000",
+        "SELECT cityid, testCube.msr2 FROM tetCube " + timeRange + " and msr2 > 100 HAVING msr2 < 1000 ORDER BY cityid"
+    };
+
+    try {
+      for (String q : queries) {
+        String hql = driver.compileCubeQuery(q);
+        System.out.println("@@QUERY: " + q);
+        System.out.println("@@HQL: " + hql);
+      }
+    } catch (Exception exc) {
+      exc.printStackTrace();
     }
   }
 

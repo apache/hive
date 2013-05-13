@@ -111,6 +111,9 @@ public class CubeQueryContext {
   private final ASTNode joinTree;
   private ASTNode havingAST;
   private ASTNode selectAST;
+  private ASTNode whereAST;
+  private ASTNode orderByAST;
+  private ASTNode groupByAST;
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
@@ -121,20 +124,23 @@ public class CubeQueryContext {
     if (qb.getParseInfo().getWhrForClause(clauseName) != null) {
       this.whereTree = HQLParser.getString(
           qb.getParseInfo().getWhrForClause(clauseName)).toLowerCase();
+      this.whereAST = qb.getParseInfo().getWhrForClause(clauseName);
     }
     if (qb.getParseInfo().getHavingForClause(clauseName) != null) {
-      this.havingTree = HQLParser.getString(qb.getParseInfo()
-          .getHavingForClause(clauseName)).toLowerCase();
+      this.havingTree = HQLParser.getString(qb.getParseInfo().getHavingForClause(
+          clauseName)).toLowerCase();
       this.havingAST = qb.getParseInfo().getHavingForClause(
           clauseName);
     }
     if (qb.getParseInfo().getOrderByForClause(clauseName) != null) {
       this.orderByTree = HQLParser.getString(qb.getParseInfo()
           .getOrderByForClause(clauseName)).toLowerCase();
+      this.orderByAST = qb.getParseInfo().getOrderByForClause(clauseName);
     }
     if (qb.getParseInfo().getGroupByForClause(clauseName) != null) {
       this.groupByTree = HQLParser.getString(qb.getParseInfo()
           .getGroupByForClause(clauseName)).toLowerCase();
+      this.groupByAST = qb.getParseInfo().getGroupByForClause(clauseName);
     }
     if (qb.getParseInfo().getSelForClause(clauseName) != null) {
       this.selectTree = HQLParser.getString(qb.getParseInfo().getSelForClause(
@@ -977,21 +983,25 @@ public class CubeQueryContext {
   }
 
   public boolean isCubeMeasure(String col) {
+    if (col == null) {
+      return false;
+    }
+
+    col = col.trim();
     // Take care of brackets added around col names in HQLParsrer.getString
     if (col.startsWith("(") && col.endsWith(")") && col.length() > 2) {
-      col = col.substring(1, col.length() - 1);
+      col = col.substring(1, col.length() -1);
     }
 
     String[] split = StringUtils.split(col, ".");
     if (split.length <= 1) {
-      return cubeMeasureNames.contains(col);
+      return cubeMeasureNames.contains(col.trim().toLowerCase());
     } else {
       String cubeName = split[0].trim();
       String colName = split[1].trim();
       if (cubeName.equalsIgnoreCase(cube.getName()) ||
           cubeName.equalsIgnoreCase(getAliasForTabName(cube.getName()))) {
-        boolean ismeasure = cubeMeasureNames.contains(colName);
-        return cubeMeasureNames.contains(colName);
+        return cubeMeasureNames.contains(colName.toLowerCase());
       } else {
         return false;
       }
@@ -1007,9 +1017,8 @@ public class CubeQueryContext {
   }
 
   public boolean hasAggregates() {
-    return !aggregateExprs.isEmpty() || (cube != null);
+    return !aggregateExprs.isEmpty() || (cube !=null);
   }
-
   public String getAlias(String expr) {
     return exprToAlias.get(expr);
   }
@@ -1045,5 +1054,18 @@ public class CubeQueryContext {
   public void setJoinCond(QBJoinTree qb, String cond) {
     joinConds.put(qb, cond);
   }
+
+  public ASTNode getWhereAST() {
+    return whereAST;
+  }
+
+  public ASTNode getOrderByAST() {
+    return orderByAST;
+  }
+
+  public ASTNode getGroupByAST() {
+    return groupByAST;
+  }
+
 
 }

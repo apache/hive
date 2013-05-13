@@ -25,11 +25,11 @@ public class CubeQueryRewriter {
   private void setupPhase1Rewriters() {
     // Resolve joins and generate base join tree
     phase1Rewriters.add(new JoinResolver(conf));
+    // Rewrite base trees (groupby, having, orderby, limit) using aliases
+    phase1Rewriters.add(new AliasReplacer(conf));
     // Resolve aggregations and generate base select tree
     phase1Rewriters.add(new AggregateResolver(conf));
     phase1Rewriters.add(new GroupbyResolver(conf));
-    // Rewrite base trees (groupby, having, orderby, limit) using aliases
-    phase1Rewriters.add(new AliasReplacer(conf));
     // Resolve partition columns and table names
     phase1Rewriters.add(new PartitionResolver(conf));
   }

@@ -195,10 +195,10 @@ public final class Cube extends AbstractCubeTable {
   }
 
   public CubeDimension getDimensionByName(String dimension) {
-    return dimMap.get(dimension);
+    return dimMap.get(dimension == null ? dimension : dimension.toLowerCase());
   }
 
   public CubeMeasure getMeasureByName(String measure) {
-    return measureMap.get(measure);
+    return measureMap.get(measure == null ? measure : measure.toLowerCase());
   }
 }

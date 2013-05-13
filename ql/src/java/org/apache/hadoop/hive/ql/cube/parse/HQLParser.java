@@ -301,4 +301,18 @@ public class HQLParser {
     toInfixString(tree, buf);
     return buf.toString();
   }
+
+  public static String getColName(ASTNode node) {
+    String colname = null;
+    int nodeType = node.getToken().getType();
+    if (nodeType == HiveParser.TOK_TABLE_OR_COL) {
+      colname = ((ASTNode) node.getChild(0)).getText();
+    } else {
+      // node in 'alias.column' format
+      ASTNode colIdent = (ASTNode) node.getChild(1);
+      colname = colIdent.getText();
+    }
+
+    return colname;
+  }
 }

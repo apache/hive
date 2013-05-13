@@ -45,7 +45,7 @@ public class AggregateResolver implements ContextRewriter {
 
     validateAggregates(cubeql, cubeql.getSelectAST(), false, false, false);
     validateAggregates(cubeql, cubeql.getHavingAST(), false, false, false);
-
+    System.out.println("Before aggregate resolver: " + cubeql.getSelectTree());
     String rewritSelect = resolveForSelect(cubeql, cubeql.getSelectTree());
     System.out.println("New select after aggregate resolver: " + rewritSelect);
     cubeql.setSelectTree(rewritSelect);
