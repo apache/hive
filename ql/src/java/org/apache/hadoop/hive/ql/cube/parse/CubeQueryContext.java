@@ -10,6 +10,7 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SELEXPR;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABLE_OR_COL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -447,9 +448,20 @@ public class CubeQueryContext {
     if (cube != null) {
       // go over the columns accessed in the query and find out which tables
       // can answer the query
+      String str = conf.get(CubeQueryConstants.VALID_FACT_TABLES);
+      List<String> validFactTables = StringUtils.isBlank(str) ? null :
+        Arrays.asList(StringUtils.split(str.toLowerCase()));
       for (Iterator<CubeFactTable> i = candidateFactTables.iterator();
           i.hasNext();) {
         CubeFactTable fact = i.next();
+        if (validFactTables != null) {
+          if (!validFactTables.contains(fact.getName().toLowerCase())) {
+            LOG.info("Not considering the fact table:" + fact + " as it is" +
+            		" not a valid fact");
+            i.remove();
+            continue;
+          }
+        }
         List<String> factCols = cubeTabToCols.get(fact);
         List<String> validFactCols = fact.getValidColumns();
         for (String col : cubeColumnsQueried) {
@@ -509,7 +521,7 @@ public class CubeQueryContext {
     return dimensions;
   }
 
-  private String getAliasForTabName(String tabName) {
+  public String getAliasForTabName(String tabName) {
     for (String alias : qb.getTabAliases()) {
       if (qb.getTabNameForAlias(alias).equalsIgnoreCase(tabName)) {
         return alias;
@@ -906,6 +918,11 @@ public class CubeQueryContext {
       Iterator<UpdatePeriod> it = partColMap.keySet().iterator();
       while (it.hasNext()) {
         UpdatePeriod updatePeriod = it.next();
+        if (storageTableMap.get(updatePeriod) == null ||
+            storageTableMap.get(updatePeriod).isEmpty()) {
+          throw new SemanticException("No storage table available for fact" +
+            fact + " for update period" + updatePeriod);
+        }
         String storageTable = storageTableMap.get(updatePeriod).get(0);
         storageTableToQuery.put(getCube(), storageTable);
         query.append(toHQL(storageTable));

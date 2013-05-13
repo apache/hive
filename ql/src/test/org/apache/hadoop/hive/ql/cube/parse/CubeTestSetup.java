@@ -115,6 +115,10 @@ public class CubeTestSetup {
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
     storageAggregatePeriods.put(hdfsStorage, updates);
+    Storage hdfsStorage2 = new HDFSStorage("C2",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage2, updates);
 
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,

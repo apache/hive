@@ -69,10 +69,8 @@ public class AliasReplacer implements ContextRewriter {
     }
 
     // Update the aggregate expression set
-    System.out.println("AggrSet Before:" + cubeql.aggregateExprs.toString());
     updateAggregates(selectAST, cubeql);
     updateAggregates(havingAST, cubeql);
-    System.out.println("AggrSet After:" + cubeql.aggregateExprs.toString());
   }
 
   private void replaceAliases(ASTNode node, int nodePos, Map<String, String> colToTableAlias) {
