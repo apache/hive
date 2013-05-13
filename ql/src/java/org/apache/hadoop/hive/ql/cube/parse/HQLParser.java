@@ -31,7 +31,9 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -314,5 +316,23 @@ public class HQLParser {
     }
 
     return colname;
+  }
+
+  public static boolean isAggregateAST(ASTNode node) {
+    int exprTokenType = node.getToken().getType();
+    if (exprTokenType == HiveParser.TOK_FUNCTION
+        || exprTokenType == HiveParser.TOK_FUNCTIONDI
+        || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
+      assert (node.getChildCount() != 0);
+      if (node.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = BaseSemanticAnalyzer.unescapeIdentifier(
+            node.getChild(0).getText());
+        if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }

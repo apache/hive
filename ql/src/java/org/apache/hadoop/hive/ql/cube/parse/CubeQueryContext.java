@@ -1020,7 +1020,7 @@ public class CubeQueryContext {
   }
 
   public boolean isAggregateExpr(String expr) {
-    return aggregateExprs.contains(expr);
+    return aggregateExprs.contains(expr == null ? expr : expr.toLowerCase());
   }
 
   public boolean hasAggregates() {
