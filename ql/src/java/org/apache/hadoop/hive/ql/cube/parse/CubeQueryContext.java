@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cube.metadata.AbstractCubeTable;
 import org.apache.hadoop.hive.ql.cube.metadata.Cube;
@@ -44,7 +46,7 @@ public class CubeQueryContext {
   public static final String TIME_RANGE_FUNC = "time_range_in";
   public static final String NOW = "now";
   public static final String DEFAULT_TABLE = "_default_";
-
+  public static Log LOG = LogFactory.getLog(CubeQueryContext.class.getName());
   private final ASTNode ast;
   private final QB qb;
   private String clauseName = null;
@@ -449,12 +451,22 @@ public class CubeQueryContext {
           i.hasNext();) {
         CubeFactTable fact = i.next();
         List<String> factCols = cubeTabToCols.get(fact);
+        List<String> validFactCols = fact.getValidColumns();
         for (String col : cubeColumnsQueried) {
           if (!factCols.contains(col.toLowerCase())) {
-            System.out.println("Not considering the fact table:" + fact +
+            LOG.info("Not considering the fact table:" + fact +
                 " as column " + col + " is not available");
             i.remove();
             break;
+          } else {
+            if (validFactCols != null) {
+              if (!validFactCols.contains(col.toLowerCase())) {
+                LOG.info("Not considering the fact table:" + fact +
+                    " as column " + col + " is not valid");
+                i.remove();
+                break;
+              }
+            }
           }
         }
       }
@@ -593,7 +605,7 @@ public class CubeQueryContext {
       QBJoinTree joinTree = qb.getQbJoinTree();
       printJoinTree(joinTree, builder);
     }
-    System.out.println(builder.toString());
+    LOG.info(builder.toString());
   }
 
   void printJoinTree(QBJoinTree joinTree, StringBuilder builder) {
@@ -750,11 +762,6 @@ public class CubeQueryContext {
       }
     } else {
       StringBuilder builder = new StringBuilder();
-      /*
-       * printJoinTree(qb.getQbJoinTree(), builder);
-       * System.out.println(builder.toString());
-       * builder = new StringBuilder();
-       */
       getQLString(qb.getQbJoinTree(), builder);
       fromString = builder.toString();
     }
@@ -815,7 +822,7 @@ public class CubeQueryContext {
 
   private String toHQL(String tableName) throws SemanticException {
     String qfmt = getQueryFormat();
-    System.out.println("qfmt:" + qfmt);
+    LOG.info("qfmt:" + qfmt);
     return String.format(qfmt, getQueryTreeStrings(tableName));
   }
 

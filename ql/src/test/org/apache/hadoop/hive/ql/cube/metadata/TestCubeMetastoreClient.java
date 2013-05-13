@@ -29,7 +29,7 @@ public class TestCubeMetastoreClient {
   private Cube cube;
   private Set<CubeMeasure> cubeMeasures;
   private Set<CubeDimension> cubeDimensions;
-  private final String cubeName = "testCube";
+  private final String cubeName = "testMetastoreCube";
   private Date now;
 
   @Before
@@ -104,7 +104,7 @@ public class TestCubeMetastoreClient {
 
   @Test
   public void testCubeFact() throws Exception {
-    String factName = "testFact";
+    String factName = "testMetastoreFact";
     List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
         cubeMeasures.size());
     for (CubeMeasure measure : cubeMeasures) {
@@ -398,7 +398,7 @@ public class TestCubeMetastoreClient {
 
   @Test
   public void testCubeDim() throws Exception {
-    String dimName = "ziptable";
+    String dimName = "ziptableMeta";
 
     List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
     dimColumns.add(new FieldSchema("zipcode", "int", "code"));
@@ -444,7 +444,7 @@ public class TestCubeMetastoreClient {
 
   @Test
   public void testCubeDimWithoutDumps() throws Exception {
-    String dimName = "countrytable";
+    String dimName = "countrytableMeta";
 
     List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
     dimColumns.add(new FieldSchema("id", "int", "code"));
@@ -484,7 +484,7 @@ public class TestCubeMetastoreClient {
 
   @Test
   public void testCubeDimWithTwoStorages() throws Exception {
-    String dimName = "citytable";
+    String dimName = "citytableMeta";
 
     List<FieldSchema>  dimColumns = new ArrayList<FieldSchema>();
     dimColumns.add(new FieldSchema("id", "int", "code"));

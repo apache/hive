@@ -8,12 +8,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class PartitionResolver implements ContextRewriter {
+  public static final Log LOG = LogFactory.getLog(
+      PartitionResolver.class.getName());
 
   public PartitionResolver(Configuration conf) {
   }
@@ -53,7 +57,7 @@ public class PartitionResolver implements ContextRewriter {
 
     UpdatePeriod interval = fact.maxIntervalInRange(fromDate, toDate);
     if (interval == null) {
-      System.err.println("Could not find partition for given range:"
+      LOG.info("Could not find partition for given range:"
           + fromDate + "-" + toDate + " in fact:" + fact.getName());
       return false;
     }

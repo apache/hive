@@ -5,6 +5,8 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABLE_OR_COL;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMeasure;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -12,16 +14,17 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
- * Replace select and having columns with default aggregate functions on them, if default aggregate
- * is defined and if there isn't already an aggregate function specified on the columns.
+ * Replace select and having columns with default aggregate functions on them,
+ * if default aggregate is defined and if there isn't already an aggregate
+ * function specified on the columns.
  * </p>
  *
  * <p>
- * Expressions which already contain aggregate sub-expressions will not be changed.
+ * Expressions which already contain aggregate sub-expressions will not be
+ * changed.
  * </p>
  *
  * <p>
@@ -29,7 +32,8 @@ import org.apache.log4j.Logger;
  * </p>
  */
 public class AggregateResolver implements ContextRewriter {
-  public static final Logger LOG = Logger.getLogger(AggregateResolver.class);
+  public static final Log LOG = LogFactory.getLog(
+      AggregateResolver.class.getName());
 
   private final Configuration conf;
 
@@ -45,16 +49,13 @@ public class AggregateResolver implements ContextRewriter {
 
     validateAggregates(cubeql, cubeql.getSelectAST(), false, false, false);
     validateAggregates(cubeql, cubeql.getHavingAST(), false, false, false);
-    System.out.println("Before aggregate resolver: " + cubeql.getSelectTree());
     String rewritSelect = resolveForSelect(cubeql, cubeql.getSelectTree());
-    System.out.println("New select after aggregate resolver: " + rewritSelect);
     cubeql.setSelectTree(rewritSelect);
 
     String rewritHaving = resolveForHaving(cubeql);
     if (StringUtils.isNotBlank(rewritHaving)) {
       cubeql.setHavingTree(rewritHaving);
     }
-    System.out.println("New having after aggregate resolver: " + rewritHaving);
   }
 
   private void validateAggregates(CubeQueryContext cubeql, ASTNode node,

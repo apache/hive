@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.ql.cube.metadata;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod.UpdatePeriodComparator;
 import org.apache.hadoop.hive.ql.cube.parse.DateUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.util.StringUtils;
 
 public final class CubeFactTable extends AbstractCubeTable {
   private final String cubeName;
@@ -200,4 +202,10 @@ public final class CubeFactTable extends AbstractCubeTable {
     return cubeName;
   }
 
+  public List<String> getValidColumns() {
+    String validColsStr = getProperties().get(MetastoreUtil.getValidColumnsKey(
+        getName()));
+    return  validColsStr == null ? null : Arrays.asList(StringUtils.split(
+        validColsStr.toLowerCase()));
+  }
 }

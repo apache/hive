@@ -166,6 +166,10 @@ public class MetastoreUtil implements MetastoreConstants {
     return getFactKeyPrefix(name) + CUBE_NAME_SFX;
   }
 
+  public static String getValidColumnsKey(String name) {
+    return getFactKeyPrefix(name) + VALID_COLUMNS_SFX;
+  }
+
   public static String getCubeTableWeightKey(String name) {
     return getCubeTableKeyPrefix(name) + WEIGHT_KEY_SFX;
   }

@@ -14,12 +14,14 @@ import org.apache.hadoop.hive.ql.cube.metadata.BaseDimension;
 import org.apache.hadoop.hive.ql.cube.metadata.ColumnMeasure;
 import org.apache.hadoop.hive.ql.cube.metadata.Cube;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeDimension;
+import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMeasure;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeMetastoreClient;
 import org.apache.hadoop.hive.ql.cube.metadata.ExprMeasure;
 import org.apache.hadoop.hive.ql.cube.metadata.HDFSStorage;
 import org.apache.hadoop.hive.ql.cube.metadata.HierarchicalDimension;
 import org.apache.hadoop.hive.ql.cube.metadata.InlineDimension;
+import org.apache.hadoop.hive.ql.cube.metadata.MetastoreUtil;
 import org.apache.hadoop.hive.ql.cube.metadata.ReferencedDimension;
 import org.apache.hadoop.hive.ql.cube.metadata.Storage;
 import org.apache.hadoop.hive.ql.cube.metadata.TableReference;
@@ -82,8 +84,6 @@ public class CubeTestSetup {
     cubeDimensions.add(new ReferencedDimension(
         new FieldSchema("dim2", "string", "ref dim"),
         new TableReference("testdim2", "id")));
-    cubeDimensions.add(new InlineDimension(
-        new FieldSchema("region", "string", "region dim"), regions));
     cube = new Cube(cubeName, cubeMeasures, cubeDimensions);
     client.createCube(cubeName, cubeMeasures, cubeDimensions);
   }
@@ -286,6 +286,82 @@ public class CubeTestSetup {
     createZiptable(client);
     createCountryTable(client);
     createStateTable(client);
+    createCubeFactsWithValidColumns(client);
+  }
+
+  private void createCubeFactsWithValidColumns(CubeMetastoreClient client)
+      throws HiveException {
+    String factName = "summary1";
+    StringBuilder commonCols = new StringBuilder();
+    List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
+        cubeMeasures.size());
+    for (CubeMeasure measure : cubeMeasures) {
+      factColumns.add(measure.getColumn());
+      commonCols.append(measure.getName());
+      commonCols.append(",");
+    }
+
+    // add dimensions of the cube
+    factColumns.add(new FieldSchema("dim1","string", "dim1"));
+    factColumns.add(new FieldSchema("dim2","string", "dim2"));
+    factColumns.add(new FieldSchema("zipcode","int", "zip"));
+    factColumns.add(new FieldSchema("cityid","int", "city id"));
+    List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
+    updates.add(UpdatePeriod.MINUTELY);
+    updates.add(UpdatePeriod.HOURLY);
+    updates.add(UpdatePeriod.DAILY);
+    Map<String, List<UpdatePeriod>> storageUpdatePeriods =
+        new HashMap<String, List<UpdatePeriod>>();
+
+    Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
+        new HashMap<Storage, List<UpdatePeriod>>();
+    Storage hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage, updates);
+    storageUpdatePeriods.put(hdfsStorage.getName(), updates);
+
+    // create cube fact summary1
+    Map<String, String> properties = new HashMap<String, String>();
+    String validColumns = commonCols.toString() + ",dim1";
+    properties.put(MetastoreUtil.getValidColumnsKey(factName),
+        validColumns);
+    CubeFactTable fact1 = new CubeFactTable(cubeName, factName, factColumns,
+        storageUpdatePeriods, 10L, properties);
+    client.createCubeTable(fact1, storageAggregatePeriods);
+
+    // create summary2 - same schema, different valid columns
+    factName = "summary2";
+    storageAggregatePeriods =
+        new HashMap<Storage, List<UpdatePeriod>>();
+    hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage, updates);
+    storageUpdatePeriods.put(hdfsStorage.getName(), updates);
+    properties = new HashMap<String, String>();
+    validColumns = commonCols.toString() + ",dim1,dim2";
+    properties.put(MetastoreUtil.getValidColumnsKey(factName),
+        validColumns);
+    CubeFactTable fact2 = new CubeFactTable(cubeName, factName, factColumns,
+        storageUpdatePeriods, 20L, properties);
+    client.createCubeTable(fact2, storageAggregatePeriods);
+
+    factName = "summary3";
+    storageAggregatePeriods =
+        new HashMap<Storage, List<UpdatePeriod>>();
+    hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage, updates);
+    storageUpdatePeriods.put(hdfsStorage.getName(), updates);
+    properties = new HashMap<String, String>();
+    validColumns = commonCols.toString() + ",dim1,dim2,cityid";
+    properties.put(MetastoreUtil.getValidColumnsKey(factName),
+        validColumns);
+    CubeFactTable fact3 = new CubeFactTable(cubeName, factName, factColumns,
+        storageUpdatePeriods, 30L, properties);
+    client.createCubeTable(fact3, storageAggregatePeriods);
   }
 
 }

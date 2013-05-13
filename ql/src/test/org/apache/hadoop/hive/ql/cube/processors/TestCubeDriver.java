@@ -78,7 +78,7 @@ public class TestCubeDriver {
   public void testCandidateTables() throws Exception {
     Throwable th = null;
     try {
-      String hqlQuery = driver.compileCubeQuery("select dim1, SUM(msr2)" +
+      String hqlQuery = driver.compileCubeQuery("select dim12, SUM(msr2)" +
           " from testCube" +
           " where time_range_in('" + getDateUptoHours(twodaysBack)
           + "','" + getDateUptoHours(now) + "')");
@@ -401,7 +401,7 @@ public class TestCubeDriver {
       String hql = driver.compileCubeQuery("SELECT cityid, testCube.msr2 from" +
           " testCube " + timeRange1);
     } catch (SemanticException exc) {
-      exc.printStackTrace(System.out);
+      exc.printStackTrace();
       Assert.assertTrue("Exception not expected here", false);
     }
 
@@ -413,7 +413,7 @@ public class TestCubeDriver {
           " testCube " + timeRange2);
       Assert.assertTrue("Should not reach here", false);
     } catch (SemanticException exc) {
-      exc.printStackTrace(System.out);
+      exc.printStackTrace();
       Assert.assertNotNull(exc);
     }
   }
@@ -425,19 +425,35 @@ public class TestCubeDriver {
     System.out.println("##TEST_ALIAS_REPLACER");
     String queries[] = {
         "SELECT cityid, t.msr2 FROM testCube t" + timeRange,
-        "SELECT cityid, msr2 FROM testCube " + timeRange + " and msr2 > 100 HAVING msr2 < 1000",
-        "SELECT cityid, testCube.msr2 FROM tetCube " + timeRange + " and msr2 > 100 HAVING msr2 < 1000 ORDER BY cityid"
+        "SELECT cityid, msr2 FROM testCube " + timeRange + " and msr2 > 100" +
+            " HAVING msr2 < 1000",
+            "SELECT cityid, testCube.msr2 FROM testCube " + timeRange + " and" +
+                " msr2 > 100 HAVING msr2 < 1000 ORDER BY cityid"
     };
 
-    try {
-      for (String q : queries) {
-        String hql = driver.compileCubeQuery(q);
-        System.out.println("@@QUERY: " + q);
-        System.out.println("@@HQL: " + hql);
-      }
-    } catch (Exception exc) {
-      exc.printStackTrace();
+    for (String q : queries) {
+      String hql = driver.compileCubeQuery(q);
+      System.out.println("@@HQL: " + hql);
     }
   }
 
+  @Test
+  public void testFactsWithInvalidColumns() throws Exception {
+    String hqlQuery = driver.compileCubeQuery("select dim1, AVG(msr1)," +
+        " msr2 from testCube" +
+        " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+    hqlQuery = driver.compileCubeQuery("select dim1, dim2, COUNT(msr1), SUM(msr2)," +
+        " msr3 from testCube" +
+        " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+    hqlQuery = driver.compileCubeQuery("select dim1, dim2, cityid, SUM(msr1)," +
+        " SUM(msr2), msr3 from testCube" +
+        " where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+
+  }
 }
