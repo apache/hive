@@ -91,6 +91,14 @@ public class TestCubeDriver {
   }
 
   @Test
+  public void testCubeExplain() throws Exception {
+    String hqlQuery = driver.compileCubeQuery("explain select SUM(msr2) from " +
+        "testCube where time_range_in('" + getDateUptoHours(twodaysBack)
+        + "','" + getDateUptoHours(now) + "')");
+    System.out.println("cube hql:" + hqlQuery);
+  }
+
+  @Test
   public void testCubeWhereQuery() throws Exception {
     System.out.println("Test from:" + getDateUptoHours(twodaysBack) + " to:" +
         getDateUptoHours(now));
@@ -509,7 +517,7 @@ public class TestCubeDriver {
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);
     hqlQuery = driver.compileCubeQuery("select dim1, dim2, COUNT(msr1)," +
-    		" SUM(msr2), msr3 from testCube" +
+        " SUM(msr2), msr3 from testCube" +
         " where time_range_in('" + getDateUptoHours(twodaysBack)
         + "','" + getDateUptoHours(now) + "')");
     System.out.println("cube hql:" + hqlQuery);

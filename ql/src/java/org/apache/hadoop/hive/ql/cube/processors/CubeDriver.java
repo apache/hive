@@ -11,6 +11,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.cube.parse.CubeQueryContext;
 import org.apache.hadoop.hive.ql.cube.parse.CubeQueryRewriter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -57,13 +58,22 @@ public class CubeDriver extends Driver {
     ParseDriver pd = new ParseDriver();
     ASTNode tree = pd.parse(query, ctx);
     tree = ParseUtils.findRootNonNullToken(tree);
+    boolean explain = false;
+    if (tree.getToken().getType() == (HiveParser.TOK_EXPLAIN)) {
+      tree = (ASTNode) tree.getChild(0);
+      explain = true;
+    }
     // compile the cube query and rewrite it to HQL query
     CubeQueryRewriter rewriter = new CubeQueryRewriter(getConf());
     // 1. rewrite query to get summary tables and joins
     CubeQueryContext phase1Query = rewriter.rewritePhase1(tree);
     CubeQueryContext finalQuery = rewriter.rewritePhase2(phase1Query,
         getSupportedStorages(getConf()));
-    return finalQuery.toHQL();
+    String hql = finalQuery.toHQL();
+    if (explain) {
+      hql = "EXPLAIN " + hql;
+    }
+    return hql;
   }
 
   private List<String> getSupportedStorages(HiveConf conf) {
