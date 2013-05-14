@@ -23,7 +23,8 @@ public class TestMaxUpdateInterval<periods> {
     "2013-Jan-01", "2013-Dec-31",
     "2013-Feb-01", "2013-Apr-25",
     "2012-Feb-01", "2013-Feb-01",
-    "2011-Feb-01", "2013-Feb-01"
+    "2011-Feb-01", "2013-Feb-01",
+    "2013-Feb-01", "2013-Feb-21"
   };
 
   public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MMM-dd");
@@ -73,6 +74,10 @@ public class TestMaxUpdateInterval<periods> {
 
     i+=2;
     Assert.assertEquals(UpdatePeriod.YEARLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+
+    CubeFactTable weeklyFact = client.getFactTable("testFactWeekly");
+    i+=2;
+    Assert.assertEquals(UpdatePeriod.WEEKLY, weeklyFact.maxIntervalInRange(pairs[i], pairs[i+1]));
   }
 
 }

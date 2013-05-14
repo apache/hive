@@ -125,6 +125,34 @@ public class CubeTestSetup {
         storageAggregatePeriods, 0L);
   }
 
+  private void createCubeFactWeekly(CubeMetastoreClient client) throws HiveException {
+    String factName = "testFactWeekly";
+    List<FieldSchema> factColumns = new ArrayList<FieldSchema>(
+        cubeMeasures.size());
+    for (CubeMeasure measure : cubeMeasures) {
+      factColumns.add(measure.getColumn());
+    }
+
+    // add dimensions of the cube
+    factColumns.add(new FieldSchema("zipcode","int", "zip"));
+
+    Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
+        new HashMap<Storage, List<UpdatePeriod>>();
+    List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
+    updates.add(UpdatePeriod.HOURLY);
+    updates.add(UpdatePeriod.DAILY);
+    updates.add(UpdatePeriod.WEEKLY);
+    updates.add(UpdatePeriod.MONTHLY);
+    Storage hdfsStorage = new HDFSStorage("C1",
+        TextInputFormat.class.getCanonicalName(),
+        HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
+    storageAggregatePeriods.put(hdfsStorage, updates);
+
+    // create cube fact
+    client.createCubeFactTable(cubeName, factName, factColumns,
+        storageAggregatePeriods, 0L);
+  }
+
   private void createCubeFactOnlyHourly(CubeMetastoreClient client)
       throws HiveException {
     String factName = "testFact2";
@@ -284,6 +312,7 @@ public class CubeTestSetup {
         new HiveConf(this.getClass()));
     createCube(client);
     createCubeFact(client);
+    createCubeFactWeekly(client);
     createCubeFactOnlyHourly(client);
     createCityTbale(client);
     createCubeFactMonthly(client);
