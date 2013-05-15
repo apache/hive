@@ -19,6 +19,5 @@ org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurr
 #### A masked pattern was here ####
 org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20003]: An error occurred when trying to close the Operator running your custom script.
 #### A masked pattern was here ####
-Ended Job = job_local_0001 with errors
 Error during job, obtaining debugging information...
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
