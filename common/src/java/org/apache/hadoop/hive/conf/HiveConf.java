@@ -415,7 +415,12 @@ public class HiveConf extends Configuration {
         true),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000),
+
+    // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
+    // need to remove by hive .13. Also, do not change default (see SMB operator)
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100),
+
+    HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5),
     HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY("hive.mapjoin.followby.map.aggr.hash.percentmemory", (float) 0.3),
