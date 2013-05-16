@@ -101,7 +101,7 @@ class RunLengthIntegerReader {
         // processing is 1, so set that if the value is null
         previous.vector[i] = 1;
       }
-      if (previous.isRepeating && (delta != 0 || !repeat)) {
+      if (previous.isRepeating && i > 0 && (previous.vector[i-1] != previous.vector[i])) {
         previous.isRepeating = false;
       }
     }

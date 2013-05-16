@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,7 +125,7 @@ public class TestVectorizedORCReader {
           Object a = ((Writable) row.getFieldValue(j));
           Object b = batch.cols[j].getWritableObject(i);
           if (null == a) {
-            Assert.assertEquals(true, (b == null));
+            Assert.assertEquals(true, (b == null || (b instanceof NullWritable)));
           } else {
             Assert.assertEquals(true, b.toString().equals(a.toString()));
           }
