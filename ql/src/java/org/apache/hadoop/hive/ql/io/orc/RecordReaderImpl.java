@@ -930,34 +930,42 @@ class RecordReaderImpl implements RecordReader {
       // Read present/isNull stream
       super.nextVector(result, batchSize);
 
-      byte[] dictionaryBytes = dictionaryBuffer.get();
+      if (dictionaryBuffer != null) {
+        byte[] dictionaryBytes = dictionaryBuffer.get();
 
-      // Read string offsets
-      scratchlcv.isNull = result.isNull;
-      reader.nextVector(scratchlcv, batchSize);
-      if (!scratchlcv.isRepeating) {
+        // Read string offsets
+        scratchlcv.isNull = result.isNull;
+        reader.nextVector(scratchlcv, batchSize);
+        if (!scratchlcv.isRepeating) {
 
-        // The vector has non-repeating strings. Iterate thru the batch
-        // and set strings one by one
-        for (int i = 0; i < batchSize; i++) {
-          if (!scratchlcv.isNull[i]) {
-            offset = dictionaryOffsets[(int) scratchlcv.vector[i]];
-            length = getDictionaryEntryLength((int) scratchlcv.vector[i], offset);
-            result.setRef(i, dictionaryBytes, offset, length);
-          } else {
-            // If the value is null then set offset and length to zero (null string)
-            result.setRef(i, dictionaryBytes, 0, 0);
+          // The vector has non-repeating strings. Iterate thru the batch
+          // and set strings one by one
+          for (int i = 0; i < batchSize; i++) {
+            if (!scratchlcv.isNull[i]) {
+              offset = dictionaryOffsets[(int) scratchlcv.vector[i]];
+              length = getDictionaryEntryLength((int) scratchlcv.vector[i], offset);
+              result.setRef(i, dictionaryBytes, offset, length);
+            } else {
+              // If the value is null then set offset and length to zero (null string)
+              result.setRef(i, dictionaryBytes, 0, 0);
+            }
           }
+        } else {
+          // If the value is repeating then just set the first value in the
+          // vector and set the isRepeating flag to true. No need to iterate thru and
+          // set all the elements to the same value
+          offset = dictionaryOffsets[(int) scratchlcv.vector[0]];
+          length = getDictionaryEntryLength((int) scratchlcv.vector[0], offset);
+          result.setRef(0, dictionaryBytes, offset, length);
         }
+        result.isRepeating = scratchlcv.isRepeating;
       } else {
-        // If the value is repeating then just set the first value in the
-        // vector and set the isRepeating flag to true. No need to iterate thru and
-        // set all the elements to the same value
-        offset = dictionaryOffsets[(int) scratchlcv.vector[0]];
-        length = getDictionaryEntryLength((int) scratchlcv.vector[0], offset);
-        result.setRef(0, dictionaryBytes, offset, length);
+        // Entire stripe contains null strings.
+        result.isRepeating = true;
+        result.noNulls = false;
+        result.isNull[0] = true;
+        result.setRef(0, "".getBytes(), 0, 0);
       }
-      result.isRepeating = scratchlcv.isRepeating;
       return result;
     }
 

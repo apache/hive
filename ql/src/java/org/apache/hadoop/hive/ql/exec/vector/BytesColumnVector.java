@@ -208,7 +208,8 @@ public class BytesColumnVector extends ColumnVector {
     }
     Writable result = null;
     if (!isNull[index] && vector[index] != null) {
-      result = new Text(vector[index]);
+      result = new Text();
+      ((Text) result).append(vector[index], start[index], length[index]);
     } else {
       result = NullWritable.get();
     }
