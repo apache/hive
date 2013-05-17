@@ -648,8 +648,7 @@ public class FetchOperator implements Serializable {
    * @return list of file status entries
    */
   private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
-    HiveConf hiveConf = new HiveConf(job, FetchOperator.class);
-    boolean recursive = hiveConf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
+    boolean recursive = HiveConf.getBoolVar(job, HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
     if (!recursive) {
       return fs.listStatus(p);
     }
