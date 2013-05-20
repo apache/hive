@@ -41,7 +41,7 @@ implements BigTableSelectorForAutoSMJ {
   public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp)
     throws SemanticException {
     int bigTablePos = 0;
-    long maxSize = 0;
+    long maxSize = -1;
     HiveConf conf = parseCtx.getConf();
 
     try {
