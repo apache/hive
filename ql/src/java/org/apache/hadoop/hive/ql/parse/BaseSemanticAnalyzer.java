@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -121,7 +120,6 @@ public abstract class BaseSemanticAnalyzer {
       .getName();
   protected static final String ORCFILE_SERDE = OrcSerde.class
       .getName();
-  protected static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
 
   class RowFormatParams {
     String fieldDelim = null;
@@ -195,7 +193,7 @@ public abstract class BaseSemanticAnalyzer {
         inputFormat = RCFILE_INPUT;
         outputFormat = RCFILE_OUTPUT;
         if (shared.serde == null) {
-          shared.serde = COLUMNAR_SERDE;
+          shared.serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
         }
         storageFormat = true;
         break;
@@ -231,7 +229,7 @@ public abstract class BaseSemanticAnalyzer {
         } else if ("RCFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
           inputFormat = RCFILE_INPUT;
           outputFormat = RCFILE_OUTPUT;
-          shared.serde = COLUMNAR_SERDE;
+          shared.serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
         } else if ("ORC".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
           inputFormat = ORCFILE_INPUT;
           outputFormat = ORCFILE_OUTPUT;

@@ -441,6 +441,10 @@ public class HiveConf extends Configuration {
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile"),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
 
+    // default serde for rcfile
+    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde", 
+                           "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe"),
+
     //Location of Hive run time structured log file
     HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
 

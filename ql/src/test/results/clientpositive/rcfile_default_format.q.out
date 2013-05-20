@@ -3,13 +3,34 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE rcfile_default_format (key STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@rcfile_default_format
-PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format
 POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
 key                 	string              	None                
 	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE rcfile_default_format_ctas AS SELECT key,value FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -17,14 +38,40 @@ POSTHOOK: query: CREATE TABLE rcfile_default_format_ctas AS SELECT key,value FRO
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@rcfile_default_format_ctas
-PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_ctas
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
+	totalSize           	5293                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE rcfile_default_format_txtfile (key STRING) STORED AS TEXTFILE
@@ -39,14 +86,40 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@rcfile_default_format_txtfile
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE EXTENDED rcfile_default_format_txtfile
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_txtfile
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED rcfile_default_format_txtfile
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_txtfile
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
 key                 	string              	None                
 	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	1406                
+	totalSize           	1906                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: CREATE TABLE textfile_default_format_ctas AS SELECT key,value FROM rcfile_default_format_ctas
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@rcfile_default_format_ctas
@@ -55,12 +128,194 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@rcfile_default_format_ctas
 POSTHOOK: Output: default@textfile_default_format_ctas
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE EXTENDED textfile_default_format_ctas
+PREHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: DESCRIBE EXTENDED textfile_default_format_ctas
+POSTHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
 key                 	string              	None                
 value               	string              	None                
 	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
 #### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE rcfile_default_format_ctas_default_serde AS SELECT key,value FROM rcfile_default_format_ctas
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_default_format_ctas
+POSTHOOK: query: CREATE TABLE rcfile_default_format_ctas_default_serde AS SELECT key,value FROM rcfile_default_format_ctas
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_default_format_ctas
+POSTHOOK: Output: default@rcfile_default_format_ctas_default_serde
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
+	totalSize           	5293                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE rcfile_default_format_default_serde (key STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@rcfile_default_format_default_serde
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE rcfile_ctas_default_serde STORED AS rcfile AS SELECT key,value FROM rcfile_default_format_ctas
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_default_format_ctas
+POSTHOOK: query: CREATE TABLE rcfile_ctas_default_serde STORED AS rcfile AS SELECT key,value FROM rcfile_default_format_ctas
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_default_format_ctas
+POSTHOOK: Output: default@rcfile_ctas_default_serde
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	500                 
+	rawDataSize         	4812                
+	totalSize           	5293                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE rcfile_default_serde (key STRING) STORED AS rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@rcfile_default_serde
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED rcfile_default_serde
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_serde
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: rcfile_default_format_txtfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

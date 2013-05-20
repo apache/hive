@@ -1350,7 +1350,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_TBLRCFILE:
       inputFormat = RCFILE_INPUT;
       outputFormat = RCFILE_OUTPUT;
-      serde = COLUMNAR_SERDE;
+      serde = conf.getVar(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
       break;
     case HiveParser.TOK_TBLORCFILE:
       inputFormat = ORCFILE_INPUT;
