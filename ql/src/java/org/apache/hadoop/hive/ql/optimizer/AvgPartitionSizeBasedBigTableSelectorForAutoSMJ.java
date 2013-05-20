@@ -48,7 +48,7 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
   public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp)
     throws SemanticException {
     int bigTablePos = 0;
-    long maxSize = 0;
+    long maxSize = -1;
     int numPartitionsCurrentBigTable = 0; // number of partitions for the chosen big table
     HiveConf conf = parseCtx.getConf();
 
@@ -79,7 +79,7 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
           for (Partition part : partsList.getNotDeniedPartns()) {
             totalSize += getSize(conf, part);
           }
-          averageSize = totalSize/numPartitions;
+          averageSize = numPartitions == 0 ? 0 : totalSize/numPartitions;
         }
 
         if (averageSize > maxSize) {
