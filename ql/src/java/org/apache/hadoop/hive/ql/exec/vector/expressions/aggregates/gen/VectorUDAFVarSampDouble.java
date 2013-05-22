@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates
     .VectorAggregateExpression.AggregationBuffer;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -50,13 +51,13 @@ public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
     /** 
     /* class for storing the current aggregate value. 
     */
-    static private final class Aggregation implements AggregationBuffer {
+    private static final class Aggregation implements AggregationBuffer {
       double sum;
       long count;
       double variance;
       boolean isNull;
       
-      public void init () {
+      public void init() {
         isNull = false;
         sum = 0;
         count = 0;
@@ -86,7 +87,7 @@ public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
       initPartialResultInspector();
     }
 
-  private void initPartialResultInspector () {
+  private void initPartialResultInspector() {
         ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
@@ -99,17 +100,200 @@ public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
 
         soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
     }
+
+    private Aggregation getCurrentAggregationBuffer(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex,
+        int row) {
+      VectorAggregationBufferRow mySet = aggregationBufferSets[row];
+      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregateIndex);
+      return myagg;
+    }
+
     
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch unit) 
-    throws HiveException {
+    public void aggregateInputSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex, 
+      VectorizedRowBatch batch) throws HiveException {
       
-      inputExpression.evaluate(unit);
+      inputExpression.evaluate(batch);
       
-      DoubleColumnVector inputVector = (DoubleColumnVector)unit.
+      DoubleColumnVector inputVector = (DoubleColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
       
-      int batchSize = unit.size;
+      int batchSize = batch.size;
+      
+      if (batchSize == 0) {
+        return;
+      }
+      
+      double[] vector = inputVector.vector;
+      
+      if (inputVector.isRepeating) {
+        if (inputVector.noNulls || !inputVector.isNull[0]) {
+          iterateRepeatingNoNullsWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex, vector[0], batchSize);
+        }
+      } 
+      else if (!batch.selectedInUse && inputVector.noNulls) {
+        iterateNoSelectionNoNullsWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex, vector, batchSize);
+      }
+      else if (!batch.selectedInUse) {
+        iterateNoSelectionHasNullsWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex, vector, batchSize, inputVector.isNull);
+      }
+      else if (inputVector.noNulls){
+        iterateSelectionNoNullsWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex, vector, batchSize, batch.selected);
+      }
+      else {
+        iterateSelectionHasNullsWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex, vector, batchSize, 
+            inputVector.isNull, batch.selected);
+      }
+      
+    }
+    
+    private void  iterateRepeatingNoNullsWithAggregationSelection(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex, 
+        double value, 
+        int batchSize) {
+
+      for (int i=0; i<batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets, 
+          aggregateIndex,
+          i);
+        if (myagg.isNull) {
+          myagg.init ();
+        }
+        myagg.sum += value;
+        myagg.count += 1;      
+        if(myagg.count > 1) {
+          double t = myagg.count*value - myagg.sum;
+          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        }
+      }
+    }
+  
+    private void iterateSelectionHasNullsWithAggregationSelection(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex, 
+        double[] vector, 
+        int batchSize,
+        boolean[] isNull, 
+        int[] selected) {
+      
+      for (int j=0; j< batchSize; ++j) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets, 
+          aggregateIndex,
+          j);
+        int i = selected[j];
+        if (!isNull[i]) {
+          double value = vector[i];
+          if (myagg.isNull) {
+            myagg.init ();
+          }
+          myagg.sum += value;
+          myagg.count += 1;
+          if(myagg.count > 1) {
+            double t = myagg.count*value - myagg.sum;
+            myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+          }
+        }
+      }
+    }
+
+    private void iterateSelectionNoNullsWithAggregationSelection(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex, 
+        double[] vector, 
+        int batchSize, 
+        int[] selected) {
+
+      for (int i=0; i< batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets, 
+          aggregateIndex,
+          i);
+        double value = vector[selected[i]];
+        if (myagg.isNull) {
+          myagg.init ();
+        }
+        myagg.sum += value;
+        myagg.count += 1;
+        if(myagg.count > 1) {
+          double t = myagg.count*value - myagg.sum;
+          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        }
+      }
+    }
+
+    private void iterateNoSelectionHasNullsWithAggregationSelection(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex, 
+        double[] vector, 
+        int batchSize,
+        boolean[] isNull) {
+      
+      for(int i=0;i<batchSize;++i) {
+        if (!isNull[i]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets, 
+            aggregateIndex,
+          i);
+          double value = vector[i];
+          if (myagg.isNull) {
+            myagg.init (); 
+          }
+          myagg.sum += value;
+          myagg.count += 1;
+        if(myagg.count > 1) {
+          double t = myagg.count*value - myagg.sum;
+          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        }
+        }
+      }
+    }
+
+    private void iterateNoSelectionNoNullsWithAggregationSelection(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex, 
+        double[] vector, 
+        int batchSize) {
+
+      for (int i=0; i<batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets, 
+          aggregateIndex,
+          i);
+        if (myagg.isNull) {
+          myagg.init ();
+        }
+        double value = vector[i];
+        myagg.sum += value;
+        myagg.count += 1;
+        if(myagg.count > 1) {
+          double t = myagg.count*value - myagg.sum;
+          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        }
+      }
+    }
+
+    @Override
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
+    throws HiveException {
+      
+      inputExpression.evaluate(batch);
+      
+      DoubleColumnVector inputVector = (DoubleColumnVector)batch.
+        cols[this.inputExpression.getOutputColumn()];
+      
+      int batchSize = batch.size;
       
       if (batchSize == 0) {
         return;
@@ -124,17 +308,17 @@ public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
           iterateRepeatingNoNulls(myagg, vector[0], batchSize);
         }
       } 
-      else if (!unit.selectedInUse && inputVector.noNulls) {
+      else if (!batch.selectedInUse && inputVector.noNulls) {
         iterateNoSelectionNoNulls(myagg, vector, batchSize);
       }
-      else if (!unit.selectedInUse) {
+      else if (!batch.selectedInUse) {
         iterateNoSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull);
       }
       else if (inputVector.noNulls){
-        iterateSelectionNoNulls(myagg, vector, batchSize, unit.selected);
+        iterateSelectionNoNulls(myagg, vector, batchSize, batch.selected);
       }
       else {
-        iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, unit.selected);
+        iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
       }
     }
 

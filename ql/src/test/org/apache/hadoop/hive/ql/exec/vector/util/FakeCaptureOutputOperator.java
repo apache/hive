@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -35,6 +36,20 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
   implements Serializable {
   private static final long serialVersionUID = 1L;
+  
+  public interface OutputInspector {
+    public void inspectRow(Object row, int tag) throws HiveException;
+  }
+  
+  private OutputInspector outputInspector;
+  
+  public void setOutputInspector(OutputInspector outputInspector) {
+    this.outputInspector = outputInspector;
+  }
+  
+  public OutputInspector getOutputInspector() {
+    return outputInspector;
+  }
 
   private transient List<Object> rows;
 
@@ -52,6 +67,7 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
     return out;
   }
 
+  
   public List<Object> getCapturedRows() {
     return rows;
   }
@@ -64,6 +80,9 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     rows.add(row);
+    if (null != outputInspector) {
+      outputInspector.inspectRow(row, tag);
+    }
   }
 
   @Override

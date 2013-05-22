@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
@@ -209,6 +210,9 @@ public class VectorizationContext {
 
   public VectorExpression[] getVectorExpressions(List<ExprNodeDesc> exprNodes) throws HiveException {
     int i = 0;
+    if (null == exprNodes) {
+      return new VectorExpression[0];
+    }
     VectorExpression[] ret = new VectorExpression[exprNodes.size()];
     for (ExprNodeDesc e : exprNodes) {
       ret[i++] = getVectorExpression(e);
@@ -1056,6 +1060,19 @@ public class VectorizationContext {
       return new BytesColumnVector(defaultSize);
     } else {
       return new LongColumnVector(defaultSize);
+    }
+  }
+
+  public ObjectInspector createObjectInspector(VectorExpression vectorExpression) 
+      throws HiveException {
+    String columnType = vectorExpression.getOutputType();
+    if (columnType.equalsIgnoreCase("long") ||
+        columnType.equalsIgnoreCase("bigint")) {
+      return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+    } else if (columnType.equalsIgnoreCase("double")) {
+      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+    } else {
+      throw new HiveException(String.format("Must implement type %s", columnType));
     }
   }
 }
