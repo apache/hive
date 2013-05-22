@@ -188,10 +188,9 @@ public class TestVectorLogicalExpressions {
     // No nulls case, not repeating
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
-    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertTrue(outCol.isRepeating);
     Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
-    Assert.assertEquals(0, outCol.vector[4]);
 
     // isRepeating, and there are nulls
     batch = getBatchThreeBooleanCols();
@@ -200,7 +199,6 @@ public class TestVectorLogicalExpressions {
     batch.cols[0].isNull[0] = true;
     expr.evaluate(batch);
     Assert.assertTrue(outCol.isRepeating);
-    ;
     Assert.assertEquals(1, outCol.vector[0]);
     Assert.assertTrue(outCol.noNulls);
 
@@ -213,6 +211,46 @@ public class TestVectorLogicalExpressions {
     Assert.assertTrue(outCol.isRepeating);
     Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
+  }
+
+  @Test
+  public void testIsNotNullExpr() {
+    // has nulls, not repeating
+    VectorizedRowBatch batch = getBatchThreeBooleanCols();
+    IsNotNull expr = new IsNotNull(0, 2);
+    LongColumnVector outCol = (LongColumnVector) batch.cols[2];
+    expr.evaluate(batch);
+    Assert.assertEquals(1, outCol.vector[0]);
+    Assert.assertEquals(0, outCol.vector[4]);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    // No nulls case, not repeating
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertEquals(1, outCol.vector[0]);
+
+    // isRepeating, and there are nulls
+    batch = getBatchThreeBooleanCols();
+    outCol = (LongColumnVector) batch.cols[2];
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertEquals(0, outCol.vector[0]);
+    Assert.assertTrue(outCol.noNulls);
+
+    // isRepeating, and no nulls
+    batch = getBatchThreeBooleanCols();
+    outCol = (LongColumnVector) batch.cols[2];
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertTrue(outCol.isRepeating);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertEquals(1, outCol.vector[0]);
   }
 
   @Test
@@ -233,25 +271,76 @@ public class TestVectorLogicalExpressions {
     assertEquals(0, batch.selected[0]);
     assertEquals(2, batch.selected[1]);
     assertEquals(4, batch.selected[2]);
+  }
 
-    batch = getBatchThreeBooleanCols();
-    SelectColumnIsNull expr2 = new SelectColumnIsNull(0);
-    expr2.evaluate(batch);
+  @Test
+  public void testSelectColumnIsNull() {
+    // has nulls, not repeating
+    VectorizedRowBatch batch = getBatchThreeBooleanCols();
+    SelectColumnIsNull expr = new SelectColumnIsNull(0);
+    expr.evaluate(batch);
     assertEquals(3, batch.size);
     assertEquals(4, batch.selected[0]);
     assertEquals(5, batch.selected[1]);
     assertEquals(8, batch.selected[2]);
 
+    // No nulls case, not repeating
     batch = getBatchThreeBooleanCols();
-    SelectColumnIsNotNull expr3 = new SelectColumnIsNotNull(1);
-    expr3.evaluate(batch);
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(0, batch.size);
+
+    // isRepeating, and there are nulls
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].isNull[0] = true;
+    int initialSize = batch.size;
+    expr.evaluate(batch);
+    Assert.assertEquals(initialSize, batch.size);
+
+    // isRepeating, and no nulls
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(0, batch.size);
+  }
+
+  @Test
+  public void testSelectColumnIsNotNull() {
+    // has nulls, not repeating
+    VectorizedRowBatch batch = getBatchThreeBooleanCols();
+    SelectColumnIsNotNull expr = new SelectColumnIsNotNull(0);
+    expr.evaluate(batch);
     assertEquals(6, batch.size);
     assertEquals(0, batch.selected[0]);
     assertEquals(1, batch.selected[1]);
     assertEquals(2, batch.selected[2]);
     assertEquals(3, batch.selected[3]);
-    assertEquals(4, batch.selected[4]);
-    assertEquals(5, batch.selected[5]);
+    assertEquals(6, batch.selected[4]);
+    assertEquals(7, batch.selected[5]);
+
+    // No nulls case, not repeating
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].noNulls = true;
+    int initialSize = batch.size;
+    expr.evaluate(batch);
+    Assert.assertEquals(initialSize, batch.size);
+
+    // isRepeating, and there are nulls
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(0, batch.size);
+
+    // isRepeating, and no nulls
+    batch = getBatchThreeBooleanCols();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    initialSize = batch.size;
+    expr.evaluate(batch);
+    Assert.assertEquals(initialSize, batch.size);
   }
 
   @Test

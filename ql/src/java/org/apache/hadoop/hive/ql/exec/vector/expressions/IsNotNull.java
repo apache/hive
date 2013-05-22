@@ -21,16 +21,20 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * This expression evaluates to true if the given input columns is not null.
+ * The boolean output is stored in the specified output column.
+ */
 public class IsNotNull extends VectorExpression {
-	int colNum;
-	int outputColumn;
+  int colNum;
+  int outputColumn;
 
-	public IsNotNull(int colNum, int outputColumn) {
-		this.colNum = colNum;
-		this.outputColumn = outputColumn;
-	}
+  public IsNotNull(int colNum, int outputColumn) {
+    this.colNum = colNum;
+    this.outputColumn = outputColumn;
+  }
 
-	@Override
+  @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -44,38 +48,34 @@ public class IsNotNull extends VectorExpression {
     long[] outputVector = ((LongColumnVector) batch.cols[outputColumn]).vector;
 
     if (n <= 0) {
-      //Nothing to do
+      // Nothing to do
       return;
     }
 
-    if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Selection property will not change.
-      if (nullPos[0]) {
-        outputVector[0] = 0;
+    // output never has nulls for this operator
+    batch.cols[outputColumn].noNulls = true;
+    if (inputColVector.noNulls) {
+      outputVector[0] = 1;
+      batch.cols[outputColumn].isRepeating = true;
+    } else if (inputColVector.isRepeating) {
+      // All must be selected otherwise size would be zero
+      // Selection property will not change.
+      outputVector[0] = nullPos[0] ? 0 : 1;
+      batch.cols[outputColumn].isRepeating = true;
+    } else {
+      batch.cols[outputColumn].isRepeating = false;
+      if (batch.selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          outputVector[i] = nullPos[i] ? 0 : 1;
+        }
       } else {
-        outputVector[0] = 1;
+        for (int i = 0; i != n; i++) {
+          outputVector[i] = nullPos[i] ? 0 : 1;
+        }
       }
-    } else if (batch.selectedInUse) {
-			for(int j=0; j != n; j++) {
-				int i = sel[j];
-				if (nullPos[i]) {
-				  outputVector[i] = 0;
-				} else {
-				  outputVector[i] = 1;
-				}
-			}
-		}
-		else {
-			for(int i = 0; i != n; i++) {
-				if (nullPos[i]) {
-				  outputVector[i] = 0;
-        } else {
-          outputVector[i] = 1;
-				}
-			}
-		}
-	}
+    }
+  }
 
   @Override
   public int getOutputColumn() {
