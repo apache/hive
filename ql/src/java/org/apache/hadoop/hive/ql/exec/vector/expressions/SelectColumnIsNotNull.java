@@ -21,14 +21,17 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * This expression selects a row if the given column is null.
+ */
 public class SelectColumnIsNotNull extends VectorExpression {
-	int colNum;
+  private final int colNum;
 
-	public SelectColumnIsNotNull(int colNum) {
-		this.colNum = colNum;
-	}
+  public SelectColumnIsNotNull(int colNum) {
+    this.colNum = colNum;
+  }
 
-	@Override
+  @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -37,46 +40,47 @@ public class SelectColumnIsNotNull extends VectorExpression {
 
     ColumnVector inputColVector = batch.cols[colNum];
     int[] sel = batch.selected;
-    //Note: if type of isNull could be long[], could we just re-use this
-    //vector as the output vector. No iterations would be needed.
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
     if (n <= 0) {
-      //Nothing to do
+      // Nothing to do
       return;
     }
 
     if (inputColVector.noNulls) {
-      //All selected, do nothing
+      // All selected, do nothing
       return;
     } else if (inputColVector.isRepeating) {
-      //All must be null
-      batch.size = 0;
+      if (nullPos[0]) {
+        // All are null so none are selected
+        batch.size = 0;
+        return;
+      } else {
+        // None are null, so all are selected
+        return;
+      }
     } else if (batch.selectedInUse) {
-      int [] newSelected = new int[n];
-      int newSize=0;
-			for(int j=0; j != n; j++) {
-				int i = sel[j];
-				if (!nullPos[i]) {
-          newSelected[newSize++] = i;
-				}
-			}
-      batch.selected = newSelected;
-      batch.size = newSize;
-		}
-		else {
       int newSize = 0;
-			for(int i = 0; i != n; i++) {
-				if (!nullPos[i]) {
-				  sel[newSize++] = i;
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if (!nullPos[i]) {
+          sel[newSize++] = i;
         }
-			}
+      }
+      batch.size = newSize;
+    } else {
+      int newSize = 0;
+      for (int i = 0; i != n; i++) {
+        if (!nullPos[i]) {
+          sel[newSize++] = i;
+        }
+      }
       if (newSize < n) {
         batch.selectedInUse = true;
         batch.size = newSize;
       }
-		}
-	}
+    }
+  }
 
   @Override
   public int getOutputColumn() {

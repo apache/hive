@@ -21,14 +21,17 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * This expression selects a row if the given boolean column is true.
+ */
 public class SelectColumnIsTrue extends VectorExpression {
-	int colNum1;
+  private final int colNum1;
 
-	public SelectColumnIsTrue(int colNum1) {
-		this.colNum1 = colNum1;
-	}
+  public SelectColumnIsTrue(int colNum1) {
+    this.colNum1 = colNum1;
+  }
 
-	@Override
+  @Override
   public void evaluate(VectorizedRowBatch batch) {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -40,29 +43,29 @@ public class SelectColumnIsTrue extends VectorExpression {
     boolean[] nullVector = inputColVector1.isNull;
 
     if (n <= 0) {
-      //Nothing to do
+      // Nothing to do
       return;
     }
 
     if (inputColVector1.noNulls) {
       if (inputColVector1.isRepeating) {
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
         if (vector1[0] == 0) {
           // All are filtered out
           batch.size = 0;
+          return;
+        } else {
+          // All are selected
+          return;
         }
       } else if (batch.selectedInUse) {
-        int[] newSelected = new int[n];
         int newSize = 0;
         for (int j = 0; j != n; j++) {
           int i = sel[j];
           if (vector1[i] == 1) {
-            newSelected[newSize++] = i;
+            sel[newSize++] = i;
           }
         }
         batch.size = newSize;
-        batch.selected = newSelected;
       } else {
         int newSize = 0;
         for (int i = 0; i != n; i++) {
@@ -76,23 +79,27 @@ public class SelectColumnIsTrue extends VectorExpression {
         }
       }
     } else {
-      if (inputColVector1.isRepeating)  {
-        //Repeating null value
-        batch.size = 0;
+      if (inputColVector1.isRepeating) {
+        if (nullVector[0] || (vector1[0] == 0)) {
+          // All are filtered
+          batch.size = 0;
+          return;
+        } else {
+          // All are selected
+          return;
+        }
       } else if (batch.selectedInUse) {
-        int [] newSelected = new int[n];
-        int newSize=0;
-        for(int j=0; j != n; j++) {
+        int newSize = 0;
+        for (int j = 0; j != n; j++) {
           int i = sel[j];
           if (vector1[i] == 1 && !nullVector[i]) {
-            newSelected[newSize++] = i;
+            sel[newSize++] = i;
           }
         }
         batch.size = newSize;
-        batch.selected = newSelected;
       } else {
-        int newSize=0;
-        for(int i = 0; i != n; i++) {
+        int newSize = 0;
+        for (int i = 0; i != n; i++) {
           if (vector1[i] == 1 && !nullVector[i]) {
             sel[newSize++] = i;
           }
@@ -103,7 +110,7 @@ public class SelectColumnIsTrue extends VectorExpression {
         }
       }
     }
-	}
+  }
 
   @Override
   public int getOutputColumn() {

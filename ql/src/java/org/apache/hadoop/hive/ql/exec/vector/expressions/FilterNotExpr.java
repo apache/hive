@@ -24,10 +24,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This class represents an NOT filter expression. This applies short circuit optimization.
  */
 public class FilterNotExpr extends VectorExpression {
-  VectorExpression childExpr1;
-  int [] tmpSelect1 = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  int [] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  int [] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private final VectorExpression childExpr1;
+  private final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
   public FilterNotExpr(VectorExpression childExpr1) {
     this.childExpr1 = childExpr1;
@@ -37,19 +37,17 @@ public class FilterNotExpr extends VectorExpression {
   public void evaluate(VectorizedRowBatch batch) {
     int n = batch.size;
 
-    if (n<=0) {
+    if (n <= 0) {
       return;
     }
 
-    //Clone the selected vector
-    int [] sel = batch.selected;
+    // Clone the selected vector
+    int[] sel = batch.selected;
     if (batch.selectedInUse) {
-      for (int i = 0; i < n; i++) {
-        tmpSelect1[i] = sel[i];
-      }
+      System.arraycopy(sel, 0, initialSelected, 0, n);
     } else {
       for (int i = 0; i < n; i++) {
-        tmpSelect1[i] = i;
+        initialSelected[i] = i;
         sel[i] = i;
       }
       batch.selectedInUse = true;
@@ -57,25 +55,30 @@ public class FilterNotExpr extends VectorExpression {
 
     childExpr1.evaluate(batch);
 
-    //Calculate unselected ones in last evaluate.
-    for (int i = 0; i < tmp.length; i++) {
-      tmp[i] = 0;
+    // Calculate unselected ones in last evaluate.
+    for (int i = 0; i < n; i++) {
+      tmp[initialSelected[i]] = 0;
     }
+
+    // Need to set sel reference again, because the child expression might
+    // have invalidated the earlier reference
+    sel = batch.selected;
     for (int j = 0; j < batch.size; j++) {
       int i = sel[j];
       tmp[i] = 1;
     }
     int unselectedSize = 0;
-    for (int j =0; j < n; j++) {
-      int i = tmpSelect1[j];
+    for (int j = 0; j < n; j++) {
+      int i = initialSelected[j];
       if (tmp[i] == 0) {
         unselected[unselectedSize++] = i;
       }
     }
 
-    //The unselected is the new selected
+    // The unselected is the new selected, swap the arrays
     batch.selected = unselected;
-    batch.size =  unselectedSize;
+    unselected = sel;
+    batch.size = unselectedSize;
   }
 
   @Override
