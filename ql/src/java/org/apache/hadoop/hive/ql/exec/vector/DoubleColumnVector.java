@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -59,7 +60,7 @@ public class DoubleColumnVector extends ColumnVector {
       index = 0;
     }
     if (!noNulls && isNull[index]) {
-      return null;
+      return NullWritable.get();
     } else {
       writableObj.set(vector[index]);
       return writableObj;

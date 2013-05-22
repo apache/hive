@@ -24,11 +24,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This class represents an Or expression. This applies short circuit optimization.
  */
 public class FilterExprOrExpr extends VectorExpression {
-  VectorExpression childExpr1;
-  VectorExpression childExpr2;
-  int [] tmpSelect1 = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  int [] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  int [] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private final VectorExpression childExpr1;
+  private final VectorExpression childExpr2;
+  private final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
   public FilterExprOrExpr(VectorExpression childExpr1, VectorExpression childExpr2) {
     this.childExpr1 = childExpr1;
@@ -42,15 +42,14 @@ public class FilterExprOrExpr extends VectorExpression {
       return;
     }
     boolean prevSelectInUse = batch.selectedInUse;
-    //Clone the selected vector
-    int [] sel = batch.selected;
+
+    // Save the original selected vector
+    int[] sel = batch.selected;
     if (batch.selectedInUse) {
-      for (int i = 0; i < n; i++) {
-        tmpSelect1[i] = sel[i];
-      }
+      System.arraycopy(sel, 0, initialSelected, 0, n);
     } else {
       for (int i = 0; i < n; i++) {
-        tmpSelect1[i] = i;
+        initialSelected[i] = i;
         sel[i] = i;
       }
       batch.selectedInUse = true;
@@ -58,40 +57,44 @@ public class FilterExprOrExpr extends VectorExpression {
 
     childExpr1.evaluate(batch);
 
-    //Calculate unselected ones in last evaluate.
-    for (int i = 0; i < tmp.length; i++) {
-      tmp[i] = 0;
+    // Preserve the selected reference and size values generated
+    // after the first child is evaluated.
+    int sizeAfterFirstChild = batch.size;
+    int[] selectedAfterFirstChild = batch.selected;
+
+    // Calculate unselected ones in last evaluate.
+    for (int j = 0; j < n; j++) {
+      tmp[initialSelected[j]] = 0;
     }
     for (int j = 0; j < batch.size; j++) {
-      int i = sel[j];
-      tmp[i] = 1;
+      tmp[selectedAfterFirstChild[j]] = 1;
     }
     int unselectedSize = 0;
-    for (int j =0; j < n; j++) {
-      int i = tmpSelect1[j];
+    for (int j = 0; j < n; j++) {
+      int i = initialSelected[j];
       if (tmp[i] == 0) {
         unselected[unselectedSize++] = i;
       }
     }
-    //Preserve current selected and size
-    int currentSize = batch.size;
-    int [] currentSelected = batch.selected;
 
-    //Evaluate second child expression over unselected ones only.
+    // Evaluate second child expression over unselected ones only.
     batch.selected = unselected;
     batch.size = unselectedSize;
+
     childExpr2.evaluate(batch);
 
-    //Merge the result of last evaluate to previous evaluate.
-    int newSize = batch.size + currentSize;
-    for (int i = batch.size; i < newSize; i++ ) {
-      batch.selected[i] = currentSelected[i-batch.size];
-    }
+    // Merge the result of last evaluate to previous evaluate.
+    int newSize = batch.size + sizeAfterFirstChild;
+    System.arraycopy(selectedAfterFirstChild, 0, batch.selected, batch.size, sizeAfterFirstChild);
     batch.size = newSize;
     if (newSize == n) {
-      //Filter didn't do anything
+      // Filter didn't do anything
       batch.selectedInUse = prevSelectInUse;
     }
+
+    // unselected array is taken away by the row batch
+    // so take the row batch's original one.
+    unselected = selectedAfterFirstChild;
   }
 
   @Override

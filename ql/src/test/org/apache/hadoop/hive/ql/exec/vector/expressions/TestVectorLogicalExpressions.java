@@ -19,19 +19,28 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Assert;
 import org.junit.Test;
 
-
+/**
+* Unit tests for logical expressions AND, OR, NOT, IsNull etc.
+*/
 public class TestVectorLogicalExpressions {
+
+  private static final int BOOLEAN_COLUMN_TEST_SIZE = 9;
 
   @Test
   public void testLongColOrLongCol() {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
-    ColOrCol expr = new ColOrCol(0,1,2);
+    ColOrCol expr = new ColOrCol(0, 1, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
     // verify
@@ -67,9 +76,12 @@ public class TestVectorLogicalExpressions {
 
     // try isRepeating path (left input only), no nulls
     batch = getBatchThreeBooleanCols();
-    batch.cols[0].noNulls = true; batch.cols[0].isRepeating = true;
-    batch.cols[1].noNulls = true; batch.cols[1].isRepeating = false;
-    batch.cols[2].noNulls = false; batch.cols[2].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    batch.cols[1].isRepeating = false;
+    batch.cols[2].noNulls = false;
+    batch.cols[2].isRepeating = true;
     outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
 
@@ -114,21 +126,23 @@ public class TestVectorLogicalExpressions {
     v2.isRepeating = true; // this value should get over-written with correct value
     v2.noNulls = true; // ditto
 
-    batch.size = 9;
+    batch.size = BOOLEAN_COLUMN_TEST_SIZE;
     return batch;
   }
 
   @Test
   public void testBooleanNot() {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
-    NotCol expr = new NotCol(0,2);
+    NotCol expr = new NotCol(0, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
 
     // Case with nulls
     Assert.assertFalse(outCol.isRepeating);
-    Assert.assertEquals(1, outCol.vector[0]);    Assert.assertFalse(outCol.isNull[0]);
-    Assert.assertEquals(0, outCol.vector[2]);    Assert.assertFalse(outCol.isNull[0]);
+    Assert.assertEquals(1, outCol.vector[0]);
+    Assert.assertFalse(outCol.isNull[0]);
+    Assert.assertEquals(0, outCol.vector[2]);
+    Assert.assertFalse(outCol.isNull[0]);
     Assert.assertTrue(outCol.isNull[4]);
 
     // No nulls case
@@ -145,7 +159,7 @@ public class TestVectorLogicalExpressions {
     batch.cols[0].isRepeating = true;
     batch.cols[0].isNull[0] = true;
     expr.evaluate(batch);
-    Assert.assertTrue(outCol.isRepeating);;
+    Assert.assertTrue(outCol.isRepeating);
     Assert.assertTrue(outCol.isNull[0]);
 
     // isRepeating, and no nulls
@@ -160,10 +174,10 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testIsNullExpr () {
+  public void testIsNullExpr() {
     // has nulls, not repeating
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
-    IsNull expr = new IsNull(0,2);
+    IsNull expr = new IsNull(0, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
     Assert.assertEquals(0, outCol.vector[0]);
@@ -185,7 +199,8 @@ public class TestVectorLogicalExpressions {
     batch.cols[0].isRepeating = true;
     batch.cols[0].isNull[0] = true;
     expr.evaluate(batch);
-    Assert.assertTrue(outCol.isRepeating);;
+    Assert.assertTrue(outCol.isRepeating);
+    ;
     Assert.assertEquals(1, outCol.vector[0]);
     Assert.assertTrue(outCol.noNulls);
 
@@ -237,5 +252,163 @@ public class TestVectorLogicalExpressions {
     assertEquals(3, batch.selected[3]);
     assertEquals(4, batch.selected[4]);
     assertEquals(5, batch.selected[5]);
+  }
+
+  @Test
+  public void testFilterNotExpr() {
+    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
+    VectorizedRowBatch batch2 = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr = new SelectColumnIsTrue(0);
+    FilterNotExpr notExpr = new FilterNotExpr(expr);
+
+    notExpr.evaluate(batch1);
+
+    notExpr.evaluate(batch2);
+
+    assertEquals(batch1.size, batch2.size);
+    for (int j = 0; j < batch1.size; j++) {
+      assertEquals(batch1.selected[j], batch2.selected[j]);
+      int i = j;
+      assertEquals((((LongColumnVector) batch1.cols[0]).vector[i]),
+          (((LongColumnVector) batch2.cols[0]).vector[i]));
+    }
+  }
+
+  @Test
+  public void testFilterExprOrExpr() {
+    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
+    VectorizedRowBatch batch2 = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
+    SelectColumnIsFalse expr2 = new SelectColumnIsFalse(1);
+
+    FilterExprOrExpr orExpr = new FilterExprOrExpr(expr1, expr2);
+
+    orExpr.evaluate(batch1);
+    orExpr.evaluate(batch2);
+
+    assertEquals(batch1.size, batch2.size);
+    for (int j = 0; j < batch1.size; j++) {
+      assertEquals(batch1.selected[j], batch2.selected[j]);
+      int i = j;
+      assertEquals((((LongColumnVector) batch1.cols[0]).vector[i]),
+          (((LongColumnVector) batch2.cols[0]).vector[i]));
+    }
+
+    assertEquals(5, batch1.size);
+    Set<Integer> expectedSet = new HashSet<Integer>();
+    expectedSet.add(0);
+    expectedSet.add(2);
+    expectedSet.add(3);
+    expectedSet.add(4);
+    expectedSet.add(7);
+
+    assertTrue(expectedSet.contains(batch1.selected[0]));
+    assertTrue(expectedSet.contains(batch1.selected[1]));
+    assertTrue(expectedSet.contains(batch1.selected[2]));
+    assertTrue(expectedSet.contains(batch1.selected[3]));
+    assertTrue(expectedSet.contains(batch1.selected[4]));
+
+    // Repeat the expression on the same batch,
+    // the result must be unchanged.
+    orExpr.evaluate(batch1);
+
+    assertEquals(5, batch1.size);
+    assertTrue(expectedSet.contains(batch1.selected[0]));
+    assertTrue(expectedSet.contains(batch1.selected[1]));
+    assertTrue(expectedSet.contains(batch1.selected[2]));
+    assertTrue(expectedSet.contains(batch1.selected[3]));
+    assertTrue(expectedSet.contains(batch1.selected[4]));
+  }
+
+  @Test
+  public void testFilterExprOrExprWithBatchReuse() {
+    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
+    SelectColumnIsFalse expr2 = new SelectColumnIsFalse(1);
+
+    FilterExprOrExpr orExpr = new FilterExprOrExpr(expr1, expr2);
+
+    orExpr.evaluate(batch1);
+
+    // Now re-initialize batch1 to simulate batch-object re-use.
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      batch1.selected[i] = 0;
+    }
+    batch1.size = BOOLEAN_COLUMN_TEST_SIZE;
+    batch1.selectedInUse = false;
+
+    // Swap column vectors to simulate change in data
+    ColumnVector tmp = batch1.cols[0];
+    batch1.cols[0] = batch1.cols[1];
+    batch1.cols[1] = tmp;
+
+    orExpr.evaluate(batch1);
+
+    assertEquals(5, batch1.size);
+    Set<Integer> expectedSet = new HashSet<Integer>();
+    expectedSet.add(0);
+    expectedSet.add(1);
+    expectedSet.add(3);
+    expectedSet.add(5);
+    expectedSet.add(6);
+
+    assertTrue(expectedSet.contains(batch1.selected[0]));
+    assertTrue(expectedSet.contains(batch1.selected[1]));
+    assertTrue(expectedSet.contains(batch1.selected[2]));
+    assertTrue(expectedSet.contains(batch1.selected[3]));
+    assertTrue(expectedSet.contains(batch1.selected[4]));
+  }
+
+  @Test
+  public void testFilterExprOrExprWithSelectInUse() {
+    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
+    SelectColumnIsFalse expr2 = new SelectColumnIsFalse(1);
+
+    FilterExprOrExpr orExpr = new FilterExprOrExpr(expr1, expr2);
+
+    // Evaluate batch1 so that temporary arrays in the expression
+    // have residual values to interfere in later computation
+    orExpr.evaluate(batch1);
+
+    // Swap column vectors, but keep selected vector unchanged
+    ColumnVector tmp = batch1.cols[0];
+    batch1.cols[0] = batch1.cols[1];
+    batch1.cols[1] = tmp;
+    // Make sure row-7 is in the output.
+    batch1.cols[1].isNull[7] = false;
+    ((LongColumnVector) batch1.cols[1]).vector[7] = 0;
+
+    orExpr.evaluate(batch1);
+
+    assertEquals(3, batch1.size);
+    Set<Integer> expectedSet = new HashSet<Integer>();
+    expectedSet.add(0);
+    expectedSet.add(3);
+    expectedSet.add(7);
+
+    assertTrue(expectedSet.contains(batch1.selected[0]));
+    assertTrue(expectedSet.contains(batch1.selected[1]));
+    assertTrue(expectedSet.contains(batch1.selected[2]));
+  }
+
+  @Test
+  public void testFilterExprAndExpr() {
+    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
+
+    SelectColumnIsTrue expr1 = new SelectColumnIsTrue(0);
+    SelectColumnIsFalse expr2 = new SelectColumnIsFalse(1);
+
+    FilterExprAndExpr orExpr = new FilterExprAndExpr(expr1, expr2);
+
+    orExpr.evaluate(batch1);
+
+    assertEquals(1, batch1.size);
+
+    assertEquals(2, batch1.selected[0]);
   }
 }
