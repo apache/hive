@@ -216,10 +216,12 @@ public class CodeGen {
 
     };
 
+
   private final String templateDirectory;
   private final String outputDirectory;
+  private final TestCodeGen testCodeGen;
 
-    private static String joinPath(String...parts) {
+  static String joinPath(String...parts) {
     String path = parts[0];
     for (int i=1; i < parts.length; ++i) {
       path += File.separatorChar + parts[i];
@@ -231,11 +233,13 @@ public class CodeGen {
     templateDirectory = System.getProperty("user.dir");
     File f = new File(templateDirectory);
     outputDirectory = joinPath(f.getParent(), "gen");
+    testCodeGen =  new TestCodeGen(joinPath(f.getParent(), "test"),templateDirectory);
   }
 
-  public CodeGen(String templateDirectory, String outputDirectory) {
+  public CodeGen(String templateDirectory, String outputDirectory, String testOutputDirectory) {
     this.templateDirectory = templateDirectory;
     this.outputDirectory = outputDirectory;
+    testCodeGen =  new TestCodeGen(testOutputDirectory,templateDirectory);
   }
 
   /**
@@ -244,10 +248,13 @@ public class CodeGen {
    */
   public static void main(String[] args) throws Exception {
     CodeGen gen;
-    if (args != null && args[0] != null) {
-      gen = new CodeGen(args[0], args[1]);
-    } else {
+    if (args == null || args.length==0) {
       gen = new CodeGen();
+    } else if (args.length==3) {
+      gen = new CodeGen(args[0], args[1], args[2]);
+    }else{
+      System.out.println("args: <templateDir> <outputDir> <testOutputDir>");
+      return;
     }
     gen.generate();
   }
@@ -287,6 +294,7 @@ public class CodeGen {
         continue;
       }
     }
+    testCodeGen.generateTestSuites();
   }
 
   private void generateVectorUDAFMinMax(String[] tdesc) throws Exception {
@@ -417,9 +425,9 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = "Filter" + this.getCamelCaseType(operandType1)
-        + "Col" + operatorName + this.getCamelCaseType(operandType2) + "Column";
-    generateColumnBinaryOperatorColumn(tdesc, "doesn't matter", className);
+    String className = "Filter" + getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+    generateColumnBinaryOperatorColumn(tdesc, null, className);
   }
 
   private void generateColumnUnaryMinus(String[] tdesc) throws IOException {
@@ -427,7 +435,7 @@ public class CodeGen {
     String inputColumnVectorType = this.getColumnVectorType(operandType);
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
-    String className = this.getCamelCaseType(operandType) + "ColUnaryMinus";
+    String className = getCamelCaseType(operandType) + "ColUnaryMinus";
     String outputFile = joinPath(this.outputDirectory, className + ".java");
     String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
     String templateString = readFile(templateFile);
@@ -444,8 +452,8 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = this.getCamelCaseType(operandType1)
-        + "Col" + operatorName + this.getCamelCaseType(operandType2) + "Column";
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnBinaryOperatorColumn(tdesc, returnType, className);
   }
@@ -456,9 +464,9 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = "Filter" + this.getCamelCaseType(operandType1)
-        + "Col" + operatorName + this.getCamelCaseType(operandType2) + "Scalar";
-    generateColumnBinaryOperatorScalar(tdesc, "doesn't matter", className);
+    String className = "Filter" + getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
+    generateColumnBinaryOperatorScalar(tdesc, null, className);
   }
 
   private void generateFilterScalarCompareColumn(String[] tdesc) throws IOException {
@@ -466,9 +474,9 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = "Filter" + this.getCamelCaseType(operandType1)
-        + "Scalar" + operatorName + this.getCamelCaseType(operandType2) + "Column";
-    generateScalarBinaryOperatorColumn(tdesc, "doesn't matter", className);
+    String className = "Filter" + getCamelCaseType(operandType1)
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+    generateScalarBinaryOperatorColumn(tdesc, null, className);
   }
 
   private void generateColumnCompareScalar(String[] tdesc) throws IOException {
@@ -476,8 +484,8 @@ public class CodeGen {
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
     String returnType = "long";
-    String className = this.getCamelCaseType(operandType1)
-        + "Col" + operatorName + this.getCamelCaseType(operandType2) + "Scalar";
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
     generateColumnBinaryOperatorScalar(tdesc, returnType, className);
   }
 
@@ -503,6 +511,20 @@ public class CodeGen {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     writeFile(outputFile, templateString);
+
+    if(returnType==null){
+      testCodeGen.addColumnColumnFilterTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          operatorSymbol);
+    }else{
+      testCodeGen.addColumnColumnOperationTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType);
+    }
   }
 
   private void generateColumnBinaryOperatorScalar(String[] tdesc, String returnType,
@@ -525,6 +547,25 @@ public class CodeGen {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     writeFile(outputFile, templateString);
+
+    if(returnType==null)
+    {
+      testCodeGen.addColumnScalarFilterTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          operandType2,
+          operatorSymbol);
+    }else
+    {
+      testCodeGen.addColumnScalarOperationTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          operandType2);
+    }
+
   }
 
   private void generateScalarBinaryOperatorColumn(String[] tdesc, String returnType,
@@ -547,6 +588,24 @@ public class CodeGen {
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
      templateString = templateString.replaceAll("<ReturnType>", returnType);
      writeFile(outputFile, templateString);
+
+     if(returnType==null)
+     {
+       testCodeGen.addColumnScalarFilterTestCases(
+           false,
+           className,
+           inputColumnVectorType,
+           operandType1,
+           operatorSymbol);
+     }else
+     {
+       testCodeGen.addColumnScalarOperationTestCases(
+           false,
+           className,
+           inputColumnVectorType,
+           outputColumnVectorType,
+           operandType1);
+     }
    }
 
   //Binary arithmetic operator
@@ -554,8 +613,8 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = this.getCamelCaseType(operandType1)
-        + "Col" + operatorName + this.getCamelCaseType(operandType2) + "Scalar";
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnBinaryOperatorScalar(tdesc, returnType, className);
   }
@@ -564,19 +623,20 @@ public class CodeGen {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    String className = this.getCamelCaseType(operandType1)
-        + "Scalar" + operatorName + this.getCamelCaseType(operandType2) + "Column";
+    String className = getCamelCaseType(operandType1)
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateScalarBinaryOperatorColumn(tdesc, returnType, className);
   }
 
-  private void writeFile(String outputFile, String str) throws IOException {
+
+   static void writeFile(String outputFile, String str) throws IOException {
     BufferedWriter w = new BufferedWriter(new FileWriter(outputFile));
     w.write(str);
     w.close();
   }
 
-  private String readFile(String templateFile) throws IOException {
+   static String readFile(String templateFile) throws IOException {
     BufferedReader r = new BufferedReader(new FileReader(templateFile));
     String line = r.readLine();
     StringBuilder b = new StringBuilder();
@@ -589,7 +649,7 @@ public class CodeGen {
     return b.toString();
   }
 
-  private String getCamelCaseType(String type) {
+   static String getCamelCaseType(String type) {
     if (type.equals("long")) {
       return "Long";
     } else if (type.equals("double")) {
@@ -610,9 +670,7 @@ public class CodeGen {
   }
 
   private String getColumnVectorType(String primitiveType) {
-    if (primitiveType.equals("long")) {
-      return "LongColumnVector";
-    } else if (primitiveType.equals("double")) {
+    if(primitiveType!=null && primitiveType.equals("double")) {
       return "DoubleColumnVector";
     }
     return "LongColumnVector";
