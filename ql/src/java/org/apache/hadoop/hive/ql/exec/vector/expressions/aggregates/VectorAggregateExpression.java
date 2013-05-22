@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,6 +31,8 @@ public abstract class VectorAggregateExpression  {
   public abstract AggregationBuffer getNewAggregationBuffer() throws HiveException;
   public abstract void aggregateInput(AggregationBuffer agg, VectorizedRowBatch unit)
         throws HiveException;
+  public abstract void aggregateInputSelection(VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex, VectorizedRowBatch vrg) throws HiveException;
   public abstract void reset(AggregationBuffer agg) throws HiveException;
   public abstract Object evaluateOutput(AggregationBuffer agg) throws HiveException;
 

@@ -45,16 +45,16 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import org.apache.hadoop.hive.ql.io.orc.*;
 
-@Description(name = "avg", value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: double)")
-public class VectorUDAFAvgDouble extends VectorAggregateExpression {
+@Description(name = "avg", value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: <ValueType>)")
+public class <ClassName> extends VectorAggregateExpression {
     
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
-      double sum;
+      <ValueType> sum;
       long count;
       boolean isNull;
       
-      public void sumValue(double value) {
+      public void sumValue(<ValueType> value) {
         if (isNull) {
           sum = value; 
           count = 1;
@@ -72,7 +72,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private DoubleWritable resultSum;
     private StructObjectInspector soi;
         
-    public VectorUDAFAvgDouble(VectorExpression inputExpression) {
+    public <ClassName>(VectorExpression inputExpression) {
       super();
       this.inputExpression = inputExpression;
       partialResult = new Object[2];
@@ -289,7 +289,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
         
         inputExpression.evaluate(batch);
         
-        DoubleColumnVector inputVector = (DoubleColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
+        <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.cols[this.inputExpression.getOutputColumn()];
         
         int batchSize = batch.size;
         
@@ -299,7 +299,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
         
         Aggregation myagg = (Aggregation)agg;
   
-        double[] vector = inputVector.vector;
+        <ValueType>[] vector = inputVector.vector;
         
         if (inputVector.isRepeating) {
           if (inputVector.noNulls || !inputVector.isNull[0]) {
@@ -330,7 +330,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
   
     private void iterateSelectionHasNulls(
         Aggregation myagg, 
-        double[] vector, 
+        <ValueType>[] vector, 
         int batchSize,
         boolean[] isNull, 
         int[] selected) {
@@ -338,7 +338,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          double value = vector[i];
+          <ValueType> value = vector[i];
           if (myagg.isNull) {
             myagg.isNull = false;
             myagg.sum = 0;
@@ -352,7 +352,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
 
     private void iterateSelectionNoNulls(
         Aggregation myagg, 
-        double[] vector, 
+        <ValueType>[] vector, 
         int batchSize, 
         int[] selected) {
       
@@ -363,7 +363,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
       }
       
       for (int i=0; i< batchSize; ++i) {
-        double value = vector[selected[i]];
+        <ValueType> value = vector[selected[i]];
         myagg.sum += value;
         myagg.count += 1;
       }
@@ -371,13 +371,13 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
 
     private void iterateNoSelectionHasNulls(
         Aggregation myagg, 
-        double[] vector, 
+        <ValueType>[] vector, 
         int batchSize,
         boolean[] isNull) {
       
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          double value = vector[i];
+          <ValueType> value = vector[i];
           if (myagg.isNull) { 
             myagg.isNull = false;
             myagg.sum = 0;
@@ -391,7 +391,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
 
     private void iterateNoSelectionNoNulls(
         Aggregation myagg, 
-        double[] vector, 
+        <ValueType>[] vector, 
         int batchSize) {
       if (myagg.isNull) {
         myagg.isNull = false;
@@ -400,7 +400,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
       }
       
       for (int i=0;i<batchSize;++i) {
-        double value = vector[i];
+        <ValueType> value = vector[i];
         myagg.sum += value;
         myagg.count += 1;
       }
