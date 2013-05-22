@@ -367,6 +367,12 @@ public class FetchOperator implements Serializable {
       job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils.escapeString(currPath
           .toString()));
 
+      // Fetch operator is not vectorized and as such turn vectorization flag off so that
+      // non-vectorized record reader is created below.
+      if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+        HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+      }
+
       PartitionDesc partDesc;
       if (currTbl == null) {
         partDesc = currPart;
