@@ -100,8 +100,13 @@ public class HiveDriver implements Driver {
     return Pattern.matches(URL_PREFIX + ".*", url);
   }
 
+  /*
+   * As per JDBC 3.0 Spec (section 9.2)
+   * "If the Driver implementation understands the URL, it will return a Connection object;
+   * otherwise it returns null"
+   */
   public Connection connect(String url, Properties info) throws SQLException {
-    return new HiveConnection(url, info);
+    return acceptsURL(url) ? new HiveConnection(url, info) : null;
   }
 
   /**
