@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.cli;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -77,11 +78,6 @@ public class CliSessionState extends SessionState {
 
   private Hive hive; // currently only used (and init'ed) in getCurrentDbName
 
-  public CliSessionState() {
-    super();
-    remoteMode = false;
-  }
-
   public CliSessionState(HiveConf conf) {
     super(conf);
     remoteMode = false;
@@ -112,10 +108,13 @@ public class CliSessionState extends SessionState {
 
   public void close() {
     try {
+      super.close();
       if (remoteMode) {
         client.clean();
         transport.close();
       }
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
     } catch (TException e) {
       e.printStackTrace();
     }

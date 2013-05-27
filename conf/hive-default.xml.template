@@ -374,6 +374,12 @@
 </property>
 
 <property>
+  <name>hive.default.rcfile.serde</name>
+  <value>org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe</value>
+  <description>The default SerDe hive will use for the rcfile format</description>
+</property>
+
+<property>
   <name>hive.fileformat.check</name>
   <value>true</value>
   <description>Whether to check file format or not when loading data files</description>
@@ -589,9 +595,9 @@
 </property>
 
 <property>
-  <name>hive.mapjoin.bucket.cache.size</name>
-  <value>100</value>
-  <description>How many values in each keys in the map-joined table should be cached in memory. </description>
+  <name>hive.smbjoin.cache.rows</name>
+  <value>10000</value>
+  <description>How many rows with the same key value should be cached in memory per smb joined table. </description>
 </property>
 
 <property>
@@ -1712,6 +1718,17 @@
     any aggregations or distincts (which incurrs RS), lateral views and joins.
     1. minimal : SELECT STAR, FILTER on partition columns, LIMIT only
     2. more    : SELECT, FILTER, LIMIT only (TABLESAMPLE, virtual columns)
+  </description>
+</property>
+
+<property>
+  <name>hive.cache.expr.evaluation</name>
+  <value>true</value>
+  <description>
+    If true, evaluation result of deterministic expression referenced twice or more will be cached.
+    For example, in filter condition like ".. where key + 10 > 10 or key + 10 = 0"
+    "key + 10" will be evaluated/cached once and reused for following expression ("key + 10 = 0").
+    Currently, this is applied only to expressions in select or filter operator.
   </description>
 </property>
 

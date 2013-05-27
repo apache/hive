@@ -1,3 +1,385 @@
+Release Notes - Hive - Version 0.11.0
+
+** Sub-task
+    * [HIVE-2340] - optimize orderby followed by a groupby
+    * [HIVE-4075] - TypeInfoFactory is not thread safe and is access by multiple threads
+    * [HIVE-4141] - InspectorFactories contains static HashMaps which can cause infinite loop
+    * [HIVE-4162] - disable TestBeeLineDriver
+    * [HIVE-4176] - disable TestBeeLineDriver in ptest util
+    * [HIVE-4238] - Integrate HCatalog site into Hive site
+    * [HIVE-4263] - Adjust build.xml package command to move all hcat jars and binaries into build
+    * [HIVE-4264] - Move HCatalog trunk code from trunk/hcatalog/historical to trunk/hcatalog
+    * [HIVE-4265] - HCatalog branches need to move out of trunk/hcatalog/historical
+    * [HIVE-4278] - HCat needs to get current Hive jars instead of pulling them from maven repo
+    * [HIVE-4325] - Merge HCat NOTICE file with Hive NOTICE file
+    * [HIVE-4326] - Clean up remaining items in hive/hcatalog/historical/trunk
+
+** Bug
+    * [HIVE-2264] - Hive server is SHUTTING DOWN when invalid queries beeing executed.
+    * [HIVE-2332] - If all of the parameters of distinct functions are exists in group by columns, query fails in runtime
+    * [HIVE-2689] - ObjectInspectorConverters cannot convert Void types to Array/Map/Struct types.
+    * [HIVE-2723] - should throw  "Ambiguous column reference key"  Exception in particular join condition
+    * [HIVE-2794] - Aggregations without grouping should return NULL when applied to partitioning column of a partitionless table
+    * [HIVE-2820] - Invalid tag is used for MapJoinProcessor
+    * [HIVE-2839] - Filters on outer join with mapjoin hint is not applied correctly
+    * [HIVE-3084] - Hive CI failing due to script_broken_pipe1.q
+    * [HIVE-3140] - Comment indenting is broken for "describe" in CLI
+    * [HIVE-3179] - HBase Handler doesn't handle NULLs properly
+    * [HIVE-3197] - Hive compile errors under Java 7 (JDBC 4.1)
+    * [HIVE-3297] - change hive.auto.convert.join's default value to true
+    * [HIVE-3300] - LOAD DATA INPATH fails if a hdfs file with same name is added to table
+    * [HIVE-3308] - Mixing avro and snappy gives null values
+    * [HIVE-3348] - semi-colon in comments in .q file does not work
+    * [HIVE-3381] - Result of outer join is not valid
+    * [HIVE-3384] - HIVE JDBC module won't compile under JDK1.7 as new methods added in JDBC specification
+    * [HIVE-3403] - user should not specify mapjoin to perform sort-merge bucketed join
+    * [HIVE-3428] - Fix log4j configuration errors when running hive on hadoop23
+    * [HIVE-3446] - PrimitiveObjectInspector doesn't handle timestamps properly
+    * [HIVE-3464] - Merging join tree may reorder joins which could be invalid
+    * [HIVE-3490] - Implement * or a.* for arguments to UDFs
+    * [HIVE-3528] - Avro SerDe doesn't handle serializing Nullable types that require access to a Schema
+    * [HIVE-3537] - release locks at the end of move tasks
+    * [HIVE-3582] - NPE in union processing followed by lateral view followed by 2 group bys
+    * [HIVE-3594] - When Group by Partition Column Type is Timestamp or STRING Which Format contains "HH:MM:SS", It will occur URISyntaxException
+    * [HIVE-3622] - reflect udf cannot find method which has arguments of primitive types and String, Binary, Timestamp types mixed
+    * [HIVE-3631] - script_pipe.q fails when using JDK7
+    * [HIVE-3645] - RCFileWriter does not implement the right function to support Federation
+    * [HIVE-3648] - HiveMetaStoreFsImpl is not compatible with hadoop viewfs
+    * [HIVE-3665] - Allow URIs without port to be specified in metatool
+    * [HIVE-3697] - External JAR files on HDFS can lead to race condition with hive.downloaded.resources.dir
+    * [HIVE-3698] - enhanceModel.notRequired is incorrectly determined
+    * [HIVE-3699] - Multiple insert overwrite into multiple tables query stores same results in all tables
+    * [HIVE-3702] - Renaming table changes table location scheme/authority
+    * [HIVE-3703] - Hive Query Explain Plan JSON not being created properly
+    * [HIVE-3714] - Patch: Hive's ivy internal resolvers need to use sourceforge for sqlline
+    * [HIVE-3717] - Hive won't compile with -Dhadoop.mr.rev=20S
+    * [HIVE-3728] - make optimizing multi-group by configurable
+    * [HIVE-3729] - Error in groupSetExpression rule in Hive grammar
+    * [HIVE-3735] - PTest doesn't work due to hive snapshot version upgrade to 11
+    * [HIVE-3741] - Driver.validateConfVariables() should perform more validations
+    * [HIVE-3747] - Provide hive operation name for hookContext
+    * [HIVE-3750] - JDBCStatsPublisher fails when ID length exceeds length of ID column
+    * [HIVE-3757] - union_remove_9.q fails in trunk (hadoop 23)
+    * [HIVE-3760] - TestNegativeMinimrCliDriver_mapreduce_stack_trace.q fails on hadoop-1
+    * [HIVE-3766] - Enable adding hooks to hive meta store init
+    * [HIVE-3767] - BucketizedHiveInputFormat should be automatically used with Bucketized Map Joins also
+    * [HIVE-3771] - HIVE-3750 broke TestParse
+    * [HIVE-3774] - Sort merge join should work if join cols are a prefix of sort columns for each partition
+    * [HIVE-3775] - Unit test failures due to unspecified order of results in "show grant" command
+    * [HIVE-3778] - Add MapJoinDesc.isBucketMapJoin() as part of explain plan
+    * [HIVE-3782] - testCliDriver_sample_islocalmode_hook fails on hadoop-1
+    * [HIVE-3783] - stats19.q is failing on trunk
+    * [HIVE-3787] - Regression introduced from HIVE-3401
+    * [HIVE-3788] - testCliDriver_repair fails on hadoop-1
+    * [HIVE-3789] - Patch HIVE-3648 causing the majority of unit tests to fail on branch 0.9
+    * [HIVE-3795] - NPE in SELECT when WHERE-clause is an and/or/not operation involving null
+    * [HIVE-3800] - testCliDriver_combine2 fails on hadoop-1
+    * [HIVE-3801] - testCliDriver_loadpart_err fails on hadoop-1
+    * [HIVE-3802] - testCliDriver_input39 fails on hadoop-1
+    * [HIVE-3803] - explain dependency should show the dependencies hierarchically in presence of views
+    * [HIVE-3806] - Ptest failing due to "Argument list too long" errors
+    * [HIVE-3809] - Concurrency issue in RCFile: multiple threads can use the same decompressor
+    * [HIVE-3817] - Adding the name space for the maven task for the maven-publish target.
+    * [HIVE-3820] - Consider creating a literal like "D" or "BD" for representing Decimal type constants
+    * [HIVE-3824] - bug if different serdes are used for different partitions
+    * [HIVE-3826] - Rollbacks and retries of drops cause org.datanucleus.exceptions.NucleusObjectNotFoundException: No such database row)
+    * [HIVE-3828] - insert overwrite fails with stored-as-dir in cluster
+    * [HIVE-3829] - Hive CLI needs UNSET TBLPROPERTY command
+    * [HIVE-3832] - Insert overwrite doesn't create a dir if the skewed column position doesnt match
+    * [HIVE-3839] - adding .gitattributes file for normalizing line endings during cross platform development
+    * [HIVE-3840] - hive cli null representation in output is inconsistent
+    * [HIVE-3847] - ppd.remove.duplicatefilters removing filters too aggressively
+    * [HIVE-3849] - Aliased column in where clause for multi-groupby single reducer cannot be resolved
+    * [HIVE-3850] - hour() function returns 12 hour clock value when using timestamp datatype
+    * [HIVE-3852] - Multi-groupby optimization fails when same distinct column is used twice or more
+    * [HIVE-3858] - Normalize left over CRLF files
+    * [HIVE-3861] - Upgrade hbase dependency to 0.94
+    * [HIVE-3862] - testHBaseNegativeCliDriver_cascade_dbdrop fails on hadoop-1
+    * [HIVE-3872] - MAP JOIN  for VIEW thorws NULL pointer exception error
+    * [HIVE-3873] - lot of tests failing for hadoop 23
+    * [HIVE-3875] - negative value for hive.stats.ndv.error should be disallowed 
+    * [HIVE-3888] - wrong mapside groupby if no partition is being selected
+    * [HIVE-3893] - something wrong with the hive-default.xml
+    * [HIVE-3899] - Partition pruning fails on <constant> = <constant> expression
+    * [HIVE-3908] - create view statement's outputs contains the view and a temporary dir.
+    * [HIVE-3909] - Wrong data due to HIVE-2820
+    * [HIVE-3912] - table_access_keys_stats.q fails with hadoop 0.23
+    * [HIVE-3913] - Possible deadlock in ZK lock manager
+    * [HIVE-3915] - Union with map-only query on one side and two MR job query on the other produces wrong results
+    * [HIVE-3916] - For outer joins, when looping over the rows looking for filtered tags, it doesn't report progress
+    * [HIVE-3918] - Normalize more CRLF line endings
+    * [HIVE-3920] - Change test for HIVE-2332
+    * [HIVE-3921] - recursive_dir.q fails on 0.23
+    * [HIVE-3923] - join_filters_overlap.q fails on 0.23
+    * [HIVE-3924] - join_nullsafe.q fails on 0.23
+    * [HIVE-3927] - Potential overflow with new RCFileCat column sizes options
+    * [HIVE-3931] - Add Oracle metastore upgrade script for 0.9 to 10.0
+    * [HIVE-3932] - Hive release tarballs don't contain PostgreSQL metastore scripts
+    * [HIVE-3943] - Skewed query fails if hdfs path has special characters
+    * [HIVE-3947] - MiniMR test remains pending after test completion
+    * [HIVE-3948] - avro_nullable_fields.q is failing in trunk
+    * [HIVE-3977] - Hive 0.10 postgres schema script is broken
+    * [HIVE-3980] - Cleanup after HIVE-3403
+    * [HIVE-3984] - Maintain a clear separation between Windowing & PTF at the specification level. 
+    * [HIVE-3985] - Update new UDAFs introduced for Windowing to work with new Decimal Type
+    * [HIVE-3986] - Fix select expr processing in PTF Operator
+    * [HIVE-3987] - Update PTF invocation and windowing grammar
+    * [HIVE-3992] - Hive RCFile::sync(long) does a sub-sequence linear search for sync blocks
+    * [HIVE-3995] - PostgreSQL upgrade scripts are not valid
+    * [HIVE-3998] - Oracle metastore update script will fail when upgrading from 0.9.0 to 0.10.0
+    * [HIVE-3999] - Mysql metastore upgrade script will end up with different schema than the full schema load
+    * [HIVE-4000] - Hive client goes into infinite loop at 100% cpu
+    * [HIVE-4004] - Incorrect status for AddPartition metastore event if RawStore commit fails
+    * [HIVE-4018] - MapJoin failing with Distributed Cache error
+    * [HIVE-4021] - PostgreSQL upgrade scripts are creating column with incorrect name
+    * [HIVE-4024] - Derby metastore update script will fail when upgrading from 0.9.0 to 0.10.0
+    * [HIVE-4027] - Thrift alter_table api doesnt validate column type
+    * [HIVE-4028] - Bring paranthesis handling in windowing specification in compliance with sql standard
+    * [HIVE-4029] - Hive Profiler dies with NPE
+    * [HIVE-4030] - Name windowing function in consistence with sql standard
+    * [HIVE-4033] - NPE at runtime while selecting virtual column after joining three tables on different keys
+    * [HIVE-4034] - Should be able to specify windowing spec without needing Between
+    * [HIVE-4035] - Column Pruner for PTF Op
+    * [HIVE-4036] - remove use of FunctionRegistry during PTF Op initialization
+    * [HIVE-4039] - Hive compiler sometimes fails in semantic analysis / optimisation stage when boolean variable appears in WHERE clause.
+    * [HIVE-4040] - fix ptf negative tests
+    * [HIVE-4041] - Support multiple partitionings in a single Query
+    * [HIVE-4052] - Disallow partition/sort and distribute/order combinations in windowing and partitioning spec
+    * [HIVE-4056] - Extend rcfilecat to support (un)compressed size and no. of row
+    * [HIVE-4067] - Followup to HIVE-701: reduce ambiguity in grammar
+    * [HIVE-4071] - Map-join outer join produces incorrect results.
+    * [HIVE-4072] - Hive eclipse build path update for string template jar
+    * [HIVE-4073] - Make partition by optional in over clause
+    * [HIVE-4077] - alterPartition and alterPartitions methods in ObjectStore swallow exceptions
+    * [HIVE-4078] - Delay the serialize-deserialize pair in CommonJoinTaskDispatcher
+    * [HIVE-4079] - Altering a view partition fails with NPE
+    * [HIVE-4080] - Add Lead & Lag UDAFs
+    * [HIVE-4081] - allow expressions with over clause
+    * [HIVE-4082] - Break up ptf tests in PTF, Windowing and Lead/Lag tests
+    * [HIVE-4083] - PTF ColumnPruner doesn't account for Partition & Order expressions
+    * [HIVE-4084] - Generated aliases for windowing expressions is broken
+    * [HIVE-4090] - Use of hive.exec.script.allow.partial.consumption can produce partial results
+    * [HIVE-4092] - Store complete names of tables in column access analyzer
+    * [HIVE-4093] - Remove sprintf from PTFTranslator and use String.format()
+    * [HIVE-4094] - decimal_3.q & decimal_serde.q fail on hadoop 2
+    * [HIVE-4096] - problem in hive.map.groupby.sorted with distincts
+    * [HIVE-4097] - ORC file doesn't properly interpret empty hive.io.file.readcolumn.ids
+    * [HIVE-4098] - OrcInputFormat assumes Hive always calls createValue
+    * [HIVE-4103] - Remove System.gc() call from the map-join local-task loop
+    * [HIVE-4104] - Hive localtask does not buffer disk-writes or reads
+    * [HIVE-4105] - Hive MapJoinOperator unnecessarily deserializes values for all join-keys
+    * [HIVE-4107] - Update Hive 0.10.0 RELEASE_NOTES.txt
+    * [HIVE-4108] - Allow over() clause to contain an order by with no partition by
+    * [HIVE-4109] - Partition by column does not have to be in order by
+    * [HIVE-4111] - Default value in lag is not handled correctly
+    * [HIVE-4112] - Window range specification should be more flexible
+    * [HIVE-4119] - ANALYZE TABLE ... COMPUTE STATISTICS FOR COLUMNS fails with NPE if the table is empty
+    * [HIVE-4122] - Queries fail if timestamp data not in expected format
+    * [HIVE-4126] - remove support for lead/lag UDFs outside of UDAF args
+    * [HIVE-4130] - Bring the Lead/Lag UDFs interface in line with Lead/Lag UDAFs
+    * [HIVE-4131] - Fix eclipse template classpath to include new packages added by ORC file patch
+    * [HIVE-4138] - ORC's union object inspector returns a type name that isn't parseable by TypeInfoUtils
+    * [HIVE-4139] - MiniDFS shim does not work for hadoop 2
+    * [HIVE-4140] - Specifying alias for windowing function
+    * [HIVE-4142] - Remove inferring partition specification behavior
+    * [HIVE-4143] - Incorrect column mappings with over clause
+    * [HIVE-4146] - bug with hive.auto.convert.join.noconditionaltask with outer joins
+    * [HIVE-4148] - Cleanup aisle "ivy"
+    * [HIVE-4149] - wrong results big outer joins with array of ints
+    * [HIVE-4151] - HiveProfiler NPE with ScriptOperator
+    * [HIVE-4154] - NPE reading column of empty string from ORC file
+    * [HIVE-4156] - need to add protobuf classes to hive-exec.jar
+    * [HIVE-4159] - RetryingHMSHandler doesn't retry in enough cases
+    * [HIVE-4167] - Hive converts bucket map join to SMB join even when tables are not sorted
+    * [HIVE-4169] - union_remove_*.q fail on hadoop 2
+    * [HIVE-4170] - [REGRESSION] FsShell.close closes filesystem, removing temporary directories
+    * [HIVE-4174] - Round UDF converts BigInts to double
+    * [HIVE-4178] - ORC fails with files with different numbers of columns
+    * [HIVE-4179] - NonBlockingOpDeDup does not merge SEL operators correctly
+    * [HIVE-4180] - Filter getting dropped with PTFOperator
+    * [HIVE-4182] - doAS does not work with HiveServer2 in non-kerberos mode with local job
+    * [HIVE-4184] - Document HiveServer2 setup under the admin documentation on hive wiki 
+    * [HIVE-4185] - Document HiveServer2 JDBC and Beeline CLI in the user documentation 
+    * [HIVE-4186] - NPE in ReduceSinkDeDuplication
+    * [HIVE-4187] - QL build-grammar target fails after HIVE-4148
+    * [HIVE-4188] - TestJdbcDriver2.testDescribeTable failing consistently
+    * [HIVE-4189] - ORC fails with String column that ends in lots of nulls
+    * [HIVE-4190] - OVER clauses with ORDER BY not getting windowing set properly
+    * [HIVE-4191] - describe table output always prints as if formatted keyword is specified
+    * [HIVE-4197] - Bring windowing support inline with SQL Standard
+    * [HIVE-4202] - reuse Partition objects in PTFOperator processing
+    * [HIVE-4208] - Clientpositive test parenthesis_star_by is non-deteministic
+    * [HIVE-4217] - Fix show_create_table_*.q test failures
+    * [HIVE-4219] - explain dependency does not capture the input table
+    * [HIVE-4235] - CREATE TABLE IF NOT EXISTS uses inefficient way to check if table exists
+    * [HIVE-4252] - hiveserver2 string representation of complex types are inconsistent with cli
+    * [HIVE-4254] - Code cleanup : debug methods, having clause associated with Windowing
+    * [HIVE-4255] - update show_functions.q.out for functions added for windowing
+    * [HIVE-4259] - SEL operator created with missing columnExprMap for unions
+    * [HIVE-4260] - union_remove_12, union_remove_13 are failing on hadoop2
+    * [HIVE-4261] - union_remove_10 is failing on hadoop2 with assertion (root task with non-empty set of parents)
+    * [HIVE-4262] - fix last_value UDAF behavior
+    * [HIVE-4269] - fix handling of binary type in hiveserver2, jdbc driver
+    * [HIVE-4270] - bug in hive.map.groupby.sorted in the presence of multiple input partitions
+    * [HIVE-4271] - Limit precision of decimal type
+    * [HIVE-4272] - partition wise metadata does not work for text files
+    * [HIVE-4275] - Hive does not differentiate scheme and authority in file uris
+    * [HIVE-4280] - TestRetryingHMSHandler is failing on trunk.
+    * [HIVE-4288] - Add IntelliJ project files files to .gitignore
+    * [HIVE-4289] - HCatalog build fails when behind a firewall
+    * [HIVE-4292] - hiveserver2 should support -hiveconf commandline parameter
+    * [HIVE-4296] - ant thriftif  fails on  hcatalog
+    * [HIVE-4302] - Fix how RowSchema and RowResolver are set on ReduceSinkOp that precedes PTFOp
+    * [HIVE-4303] - 2 empty java files in hcatalog
+    * [HIVE-4308] - Newly added test TestCliDriver.hiveprofiler_union0 is failing on trunk
+    * [HIVE-4311] - DOS line endings in auto_join26.q
+    * [HIVE-4315] - enable doAs in unsecure mode for hive server2, when MR job runs locally
+    * [HIVE-4318] - OperatorHooks hit performance even when not used
+    * [HIVE-4319] - Revert changes checked-in as part of HIVE-1953
+    * [HIVE-4320] - Consider extending max limit for precision to 38
+    * [HIVE-4323] - sqlline dependency is not required
+    * [HIVE-4327] - NPE in constant folding with decimal
+    * [HIVE-4332] - orc*.q tests fail on hadoop 2
+    * [HIVE-4333] - most windowing tests fail on hadoop 2
+    * [HIVE-4334] - ctas test on hadoop 2 has outdated golden file
+    * [HIVE-4335] - serde_regex test fails on hadoop 2
+    * [HIVE-4336] - Selecting from a view, and another view that also selects from that view fails
+    * [HIVE-4342] - NPE for query involving UNION ALL with nested JOIN and UNION ALL
+    * [HIVE-4352] - Guava not getting included in build package
+    * [HIVE-4356] - remove duplicate impersonation parameters for hiveserver2
+    * [HIVE-4358] - Check for Map side processing in PTFOp is no longer valid
+    * [HIVE-4365] - wrong result in left semi join
+    * [HIVE-4371] - some issue with merging join trees
+    * [HIVE-4373] - Hive Version returned by HiveDatabaseMetaData.getDatabaseProductVersion is incorrect
+    * [HIVE-4378] - Counters hit performance even when not used
+    * [HIVE-4387] - ant maven-build fails because hcatalog doesn't have a make-pom target
+    * [HIVE-4394] - test leadlag.q fails
+    * [HIVE-4398] - HS2 Resource leak: operation handles not cleaned when originating session is closed
+    * [HIVE-4407] - TestHCatStorer.testStoreFuncAllSimpleTypes fails because of null case difference
+    * [HIVE-4412] - PTFDesc tries serialize transient fields like OIs, etc.
+    * [HIVE-4419] - webhcat - support ${WEBHCAT_PREFIX}/conf/ as config directory
+    * [HIVE-4420] - HCatalog unit tests stop after a failure
+    * [HIVE-4421] - Improve memory usage by ORC dictionaries
+    * [HIVE-4447] - hcatalog version numbers need to be updated 
+    * [HIVE-4455] - HCatalog build directories get included in tar file produced by "ant tar"
+    * [HIVE-4461] - hcatalog jars not getting published to maven repo
+    * [HIVE-4494] - ORC map columns get class cast exception in some context
+    * [HIVE-4498] - TestBeeLineWithArgs.testPositiveScriptFile fails
+    * [HIVE-4500] - HS2 holding too many file handles of hive_job_log_hive_*.txt files
+    * [HIVE-4505] - Hive can't load transforms added using 'ADD FILE'
+    * [HIVE-4527] - Fix eclipse project template
+
+** Improvement
+    * [HIVE-581] - improve group by syntax
+    * [HIVE-948] - more query plan optimization rules 
+    * [HIVE-1953] - Hive should process comments in CliDriver
+    * [HIVE-2439] - Upgrade antlr version to 3.4
+    * [HIVE-2477] - Use name of original expression for name of CAST output
+    * [HIVE-3004] - RegexSerDe should support other column types in addition to STRING
+    * [HIVE-3231] - msck repair should find partitions already containing data files
+    * [HIVE-3252] - Add environment context to metastore Thrift calls
+    * [HIVE-3401] - Diversify grammar for split sampling
+    * [HIVE-3431] - Avoid race conditions while downloading resources from non-local filesystem
+    * [HIVE-3492] - Provide ALTER for partition changing bucket number 
+    * [HIVE-3527] - Allow CREATE TABLE LIKE command to take TBLPROPERTIES
+    * [HIVE-3531] - Simple lock manager for dedicated hive server
+    * [HIVE-3564] - hivetest.py: revision number and applied patch
+    * [HIVE-3628] - Provide a way to use counters in Hive through UDF
+    * [HIVE-3633] - sort-merge join does not work with sub-queries
+    * [HIVE-3672] - Support altering partition column type in Hive
+    * [HIVE-3708] - Add mapreduce workflow information to job configuration
+    * [HIVE-3709] - Stop storing default ConfVars in temp file
+    * [HIVE-3710] - HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE should not be checked in FileSinkOperator
+    * [HIVE-3762] - Minor fix for 'tableName' in Hive.g
+    * [HIVE-3784] - de-emphasize mapjoin hint
+    * [HIVE-3793] - Print number of fetched rows after query in CliDriver
+    * [HIVE-3796] - Multi-insert involving bucketed/sorted table turns off merging on all outputs
+    * [HIVE-3799] - Better error message if metalisteners or hookContext cannot be loaded/instantiated
+    * [HIVE-3805] - Resolve TODO in TUGIBasedProcessor
+    * [HIVE-3833] - object inspectors should be initialized based on partition metadata
+    * [HIVE-3853] - UDF unix_timestamp is deterministic if an argument is given, but it treated as non-deterministic preventing PPD
+    * [HIVE-3874] - Create a new Optimized Row Columnar file format for Hive
+    * [HIVE-3884] - Better align columns in DESCRIBE table_name output to make more human-readable
+    * [HIVE-3904] - Replace hashmaps in JoinOperators to array
+    * [HIVE-3917] - Support noscan operation for analyze command
+    * [HIVE-3950] - Remove code for merging files via MR job
+    * [HIVE-3952] - merge map-job followed by map-reduce job
+    * [HIVE-3958] - support partial scan for analyze command - RCFile
+    * [HIVE-3970] - Clean up/fix PartitionNameWhitelistPreEventListener
+    * [HIVE-3996] - Correctly enforce the memory limit on the multi-table map-join
+    * [HIVE-4001] - Add o.a.h.h.serde.Constants for backward compatibility
+    * [HIVE-4007] - Create abstract classes for serializer and deserializer
+    * [HIVE-4015] - Add ORC file to the grammar as a file format
+    * [HIVE-4016] - Remove init(fname) from TestParse.vm for each test
+    * [HIVE-4020] - Swap applying order of CP and PPD
+    * [HIVE-4023] - Improve Error Logging in MetaStore
+    * [HIVE-4025] - Add reflect UDF for member method invocation of column
+    * [HIVE-4042] - ignore mapjoin hint
+    * [HIVE-4045] - Modify PreDropPartitionEvent to pass Table parameter
+    * [HIVE-4076] - Refactor code for finding windowing expressions
+    * [HIVE-4125] - Expose metastore JMX metrics
+    * [HIVE-4128] - Support avg(decimal)
+    * [HIVE-4129] - Window handling dumps debug info on console, instead should use logger.
+    * [HIVE-4157] - ORC runs out of heap when writing
+    * [HIVE-4206] - Sort merge join does not work for outer joins for 7 inputs
+    * [HIVE-4212] - sort merge join should work for outer joins for more than 8 inputs
+    * [HIVE-4240] - optimize hive.enforce.bucketing and hive.enforce sorting insert
+    * [HIVE-4258] - Log logical plan tree for debugging
+    * [HIVE-4281] - add hive.map.groupby.sorted.testmode
+    * [HIVE-4304] - Remove unused builtins and pdk submodules
+    * [HIVE-4306] - PTFDeserializer should reconstruct OIs based on InputOI passed to PTFOperator
+    * [HIVE-4328] - Change default bigtable selection policy for sort-merge joins
+
+** New Feature
+    * [HIVE-446] - Implement TRUNCATE
+    * [HIVE-701] - lots of reserved keywords in hive
+    * [HIVE-896] - Add LEAD/LAG/FIRST/LAST analytical windowing functions to Hive.
+    * [HIVE-933] - Infer bucketing/sorting properties
+    * [HIVE-2288] - Adding the oracle nvl function to the UDF
+    * [HIVE-2691] - Specify location of log4j configuration files via configuration properties
+    * [HIVE-2693] - Add DECIMAL data type
+    * [HIVE-2935] - Implement HiveServer2
+    * [HIVE-3073] - Hive List Bucketing - DML support 
+    * [HIVE-3552] - HIVE-3552 performant manner for performing cubes/rollups/grouping sets for a high number of grouping set keys
+    * [HIVE-3646] - Add 'IGNORE PROTECTION' predicate for dropping partitions
+    * [HIVE-3682] - when output hive table to file,users should could have a separator of their own choice
+    * [HIVE-3825] - Add Operator level Hooks
+    * [HIVE-3834] - Support ALTER VIEW AS SELECT in Hive
+    * [HIVE-3897] - Add a way to get the uncompressed/compressed sizes of columns from an RC File
+    * [HIVE-3898] - getReducersBucketing in SemanticAnalyzer may return more than the max number of reducers
+    * [HIVE-3903] - Allow updating bucketing/sorting metadata of a partition through the CLI
+    * [HIVE-3937] - Hive Profiler
+    * [HIVE-3951] - Allow Decimal type columns in Regex Serde
+    * [HIVE-4019] - Ability to create and drop temporary partition function
+    * [HIVE-4048] - Allow partition by/order by in partitioning spec in over clause and partition function
+    * [HIVE-4120] - Implement decimal encoding for ORC
+    * [HIVE-4127] - Testing with Hadoop 2.x causes test failure for ORC's TestFileDump
+    * [HIVE-4155] - Expose ORC's FileDump as a service
+    * [HIVE-4248] - Implement a memory manager for ORC
+
+** Task
+    * [HIVE-3679] - Unescape partition names returned by show partitions
+    * [HIVE-3718] - Add check to determine whether partition can be dropped at Semantic Analysis time
+    * [HIVE-3721] - ALTER TABLE ADD PARTS should check for valid partition spec and throw a SemanticException if part spec is not valid
+    * [HIVE-3838] - Add input table name to MetaStoreEndFunctionContext for logging purposes
+    * [HIVE-3940] - Track columns accessed in each table in a query
+    * [HIVE-3981] - Split up tests in ptf_general_queries.q
+    * [HIVE-3982] - Merge PTFDesc and PTFDef classes
+    * [HIVE-4031] - Add apache headers in new files 
+    * [HIVE-4145] - Create hcatalog stub directory and add it to the build
+
+** Test
+    * [HIVE-3571] - add a way to run a small unit quickly
+    * [HIVE-3842] - Remove redundant test codes
+    * [HIVE-3944] - Make accept qfile argument for miniMR tests
+    * [HIVE-3956] - TestMetaStoreAuthorization always uses the same port
+    * [HIVE-4124] - Add more tests for windowing
+    * [HIVE-4298] - add tests for distincts for hive.map.groutp.sorted
+    * [HIVE-4337] - Update list bucketing test results
+
+** Wish
+    * [HIVE-4314] - Result of mapjoin_test_outer.q is not deterministic
+
 Release Notes - Hive - Version 0.10.0
 
 ** Sub-task

@@ -37,6 +37,7 @@
     <property name="driver.src" value="${basedir}/drivers"/>
     <property name="deployer.src" value="${basedir}/deployers"/>
     <property name="conf.src" value="${basedir}/conf"/>
+    <property name="resource.src" value="${basedir}/resource"/>
     <property name="tool.src" value="${basedir}/tools"/>
     <property name="data.dir" value="${basedir}/data"/>
 
@@ -105,6 +106,7 @@
         <mkdir dir="${tar.dir}/drivers"/>
         <mkdir dir="${tar.dir}/deployers"/>
         <mkdir dir="${tar.dir}/conf"/>
+        <mkdir dir="${tar.dir}/resource"/>
         <mkdir dir="${tar.dir}/libexec"/>
         <mkdir dir="${tar.dir}/libexec/PigTest"/>
         <mkdir dir="${tar.dir}/libexec/PigTest/test"/>
@@ -134,6 +136,10 @@
 
         <copy todir="${tar.dir}/conf">
             <fileset dir="${conf.src}"/>
+        </copy>
+
+        <copy todir="${tar.dir}/resource">
+            <fileset dir="${resource.src}"/>
         </copy>
 
         <copy todir="${tar.dir}/libexec/HCatTest">

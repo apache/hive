@@ -201,7 +201,8 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONMAXPARTS("hive.exec.max.dynamic.partitions", 1000),
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L),
-    DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir", "/tmp/"+System.getProperty("user.name")+"/hive_resources"),
+    DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
+        "/tmp/${hive.session.id}_resources"),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__"),
     // Whether to show a link to the most failed task + debugging tips
@@ -414,7 +415,12 @@ public class HiveConf extends Configuration {
         true),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000),
+
+    // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
+    // need to remove by hive .13. Also, do not change default (see SMB operator)
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100),
+
+    HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5),
     HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY("hive.mapjoin.followby.map.aggr.hash.percentmemory", (float) 0.3),
@@ -434,6 +440,10 @@ public class HiveConf extends Configuration {
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile"),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
+
+    // default serde for rcfile
+    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde", 
+                           "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe"),
 
     //Location of Hive run time structured log file
     HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
@@ -635,6 +645,8 @@ public class HiveConf extends Configuration {
 
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
+
+    HIVEEXPREVALUATIONCACHE("hive.cache.expr.evaluation", true),
 
     // Hive Variables
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),

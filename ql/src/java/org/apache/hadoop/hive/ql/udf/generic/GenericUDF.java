@@ -50,6 +50,7 @@ public abstract class GenericUDF implements Closeable {
    * GenericUDF use DeferedObject to pass arguments.
    */
   public static interface DeferredObject {
+    void prepare(int version) throws HiveException;
     Object get() throws HiveException;
   };
 
@@ -62,6 +63,10 @@ public abstract class GenericUDF implements Closeable {
 
     public DeferredJavaObject(Object value) {
       this.value = value;
+    }
+
+    @Override
+    public void prepare(int version) throws HiveException {
     }
 
     @Override
