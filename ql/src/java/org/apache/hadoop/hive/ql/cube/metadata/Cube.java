@@ -115,7 +115,7 @@ public final class Cube extends AbstractCubeTable {
         Constructor<?> constructor;
         constructor = clazz.getConstructor(String.class, Map.class);
         measure = (CubeMeasure) constructor.newInstance(new Object[]
-        {measureName, props});
+            {measureName, props});
       } catch (ClassNotFoundException e) {
         throw new IllegalArgumentException("Invalid measure", e);
       } catch (SecurityException e) {
@@ -150,7 +150,7 @@ public final class Cube extends AbstractCubeTable {
         Constructor<?> constructor;
         constructor = clazz.getConstructor(String.class, Map.class);
         dim = (CubeDimension) constructor.newInstance(new Object[]
-        {dimName, props});
+            {dimName, props});
       } catch (ClassNotFoundException e) {
         throw new IllegalArgumentException("Invalid dimension", e);
       } catch (SecurityException e) {

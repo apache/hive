@@ -90,10 +90,10 @@ public class CubeQueryContext {
   // storage specific
   protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
   factPartitionMap =
-      new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
+  new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
   private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
   factStorageMap =
-      new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
+  new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
   private final Map<CubeDimensionTable, List<String>> dimStorageMap =
       new HashMap<CubeDimensionTable, List<String>>();
   private final Map<String, String> storageTableToWhereClause =
@@ -460,7 +460,7 @@ public class CubeQueryContext {
         if (validFactTables != null) {
           if (!validFactTables.contains(fact.getName().toLowerCase())) {
             LOG.info("Not considering the fact table:" + fact + " as it is" +
-            		" not a valid fact");
+                " not a valid fact");
             i.remove();
             continue;
           }
@@ -915,7 +915,7 @@ public class CubeQueryContext {
         if (storageTableMap.get(updatePeriod) == null ||
             storageTableMap.get(updatePeriod).isEmpty()) {
           throw new SemanticException("No storage table available for fact" +
-            fact + " for update period" + updatePeriod);
+              fact + " for update period" + updatePeriod);
         }
         String storageTable = storageTableMap.get(updatePeriod).get(0);
         storageTableToQuery.put(getCube(), storageTable);

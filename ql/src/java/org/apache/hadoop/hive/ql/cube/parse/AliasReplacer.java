@@ -15,7 +15,7 @@ public class AliasReplacer implements ContextRewriter {
   }
 
   @Override
-  public void rewriteContext(CubeQueryContext cubeql)  throws SemanticException {
+  public void rewriteContext(CubeQueryContext cubeql) throws SemanticException {
 
     // Rewrite the all the columns in the query with table alias prefixed.
     // If col1 of table tab1 is accessed, it would be changed as tab1.col1.
@@ -73,7 +73,8 @@ public class AliasReplacer implements ContextRewriter {
     updateAggregates(havingAST, cubeql);
   }
 
-  private void replaceAliases(ASTNode node, int nodePos, Map<String, String> colToTableAlias) {
+  private void replaceAliases(ASTNode node, int nodePos,
+      Map<String, String> colToTableAlias) {
     if (node == null) {
       return;
     }
@@ -90,22 +91,26 @@ public class AliasReplacer implements ContextRewriter {
       if (nodeType == HiveParser.DOT) {
         // No need to create a new node, just replace the table name ident
         ASTNode aliasNode = (ASTNode) node.getChild(0);
-        ASTNode newAliasIdent = new ASTNode(new CommonToken(HiveParser.Identifier, newAlias));
+        ASTNode newAliasIdent = new ASTNode(new CommonToken(
+            HiveParser.Identifier, newAlias));
         aliasNode.setChild(0, newAliasIdent);
         newAliasIdent.setParent(aliasNode);
       } else {
         // Just a column ref, we need to make it alias.col
         // '.' will become the parent node
         ASTNode dot = new ASTNode(new CommonToken(HiveParser.DOT, "."));
-        ASTNode aliasIdentNode = new ASTNode(new CommonToken(HiveParser.Identifier, newAlias));
-        ASTNode tabRefNode = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+        ASTNode aliasIdentNode = new ASTNode(new CommonToken(
+            HiveParser.Identifier, newAlias));
+        ASTNode tabRefNode = new ASTNode(new CommonToken(
+            HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
 
         tabRefNode.addChild(aliasIdentNode);
         aliasIdentNode.setParent(tabRefNode);
         dot.addChild(tabRefNode);
         tabRefNode.setParent(dot);
 
-        ASTNode colIdentNode = new ASTNode(new CommonToken(HiveParser.Identifier, colName));
+        ASTNode colIdentNode = new ASTNode(new CommonToken(
+            HiveParser.Identifier, colName));
 
         dot.addChild(colIdentNode);
 
