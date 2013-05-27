@@ -1,8 +1,6 @@
 package org.apache.hadoop.hive.ql.cube.processors;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -65,23 +63,11 @@ public class CubeDriver extends Driver {
     }
     // compile the cube query and rewrite it to HQL query
     CubeQueryRewriter rewriter = new CubeQueryRewriter(getConf());
-    // 1. rewrite query to get summary tables and joins
-    CubeQueryContext phase1Query = rewriter.rewritePhase1(tree);
-    CubeQueryContext finalQuery = rewriter.rewritePhase2(phase1Query,
-        getSupportedStorages(getConf()));
-    String hql = finalQuery.toHQL();
+    CubeQueryContext rewrittenQuery = rewriter.rewrite(tree);
+    String hql = rewrittenQuery.toHQL();
     if (explain) {
       hql = "EXPLAIN " + hql;
     }
     return hql;
-  }
-
-  private List<String> getSupportedStorages(HiveConf conf) {
-    String[] storages = conf.getStrings(
-        HiveConf.ConfVars.HIVE_DRIVER_SUPPORTED_STORAGES.toString());
-    if (storages != null) {
-      return Arrays.asList(storages);
-    }
-    return null;
   }
 }

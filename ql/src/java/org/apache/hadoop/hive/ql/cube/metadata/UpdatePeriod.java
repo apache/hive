@@ -12,9 +12,9 @@ public enum UpdatePeriod implements Named {
   MINUTELY(Calendar.MINUTE, 60 * SECONDLY.weight(), "yyyy-MM-dd-HH-mm"),
   HOURLY(Calendar.HOUR_OF_DAY, 60 * MINUTELY.weight(), "yyyy-MM-dd-HH"),
   DAILY(Calendar.DAY_OF_MONTH, 24 * HOURLY.weight(), "yyyy-MM-dd"),
-  WEEKLY(Calendar.WEEK_OF_YEAR, 7 * DAILY.weight(), "yyyy-'W'ww-u"),
+  WEEKLY(Calendar.WEEK_OF_YEAR, 7 * DAILY.weight(), "YYYY-'W'ww"),
   MONTHLY(Calendar.MONTH, 30 * DAILY.weight(), "yyyy-MM"),
-  QUARTERLY(Calendar.MONTH, 3 * MONTHLY.weight(), "yyyy-M"),
+  QUARTERLY(Calendar.MONTH, 3 * MONTHLY.weight(), "yyyy-MM"),
   YEARLY(Calendar.YEAR, 12 * MONTHLY.weight(), "yyyy");
 
   public static final long MIN_INTERVAL = SECONDLY.weight();

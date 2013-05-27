@@ -2,13 +2,12 @@ package org.apache.hadoop.hive.ql.cube.parse;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.cube.metadata.CubeFactTable;
-import org.apache.hadoop.hive.ql.cube.metadata.CubeMetastoreClient;
 import org.apache.hadoop.hive.ql.cube.metadata.UpdatePeriod;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +26,8 @@ public class TestMaxUpdateInterval<periods> {
     "2013-Feb-01", "2013-Feb-21"
   };
 
-  public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MMM-dd");
+  public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat(
+      "yyyy-MMM-dd");
 
   private final Date pairs[];
 
@@ -45,39 +45,36 @@ public class TestMaxUpdateInterval<periods> {
 
   @Test
   public void testMaxUpdatePeriodInInterval() throws Exception {
-    CubeTestSetup setup = new CubeTestSetup();
-    setup.createSources();
-
-    CubeMetastoreClient client =  CubeMetastoreClient.getInstance(
-        new HiveConf(this.getClass()));
-
-    CubeFactTable fact = client.getFactTable("testFact");
-    List<UpdatePeriod> allPeriods = new ArrayList<UpdatePeriod>();
-    for (List<UpdatePeriod >periods : fact.getUpdatePeriods().values()) {
-      allPeriods.addAll(periods);
-    }
+    Set<UpdatePeriod> allPeriods = new HashSet<UpdatePeriod>();
+    allPeriods.addAll(Arrays.asList(UpdatePeriod.values()));
 
     int i = 0;
-    Assert.assertEquals(UpdatePeriod.DAILY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.DAILY, CubeFactTable.maxIntervalInRange(
+        pairs[i], pairs[i+1], allPeriods));
 
     i+=2;
-    Assert.assertEquals(UpdatePeriod.MONTHLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.MONTHLY, CubeFactTable.maxIntervalInRange(
+        pairs[i], pairs[i+1], allPeriods));
 
     i+=2;
-    Assert.assertEquals(UpdatePeriod.QUARTERLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.QUARTERLY, CubeFactTable.
+        maxIntervalInRange(pairs[i], pairs[i+1], allPeriods));
 
     i+=2;
-    Assert.assertEquals(UpdatePeriod.MONTHLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.MONTHLY, CubeFactTable.maxIntervalInRange(
+        pairs[i], pairs[i+1], allPeriods));
 
     i+=2;
-    Assert.assertEquals(UpdatePeriod.QUARTERLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.QUARTERLY, CubeFactTable.
+        maxIntervalInRange(pairs[i], pairs[i+1], allPeriods));
 
     i+=2;
-    Assert.assertEquals(UpdatePeriod.YEARLY, fact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.YEARLY, CubeFactTable.maxIntervalInRange(
+        pairs[i], pairs[i+1], allPeriods));
 
-    CubeFactTable weeklyFact = client.getFactTable("testFactWeekly");
     i+=2;
-    Assert.assertEquals(UpdatePeriod.WEEKLY, weeklyFact.maxIntervalInRange(pairs[i], pairs[i+1]));
+    Assert.assertEquals(UpdatePeriod.WEEKLY, CubeFactTable.maxIntervalInRange(
+        pairs[i], pairs[i+1], allPeriods));
   }
 
 }

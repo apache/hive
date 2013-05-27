@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -141,7 +140,8 @@ public final class CubeFactTable extends AbstractCubeTable {
   }
 
 
-  public UpdatePeriod maxIntervalInRange(Date from, Date to) {
+  public static UpdatePeriod maxIntervalInRange(Date from, Date to,
+      Set<UpdatePeriod> updatePeriods) {
     UpdatePeriod max = null;
 
     long diff = to.getTime() - from.getTime();
@@ -149,17 +149,13 @@ public final class CubeFactTable extends AbstractCubeTable {
       return null;
     }
 
-    Set<UpdatePeriod> updatePeriods = new HashSet<UpdatePeriod>();
-
-    for (List<UpdatePeriod> value : storageUpdatePeriods.values()) {
-      updatePeriods.addAll(value);
-    }
-
     // Use weight only till UpdatePeriod.DAILY
-    // Above Daily, check if at least one full update period is present between the dates
+    // Above Daily, check if at least one full update period is present
+    // between the dates
     UpdatePeriodComparator cmp = new UpdatePeriodComparator();
     for (UpdatePeriod i : updatePeriods) {
-      if (UpdatePeriod.YEARLY == i || UpdatePeriod.QUARTERLY == i || UpdatePeriod.MONTHLY == i) {
+      if (UpdatePeriod.YEARLY == i || UpdatePeriod.QUARTERLY == i
+          || UpdatePeriod.MONTHLY == i) {
         int intervals = 0;
         switch (i) {
         case YEARLY:

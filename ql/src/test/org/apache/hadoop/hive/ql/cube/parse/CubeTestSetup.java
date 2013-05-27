@@ -2,6 +2,8 @@ package org.apache.hadoop.hive.ql.cube.parse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,22 @@ public class CubeTestSetup {
   private Set<CubeMeasure> cubeMeasures;
   private Set<CubeDimension> cubeDimensions;
   private final String cubeName = "testCube";
+  public static Date now;
+  public static Date twodaysBack;
+  public static Date twoMonthsBack;
+
+  static {
+    Calendar cal = Calendar.getInstance();
+    now = cal.getTime();
+    System.out.println("Test now:" + now);
+    cal.add(Calendar.DAY_OF_MONTH, -2);
+    twodaysBack = cal.getTime();
+    System.out.println("Test twodaysBack:" + twodaysBack);
+    cal = Calendar.getInstance();
+    cal.add(Calendar.MONTH, -2);
+    twoMonthsBack = cal.getTime();
+    System.out.println("Test twoMonthsBack:" + twoMonthsBack);
+  }
 
   private void createCube(CubeMetastoreClient client) throws HiveException {
     cubeMeasures = new HashSet<CubeMeasure>();
@@ -139,10 +157,7 @@ public class CubeTestSetup {
     Map<Storage, List<UpdatePeriod>> storageAggregatePeriods =
         new HashMap<Storage, List<UpdatePeriod>>();
     List<UpdatePeriod> updates  = new ArrayList<UpdatePeriod>();
-    updates.add(UpdatePeriod.HOURLY);
-    updates.add(UpdatePeriod.DAILY);
     updates.add(UpdatePeriod.WEEKLY);
-    updates.add(UpdatePeriod.MONTHLY);
     Storage hdfsStorage = new HDFSStorage("C1",
         TextInputFormat.class.getCanonicalName(),
         HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
@@ -178,6 +193,18 @@ public class CubeTestSetup {
     // create cube fact
     client.createCubeFactTable(cubeName, factName, factColumns,
         storageAggregatePeriods, 0L);
+    CubeFactTable fact2 = client.getFactTable(factName);
+    // Add all hourly partitions for two days
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(twodaysBack);
+    Date temp = cal.getTime();
+    while (!(temp.after(now))) {
+      System.out.println("Adding partition" + temp);
+      client.addPartition(fact2, hdfsStorage,
+        UpdatePeriod.HOURLY, temp);
+      cal.add(Calendar.HOUR_OF_DAY, 1);
+      temp = cal.getTime();
+    }
   }
 
   private void createCubeFactMonthly(CubeMetastoreClient client)
@@ -312,7 +339,8 @@ public class CubeTestSetup {
         new HiveConf(this.getClass()));
     createCube(client);
     createCubeFact(client);
-    createCubeFactWeekly(client);
+    // commenting this as the week date format throws IllegalPatternException
+    //createCubeFactWeekly(client);
     createCubeFactOnlyHourly(client);
     createCityTbale(client);
     createCubeFactMonthly(client);

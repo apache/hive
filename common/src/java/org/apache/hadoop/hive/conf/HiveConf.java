@@ -775,8 +775,6 @@ public class HiveConf extends Configuration {
       "org.apache.hadoop.hive.ql.exec.PTFPersistence$PartitionedByteBasedList"),
     HIVE_PTF_PARTITION_PERSISTENT_SIZE("hive.ptf.partition.persistence.memsize",
       (int) Math.pow(2, (5 + 10 + 10)) ), // 32MB
-
-    HIVE_DRIVER_SUPPORTED_STORAGES("hive.driver.supported.storages", null);
     ;
 
     public final String varname;

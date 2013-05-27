@@ -91,8 +91,6 @@ public class CubeQueryContext {
   protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
   factPartitionMap =
       new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
-  private List<String> supportedStorages;
-  private boolean allStoragesSupported;
   private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
   factStorageMap =
       new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
@@ -117,6 +115,7 @@ public class CubeQueryContext {
   private ASTNode whereAST;
   private ASTNode orderByAST;
   private ASTNode groupByAST;
+  private CubeMetastoreClient client;
 
   public CubeQueryContext(ASTNode ast, QB qb, HiveConf conf)
       throws SemanticException {
@@ -124,6 +123,11 @@ public class CubeQueryContext {
     this.qb = qb;
     this.conf = conf;
     this.clauseName = getClause();
+    try {
+      client = CubeMetastoreClient.getInstance(conf);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
     if (qb.getParseInfo().getWhrForClause(clauseName) != null) {
       this.whereTree = HQLParser.getString(
           qb.getParseInfo().getWhrForClause(clauseName)).toLowerCase();
@@ -169,7 +173,6 @@ public class CubeQueryContext {
 
   private void extractMetaTables() throws SemanticException {
     try {
-      CubeMetastoreClient client = CubeMetastoreClient.getInstance(conf);
       List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
       for (String alias : tabAliases) {
         String tblName = qb.getTabNameForAlias(alias);
@@ -705,15 +708,6 @@ public class CubeQueryContext {
     this.factPartitionMap.putAll(factPartitionMap);
   }
 
-  public List<String> getSupportedStorages() {
-    return supportedStorages;
-  }
-
-  public void setSupportedStorages(List<String> supportedStorages) {
-    this.supportedStorages = supportedStorages;
-    this.allStoragesSupported = (supportedStorages == null);
-  }
-
   private final String baseQueryFormat = "SELECT %s FROM %s";
 
   String getQueryFormat() {
@@ -967,13 +961,6 @@ public class CubeQueryContext {
     return !storageTableToWhereClause.isEmpty();
   }
 
-  public boolean isStorageSupported(String storage) {
-    if (!allStoragesSupported) {
-      return supportedStorages.contains(storage);
-    }
-    return true;
-  }
-
   public Map<String, List<String>> getTblToColumns() {
     return tblAliasToColumns;
   }
@@ -1091,5 +1078,7 @@ public class CubeQueryContext {
     return groupByAST;
   }
 
-
+  public CubeMetastoreClient getMetastoreClient() {
+    return client;
+  }
 }

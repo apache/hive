@@ -11,53 +11,37 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class CubeQueryRewriter {
   private final Configuration conf;
-  private final List<ContextRewriter> phase1Rewriters =
+  private final List<ContextRewriter> rewriters =
       new ArrayList<ContextRewriter>();
-  private final List<ContextRewriter> phase2Rewriters =
-      new ArrayList<ContextRewriter>();
-
   public CubeQueryRewriter(Configuration conf) {
     this.conf = conf;
-    setupPhase1Rewriters();
-    setupPhase2Rewriters();
+    setupRewriters();
   }
 
-  private void setupPhase1Rewriters() {
+  private void setupRewriters() {
     // Resolve joins and generate base join tree
-    phase1Rewriters.add(new JoinResolver(conf));
+    rewriters.add(new JoinResolver(conf));
     // Rewrite base trees (groupby, having, orderby, limit) using aliases
-    phase1Rewriters.add(new AliasReplacer(conf));
+    rewriters.add(new AliasReplacer(conf));
     // Resolve aggregations and generate base select tree
-    phase1Rewriters.add(new AggregateResolver(conf));
-    phase1Rewriters.add(new GroupbyResolver(conf));
-    // Resolve partition columns and table names
-    phase1Rewriters.add(new PartitionResolver(conf));
+    rewriters.add(new AggregateResolver(conf));
+    rewriters.add(new GroupbyResolver(conf));
+    // Resolve storage partitions and table names
+    rewriters.add(new StorageTableResolver(conf));
+    rewriters.add(new LeastPartitionResolver(conf));
+    rewriters.add(new LightestFactResolver(conf));
+    rewriters.add(new LeastDimensionResolver(conf));
   }
 
-  private void setupPhase2Rewriters() {
-    phase2Rewriters.add(new StorageTableResolver(conf));
-    phase2Rewriters.add(new LeastPartitionResolver(conf));
-    phase2Rewriters.add(new LightestFactResolver(conf));
-    phase2Rewriters.add(new LeastDimensionResolver(conf));
-  }
-
-  public CubeQueryContext rewritePhase1(ASTNode astnode)
+  public CubeQueryContext rewrite(ASTNode astnode)
       throws SemanticException, ParseException {
     CubeSemanticAnalyzer analyzer = new CubeSemanticAnalyzer(
         new HiveConf(conf, HiveConf.class));
     analyzer.analyzeInternal(astnode);
     CubeQueryContext ctx = analyzer.getQueryContext();
-    rewrite(phase1Rewriters, ctx);
+    rewrite(rewriters, ctx);
     return ctx;
   }
-
-  public CubeQueryContext rewritePhase2(CubeQueryContext cubeql,
-      List<String> storages) throws SemanticException {
-    cubeql.setSupportedStorages(storages);
-    rewrite(phase2Rewriters, cubeql);
-    return cubeql;
-  }
-
 
   private void rewrite(List<ContextRewriter> rewriters, CubeQueryContext ctx)
       throws SemanticException {

@@ -1,10 +1,7 @@
 package org.apache.hadoop.hive.ql.cube.parse;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +21,7 @@ public class PartitionResolver implements ContextRewriter {
 
   @Override
   public void rewriteContext(CubeQueryContext cubeql) throws SemanticException {
-    if (!cubeql.getCandidateFactTables().isEmpty()) {
+    /*if (!cubeql.getCandidateFactTables().isEmpty()) {
       Map<CubeFactTable, Map<UpdatePeriod, List<String>>> factPartitionMap =
           new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
       Date fromDate = cubeql.getFromDate();
@@ -37,7 +34,7 @@ public class PartitionResolver implements ContextRewriter {
         CubeFactTable fact = i.next();
         Map<UpdatePeriod, List<String>> partitionColMap =
             new HashMap<UpdatePeriod, List<String>>();
-        if (!getPartitions(fact, fromDate, toDate, partitionColMap, cubeql)) {
+        if (!getPartitions(fact, fromDate, toDate, partitionColMap)) {
           i.remove();
         } else {
           factPartitionMap.put(fact, partitionColMap);
@@ -45,17 +42,17 @@ public class PartitionResolver implements ContextRewriter {
       }
       // set partition cols map in cubeql
       cubeql.setFactPartitionMap(factPartitionMap);
-    }
+    } */
   }
 
   private boolean getPartitions(CubeFactTable fact, Date fromDate, Date toDate,
-      Map<UpdatePeriod, List<String>> partitionColMap, CubeQueryContext cubeql)
+      Map<UpdatePeriod, List<String>> partitionColMap)
       throws SemanticException {
     if (fromDate.equals(toDate) || fromDate.after(toDate)) {
       return true;
     }
 
-    UpdatePeriod interval = fact.maxIntervalInRange(fromDate, toDate);
+    UpdatePeriod interval = fact.maxIntervalInRange(fromDate, toDate, null);
     if (interval == null) {
       LOG.info("Could not find partition for given range:"
           + fromDate + "-" + toDate + " in fact:" + fact.getName());
@@ -74,7 +71,7 @@ public class PartitionResolver implements ContextRewriter {
       }
       parts.addAll(partitions);
     }
-    return (getPartitions(fact, fromDate, ceilFromDate, partitionColMap, cubeql)
-    && getPartitions(fact, floorToDate, toDate, partitionColMap, cubeql));
+    return (getPartitions(fact, fromDate, ceilFromDate, partitionColMap)
+    && getPartitions(fact, floorToDate, toDate, partitionColMap));
   }
 }
