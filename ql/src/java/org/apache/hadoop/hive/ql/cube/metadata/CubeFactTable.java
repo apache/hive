@@ -167,6 +167,9 @@ public final class CubeFactTable extends AbstractCubeTable {
         case MONTHLY:
           intervals = DateUtil.getMonthsBetween(from, to);
           break;
+        case WEEKLY:
+          intervals = DateUtil.getWeeksBetween(from, to);
+          break;
         }
 
         if (intervals > 0) {
@@ -175,7 +178,7 @@ public final class CubeFactTable extends AbstractCubeTable {
           }
         }
       } else {
-        // Below MONTHLY, we can use weight to find out the correct period
+        // Below WEEKLY, we can use weight to find out the correct period
         if (diff < i.weight()) {
           // interval larger than time diff
           continue;

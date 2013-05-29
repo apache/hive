@@ -236,13 +236,18 @@ public class DateUtil {
   }
 
   public static int getMonthsBetween(Date from, Date to) {
-    from = DateUtils.round(from, Calendar.MONTH);
-    to = DateUtils.truncate(to, Calendar.MONTH);
+    // Move 'from' to end of month, unless its the first day of month
+    if (!from.equals(DateUtils.truncate(from, Calendar.MONTH))) {
+      from = DateUtils.addMonths(DateUtils.truncate(from, Calendar.MONTH), 1);
+    }
+
+    // Move 'to' to beginning of month, unless its the last day of the month
+    if (!to.equals(DateUtils.round(to, Calendar.MONTH))) {
+      to = DateUtils.truncate(to, Calendar.MONTH);
+    }
 
     int months = 0;
-    from = DateUtils.addMonths(from, 1);
-
-    while (to.after(from)) {
+    while (from.before(to)) {
       from = DateUtils.addMonths(from, 1);
       months++;
     }
@@ -250,45 +255,102 @@ public class DateUtil {
   }
 
   public static int getQuartersBetween(Date from, Date to) {
+    int months = getMonthsBetween(from, to);
+    if (months < 3) {
+      return 0;
+    }
 
     Calendar cal = Calendar.getInstance();
     cal.setTime(from);
-    int fromQtr = cal.get(Calendar.MONTH) / 3 + 1;
+    int fromMonth = cal.get(Calendar.MONTH);
     int fromYear = cal.get(Calendar.YEAR);
-    cal.setTime(to);
-    int toQtr = cal.get(Calendar.MONTH) / 3 + 1;
-    int toYear = cal.get(Calendar.YEAR);
 
-
-    if (fromYear == toYear) {
-      if (fromQtr == toQtr) {
-        return 0;
-      } else {
-        return toQtr - fromQtr - 1;
-      }
+    // Get the start date of the quarter
+    int qtrStartMonth;
+    if (fromMonth % 3 == 0) {
+      qtrStartMonth = fromMonth;
     } else {
-      from = DateUtils.round(from, Calendar.YEAR);
-      to = DateUtils.truncate(to, Calendar.YEAR);
-      int quarters = 0;
-      from = DateUtils.addYears(from, 1);
-      while (to.after(from)) {
-        from = DateUtils.addYears(from, 1);
-        quarters += 4;
-      }
-      return quarters + (4 - fromQtr) + (toQtr - 1);
+      qtrStartMonth = fromMonth - (fromMonth % 3);
     }
+
+    cal.clear();
+    cal.set(Calendar.MONTH, qtrStartMonth);
+    cal.set(Calendar.YEAR, fromYear);
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    Date fromQtrStartDate = cal.getTime();
+
+    int moveUp = 0;
+    if (fromQtrStartDate.before(from)) {
+      moveUp = 3 - (fromMonth % 3);
+    }
+
+    if (months % 3 != 0) {
+      months = months - (months % 3);
+    }
+    return (months - moveUp) / 3;
   }
 
   public static int getYearsBetween(Date from, Date to) {
-    from = DateUtils.round(from, Calendar.YEAR);
-    to = DateUtils.truncate(to, Calendar.YEAR);
-    int years = 0;
-    from = DateUtils.addYears(from, 1);
-
-    while (to.after(from)) {
-      from = DateUtils.addYears(from, 1);
-      years++;
+    int months = getMonthsBetween(from, to);
+    if (months < 12) {
+      return 0;
     }
-    return years;
+
+    // Get start of year for 'from' date
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(from);
+    int fromMonth = cal.get(Calendar.MONTH);
+    int fromYear = cal.get(Calendar.YEAR);
+
+    cal.clear();
+    cal.set(Calendar.MONTH, Calendar.JANUARY);
+    cal.set(Calendar.YEAR, fromYear);
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+
+    Date yearStartDate = cal.getTime();
+
+    int moveUp = 0;
+    if (yearStartDate.before(from)) {
+      moveUp = 12 - (fromMonth % 12);
+    }
+
+    if (months % 12 != 0) {
+      months = months - (months % 12);
+    }
+
+    return (months - moveUp)/ 12;
+  }
+
+  public static int getWeeksBetween(Date from, Date to) {
+    int dayDiff = 0;
+    Date tmpFrom = from;
+    while (tmpFrom.before(to)) {
+      tmpFrom = DateUtils.addDays(tmpFrom, 1);
+      dayDiff++;
+    }
+
+    if (dayDiff < 7) {
+      return 0;
+    }
+
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(from);
+    int fromWeek = cal.get(Calendar.WEEK_OF_YEAR);
+    int fromDay  = cal.get(Calendar.DAY_OF_WEEK);
+    int fromYear = cal.get(Calendar.YEAR);
+
+    cal.clear();
+    cal.set(Calendar.YEAR, fromYear);
+    cal.set(Calendar.WEEK_OF_YEAR, fromWeek);
+    cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+    int maxDayInWeek = cal.getActualMaximum(Calendar.DAY_OF_WEEK);
+    Date fromWeekStartDate = cal.getTime();
+
+    if (fromWeekStartDate.before(from)) {
+      // Count from the start of next week
+      dayDiff -= (maxDayInWeek - (fromDay - Calendar.SUNDAY));
+    }
+
+    return dayDiff / 7;
   }
 }
