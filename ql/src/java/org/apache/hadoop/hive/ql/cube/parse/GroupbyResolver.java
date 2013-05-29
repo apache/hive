@@ -3,6 +3,7 @@ package org.apache.hadoop.hive.ql.cube.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -18,13 +19,13 @@ public class GroupbyResolver implements ContextRewriter {
     String groupByTree = cubeql.getGroupByTree();
     String selectTree = cubeql.getSelectTree();
     List<String> selectExprs = new ArrayList<String>();
-    String[] sel = selectTree.split(",");
+    String[] sel = StringUtils.split(selectTree, ",");
     for (String s : sel) {
       selectExprs.add(s.trim().toLowerCase());
     }
     List<String> groupByExprs = new ArrayList<String>();
     if (groupByTree != null) {
-      String[] gby = groupByTree.split(",");
+      String[] gby = StringUtils.split(groupByTree, ",");
       for (String g : gby) {
         groupByExprs.add(g.trim().toLowerCase());
       }

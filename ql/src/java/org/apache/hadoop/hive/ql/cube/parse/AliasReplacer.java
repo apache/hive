@@ -1,5 +1,8 @@
 package org.apache.hadoop.hive.ql.cube.parse;
 
+import static org.apache.hadoop.hive.ql.parse.HiveParser.Identifier;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SELEXPR;
+
 import java.util.Map;
 
 import org.antlr.runtime.CommonToken;
@@ -71,6 +74,8 @@ public class AliasReplacer implements ContextRewriter {
     // Update the aggregate expression set
     updateAggregates(selectAST, cubeql);
     updateAggregates(havingAST, cubeql);
+    // Update alias map as well
+    updateAliasMap(selectAST, cubeql);
   }
 
   private void replaceAliases(ASTNode node, int nodePos,
@@ -138,6 +143,24 @@ public class AliasReplacer implements ContextRewriter {
       for (int i = 0; i < root.getChildCount(); i++) {
         ASTNode child = (ASTNode) root.getChild(i);
         updateAggregates(child, cubeql);
+      }
+    }
+  }
+
+  private void updateAliasMap(ASTNode root, CubeQueryContext cubeql) {
+    if (root == null) {
+      return;
+    }
+
+    if (root.getToken().getType() == TOK_SELEXPR) {
+        ASTNode alias = HQLParser.findNodeByPath(root, Identifier);
+        if (alias != null) {
+          cubeql.addExprToAlias(HQLParser.getString(root).trim().toLowerCase(),
+              alias.getText());
+        }
+    } else {
+      for (int i = 0; i < root.getChildCount(); i++) {
+        updateAliasMap((ASTNode)root.getChild(i), cubeql);
       }
     }
   }

@@ -163,7 +163,7 @@ public class AggregateResolver implements ContextRewriter {
     String exprTokens[] = StringUtils.split(exprTree, ",");
     for (int i = 0; i < exprTokens.length; i++) {
       String token = exprTokens[i].trim();
-      String tokenAlias = cubeql.getAlias(token);
+      String tokenAlias = cubeql.getAlias(token.toLowerCase());
       boolean hasAlias = false;
       if (StringUtils.isNotBlank(tokenAlias)) {
         token = token.substring(0, exprTree.lastIndexOf(tokenAlias)).trim();

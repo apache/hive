@@ -1081,4 +1081,10 @@ public class CubeQueryContext {
   public CubeMetastoreClient getMetastoreClient() {
     return client;
   }
+
+  public void addExprToAlias(String expr, String alias) {
+    if (exprToAlias != null) {
+      exprToAlias.put(expr.trim().toLowerCase(), alias);
+    }
+  }
 }
