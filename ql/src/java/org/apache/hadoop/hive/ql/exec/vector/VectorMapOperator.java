@@ -505,6 +505,9 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
       case TABLESCAN:
         vectorOp = op.clone();
         break;
+      case REDUCESINK:
+        vectorOp = new VectorReduceSinkOperator(vectorizationContext, op.getConf());
+        break;
       default:
         throw new HiveException("Operator: " + op.getName() + ", " +
             "not vectorized");

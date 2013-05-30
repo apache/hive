@@ -35,6 +35,8 @@ public class VectorizedRowBatch implements Writable {
   public ColumnVector[] cols;   // a vector for each column
   public int size;              // number of rows that qualify (i.e. haven't been filtered out)
   public int[] selected;        // array of positions of selected values
+  public int[] projectedColumns;
+  public int projectionSize;
 
   /*
    * If no filtering has been applied yet, selectedInUse is false,
@@ -80,6 +82,13 @@ public class VectorizedRowBatch implements Writable {
     selectedInUse = false;
     this.cols = new ColumnVector[numCols];
     writableRow = new Writable[numCols];
+    projectedColumns = new int[numCols];
+
+    // Initially all columns are projected and in the same order
+    projectionSize = numCols;
+    for (int i = 0; i < numCols; i++) {
+      projectedColumns[i] = i;
+    }
   }
 
   public void initRowIterator(){
@@ -92,12 +101,14 @@ public class VectorizedRowBatch implements Writable {
     }
     if (selectedInUse) {
       int i = selected[rowIteratorIndex];
-      for (int c = 0; c < numCols; c++) {
+      for (int k = 0; k < projectionSize; k++) {
+        int c = this.projectedColumns[k];
         writableRow[c] = cols[c].getWritableObject(i);
       }
     } else {
       int i = rowIteratorIndex;
-      for (int c = 0; c < numCols; c++) {
+      for (int k = 0; k < projectionSize; k++) {
+        int c = this.projectedColumns[k];
         writableRow[c] = cols[c].getWritableObject(i);
       }
     }
@@ -123,7 +134,8 @@ public class VectorizedRowBatch implements Writable {
       for (int j = 0; j < size; j++) {
         int i = selected[j];
         int colIndex = 0;
-        for (ColumnVector cv : cols) {
+        for (int k = 0; k < projectionSize; k++) {
+          ColumnVector cv = cols[this.projectedColumns[k]];
           if (cv.isRepeating) {
             b.append(cv.getWritableObject(0).toString());
           } else {
@@ -141,7 +153,8 @@ public class VectorizedRowBatch implements Writable {
     } else {
       for (int i = 0; i < size; i++) {
         int colIndex = 0;
-        for (ColumnVector cv : cols) {
+        for (int k = 0; k < projectionSize; k++) {
+          ColumnVector cv = cols[this.projectedColumns[k]];
           if (cv.isRepeating) {
             b.append(cv.getWritableObject(0).toString());
           } else {

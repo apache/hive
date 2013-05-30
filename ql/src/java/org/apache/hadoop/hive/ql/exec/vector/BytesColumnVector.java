@@ -49,6 +49,9 @@ public class BytesColumnVector extends ColumnVector {
   private byte[] buffer;   // optional buffer to use when actually copying in data
   private int nextFree;    // next free position in buffer
 
+  // Reusable text object
+  private final Text textObject = new Text();
+
   // Estimate that there will be 16 bytes per entry
   static final int DEFAULT_BUFFER_SIZE = 16 * VectorizedRowBatch.DEFAULT_SIZE;
 
@@ -208,8 +211,9 @@ public class BytesColumnVector extends ColumnVector {
     }
     Writable result = null;
     if (!isNull[index] && vector[index] != null) {
-      result = new Text();
-      ((Text) result).append(vector[index], start[index], length[index]);
+      textObject.clear();
+      textObject.append(vector[index], start[index], length[index]);
+      result = textObject;
     } else {
       result = NullWritable.get();
     }

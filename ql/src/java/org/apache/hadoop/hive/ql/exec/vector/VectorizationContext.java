@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
@@ -192,7 +193,6 @@ public class VectorizationContext {
 
   private VectorExpression getVectorExpression(ExprNodeColumnDesc
       exprDesc) {
-
     int columnNum = getInputColumnIndex(exprDesc.getColumn());
     VectorExpression expr = null;
     switch (opType) {
@@ -1074,7 +1074,8 @@ public class VectorizationContext {
     String columnType = vectorExpression.getOutputType();
     if (columnType.equalsIgnoreCase("long") ||
         columnType.equalsIgnoreCase("bigint") ||
-        columnType.equalsIgnoreCase("int")) {
+        columnType.equalsIgnoreCase("int") || 
+        columnType.equalsIgnoreCase("smallint")) {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     } else if (columnType.equalsIgnoreCase("double")) {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
@@ -1082,6 +1083,24 @@ public class VectorizationContext {
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
     } else {
       throw new HiveException(String.format("Must implement type %s", columnType));
+    }
+  }
+
+  public ObjectInspector createObjectInspector(
+      VectorExpression[] vectorExpressions, List<String> columnNames)
+      throws HiveException {
+    List<ObjectInspector> oids = new ArrayList<ObjectInspector>();
+    for (VectorExpression vexpr : vectorExpressions) {
+      ObjectInspector oi = createObjectInspector(vexpr);
+      oids.add(oi);
+    }
+    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames,
+        oids);
+  }
+
+  public void addToColumnMap(String columnName, int outputColumn) {
+    if (columnMap != null) {
+      columnMap.put(columnName, outputColumn);
     }
   }
 }

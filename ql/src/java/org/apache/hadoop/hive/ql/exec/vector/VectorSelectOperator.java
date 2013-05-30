@@ -40,8 +40,9 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
   protected transient VectorExpression[] vExpressions;
 
-  VectorizedRowBatch output;
   private final VectorizationContext vContext;
+
+  private int [] projectedColumns = null;
 
   public VectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf) {
     this.vContext = ctxt;
@@ -61,19 +62,19 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     vExpressions = new VectorExpression[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
       vExpressions[i] = vContext.getVectorExpression(colList.get(i));
+      String columnName = conf.getOutputColumnNames().get(i);
+      // Update column map with output column names
+      vContext.addToColumnMap(columnName, vExpressions[i].getOutputColumn());
     }
-    output = new VectorizedRowBatch(colList.size(),
-        VectorizedRowBatch.DEFAULT_SIZE);
     initializeChildren(hconf);
+    projectedColumns = new int [vExpressions.length];
+    for (int i = 0; i < projectedColumns.length; i++) {
+      projectedColumns[i] = vExpressions[i].getOutputColumn();
+    }
   }
 
   public void setSelectExpressions(VectorExpression[] exprs) {
     this.vExpressions = exprs;
-    output = new VectorizedRowBatch(exprs.length, VectorizedRowBatch.DEFAULT_SIZE);
-  }
-
-  public VectorizedRowBatch getOutput() {
-    return output;
   }
 
   @Override
@@ -95,15 +96,18 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
       }
     }
 
-    //Prepare output, shallow vector copy
-    output.selectedInUse = vrg.selectedInUse;
-    output.selected = vrg.selected;
-    output.size = vrg.size;
+    //Prepare output, set the projections
+    int[] originalProjections = vrg.projectedColumns;
+    int originalProjectionSize = vrg.projectionSize;
+    vrg.projectionSize = vExpressions.length;
     for (int i = 0; i < vExpressions.length; i++) {
-      output.cols[i] = vrg.cols[vExpressions[i].getOutputColumn()];
+      vrg.projectedColumns[i] = vExpressions[i].getOutputColumn();
     }
-    output.numCols = vExpressions.length;
-    forward(output, outputObjInspector);
+    forward(vrg, outputObjInspector);
+
+    // Revert the projected columns back, because vrg will be re-used.
+    vrg.projectionSize = originalProjectionSize;
+    vrg.projectedColumns = originalProjections;
   }
 
   /**

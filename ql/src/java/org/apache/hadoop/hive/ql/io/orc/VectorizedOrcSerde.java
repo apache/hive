@@ -55,7 +55,8 @@ public class VectorizedOrcSerde extends OrcSerde {
       } else {
         index = i;
       }
-      for (int k = 0; k < batch.numCols; k++) {
+      for (int p = 0; p < batch.projectionSize; p++) {
+        int k = batch.projectedColumns[p];
         Writable w;
         if (batch.cols[k].isRepeating) {
           w = batch.cols[k].getWritableObject(0);
