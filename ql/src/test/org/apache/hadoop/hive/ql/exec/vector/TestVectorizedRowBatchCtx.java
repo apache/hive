@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,13 +38,16 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -82,10 +87,10 @@ public class TestVectorizedRowBatchCtx {
     // Set the configuration parameters
     tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "6");
     tbl.setProperty("columns",
-        "ashort,aint,along,adouble,afloat,astring");
+        "ashort,aint,along,adouble,afloat,astring,abyte,aboolean,atimestamp");
     tbl.setProperty("columns.types",
-        "smallint:int:bigint:double:float:string");
-    colCount = 6;
+        "smallint:int:bigint:double:float:string:tinyint:boolean:timestamp");
+    colCount = 9;
     tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
 
     try {
@@ -109,7 +114,8 @@ public class TestVectorizedRowBatchCtx {
       BytesRefArrayWritable bytes = new BytesRefArrayWritable(colCount);
       BytesRefWritable cu;
 
-      if (i % 3 != 0) {
+       if (i % 3 != 0) {
+      //if (i < 100) {
         cu = new BytesRefWritable((i + "").getBytes("UTF-8"), 0, (i + "").getBytes("UTF-8").length);
         bytes.set(0, cu);
 
@@ -132,6 +138,20 @@ public class TestVectorizedRowBatchCtx {
         cu = new BytesRefWritable(("Test string").getBytes("UTF-8"), 0,
             ("Test string").getBytes("UTF-8").length);
         bytes.set(5, cu);
+
+        cu = new BytesRefWritable((1 + "").getBytes("UTF-8"), 0,
+            (1 + "").getBytes("UTF-8").length);
+        bytes.set(6, cu);
+
+        cu = new BytesRefWritable(("true").getBytes("UTF-8"), 0,
+            ("true").getBytes("UTF-8").length);
+        bytes.set(7, cu);
+
+        Timestamp t = new Timestamp(Calendar.getInstance().getTime().getTime());
+        cu = new BytesRefWritable(t.toString().getBytes("UTF-8"), 0,
+            t.toString().getBytes("UTF-8").length);
+        bytes.set(8, cu);
+
       } else {
         cu = new BytesRefWritable((i + "").getBytes("UTF-8"), 0, (i + "").getBytes("UTF-8").length);
         bytes.set(0, cu);
@@ -151,6 +171,19 @@ public class TestVectorizedRowBatchCtx {
         cu = new BytesRefWritable(("Test string").getBytes("UTF-8"), 0,
             ("Test string").getBytes("UTF-8").length);
         bytes.set(5, cu);
+
+        cu = new BytesRefWritable(new byte[0], 0, 0);
+        bytes.set(6, cu);
+
+        cu = new BytesRefWritable(new byte[0], 0, 0);
+        bytes.set(7, cu);
+
+//        cu = new BytesRefWritable(new byte[0], 0, 0);
+//        bytes.set(8, cu);
+        Timestamp t = new Timestamp(Calendar.getInstance().getTime().getTime());
+        cu = new BytesRefWritable(t.toString().getBytes("UTF-8"), 0,
+            t.toString().getBytes("UTF-8").length);
+        bytes.set(8, cu);
       }
       writer.append(bytes);
     }
@@ -166,7 +199,7 @@ public class TestVectorizedRowBatchCtx {
         .getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
 
-    Assert.assertEquals("Field size should be 6", colCount, fieldRefs.size());
+    Assert.assertEquals("Field size should be 9", colCount, fieldRefs.size());
 
     // Create the context
     VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null);
@@ -213,6 +246,17 @@ public class TestVectorizedRowBatchCtx {
         Object writableCol = poi.getPrimitiveWritableObject(fieldData);
         if (writableCol != null) {
           switch (poi.getPrimitiveCategory()) {
+          case BOOLEAN: {
+            LongColumnVector lcv = (LongColumnVector) batch.cols[j];
+            Assert.assertEquals(true, lcv.vector[i] == (((BooleanWritable) writableCol).get() ? 1
+                : 0));
+          }
+            break;
+          case BYTE: {
+            LongColumnVector lcv = (LongColumnVector) batch.cols[j];
+            Assert.assertEquals(true, lcv.vector[i] == (long) ((ByteWritable) writableCol).get());
+          }
+            break;
           case SHORT: {
             LongColumnVector lcv = (LongColumnVector) batch.cols[j];
             Assert.assertEquals(true, lcv.vector[i] == ((ShortWritable) writableCol).get());
@@ -247,6 +291,13 @@ public class TestVectorizedRowBatchCtx {
             Assert.assertEquals(true, a.equals(b));
           }
             break;
+          case TIMESTAMP: {
+            LongColumnVector tcv = (LongColumnVector) batch.cols[j];
+            Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
+            long timeInNanoSec = (t.getTime() * 1000000) + (t.getNanos() % 1000000);
+            Assert.assertEquals(true, tcv.vector[i] == timeInNanoSec);
+          }
+            break;
           default:
             Assert.assertEquals("Unknown type", false);
           }
@@ -275,18 +326,18 @@ public class TestVectorizedRowBatchCtx {
   @Test
   public void TestCtx() throws Exception {
 
-      InitSerde();
-      WriteRCFile(this.fs, this.testFilePath, this.conf);
-      VectorizedRowBatch batch = GetRowBatch();
-      ValidateRowBatch(batch);
+    InitSerde();
+    WriteRCFile(this.fs, this.testFilePath, this.conf);
+    VectorizedRowBatch batch = GetRowBatch();
+    ValidateRowBatch(batch);
 
-      // Test VectorizedColumnarSerDe
-      VectorizedColumnarSerDe vcs = new VectorizedColumnarSerDe();
-      vcs.initialize(this.conf, tbl);
-      Writable w = vcs.serializeVector(batch, (StructObjectInspector) serDe
-          .getObjectInspector());
-      BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[])((ObjectWritable)w).get();
-      vcs.deserializeVector(refArray, 10, batch);
-      ValidateRowBatch(batch);
+    // Test VectorizedColumnarSerDe
+    VectorizedColumnarSerDe vcs = new VectorizedColumnarSerDe();
+    vcs.initialize(this.conf, tbl);
+    Writable w = vcs.serializeVector(batch, (StructObjectInspector) serDe
+        .getObjectInspector());
+    BytesRefArrayWritable[] refArray = (BytesRefArrayWritable[]) ((ObjectWritable) w).get();
+    vcs.deserializeVector(refArray, 10, batch);
+    ValidateRowBatch(batch);
   }
 }

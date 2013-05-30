@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+
 class BitFieldReader {
-  private RunLengthByteReader input;
+  private final RunLengthByteReader input;
   private final int bitSize;
   private int current;
   private int bitsLeft;
@@ -58,6 +60,23 @@ class BitFieldReader {
       result |= (current >>> bitsLeft) & ((1 << bitsLeftToRead) - 1);
     }
     return result & mask;
+  }
+
+  void nextVector(LongColumnVector previous, long previousLen)
+      throws IOException {
+    previous.isRepeating = true;
+    for (int i = 0; i < previousLen; i++) {
+      if (!previous.isNull[i]) {
+        previous.vector[i] = next();
+      } else {
+        // The default value of null for int types in vectorized
+        // processing is 1, so set that if the value is null
+        previous.vector[i] = 1;
+      }
+      if (previous.isRepeating && i > 0 && (previous.vector[i-1] != previous.vector[i])) {
+        previous.isRepeating = false;
+      }
+    }
   }
 
   void seek(PositionProvider index) throws IOException {

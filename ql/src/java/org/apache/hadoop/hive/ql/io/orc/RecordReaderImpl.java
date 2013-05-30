@@ -240,8 +240,19 @@ class RecordReaderImpl implements RecordReader {
 
     @Override
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      throw new UnsupportedOperationException(
-          "NextVector is not supported operation on Boolean type");
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
+      return result;
     }
   }
 
@@ -284,8 +295,19 @@ class RecordReaderImpl implements RecordReader {
 
     @Override
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      throw new UnsupportedOperationException(
-          "NextVector is not supported operation for Byte type");
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read value entries based on isNull entries
+      reader.nextVector(result, batchSize);
+      return result;
     }
 
     @Override
@@ -708,6 +730,7 @@ class RecordReaderImpl implements RecordReader {
   private static class TimestampTreeReader extends TreeReader{
     private RunLengthIntegerReader data;
     private RunLengthIntegerReader nanos;
+    private final LongColumnVector nanoVector = new LongColumnVector();
 
     TimestampTreeReader(int columnId) {
       super(columnId);
@@ -758,8 +781,47 @@ class RecordReaderImpl implements RecordReader {
 
     @Override
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      throw new UnsupportedOperationException(
-          "NextVector is not supported operation for TimeStamp type");
+      LongColumnVector result = null;
+      if (previousVector == null) {
+        result = new LongColumnVector();
+      } else {
+        result = (LongColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      data.nextVector(result, batchSize);
+      nanoVector.isNull = result.isNull;
+      nanos.nextVector(nanoVector, batchSize);
+
+      if (!(result.isRepeating && nanoVector.isRepeating)) {
+
+        // Non repeating values preset in the vector. Iterate thru the vector and populate the time
+        for (int i = 0; i < batchSize; i++) {
+          if (!result.isNull[i]) {
+            result.vector[i] = (result.vector[i] + WriterImpl.BASE_TIMESTAMP)
+                * WriterImpl.MILLIS_PER_SECOND;
+            nanoVector.vector[i] = parseNanos(nanoVector.vector[i]);
+            // fix the rounding when we divided by 1000.
+            if (result.vector[i] >= 0) {
+              result.vector[i] += nanoVector.vector[i] / 1000000;
+            } else {
+              result.vector[i] -= nanoVector.vector[i] / 1000000;
+            }
+            // Convert millis into nanos and add the nano vector value to it
+            result.vector[i] = (result.vector[i] * 1000000)
+                + nanoVector.vector[i];
+          }
+        }
+      } else {
+        // Entire vector has repeating values
+        if (!result.isNull[0]) {
+          result.vector[0] = (result.vector[0] * 1000000)
+              + nanoVector.vector[0];
+        }
+      }
+      return result;
     }
 
     private static int parseNanos(long serialized) {

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -29,8 +31,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,18 +60,24 @@ public class TestVectorizedORCReader {
   }
 
   static class MyRecord {
+    private final Boolean bo;
+    private final Byte by;
     private final Integer i;
     private final Long l;
     private final Short s;
     private final Double d;
     private final String k;
+    private final Timestamp t;
 
-    MyRecord(Integer i, Long l, Short s, Double d, String k) {
+    MyRecord(Boolean bo, Byte by, Integer i, Long l, Short s, Double d, String k, Timestamp t) {
+      this.bo = bo;
+      this.by = by;
       this.i = i;
       this.l = l;
       this.s = s;
       this.d = d;
       this.k = k;
+      this.t = t;
     }
   }
 
@@ -96,11 +104,11 @@ public class TestVectorizedORCReader {
         "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
         "way"};
     for (int i = 0; i < 21000; ++i) {
-      if ((i % 3) != 0) {
-        writer.addRow(new MyRecord(i, (long) 200, (short) (300 + i), (double) (400 + i),
-            words[r1.nextInt(words.length)]));
+      if ((i % 7) != 0) {
+        writer.addRow(new MyRecord(((i % 3) == 0), (byte)(i % 5), i, (long) 200, (short) (300 + i), (double) (400 + i),
+            words[r1.nextInt(words.length)], new Timestamp(Calendar.getInstance().getTime().getTime())));
       } else {
-        writer.addRow(new MyRecord(i, (long) 200, null, null, null));
+        writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null));
       }
     }
     writer.close();
@@ -122,8 +130,21 @@ public class TestVectorizedORCReader {
       for (int i = 0; i < batch.size; i++) {
         row = (OrcStruct) rr.next((Object) row);
         for (int j = 0; j < batch.cols.length; j++) {
-          Object a = ((Writable) row.getFieldValue(j));
+          Object a = (row.getFieldValue(j));
           Object b = batch.cols[j].getWritableObject(i);
+          // Boolean values are stores a 1's and 0's, so convert and compare
+          if (a instanceof BooleanWritable) {
+            Long temp = (long) (((BooleanWritable) a).get() ? 1 : 0);
+            Assert.assertEquals(true, temp.toString().equals(b.toString()));
+            continue;
+          }
+          // Timestamps are stored as long, so convert and compare
+          if (a instanceof Timestamp) {
+            Timestamp t = ((Timestamp) a);
+            Long timeInNanoSec = (t.getTime() * 1000000) + t.getNanos();
+            Assert.assertEquals(true, timeInNanoSec.toString().equals(b.toString()));
+            continue;
+          }
           if (null == a) {
             Assert.assertEquals(true, (b == null || (b instanceof NullWritable)));
           } else {
@@ -134,17 +155,23 @@ public class TestVectorizedORCReader {
 
       // Check repeating
       Assert.assertEquals(false, batch.cols[0].isRepeating);
-      Assert.assertEquals(true, batch.cols[1].isRepeating);
+      Assert.assertEquals(false, batch.cols[1].isRepeating);
       Assert.assertEquals(false, batch.cols[2].isRepeating);
-      Assert.assertEquals(false, batch.cols[3].isRepeating);
+      Assert.assertEquals(true, batch.cols[3].isRepeating);
       Assert.assertEquals(false, batch.cols[4].isRepeating);
+      Assert.assertEquals(false, batch.cols[5].isRepeating);
+      Assert.assertEquals(false, batch.cols[6].isRepeating);
+      Assert.assertEquals(false, batch.cols[7].isRepeating);
 
       // Check non null
-      Assert.assertEquals(true, batch.cols[0].noNulls);
-      Assert.assertEquals(true, batch.cols[1].noNulls);
-      Assert.assertEquals(false, batch.cols[2].noNulls);
-      Assert.assertEquals(false, batch.cols[3].noNulls);
+      Assert.assertEquals(false, batch.cols[0].noNulls);
+      Assert.assertEquals(false, batch.cols[1].noNulls);
+      Assert.assertEquals(true, batch.cols[2].noNulls);
+      Assert.assertEquals(true, batch.cols[3].noNulls);
       Assert.assertEquals(false, batch.cols[4].noNulls);
+      Assert.assertEquals(false, batch.cols[5].noNulls);
+      Assert.assertEquals(false, batch.cols[6].noNulls);
+      Assert.assertEquals(false, batch.cols[7].noNulls);
     }
     Assert.assertEquals(false, rr.hasNext());
   }

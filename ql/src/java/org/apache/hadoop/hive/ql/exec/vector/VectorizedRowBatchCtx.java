@@ -197,11 +197,14 @@ public class VectorizedRowBatchCtx {
       case PRIMITIVE: {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
         // Vectorization currently only supports the following data types:
-        // SHORT, INT, LONG, FLOAT, DOUBLE, STRING
+        // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING and TIMESTAMP
         switch (poi.getPrimitiveCategory()) {
+        case BOOLEAN:
+        case BYTE:
         case SHORT:
         case INT:
         case LONG:
+        case TIMESTAMP:
           result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
           break;
         case FLOAT:
@@ -231,9 +234,6 @@ public class VectorizedRowBatchCtx {
     result.numCols = fieldRefs.size();
     return result;
   }
-
-
-
 
   /**
    * Adds the row to the batch after deserializing the row
