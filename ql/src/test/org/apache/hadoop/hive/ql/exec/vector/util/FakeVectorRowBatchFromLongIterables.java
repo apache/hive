@@ -30,57 +30,57 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * VectorizedRowBatch test source from individual column values (as iterables)
  * Used in unit test only.
  */
-public class FakeVectorRowBatchFromIterables extends FakeVectorRowBatchBase {
-  private VectorizedRowBatch vrg;
+public class FakeVectorRowBatchFromLongIterables extends FakeVectorRowBatchBase {
+  private VectorizedRowBatch batch;
   private final int numCols;
   private final int batchSize;
   private List<Iterator<Long>> iterators;
   private boolean eof;
 
-  public FakeVectorRowBatchFromIterables(int batchSize, Iterable<Long>...iterables) {
+  public FakeVectorRowBatchFromLongIterables(int batchSize, Iterable<Long>...iterables) {
     numCols = iterables.length;
     this.batchSize = batchSize;
     iterators = new ArrayList<Iterator<Long>>();
-    vrg = new VectorizedRowBatch(numCols, batchSize);
+    batch = new VectorizedRowBatch(numCols, batchSize);
     for (int i =0; i < numCols; i++) {
-      vrg.cols[i] = new LongColumnVector(batchSize);
+      batch.cols[i] = new LongColumnVector(batchSize);
       iterators.add(iterables[i].iterator());
     }
   }
 
   @Override
   public VectorizedRowBatch produceNextBatch() {
-    vrg.size = 0;
-    vrg.selectedInUse = false;
+    batch.size = 0;
+    batch.selectedInUse = false;
     for (int i=0; i < numCols; ++i) {
-      ColumnVector col = vrg.cols[i];
+      ColumnVector col = batch.cols[i];
       col.noNulls = true;
       col.isRepeating = false;
     }
-    while (!eof && vrg.size < this.batchSize){
-      int r = vrg.size;
+    while (!eof && batch.size < this.batchSize){
+      int r = batch.size;
       for (int i=0; i < numCols; ++i) {
         Iterator<Long> it = iterators.get(i);
         if (!it.hasNext()) {
           eof = true;
           break;
         }
-        LongColumnVector col = (LongColumnVector)vrg.cols[i];
+        LongColumnVector col = (LongColumnVector)batch.cols[i];
         Long value = it.next();
         if (null == value) {
           col.noNulls = false;
-          col.isNull[vrg.size] = true;
+          col.isNull[batch.size] = true;
         } else {
           long[] vector = col.vector;
           vector[r] = value;
-          col.isNull[vrg.size] = false;
+          col.isNull[batch.size] = false;
         }
       }
       if (!eof) {
-        vrg.size += 1;
+        batch.size += 1;
       }
     }
-    return vrg;
+    return batch;
   }
 }
 

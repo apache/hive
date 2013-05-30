@@ -35,7 +35,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
-import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromIterables;
+import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromLongIterables;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromRepeats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -43,7 +43,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.Test;
 
@@ -54,9 +56,11 @@ public class TestVectorGroupByOperator {
 
   private static ExprNodeDesc buildColumnDesc(
       VectorizationContext ctx,
-      String column) {
+      String column,
+      TypeInfo typeInfo) {
+
     return new ExprNodeColumnDesc(
-        TypeInfoFactory.longTypeInfo, column, "table", false);
+        typeInfo, column, "table", false);
   }
 
   private static AggregationDesc buildAggregationDesc(
@@ -64,7 +68,7 @@ public class TestVectorGroupByOperator {
       String aggregate,
       String column) {
 
-    ExprNodeDesc inputColumn = buildColumnDesc(ctx, column);
+    ExprNodeDesc inputColumn = buildColumnDesc(ctx, column, TypeInfoFactory.longTypeInfo);
 
     ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
     params.add(inputColumn);
@@ -99,16 +103,37 @@ public class TestVectorGroupByOperator {
       VectorizationContext ctx,
       String aggregate,
       String column,
+      TypeInfo typeInfo,
       String key) {
 
     GroupByDesc desc = buildGroupByDesc(ctx, aggregate, column);
-    
-    ExprNodeDesc keyExp = buildColumnDesc(ctx, key);
+
+    ExprNodeDesc keyExp = buildColumnDesc(ctx, key, typeInfo);
     ArrayList<ExprNodeDesc> keys = new ArrayList<ExprNodeDesc>();
     keys.add(keyExp);
     desc.setKeys(keys);
-    
+
     return desc;
+  }
+
+  @Test
+  public void testMinLongNullStringKeys() throws HiveException {
+    testAggregateStringKeyAggregate(
+        "min",
+        2,
+        Arrays.asList(new Object[]{"A",null,"A",null}),
+        Arrays.asList(new Object[]{13L, 5L, 7L,19L}),
+        buildHashMap("A", 7L, null, 5L));
+  }
+
+  @Test
+  public void testMinLongStringKeys() throws HiveException {
+    testAggregateStringKeyAggregate(
+        "min",
+        2,
+        Arrays.asList(new Object[]{"A","B","A","B"}),
+        Arrays.asList(new Object[]{13L, 5L, 7L,19L}),
+        buildHashMap("A", 7L, "B", 5L));
   }
 
   @Test
@@ -120,7 +145,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,5L,7L,19L}),
         buildHashMap(1L, 5L, 2L, 7L));
   }
-  
+
   @Test
   public void testMinLongKeyGroupBySingleBatch() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -130,7 +155,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,5L,7L,19L}),
         buildHashMap(1L, 5L, 2L, 7L));
   }
-  
+
   @Test
   public void testMinLongKeyGroupByCrossBatch() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -170,7 +195,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,5L,7L,19L}),
         buildHashMap(null, 13L, 2L, 19L));
   }
-  
+
   @Test
   public void testCountLongNullKeyGroupBySingleBatch() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -180,7 +205,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,5L,7L,19L}),
         buildHashMap(null, 2L, 2L, 2L));
   }
-  
+
   @Test
   public void testSumLongNullKeyGroupBySingleBatch() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -190,7 +215,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L,5L,7L,19L}),
         buildHashMap(null, 20L, 2L, 24L));
   }
-  
+
   @Test
   public void testAvgLongNullKeyGroupBySingleBatch() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -210,7 +235,7 @@ public class TestVectorGroupByOperator {
         Arrays.asList(new Long[]{13L, 5L,18L,19L,12L,15L}),
         buildHashMap(null, 0.0, 2L, 49.0, 01L, 6.0));
   }
-  
+
   @Test
   public void testMinNullLongNullKeyGroupBy() throws HiveException {
     testAggregateLongKeyAggregate(
@@ -230,7 +255,7 @@ public class TestVectorGroupByOperator {
         5L);
   }
 
-  
+
   @Test
   public void testMinLongSimple() throws HiveException {
     testAggregateLongAggregate(
@@ -408,7 +433,7 @@ public class TestVectorGroupByOperator {
         new FakeVectorRowBatchFromConcat(
             new FakeVectorRowBatchFromRepeats(
                 new Long[] {19L}, 10, 2),
-            new FakeVectorRowBatchFromIterables(
+            new FakeVectorRowBatchFromLongIterables(
                 3,
                 Arrays.asList(new Long[]{13L, 7L, 23L, 29L}))),
          7L);
@@ -485,7 +510,7 @@ public class TestVectorGroupByOperator {
         new FakeVectorRowBatchFromConcat(
             new FakeVectorRowBatchFromRepeats(
                 new Long[] {19L}, 10, 2),
-            new FakeVectorRowBatchFromIterables(
+            new FakeVectorRowBatchFromLongIterables(
                 3,
                 Arrays.asList(new Long[]{13L, 7L, 23L, 29L}))),
          14L);
@@ -561,7 +586,7 @@ public class TestVectorGroupByOperator {
         new FakeVectorRowBatchFromConcat(
             new FakeVectorRowBatchFromRepeats(
                 new Long[] {19L}, 10, 2),
-            new FakeVectorRowBatchFromIterables(
+            new FakeVectorRowBatchFromLongIterables(
                 3,
                 Arrays.asList(new Long[]{13L, 7L, 23L, 29L}))),
          19L*10L + 13L + 7L + 23L +29L);
@@ -692,7 +717,7 @@ public class TestVectorGroupByOperator {
         new FakeVectorRowBatchFromConcat(
             new FakeVectorRowBatchFromRepeats(
                 new Long[] {19L}, 10, 2),
-            new FakeVectorRowBatchFromIterables(
+            new FakeVectorRowBatchFromLongIterables(
                 3,
                 Arrays.asList(new Long[]{13L, 7L, 23L, 29L}))),
          (double) (19L*10L + 13L + 7L + 23L +29L) / (double) 14 );
@@ -873,7 +898,7 @@ public class TestVectorGroupByOperator {
         new Long[] {value}, repeat, batchSize);
     testAggregateLongIterable (aggregateName, fdr, expected);
   }
-  
+
   public HashMap<Object, Object> buildHashMap(Object... pairs) {
     HashMap<Object, Object> map = new HashMap<Object, Object>();
     for(int i = 0; i < pairs.length; i += 2) {
@@ -882,19 +907,35 @@ public class TestVectorGroupByOperator {
     return map;
   }
 
+  public void testAggregateStringKeyAggregate (
+      String aggregateName,
+      int batchSize,
+      Iterable<Object> list,
+      Iterable<Object> values,
+      HashMap<Object, Object> expected) throws HiveException {
+
+    @SuppressWarnings("unchecked")
+    FakeVectorRowBatchFromObjectIterables fdr = new FakeVectorRowBatchFromObjectIterables(
+        batchSize,
+        new String[] {"string", "long"},
+        list,
+        values);
+    testAggregateStringKeyIterable (aggregateName, fdr, expected);
+  }
+
 
   public void testAggregateLongKeyAggregate (
       String aggregateName,
       int batchSize,
-      Iterable<Long> keys,
+      List<Long> list,
       Iterable<Long> values,
       HashMap<Object, Object> expected) throws HiveException {
 
     @SuppressWarnings("unchecked")
-    FakeVectorRowBatchFromIterables fdr = new FakeVectorRowBatchFromIterables(batchSize, keys, values);
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, list, values);
     testAggregateLongKeyIterable (aggregateName, fdr, expected);
   }
-  
+
   public void testAggregateLongAggregate (
       String aggregateName,
       int batchSize,
@@ -902,7 +943,7 @@ public class TestVectorGroupByOperator {
       Object expected) throws HiveException {
 
     @SuppressWarnings("unchecked")
-    FakeVectorRowBatchFromIterables fdr = new FakeVectorRowBatchFromIterables(batchSize, values);
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, values);
     testAggregateLongIterable (aggregateName, fdr, expected);
   }
 
@@ -1085,19 +1126,20 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
     Set<Object> keys = new HashSet<Object>();
 
-    GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value", "Key");
+    GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",
+        TypeInfoFactory.longTypeInfo, "Key");
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
     vgo.initialize(null, null);
     out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
-      
+
       private int rowIndex;
       private String aggregateName;
       private HashMap<Object,Object> expected;
       private Set<Object> keys;
-      
+
       @Override
       public void inspectRow(Object row, int tag) throws HiveException {
         assertTrue(row instanceof Object[]);
@@ -1117,7 +1159,7 @@ public class TestVectorGroupByOperator {
         validator.validate(expectedValue, new Object[] {value});
         keys.add(keyValue);
       }
-      
+
       private FakeCaptureOutputOperator.OutputInspector init(
           String aggregateName, HashMap<Object,Object> expected, Set<Object> keys) {
         this.aggregateName = aggregateName;
@@ -1131,11 +1173,78 @@ public class TestVectorGroupByOperator {
       vgo.process(unit,  0);
     }
     vgo.close(false);
-    
+
     List<Object> outBatchList = out.getCapturedRows();
     assertNotNull(outBatchList);
     assertEquals(expected.size(), outBatchList.size());
     assertEquals(expected.size(), keys.size());
   }
+
+  public void testAggregateStringKeyIterable (
+      String aggregateName,
+      Iterable<VectorizedRowBatch> data,
+      HashMap<Object,Object> expected) throws HiveException {
+    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
+    mapColumnNames.put("Key", 0);
+    mapColumnNames.put("Value", 1);
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+    Set<Object> keys = new HashSet<Object>();
+
+    GroupByDesc desc = buildKeyGroupByDesc (ctx, aggregateName, "Value",
+        TypeInfoFactory.stringTypeInfo, "Key");
+
+    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    vgo.initialize(null, null);
+    out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
+
+      private int rowIndex;
+      private String aggregateName;
+      private HashMap<Object,Object> expected;
+      private Set<Object> keys;
+
+      @SuppressWarnings("deprecation")
+      @Override
+      public void inspectRow(Object row, int tag) throws HiveException {
+        assertTrue(row instanceof Object[]);
+        Object[] fields = (Object[]) row;
+        assertEquals(2, fields.length);
+        Object key = fields[0];
+        String keyValue = null;
+        if (null != key) {
+          assertTrue(key instanceof BytesWritable);
+          BytesWritable bwKey = (BytesWritable)key;
+          keyValue = new String(bwKey.get());
+        }
+        assertTrue(expected.containsKey(keyValue));
+        Object expectedValue = expected.get(keyValue);
+        Object value = fields[1];
+        Validator validator = getValidator(aggregateName);
+        validator.validate(expectedValue, new Object[] {value});
+        keys.add(keyValue);
+      }
+
+      private FakeCaptureOutputOperator.OutputInspector init(
+          String aggregateName, HashMap<Object,Object> expected, Set<Object> keys) {
+        this.aggregateName = aggregateName;
+        this.expected = expected;
+        this.keys = keys;
+        return this;
+      }
+    }.init(aggregateName, expected, keys));
+
+    for (VectorizedRowBatch unit: data) {
+      vgo.process(unit,  0);
+    }
+    vgo.close(false);
+
+    List<Object> outBatchList = out.getCapturedRows();
+    assertNotNull(outBatchList);
+    assertEquals(expected.size(), outBatchList.size());
+    assertEquals(expected.size(), keys.size());
+  }
+
+
 }
 

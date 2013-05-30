@@ -1063,14 +1063,17 @@ public class VectorizationContext {
     }
   }
 
-  public ObjectInspector createObjectInspector(VectorExpression vectorExpression) 
+  public ObjectInspector createObjectInspector(VectorExpression vectorExpression)
       throws HiveException {
     String columnType = vectorExpression.getOutputType();
     if (columnType.equalsIgnoreCase("long") ||
-        columnType.equalsIgnoreCase("bigint")) {
+        columnType.equalsIgnoreCase("bigint") ||
+        columnType.equalsIgnoreCase("int")) {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     } else if (columnType.equalsIgnoreCase("double")) {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+    } else if (columnType.equalsIgnoreCase("string")) {
+      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
     } else {
       throw new HiveException(String.format("Must implement type %s", columnType));
     }
