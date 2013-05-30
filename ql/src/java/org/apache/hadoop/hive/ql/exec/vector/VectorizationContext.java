@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFCountDouble;
@@ -942,6 +943,7 @@ public class VectorizationContext {
     {"min",       "Double", VectorUDAFMinDouble.class},
     {"max",       "Long",   VectorUDAFMaxLong.class},
     {"max",       "Double", VectorUDAFMaxDouble.class},
+    {"count",     null,     VectorUDAFCountStar.class},
     {"count",     "Long",   VectorUDAFCountLong.class},
     {"count",     "Double", VectorUDAFCountDouble.class},
     {"sum",       "Long",   VectorUDAFSumLong.class},
@@ -966,6 +968,7 @@ public class VectorizationContext {
 
   public VectorAggregateExpression getAggregatorExpression(AggregationDesc desc)
       throws HiveException {
+
     ArrayList<ExprNodeDesc> paramDescList = desc.getParameters();
     VectorExpression[] vectorParams = new VectorExpression[paramDescList.size()];
 
@@ -975,22 +978,25 @@ public class VectorizationContext {
     }
 
     String aggregateName = desc.getGenericUDAFName();
-    List<ExprNodeDesc> params = desc.getParameters();
-    //TODO: handle length != 1
-    assert (params.size() == 1);
-    ExprNodeDesc inputExpr = params.get(0);
-    String inputType = getNormalizedTypeName(inputExpr.getTypeString());
+    String inputType = null;
+
+    if (paramDescList.size() > 0) {
+      ExprNodeDesc inputExpr = paramDescList.get(0);
+      inputType = getNormalizedTypeName(inputExpr.getTypeString());
+    }
 
     for (Object[] aggDef : aggregatesDefinition) {
-      if (aggDef[0].equals (aggregateName) &&
-          aggDef[1].equals(inputType)) {
+      if (aggregateName.equalsIgnoreCase((String) aggDef[0]) &&
+          ((aggDef[1] == null && inputType == null) ||
+          (aggDef[1] != null && aggDef[1].equals(inputType)))) {
         Class<? extends VectorAggregateExpression> aggClass =
             (Class<? extends VectorAggregateExpression>) (aggDef[2]);
         try
         {
           Constructor<? extends VectorAggregateExpression> ctor =
               aggClass.getConstructor(VectorExpression.class);
-          VectorAggregateExpression aggExpr = ctor.newInstance(vectorParams[0]);
+          VectorAggregateExpression aggExpr = ctor.newInstance(
+              vectorParams.length > 0 ? vectorParams[0] : null);
           return aggExpr;
         }
         // TODO: change to 1.7 syntax when possible

@@ -79,6 +79,14 @@ public class TestVectorGroupByOperator {
 
     return agg;
   }
+  private static AggregationDesc buildAggregationDescCountStar(
+      VectorizationContext ctx) {
+    AggregationDesc agg = new AggregationDesc();
+    agg.setGenericUDAFName("COUNT");
+    agg.setParameters(new ArrayList<ExprNodeDesc>());
+    return agg;
+  }
+
 
   private static GroupByDesc buildGroupByDesc(
       VectorizationContext ctx,
@@ -98,6 +106,23 @@ public class TestVectorGroupByOperator {
 
     return desc;
   }
+  private static GroupByDesc buildGroupByDescCountStar(
+      VectorizationContext ctx) {
+
+    AggregationDesc agg = buildAggregationDescCountStar(ctx);
+    ArrayList<AggregationDesc> aggs = new ArrayList<AggregationDesc>();
+    aggs.add(agg);
+
+    ArrayList<String> outputColumnNames = new ArrayList<String>();
+    outputColumnNames.add("_col0");
+
+    GroupByDesc desc = new GroupByDesc();
+    desc.setOutputColumnNames(outputColumnNames);
+    desc.setAggregators(aggs);
+
+    return desc;
+  }
+
 
   private static GroupByDesc buildKeyGroupByDesc(
       VectorizationContext ctx,
@@ -114,6 +139,14 @@ public class TestVectorGroupByOperator {
     desc.setKeys(keys);
 
     return desc;
+  }
+
+  @Test
+  public void testCountStar () throws HiveException {
+    testAggregateCountStar(
+        2,
+        Arrays.asList(new Long[]{13L,null,7L,19L}),
+        4L);
   }
 
   @Test
@@ -947,6 +980,17 @@ public class TestVectorGroupByOperator {
     testAggregateLongIterable (aggregateName, fdr, expected);
   }
 
+  public void testAggregateCountStar (
+      int batchSize,
+      Iterable<Long> values,
+      Object expected) throws HiveException {
+
+    @SuppressWarnings("unchecked")
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, values);
+    testAggregateCountStarIterable (fdr, expected);
+  }
+
+
   public static interface Validator {
     void validate (Object expected, Object result);
   };
@@ -1084,6 +1128,35 @@ public class TestVectorGroupByOperator {
       throw new HiveException(e);
     }
     throw new HiveException("Missing validator for aggregate: " + aggregate);
+  }
+
+  public void testAggregateCountStarIterable (
+      Iterable<VectorizedRowBatch> data,
+      Object expected) throws HiveException {
+    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
+    mapColumnNames.put("A", 0);
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
+
+    GroupByDesc desc = buildGroupByDescCountStar (ctx);
+
+    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    vgo.initialize(null, null);
+
+    for (VectorizedRowBatch unit: data) {
+      vgo.process(unit,  0);
+    }
+    vgo.close(false);
+
+    List<Object> outBatchList = out.getCapturedRows();
+    assertNotNull(outBatchList);
+    assertEquals(1, outBatchList.size());
+
+    Object result = outBatchList.get(0);
+
+    Validator validator = getValidator("count");
+    validator.validate(expected, result);
   }
 
   public void testAggregateLongIterable (
