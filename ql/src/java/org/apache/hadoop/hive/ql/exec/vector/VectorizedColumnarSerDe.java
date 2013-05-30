@@ -105,7 +105,8 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
 
         byteRow.resetValid(numCols);
 
-        for (int k = 0; k < numCols; k++) {
+        for (int p = 0; p < batch.projectionSize; p++) {
+          int k = batch.projectedColumns[p];
           ObjectInspector foi = fields.get(k).getFieldObjectInspector();
           ColumnVector currentColVector = batch.cols[k];
 
