@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -88,6 +92,28 @@ public class VectorizedBatchUtil {
       // NOTE: The default value for null fields in vectorization is 1 for int types, NaN for
       // float/double. String types have no default value for null.
       switch (poi.getPrimitiveCategory()) {
+      case BOOLEAN: {
+        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        if (writableCol != null) {
+          lcv.vector[rowIndex] = ((BooleanWritable) writableCol).get() ? 1 : 0;
+          lcv.isNull[rowIndex] = false;
+        } else {
+          lcv.vector[rowIndex] = 1;
+          SetNullColIsNullValue(lcv, rowIndex);
+        }
+      }
+        break;
+      case BYTE: {
+        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        if (writableCol != null) {
+          lcv.vector[rowIndex] = ((ByteWritable) writableCol).get();
+          lcv.isNull[rowIndex] = false;
+        } else {
+          lcv.vector[rowIndex] = 1;
+          SetNullColIsNullValue(lcv, rowIndex);
+        }
+      }
+        break;
       case SHORT: {
         LongColumnVector lcv = (LongColumnVector) batch.cols[i];
         if (writableCol != null) {
@@ -140,6 +166,18 @@ public class VectorizedBatchUtil {
         } else {
           dcv.vector[rowIndex] = Double.NaN;
           SetNullColIsNullValue(dcv, rowIndex);
+        }
+      }
+        break;
+      case TIMESTAMP: {
+        LongColumnVector lcv = (LongColumnVector) batch.cols[i];
+        if (writableCol != null) {
+          Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
+          lcv.vector[rowIndex] = (t.getTime() * 1000000) + (t.getNanos() % 1000000);
+          lcv.isNull[rowIndex] = false;
+        } else {
+          lcv.vector[rowIndex] = 1;
+          SetNullColIsNullValue(lcv, rowIndex);
         }
       }
         break;

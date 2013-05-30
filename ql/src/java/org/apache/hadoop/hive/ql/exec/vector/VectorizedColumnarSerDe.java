@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -28,7 +29,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
+import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -121,6 +124,18 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
               }
 
               switch (poi.getPrimitiveCategory()) {
+              case BOOLEAN: {
+                LongColumnVector lcv = (LongColumnVector) batch.cols[k];
+                // In vectorization true is stored as 1 and false as 0
+                boolean b = lcv.vector[rowIndex] == 1 ? true : false;
+                if (b) {
+                  serializeVectorStream.write(LazyUtils.trueBytes, 0, LazyUtils.trueBytes.length);
+                } else {
+                  serializeVectorStream.write(LazyUtils.trueBytes, 0, LazyUtils.trueBytes.length);
+                }
+              }
+                break;
+              case BYTE:
               case SHORT:
               case INT:
               case LONG:
@@ -140,6 +155,16 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
                     bcv.length[rowIndex],
                     serdeParams.isEscaped(), serdeParams.getEscapeChar(), serdeParams
                         .getNeedsEscape());
+                break;
+              case TIMESTAMP:
+                LongColumnVector tcv = (LongColumnVector) batch.cols[k];
+                long timeInNanoSec = tcv.vector[rowIndex];
+                Timestamp t = new Timestamp(0);
+                t.setTime((timeInNanoSec)/1000000);
+                t.setNanos((int)((t.getNanos()) + (timeInNanoSec % 1000000)));
+                TimestampWritable tw = new TimestampWritable();
+                tw.set(t);
+                LazyTimestamp.writeUTF8(serializeVectorStream, tw);
                 break;
               default:
                 throw new UnsupportedOperationException(
