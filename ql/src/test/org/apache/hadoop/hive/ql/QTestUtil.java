@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -198,7 +199,7 @@ public class QTestUtil {
   public String getLogDirectory() {
     return logDir;
   }
-  
+
   private String getHadoopMainVersion(String input) {
     if (input == null) {
       return null;
@@ -215,6 +216,11 @@ public class QTestUtil {
 
     if (Shell.WINDOWS) {
       convertPathsFromWindowsToHdfs();
+    }
+
+    String vectorizationEnabled = System.getProperty("test.vectorization.enabled");
+    if(vectorizationEnabled != null && vectorizationEnabled.equalsIgnoreCase("true")) {
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
     if (miniMr) {
