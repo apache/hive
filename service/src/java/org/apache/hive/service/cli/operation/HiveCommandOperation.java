@@ -79,6 +79,7 @@ public abstract class HiveCommandOperation extends ExecuteStatementOperation {
         sessionState.out = new PrintStream(System.out, true, "UTF-8");
         sessionState.err = new PrintStream(System.err, true, "UTF-8");
       } catch (UnsupportedEncodingException ee) {
+        LOG.error("Error creating PrintStream", e);
         ee.printStackTrace();
         sessionState.out = null;
         sessionState.err = null;
@@ -117,7 +118,7 @@ public abstract class HiveCommandOperation extends ExecuteStatementOperation {
       }
     } catch (Exception e) {
       setState(OperationState.ERROR);
-      throw new HiveSQLException("Error running query: " + e.toString());
+      throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
     setState(OperationState.FINISHED);
   }
