@@ -110,7 +110,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw e;
     } catch (Exception e) {
       setState(OperationState.ERROR);
-      throw new HiveSQLException("Error running query: " + e.toString());
+      throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
     setState(OperationState.FINISHED);
   }
@@ -208,7 +208,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     // for now, expose non-primitive as a string
     // TODO: expose non-primitive as a structured object while maintaining JDBC compliance
     if (oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      return SerDeUtils.getJSONString(o, oi); 
+      return SerDeUtils.getJSONString(o, oi);
     }
     return obj;
   }

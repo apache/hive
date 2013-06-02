@@ -229,7 +229,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       return Date.valueOf((String) obj);
     } catch (Exception e) {
       throw new SQLException("Cannot convert column " + columnIndex
-              + " to date: " + e.toString());
+              + " to date: " + e.toString(), e);
     }
   }
 
@@ -258,7 +258,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
       throw new SQLException("Cannot convert column " + columnIndex
-              + " to double: " + e.toString());
+              + " to double: " + e.toString(), e);
     }
   }
 
@@ -287,7 +287,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
       throw new SQLException("Cannot convert column " + columnIndex
-              + " to float: " + e.toString());
+              + " to float: " + e.toString(), e);
     }
   }
 
@@ -311,7 +311,9 @@ public abstract class HiveBaseResultSet implements ResultSet {
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to integer" + e.toString());
+      throw new SQLException(
+          "Cannot convert column " + columnIndex + " to integer" + e.toString(),
+          e);
     }
   }
 
@@ -331,7 +333,9 @@ public abstract class HiveBaseResultSet implements ResultSet {
       }
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to long: " + e.toString());
+      throw new SQLException(
+          "Cannot convert column " + columnIndex + " to long: " + e.toString(),
+          e);
     }
   }
 
@@ -578,7 +582,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
       throw new Exception("Illegal conversion");
     } catch (Exception e) {
       throw new SQLException("Cannot convert column " + columnIndex
-              + " to short: " + e.toString());
+              + " to short: " + e.toString(), e);
     }
   }
 
