@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -45,13 +46,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.serde.serdeConstants;;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -64,7 +65,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
-import org.apache.hadoop.util.StringUtils;
+
 
 public class MetaStoreUtils {
 
@@ -379,7 +380,7 @@ public class MetaStoreUtils {
       throw new InvalidOperationException(
           "The following columns have types incompatible with the existing " +
           "columns in their respective positions :\n" +
-          StringUtils.join(",", incompatibleCols)
+          StringUtils.join(incompatibleCols, ',')
         );
     }
   }
@@ -954,12 +955,11 @@ public class MetaStoreUtils {
    * @throws MetaException
    */
   static void logAndThrowMetaException(Exception e) throws MetaException {
-    LOG
-        .error("Got exception: " + e.getClass().getName() + " "
-            + e.getMessage());
-    LOG.error(StringUtils.stringifyException(e));
-    throw new MetaException("Got exception: " + e.getClass().getName() + " "
-        + e.getMessage());
+    String exInfo = "Got exception: " + e.getClass().getName() + " "
+        + e.getMessage();
+    LOG.error(exInfo, e);
+    LOG.error("Converting exception to MetaException");
+    throw new MetaException(exInfo);
   }
 
   /**
