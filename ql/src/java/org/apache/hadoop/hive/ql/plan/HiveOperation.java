@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 
 public enum HiveOperation {
-
   EXPLAIN("EXPLAIN", null, null),
   LOAD("LOAD", null, new Privilege[]{Privilege.ALTER_DATA}),
   EXPORT("EXPORT", new Privilege[]{Privilege.SELECT}, null),
@@ -102,6 +101,7 @@ public enum HiveOperation {
   ALTERTABLE_SKEWED("ALTERTABLE_SKEWED", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERTBLPART_SKEWED_LOCATION("ALTERTBLPART_SKEWED_LOCATION",
       new Privilege[] {Privilege.ALTER_DATA}, null),
+  ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ;
 
   private String operationName;

@@ -108,7 +108,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
-      throw new SQLException(e.toString(), "08S01");
+      throw new SQLException(e.toString(), "08S01", e);
     }
   }
 
@@ -143,7 +143,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
-      throw new SQLException(e.toString(), "08S01");
+      throw new SQLException(e.toString(), "08S01", e);
     }
     stmtHandle = null;
   }
@@ -184,7 +184,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (SQLException eS) {
       throw eS;
     } catch (Exception ex) {
-      throw new SQLException(ex.toString(), "08S01");
+      throw new SQLException(ex.toString(), "08S01", ex);
     }
 
     if (!stmtHandle.isHasResultSet()) {

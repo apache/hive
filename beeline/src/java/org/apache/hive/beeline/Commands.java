@@ -771,9 +771,6 @@ public class Commands {
           beeLine.info(beeLine.loc("rows-affected", count)
               + " " + beeLine.locElapsedTime(end - start));
         }
-      } catch (Exception e) {
-        beeLine.error(e);
-        throw e;
       } finally {
         if (stmnt != null) {
           stmnt.close();

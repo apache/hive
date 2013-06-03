@@ -18,11 +18,11 @@ ds                  	string              	None
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW view1 RENAME TO view2
-PREHOOK: type: null
+PREHOOK: type: ALTERVIEW_RENAME
 PREHOOK: Input: default@view1
 PREHOOK: Output: default@view1
 POSTHOOK: query: ALTER VIEW view1 RENAME TO view2
-POSTHOOK: type: null
+POSTHOOK: type: ALTERVIEW_RENAME
 POSTHOOK: Input: default@view1
 POSTHOOK: Output: default@view1
 POSTHOOK: Output: default@view2

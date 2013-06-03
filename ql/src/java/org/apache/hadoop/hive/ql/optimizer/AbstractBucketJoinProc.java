@@ -303,7 +303,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
             // The number of files for the table should be same as number of buckets.
             int bucketCount = p.getBucketCount();
 
-            if (fileNames.size() != bucketCount) {
+            if (fileNames.size() != 0 && fileNames.size() != bucketCount) {
               String msg = "The number of buckets for table " +
                   tbl.getTableName() + " partition " + p.getName() + " is " +
                   p.getBucketCount() + ", whereas the number of files is " + fileNames.size();
@@ -333,7 +333,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         Integer num = new Integer(tbl.getNumBuckets());
 
         // The number of files for the table should be same as number of buckets.
-        if (fileNames.size() != num) {
+        if (fileNames.size() != 0 && fileNames.size() != num) {
           String msg = "The number of buckets for table " +
               tbl.getTableName() + " is " + tbl.getNumBuckets() +
               ", whereas the number of files is " + fileNames.size();

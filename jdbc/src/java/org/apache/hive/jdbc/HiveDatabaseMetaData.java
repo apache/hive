@@ -124,7 +124,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       catalogResp = client.GetCatalogs(new TGetCatalogsReq(sessHandle));
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(catalogResp.getStatus());
 
@@ -197,7 +197,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       colResp = client.GetColumns(colReq);
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(colResp.getStatus());
     // build the resultset from response
@@ -312,7 +312,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       funcResp = client.GetFunctions(getFunctionsReq);
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(funcResp.getStatus());
 
@@ -553,7 +553,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       schemaResp = client.GetSchemas(schemaReq);
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(schemaResp.getStatus());
 
@@ -597,7 +597,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       tableTypeResp = client.GetTableTypes(new TGetTableTypesReq(sessHandle));
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(tableTypeResp.getStatus());
 
@@ -630,7 +630,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       getTableResp = client.GetTables(getTableReq);
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(getTableResp.getStatus());
 
@@ -687,7 +687,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     try {
       getTypeInfoResp = client.GetTypeInfo(getTypeInfoReq);
     } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01");
+      throw new SQLException(e.getMessage(), "08S01", e);
     }
     Utils.verifySuccess(getTypeInfoResp.getStatus());
     return new HiveQueryResultSet.Builder()

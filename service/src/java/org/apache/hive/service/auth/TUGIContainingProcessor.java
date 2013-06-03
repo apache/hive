@@ -54,12 +54,5 @@ public class TUGIContainingProcessor implements TProcessor{
     } catch (IOException ioe) {
       throw new RuntimeException(ioe); // unexpected!
     }
-    finally {
-      // cleanup the filesystem handles at the end if they are cached
-      // clientUgi will be null if createRemoteUser() fails
-      if (clientUgi != null && !isFsCacheDisabled) {
-        shim.closeAllForUGI(clientUgi);
-      }
-    }
   }
 }

@@ -374,6 +374,12 @@
 </property>
 
 <property>
+  <name>hive.default.rcfile.serde</name>
+  <value>org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe</value>
+  <description>The default SerDe hive will use for the rcfile format</description>
+</property>
+
+<property>
   <name>hive.fileformat.check</name>
   <value>true</value>
   <description>Whether to check file format or not when loading data files</description>
@@ -589,9 +595,9 @@
 </property>
 
 <property>
-  <name>hive.mapjoin.bucket.cache.size</name>
-  <value>100</value>
-  <description>How many values in each keys in the map-joined table should be cached in memory. </description>
+  <name>hive.smbjoin.cache.rows</name>
+  <value>10000</value>
+  <description>How many rows with the same key value should be cached in memory per smb joined table. </description>
 </property>
 
 <property>
