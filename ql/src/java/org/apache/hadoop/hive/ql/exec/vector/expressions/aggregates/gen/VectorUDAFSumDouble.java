@@ -51,7 +51,7 @@ public class VectorUDAFSumDouble extends VectorAggregateExpression {
     /** 
     /* class for storing the current aggregate value.
     */
-    static private final class Aggregation implements AggregationBuffer {
+    private static final class Aggregation implements AggregationBuffer {
       double sum;
       boolean isNull;
       

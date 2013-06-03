@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +36,10 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
   private final VectorizedRowBatch batch;
   private boolean eof;
   private final int batchSize;
+  
+  public String[] getTypes() {
+    return this.types;
+  }
 
   /**
    * Helper interface for assigning values to primitive vector column types.
@@ -58,7 +63,11 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
 
     batch = new VectorizedRowBatch(types.length, batchSize);
     for(int i=0; i< types.length; ++i) {
-      if (types[i].equalsIgnoreCase("long")) {
+      if (types[i].equalsIgnoreCase("tinyint") ||
+          types[i].equalsIgnoreCase("smallint")||
+          types[i].equalsIgnoreCase("int")||
+          types[i].equalsIgnoreCase("bigint")||
+          types[i].equalsIgnoreCase("long")) {
         batch.cols[i] = new LongColumnVector(batchSize);
         columnAssign[i] = new ColumnVectorAssign() {
           @Override
@@ -67,9 +76,35 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
               int row,
               Object value) {
             LongColumnVector lcv = (LongColumnVector) columnVector;
-            lcv.vector[row] = (Long) value;
+            lcv.vector[row] = Long.valueOf(value.toString());
           }
         };
+      } else if (types[i].equalsIgnoreCase("boolean")) {
+        batch.cols[i] = new LongColumnVector(batchSize);
+        columnAssign[i] = new ColumnVectorAssign() {
+          @Override
+          public void assign(
+              ColumnVector columnVector,
+              int row,
+              Object value) {
+            LongColumnVector lcv = (LongColumnVector) columnVector;
+            lcv.vector[row] = (Boolean) value ? 1 : 0;
+          }
+        };
+      } else if (types[i].equalsIgnoreCase("timestamp")) {
+        batch.cols[i] = new LongColumnVector(batchSize);
+        columnAssign[i] = new ColumnVectorAssign() {
+          @Override
+          public void assign(
+              ColumnVector columnVector,
+              int row,
+              Object value) {
+            LongColumnVector lcv = (LongColumnVector) columnVector;
+            Timestamp t = (Timestamp) value;
+            lcv.vector[row] = TimestampUtils.getTimeNanoSec(t);
+          }
+        };
+        
       } else if (types[i].equalsIgnoreCase("string")) {
         batch.cols[i] = new BytesColumnVector(batchSize);
         columnAssign[i] = new ColumnVectorAssign() {
@@ -86,7 +121,8 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
             bcv.length[row] = bytes.length;
           }
         };
-      } else if (types[i].equalsIgnoreCase("double")) {
+      } else if (types[i].equalsIgnoreCase("double") ||
+          types[i].equalsIgnoreCase("float")) {
         batch.cols[i] = new DoubleColumnVector(batchSize);
         columnAssign[i] = new ColumnVectorAssign() {
           @Override
@@ -95,7 +131,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
               int row,
               Object value) {
             DoubleColumnVector dcv = (DoubleColumnVector) columnVector;
-            dcv.vector[row] = (Double) value;
+            dcv.vector[row] = Double.valueOf(value.toString());
           }
         };
       } else {

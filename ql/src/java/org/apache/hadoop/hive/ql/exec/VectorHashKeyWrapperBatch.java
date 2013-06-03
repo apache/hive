@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -80,18 +81,6 @@ public class VectorHashKeyWrapperBatch {
    * lookup vector to map from key index to primitive type index
    */
   private KeyLookupHelper[] indexLookup;
-
-  /**
-   * preallocated and reused LongWritable objects for emiting row mode key values
-   */
-  private LongWritable[] longKeyValueOutput;
-
-  /**
-   * preallocated and reused DoubleWritable objects for emiting row mode key values
-   */
-  private DoubleWritable[] doubleKeyValueOutput;
-
-  private BytesWritable[] stringKeyValueOutput;
 
   /**
    * Accessor for the batch-sized array of key wrappers
@@ -452,15 +441,19 @@ public class VectorHashKeyWrapperBatch {
     for(int i=0; i < keyExpressions.length; ++i) {
       indexLookup[i] = new KeyLookupHelper();
       String outputType = keyExpressions[i].getOutputType();
-      if (outputType.equalsIgnoreCase("long") ||
-          outputType.equalsIgnoreCase("bigint") ||
-          outputType.equalsIgnoreCase("int")) {
+      if (outputType.equalsIgnoreCase("tinyint") ||
+          outputType.equalsIgnoreCase("smallint") ||
+          outputType.equalsIgnoreCase("int")  ||
+          outputType.equalsIgnoreCase("bigint")  ||
+          outputType.equalsIgnoreCase("timestamp") ||
+          outputType.equalsIgnoreCase("boolean")) {
         longIndices[longIndicesIndex] = i;
         indexLookup[i].longIndex = longIndicesIndex;
         indexLookup[i].doubleIndex = -1;
         indexLookup[i].stringIndex = -1;
         ++longIndicesIndex;
-      } else if (outputType.equalsIgnoreCase("double")) {
+      } else if (outputType.equalsIgnoreCase("double") ||
+          outputType.equalsIgnoreCase("float")) {
         doubleIndices[doubleIndicesIndex] = i;
         indexLookup[i].longIndex = -1;
         indexLookup[i].doubleIndex = doubleIndicesIndex;
@@ -477,18 +470,6 @@ public class VectorHashKeyWrapperBatch {
       }
     }
     compiledKeyWrapperBatch.indexLookup = indexLookup;
-    compiledKeyWrapperBatch.longKeyValueOutput = new LongWritable[longIndicesIndex];
-    for (int i=0; i < longIndicesIndex; ++i) {
-      compiledKeyWrapperBatch.longKeyValueOutput[i] = new LongWritable();
-    }
-    compiledKeyWrapperBatch.doubleKeyValueOutput = new DoubleWritable[doubleIndicesIndex];
-    for (int i=0; i < doubleIndicesIndex; ++i) {
-      compiledKeyWrapperBatch.doubleKeyValueOutput[i] = new DoubleWritable();
-    }
-    compiledKeyWrapperBatch.stringKeyValueOutput = new BytesWritable[stringIndicesIndex];
-    for (int i = 0; i < stringIndicesIndex; ++i) {
-      compiledKeyWrapperBatch.stringKeyValueOutput[i] = new BytesWritable();
-    }
     compiledKeyWrapperBatch.longIndices = Arrays.copyOf(longIndices, longIndicesIndex);
     compiledKeyWrapperBatch.doubleIndices = Arrays.copyOf(doubleIndices, doubleIndicesIndex);
     compiledKeyWrapperBatch.stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
@@ -503,23 +484,22 @@ public class VectorHashKeyWrapperBatch {
 
   /**
    * Get the row-mode writable object value of a key from a key wrapper
+   * @param keyOutputWriter 
    */
-  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i)
+  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i, 
+      VectorExpressionWriter keyOutputWriter)
     throws HiveException {
     if (kw.getIsNull(i)) {
       return null;
     }
     KeyLookupHelper klh = indexLookup[i];
     if (klh.longIndex >= 0) {
-      longKeyValueOutput[klh.longIndex].set(kw.getLongValue(i));
-      return longKeyValueOutput[klh.longIndex];
+      return keyOutputWriter.writeValue(kw.getLongValue(i));
     } else if (klh.doubleIndex >= 0) {
-      doubleKeyValueOutput[klh.doubleIndex].set(kw.getDoubleValue(i));
-      return doubleKeyValueOutput[klh.doubleIndex];
+      return keyOutputWriter.writeValue(kw.getDoubleValue(i));
     } else if (klh.stringIndex >= 0) {
-      stringKeyValueOutput[klh.stringIndex].set(
+      return keyOutputWriter.writeValue(
           kw.getBytes(i), kw.getByteStart(i), kw.getByteLength(i));
-      return stringKeyValueOutput[klh.stringIndex];
     } else {
       throw new HiveException(String.format(
           "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",

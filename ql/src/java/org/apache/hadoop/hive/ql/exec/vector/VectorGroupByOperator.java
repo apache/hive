@@ -33,9 +33,12 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -65,6 +68,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
    * Key vector expressions.
    */
   private transient VectorExpression[] keyExpressions;
+  
+  private VectorExpressionWriter[] keyOutputWriters;
   
   /**
    * The aggregation buffers to use for the current batch.
@@ -98,13 +103,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
     try {
       vContext.setOperatorType(OperatorType.GROUPBY);
 
-      ArrayList<AggregationDesc> aggrDesc = conf.getAggregators();
-      keyExpressions = vContext.getVectorExpressions(conf.getKeys());
+      List<ExprNodeDesc> keysDesc = conf.getKeys();
+      keyExpressions = vContext.getVectorExpressions(keysDesc);
+      
+      keyOutputWriters = new VectorExpressionWriter[keyExpressions.length];
       
       for(int i = 0; i < keyExpressions.length; ++i) {
-        objectInspectors.add(vContext.createObjectInspector(keyExpressions[i]));
+        keyOutputWriters[i] = VectorExpressionWriterFactory.
+            genVectorExpressionWritable(keysDesc.get(i));
+        objectInspectors.add(keyOutputWriters[i].getObjectInspector());
       }
-
+      
+      ArrayList<AggregationDesc> aggrDesc = conf.getAggregators();
       aggregators = new VectorAggregateExpression[aggrDesc.size()];
       for (int i = 0; i < aggrDesc.size(); ++i) {
         AggregationDesc desc = aggrDesc.get(i);
@@ -233,7 +243,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
           int fi = 0;
           for (int i = 0; i < keyExpressions.length; ++i) {
             VectorHashKeyWrapper kw = (VectorHashKeyWrapper)pair.getKey();
-            forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (kw, i);
+            forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
+                kw, i, keyOutputWriters[i]);
           }
           for (int i = 0; i < aggregators.length; ++i) {
             forwardCache[fi++] = aggregators[i].evaluateOutput(pair.getValue()

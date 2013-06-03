@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -57,11 +59,24 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * the reducer side. Key columns are passed to the reducer in the "key".
    */
   protected transient VectorExpression[] keyEval;
+  
+  /**
+   * The key value writers. These know how to write the necessary writable type
+   * based on key column metadata, from the primitive vector type.
+   */
+  protected transient VectorExpressionWriter[] keyWriters;
+  
   /**
    * The evaluators for the value columns. Value columns are passed to reducer
    * in the "value".
    */
   protected transient VectorExpression[] valueEval;
+  
+  /**
+   * The output value writers. These know how to write the necessary writable type
+   * based on value column metadata, from the primitive vector type.
+   */
+  protected transient VectorExpressionWriter[] valueWriters;
 
   /**
    * The evaluators for the partition columns (CLUSTER BY or DISTRIBUTE BY in
@@ -69,6 +84,12 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * goes to. Partition columns are not passed to reducer.
    */
   protected transient VectorExpression[] partitionEval;
+  
+  /**
+   * The partition value writers. These know how to write the necessary writable type
+   * based on partition column metadata, from the primitive vector type.
+   */  
+  protected transient VectorExpressionWriter[] partitionWriters;
 
   private int numDistributionKeys;
 
@@ -112,15 +133,22 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           .newInstance();
       keySerializer.initialize(null, keyTableDesc.getProperties());
       keyIsText = keySerializer.getSerializedClass().equals(Text.class);
-
-      keyObjectInspector = vContext.createObjectInspector(keyEval,
-          conf.getOutputKeyColumnNames());
-
-      partitionObjectInspectors = new ObjectInspector[partitionEval.length];
-      for (int i = 0; i < partitionEval.length; i++) {
-        partitionObjectInspectors[i] = vContext.createObjectInspector(partitionEval[i]);
-      }
-
+      
+      /*
+       * Compute and assign the key writers and the key object inspector 
+       */
+      VectorExpressionWriterFactory.processVectorExpressions(
+          conf.getKeyCols(), 
+          conf.getOutputKeyColumnNames(),
+          new VectorExpressionWriterFactory.Closure() {
+            @Override
+            public void assign(VectorExpressionWriter[] writers,
+              ObjectInspector objectInspector) {
+              keyWriters = writers;
+              keyObjectInspector = objectInspector;
+            }
+          });
+      
       String colNames = "";
       for(String colName : conf.getOutputKeyColumnNames()) {
         colNames = String.format("%s %s", colNames, colName);
@@ -131,18 +159,27 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           keyObjectInspector,
           colNames));
 
-      conf.getOutputKeyColumnNames();
-      conf.getOutputValueColumnNames();
-
-      //keyObjectInspector = ObjectInspectorFactory.
-
+      partitionWriters = VectorExpressionWriterFactory.getExpressionWriters(conf.getPartitionCols());
+      
       TableDesc valueTableDesc = conf.getValueSerializeInfo();
       valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
           .newInstance();
       valueSerializer.initialize(null, valueTableDesc.getProperties());
-
-      valueObjectInspector = vContext.createObjectInspector (valueEval,
-          conf.getOutputValueColumnNames());
+      
+      /*
+       * Compute and assign the value writers and the value object inspector
+       */
+      VectorExpressionWriterFactory.processVectorExpressions(
+          conf.getValueCols(),
+          conf.getOutputValueColumnNames(),
+          new VectorExpressionWriterFactory.Closure() {
+            @Override
+            public void assign(VectorExpressionWriter[] writers,
+                ObjectInspector objectInspector) {
+                valueWriters = writers;
+                valueObjectInspector = objectInspector;
+              }
+          });
 
       colNames = "";
       for(String colName : conf.getOutputValueColumnNames()) {
@@ -202,7 +239,7 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         for (int i = 0; i < valueEval.length; i++) {
           int batchColumn = valueEval[i].getOutputColumn();
           ColumnVector vectorColumn = vrg.cols[batchColumn];
-          cachedValues[i] = vectorColumn.getWritableObject(rowIndex);
+          cachedValues[i] = valueWriters[i].writeValue(vectorColumn, rowIndex);
         }
         // Serialize the value
         value = valueSerializer.serialize(cachedValues, valueObjectInspector);
@@ -210,7 +247,7 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         for (int i = 0; i < keyEval.length; i++) {
           int batchColumn = keyEval[i].getOutputColumn();
           ColumnVector vectorColumn = vrg.cols[batchColumn];
-          distributionKeys[i] = vectorColumn.getWritableObject(rowIndex);
+          distributionKeys[i] = keyWriters[i].writeValue(vectorColumn, rowIndex);
         }
         // no distinct key
         System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
@@ -255,11 +292,13 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             keyHashCode = random.nextInt();
           } else {
             for (int p = 0; p < partitionEval.length; p++) {
+              ColumnVector columnVector = vrg.cols[partitionEval[p].getOutputColumn()];
+              Object partitionValue = partitionWriters[p].writeValue(columnVector, rowIndex);
               keyHashCode = keyHashCode
                   * 31
                   + ObjectInspectorUtils.hashCode(
-                      vrg.cols[partitionEval[p].getOutputColumn()].getWritableObject(rowIndex),
-                      partitionObjectInspectors[i]);
+                      partitionValue,
+                      partitionWriters[p].getObjectInspector());
             }
           }
           keyWritable.setHashCode(keyHashCode);
