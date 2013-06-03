@@ -45,6 +45,7 @@ public class DoubleColGreaterDoubleScalar extends VectorExpression {
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
+    boolean[] outNulls = outputColVector.isNull;
     int n = batch.size;
     double[] vector = inputColVector.vector;
     long[] outputVector = outputColVector.vector;
@@ -54,6 +55,8 @@ public class DoubleColGreaterDoubleScalar extends VectorExpression {
       return;
     }
 
+    outputColVector.isRepeating = false;
+    outputColVector.noNulls = inputColVector.noNulls;
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
         //All must be selected otherwise size would be zero
@@ -76,8 +79,9 @@ public class DoubleColGreaterDoubleScalar extends VectorExpression {
         //Repeating property will not change.
         if (!nullPos[0]) {
           outputVector[0] = vector[0] > value ? 1 : 0;
+          outNulls[0] = false;
         } else {
-          outputVector[0] = 0;
+          outNulls[0] = true;
         }
         outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
@@ -85,18 +89,18 @@ public class DoubleColGreaterDoubleScalar extends VectorExpression {
           int i = sel[j];
           if (!nullPos[i]) {
             outputVector[i] = vector[i] > value ? 1 : 0;
+            outNulls[i] = false;
           } else {
-            //compare with null is false
-            outputVector[i] = 0;
+            //comparison with null is null
+            outNulls[i] = true;
           }
         }
       } else {
+        System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
             outputVector[i] = vector[i] > value ? 1 : 0;
-          } else {
-            outputVector[i] = 0;
-          }
+          } 
         }
       }
     }
