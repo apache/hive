@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 public class DoubleColSubtractLongScalar extends VectorExpression {
   private int colNum;
@@ -47,6 +48,7 @@ public class DoubleColSubtractLongScalar extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
+    outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
     double[] vector = inputColVector.vector;
     double[] outputVector = outputColVector.vector;
@@ -57,15 +59,13 @@ public class DoubleColSubtractLongScalar extends VectorExpression {
     }
 
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
       outputVector[0] = vector[0] - value;
+      
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0]; 
-      outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = vector[i] - value;
         }
@@ -74,10 +74,9 @@ public class DoubleColSubtractLongScalar extends VectorExpression {
           outputVector[i] = vector[i] - value;
         }
       }
-      outputColVector.isRepeating = false;
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = vector[i] - value;
           outputIsNull[i] = inputIsNull[i];
@@ -88,8 +87,9 @@ public class DoubleColSubtractLongScalar extends VectorExpression {
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
+    
+    NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
@@ -47,7 +48,6 @@ public class LongColSubtractLongColumn extends VectorExpression {
     int n = batch.size;
     long[] vector1 = inputColVector1.vector;
     long[] vector2 = inputColVector2.vector;
-
     long[] outputVector = outputColVector.vector;
     
     // return immediately if batch is empty
@@ -55,81 +55,19 @@ public class LongColSubtractLongColumn extends VectorExpression {
       return;
     }
     
-    /* Set repeating property to false (the default).
-     * It will be set to true later if needed later.
-     */
-    outputColVector.isRepeating = false;
-
-    //Handle nulls first
-    if (inputColVector1.noNulls && !inputColVector2.noNulls) {
-      outputColVector.noNulls = false;
-      if (inputColVector2.isRepeating) {
-        //Output will also be repeating and null
-        outputColVector.isNull[0] = true;
-        outputColVector.isRepeating = true;
-        //return as no further processing is needed
-        return;
-      } else {
-        if (batch.selectedInUse) {
-          for(int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputColVector.isNull[i] = inputColVector2.isNull[i];
-          }
-        } else {
-          for(int i = 0; i != n; i++) {
-            outputColVector.isNull[i] = inputColVector2.isNull[i];
-          }
-        }
-      }
-    } else if (!inputColVector1.noNulls && inputColVector2.noNulls) {
-      outputColVector.noNulls = false;
-      if (inputColVector1.isRepeating) {
-        //Output will also be repeating and null
-        outputColVector.isRepeating = true;
-        outputColVector.isNull[0] = true;
-        //return as no further processing is needed
-        return;
-      } else {
-        if (batch.selectedInUse) {
-          for(int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputColVector.isNull[i] = inputColVector1.isNull[i];
-          }
-        } else {
-          for(int i = 0; i != n; i++) {
-            outputColVector.isNull[i] = inputColVector1.isNull[i];
-          }
-        }
-      }
-    } else if (!inputColVector1.noNulls && !inputColVector2.noNulls) {
-      outputColVector.noNulls = false;
-      if (inputColVector1.isRepeating || inputColVector2.isRepeating) {
-        //Output will also be repeating and null
-        outputColVector.isRepeating = true;
-        outputColVector.isNull[0] = true;
-        //return as no further processing is needed
-        return;
-      } else {
-        if (batch.selectedInUse) {
-          for(int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputColVector.isNull[i] = inputColVector1.isNull[i] || inputColVector2.isNull[i];
-          }
-        } else {
-          for(int i = 0; i != n; i++) {
-            outputColVector.isNull[i] = inputColVector1.isNull[i] || inputColVector2.isNull[i];
-          }
-        }
-      }
-    }
-
-
-    //Disregard nulls for processing
+    outputColVector.isRepeating = inputColVector1.isRepeating && inputColVector2.isRepeating;
+    
+    // Handle nulls first  
+    NullUtil.propagateNullsColCol(
+      inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
+          
+    /* Disregard nulls for processing. In other words,
+     * the arithmetic operation is performed even if one or 
+     * more inputs are null. This is to improve speed by avoiding
+     * conditional checks in the inner loop.
+     */ 
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) { 
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
       outputVector[0] = vector1[0] - vector2[0];
-      outputColVector.isRepeating = true;
     } else if (inputColVector1.isRepeating) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
@@ -154,7 +92,7 @@ public class LongColSubtractLongColumn extends VectorExpression {
       }
     } else {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = vector1[i] - vector2[i];
         }
@@ -164,6 +102,14 @@ public class LongColSubtractLongColumn extends VectorExpression {
         }
       }
     }
+    
+    /* For the case when the output can have null values, follow 
+     * the convention that the data values must be 1 for long and 
+     * NaN for double. This is to prevent possible later zero-divide errors
+     * in complex arithmetic expressions like col2 / (col1 - 1)
+     * in the case when some col1 entries are null.
+     */
+    NullUtil.setNullDataEntriesLong(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override

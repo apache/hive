@@ -35,6 +35,7 @@ import org.apache.hadoop.io.Writable;
 public class LongColumnVector extends ColumnVector {
   public long[] vector;
   private final LongWritable writableObj = new LongWritable();
+  public static final long NULL_VALUE = 1;
 
   /**
    * Use this constructor by default. All column vectors
