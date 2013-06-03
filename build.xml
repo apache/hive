@@ -59,6 +59,14 @@
   <property name="rat.build.dir" location="${build.dir.hive}/rat"/>
   <property name="md5sum.format" value="{0}  {1}"/>
 
+  <!-- Check minimum ant version required -->
+  <fail message="Please use ant version 1.8.0 or greater for building hive.">
+    <condition>
+      <not>
+        <antversion atleast="1.8.0"/>
+      </not>
+    </condition>
+  </fail>
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>

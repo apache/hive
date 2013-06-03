@@ -146,7 +146,7 @@ public class HiveConnection implements java.sql.Connection {
         }
       } catch (SaslException e) {
         throw new SQLException("Could not establish secure connection to "
-                  + uri + ": " + e.getMessage(), " 08S01");
+                  + uri + ": " + e.getMessage(), " 08S01", e);
       }
     }
 
@@ -155,9 +155,8 @@ public class HiveConnection implements java.sql.Connection {
     try {
       transport.open();
     } catch (TTransportException e) {
-      e.printStackTrace();
       throw new SQLException("Could not establish connection to "
-          + uri + ": " + e.getMessage(), " 08S01");
+          + uri + ": " + e.getMessage(), " 08S01", e);
     }
   }
 
@@ -178,7 +177,7 @@ public class HiveConnection implements java.sql.Connection {
         sessHandle = openResp.getSessionHandle();
       } catch (TException e) {
         throw new SQLException("Could not establish connection to "
-            + uri + ": " + e.getMessage(), " 08S01");
+            + uri + ": " + e.getMessage(), " 08S01", e);
       }
       isClosed = false;
     }

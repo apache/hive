@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.common.util.HiveVersionInfo;
+
 
 /**
  * TestJdbcDriver2
@@ -1261,6 +1263,16 @@ public class TestJdbcDriver2 extends TestCase {
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 14);
     assertFalse(res.next());
+  }
+
+  /**
+   * If the Driver implementation understands the URL, it will return a Connection object;
+   * otherwise it returns null
+   */
+  public void testInvalidURL() throws Exception {
+    HiveDriver driver = new HiveDriver();
+    Connection conn = driver.connect("jdbc:derby://localhost:10000/default", new Properties());
+    assertNull(conn);
   }
 
 }
