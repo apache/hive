@@ -196,6 +196,10 @@ public class Table implements Serializable {
     List<String> colNames = new ArrayList<String>();
     while (iterCols.hasNext()) {
       String colName = iterCols.next().getName();
+      if (!MetaStoreUtils.validateName(colName)) {
+        throw new HiveException("Invalid column name '" + colName
+            + "' in the table definition");
+      }
       Iterator<String> iter = colNames.iterator();
       while (iter.hasNext()) {
         String oldColName = iter.next();
