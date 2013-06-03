@@ -161,8 +161,7 @@ public class VectorizedColumnarSerDe extends ColumnarSerDe implements Vectorized
                 LongColumnVector tcv = (LongColumnVector) batch.cols[k];
                 long timeInNanoSec = tcv.vector[rowIndex];
                 Timestamp t = new Timestamp(0);
-                t.setTime((timeInNanoSec)/1000000);
-                t.setNanos((int)((t.getNanos()) + (timeInNanoSec % 1000000)));
+                TimestampUtils.assignTimeInNanoSec(timeInNanoSec, t);
                 TimestampWritable tw = new TimestampWritable();
                 tw.set(t);
                 LazyTimestamp.writeUTF8(serializeVectorStream, tw);

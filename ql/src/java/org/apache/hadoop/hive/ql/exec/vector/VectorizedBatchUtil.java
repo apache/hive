@@ -173,7 +173,7 @@ public class VectorizedBatchUtil {
         LongColumnVector lcv = (LongColumnVector) batch.cols[i];
         if (writableCol != null) {
           Timestamp t = ((TimestampWritable) writableCol).getTimestamp();
-          lcv.vector[rowIndex] = (t.getTime() * 1000000) + (t.getNanos() % 1000000);
+          lcv.vector[rowIndex] = TimestampUtils.getTimeNanoSec(t);
           lcv.isNull[rowIndex] = false;
         } else {
           lcv.vector[rowIndex] = 1;

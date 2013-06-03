@@ -1049,11 +1049,6 @@ public class VectorizationContext {
     return ret;
   }
 
-  Object[][] mapObjectInspectors = {
-      {"double", PrimitiveObjectInspectorFactory.writableDoubleObjectInspector},
-      {"long", PrimitiveObjectInspectorFactory.writableLongObjectInspector},
-  };
-
   public Map<Integer, String> getOutputColumnTypeMap() {
     Map<Integer, String> map = new HashMap<Integer, String>();
     for (int i = 0; i < ocm.outputColCount; i++) {
@@ -1073,34 +1068,6 @@ public class VectorizationContext {
     }
   }
 
-  public ObjectInspector createObjectInspector(VectorExpression vectorExpression)
-      throws HiveException {
-    String columnType = vectorExpression.getOutputType();
-    if (columnType.equalsIgnoreCase("long") ||
-        columnType.equalsIgnoreCase("bigint") ||
-        columnType.equalsIgnoreCase("int") || 
-        columnType.equalsIgnoreCase("smallint")) {
-      return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
-    } else if (columnType.equalsIgnoreCase("double")) {
-      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    } else if (columnType.equalsIgnoreCase("string")) {
-      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
-    } else {
-      throw new HiveException(String.format("Must implement type %s", columnType));
-    }
-  }
-
-  public ObjectInspector createObjectInspector(
-      VectorExpression[] vectorExpressions, List<String> columnNames)
-      throws HiveException {
-    List<ObjectInspector> oids = new ArrayList<ObjectInspector>();
-    for (VectorExpression vexpr : vectorExpressions) {
-      ObjectInspector oi = createObjectInspector(vexpr);
-      oids.add(oi);
-    }
-    return ObjectInspectorFactory.getStandardStructObjectInspector(columnNames,
-        oids);
-  }
 
   public void addToColumnMap(String columnName, int outputColumn) {
     if (columnMap != null) {
