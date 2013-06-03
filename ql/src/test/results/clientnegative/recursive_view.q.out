@@ -68,11 +68,11 @@ POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@r0
 POSTHOOK: Output: default@r0
 PREHOOK: query: alter view r3 rename to r0
-PREHOOK: type: null
+PREHOOK: type: ALTERVIEW_RENAME
 PREHOOK: Input: default@r3
 PREHOOK: Output: default@r3
 POSTHOOK: query: alter view r3 rename to r0
-POSTHOOK: type: null
+POSTHOOK: type: ALTERVIEW_RENAME
 POSTHOOK: Input: default@r3
 POSTHOOK: Output: default@r0
 POSTHOOK: Output: default@r3
