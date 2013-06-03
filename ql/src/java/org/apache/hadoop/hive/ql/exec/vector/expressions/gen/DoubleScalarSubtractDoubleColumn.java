@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 /**
  * Implements a vectorized arithmetic operator with a scalar on the left and a
@@ -62,6 +63,7 @@ public class DoubleScalarSubtractDoubleColumn extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
+    outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
     double[] vector = inputColVector.vector;
     double[] outputVector = outputColVector.vector;
@@ -72,16 +74,10 @@ public class DoubleScalarSubtractDoubleColumn extends VectorExpression {
     }
 
     if (inputColVector.isRepeating) {
-    
-      /*
-       * All must be selected otherwise size would be zero
-       * Repeating property will not change.
-       */
       outputVector[0] = value - vector[0];
       
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0]; 
-      outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
@@ -93,7 +89,6 @@ public class DoubleScalarSubtractDoubleColumn extends VectorExpression {
           outputVector[i] = value - vector[i];
         }
       }
-      outputColVector.isRepeating = false;
     } else {                         /* there are nulls */ 
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
@@ -107,8 +102,9 @@ public class DoubleScalarSubtractDoubleColumn extends VectorExpression {
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
+    
+    NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override

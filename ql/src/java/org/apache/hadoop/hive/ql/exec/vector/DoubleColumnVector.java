@@ -35,6 +35,7 @@ import org.apache.hadoop.io.Writable;
 public class DoubleColumnVector extends ColumnVector {
   public double[] vector;
   private final DoubleWritable writableObj = new DoubleWritable();
+  public static final double NULL_VALUE = Double.NaN;
 
   /**
    * Use this constructor by default. All column vectors

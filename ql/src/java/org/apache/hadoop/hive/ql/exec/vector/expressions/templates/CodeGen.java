@@ -530,6 +530,7 @@ public class CodeGen {
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
     writeFile(outputFile, templateString);
 
     if(returnType==null){
@@ -669,7 +670,10 @@ public class CodeGen {
     return b.toString();
   }
 
-   static String getCamelCaseType(String type) {
+  static String getCamelCaseType(String type) {
+    if (type == null) {
+      return null;
+    }
     if (type.equals("long")) {
       return "Long";
     } else if (type.equals("double")) {

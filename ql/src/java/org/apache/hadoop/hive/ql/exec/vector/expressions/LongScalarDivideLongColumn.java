@@ -15,34 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 /**
- * Implements a vectorized arithmetic operator with a scalar on the left and a
- * column vector on the right. The result is output to an output column vector.
+ * This operation is handled as a special case because Hive
+ * long/long division returns double. This file is thus not generated
+ * from a template like the other arithmetic operations are.
  */
 public class LongScalarDivideLongColumn extends VectorExpression {
-  private final int colNum;
+  private int colNum;
   private final double value;
-  private final int outputColumn;
+  private int outputColumn;
 
   public LongScalarDivideLongColumn(long value, int colNum, int outputColumn) {
     this.colNum = colNum;
-    this.value = value;
+    this.value = (double) value;
     this.outputColumn = outputColumn;
   }
 
   @Override
-  /**
-   * Method to evaluate scalar-column operation in vectorized fashion.
-   *
-   * @batch a package of rows with each column stored in a vector
-   */
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -55,26 +53,21 @@ public class LongScalarDivideLongColumn extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
+    outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
     long[] vector = inputColVector.vector;
     double[] outputVector = outputColVector.vector;
-
+    
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
     if (inputColVector.isRepeating) {
-
-      /*
-       * All must be selected otherwise size would be zero
-       * Repeating property will not change.
-       */
       outputVector[0] = value / vector[0];
-
+      
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
-      outputColVector.isRepeating = true;
+      outputIsNull[0] = inputIsNull[0]; 
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
@@ -86,8 +79,7 @@ public class LongScalarDivideLongColumn extends VectorExpression {
           outputVector[i] = value / vector[i];
         }
       }
-      outputColVector.isRepeating = false;
-    } else {                         /* there are nulls */
+    } else /* there are nulls */ {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
@@ -100,15 +92,20 @@ public class LongScalarDivideLongColumn extends VectorExpression {
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
+    
+    /* Set double data vector array entries for NULL elements to the correct value.
+     * Unlike other col-scalar operations, this one doesn't benefit from carrying 
+     * over NaN values from the input array.
+     */
+    NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override
   public int getOutputColumn() {
     return outputColumn;
   }
-
+  
   @Override
   public String getOutputType() {
     return "double";

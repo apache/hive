@@ -15,17 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
+/**
+ * This operation is handled as a special case because Hive
+ * long/long division returns double. This file is thus not generated
+ * from a template like the other arithmetic operations are.
+ */
 public class LongColDivideLongScalar extends VectorExpression {
-  private final int colNum;
-  private final double value;
-  private final int outputColumn;
+  private int colNum;
+  private long value;
+  private int outputColumn;
 
   public LongColDivideLongScalar(int colNum, long value, int outputColumn) {
     this.colNum = colNum;
@@ -46,56 +53,59 @@ public class LongColDivideLongScalar extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
+    outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
     long[] vector = inputColVector.vector;
     double[] outputVector = outputColVector.vector;
-
+    
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      outputVector[0] = vector[0] / value;
+      outputVector[0] = vector[0] / (double) value;
+      
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
-      outputColVector.isRepeating = true;
+      outputIsNull[0] = inputIsNull[0]; 
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector[i] / value;
+          outputVector[i] = vector[i] / (double) value;
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector[i] / value;
+          outputVector[i] = vector[i] / (double) value;
         }
       }
-      outputColVector.isRepeating = false;
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector[i] / value;
+          outputVector[i] = vector[i] / (double) value;
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector[i] / value;
+          outputVector[i] = vector[i] / (double) value;
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
+    
+    /* Set double data vector array entries for NULL elements to the correct value.
+     * Unlike other col-scalar operations, this one doesn't benefit from carrying 
+     * over NaN values from the input array.
+     */
+    NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override
   public int getOutputColumn() {
     return outputColumn;
   }
-
+  
   @Override
   public String getOutputType() {
     return "double";
