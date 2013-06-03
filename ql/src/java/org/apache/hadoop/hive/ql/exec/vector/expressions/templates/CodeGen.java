@@ -194,9 +194,8 @@ public class CodeGen {
         {"VectorUDAFMinMax", "VectorUDAFMaxLong", "long", ">", "max", "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: long)"},
         {"VectorUDAFMinMax", "VectorUDAFMaxDouble", "double", ">", "max", "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: double)"},
 
-        //template, <ClassName>, <ValueType>
-        {"VectorUDAFCount", "VectorUDAFCountLong", "long"},
-        {"VectorUDAFCount", "VectorUDAFCountDouble", "double"},
+        {"VectorUDAFMinMaxString", "VectorUDAFMinString", "<", "min", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
+        {"VectorUDAFMinMaxString", "VectorUDAFMaxString", ">", "max", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
 
         //template, <ClassName>, <ValueType>
         {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
@@ -280,6 +279,8 @@ public class CodeGen {
         generateVectorUDAFCount(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMax")) {
         generateVectorUDAFMinMax(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFMinMaxString")) {
+        generateVectorUDAFMinMaxString(tdesc);
       } else if (tdesc[0].equals("VectorUDAFSum")) {
         generateVectorUDAFSum(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvg")) {
@@ -322,6 +323,25 @@ public class CodeGen {
     writeFile(outputFile, templateString);
 
   }
+
+  private void generateVectorUDAFMinMaxString(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String operatorSymbol = tdesc[2];
+    String descName = tdesc[3];
+    String descValue = tdesc[4];
+
+    String outputFile = joinPath(this.outputDirectory, className + ".java");
+    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    templateString = templateString.replaceAll("<DescriptionName>", descName);
+    templateString = templateString.replaceAll("<DescriptionValue>", descValue);
+    writeFile(outputFile, templateString);
+
+  }
+
 
   private void generateVectorUDAFCount(String[] tdesc) throws IOException {
     String className = tdesc[1];

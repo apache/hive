@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 /**
 * <ClassName>. Vectorized implementation for COUNT aggregates. 
 */
-@Description(name = "count", value = "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: <ValueType>)")
+@Description(name = "count", value = "_FUNC_(expr) - Returns the maximum value of expr (vectorized)")
 public class <ClassName> extends VectorAggregateExpression {
     
     /** 
@@ -94,7 +94,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
       
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
+      VectorColumn inputVector = (VectorColumn)batch.
         cols[this.inputExpression.getOutputColumn()];
 
       if (inputVector.noNulls) {
@@ -172,7 +172,7 @@ public class <ClassName> extends VectorAggregateExpression {
       
       inputExpression.evaluate(batch);
       
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
+      VectorColumn inputVector = (VectorColumn)batch.
         cols[this.inputExpression.getOutputColumn()];
       
       int batchSize = batch.size;
