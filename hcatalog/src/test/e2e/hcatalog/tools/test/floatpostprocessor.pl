@@ -42,7 +42,7 @@ sub postprocess($)
 	for (my $i = 0; $i < @fields; $i++) {
 		if ($i != 0) { print($delim); }
 		if ($floats[$i]) {
-			printf("%.3f", $fields[$i]);
+			printf("%.2f", $fields[$i]);
 		} else {
 			print($fields[$i]);
 		}
