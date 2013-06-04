@@ -151,6 +151,8 @@ public class TestVectorGroupByOperator {
     ArrayList<ExprNodeDesc> keys = new ArrayList<ExprNodeDesc>();
     keys.add(keyExp);
     desc.setKeys(keys);
+    
+    desc.getOutputColumnNames().add("_col1");
 
     return desc;
   }
@@ -1279,6 +1281,7 @@ public class TestVectorGroupByOperator {
 
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");
+    outputColumnNames.add("_col1");
 
     GroupByDesc desc = new GroupByDesc();
     desc.setOutputColumnNames(outputColumnNames);
