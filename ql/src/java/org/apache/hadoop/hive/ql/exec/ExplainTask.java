@@ -717,13 +717,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // explain task has nothing to localize
-    // we don't expect to enter this code path at all
-    throw new RuntimeException("Unexpected call");
-  }
-
-  @Override
   public List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();

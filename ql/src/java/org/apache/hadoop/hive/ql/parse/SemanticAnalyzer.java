@@ -9637,15 +9637,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setOriginalTracker(ShimLoader.getHadoopShims().getJobLauncherRpcAddress(conf));
       ShimLoader.getHadoopShims().setJobLauncherRpcAddress(conf, "local");
       console.printInfo("Automatically selecting local only mode for query");
-
-      // If all the tasks can be run locally, we can use local disk for
-      // storing intermediate data.
-
-      /**
-       * This code is commented out pending further testing/development
-       * for (Task<? extends OperatorDesc> t: rootTasks)
-       * t.localizeMRTmpFiles(ctx);
-       */
     }
   }
 

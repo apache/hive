@@ -915,57 +915,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   }
 
   @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-
-    // localize any map-reduce input paths
-    ctx.localizeKeys((Map<String, Object>) ((Object) work.getPathToAliases()));
-    ctx.localizeKeys((Map<String, Object>) ((Object) work.getPathToPartitionInfo()));
-
-    // localize any input paths for maplocal work
-    MapredLocalWork l = work.getMapLocalWork();
-    if (l != null) {
-      Map<String, FetchWork> m = l.getAliasToFetchWork();
-      if (m != null) {
-        for (FetchWork fw : m.values()) {
-          String s = fw.getTblDir();
-          if ((s != null) && ctx.isMRTmpFileURI(s)) {
-            fw.setTblDir(ctx.localizeMRTmpFileURI(s));
-          }
-        }
-      }
-    }
-
-    // fix up outputs
-    Map<String, ArrayList<String>> pa = work.getPathToAliases();
-    if (pa != null) {
-      for (List<String> ls : pa.values()) {
-        for (String a : ls) {
-          ArrayList<Operator<? extends OperatorDesc>> opList =
-            new ArrayList<Operator<? extends OperatorDesc>>();
-          opList.add(work.getAliasToWork().get(a));
-
-          while (!opList.isEmpty()) {
-            Operator<? extends OperatorDesc> op = opList.remove(0);
-
-            if (op instanceof FileSinkOperator) {
-              FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
-              String s = fdesc.getDirName();
-              if ((s != null) && ctx.isMRTmpFileURI(s)) {
-                fdesc.setDirName(ctx.localizeMRTmpFileURI(s));
-              }
-              ((FileSinkOperator) op).setConf(fdesc);
-            }
-
-            if (op.getChildOperators() != null) {
-              opList.addAll(op.getChildOperators());
-            }
-          }
-        }
-      }
-    }
-  }
-
-  @Override
   public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     for (Operator<? extends OperatorDesc> op : work.getAliasToWork().values()) {
       op.updateCounters(ctrs);

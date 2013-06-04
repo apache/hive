@@ -448,11 +448,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public void localizeMRTmpFilesImpl(Context ctx) {
-
-  }
-
-  @Override
   public boolean isMapRedLocalTask() {
     return true;
   }
