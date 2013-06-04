@@ -114,9 +114,4 @@ public class FunctionTask extends Task<FunctionWork> {
   public String getName() {
     return "FUNCTION";
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    throw new RuntimeException ("Unexpected call");
-  }
 }

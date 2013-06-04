@@ -205,15 +205,6 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    if (getListTasks() != null) {
-      for (Task<? extends Serializable> t : getListTasks()) {
-        t.localizeMRTmpFiles(ctx);
-      }
-    }
-  }
-
-  @Override
   public List<Task<? extends Serializable>> getDependentTasks() {
     return listTasks;
   }

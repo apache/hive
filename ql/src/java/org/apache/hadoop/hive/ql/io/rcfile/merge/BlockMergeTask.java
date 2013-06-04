@@ -378,10 +378,4 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
   public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     // no op
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // no op
-  }
-
 }
