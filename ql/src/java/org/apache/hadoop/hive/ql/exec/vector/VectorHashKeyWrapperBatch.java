@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
@@ -65,7 +65,7 @@ public class VectorHashKeyWrapperBatch {
   private int[] doubleIndices;
 
   /*
-   * indices of stirng (byte[]) primitive keys
+   * indices of string (byte[]) primitive keys
    */
   private int[] stringIndices;
 
