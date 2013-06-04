@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -56,12 +57,12 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   @Override
-  void getNewKey(Object row, ObjectInspector rowInspector) throws HiveException {
+  public void getNewKey(Object row, ObjectInspector rowInspector) throws HiveException {
     throw new HiveException("Should not be called");
   }
 
   @Override
-  void setHashKey() {
+  public void setHashKey() {
     hashcode = Arrays.hashCode(longValues) ^
         Arrays.hashCode(doubleValues) ^
         Arrays.hashCode(isNull);
@@ -158,15 +159,13 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   @Override
-  void copyKey(KeyWrapper oldWrapper) {
-    // TODO Auto-generated method stub
-
+  public void copyKey(KeyWrapper oldWrapper) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  Object[] getKeyArray() {
-    // TODO Auto-generated method stub
-    return null;
+  public Object[] getKeyArray() {
+    throw new UnsupportedOperationException();
   }
 
   public void assignDouble(int index, double d) {
