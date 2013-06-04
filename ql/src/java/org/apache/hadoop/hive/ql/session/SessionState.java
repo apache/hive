@@ -22,16 +22,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -303,9 +302,7 @@ public class SessionState {
    * @return the unique string
    */
   private static String makeSessionId() {
-    String userid = System.getProperty("user.name");
-    return userid + "_" + ManagementFactory.getRuntimeMXBean().getName() + "_"
-        + DATE_FORMAT.format(new Date());
+    return UUID.randomUUID().toString();
   }
 
   /**
