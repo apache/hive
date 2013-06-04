@@ -117,9 +117,9 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
       
       inputExpression.evaluate(batch);
       
-      LongColumnVector inputVector = (LongColumnVector)batch.
+       DoubleColumnVector inputVector = ( DoubleColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
-      long[] vector = inputVector.vector;
+      double[] vector = inputVector.vector;
 
       if (inputVector.noNulls) {
         if (inputVector.isRepeating) {
@@ -165,7 +165,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateNoNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long value,
+      double value,
       int batchSize) {
 
       for (int i=0; i < batchSize; ++i) {
@@ -180,7 +180,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long[] values,
+      double[] values,
       int[] selection,
       int batchSize) {
       
@@ -196,7 +196,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long[] values,
+      double[] values,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
@@ -210,7 +210,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long value,
+      double value,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
@@ -230,7 +230,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateHasNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long value,
+      double value,
       int batchSize,
       boolean[] isNull) {
 
@@ -248,7 +248,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long[] values,
+      double[] values,
       int batchSize,
       int[] selection,
       boolean[] isNull) {
@@ -268,7 +268,7 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int bufferIndex,
-      long[] values,
+      double[] values,
       int batchSize,
       boolean[] isNull) {
 

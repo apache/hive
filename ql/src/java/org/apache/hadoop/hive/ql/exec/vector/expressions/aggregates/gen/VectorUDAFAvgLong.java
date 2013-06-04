@@ -117,7 +117,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       
       inputExpression.evaluate(batch);
       
-      LongColumnVector inputVector = (LongColumnVector)batch.
+       LongColumnVector inputVector = ( LongColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
       long[] vector = inputVector.vector;
 

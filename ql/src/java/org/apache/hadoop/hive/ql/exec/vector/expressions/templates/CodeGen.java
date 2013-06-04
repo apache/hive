@@ -275,8 +275,6 @@ public class CodeGen {
         generateColumnArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
-      } else if (tdesc[0].equals("VectorUDAFCount")) {
-        generateVectorUDAFCount(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMax")) {
         generateVectorUDAFMinMax(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxString")) {
@@ -340,22 +338,6 @@ public class CodeGen {
     templateString = templateString.replaceAll("<DescriptionValue>", descValue);
     writeFile(outputFile, templateString);
 
-  }
-
-
-  private void generateVectorUDAFCount(String[] tdesc) throws IOException {
-    String className = tdesc[1];
-    String valueType = tdesc[2];
-    String columnType = getColumnVectorType(valueType);
-
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
-
-    String templateString = readFile(templateFile);
-    templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<ValueType>", valueType);
-    templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
-    writeFile(outputFile, templateString);
   }
 
   private void generateVectorUDAFSum(String[] tdesc) throws Exception {
