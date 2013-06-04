@@ -96,13 +96,11 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
       }
     }
 
-    //Prepare output, set the projections
+    // Prepare output, set the projections
     int[] originalProjections = vrg.projectedColumns;
     int originalProjectionSize = vrg.projectionSize;
     vrg.projectionSize = vExpressions.length;
-    for (int i = 0; i < vExpressions.length; i++) {
-      vrg.projectedColumns[i] = vExpressions[i].getOutputColumn();
-    }
+    vrg.projectedColumns = this.projectedColumns;
     forward(vrg, outputObjInspector);
 
     // Revert the projected columns back, because vrg will be re-used.

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
@@ -142,5 +143,30 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(exprDesc);
 
     assertTrue(ve instanceof FilterStringColGreaterStringScalar);
+  }
+
+  @Test
+  public void testFilterWithNegativeScalar() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Integer.class, "col1", "table", false);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(-10));
+
+    GenericUDFOPGreaterThan udf = new GenericUDFOPGreaterThan();
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(col1Expr);
+    children1.add(constDesc);
+    exprDesc.setChildExprs(children1);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    columnMap.put("col2", 2);
+
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    vc.setOperatorType(OperatorType.FILTER);
+
+    VectorExpression ve = vc.getVectorExpression(exprDesc);
+
+    assertTrue(ve instanceof FilterLongColGreaterLongScalar);
   }
 }
