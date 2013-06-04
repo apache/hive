@@ -168,6 +168,11 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
 
     // Reset column fields noNull values to true
     VectorizedBatchUtil.SetNoNullFields(true, value);
+    value.selectedInUse = false;
+    for (int i = 0; i < value.numCols; i++) {
+      value.cols[i].isRepeating = false;
+    }
+
     int i = 0;
     try {
       for (; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {

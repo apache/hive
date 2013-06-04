@@ -1568,6 +1568,7 @@ class RecordReaderImpl implements RecordReader {
       result.cols = cols;
     } else {
       result = (VectorizedRowBatch) previous;
+      result.selectedInUse = false;
       reader.nextVector(result.cols, (int) batchSize);
     }
 

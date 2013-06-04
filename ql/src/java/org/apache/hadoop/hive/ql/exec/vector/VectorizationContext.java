@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
@@ -89,8 +91,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * Context class for vectorization execution.
@@ -246,6 +247,44 @@ public class VectorizationContext {
     return ve;
   }
 
+  /**
+   * Handles only the special case of unary operators on a constant.
+   * @param exprDesc
+   * @return The same expression if no folding done, else return the constant
+   *         expression.
+   * @throws HiveException
+   */
+  private ExprNodeDesc foldConstantsForUnaryExpression(ExprNodeDesc exprDesc) throws HiveException {
+    if (!(exprDesc instanceof ExprNodeGenericFuncDesc)) {
+      return exprDesc;
+    }
+
+    if (exprDesc.getChildren() == null || (exprDesc.getChildren().size() != 1) ||
+        (!( exprDesc.getChildren().get(0) instanceof ExprNodeConstantDesc))) {
+      return exprDesc;
+    }
+
+    GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
+    if (!(gudf instanceof GenericUDFBridge)) {
+      return exprDesc;
+    }
+
+    Class<? extends UDF> cl = ((GenericUDFBridge) gudf).getUdfClass();
+
+    ExprNodeConstantDesc constExpr = (ExprNodeConstantDesc) exprDesc.getChildren().get(0);
+
+    if (cl.equals(UDFOPNegative.class) || cl.equals(UDFOPPositive.class)) {
+      ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
+      ObjectInspector output = evaluator.initialize(null);
+
+      Object constant = evaluator.evaluate(null);
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+      return new ExprNodeConstantDesc(java);
+    } else {
+      return exprDesc;
+    }
+  }
+
   private VectorExpression getConstantVectorExpression(ExprNodeConstantDesc exprDesc)
       throws HiveException {
     String type = exprDesc.getTypeString();
@@ -377,6 +416,10 @@ public class VectorizationContext {
       List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
+
+    // TODO: Remove this when constant folding is fixed in the optimizer.
+    leftExpr = foldConstantsForUnaryExpression(leftExpr);
+    rightExpr = foldConstantsForUnaryExpression(rightExpr);
 
     VectorExpression v1 = null;
     VectorExpression v2 = null;
@@ -654,6 +697,10 @@ public class VectorizationContext {
 
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
+
+    // TODO: Remove this when constant folding is fixed in the optimizer.
+    leftExpr = foldConstantsForUnaryExpression(leftExpr);
+    rightExpr = foldConstantsForUnaryExpression(rightExpr);
 
     VectorExpression expr = null;
     VectorExpression v1 = null;
