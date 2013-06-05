@@ -41,10 +41,14 @@ public class CubeTestSetup {
   public static Date now;
   public static Date twodaysBack;
   public static Date twoMonthsBack;
+  private static boolean zerothHour;
+  private static boolean firstDayOfMonth;
 
   static {
     Calendar cal = Calendar.getInstance();
     now = cal.getTime();
+    zerothHour = (cal.get(Calendar.HOUR_OF_DAY) == 0);
+    firstDayOfMonth = (cal.get(Calendar.DAY_OF_MONTH) == 0);
     System.out.println("Test now:" + now);
     cal.add(Calendar.DAY_OF_MONTH, -2);
     twodaysBack = cal.getTime();
@@ -53,6 +57,10 @@ public class CubeTestSetup {
     cal.add(Calendar.MONTH, -2);
     twoMonthsBack = cal.getTime();
     System.out.println("Test twoMonthsBack:" + twoMonthsBack);
+  }
+
+  public static boolean isZerothHour() {
+    return zerothHour;
   }
 
   private void createCube(CubeMetastoreClient client) throws HiveException {
@@ -199,7 +207,6 @@ public class CubeTestSetup {
     cal.setTime(twodaysBack);
     Date temp = cal.getTime();
     while (!(temp.after(now))) {
-      System.out.println("Adding partition" + temp);
       client.addPartition(fact2, hdfsStorage,
         UpdatePeriod.HOURLY, temp);
       cal.add(Calendar.HOUR_OF_DAY, 1);
@@ -423,6 +430,10 @@ public class CubeTestSetup {
     CubeFactTable fact3 = new CubeFactTable(cubeName, factName, factColumns,
         storageUpdatePeriods, 30L, properties);
     client.createCubeTable(fact3, storageAggregatePeriods);
+  }
+
+  public static boolean isFirstDayOfMonth() {
+    return firstDayOfMonth;
   }
 
 }

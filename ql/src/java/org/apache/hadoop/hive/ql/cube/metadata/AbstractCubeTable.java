@@ -21,14 +21,14 @@ public abstract class AbstractCubeTable implements Named {
 
   protected AbstractCubeTable(String name, List<FieldSchema> columns,
       Map<String, String> props, double weight) {
-    this.name = name;
+    this.name = name.toLowerCase();
     this.columns = columns;
     this.weight = weight;
     this.properties.putAll(props);
   }
 
   protected AbstractCubeTable(Table hiveTable) {
-    this.name = hiveTable.getTableName();
+    this.name = hiveTable.getTableName().toLowerCase();
     this.columns = hiveTable.getCols();
     this.properties.putAll(hiveTable.getParameters());
     this.weight = getWeight(getProperties(), getName());
@@ -99,5 +99,14 @@ public abstract class AbstractCubeTable implements Named {
   @Override
   public String toString() {
     return getName();
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((getName() == null) ? 0 :
+      getName().hashCode());
+    return result;
   }
 }

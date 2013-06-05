@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -205,7 +206,7 @@ public class StorageTableResolver implements ContextRewriter {
       Date fromDate, Date toDate)
           throws SemanticException {
     Map<UpdatePeriod, List<String>> partitionColMap =
-        new HashMap<UpdatePeriod, List<String>>();
+        new TreeMap<UpdatePeriod, List<String>>();
     Set<UpdatePeriod> updatePeriods = factStorageMap.get(fact).keySet();
     try {
       if (!getPartitions(fact, fromDate, toDate, partitionColMap,
@@ -265,6 +266,7 @@ public class StorageTableResolver implements ContextRewriter {
             interval, dt)) {
           partitions.add(part);
           foundPart = true;
+          LOG.info("Adding existing partition" + part);
           break;
         }
       }
@@ -301,7 +303,7 @@ public class StorageTableResolver implements ContextRewriter {
             toDate, partitionColMap, updatePeriods, addNonExistingParts));
   }
 
-  private static String getWherePartClause(String tableName,
+  public static String getWherePartClause(String tableName,
       List<String> parts) {
     if (parts.size() == 0) {
       return "";

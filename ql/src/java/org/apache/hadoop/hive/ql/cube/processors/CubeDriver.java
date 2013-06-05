@@ -68,6 +68,7 @@ public class CubeDriver extends Driver {
     if (explain) {
       hql = "EXPLAIN " + hql;
     }
+    System.out.println("Rewritten query:" + hql);
     return hql;
   }
 }

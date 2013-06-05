@@ -68,8 +68,6 @@ public class CubeQueryContext {
       new HashMap<String, AbstractCubeTable>();
   private final Map<AbstractCubeTable, List<String>> cubeTabToCols =
       new HashMap<AbstractCubeTable, List<String>>();
-  protected Set<CubeFactTable> candidateFactTables =
-      new HashSet<CubeFactTable>();
 
   // fields queried
   private final Map<String, List<String>> tblAliasToColumns =
@@ -79,8 +77,6 @@ public class CubeQueryContext {
       new HashMap<String, String>();
   private final Map<CubeQueryExpr, Set<String>> exprToCols =
       new HashMap<CubeQueryExpr, Set<String>>();
-  private final Map<CubeQueryExpr, Set<String>> queryExprToExprs =
-      new HashMap<CubeQueryExpr, Set<String>>();
   private final Map<String, String> exprToAlias = new HashMap<String, String>();
   private final Set<String> aggregateCols = new HashSet<String>();
   private final Set<String> aggregateExprs = new HashSet<String>();
@@ -88,7 +84,9 @@ public class CubeQueryContext {
       new HashMap<QBJoinTree, String>();
 
   // storage specific
-  protected Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
+  protected final Set<CubeFactTable> candidateFactTables =
+      new HashSet<CubeFactTable>();
+  protected final Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
   factPartitionMap =
   new HashMap<CubeFactTable, Map<UpdatePeriod, List<String>>>();
   private final Map<CubeFactTable, Map<UpdatePeriod, List<String>>>
@@ -102,13 +100,11 @@ public class CubeQueryContext {
       new HashMap<AbstractCubeTable, String>();
 
   // query trees
-  private ASTNode fromTree;
   private String whereTree;
   private String havingTree;
   private String orderByTree;
   private String selectTree;
   private String groupByTree;
-  private ASTNode limitTree;
   private final ASTNode joinTree;
   private ASTNode havingAST;
   private ASTNode selectAST;
@@ -275,8 +271,6 @@ public class CubeQueryContext {
   }
 
   private void extractColumns() throws SemanticException {
-    // columnAliases = new ArrayList<String>();
-
     // Check if its 'select * from...'
     ASTNode selTree = qb.getParseInfo().getSelForClause(clauseName);
     if (selTree.getChildCount() == 1) {
@@ -357,17 +351,18 @@ public class CubeQueryContext {
             && (parent != null && parent.getToken().getType() != DOT)) {
           // Take child ident.totext
           ASTNode ident = (ASTNode) node.getChild(0);
+          String column = ident.getText().toLowerCase();
           if (tblToCols != null) {
             List<String> colList = tblToCols.get(DEFAULT_TABLE);
             if (colList == null) {
               colList = new ArrayList<String>();
               tblToCols.put(DEFAULT_TABLE, colList);
             }
-            if (!colList.contains(ident.getText())) {
-              colList.add(ident.getText());
+            if (!colList.contains(column)) {
+              colList.add(column);
             }
           }
-          columns.add(ident.getText());
+          columns.add(column);
         } else if (node.getToken().getType() == DOT) {
           // This is for the case where column name is prefixed by table name
           // or table alias
@@ -377,8 +372,8 @@ public class CubeQueryContext {
               Identifier);
           ASTNode colIdent = (ASTNode) node.getChild(1);
 
-          String column = colIdent.getText();
-          String table = tabident.getText();
+          String column = colIdent.getText().toLowerCase();
+          String table = tabident.getText().toLowerCase();
           if (tblToCols != null) {
             List<String> colList = tblToCols.get(table);
             if (colList == null) {
@@ -397,7 +392,7 @@ public class CubeQueryContext {
             ASTNode alias = HQLParser.findNodeByPath(node, Identifier);
             if (alias != null) {
               exprToAlias.put(HQLParser.getString(node).trim().toLowerCase(),
-                  alias.getText());
+                  alias.getText().toLowerCase());
             }
           }
         }
@@ -430,8 +425,8 @@ public class CubeQueryContext {
                   + " in dimensions '" + prevDim + "' and '"
                   + dim.getName() + "'");
             }
-            columnToTabAlias.put(col.toLowerCase(), dim.getName());
-            break;
+            columnToTabAlias.put(col.toLowerCase(), getAliasForTabName(
+                dim.getName()));
           } else {
             // throw error because column is in both cube and dimension table
             throw new SemanticException("Ambiguous column:" + col
@@ -882,8 +877,8 @@ public class CubeQueryContext {
       CubeDimensionTable dim = it.next();
       appendWhereClause(dim, whereWithoutTimerange, factStorageTable != null);
       while (it.hasNext()) {
-        appendWhereClause(dim, whereWithoutTimerange, true);
         dim = it.next();
+        appendWhereClause(dim, whereWithoutTimerange, true);
       }
     }
     if (whereWithoutTimerange.length() == 0) {
@@ -921,7 +916,7 @@ public class CubeQueryContext {
         storageTableToQuery.put(getCube(), storageTable);
         query.append(toHQL(storageTable));
         if (it.hasNext()) {
-          query.append(" UNION ");
+          query.append(" UNION ALL ");
         }
       }
       return query.toString();

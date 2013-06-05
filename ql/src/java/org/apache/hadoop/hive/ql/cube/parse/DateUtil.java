@@ -168,11 +168,6 @@ public class DateUtil {
         hasFraction = true;
         break;
       }
-    case WEEKLY:
-      if (cal.get(Calendar.DAY_OF_WEEK) != 1) {
-        hasFraction = true;
-        break;
-      }
     case DAILY:
       if (cal.get(Calendar.HOUR_OF_DAY) != 0) {
         hasFraction = true;
@@ -190,6 +185,11 @@ public class DateUtil {
       }
     case SECONDLY:
       if (cal.get(Calendar.MILLISECOND) != 0) {
+        hasFraction = true;
+      }
+      break;
+    case WEEKLY:
+      if (cal.get(Calendar.DAY_OF_WEEK) != 1) {
         hasFraction = true;
         break;
       }
