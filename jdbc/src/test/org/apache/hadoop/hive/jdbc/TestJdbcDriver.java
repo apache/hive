@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -229,49 +230,18 @@ public class TestJdbcDriver extends TestCase {
 
      ///////////////////////////////////////////////
     //////////////////// correct testcase
+    //////////////////// executed twice: once with the typed ps setters, once with the generic setObject
     //////////////////////////////////////////////
     try {
-      PreparedStatement ps = con.prepareStatement(sql);
-
-      ps.setBoolean(1, true);
-      ps.setBoolean(2, true);
-
-      ps.setShort(3, Short.valueOf("1"));
-      ps.setInt(4, 2);
-      ps.setFloat(5, 3f);
-      ps.setDouble(6, Double.valueOf(4));
-      ps.setString(7, "test'string\"");
-      ps.setLong(8, 5L);
-      ps.setByte(9, (byte) 1);
-      ps.setByte(10, (byte) 1);
-
-      ps.setMaxRows(2);
-
-      assertTrue(true);
-
+      PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
       ResultSet res = ps.executeQuery();
-      assertNotNull(res);
-
-      while (res.next()) {
-        assertEquals("2011-03-25", res.getString("ddate"));
-        assertEquals("10", res.getString("num"));
-        assertEquals((byte) 10, res.getByte("num"));
-        assertEquals("2011-03-25", res.getDate("ddate").toString());
-        assertEquals(Double.valueOf(10).doubleValue(), res.getDouble("num"), 0.1);
-        assertEquals(10, res.getInt("num"));
-        assertEquals(Short.valueOf("10").shortValue(), res.getShort("num"));
-        assertEquals(10L, res.getLong("num"));
-        assertEquals(true, res.getBoolean("bv"));
-        Object o = res.getObject("ddate");
-        assertNotNull(o);
-        o = res.getObject("num");
-        assertNotNull(o);
-      }
-      res.close();
-      assertTrue(true);
-
+      assertPreparedStatementResultAsExpected(res);
       ps.close();
-      assertTrue(true);
+
+      ps = createPreapredStatementUsingSetObject(sql);
+      res = ps.executeQuery();
+      assertPreparedStatementResultAsExpected(res);
+      ps.close();
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -326,6 +296,80 @@ public class TestJdbcDriver extends TestCase {
     assertNotNull(
         "Execute the invalid setted sql statement should throw exception",
         expectedException);
+    
+    // setObject to the yet unknown type java.util.Date
+    expectedException = null;
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+      ps.setObject(1, new Date());
+      ps.executeQuery();
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    assertNotNull(
+        "Setting to an unknown type should throw an exception",
+        expectedException);
+
+  }
+
+  private PreparedStatement createPreapredStatementUsingSetObject(String sql) throws SQLException {
+    PreparedStatement ps = con.prepareStatement(sql);
+
+    ps.setObject(1, true); //setBoolean
+    ps.setObject(2, true); //setBoolean
+
+    ps.setObject(3, Short.valueOf("1")); //setShort
+    ps.setObject(4, 2); //setInt
+    ps.setObject(5, 3f); //setFloat
+    ps.setObject(6, Double.valueOf(4)); //setDouble
+    ps.setObject(7, "test'string\""); //setString
+    ps.setObject(8, 5L); //setLong
+    ps.setObject(9, (byte) 1); //setByte
+    ps.setObject(10, (byte) 1); //setByte
+
+    ps.setMaxRows(2);
+    return ps;
+  }
+
+  private PreparedStatement createPreapredStatementUsingSetXXX(String sql) throws SQLException {
+    PreparedStatement ps = con.prepareStatement(sql);
+
+    ps.setBoolean(1, true); //setBoolean
+    ps.setBoolean(2, true); //setBoolean
+
+    ps.setShort(3, Short.valueOf("1")); //setShort
+    ps.setInt(4, 2); //setInt
+    ps.setFloat(5, 3f); //setFloat
+    ps.setDouble(6, Double.valueOf(4)); //setDouble
+    ps.setString(7, "test'string\""); //setString
+    ps.setLong(8, 5L); //setLong
+    ps.setByte(9, (byte) 1); //setByte
+    ps.setByte(10, (byte) 1); //setByte
+
+    ps.setMaxRows(2);
+    return ps;
+  }
+
+  private void assertPreparedStatementResultAsExpected(ResultSet res ) throws SQLException {
+    assertNotNull(res);
+
+    while (res.next()) {
+      assertEquals("2011-03-25", res.getString("ddate"));
+      assertEquals("10", res.getString("num"));
+      assertEquals((byte) 10, res.getByte("num"));
+      assertEquals("2011-03-25", res.getDate("ddate").toString());
+      assertEquals(Double.valueOf(10).doubleValue(), res.getDouble("num"), 0.1);
+      assertEquals(10, res.getInt("num"));
+      assertEquals(Short.valueOf("10").shortValue(), res.getShort("num"));
+      assertEquals(10L, res.getLong("num"));
+      assertEquals(true, res.getBoolean("bv"));
+      Object o = res.getObject("ddate");
+      assertNotNull(o);
+      o = res.getObject("num");
+      assertNotNull(o);
+    }
+    res.close();
+    assertTrue(true);
   }
 
   public final void testSelectAll() throws Exception {
