@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -221,6 +222,17 @@ public class MapredWork extends AbstractOperatorDesc {
   public void setAliasToWork(
       final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
+  }
+
+  public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
+    ArrayList<String> aliases = pathToAliases.get(pathDir);
+    if (aliases == null) {
+      aliases = new ArrayList<String>(Arrays.asList(alias));
+      pathToAliases.put(pathDir, aliases);
+      pathToPartitionInfo.put(pathDir, partitionInfo);
+    } else {
+      aliases.add(alias);
+    }
   }
 
   /**
