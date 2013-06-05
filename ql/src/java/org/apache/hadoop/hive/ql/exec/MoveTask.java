@@ -537,10 +537,4 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   public String getName() {
     return "MOVE";
   }
-
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // no-op
-  }
 }

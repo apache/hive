@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -362,6 +363,17 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         childWork.getAliasToWork().values().iterator().next();
     if (mapJoinTaskFileSinkOperator.getParentOperators().size() > 1) {
       return;
+    }
+
+    // remove the unnecessary TableScan
+    if (childAliasOp instanceof TableScanOperator) {
+      TableScanOperator tso = (TableScanOperator)childAliasOp;
+      if (tso.getNumChild() != 1) {
+        // shouldn't happen
+        return;
+      }
+      childAliasOp = tso.getChildOperators().get(0);
+      childAliasOp.getParentOperators().remove(tso);
     }
 
     // Merge the 2 trees - remove the FileSinkOperator from the first tree pass it to the

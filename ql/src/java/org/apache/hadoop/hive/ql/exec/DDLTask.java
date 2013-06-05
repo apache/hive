@@ -4059,9 +4059,4 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   public String getName() {
     return "DDL";
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // no-op
-  }
 }

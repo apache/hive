@@ -384,37 +384,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public abstract StageType getType();
 
   /**
-   * If this task uses any map-reduce intermediate data (either for reading or for writing),
-   * localize them (using the supplied Context). Map-Reduce intermediate directories are allocated
-   * using Context.getMRTmpFileURI() and can be localized using localizeMRTmpFileURI().
-   *
-   * This method is declared abstract to force any task code to explicitly deal with this aspect of
-   * execution.
-   *
-   * @param ctx
-   *          context object with which to localize
-   */
-  abstract protected void localizeMRTmpFilesImpl(Context ctx);
-
-  /**
-   * Localize a task tree
-   *
-   * @param ctx
-   *          context object with which to localize
-   */
-  public final void localizeMRTmpFiles(Context ctx) {
-    localizeMRTmpFilesImpl(ctx);
-
-    if (childTasks == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> t : childTasks) {
-      t.localizeMRTmpFiles(ctx);
-    }
-  }
-
-  /**
    * Subscribe the feed of publisher. To prevent cycles, a task can only subscribe to its ancestor.
    * Feed is a generic form of execution-time feedback (type, value) pair from one task to another
    * task. Examples include dynamic partitions (which are only available at execution time). The

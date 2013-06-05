@@ -1,6 +1,16 @@
-PREHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+PREHOOK: query: -- HIVE-2340 deduplicate RS followed by RS
+-- hive.optimize.reducededuplication : wherther using this optimization
+-- hive.optimize.reducededuplication.min.reducer : number of reducer of deduped RS should be this at least
+
+-- RS-mGBY-RS-rGBY
+explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+POSTHOOK: query: -- HIVE-2340 deduplicate RS followed by RS
+-- hive.optimize.reducededuplication : wherther using this optimization
+-- hive.optimize.reducededuplication.min.reducer : number of reducer of deduped RS should be this at least
+
+-- RS-mGBY-RS-rGBY
+explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) Q1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
@@ -242,9 +252,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select key, sum(key) as value from src group by key order by key, value
+PREHOOK: query: -- mGBY-RS-rGBY-RS
+explain select key, sum(key) as value from src group by key order by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key, sum(key) as value from src group by key order by key, value
+POSTHOOK: query: -- mGBY-RS-rGBY-RS
+explain select key, sum(key) as value from src group by key order by key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)) value)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
@@ -317,9 +329,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+PREHOOK: query: -- RS-JOIN-mGBY-RS-rGBY
+explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+POSTHOOK: query: -- RS-JOIN-mGBY-RS-rGBY
+explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (. (TOK_TABLE_OR_COL src) key)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value))))
@@ -447,9 +461,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+PREHOOK: query: -- RS-JOIN-RS
+explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+POSTHOOK: query: -- RS-JOIN-RS
+explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src) value)))))
@@ -546,9 +562,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
+PREHOOK: query: -- mGBY-RS-rGBY-mGBY-RS-rGBY
+explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
+POSTHOOK: query: -- mGBY-RS-rGBY-mGBY-RS-rGBY
+explain from (select key, value from src group by key, value) s select s.key group by s.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL s) key))))
@@ -2289,9 +2307,11 @@ POSTHOOK: Input: default@src
 96
 97
 98
-PREHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+PREHOOK: query: -- RS-RS-GBY
+explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+POSTHOOK: query: -- RS-RS-GBY
+explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) Q1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
@@ -2533,9 +2553,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select key, sum(key) as value from src group by key order by key, value
+PREHOOK: query: -- RS-GBY-RS
+explain select key, sum(key) as value from src group by key order by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key, sum(key) as value from src group by key order by key, value
+POSTHOOK: query: -- RS-GBY-RS
+explain select key, sum(key) as value from src group by key order by key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)) value)) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
@@ -2596,9 +2618,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+PREHOOK: query: -- RS-JOIN-RS-GBY
+explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+POSTHOOK: query: -- RS-JOIN-RS-GBY
+explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (. (TOK_TABLE_OR_COL src) key)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value))))
@@ -2712,9 +2736,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+PREHOOK: query: -- RS-JOIN-RS
+explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+POSTHOOK: query: -- RS-JOIN-RS
+explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src)) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src) value)))))
@@ -2811,9 +2837,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
+PREHOOK: query: -- RS-GBY-RS-GBY
+explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
+POSTHOOK: query: -- RS-GBY-RS-GBY
+explain from (select key, value from src group by key, value) s select s.key group by s.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL s) key))))

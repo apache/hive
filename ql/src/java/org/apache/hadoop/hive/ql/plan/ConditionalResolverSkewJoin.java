@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * ConditionalResolverSkewJoin.
@@ -93,7 +94,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
         String path = entry.getKey();
         Path dirPath = new Path(path);
         FileSystem inpFs = dirPath.getFileSystem(conf);
-        FileStatus[] fstatus = inpFs.listStatus(dirPath);
+        FileStatus[] fstatus = Utilities.listStatusIfExists(dirPath, inpFs);
         if (fstatus != null && fstatus.length > 0) {
           Task <? extends Serializable> task = entry.getValue();
           List<Task <? extends Serializable>> parentOps = task.getParentTasks();

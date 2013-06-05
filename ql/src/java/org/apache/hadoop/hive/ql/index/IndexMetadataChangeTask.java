@@ -98,9 +98,4 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
   public StageType getType() {
     return StageType.DDL;
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-  }
-
 }

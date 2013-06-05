@@ -254,10 +254,4 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
   public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     // no op
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // no op
-  }
-
 }

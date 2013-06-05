@@ -96,8 +96,12 @@ public class Commands {
 
 
   public boolean metadata(String cmd, String[] args) {
+    if (!(beeLine.assertConnection())) {
+      return false;
+    }
+
     try {
-      Method[] m = beeLine.getDatabaseConnection().getDatabaseMetaData().getClass().getMethods();
+      Method[] m = beeLine.getDatabaseMetaData().getClass().getMethods();
       Set<String> methodNames = new TreeSet<String>();
       Set<String> methodNamesUpper = new TreeSet<String>();
       for (int i = 0; i < m.length; i++) {
@@ -114,7 +118,7 @@ public class Commands {
         return false;
       }
 
-      Object res = beeLine.getReflector().invoke(beeLine.getDatabaseConnection().getDatabaseMetaData(),
+      Object res = beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
           DatabaseMetaData.class, cmd, Arrays.asList(args));
 
       if (res instanceof ResultSet) {
@@ -224,7 +228,7 @@ public class Commands {
     if (sql.startsWith("native")) {
       sql = sql.substring("native".length() + 1);
     }
-    String nat = beeLine.getDatabaseConnection().getConnection().nativeSQL(sql);
+    String nat = beeLine.getConnection().nativeSQL(sql);
     beeLine.output(nat);
     return true;
   }
@@ -568,7 +572,7 @@ public class Commands {
     for (int i = 0; i < m.length; i++) {
       try {
         beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen).append(
-            "" + beeLine.getReflector().invoke(beeLine.getDatabaseConnection().getDatabaseMetaData(),
+            "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
                 m[i], new Object[0])));
       } catch (Exception e) {
         beeLine.handleException(e);
@@ -771,9 +775,6 @@ public class Commands {
           beeLine.info(beeLine.loc("rows-affected", count)
               + " " + beeLine.locElapsedTime(end - start));
         }
-      } catch (Exception e) {
-        beeLine.error(e);
-        throw e;
       } finally {
         if (stmnt != null) {
           stmnt.close();

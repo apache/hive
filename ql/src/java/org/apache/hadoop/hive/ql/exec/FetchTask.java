@@ -163,19 +163,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     return "FETCH";
   }
 
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    String s = work.getTblDir();
-    if ((s != null) && ctx.isMRTmpFileURI(s)) {
-      work.setTblDir(ctx.localizeMRTmpFileURI(s));
-    }
-
-    ArrayList<String> ls = work.getPartDir();
-    if (ls != null) {
-      ctx.localizePaths(ls);
-    }
-  }
-
   /**
    * Clear the Fetch Operator.
    *

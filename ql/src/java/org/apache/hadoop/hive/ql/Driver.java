@@ -113,7 +113,7 @@ public class Driver implements CommandProcessor {
   static final protected LogHelper console = new LogHelper(LOG);
 
   private static final Object compileMonitor = new Object();
-  
+
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
 
@@ -889,10 +889,10 @@ public class Driver implements CommandProcessor {
           driverRunHook.preDriverRun(hookContext);
       }
     } catch (Exception e) {
-      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e)
+          + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage + "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError(errorMessage);
       return new CommandProcessorResponse(12, errorMessage, SQLState);
     }
 
@@ -965,10 +965,10 @@ public class Driver implements CommandProcessor {
           driverRunHook.postDriverRun(hookContext);
       }
     } catch (Exception e) {
-      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e)
+          + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage + "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError(errorMessage);
       return new CommandProcessorResponse(12, errorMessage, SQLState);
     }
 

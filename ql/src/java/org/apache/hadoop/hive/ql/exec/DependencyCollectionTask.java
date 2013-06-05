@@ -53,12 +53,4 @@ public class DependencyCollectionTask extends Task<DependencyCollectionWork>
   public String getName() {
     return "DEPENDENCY_COLLECTION";
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // copy task doesn't have any execution and so
-    // does not use any map-reduce tmp files
-    // we don't expect to enter this code path at all
-    throw new RuntimeException ("Unexpected call");
-  }
 }

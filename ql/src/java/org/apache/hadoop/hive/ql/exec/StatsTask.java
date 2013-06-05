@@ -263,11 +263,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return "STATS";
   }
 
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // Nothing to do for StatsTask here.
-  }
-
   private int aggregateStats() {
 
     StatsAggregator statsAggregator = null;
