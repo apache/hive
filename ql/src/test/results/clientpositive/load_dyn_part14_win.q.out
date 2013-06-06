@@ -1,9 +1,13 @@
 PREHOOK: query: -- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
+
 
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
+
 
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string)
@@ -13,8 +17,13 @@ PREHOOK: query: describe extended nzhang_part14
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part14
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
@@ -42,14 +51,16 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7, Stage-8
-  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-9, Stage-10
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-7 is a root stage
-  Stage-8 is a root stage
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+  Stage-9 is a root stage
+  Stage-10 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -142,7 +153,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.nzhang_part14
 
-  Stage: Stage-6
+  Stage: Stage-8
     Conditional Operator
 
   Stage: Stage-5
@@ -179,7 +190,26 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.nzhang_part14
 
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.nzhang_part14
+
   Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:t-subquery2:src 
@@ -211,7 +241,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-8
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1:t-subquery1-subquery1:src 
@@ -280,12 +310,14 @@ value=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part14
 PREHOOK: Input: default@nzhang_part14@value=%20
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Input: default@nzhang_part14@value=%20
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
