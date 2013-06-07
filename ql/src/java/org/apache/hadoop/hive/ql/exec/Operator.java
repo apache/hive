@@ -1414,6 +1414,60 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return ret;
   }
 
+  /**
+   * Clones only the operator. The children and parent are set
+   * to null.
+   * @return Cloned operator
+   * @throws CloneNotSupportedException
+   */
+  public Operator<? extends OperatorDesc> cloneOp() throws CloneNotSupportedException {
+    T descClone = (T) conf.clone();
+    Operator<? extends OperatorDesc> ret =
+        (Operator<? extends OperatorDesc>) OperatorFactory.getAndMakeChild(
+            descClone, getSchema());
+    return ret;
+  }
+
+  /**
+   * Recursively clones all the children of the tree,
+   * Fixes the pointers to children, parents and the pointers to itself coming from the children.
+   * It does not fix the pointers to itself coming from parents, parents continue to point to
+   * the original child.
+   * @return Cloned operator
+   * @throws CloneNotSupportedException
+   */
+  public Operator<? extends OperatorDesc> cloneRecursiveChildren()
+      throws CloneNotSupportedException {
+    Operator<? extends OperatorDesc> newOp = this.cloneOp();
+    newOp.setParentOperators(this.parentOperators);
+    // Fix parent in all children
+    if (this.getChildOperators() == null) {
+      newOp.setChildOperators(null);
+      return newOp;
+    }
+    List<Operator<? extends OperatorDesc>> newChildren =
+        new ArrayList<Operator<? extends OperatorDesc>>();
+
+    for (Operator<? extends OperatorDesc> childOp : this.getChildOperators()) {
+      List<Operator<? extends OperatorDesc>> parentList =
+          new ArrayList<Operator<? extends OperatorDesc>>();
+      for (Operator<? extends OperatorDesc> parent : childOp.getParentOperators()) {
+        if (parent.equals(this)) {
+          parentList.add(newOp);
+        } else {
+          parentList.add(parent);
+        }
+      }
+      // Recursively clone the children
+      Operator<? extends OperatorDesc> clonedChildOp = childOp.cloneRecursiveChildren();
+      clonedChildOp.setParentOperators(parentList);
+    }
+
+    newOp.setChildOperators(newChildren);
+    return newOp;
+  }
+
+
   /*
    * True only for operators which produce atmost 1 output row per input
    * row to it. This will allow the output column names to be directly

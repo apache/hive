@@ -285,7 +285,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (vectorPath) {
       if (validateVectorPath()) {
-        System.out.println("Going down the vectorization path");
+        LOG.debug("Going down the vectorization path");
         job.setMapperClass(VectorExecMapper.class);
       } else {
         //fall back to non-vector mode
@@ -533,8 +533,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   }
 
   private boolean validateVectorPath() {
-    System.out.println("Validating if vectorized execution is applicable");
-    LOG.info("Validating if vectorized execution is applicable");
+    LOG.debug("Validating if vectorized execution is applicable");
     MapredWork thePlan = this.getWork();
 
     for (String path : thePlan.getPathToPartitionInfo().keySet()) {
@@ -542,9 +541,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       List<Class<?>> interfaceList =
           Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
       if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
-        System.out.println("Input format: " + pd.getInputFileFormatClassName()
-            + ", doesn't provide vectorized input");
-        LOG.info("Input format: " + pd.getInputFileFormatClassName()
+        LOG.debug("Input format: " + pd.getInputFileFormatClassName()
             + ", doesn't provide vectorized input");
         return false;
       }
@@ -559,21 +556,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         try {
           vectorOp = VectorMapOperator.vectorizeOperator(op, vc);
         } catch (Exception e) {
-          LOG.info("Cannot vectorize the plan", e);
-          System.out.println("Cannot vectorize the plan: "+ e);
+          LOG.debug("Cannot vectorize the plan", e);
           return false;
         }
         if (vectorOp == null) {
-          LOG.info("Cannot vectorize the plan");
-          System.out.println("Cannot vectorize the plan");
+          LOG.debug("Cannot vectorize the plan");
           return false;
         }
         //verify the expressions contained in the operators
         try {
           validateVectorOperator(vectorOp);
         } catch (HiveException e) {
-          LOG.info("Cannot vectorize the plan", e);
-          System.out.println("Cannot vectorize the plan: "+e.getMessage());
+          LOG.debug("Cannot vectorize the plan", e);
           return false;
         }
       }

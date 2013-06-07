@@ -503,7 +503,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
             op.getConf());
         break;
       case TABLESCAN:
-        vectorOp = op.clone();
+        vectorOp = op.cloneOp();
         break;
       case REDUCESINK:
         vectorOp = new VectorReduceSinkOperator(vectorizationContext, op.getConf());
@@ -530,14 +530,18 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         vectorOp.setChildOperators(vectorizedChildren);
       }
     } else {
-      // transfer the row-mode clients to the vectorized op parent
-      List<Operator<? extends OperatorDesc>> children = op.getChildOperators();
-      if (children != null && !children.isEmpty()) {
+      // transfer the row-mode children to the vectorized op parent
+      List<Operator<? extends OperatorDesc>> children =
+          new ArrayList<Operator<? extends OperatorDesc>>();
+
+      if (op.getChildOperators() != null && !op.getChildOperators().isEmpty()) {
         List<Operator<? extends OperatorDesc>> parentList =
             new ArrayList<Operator<? extends OperatorDesc>>();
         parentList.add(vectorOp);
-        for (Operator<? extends OperatorDesc> childOp : children) {
-          childOp.setParentOperators(parentList);
+        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
+          Operator<? extends OperatorDesc> clonedOp = childOp.cloneRecursiveChildren();
+          clonedOp.setParentOperators(parentList);
+          children.add(clonedOp);
         }
         vectorOp.setChildOperators(children);
       }
