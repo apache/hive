@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.CommonOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -114,7 +114,7 @@ public abstract class BaseSemanticAnalyzer {
       .getName();
   protected static final String RCFILE_OUTPUT = RCFileOutputFormat.class
       .getName();
-  protected static final String ORCFILE_INPUT = OrcInputFormat.class
+  protected static final String ORCFILE_INPUT = CommonOrcInputFormat.class
       .getName();
   protected static final String ORCFILE_OUTPUT = OrcOutputFormat.class
       .getName();
