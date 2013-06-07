@@ -139,7 +139,7 @@ public class OrcSerde implements SerDe, VectorizedSerde {
   public Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
       throws SerDeException {
     if (vos == null) {
-      vos = new VectorizedOrcSerde();
+      vos = new VectorizedOrcSerde(objInspector);
     }
     return vos.serialize(vrg, objInspector);
   }

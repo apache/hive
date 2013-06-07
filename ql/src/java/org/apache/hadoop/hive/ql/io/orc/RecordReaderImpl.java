@@ -552,7 +552,7 @@ class RecordReaderImpl implements RecordReader {
       // Read value entries based on isNull entries
       for (int i = 0; i < batchSize; i++) {
         if (!result.isNull[i]) {
-          result.vector[i] = SerializationUtils.readDouble(stream);
+          result.vector[i] = SerializationUtils.readFloat(stream);
         } else {
 
           // If the value is not present then set NaN

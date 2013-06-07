@@ -18,7 +18,11 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -31,43 +35,54 @@ public class VectorizedOrcSerde extends OrcSerde {
   private final Writable [] orcRowArray = new Writable [VectorizedRowBatch.DEFAULT_SIZE];
   private final ObjectWritable ow = new ObjectWritable();
   private final ObjectInspector inspector = null;
+  private final VectorExpressionWriter [] valueWriters;
 
-  public VectorizedOrcSerde() {
+  public VectorizedOrcSerde(ObjectInspector objInspector) {
     super();
     for (int i = 0; i < orcStructArray.length; i++) {
       orcRowArray[i] = new OrcSerdeRow();
+    }
+    try {
+      valueWriters = VectorExpressionWriterFactory
+          .getExpressionWriters((StructObjectInspector) objInspector);
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
     }
   }
 
 
   @Override
   public Writable serialize(Object obj, ObjectInspector inspector) {
-    VectorizedRowBatch batch = (VectorizedRowBatch)obj;
-    for (int i = 0; i < batch.size; i++) {
-      OrcStruct ost = orcStructArray[i];
-      if (ost == null) {
-        ost = new OrcStruct(batch.numCols);
-        orcStructArray[i] = ost;
-      }
-      int index = 0;
-      if (batch.selectedInUse) {
-        index = batch.selected[i];
-      } else {
-        index = i;
-      }
-      for (int p = 0; p < batch.projectionSize; p++) {
-        int k = batch.projectedColumns[p];
-        Writable w;
-        if (batch.cols[k].isRepeating) {
-          w = batch.cols[k].getWritableObject(0);
-        } else {
-          w = batch.cols[k].getWritableObject(index);
+    VectorizedRowBatch batch = (VectorizedRowBatch) obj;
+    try {
+      for (int i = 0; i < batch.size; i++) {
+        OrcStruct ost = orcStructArray[i];
+        if (ost == null) {
+          ost = new OrcStruct(batch.numCols);
+          orcStructArray[i] = ost;
         }
-        ost.setFieldValue(k, w);
+        int index = 0;
+        if (batch.selectedInUse) {
+          index = batch.selected[i];
+        } else {
+          index = i;
+        }
+        for (int p = 0; p < batch.projectionSize; p++) {
+          int k = batch.projectedColumns[p];
+          Writable w;
+          if (batch.cols[k].isRepeating) {
+            w = (Writable) valueWriters[p].writeValue(batch.cols[k], 0);
+          } else {
+            w = (Writable) valueWriters[p].writeValue(batch.cols[k], index);
+          }
+          ost.setFieldValue(k, w);
+        }
+        OrcSerdeRow row = (OrcSerdeRow) orcRowArray[i];
+        row.realRow = ost;
+        row.inspector = inspector;
       }
-      OrcSerdeRow row = (OrcSerdeRow) orcRowArray[i];
-      row.realRow = ost;
-      row.inspector = inspector;
+    } catch (HiveException ex) {
+      throw new RuntimeException(ex);
     }
     ow.set(orcRowArray);
     return ow;

@@ -21,6 +21,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -54,8 +56,7 @@ public class VectorizedRowBatch implements Writable {
    */
   public static final int DEFAULT_SIZE = 1024;
 
-  private final Writable[] writableRow;
-  private int rowIteratorIndex = 0;
+  public VectorExpressionWriter[] valueWriters = null;
 
   /**
    * Return a batch with the specified number of columns.
@@ -81,7 +82,6 @@ public class VectorizedRowBatch implements Writable {
     selected = new int[size];
     selectedInUse = false;
     this.cols = new ColumnVector[numCols];
-    writableRow = new Writable[numCols];
     projectedColumns = new int[numCols];
 
     // Initially all columns are projected and in the same order
@@ -89,30 +89,6 @@ public class VectorizedRowBatch implements Writable {
     for (int i = 0; i < numCols; i++) {
       projectedColumns[i] = i;
     }
-  }
-
-  public void initRowIterator(){
-    this.rowIteratorIndex = 0;
-  }
-
-  public Writable [] getNextRow() {
-    if (rowIteratorIndex >= size) {
-      return null;
-    }
-    if (selectedInUse) {
-      int i = selected[rowIteratorIndex];
-      for (int k = 0; k < projectionSize; k++) {
-        int c = this.projectedColumns[k];
-        writableRow[c] = cols[c].getWritableObject(i);
-      }
-    } else {
-      int i = rowIteratorIndex;
-      for (int k = 0; k < projectionSize; k++) {
-        int c = this.projectedColumns[k];
-        writableRow[c] = cols[c].getWritableObject(i);
-      }
-    }
-    return writableRow;
   }
 
   /**
@@ -130,45 +106,51 @@ public class VectorizedRowBatch implements Writable {
       return "";
     }
     StringBuilder b = new StringBuilder();
-    if (this.selectedInUse) {
-      for (int j = 0; j < size; j++) {
-        int i = selected[j];
-        int colIndex = 0;
-        for (int k = 0; k < projectionSize; k++) {
-          ColumnVector cv = cols[this.projectedColumns[k]];
-          if (cv.isRepeating) {
-            b.append(cv.getWritableObject(0).toString());
-          } else {
-            b.append(cv.getWritableObject(i).toString());
+    try {
+      if (this.selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = selected[j];
+          int colIndex = 0;
+          for (int k = 0; k < projectionSize; k++) {
+            int projIndex = projectedColumns[k];
+            ColumnVector cv = cols[projIndex];
+            if (cv.isRepeating) {
+              b.append(valueWriters[k].writeValue(cv, 0).toString());
+            } else {
+              b.append(valueWriters[k].writeValue(cv, i).toString());
+            }
+            colIndex++;
+            if (colIndex < cols.length) {
+              b.append('\u0001');
+            }
           }
-          colIndex++;
-          if (colIndex < cols.length) {
-            b.append('\u0001');
+          if (j < size - 1) {
+            b.append('\n');
           }
         }
-        if (j < size-1) {
-          b.append('\n');
+      } else {
+        for (int i = 0; i < size; i++) {
+          int colIndex = 0;
+          for (int k = 0; k < projectionSize; k++) {
+            int projIndex = projectedColumns[k];
+            ColumnVector cv = cols[projIndex];
+            if (cv.isRepeating) {
+              b.append(valueWriters[k].writeValue(cv, 0).toString());
+            } else {
+              b.append(valueWriters[k].writeValue(cv, i).toString());
+            }
+            colIndex++;
+            if (colIndex < cols.length) {
+              b.append('\u0001');
+            }
+          }
+          if (i < size - 1) {
+            b.append('\n');
+          }
         }
       }
-    } else {
-      for (int i = 0; i < size; i++) {
-        int colIndex = 0;
-        for (int k = 0; k < projectionSize; k++) {
-          ColumnVector cv = cols[this.projectedColumns[k]];
-          if (cv.isRepeating) {
-            b.append(cv.getWritableObject(0).toString());
-          } else {
-            b.append(cv.getWritableObject(i).toString());
-          }
-          colIndex++;
-          if (colIndex < cols.length) {
-            b.append('\u0001');
-          }
-        }
-        if (i < size-1) {
-          b.append('\n');
-        }
-      }
+    } catch (HiveException ex) {
+      throw new RuntimeException(ex);
     }
     return b.toString();
   }
@@ -181,6 +163,10 @@ public class VectorizedRowBatch implements Writable {
   @Override
   public void write(DataOutput arg0) throws IOException {
     throw new UnsupportedOperationException("Don't call me");
+  }
+
+  public void setValueWriters(VectorExpressionWriter[] valueWriters) {
+    this.valueWriters = valueWriters;
   }
 }
 
