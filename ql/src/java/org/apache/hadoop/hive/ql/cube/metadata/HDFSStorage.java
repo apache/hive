@@ -7,6 +7,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
@@ -184,6 +185,12 @@ public class HDFSStorage extends Storage {
           location, getTableParameters(), inputFormat, outputFormat, -1,
           storageTbl.getCols(), serdeClassName, serdeParameters, null, null);
     }
+  }
+
+  @Override
+  public void dropPartition(String storageTableName,
+      List<String> partVals, HiveConf conf) throws HiveException {
+    Hive.get(conf).dropPartition(storageTableName, partVals, false);
   }
 
 }

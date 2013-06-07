@@ -478,7 +478,7 @@ public class TestCubeMetastoreClient {
       String storageTableName = MetastoreUtil.getDimStorageTableName(dimName,
           storage.getPrefix());
       Assert.assertTrue(client.tableExists(storageTableName));
-      Assert.assertTrue(!client.getStorageTable(storageTableName).isPartitioned());
+      Assert.assertTrue(!client.getHiveTable(storageTableName).isPartitioned());
     }
   }
 
@@ -525,7 +525,7 @@ public class TestCubeMetastoreClient {
     String storageTableName2 = MetastoreUtil.getDimStorageTableName(dimName,
         hdfsStorage2.getPrefix());
     Assert.assertTrue(client.tableExists(storageTableName2));
-    Assert.assertTrue(!client.getStorageTable(storageTableName2).isPartitioned());
+    Assert.assertTrue(!client.getHiveTable(storageTableName2).isPartitioned());
   }
 
 }
