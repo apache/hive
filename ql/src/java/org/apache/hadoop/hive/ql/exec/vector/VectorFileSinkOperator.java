@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Stat;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -331,7 +332,6 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
 
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      System.out.println("Deserializer class = "+serializer.getClass().toString());
       serializer.initialize(null, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
 
@@ -589,6 +589,10 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
       if (vectorizedSerde) {
         row = records[i];
       } else {
+        if (vrg.valueWriters == null) {
+          vrg.setValueWriters(VectorExpressionWriterFactory.getExpressionWriters(
+              (StructObjectInspector)inputObjInspectors[0]));
+        }
         row = new Text(vrg.toString());
       }
     /* Create list bucketing sub-directory only if stored-as-directories is on. */

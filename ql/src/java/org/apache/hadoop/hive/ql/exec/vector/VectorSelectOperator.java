@@ -19,16 +19,21 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * Select operator implementation.
@@ -44,6 +49,8 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
   private int [] projectedColumns = null;
 
+  private VectorExpressionWriter [] valueWriters = null;
+
   public VectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf) {
     this.vContext = ctxt;
     this.conf = (SelectDesc) conf;
@@ -57,6 +64,8 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
       return;
     }
 
+    List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
+
     List<ExprNodeDesc> colList = conf.getColList();
     vContext.setOperatorType(OperatorType.SELECT);
     vExpressions = new VectorExpression[colList.size()];
@@ -66,6 +75,15 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
       // Update column map with output column names
       vContext.addToColumnMap(columnName, vExpressions[i].getOutputColumn());
     }
+    valueWriters = VectorExpressionWriterFactory.getExpressionWriters(colList);
+    for (VectorExpressionWriter vew : valueWriters) {
+      objectInspectors.add(vew.getObjectInspector());
+    }
+
+    List<String> outputFieldNames = conf.getOutputColumnNames();
+    outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
+        outputFieldNames, objectInspectors);
+
     initializeChildren(hconf);
     projectedColumns = new int [vExpressions.length];
     for (int i = 0; i < projectedColumns.length; i++) {
@@ -97,6 +115,8 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     }
 
     // Prepare output, set the projections
+    VectorExpressionWriter [] originalValueWriters = vrg.valueWriters;
+    vrg.setValueWriters(valueWriters);
     int[] originalProjections = vrg.projectedColumns;
     int originalProjectionSize = vrg.projectionSize;
     vrg.projectionSize = vExpressions.length;
@@ -106,6 +126,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     // Revert the projected columns back, because vrg will be re-used.
     vrg.projectionSize = originalProjectionSize;
     vrg.projectedColumns = originalProjections;
+    vrg.valueWriters = originalValueWriters;
   }
 
   /**
