@@ -24,8 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.
-    VectorAggregateExpression.AggregationBuffer;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -38,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 
 /**
 * <ClassName>. Vectorized implementation for MIN/MAX aggregates. 
@@ -78,12 +77,12 @@ public class <ClassName> extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private BytesWritable result;
+    private Text result;
     
     public <ClassName>(VectorExpression inputExpression) {
       super();
       this.inputExpression = inputExpression;
-      result = new BytesWritable();
+      result = new Text();
     }
     
     private Aggregation getCurrentAggregationBuffer(
@@ -358,7 +357,7 @@ public class <ClassName> extends VectorAggregateExpression {
     
     @Override
     public ObjectInspector getOutputObjectInspector() {
-      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
+      return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     }
 }
 
