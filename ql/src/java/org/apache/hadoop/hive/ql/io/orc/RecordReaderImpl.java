@@ -795,32 +795,27 @@ class RecordReaderImpl implements RecordReader {
       nanoVector.isNull = result.isNull;
       nanos.nextVector(nanoVector, batchSize);
 
-      if (!(result.isRepeating && nanoVector.isRepeating)) {
+      if(result.isRepeating && nanoVector.isRepeating) {
+        batchSize = 1;
+      }
 
-        // Non repeating values preset in the vector. Iterate thru the vector and populate the time
-        for (int i = 0; i < batchSize; i++) {
-          if (!result.isNull[i]) {
-            result.vector[i] = (result.vector[i] + WriterImpl.BASE_TIMESTAMP)
-                * WriterImpl.MILLIS_PER_SECOND;
-            nanoVector.vector[i] = parseNanos(nanoVector.vector[i]);
-            // fix the rounding when we divided by 1000.
-            if (result.vector[i] >= 0) {
-              result.vector[i] += nanoVector.vector[i] / 1000000;
-            } else {
-              result.vector[i] -= nanoVector.vector[i] / 1000000;
-            }
-            // Convert millis into nanos and add the nano vector value to it
-            result.vector[i] = (result.vector[i] * 1000000)
-                + nanoVector.vector[i];
-          }
-        }
-      } else {
-        // Entire vector has repeating values
-        if (!result.isNull[0]) {
-          result.vector[0] = (result.vector[0] * 1000000)
-              + nanoVector.vector[0];
+      // Non repeating values preset in the vector. Iterate thru the vector and populate the time
+      for (int i = 0; i < batchSize; i++) {
+        if (!result.isNull[i]) {
+          result.vector[i] = (result.vector[result.isRepeating ? 0 : i] + WriterImpl.BASE_TIMESTAMP)
+              * WriterImpl.MILLIS_PER_SECOND;
+          nanoVector.vector[i] = parseNanos(nanoVector.vector[nanoVector.isRepeating ? 0 : i]);
+          // Convert millis into nanos and add the nano vector value to it
+          // since we don't use sql.Timestamp, rounding errors don't apply here
+          result.vector[i] = (result.vector[i] * 1000000) + nanoVector.vector[i];
         }
       }
+
+      if(!(result.isRepeating && nanoVector.isRepeating)) {
+        // both have to repeat for the result to be repeating
+        result.isRepeating = false;
+      }
+
       return result;
     }
 
