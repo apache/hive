@@ -726,6 +726,25 @@ public class CubeQueryContext {
     return queryFormat.toString();
   }
 
+  private final String unionQueryFormat = "SELECT * FROM %s";
+  String getUnionQueryFormat() {
+    StringBuilder queryFormat = new StringBuilder();
+    queryFormat.append(unionQueryFormat);
+    if (getGroupByTree() != null) {
+      queryFormat.append(" GROUP BY %s");
+    }
+    if (getHavingTree() != null) {
+      queryFormat.append(" HAVING %s");
+    }
+    if (getOrderByTree() != null) {
+      queryFormat.append(" ORDER BY %s");
+    }
+    if (getLimitValue() != null) {
+      queryFormat.append(" LIMIT %s");
+    }
+    return queryFormat.toString();
+  }
+
   private Object[] getQueryTreeStrings(String factStorageTable)
       throws SemanticException {
     List<String> qstrs = new ArrayList<String>();
@@ -735,6 +754,24 @@ public class CubeQueryContext {
     if (whereString != null) {
       qstrs.add(whereString);
     }
+    if (getGroupByTree() != null) {
+      qstrs.add(getGroupByTree());
+    }
+    if (getHavingTree() != null) {
+      qstrs.add(getHavingTree());
+    }
+    if (getOrderByTree() != null) {
+      qstrs.add(getOrderByTree());
+    }
+    if (getLimitValue() != null) {
+      qstrs.add(String.valueOf(getLimitValue()));
+    }
+    return qstrs.toArray(new String[0]);
+  }
+
+  private Object[] getUnionQueryTreeStrings(String baseQuery) {
+    List<String> qstrs = new ArrayList<String>();
+    qstrs.add("(" + baseQuery + ") "+ getAliasForTabName(cube.getName()));
     if (getGroupByTree() != null) {
       qstrs.add(getGroupByTree());
     }
@@ -827,6 +864,12 @@ public class CubeQueryContext {
     return String.format(qfmt, getQueryTreeStrings(tableName));
   }
 
+  private String getUnionQuery(String baseQuery) {
+    String qfmt = getUnionQueryFormat();
+    LOG.info("union query format:" + qfmt);
+    return String.format(qfmt, getUnionQueryTreeStrings(baseQuery));
+
+  }
   private void appendWhereClause(StringBuilder whereWithoutTimerange,
       String whereClause, boolean hasMore) {
     if (hasMore) {
@@ -919,7 +962,11 @@ public class CubeQueryContext {
           query.append(" UNION ALL ");
         }
       }
-      return query.toString();
+      if (partColMap.keySet().size() > 1) {
+        return getUnionQuery(query.toString());
+      } else {
+        return query.toString();
+      }
     } else {
       return toHQL(null);
     }

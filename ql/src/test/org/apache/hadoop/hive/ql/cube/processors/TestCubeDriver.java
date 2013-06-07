@@ -131,7 +131,15 @@ public class TestCubeDriver {
       }
       i++;
     }
-    return expected.toString();
+    if (numTabs > 1) {
+      String query = "select * from (" + expected.toString() + ")" + cubeName;
+      if (postWhereExpr != null) {
+        query += " " + postWhereExpr;
+      }
+      return query;
+    } else {
+      return expected.toString();
+    }
   }
 
   public String getExpectedQuery(String cubeName, String selExpr,
@@ -171,7 +179,15 @@ public class TestCubeDriver {
       }
       i++;
     }
-    return expected.toString();
+    if (numTabs > 1) {
+      String query = "select * from (" + expected.toString() + ")" + cubeName;
+      if (postWhereExpr != null) {
+        query += " " + postWhereExpr;
+      }
+      return query;
+    } else {
+      return expected.toString();
+    }
   }
 
   private Map<String, String> getWhereForDailyAndHourly2days(String cubeName,
@@ -280,10 +296,12 @@ public class TestCubeDriver {
   }
 
   private void compareQueries(String expected, String actual) {
+    System.out.println("Expected:" + expected);
     expected = expected.replaceAll("\\W", "");
     actual = actual.replaceAll("\\W", "");
     Assert.assertTrue(expected.equalsIgnoreCase(actual));
   }
+
   @Test
   public void testCubeWhereQuery() throws Exception {
     String hqlQuery = driver.compileCubeQuery("select SUM(msr2) from testCube" +
