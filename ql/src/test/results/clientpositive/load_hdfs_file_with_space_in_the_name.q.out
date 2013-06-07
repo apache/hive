@@ -1,0 +1,12 @@
+PREHOOK: query: CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@load_file_with_space_in_the_name
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+PREHOOK: Output: default@load_file_with_space_in_the_name
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@load_file_with_space_in_the_name
+#### A masked pattern was here ####

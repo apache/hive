@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -82,7 +84,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = new Path(System.getProperty("user.dir"), path).toUri().toString();
+        path = URIUtil.decode( new Path(System.getProperty("user.dir"), path).toUri().toString() );
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
           path).toString();
@@ -231,8 +233,13 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       // that's just a test case.
       String copyURIStr = ctx.getExternalTmpFileURI(toURI);
       URI copyURI = URI.create(copyURIStr);
-      rTask = TaskFactory.get(new CopyWork(fromURI.toString(), copyURIStr),
-          conf);
+      try {
+        rTask = TaskFactory.get(new CopyWork(URIUtil.decode(fromURI.toString()), copyURIStr),
+            conf);
+      } catch (URIException e) {
+        throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
+            .getMessage()), e);
+      }
       fromURI = copyURI;
     }
 
@@ -261,8 +268,14 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
 
-    LoadTableDesc loadTableWork = new LoadTableDesc(fromURI.toString(),
-        loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
+    LoadTableDesc loadTableWork;
+    try {
+      loadTableWork = new LoadTableDesc(URIUtil.decode(fromURI.toString()),
+          loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
+    } catch (URIException e1) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e1
+          .getMessage()), e1);
+    }
 
     Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
         getOutputs(), loadTableWork, null, true), conf);
