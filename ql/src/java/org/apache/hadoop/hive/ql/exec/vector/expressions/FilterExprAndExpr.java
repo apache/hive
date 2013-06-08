@@ -24,18 +24,17 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This class represents a non leaf binary operator in the expression tree.
  */
 public class FilterExprAndExpr extends VectorExpression {
-  VectorExpression childExpr1;
-  VectorExpression childExpr2;
 
   public FilterExprAndExpr(VectorExpression childExpr1, VectorExpression childExpr2) {
-    this.childExpr1 = childExpr1;
-    this.childExpr2 = childExpr2;
+    this.childExpressions = new VectorExpression[2];
+    childExpressions[0] = childExpr1;
+    childExpressions[1] = childExpr2;
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-    childExpr1.evaluate(batch);
-    childExpr2.evaluate(batch);
+    childExpressions[0].evaluate(batch);
+    childExpressions[1].evaluate(batch);
   }
 
   @Override

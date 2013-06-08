@@ -611,7 +611,7 @@ public class VectorizationContext {
       int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve2 = new SelectColumnIsTrue(inputCol);
     } else {
-      ve2 = getVectorExpression(leftExpr);
+      ve2 = getVectorExpression(rightExpr);
     }
 
     return new FilterExprOrExpr(ve1,ve2);
@@ -633,6 +633,7 @@ public class VectorizationContext {
 
   private VectorExpression getVectorExpression(GenericUDFOPAnd udf,
       List<ExprNodeDesc> childExpr) throws HiveException {
+
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
@@ -651,7 +652,7 @@ public class VectorizationContext {
       int inputCol = getInputColumnIndex(colDesc.getColumn());
       ve2 = new SelectColumnIsTrue(inputCol);
     } else {
-      ve2 = getVectorExpression(leftExpr);
+      ve2 = getVectorExpression(rightExpr);
     }
 
     return new FilterExprAndExpr(ve1,ve2);
@@ -965,7 +966,8 @@ public class VectorizationContext {
 
   private String getOutputColType(String inputType1, String inputType2, String method) {
     if (method.equalsIgnoreCase("divide") || inputType1.equalsIgnoreCase("double") ||
-        inputType2.equalsIgnoreCase("double")) {
+        inputType2.equalsIgnoreCase("double") || inputType1.equalsIgnoreCase("float") ||
+        inputType2.equalsIgnoreCase("float")) {
       return "double";
     } else {
       if (inputType1.equalsIgnoreCase("string") || inputType2.equalsIgnoreCase("string")) {
