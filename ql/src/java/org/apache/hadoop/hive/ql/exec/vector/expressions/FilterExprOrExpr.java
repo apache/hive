@@ -24,15 +24,14 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This class represents an Or expression. This applies short circuit optimization.
  */
 public class FilterExprOrExpr extends VectorExpression {
-  private final VectorExpression childExpr1;
-  private final VectorExpression childExpr2;
   private final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
   private int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
   private final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
   public FilterExprOrExpr(VectorExpression childExpr1, VectorExpression childExpr2) {
-    this.childExpr1 = childExpr1;
-    this.childExpr2 = childExpr2;
+    this.childExpressions = new VectorExpression[2];
+    childExpressions[0] = childExpr1;
+    childExpressions[1] = childExpr2;
   }
 
   @Override
@@ -41,6 +40,10 @@ public class FilterExprOrExpr extends VectorExpression {
     if (n <= 0) {
       return;
     }
+
+    VectorExpression childExpr1 = this.childExpressions[0];
+    VectorExpression childExpr2 = this.childExpressions[1];
+
     boolean prevSelectInUse = batch.selectedInUse;
 
     // Save the original selected vector

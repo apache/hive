@@ -285,7 +285,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (vectorPath) {
       if (validateVectorPath()) {
-        LOG.debug("Going down the vectorization path");
+        LOG.info("Going down the vectorization path");
         job.setMapperClass(VectorExecMapper.class);
       } else {
         //fall back to non-vector mode
