@@ -141,7 +141,10 @@ public class TestVectorizedORCReader {
           // Timestamps are stored as long, so convert and compare
           if (a instanceof Timestamp) {
             Timestamp t = ((Timestamp) a);
-            Long timeInNanoSec = (t.getTime() * 1000000) + t.getNanos();
+            // Timestamp.getTime() is overriden and is 
+            // long time = super.getTime();
+            // return (time + (nanos / 1000000));
+            Long timeInNanoSec = (t.getTime() * 1000000) + (t.getNanos() % 1000000);
             Assert.assertEquals(true, timeInNanoSec.toString().equals(b.toString()));
             continue;
           }
