@@ -20,14 +20,23 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 public class TestVectorSelectOperator {
@@ -36,8 +45,10 @@ public class TestVectorSelectOperator {
 
     private static final long serialVersionUID = 1L;
 
-    public ValidatorVectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf) {
+    public ValidatorVectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf)
+        throws HiveException {
       super(ctxt, conf);
+      initializeOp(null);
     }
 
     /**
@@ -49,8 +60,8 @@ public class TestVectorSelectOperator {
 
       int[] projections = vrg.projectedColumns;
       assertEquals(2, vrg.projectionSize);
-      assertEquals(2, projections[0]);
-      assertEquals(3, projections[1]);
+      assertEquals(3, projections[0]);
+      assertEquals(2, projections[1]);
 
       LongColumnVector out0 = (LongColumnVector) vrg.cols[projections[0]];
       LongColumnVector out1 = (LongColumnVector) vrg.cols[projections[1]];
@@ -62,8 +73,8 @@ public class TestVectorSelectOperator {
 
       for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
         assertEquals(in0.vector[i] + in1.vector[i], out0.vector[i]);
-        assertEquals(in2.vector[i], out0.vector[i]);
-        assertEquals(in3.vector[i], out1.vector[i]);
+        assertEquals(in3.vector[i], out0.vector[i]);
+        assertEquals(in2.vector[i], out1.vector[i]);
       }
     }
   }
@@ -71,18 +82,37 @@ public class TestVectorSelectOperator {
   @Test
   public void testSelectOperator() throws HiveException {
 
-    ValidatorVectorSelectOperator vso = new ValidatorVectorSelectOperator(null, new SelectDesc(
-        false));
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("a", 0); columnMap.put("b", 1); columnMap.put("c", 2);
+    VectorizationContext vc = new VectorizationContext(columnMap, 3);
+
+    SelectDesc selDesc = new SelectDesc(false);
+    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
+    ExprNodeColumnDesc colDesc1 = new ExprNodeColumnDesc(Long.class, "a", "table", false);
+    ExprNodeColumnDesc colDesc2 = new ExprNodeColumnDesc(Long.class, "b", "table", false);
+    ExprNodeColumnDesc colDesc3 = new ExprNodeColumnDesc(Long.class, "c", "table", false);
+    ExprNodeGenericFuncDesc plusDesc = new ExprNodeGenericFuncDesc();
+    GenericUDF gudf = new GenericUDFBridge("+", true, UDFOPPlus.class);
+    plusDesc.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new  ArrayList<ExprNodeDesc>();
+    children.add(colDesc1);
+    children.add(colDesc2);
+    plusDesc.setChildExprs(children);
+    plusDesc.setTypeInfo(TypeInfoFactory.longTypeInfo);
+
+    colList.add(plusDesc);
+    colList.add(colDesc3);
+    selDesc.setColList(colList);
+
+    List<String> outputColNames = new ArrayList<String>();
+    outputColNames.add("_col0");
+    outputColNames.add("_col1");
+    selDesc.setOutputColumnNames(outputColNames);
+
+    ValidatorVectorSelectOperator vso = new ValidatorVectorSelectOperator(vc, selDesc);
 
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE, 4, 17);
-
-    LongColAddLongColumn lcalcExpr = new LongColAddLongColumn(0, 1, 2);
-    IdentityExpression iexpr = new IdentityExpression(3, "long");
-
-    VectorExpression[] ves = new VectorExpression[] {lcalcExpr, iexpr};
-
-    vso.setSelectExpressions(ves);
 
     vso.processOp(vrg, 0);
   }

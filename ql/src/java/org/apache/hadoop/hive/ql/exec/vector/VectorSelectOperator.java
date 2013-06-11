@@ -91,10 +91,6 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     }
   }
 
-  public void setSelectExpressions(VectorExpression[] exprs) {
-    this.vExpressions = exprs;
-  }
-
   @Override
   public void processOp(Object row, int tag) throws HiveException {
 
