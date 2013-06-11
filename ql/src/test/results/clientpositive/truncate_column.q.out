@@ -55,26 +55,26 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM test_tab
+PREHOOK: query: SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_tab
+POSTHOOK: query: SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
 165	val_165
-409	val_409
+238	val_238
 255	val_255
+27	val_27
 278	val_278
-98	val_98
+311	val_311
+409	val_409
 484	val_484
+86	val_86
+98	val_98
 PREHOOK: query: -- Truncate 1 column
 TRUNCATE TABLE test_tab COLUMNS (key)
 PREHOOK: type: TRUNCATETABLE
@@ -124,27 +124,27 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- First column should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- First column should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-NULL	val_238
-NULL	val_86
-NULL	val_311
-NULL	val_27
 NULL	val_165
-NULL	val_409
+NULL	val_238
 NULL	val_255
+NULL	val_27
 NULL	val_278
-NULL	val_98
+NULL	val_311
+NULL	val_409
 NULL	val_484
+NULL	val_86
+NULL	val_98
 PREHOOK: query: -- Truncate multiple columns
 INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
@@ -210,12 +210,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -286,12 +286,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -378,11 +378,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM test_tab
+PREHOOK: query: SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_tab
+POSTHOOK: query: SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -392,16 +392,16 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
 165	val_165
-409	val_409
+238	val_238
 255	val_255
+27	val_27
 278	val_278
-98	val_98
+311	val_311
+409	val_409
 484	val_484
+86	val_86
+98	val_98
 PREHOOK: query: -- Truncate 1 column
 TRUNCATE TABLE test_tab COLUMNS (key)
 PREHOOK: type: TRUNCATETABLE
@@ -460,12 +460,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- First column should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- First column should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -475,16 +475,16 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-NULL	val_238
-NULL	val_86
-NULL	val_311
-NULL	val_27
 NULL	val_165
-NULL	val_409
+NULL	val_238
 NULL	val_255
+NULL	val_27
 NULL	val_278
-NULL	val_98
+NULL	val_311
+NULL	val_409
 NULL	val_484
+NULL	val_86
+NULL	val_98
 PREHOOK: query: -- Truncate 2 columns
 TRUNCATE TABLE test_tab COLUMNS (key, value)
 PREHOOK: type: TRUNCATETABLE
@@ -543,12 +543,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- Both columns should be null
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -643,12 +643,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM test_tab_part WHERE part = '1'
+PREHOOK: query: SELECT * FROM test_tab_part WHERE part = '1' ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab_part
 PREHOOK: Input: default@test_tab_part@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_tab_part WHERE part = '1'
+POSTHOOK: query: SELECT * FROM test_tab_part WHERE part = '1' ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab_part
 POSTHOOK: Input: default@test_tab_part@part=1
@@ -661,16 +661,16 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238	1
-86	val_86	1
-311	val_311	1
-27	val_27	1
 165	val_165	1
-409	val_409	1
+238	val_238	1
 255	val_255	1
+27	val_27	1
 278	val_278	1
-98	val_98	1
+311	val_311	1
+409	val_409	1
 484	val_484	1
+86	val_86	1
+98	val_98	1
 PREHOOK: query: TRUNCATE TABLE test_tab_part PARTITION (part = '1') COLUMNS (key)
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Input: default@test_tab_part
@@ -734,13 +734,13 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- First column should be null
-SELECT * FROM test_tab_part WHERE part = '1'
+SELECT * FROM test_tab_part WHERE part = '1' ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab_part
 PREHOOK: Input: default@test_tab_part@part=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- First column should be null
-SELECT * FROM test_tab_part WHERE part = '1'
+SELECT * FROM test_tab_part WHERE part = '1' ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab_part
 POSTHOOK: Input: default@test_tab_part@part=1
@@ -753,13 +753,13 @@ POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab_part PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-NULL	val_238	1
-NULL	val_86	1
-NULL	val_311	1
-NULL	val_27	1
 NULL	val_165	1
-NULL	val_409	1
+NULL	val_238	1
 NULL	val_255	1
+NULL	val_27	1
 NULL	val_278	1
-NULL	val_98	1
+NULL	val_311	1
+NULL	val_409	1
 NULL	val_484	1
+NULL	val_86	1
+NULL	val_98	1
