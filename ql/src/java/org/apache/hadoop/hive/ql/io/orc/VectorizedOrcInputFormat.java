@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -46,7 +45,7 @@ import org.apache.hadoop.mapred.Reporter;
  * A MapReduce/Hive input format for ORC files.
  */
 public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, VectorizedRowBatch>
-  implements InputFormatChecker, VectorizedInputFormatInterface {
+    implements InputFormatChecker, VectorizedInputFormatInterface {
 
   private static class VectorizedOrcRecordReader
       implements RecordReader<NullWritable, VectorizedRowBatch> {
@@ -55,6 +54,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private final long length;
     private float progress = 0.0f;
     private VectorizedRowBatchCtx rbCtx;
+    private boolean addPartitionCols = true;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -78,10 +78,19 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       if (!reader.hasNext()) {
         return false;
       }
-      reader.nextBatch(value);
       try {
-        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object)value, value.size, value);
-      } catch (SerDeException e) {
+        // Check and update partition cols if necessary. Ideally, this should be done
+        // in CreateValue as the partition is constant per split. But since Hive uses
+        // CombineHiveRecordReader and
+        // as this does not call CreateValue for each new RecordReader it creates, this check is
+        // required in next()
+        if (addPartitionCols) {
+          rbCtx.AddPartitionColsToBatch(value);
+          addPartitionCols = false;
+        }
+        reader.nextBatch(value);
+        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object) value, value.size, value);
+      } catch (Exception e) {
         new RuntimeException(e);
       }
       progress = reader.getProgress();
@@ -98,10 +107,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       VectorizedRowBatch result = null;
       try {
         result = rbCtx.CreateVectorizedRowBatch();
-        // Since the record reader works only on one split and
-        // given a split the partition cannot change, we are setting the partition
-        // values only once during batch creation
-        rbCtx.AddPartitionColsToBatch(result);
       } catch (HiveException e) {
         new RuntimeException("Error creating a batch", e);
       }
@@ -131,29 +136,36 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
   /**
    * Recurse down into a type subtree turning on all of the sub-columns.
-   * @param types the types of the file
-   * @param result the global view of columns that should be included
-   * @param typeId the root of tree to enable
+   *
+   * @param types
+   *          the types of the file
+   * @param result
+   *          the global view of columns that should be included
+   * @param typeId
+   *          the root of tree to enable
    */
   private static void includeColumnRecursive(List<OrcProto.Type> types,
-                                             boolean[] result,
-                                             int typeId) {
+      boolean[] result,
+      int typeId) {
     result[typeId] = true;
     OrcProto.Type type = types.get(typeId);
     int children = type.getSubtypesCount();
-    for(int i=0; i < children; ++i) {
+    for (int i = 0; i < children; ++i) {
       includeColumnRecursive(types, result, type.getSubtypes(i));
     }
   }
 
   /**
    * Take the configuration and figure out which columns we need to include.
-   * @param types the types of the file
-   * @param conf the configuration
+   *
+   * @param types
+   *          the types of the file
+   * @param conf
+   *          the configuration
    * @return true for each column that should be included
    */
   private static boolean[] findIncludedColumns(List<OrcProto.Type> types,
-                                               Configuration conf) {
+      Configuration conf) {
     String includedStr =
         conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
     if (includedStr == null || includedStr.trim().length() == 0) {
@@ -164,13 +176,13 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       result[0] = true;
       OrcProto.Type root = types.get(0);
       List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
-      for(int i=0; i < root.getSubtypesCount(); ++i) {
+      for (int i = 0; i < root.getSubtypesCount(); ++i) {
         if (included.contains(i)) {
           includeColumnRecursive(types, result, root.getSubtypes(i));
         }
       }
       // if we are filtering at least one column, return the boolean array
-      for(boolean include: result) {
+      for (boolean include : result) {
         if (!include) {
           return result;
         }
@@ -182,7 +194,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
   @Override
   public RecordReader<NullWritable, VectorizedRowBatch>
       getRecordReader(InputSplit inputSplit, JobConf conf,
-                      Reporter reporter) throws IOException {
+          Reporter reporter) throws IOException {
     FileSplit fileSplit = (FileSplit) inputSplit;
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
@@ -192,8 +204,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
-                               ArrayList<FileStatus> files
-                              ) throws IOException {
+      ArrayList<FileStatus> files
+      ) throws IOException {
     if (files.size() <= 0) {
       return false;
     }

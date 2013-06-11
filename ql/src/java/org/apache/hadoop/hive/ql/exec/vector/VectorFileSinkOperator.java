@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
@@ -597,7 +600,7 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
       }
     /* Create list bucketing sub-directory only if stored-as-directories is on. */
     String lbDirName = null;
-    //lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
+    lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
 
     FSPaths fpaths;
 
@@ -679,6 +682,52 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
       throw new HiveException(e);
     }
     }
+  }
+
+  /**
+   * Generate list bucketing directory name from a row.
+   * @param row row to process.
+   * @return directory name.
+   */
+  private String generateListBucketingDirName(Object row) {
+    if (!this.isSkewedStoredAsSubDirectories) {
+      return null;
+    }
+
+    String lbDirName = null;
+    List<Object> standObjs = new ArrayList<Object>();
+    List<String> skewedCols = lbCtx.getSkewedColNames();
+    List<List<String>> allSkewedVals = lbCtx.getSkewedColValues();
+    List<String> skewedValsCandidate = null;
+    Map<SkewedValueList, String> locationMap = lbCtx.getLbLocationMap();
+
+    /* Convert input row to standard objects. */
+    ObjectInspectorUtils.copyToStandardObject(standObjs, row,
+        (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
+
+    assert (standObjs.size() >= skewedCols.size()) :
+      "The row has less number of columns than no. of skewed column.";
+
+    skewedValsCandidate = new ArrayList<String>(skewedCols.size());
+    for (SkewedColumnPositionPair posPair : lbCtx.getRowSkewedIndex()) {
+      skewedValsCandidate.add(posPair.getSkewColPosition(),
+          standObjs.get(posPair.getTblColPosition()).toString());
+    }
+    /* The row matches skewed column names. */
+    if (allSkewedVals.contains(skewedValsCandidate)) {
+      /* matches skewed values. */
+      lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate);
+      locationMap.put(new SkewedValueList(skewedValsCandidate), lbDirName);
+    } else {
+      /* create default directory. */
+      lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
+          lbCtx.getDefaultDirName());
+      List<String> defaultKey = Arrays.asList(lbCtx.getDefaultKey());
+      if (!locationMap.containsKey(defaultKey)) {
+        locationMap.put(new SkewedValueList(defaultKey), lbDirName);
+      }
+    }
+    return lbDirName;
   }
 
   /**
