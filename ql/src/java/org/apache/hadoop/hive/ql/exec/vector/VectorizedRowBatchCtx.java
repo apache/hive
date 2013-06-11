@@ -279,7 +279,7 @@ public class VectorizedRowBatchCtx {
   {
     List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
     for (int i = 0; i < fieldRefs.size(); i++) {
-      if (fieldRefs.get(i).getFieldName() == colName) {
+      if (fieldRefs.get(i).getFieldName().equals(colName)) {
         return i;
       }
     }

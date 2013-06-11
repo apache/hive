@@ -58,6 +58,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
   private VectorizedRowBatchCtx rbCtx;
   private final LongWritable keyCache = new LongWritable();
   private final BytesRefArrayWritable colsCache = new BytesRefArrayWritable();
+  private boolean addPartitionCols = true;
 
   private static RCFileSyncCache syncCache = new RCFileSyncCache();
 
@@ -149,10 +150,6 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
     VectorizedRowBatch result = null;
     try {
       result = rbCtx.CreateVectorizedRowBatch();
-      // Since the record reader works only on one split and
-      // given a split the partition cannot change, we are setting the partition
-      // values only once during batch creation
-      rbCtx.AddPartitionColsToBatch(result);
     } catch (HiveException e) {
       new RuntimeException("Error creating a batch", e);
     }
@@ -175,9 +172,18 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
 
     int i = 0;
     try {
+
       for (; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
         more = next(keyCache);
         if (more) {
+          // Check and update partition cols if necessary. Ideally this should be done
+          // in CreateValue() as the partition is constant per split. But since Hive uses
+          // CombineHiveRecordReader and as this does not call CreateValue() for
+          // each new RecordReader it creates, this check is required in next()
+          if (addPartitionCols) {
+            rbCtx.AddPartitionColsToBatch(value);
+            addPartitionCols = false;
+          }
           in.getCurrentRow(colsCache);
           // Currently RCFile reader does not support reading vectorized
           // data. Populating the batch by adding one row at a time.

@@ -412,6 +412,9 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
 
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(hconf);
+    Map<String, Operator<? extends OperatorDesc>> aliasToVectorOpMap =
+        new HashMap<String, Operator<? extends OperatorDesc>>();
+
     try {
       for (String onefile : conf.getPathToAliases().keySet()) {
         MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile, convertedOI);
@@ -440,8 +443,12 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
           LOG.info("Adding alias " + onealias + " to work list for file "
             + onefile);
 
-          Operator<? extends OperatorDesc> vectorOp = vectorizeOperator(op,
-              vectorizationContext);
+          Operator<? extends OperatorDesc> vectorOp = aliasToVectorOpMap.get(onealias);
+
+          if (vectorOp == null) {
+            vectorOp = vectorizeOperator(op, vectorizationContext);
+            aliasToVectorOpMap.put(onealias, vectorOp);
+          }
 
           System.out.println("Using vectorized op: "+ vectorOp.getName());
           LOG.info("Using vectorized op: " + vectorOp.getName());
@@ -499,8 +506,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         vectorOp = new VectorSelectOperator(vectorizationContext, op.getConf());
         break;
       case FILESINK:
-        vectorOp = new VectorFileSinkOperator(vectorizationContext,
-            op.getConf());
+        vectorOp = new VectorFileSinkOperator(vectorizationContext, op.getConf());
         break;
       case TABLESCAN:
         vectorOp = op.cloneOp();
@@ -631,7 +637,25 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
   // multiple files/partitions.
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
+    Path fpath = new Path((new Path(this.getExecContext().getCurrentInputFile()))
+        .toUri().getPath());
 
+    for (String onefile : conf.getPathToAliases().keySet()) {
+      Path onepath = new Path(new Path(onefile).toUri().getPath());
+      // check for the operators who will process rows coming to this Map
+      // Operator
+      if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
+        String onealias = conf.getPathToAliases().get(onefile).get(0);
+        Operator<? extends OperatorDesc> op =
+            conf.getAliasToWork().get(onealias);
+
+        LOG.info("Processing alias " + onealias + " for file " + onefile);
+
+        MapInputPath inp = new MapInputPath(onefile, onealias, op);
+        //setInspectorInput(inp);
+        break;
+      }
+    }
   }
 
   public static Writable[] populateVirtualColumnValues(ExecMapperContext ctx,
