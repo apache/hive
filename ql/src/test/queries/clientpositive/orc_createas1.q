@@ -20,7 +20,7 @@ CREATE TABLE orc_createas1b
     STORED AS ORC AS
     SELECT * FROM src;
 
-EXPLAIN SELECT * FROM orc_createas1b LIMIT 5;
+EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5;
 
 SELECT * FROM orc_createas1b ORDER BY key LIMIT 5;
 
