@@ -55,7 +55,10 @@ public class DoubleColAddDoubleColumn extends VectorExpression {
       return;
     }
     
-    outputColVector.isRepeating = inputColVector1.isRepeating && inputColVector2.isRepeating;
+    outputColVector.isRepeating = 
+         inputColVector1.isRepeating && inputColVector2.isRepeating
+      || inputColVector1.isRepeating && !inputColVector1.noNulls && inputColVector1.isNull[0]
+      || inputColVector2.isRepeating && !inputColVector2.noNulls && inputColVector2.isNull[0];
     
     // Handle nulls first  
     NullUtil.propagateNullsColCol(
