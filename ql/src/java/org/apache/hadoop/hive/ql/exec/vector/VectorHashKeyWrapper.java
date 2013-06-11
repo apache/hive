@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -231,6 +232,15 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public int getByteLength(int i) {
     return byteLengths[i - longValues.length - doubleValues.length];
+  }
+
+  public int getVariableSize() {
+    int variableSize = 0;
+    for (int i=0; i<byteLengths.length; ++i) {
+      JavaDataModel model = JavaDataModel.get();
+      variableSize += model.lengthForByteArrayOfSize(byteLengths[i]);
+    }
+    return variableSize;
   }
 
 

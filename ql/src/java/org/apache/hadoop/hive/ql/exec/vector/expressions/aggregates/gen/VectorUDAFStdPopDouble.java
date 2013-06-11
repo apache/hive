@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -61,6 +62,11 @@ public class VectorUDAFStdPopDouble extends VectorAggregateExpression {
         sum = 0;
         count = 0;
         variance = 0;
+      }
+
+      @Override
+      public int getVariableSize() {
+        throw new UnsupportedOperationException();
       }
     }
     
@@ -482,5 +488,16 @@ public class VectorUDAFStdPopDouble extends VectorAggregateExpression {
     public ObjectInspector getOutputObjectInspector() {
       return soi;
     }
+
+  @Override
+  public int getAggregationBufferFixedSize() {
+      JavaDataModel model = JavaDataModel.get();
+      return JavaDataModel.alignUp(
+        model.object() +
+        model.primitive2()*3+
+        model.primitive1(),
+        model.memoryAlign());
+  }
+
 }
 

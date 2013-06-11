@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -61,6 +62,11 @@ public class VectorUDAFSumLong extends VectorAggregateExpression {
         } else {
           sum += value;
         }
+      }
+
+      @Override
+      public int getVariableSize() {
+        throw new UnsupportedOperationException();
       }
     }
     
@@ -404,5 +410,15 @@ public class VectorUDAFSumLong extends VectorAggregateExpression {
     public ObjectInspector getOutputObjectInspector() {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
+
+  @Override
+  public int getAggregationBufferFixedSize() {
+      JavaDataModel model = JavaDataModel.get();
+      return JavaDataModel.alignUp(
+        model.object(),
+        model.memoryAlign());
+  }
+
+
 }
 
