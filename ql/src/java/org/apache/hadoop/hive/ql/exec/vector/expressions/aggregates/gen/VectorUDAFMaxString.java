@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -74,6 +75,12 @@ public class VectorUDAFMaxString extends VectorAggregateExpression {
         System.arraycopy(bytes, start, this.bytes, 0, length);
         this.length = length;
       }
+      @Override
+      public int getVariableSize() {
+        JavaDataModel model = JavaDataModel.get();
+        return model.lengthForByteArrayOfSize(bytes.length);
+      }
+
     }
     
     private VectorExpression inputExpression;
@@ -359,5 +366,21 @@ public class VectorUDAFMaxString extends VectorAggregateExpression {
     public ObjectInspector getOutputObjectInspector() {
       return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     }
+
+    @Override
+    public int getAggregationBufferFixedSize() {
+      JavaDataModel model = JavaDataModel.get();
+      return JavaDataModel.alignUp(
+        model.object() +
+        model.ref()+
+        model.primitive1()*2,
+        model.memoryAlign());
+    }
+    
+    @Override
+    public boolean hasVariableSize() {
+      return true;
+    }
+
 }
 

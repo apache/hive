@@ -20,16 +20,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 /**
  * Class for handling vectorized hash map key wrappers. It evaluates the key columns in a
@@ -81,6 +75,19 @@ public class VectorHashKeyWrapperBatch {
    * lookup vector to map from key index to primitive type index
    */
   private KeyLookupHelper[] indexLookup;
+
+  /**
+   * The fixed size of the key wrappers.
+   */
+  private int keysFixedSize;
+
+   /**
+   * Returns the compiled fixed size for the key wrappers.
+   * @return
+   */
+  public int getKeysFixedSize() {
+    return keysFixedSize;
+  }
 
   /**
    * Accessor for the batch-sized array of key wrappers
@@ -428,6 +435,8 @@ public class VectorHashKeyWrapperBatch {
     VectorHashKeyWrapperBatch compiledKeyWrapperBatch = new VectorHashKeyWrapperBatch();
     compiledKeyWrapperBatch.keyExpressions = keyExpressions;
 
+    compiledKeyWrapperBatch.keysFixedSize = 0;
+
     // We'll overallocate and then shrink the array for each type
     int[] longIndices = new int[keyExpressions.length];
     int longIndicesIndex = 0;
@@ -479,14 +488,32 @@ public class VectorHashKeyWrapperBatch {
       compiledKeyWrapperBatch.vectorHashKeyWrappers[i] =
           new VectorHashKeyWrapper(longIndicesIndex, doubleIndicesIndex, stringIndicesIndex);
     }
+
+    JavaDataModel model = JavaDataModel.get();
+
+    // Compute the fixed size overhead for the keys
+    // start with the keywrapper itself
+    compiledKeyWrapperBatch.keysFixedSize += JavaDataModel.alignUp(
+        model.object() +
+        model.ref() * 6+
+        model.primitive1(),
+        model.memoryAlign());
+
+    // Now add the key wrapper arrays
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForLongArrayOfSize(longIndicesIndex);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForDoubleArrayOfSize(doubleIndicesIndex);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(stringIndicesIndex);
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForIntArrayOfSize(longIndicesIndex) * 2;
+    compiledKeyWrapperBatch.keysFixedSize += model.lengthForBooleanArrayOfSize(keyExpressions.length);
+
     return compiledKeyWrapperBatch;
   }
 
   /**
    * Get the row-mode writable object value of a key from a key wrapper
-   * @param keyOutputWriter 
+   * @param keyOutputWriter
    */
-  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i, 
+  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i,
       VectorExpressionWriter keyOutputWriter)
     throws HiveException {
     if (kw.getIsNull(i)) {
@@ -505,6 +532,17 @@ public class VectorHashKeyWrapperBatch {
           "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",
           i, klh.longIndex, klh.doubleIndex, klh.stringIndex));
     }
+  }
+
+  public int getVariableSize(int batchSize) {
+    int variableSize = 0;
+    if ( 0 < stringIndices.length) {
+      for (int k=0; k<batchSize; ++k) {
+        VectorHashKeyWrapper hkw = vectorHashKeyWrappers[k];
+        variableSize += hkw.getVariableSize();
+      }
+    }
+    return variableSize;
   }
 }
 

@@ -24,9 +24,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public abstract class VectorAggregateExpression  {
-  
+
   public static interface AggregationBuffer {
-  }; 
+    int getVariableSize();
+  };
 
   public abstract AggregationBuffer getNewAggregationBuffer() throws HiveException;
   public abstract void aggregateInput(AggregationBuffer agg, VectorizedRowBatch unit)
@@ -37,5 +38,9 @@ public abstract class VectorAggregateExpression  {
   public abstract Object evaluateOutput(AggregationBuffer agg) throws HiveException;
 
   public abstract ObjectInspector getOutputObjectInspector();
+  public abstract int getAggregationBufferFixedSize();
+  public boolean hasVariableSize() {
+    return false;
+  }
 }
 

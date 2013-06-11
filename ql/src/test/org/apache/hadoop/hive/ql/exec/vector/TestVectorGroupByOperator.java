@@ -43,18 +43,17 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.ByteWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-
+import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -151,12 +150,12 @@ public class TestVectorGroupByOperator {
     ArrayList<ExprNodeDesc> keys = new ArrayList<ExprNodeDesc>();
     keys.add(keyExp);
     desc.setKeys(keys);
-    
+
     desc.getOutputColumnNames().add("_col1");
 
     return desc;
   }
-  
+
   @Test
   public void testDoubleValueTypeSum() throws HiveException {
     testKeyTypeAggregate(
@@ -168,7 +167,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 20.0, null, 19.0));
   }
-  
+
   @Test
   public void testDoubleValueTypeSumOneKey() throws HiveException {
     testKeyTypeAggregate(
@@ -179,8 +178,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1, 1, 1, 1}),
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 39.0));
-  }  
-  
+  }
+
   @Test
   public void testDoubleValueTypeCount() throws HiveException {
     testKeyTypeAggregate(
@@ -192,7 +191,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 2L, null, 1L));
   }
-  
+
   public void testDoubleValueTypeCountOneKey() throws HiveException {
     testKeyTypeAggregate(
         "count",
@@ -202,8 +201,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1, 1, 1, 1}),
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 3L));
-  }  
-  
+  }
+
   @Test
   public void testDoubleValueTypeAvg() throws HiveException {
     testKeyTypeAggregate(
@@ -215,7 +214,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 10.0, null, 19.0));
   }
-  
+
   @Test
   public void testDoubleValueTypeAvgOneKey() throws HiveException {
     testKeyTypeAggregate(
@@ -226,8 +225,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1, 1, 1, 1}),
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 13.0));
-  }  
-  
+  }
+
   @Test
   public void testDoubleValueTypeMin() throws HiveException {
     testKeyTypeAggregate(
@@ -239,7 +238,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 7.0, null, 19.0));
   }
-  
+
   @Test
   public void testDoubleValueTypeMinOneKey() throws HiveException {
     testKeyTypeAggregate(
@@ -251,7 +250,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 7.0));
   }
-  
+
   @Test
   public void testDoubleValueTypeMax() throws HiveException {
     testKeyTypeAggregate(
@@ -287,7 +286,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 9.0, null, 0.0));
   }
-  
+
   @Test
   public void testDoubleValueTypeVarianceOneKey() throws HiveException {
     testKeyTypeAggregate(
@@ -298,7 +297,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1, 1, 1, 1}),
             Arrays.asList(new Object[]{13.0,null,7.0, 19.0})),
         buildHashMap((byte)1, 24.0));
-  }  
+  }
   @Test
   public void testTinyintKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -310,7 +309,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((byte)1, 20L, null, 19L));
   }
-  
+
   @Test
   public void testSmallintKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -321,8 +320,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1,null, 1, null}),
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((short)1, 20L, null, 19L));
-  }  
-  
+  }
+
   @Test
   public void testIntKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -334,7 +333,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((int)1, 20L, null, 19L));
   }
-  
+
   @Test
   public void testBigintKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -346,7 +345,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((long)1L, 20L, null, 19L));
   }
-  
+
   @Test
   public void testBooleanKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -358,7 +357,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap(true, 20L, null, 19L));
   }
-  
+
   @Test
   public void testTimestampKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -369,8 +368,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{new Timestamp(1),null, new Timestamp(1), null}),
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap(new Timestamp(1), 20L, null, 19L));
-  }  
-  
+  }
+
   @Test
   public void testFloatKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -382,7 +381,7 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((float)1.0, 20L, null, 19L));
   }
-  
+
   @Test
   public void testDoubleKeyTypeAggregate() throws HiveException {
     testKeyTypeAggregate(
@@ -393,8 +392,8 @@ public class TestVectorGroupByOperator {
             Arrays.asList(new Object[]{  1,null, 1, null}),
             Arrays.asList(new Object[]{13L,null,7L, 19L})),
         buildHashMap((double)1.0, 20L, null, 19L));
-  }    
-  
+  }
+
   @Test
   public void testCountStar() throws HiveException {
     testAggregateCountStar(
@@ -1262,18 +1261,18 @@ public class TestVectorGroupByOperator {
         1024,
         (double)0);
   }
-  
+
   private void testKeyTypeAggregate(
       String aggregateName,
       FakeVectorRowBatchFromObjectIterables data,
       Map<Object, Object> expected) throws HiveException {
-    
+
     Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
     mapColumnNames.put("Key", 0);
     mapColumnNames.put("Value", 1);
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
     Set<Object> keys = new HashSet<Object>();
-    
+
     AggregationDesc agg = buildAggregationDesc(ctx, aggregateName,
         "Value", TypeInfoFactory.getPrimitiveTypeInfo(data.getTypes()[1]));
     ArrayList<AggregationDesc> aggs = new ArrayList<AggregationDesc>();
@@ -1287,7 +1286,7 @@ public class TestVectorGroupByOperator {
     desc.setOutputColumnNames(outputColumnNames);
     desc.setAggregators(aggs);
 
-    ExprNodeDesc keyExp = buildColumnDesc(ctx, "Key", 
+    ExprNodeDesc keyExp = buildColumnDesc(ctx, "Key",
         TypeInfoFactory.getPrimitiveTypeInfo(data.getTypes()[0]));
     ArrayList<ExprNodeDesc> keysDesc = new ArrayList<ExprNodeDesc>();
     keysDesc.add(keyExp);
@@ -1338,10 +1337,10 @@ public class TestVectorGroupByOperator {
           BooleanWritable bwKey = (BooleanWritable)key;
           keyValue = bwKey.get();
         } else {
-          Assert.fail(String.format("Not implemented key output type %s: %s", 
+          Assert.fail(String.format("Not implemented key output type %s: %s",
               key.getClass().getName(), key));
         }
-        
+
         assertTrue(expected.containsKey(keyValue));
         Object expectedValue = expected.get(keyValue);
         Object value = fields[1];
@@ -1367,8 +1366,8 @@ public class TestVectorGroupByOperator {
     List<Object> outBatchList = out.getCapturedRows();
     assertNotNull(outBatchList);
     assertEquals(expected.size(), outBatchList.size());
-    assertEquals(expected.size(), keys.size());    
-  }  
+    assertEquals(expected.size(), keys.size());
+  }
 
 
   public void testAggregateLongRepeats (
@@ -1498,9 +1497,9 @@ public class TestVectorGroupByOperator {
       } else if (arr[0] instanceof LongWritable) {
         LongWritable lw = (LongWritable) arr[0];
         assertEquals((Long) expected, (Long) lw.get());
-      } else if (arr[0] instanceof BytesWritable) {
-        BytesWritable bw = (BytesWritable) arr[0];
-        String sbw = new String(bw.getBytes());
+      } else if (arr[0] instanceof Text) {
+        Text tx = (Text) arr[0];
+        String sbw = tx.toString();
         assertEquals((String) expected, sbw);
       } else if (arr[0] instanceof DoubleWritable) {
         DoubleWritable dw = (DoubleWritable) arr[0];
@@ -1849,9 +1848,9 @@ public class TestVectorGroupByOperator {
         Object key = fields[0];
         String keyValue = null;
         if (null != key) {
-          assertTrue(key instanceof BytesWritable);
-          BytesWritable bwKey = (BytesWritable)key;
-          keyValue = new String(bwKey.get());
+          assertTrue(key instanceof Text);
+          Text bwKey = (Text)key;
+          keyValue = bwKey.toString();
         }
         assertTrue(expected.containsKey(keyValue));
         Object expectedValue = expected.get(keyValue);

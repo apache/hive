@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.LongWritable;
@@ -39,6 +40,11 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
     static class Aggregation implements AggregationBuffer {
       long value;
       boolean isNull;
+
+      @Override
+      public int getVariableSize() {
+        throw new UnsupportedOperationException();
+      }
     }
 
     private final LongWritable result;
@@ -119,6 +125,16 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
     @Override
     public ObjectInspector getOutputObjectInspector() {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+    }
+
+    @Override
+    public int getAggregationBufferFixedSize() {
+      JavaDataModel model = JavaDataModel.get();
+      return JavaDataModel.alignUp(
+        model.object() +
+        model.primitive2() +
+        model.primitive1(),
+        model.memoryAlign());
     }
 }
 
