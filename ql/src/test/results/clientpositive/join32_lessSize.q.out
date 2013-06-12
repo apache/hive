@@ -375,11 +375,11 @@ POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: query: select * from dest_j1 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: query: select * from dest_j1 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
@@ -1540,11 +1540,11 @@ POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)y.FieldSchema(name:value, type:
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: query: select * from dest_j1 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: query: select * from dest_j1 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
 #### A masked pattern was here ####
@@ -2021,11 +2021,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)z.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: dest_j2.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j2 x order by x.key
+PREHOOK: query: select * from dest_j2 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j2 x order by x.key
+POSTHOOK: query: select * from dest_j2 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
@@ -2521,11 +2521,11 @@ POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:str
 POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j2 x order by x.key
+PREHOOK: query: select * from dest_j2 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j2 x order by x.key
+POSTHOOK: query: select * from dest_j2 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
@@ -2541,23 +2541,16 @@ POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:str
 POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-	val_27	val_27
-	val_165	val_165
-	val_409	val_409
-	val_409	val_409
-	val_409	val_409
-	val_165	val_165
-	val_484	val_484
-	val_265	val_265
-	val_265	val_265
-	val_193	val_193
-	val_193	val_193
-	val_193	val_193
 146	val_146	val_146
 146	val_146	val_146
 146	val_146	val_146
 146	val_146	val_146
 150	val_150	val_150
+	val_165	val_165
+	val_165	val_165
+	val_193	val_193
+	val_193	val_193
+	val_193	val_193
 213	val_213	val_213
 213	val_213	val_213
 213	val_213	val_213
@@ -2570,6 +2563,9 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 255	val_255	val_255
 255	val_255	val_255
 255	val_255	val_255
+	val_265	val_265
+	val_265	val_265
+	val_27	val_27
 273	val_273	val_273
 273	val_273	val_273
 273	val_273	val_273
@@ -2633,6 +2629,10 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 406	val_406	val_406
 406	val_406	val_406
 406	val_406	val_406
+	val_409	val_409
+	val_409	val_409
+	val_409	val_409
+	val_484	val_484
 66	val_66	val_66
 98	val_98	val_98
 98	val_98	val_98
@@ -2833,11 +2833,11 @@ POSTHOOK: Lineage: dest_j2.val2 SIMPLE [(src1)x.FieldSchema(name:value, type:str
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j2 x order by x.key
+PREHOOK: query: select * from dest_j2 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j2 x order by x.key
+POSTHOOK: query: select * from dest_j2 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
@@ -3142,11 +3142,11 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(srcpart)y.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j2 x order by x.key
+PREHOOK: query: select * from dest_j2 x order by x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j2 x order by x.key
+POSTHOOK: query: select * from dest_j2 x order by x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
 #### A masked pattern was here ####
