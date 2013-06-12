@@ -150,6 +150,7 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from combine2 where value is not null order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2
 PREHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
 PREHOOK: Input: default@combine2@value=val_0
 PREHOOK: Input: default@combine2@value=val_2
@@ -161,6 +162,7 @@ PREHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from combine2 where value is not null order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
 POSTHOOK: Input: default@combine2@value=val_0
 POSTHOOK: Input: default@combine2@value=val_2
@@ -250,7 +252,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 2
@@ -296,7 +297,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 3
-              numPartitions 8
               numRows 3
               partition_columns value
               rawDataSize 3
@@ -342,7 +342,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -388,7 +387,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -434,7 +432,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 3
-              numPartitions 8
               numRows 3
               partition_columns value
               rawDataSize 3
@@ -480,7 +477,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -526,7 +522,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 1
@@ -572,7 +567,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.combine2
               numFiles 1
-              numPartitions 8
               numRows 1
               partition_columns value
               rawDataSize 2
@@ -650,6 +644,7 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from combine2 where value is not null
 PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2
 PREHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
 PREHOOK: Input: default@combine2@value=val_0
 PREHOOK: Input: default@combine2@value=val_2
@@ -661,6 +656,7 @@ PREHOOK: Input: default@combine2@value=|
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from combine2 where value is not null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
 POSTHOOK: Input: default@combine2@value=val_0
 POSTHOOK: Input: default@combine2@value=val_2
@@ -764,6 +760,7 @@ STAGE PLANS:
 
 PREHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -771,6 +768,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
