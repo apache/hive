@@ -471,7 +471,7 @@ public class VectorHashKeyWrapperBatch {
       } else if (outputType.equalsIgnoreCase("string")) {
         indexLookup[i].longIndex = -1;
         indexLookup[i].doubleIndex = -1;
-        stringIndices[i]= stringIndicesIndex;
+        stringIndices[stringIndicesIndex]= i;
         ++stringIndicesIndex;
       }
       else {
