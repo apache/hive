@@ -47,11 +47,13 @@ POSTHOOK: Lineage: sih_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchem
 POSTHOOK: Lineage: sih_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@sih_i_part
 PREHOOK: Input: default@sih_i_part@p=1
 PREHOOK: Input: default@sih_i_part@p=2
 PREHOOK: Input: default@sih_i_part@p=3
 POSTHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@sih_i_part
 POSTHOOK: Input: default@sih_i_part@p=1
 POSTHOOK: Input: default@sih_i_part@p=2
 POSTHOOK: Input: default@sih_i_part@p=3

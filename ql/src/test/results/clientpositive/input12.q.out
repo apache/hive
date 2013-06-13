@@ -525,10 +525,12 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 169	val_169
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
