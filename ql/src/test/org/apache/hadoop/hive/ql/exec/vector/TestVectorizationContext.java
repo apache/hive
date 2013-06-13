@@ -18,6 +18,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColum
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -28,11 +29,13 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.UDFOPMod;
 import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 public class TestVectorizationContext {
@@ -237,6 +240,28 @@ public class TestVectorizationContext {
     assertEquals(veOr.getChildExpressions()[1].getClass(), FilterDoubleColLessDoubleScalar.class);
   }
 
+  @Test
+  public void testVectorizeScalarColumnExpression() throws HiveException {
+    ExprNodeGenericFuncDesc scalarMinusConstant = new ExprNodeGenericFuncDesc();
+    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPMinus.class);
+    scalarMinusConstant.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 20);
+    ExprNodeColumnDesc colDesc = new ExprNodeColumnDesc(Long.class, "a", "table", false);
+
+    children.add(constDesc);
+    children.add(colDesc);
+
+    scalarMinusConstant.setChildExprs(children);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("a", 0);
+
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    VectorExpression ve = vc.getVectorExpression(scalarMinusConstant);
+
+    assertEquals(ve.getClass(), LongScalarSubtractLongColumn.class);
+  }
 
   @Test
   public void testFilterWithNegativeScalar() throws HiveException {
