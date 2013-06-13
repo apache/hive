@@ -896,6 +896,7 @@ class RecordReaderImpl implements RecordReader {
     private int[] dictionaryOffsets;
     private RunLengthIntegerReader reader;
 
+    private byte[] dictionaryBufferInBytesCache = null;
     private final LongColumnVector scratchlcv;
 
     StringTreeReader(int columnId) {
@@ -917,6 +918,8 @@ class RecordReaderImpl implements RecordReader {
       if (in.available() > 0) {
         dictionaryBuffer = new DynamicByteArray(64, in.available());
         dictionaryBuffer.readAll(in);
+        // Since its start of strip invalidate the cache.
+        dictionaryBufferInBytesCache = null;
       } else {
         dictionaryBuffer = null;
       }
@@ -988,7 +991,11 @@ class RecordReaderImpl implements RecordReader {
       super.nextVector(result, batchSize);
 
       if (dictionaryBuffer != null) {
-        byte[] dictionaryBytes = dictionaryBuffer.get();
+
+        // Load dictionaryBuffer into cache.
+        if (dictionaryBufferInBytesCache == null) {
+          dictionaryBufferInBytesCache = dictionaryBuffer.get();
+        }
 
         // Read string offsets
         scratchlcv.isNull = result.isNull;
@@ -1001,10 +1008,10 @@ class RecordReaderImpl implements RecordReader {
             if (!scratchlcv.isNull[i]) {
               offset = dictionaryOffsets[(int) scratchlcv.vector[i]];
               length = getDictionaryEntryLength((int) scratchlcv.vector[i], offset);
-              result.setRef(i, dictionaryBytes, offset, length);
+              result.setRef(i, dictionaryBufferInBytesCache, offset, length);
             } else {
               // If the value is null then set offset and length to zero (null string)
-              result.setRef(i, dictionaryBytes, 0, 0);
+              result.setRef(i, dictionaryBufferInBytesCache, 0, 0);
             }
           }
         } else {
@@ -1013,7 +1020,7 @@ class RecordReaderImpl implements RecordReader {
           // set all the elements to the same value
           offset = dictionaryOffsets[(int) scratchlcv.vector[0]];
           length = getDictionaryEntryLength((int) scratchlcv.vector[0], offset);
-          result.setRef(0, dictionaryBytes, offset, length);
+          result.setRef(0, dictionaryBufferInBytesCache, offset, length);
         }
         result.isRepeating = scratchlcv.isRepeating;
       } else {
