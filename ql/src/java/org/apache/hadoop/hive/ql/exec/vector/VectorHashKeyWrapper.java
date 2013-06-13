@@ -142,7 +142,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     clone.byteLengths = byteLengths.clone();
     for (int i = 0; i < byteValues.length; ++i) {
       // avoid allocation/copy of nulls, because it potentially expensive. branch instead.
-      if (!isNull[i]) {
+      if (!isNull[longValues.length + doubleValues.length + i]) {
         clone.byteValues[i] = Arrays.copyOfRange(
             byteValues[i],
             byteStarts[i],
