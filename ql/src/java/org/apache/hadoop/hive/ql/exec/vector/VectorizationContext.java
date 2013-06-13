@@ -443,23 +443,23 @@ public class VectorizationContext {
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
-    } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
-        (leftExpr instanceof ExprNodeConstantDesc) ) {
+    } else if ( (leftExpr instanceof ExprNodeConstantDesc) &&
+        (rightExpr instanceof ExprNodeColumnDesc) ) {
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
       int inputCol = getInputColumnIndex(rightColDesc.getColumn());
       String colType = rightColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
-      String className = getBinaryColumnScalarExpressionClassName(colType,
+      String className = getBinaryScalarColumnExpressionClassName(colType,
           scalarType, method);
       String outputColType = getOutputColType(colType, scalarType, method);
       int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
         expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol,
-            getScalarValue(constDesc), outputCol);
+            getDeclaredConstructors()[0].newInstance(getScalarValue(constDesc),
+            inputCol, outputCol);
       } catch (Exception ex) {
-        throw new HiveException(ex);
+        throw new HiveException("Could not instantiate: "+className, ex);
       }
     } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
         (leftExpr instanceof ExprNodeColumnDesc) ) {
