@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.NullWritable;
 
 /**
 * VectorUDAFMaxString. Vectorized implementation for MIN/MAX aggregates. 
@@ -354,7 +356,7 @@ public class VectorUDAFMaxString extends VectorAggregateExpression {
         AggregationBuffer agg) throws HiveException {
     Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
-        return null;
+        return NullWritable.get();
       }
       else {
         result.set(myagg.bytes, 0, myagg.length);
@@ -382,5 +384,9 @@ public class VectorUDAFMaxString extends VectorAggregateExpression {
       return true;
     }
 
+    @Override
+    public void init(AggregationDesc desc) throws HiveException {
+      // No-op
+    }
 }
 

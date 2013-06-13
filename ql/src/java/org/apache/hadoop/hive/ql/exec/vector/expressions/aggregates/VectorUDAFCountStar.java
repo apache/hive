@@ -23,10 +23,12 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 
 /**
 * VectorUDAFCountStar. Vectorized implementation for COUNT(*) aggregates.
@@ -114,7 +116,7 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
     public Object evaluateOutput(AggregationBuffer agg) throws HiveException {
     Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
-        return null;
+        return NullWritable.get();
       }
       else {
         result.set (myagg.value);
@@ -135,6 +137,11 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
         model.primitive2() +
         model.primitive1(),
         model.memoryAlign());
+    }
+
+    @Override
+    public void init(AggregationDesc desc) throws HiveException {
+      // No-op
     }
 }
 

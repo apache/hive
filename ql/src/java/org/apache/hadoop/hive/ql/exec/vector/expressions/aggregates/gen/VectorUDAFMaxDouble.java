@@ -25,13 +25,17 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.
     VectorAggregateExpression.AggregationBuffer;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;    
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -72,12 +76,17 @@ public class VectorUDAFMaxDouble extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private DoubleWritable result;
+    private VectorExpressionWriter resultWriter;
     
     public VectorUDAFMaxDouble(VectorExpression inputExpression) {
       super();
       this.inputExpression = inputExpression;
-      result = new DoubleWritable();
+    }
+    
+    @Override
+    public void init(AggregationDesc desc) throws HiveException {
+      resultWriter = VectorExpressionWriterFactory.genVectorExpressionWritable(
+          desc.getParameters().get(0));
     }
     
     private Aggregation getCurrentAggregationBuffer(
@@ -405,17 +414,16 @@ public class VectorUDAFMaxDouble extends VectorAggregateExpression {
         AggregationBuffer agg) throws HiveException {
     Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
-        return null;
+        return NullWritable.get();
       }
       else {
-        result.set(myagg.value);
-        return result;
+        return resultWriter.writeValue(myagg.value);
       }
     }
     
     @Override
     public ObjectInspector getOutputObjectInspector() {
-      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+      return resultWriter.getObjectInspector();
     }
 
     @Override
