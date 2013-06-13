@@ -1050,6 +1050,7 @@ public class VectorizationContext {
               aggClass.getConstructor(VectorExpression.class);
           VectorAggregateExpression aggExpr = ctor.newInstance(
               vectorParams.length > 0 ? vectorParams[0] : null);
+          aggExpr.init(desc);
           return aggExpr;
         }
         // TODO: change to 1.7 syntax when possible

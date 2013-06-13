@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public abstract class VectorAggregateExpression  {
@@ -42,5 +43,7 @@ public abstract class VectorAggregateExpression  {
   public boolean hasVariableSize() {
     return false;
   }
+
+  public abstract void init(AggregationDesc desc) throws HiveException;
 }
 

@@ -29,8 +29,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -474,7 +476,7 @@ public class VectorUDAFVarPopLong extends VectorAggregateExpression {
         AggregationBuffer agg) throws HiveException {
       Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
-        return null;
+        return NullWritable.get();
       }
       else {
         assert(0 < myagg.count);
@@ -498,6 +500,12 @@ public class VectorUDAFVarPopLong extends VectorAggregateExpression {
         model.primitive1(),
         model.memoryAlign());
   }
+
+  @Override
+  public void init(AggregationDesc desc) throws HiveException {
+    // No-op
+  }
+
 
 }
 
