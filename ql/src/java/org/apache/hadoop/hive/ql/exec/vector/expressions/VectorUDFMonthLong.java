@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 public final class VectorUDFMonthLong extends VectorUDFTimestampFieldLong {
 
-  VectorUDFMonthLong(int colNum, int outputColumn) {
+  public VectorUDFMonthLong(int colNum, int outputColumn) {
     super(Calendar.MONTH, colNum,outputColumn);
   }
 

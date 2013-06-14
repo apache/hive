@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 public final class VectorUDFWeekOfYearLong extends VectorUDFTimestampFieldLong {
 
-  VectorUDFWeekOfYearLong(int colNum, int outputColumn) {
+  public VectorUDFWeekOfYearLong(int colNum, int outputColumn) {
     super(Calendar.WEEK_OF_YEAR, colNum,outputColumn);
     /* code copied over from UDFWeekOfYear implementation */
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
