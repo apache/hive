@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
@@ -70,6 +71,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFHour;
+import org.apache.hadoop.hive.ql.udf.UDFMinute;
+import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
 import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.UDFOPMod;
@@ -77,6 +82,9 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
+import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -90,6 +98,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
@@ -386,6 +395,29 @@ public class VectorizationContext {
       return getVectorExpression((GenericUDFOPOr) udf, childExpr);
     } else if (udf instanceof GenericUDFBridge) {
       return getVectorExpression((GenericUDFBridge) udf, childExpr);
+    } else if(udf instanceof GenericUDFToUnixTimeStamp) {
+      return getVectorExpression((GenericUDFToUnixTimeStamp) udf, childExpr);
+    }
+    throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getVectorExpression(GenericUDFToUnixTimeStamp udf,
+      List<ExprNodeDesc> childExpr) throws HiveException {
+    ExprNodeDesc leftExpr = childExpr.get(0);
+    leftExpr = foldConstantsForUnaryExpression(leftExpr);
+    VectorExpression v1 = getVectorExpression(leftExpr);
+    String colType = v1.getOutputType();
+    String outputType = "long";
+    if(colType.equalsIgnoreCase("timestamp")) {
+      int inputCol = v1.getOutputColumn();
+      int outputCol = ocm.allocateOutputColumn(outputType);
+      try {
+        VectorExpression v2 = new VectorUDFUnixTimeStampLong(inputCol, outputCol);
+        return v2;
+      } catch(Exception e) {
+        e.printStackTrace();
+        throw new HiveException("Udf: Vector"+udf+", could not be initialized for " + colType, e);
+      }
     }
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
@@ -408,8 +440,42 @@ public class VectorizationContext {
       return getUnaryMinusExpression(childExpr);
     } else if (cl.equals(UDFOPPositive.class)) {
       return getUnaryPlusExpression(childExpr);
+    } else if (cl.equals(UDFYear.class) ||
+        cl.equals(UDFMonth.class) ||
+        cl.equals(UDFWeekOfYear.class) ||
+        cl.equals(UDFDayOfMonth.class) ||
+        cl.equals(UDFHour.class) ||
+        cl.equals(UDFMinute.class) ||
+        cl.equals(UDFSecond.class)) {
+      return getTimestampFieldExpression(cl.getSimpleName(), childExpr);
     }
+
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getTimestampFieldExpression(String udf,
+      List<ExprNodeDesc> childExpr) throws HiveException {
+    ExprNodeDesc leftExpr = childExpr.get(0);
+    leftExpr = foldConstantsForUnaryExpression(leftExpr);
+    VectorExpression v1 = getVectorExpression(leftExpr);
+    String colType = v1.getOutputType();
+    String outputType = "long";
+    if(colType.equalsIgnoreCase("timestamp")) {
+        int inputCol = v1.getOutputColumn();
+        int outputCol = ocm.allocateOutputColumn(outputType);
+        String pkg = "org.apache.hadoop.hive.ql.exec.vector.expressions";
+        // org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong
+        String vectorUDF = pkg + ".Vector"+udf+"Long";
+        try {
+          VectorExpression v2 = (VectorExpression)Class.forName(vectorUDF).
+              getDeclaredConstructors()[0].newInstance(inputCol,outputCol);
+          return v2;
+        } catch(Exception e) {
+          e.printStackTrace();
+          throw new HiveException("Udf: Vector"+udf+", could not be initialized for " + colType, e);
+        }
+    }
+    throw new HiveException("Udf: "+udf+", is not supported for " + colType);
   }
 
   private VectorExpression getBinaryArithmeticExpression(String method,

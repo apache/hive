@@ -53,7 +53,7 @@ public final class VectorUDFYearLong extends VectorUDFTimestampFieldLong {
     }
   }
 
-  VectorUDFYearLong(int colNum, int outputColumn) {
+  public VectorUDFYearLong(int colNum, int outputColumn) {
     super(Calendar.YEAR, colNum,outputColumn);
   }
 

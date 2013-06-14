@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 public final class VectorUDFHourLong extends VectorUDFTimestampFieldLong {
 
-  VectorUDFHourLong(int colNum, int outputColumn) {
+  public VectorUDFHourLong(int colNum, int outputColumn) {
     super(Calendar.HOUR_OF_DAY, colNum,outputColumn);
   }
 

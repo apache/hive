@@ -33,7 +33,7 @@ public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLon
     return ms/1000;
   }
 
-  VectorUDFUnixTimeStampLong(int colNum, int outputColumn) {
+  public VectorUDFUnixTimeStampLong(int colNum, int outputColumn) {
     /* not a real field */
     super(-1, colNum,outputColumn);
   }
