@@ -1,0 +1,1 @@
+FAILED: SemanticException Expected columns [y, x] but found [x]

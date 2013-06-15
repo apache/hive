@@ -142,6 +142,17 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
   }
 
   @Override
+  public boolean isStateful() {
+    boolean result = FunctionRegistry.isStateful(genericUDF);
+    for (ExprNodeEvaluator child : children) {
+      if(result = result || child.isStateful()) {
+        return result;
+      }
+    }
+    return result;
+  }
+
+  @Override
   protected Object _evaluate(Object row, int version) throws HiveException {
     rowObject = row;
     if (ObjectInspectorUtils.isConstantObjectInspector(outputOI) &&
