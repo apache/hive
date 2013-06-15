@@ -882,7 +882,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
         }
         break;
-
+        
       case HiveParser.TOK_SORTBY:
      // Get the sort by aliases - these are aliased to the entries in the
         // select list

@@ -72,6 +72,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
  * BaseSemanticAnalyzer.
  *
  */
+@SuppressWarnings("deprecation")
 public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
@@ -551,20 +552,22 @@ public abstract class BaseSemanticAnalyzer {
     for (int i = 0; i < numCh; i++) {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
+      Tree grandChild = child.getChild(0);
+      if(grandChild != null) {
+        String name = grandChild.getText();
+        if(lowerCase) {
+          name = name.toLowerCase();
+        }
+        // child 0 is the name of the column
+        col.setName(unescapeIdentifier(name));
+        // child 1 is the type of the column
+        ASTNode typeChild = (ASTNode) (child.getChild(1));
+        col.setType(getTypeStringFromAST(typeChild));
 
-      String name = child.getChild(0).getText();
-      if(lowerCase) {
-        name = name.toLowerCase();
-      }
-      // child 0 is the name of the column
-      col.setName(unescapeIdentifier(name));
-      // child 1 is the type of the column
-      ASTNode typeChild = (ASTNode) (child.getChild(1));
-      col.setType(getTypeStringFromAST(typeChild));
-
-      // child 2 is the optional comment of the column
-      if (child.getChildCount() == 3) {
-        col.setComment(unescapeSQLString(child.getChild(2).getText()));
+        // child 2 is the optional comment of the column
+        if (child.getChildCount() == 3) {
+          col.setComment(unescapeSQLString(child.getChild(2).getText()));
+        }        
       }
       colList.add(col);
     }

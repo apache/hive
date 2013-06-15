@@ -205,6 +205,8 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_CREATEMACRO;
+TOK_DROPMACRO;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
 TOK_ALTERVIEW_AS;
@@ -606,9 +608,11 @@ ddlStatement
     | createViewStatement
     | dropViewStatement
     | createFunctionStatement
+    | createMacroStatement
     | createIndexStatement
     | dropIndexStatement
     | dropFunctionStatement
+    | dropMacroStatement
     | analyzeStatement
     | lockStatement
     | unlockStatement
@@ -1384,6 +1388,21 @@ dropFunctionStatement
 @after { msgs.pop(); }
     : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
     -> ^(TOK_DROPFUNCTION identifier ifExists?)
+    ;
+
+createMacroStatement
+@init { msgs.push("create macro statement"); }
+@after { msgs.pop(); }
+    : KW_CREATE KW_TEMPORARY KW_MACRO Identifier
+      LPAREN columnNameTypeList? RPAREN expression
+    -> ^(TOK_CREATEMACRO Identifier columnNameTypeList? expression)
+    ;
+
+dropMacroStatement
+@init { msgs.push("drop macro statement"); }
+@after { msgs.pop(); }
+    : KW_DROP KW_TEMPORARY KW_MACRO ifExists? Identifier
+    -> ^(TOK_DROPMACRO Identifier ifExists?)
     ;
 
 createViewStatement
