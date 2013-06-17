@@ -45,7 +45,7 @@ LOCATION '${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1';
 alter table fact_daily PARTITION (ds = '1') set skewed location (484='${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/x=484','HIVE_DEFAULT_LIST_BUCKETING_KEY'='${hiveconf:hive.metastore.warehouse.dir}/fact_tz/ds=1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME');
 describe formatted fact_daily PARTITION (ds = '1');
 	
-SELECT * FROM fact_daily WHERE ds='1';	
+SELECT * FROM fact_daily WHERE ds='1' ORDER BY x, y;
 
 -- The first subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
@@ -55,9 +55,9 @@ select x from (select * from fact_daily where ds = '1') subq where x = 484;
 
 -- The second subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484;
+explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484 ORDER BY x1, y1;
 -- List Bucketing Query
-select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484;
+select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484 ORDER BY x1, y1;
 
 
 -- The third subquery
