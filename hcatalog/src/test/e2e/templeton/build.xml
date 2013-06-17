@@ -24,6 +24,7 @@
     <property name="test.src" value="${basedir}/tests"/>
     <property name="driver.src" value="${basedir}/drivers"/>
     <property name="conf.src" value="${basedir}/conf"/>
+    <property name="resource.src" value="${basedir}/resource"/>
     <property name="harness.dir" value="${basedir}/../harness"/>
     <property name="harness.tar" value="${harness.dir}/harness.tar"/>
     <property name="inpdir.local" value="${basedir}/inpdir/"/>
@@ -51,6 +52,7 @@
         <mkdir dir="${tar.dir}"/>
         <mkdir dir="${tar.dir}/tests"/>
         <mkdir dir="${tar.dir}/conf"/>
+        <mkdir dir="${tar.dir}/resource"/>
         <copy todir="${tar.dir}/tests">
             <fileset dir="${test.src}">
             </fileset>
@@ -60,6 +62,9 @@
         </copy>
         <copy todir="${tar.dir}/conf">
             <fileset dir="${conf.src}"/>
+        </copy>
+        <copy todir="${tar.dir}/resource">
+            <fileset dir="${resource.src}"/>
         </copy>
         <tar destfile="${tar.name}" basedir="${tar.dir}"/>
     </target>

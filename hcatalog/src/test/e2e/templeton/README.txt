@@ -20,10 +20,37 @@ End to end tests
 End to end tests in templeton runs tests against an existing templeton server.
 It runs hcat, mapreduce, streaming, hive and pig tests.
 
+It's a good idea to look at current versions of
+http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html and
+http://hive.apache.org/docs/hcat_r0.5.0/configuration.html before proceeding.
+
+
+(Note that by default, webhcat-default.xml templeton.hive.properties sets
+hive.metastore.uris=thrift://localhost:9933, thus WebHCat will expect
+an external metastore to be running.
+to start hive metastore: ./bin/hive --service metastore -p 9933)
+
+launch templeton server: ./hcatalog/sbin/webhcat_server.sh start
+
+to control which DB the metastore uses put something like
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=/Users/ekoifman/dev/data/tmp/metastore_db_e2e;create=true</value>
+  <description>Controls which DB engine metastore will use for persistence. In particular,
+  where Derby will create it's data files.</description>
+</property>
+
+in hive-site.xml
+)
+
+
 !!!! NOTE !!!!
 --------------
 USE SVN TO CHECKOUT CODE FOR RUNNING TESTS AS THE TEST
   HARNESS IS EXTERNED FROM PIG. GIT WILL NOT IMPORT IT
+  (if you are using GIT, check out http://svn.apache.org/repos/asf/hive/trunk (or whichever branch)
+  (http://hive.apache.org/version_control.html) and symlink
+  hcatalog/src/test/e2e/harness/ to corresponding harness/ in SVN tree)
 
 Test cases
 ----------
@@ -57,11 +84,19 @@ Tips:
 
 
 3. Copy contents of src/test/e2e/templeton/inpdir to hdfs
+(e.g. ./bin/hadoop fs -put ~/dev/hive/hcatalog/src/test/e2e/templeton/inpdir/ webhcate2e)
 
 4. You will need to two jars in the same HDFS directory as the contents of inpdir.  piggybank.jar, which can
 be obtained from Pig.  The second is the hadoop-examples.jar, which can be obtained from your Hadoop distribution.
 This should be called hexamples.jar when it is uploaded to HDFS.
+Also see http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Hadoop+Distributed+Cache for notes on
+additional JAR files to copy to HDFS.
 
+5. Make sure TEMPLETON_HOME evnironment variable is set
+
+
+6. hadoop/conf/core-site.xml should have items described in
+http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Permissions
 
 Running the tests
 -----------------
@@ -73,6 +108,7 @@ ant test -Dinpdir.hdfs=<location of inpdir on hdfs>  -Dtest.user.name=<user the 
 If you want to run specific test group you can specify the group, for example:  -Dtests.to.run='-t TestHive'
 
 If you want to run specific test in a group group you can specify the test, for example:  -Dtests.to.run='-t TestHive_1'
+For example, tests/ddl.conf has several groups such as 'name' => 'REST_DDL_TABLE_BASIC'; use REST_DDL_TABLE_BASIC as the name
 
 
 Running the hcat authorization tests
@@ -110,3 +146,7 @@ ant clean; ant e2e
 This assumes you've got webhdfs at the address above, the inpdir info in /user/templeton, and templeton running on the default port.  You can change any of those properties in the build file.
 
 It's best to set HADOOP_HOME_WARN_SUPPRESS=true everywhere you can.
+Also useful to add to conf/hadoop-env.sh
+export HADOOP_OPTS="-Djava.security.krb5.realm=OX.AC.UK -Djava.security.krb5.kdc=kdc0.ox.ac.uk:kdc1.ox.ac.uk"
+to prevent warning about SCDynamicStore which may throw some tests off
+(http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore)
