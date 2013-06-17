@@ -29,13 +29,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
 
-  String ldapURL;
-  String baseDN;
+  private final String ldapURL;
+  private final String baseDN;
+  private final String ldapDomain;
 
   LdapAuthenticationProviderImpl () {
     HiveConf conf = new HiveConf();
     this.ldapURL = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL);
     this.baseDN = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN);
+    this.ldapDomain = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_DOMAIN);
   }
 
   @Override
@@ -45,6 +47,12 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     Hashtable<String, Object> env = new Hashtable<String, Object>();
     env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     env.put(Context.PROVIDER_URL, ldapURL);
+
+    //  If the domain is supplied, then append it. LDAP providers like Active Directory
+    // use a fully qualified user name like foo@bar.com.
+    if (ldapDomain != null) {
+      user  = user + "@" + ldapDomain;
+    }
 
     // setup the security principal
     String bindDN;
