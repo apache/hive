@@ -152,6 +152,10 @@ public class PTFPartition
     return new PItr(start, end);
   }
 
+  public void close() {
+    elems.close();
+  }
+
   class PItr implements PTFPartitionIterator<Object>
   {
     int idx;
