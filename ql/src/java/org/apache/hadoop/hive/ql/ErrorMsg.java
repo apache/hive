@@ -239,7 +239,7 @@ public enum ErrorMsg {
   JOINNODE_OUTERJOIN_MORETHAN_16(10142, "Single join node containing outer join(s) " +
       "cannot have more than 16 aliases"),
 
-  INVALID_JDO_FILTER_EXPRESSION(10043, "Invalid expression for JDO filter"),
+  INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
   SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
   ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
@@ -321,13 +321,6 @@ public enum ErrorMsg {
     "with distincts. Either set hive.new.job.grouping.set.cardinality to a high number " +
     "(higher than the number of rows per input row due to grouping sets in the query), or " +
     "rewrite the query to not use distincts."),
-  TRUNCATE_COLUMN_INDEXED_TABLE(10227, "Can not truncate columns from table with indexes"),
-  TRUNCATE_COLUMN_NOT_RC(10228, "Only RCFileFormat supports column truncation."),
-  TRUNCATE_COLUMN_ARCHIVED(10229, "Column truncation cannot be performed on archived partitions."),
-  TRUNCATE_BUCKETED_COLUMN(10230,
-      "A column on which a partition/table is bucketed cannot be truncated."),
-  TRUNCATE_LIST_BUCKETED_COLUMN(10231,
-      "A column on which a partition/table is list bucketed cannot be truncated."),
 
   OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
@@ -349,6 +342,14 @@ public enum ErrorMsg {
             " A subpartition value is specified without specififying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
+
+  TRUNCATE_COLUMN_INDEXED_TABLE(10236, "Can not truncate columns from table with indexes"),
+  TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
+  TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
+  TRUNCATE_BUCKETED_COLUMN(10239,
+      "A column on which a partition/table is bucketed cannot be truncated."),
+  TRUNCATE_LIST_BUCKETED_COLUMN(10240,
+      "A column on which a partition/table is list bucketed cannot be truncated."),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
