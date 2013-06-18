@@ -125,6 +125,9 @@ public class LauncherDelegator extends TempletonDelegator {
         addDef(args, TempletonControllerJob.OVERRIDE_CLASSPATH,
             makeOverrideClasspath(appConf));
 
+        // Hadoop queue information
+        addDef(args, "mapred.job.queue.name", appConf.hadoopQueueName());
+
         // Job vars
         addStorageVars(args);
         addCompletionVars(args, completedUrl);
