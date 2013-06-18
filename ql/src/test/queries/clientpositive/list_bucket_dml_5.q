@@ -28,11 +28,11 @@ desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='12');
 select count(1) from srcpart where ds='2008-04-08';
 select count(1) from list_bucketing_dynamic_part where ds='2008-04-08';
 
-select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103";
+select key, value from srcpart where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value;
 set hive.optimize.listbucketing=true;
 explain extended
-select key, value from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103";
-select key, value from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103";
+select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value, ds, hr;
+select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103" ORDER BY key, value, ds, hr;
 
 -- clean up resources
 drop table list_bucketing_dynamic_part;
