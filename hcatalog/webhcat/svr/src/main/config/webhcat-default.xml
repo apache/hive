@@ -225,4 +225,14 @@
     <description>The maximum age of a templeton job</description>
   </property>
 
+  <property>
+    <name>templeton.hadoop.queue.name</name>
+    <value>default</value>
+    <description>
+    MapReduce queue name where WebHCat map-only jobs will be
+    submitted to. Can be used to avoid a deadlock where all map slots
+    in the cluster are taken over by Templeton launcher tasks.
+    </description>
+  </property>
+
 </configuration>
