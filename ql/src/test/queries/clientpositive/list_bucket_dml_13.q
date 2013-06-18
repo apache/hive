@@ -29,8 +29,8 @@ desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='2013-01-23
 set hive.optimize.listbucketing=true;
 explain extended
 select * from list_bucketing_mul_col 
-where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466";
+where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466" ORDER BY col2, col4, ds, hr;
 select * from list_bucketing_mul_col 
-where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466";
+where ds='2008-04-08' and hr='2013-01-23+18:00:99' and col2 = "466" and col4 = "val_466" ORDER BY col2, col4, ds, hr;
 
 drop table list_bucketing_mul_col;

@@ -329,15 +329,15 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 1000
 PREHOOK: query: explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME list_bucketing_static_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) '11')) (= (TOK_TABLE_OR_COL key) '484')) (= (TOK_TABLE_OR_COL value) 'val_484')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME list_bucketing_static_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) '11')) (= (TOK_TABLE_OR_COL key) '484')) (= (TOK_TABLE_OR_COL value) 'val_484'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ds)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL hr)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -367,23 +367,27 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1,_col2,_col3
-                        columns.types string:string:string:string
-                        escape.delim \
-                        serialization.format 1
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
+                  sort order: ++++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -434,6 +438,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_static_part
             name: default.list_bucketing_static_part
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1,_col2,_col3
+                  columns.types string:string:string:string
+                  escape.delim \
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
       Truncated Path -> Alias:
         /list_bucketing_static_part/ds=2008-04-08/hr=11/key=484/value=val_484 [list_bucketing_static_part]
 
@@ -442,12 +465,12 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
+PREHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484'
+POSTHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
@@ -456,13 +479,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 484	val_484	2008-04-08	11
 484	val_484	2008-04-08	11
-PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484'
+PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484'
+POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -470,11 +493,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-484	val_484	2008-04-08	12
 484	val_484	2008-04-08	11
+484	val_484	2008-04-08	12
 PREHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
 -- but query should succeed for 51 or 51 and val_14
-select * from srcpart where ds = '2008-04-08' and key = '51'
+select * from srcpart where ds = '2008-04-08' and key = '51' ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -482,7 +505,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
 -- but query should succeed for 51 or 51 and val_14
-select * from srcpart where ds = '2008-04-08' and key = '51'
+select * from srcpart where ds = '2008-04-08' and key = '51' ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -490,16 +513,16 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-51	val_51	2008-04-08	12
-51	val_51	2008-04-08	12
 51	val_51	2008-04-08	11
 51	val_51	2008-04-08	11
-PREHOOK: query: select * from list_bucketing_static_part where key = '51'
+51	val_51	2008-04-08	12
+51	val_51	2008-04-08	12
+PREHOOK: query: select * from list_bucketing_static_part where key = '51' ORDER BY key, value, ds, hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_static_part where key = '51'
+POSTHOOK: query: select * from list_bucketing_static_part where key = '51' ORDER BY key, value, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
@@ -510,13 +533,13 @@ POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).val
 51	val_51	2008-04-08	11
 51	val_51	2008-04-08	11
 51	val_51	2008-04-08	11
-PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'
+PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'  ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'
+POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'  ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -524,12 +547,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14'
+PREHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14' ORDER BY key, value, ds, hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14'
+POSTHOOK: query: select * from list_bucketing_static_part where key = '51' and value = 'val_14' ORDER BY key, value, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
