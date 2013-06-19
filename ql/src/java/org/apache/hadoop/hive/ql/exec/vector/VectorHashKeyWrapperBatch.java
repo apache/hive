@@ -469,9 +469,10 @@ public class VectorHashKeyWrapperBatch {
         indexLookup[i].stringIndex = -1;
         ++doubleIndicesIndex;
       } else if (outputType.equalsIgnoreCase("string")) {
+        stringIndices[stringIndicesIndex]= i;
         indexLookup[i].longIndex = -1;
         indexLookup[i].doubleIndex = -1;
-        stringIndices[stringIndicesIndex]= i;
+        indexLookup[i].stringIndex = stringIndicesIndex;
         ++stringIndicesIndex;
       }
       else {
@@ -516,17 +517,20 @@ public class VectorHashKeyWrapperBatch {
   public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i,
       VectorExpressionWriter keyOutputWriter)
     throws HiveException {
-    if (kw.getIsNull(i)) {
-      return null;
-    }
+
     KeyLookupHelper klh = indexLookup[i];
     if (klh.longIndex >= 0) {
-      return keyOutputWriter.writeValue(kw.getLongValue(i));
+      return kw.getIsLongNull(klh.longIndex) ? null : 
+        keyOutputWriter.writeValue(kw.getLongValue(klh.longIndex));
     } else if (klh.doubleIndex >= 0) {
-      return keyOutputWriter.writeValue(kw.getDoubleValue(i));
+      return kw.getIsDoubleNull(klh.doubleIndex) ? null :
+          keyOutputWriter.writeValue(kw.getDoubleValue(klh.doubleIndex));
     } else if (klh.stringIndex >= 0) {
-      return keyOutputWriter.writeValue(
-          kw.getBytes(i), kw.getByteStart(i), kw.getByteLength(i));
+      return kw.getIsBytesNull(klh.stringIndex) ? null : 
+          keyOutputWriter.writeValue(
+              kw.getBytes(klh.stringIndex), 
+                kw.getByteStart(klh.stringIndex), 
+                kw.getByteLength(klh.stringIndex));
     } else {
       throw new HiveException(String.format(
           "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d",

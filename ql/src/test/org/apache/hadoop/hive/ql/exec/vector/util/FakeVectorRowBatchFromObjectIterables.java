@@ -168,6 +168,8 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
           batch.cols[i].isNull[batch.size] = true;
           batch.cols[i].noNulls = false;
         } else {
+          // Must reset the isNull, could be set from prev batch use
+          batch.cols[i].isNull[batch.size] = false;
           columnAssign[i].assign(batch.cols[i], batch.size, value);
         }
       }
