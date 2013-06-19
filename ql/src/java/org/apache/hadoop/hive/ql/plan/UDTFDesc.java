@@ -31,12 +31,14 @@ public class UDTFDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
   private GenericUDTF genericUDTF;
+  private boolean outerLV;
 
   public UDTFDesc() {
   }
 
-  public UDTFDesc(final GenericUDTF genericUDTF) {
+  public UDTFDesc(final GenericUDTF genericUDTF, boolean outerLV) {
     this.genericUDTF = genericUDTF;
+    this.outerLV = outerLV;
   }
 
   public GenericUDTF getGenericUDTF() {
@@ -50,5 +52,18 @@ public class UDTFDesc extends AbstractOperatorDesc {
   @Explain(displayName = "function name")
   public String getUDTFName() {
     return genericUDTF.toString();
+  }
+
+  public boolean isOuterLV() {
+    return outerLV;
+  }
+
+  public void setOuterLV(boolean outerLV) {
+    this.outerLV = outerLV;
+  }
+
+  @Explain(displayName = "outer lateral view")
+  public String isOuterLateralView() {
+    return outerLV ? "true" : null;
   }
 }

@@ -33,7 +33,8 @@ public class UDTFCollector implements Collector {
    * @see
    * org.apache.hadoop.hive.ql.udf.generic.Collector#collect(java.lang.Object)
    */
-  UDTFOperator op = null;
+  final UDTFOperator op;
+  private transient int counter;
 
   public UDTFCollector(UDTFOperator op) {
     this.op = op;
@@ -42,6 +43,14 @@ public class UDTFCollector implements Collector {
   @Override
   public void collect(Object input) throws HiveException {
     op.forwardUDTFOutput(input);
+    counter++;
   }
 
+  public int getCounter() {
+    return counter;
+  }
+
+  public void reset() {
+    counter = 0;
+  }
 }
