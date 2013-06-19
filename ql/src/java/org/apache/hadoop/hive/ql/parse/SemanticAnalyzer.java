@@ -710,7 +710,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               "PTF invocation in a Join must have an alias"));
         }
 
-      } else if (child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+      } else if (child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
+          child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
         // SELECT * FROM src1 LATERAL VIEW udtf() AS myTable JOIN src2 ...
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
@@ -751,6 +752,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       alias = processSubQuery(qb, next);
       break;
     case HiveParser.TOK_LATERAL_VIEW:
+    case HiveParser.TOK_LATERAL_VIEW_OUTER:
       alias = processLateralView(qb, next);
       break;
     default:
@@ -849,7 +851,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processTable(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
-        } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+        } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
+            frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
           queryProperties.setHasJoin(true);
@@ -1026,6 +1029,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         skipRecursion = false;
         break;
       case HiveParser.TOK_LATERAL_VIEW:
+      case HiveParser.TOK_LATERAL_VIEW_OUTER:
         // todo: nested LV
         assert ast.getChildCount() == 1;
         qb.getParseInfo().getDestToLateralView().put(ctx_1.dest, ast);
@@ -2441,7 +2445,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
 
-    Operator<?> op = genSelectPlan(selExprList, qb, input);
+    Operator<?> op = genSelectPlan(selExprList, qb, input, false);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Select Plan for clause: " + dest);
@@ -2452,7 +2456,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator<?> genSelectPlan(ASTNode selExprList, QB qb,
-      Operator<?> input) throws SemanticException {
+      Operator<?> input, boolean outerLV) throws SemanticException {
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("tree: " + selExprList.toStringTree());
@@ -2691,7 +2695,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (isUDTF) {
       output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb,
-          output);
+          output, outerLV);
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
@@ -5474,7 +5478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Operator genUDTFPlan(GenericUDTF genericUDTF,
       String outputTableAlias, ArrayList<String> colAliases, QB qb,
-      Operator input) throws SemanticException {
+      Operator input, boolean outerLV) throws SemanticException {
 
     // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
     QBParseInfo qbp = qb.getParseInfo();
@@ -5552,7 +5556,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Add the UDTFOperator to the operator DAG
     Operator<?> udtf = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new UDTFDesc(genericUDTF), new RowSchema(out_rwsch.getColumnInfos()),
+        new UDTFDesc(genericUDTF, outerLV), new RowSchema(out_rwsch.getColumnInfos()),
         input), out_rwsch);
     return udtf;
   }
@@ -8148,7 +8152,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Get the UDTF Path
     QB blankQb = new QB(null, null, false);
     Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
-        .getChild(0), blankQb, lvForward);
+        .getChild(0), blankQb, lvForward,
+        lateralViewTree.getType() == HiveParser.TOK_LATERAL_VIEW_OUTER);
     // add udtf aliases to QB
     for (String udtfAlias : blankQb.getAliases()) {
       qb.addAlias(udtfAlias);
