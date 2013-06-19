@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
@@ -18,6 +19,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColum
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -28,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.UDFOPMod;
 import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
+import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -286,5 +289,43 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(exprDesc);
 
     assertTrue(ve instanceof FilterLongColGreaterLongScalar);
+  }
+
+  @Test
+  public void testUnaryMinusColumnLong() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Integer.class, "col1", "table", false);
+    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
+    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPNegative.class);
+    negExprDesc.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
+    children.add(col1Expr);
+    negExprDesc.setChildExprs(children);
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    VectorizationContext vc = new VectorizationContext(columnMap, 1);
+    vc.setOperatorType(OperatorType.SELECT);
+
+    VectorExpression ve = vc.getVectorExpression(negExprDesc);
+
+    assertTrue( ve instanceof LongColUnaryMinus);
+  }
+
+  @Test
+  public void testUnaryMinusColumnDouble() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Float.class, "col1", "table", false);
+    ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
+    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPNegative.class);
+    negExprDesc.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
+    children.add(col1Expr);
+    negExprDesc.setChildExprs(children);
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    VectorizationContext vc = new VectorizationContext(columnMap, 1);
+    vc.setOperatorType(OperatorType.SELECT);
+
+    VectorExpression ve = vc.getVectorExpression(negExprDesc);
+
+    assertTrue( ve instanceof DoubleColUnaryMinus);
   }
 }
