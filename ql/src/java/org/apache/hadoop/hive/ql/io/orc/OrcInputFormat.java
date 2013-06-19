@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -33,15 +39,13 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * A MapReduce/Hive input format for ORC files.
  */
 public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
-  implements InputFormatChecker {
+  implements InputFormatChecker, VectorizedInputFormatInterface {
+
+  VectorizedOrcInputFormat voif = new VectorizedOrcInputFormat();
 
   private static class OrcRecordReader
       implements RecordReader<NullWritable, OrcStruct> {
@@ -50,6 +54,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
     private final long length;
     private final int numColumns;
     private float progress = 0.0f;
+
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
@@ -161,6 +166,15 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   public RecordReader<NullWritable, OrcStruct>
       getRecordReader(InputSplit inputSplit, JobConf conf,
                       Reporter reporter) throws IOException {
+
+    boolean vectorPath = conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.toString(),
+        false);
+    if (vectorPath) {
+      RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
+          reporter);
+      return (RecordReader) vorr;
+    }
+
     FileSplit fileSplit = (FileSplit) inputSplit;
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
@@ -173,6 +187,13 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   public boolean validateInput(FileSystem fs, HiveConf conf,
                                ArrayList<FileStatus> files
                               ) throws IOException {
+    boolean vectorPath = conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.toString(),
+        false);
+
+    if (vectorPath) {
+      return voif.validateInput(fs, conf, files);
+    }
+
     if (files.size() <= 0) {
       return false;
     }
