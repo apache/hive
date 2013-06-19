@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -100,6 +101,13 @@ public class VectorizedRowBatch implements Writable {
     return size;
   }
 
+  private String toUTF8(Object o) {
+    if(o == null || o instanceof NullWritable) {
+      return "\\N"; /* as found in LazySimpleSerDe's nullSequence */
+    }
+    return o.toString();
+  }
+
   @Override
   public String toString() {
     if (size == 0) {
@@ -110,18 +118,16 @@ public class VectorizedRowBatch implements Writable {
       if (this.selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = selected[j];
-          int colIndex = 0;
           for (int k = 0; k < projectionSize; k++) {
             int projIndex = projectedColumns[k];
             ColumnVector cv = cols[projIndex];
-            if (cv.isRepeating) {
-              b.append(valueWriters[k].writeValue(cv, 0).toString());
-            } else {
-              b.append(valueWriters[k].writeValue(cv, i).toString());
-            }
-            colIndex++;
-            if (colIndex < cols.length) {
+            if (k > 0) {
               b.append('\u0001');
+            }
+            if (cv.isRepeating) {
+              b.append(toUTF8(valueWriters[k].writeValue(cv, 0)));
+            } else {
+              b.append(toUTF8(valueWriters[k].writeValue(cv, i)));
             }
           }
           if (j < size - 1) {
@@ -130,18 +136,16 @@ public class VectorizedRowBatch implements Writable {
         }
       } else {
         for (int i = 0; i < size; i++) {
-          int colIndex = 0;
           for (int k = 0; k < projectionSize; k++) {
             int projIndex = projectedColumns[k];
             ColumnVector cv = cols[projIndex];
-            if (cv.isRepeating) {
-              b.append(valueWriters[k].writeValue(cv, 0).toString());
-            } else {
-              b.append(valueWriters[k].writeValue(cv, i).toString());
-            }
-            colIndex++;
-            if (colIndex < cols.length) {
+            if (k > 0) {
               b.append('\u0001');
+            }
+            if (cv.isRepeating) {
+              b.append(toUTF8(valueWriters[k].writeValue(cv, 0)));
+            } else {
+              b.append(toUTF8(valueWriters[k].writeValue(cv, i)));
             }
           }
           if (i < size - 1) {
