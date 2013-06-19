@@ -197,7 +197,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void assignNullString(int index) {
-    // We do not assign the value to [] because the value is never used on null
+    // We do not assign the value to byteValues[] because the value is never used on null
     isNull[longValues.length + doubleValues.length + index] = true;
   }
 
@@ -210,28 +210,37 @@ public class VectorHashKeyWrapper extends KeyWrapper {
         byteValues.length, Arrays.toString(byteValues));
   }
 
-  public boolean getIsNull(int i) {
+  public boolean getIsLongNull(int i) {
     return isNull[i];
   }
 
+  public boolean getIsDoubleNull(int i) {
+    return isNull[longValues.length + i];
+  }
+
+  public boolean getIsBytesNull(int i) {
+    return isNull[longValues.length + doubleValues.length + i];
+  }
+
+  
   public long getLongValue(int i) {
     return longValues[i];
   }
 
   public double getDoubleValue(int i) {
-    return doubleValues[i - longValues.length];
+    return doubleValues[i];
   }
 
   public byte[] getBytes(int i) {
-    return byteValues[i - longValues.length - doubleValues.length];
+    return byteValues[i];
   }
 
   public int getByteStart(int i) {
-    return byteStarts[i - longValues.length - doubleValues.length];
+    return byteStarts[i];
   }
 
   public int getByteLength(int i) {
-    return byteLengths[i - longValues.length - doubleValues.length];
+    return byteLengths[i];
   }
 
   public int getVariableSize() {
