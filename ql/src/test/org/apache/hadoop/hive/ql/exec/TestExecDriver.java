@@ -62,8 +62,8 @@ public class TestExecDriver extends TestCase {
 
   static HiveConf conf;
 
-  private static String tmpdir = "/tmp/" + System.getProperty("user.name")
-      + "/";
+  private static String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")
+      + File.separator;
   private static Path tmppath = new Path(tmpdir);
   private static Hive db;
   private static FileSystem fs;

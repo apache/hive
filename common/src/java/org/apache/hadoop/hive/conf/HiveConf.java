@@ -178,7 +178,7 @@ public class HiveConf extends Configuration {
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
-    LOCALSCRATCHDIR("hive.exec.local.scratchdir", "/tmp/" + System.getProperty("user.name")),
+    LOCALSCRATCHDIR("hive.exec.local.scratchdir", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
@@ -202,7 +202,7 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L),
     DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
-        "/tmp/${hive.session.id}_resources"),
+        System.getProperty("java.io.tmpdir") + File.separator  + "${hive.session.id}_resources"),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__"),
     // Whether to show a link to the most failed task + debugging tips
@@ -442,11 +442,11 @@ public class HiveConf extends Configuration {
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
 
     // default serde for rcfile
-    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde", 
+    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde",
                            "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe"),
 
     //Location of Hive run time structured log file
-    HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
+    HIVEHISTORYFILELOC("hive.querylog.location", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
 
     // Whether to log the plan's progress every time a job's progress is checked
     HIVE_LOG_INCREMENTAL_PLAN_PROGRESS("hive.querylog.enable.plan.progress", true),

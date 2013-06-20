@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -87,7 +88,8 @@ public class TestPlan extends TestCase {
       // store into configuration
       JobConf job = new JobConf(TestPlan.class);
       job.set("fs.default.name", "file:///");
-      Utilities.setMapRedWork(job, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
+      Utilities.setMapRedWork(job, mrwork, System.getProperty("java.io.tmpdir") + File.separator +
+        System.getProperty("user.name") + File.separator + "hive");
       MapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearMapRedWork(job);
 
