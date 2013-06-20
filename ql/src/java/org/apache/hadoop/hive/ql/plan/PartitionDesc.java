@@ -188,6 +188,16 @@ public class PartitionDesc implements Serializable, Cloneable {
     return properties;
   }
 
+  public java.util.Properties getOverlayedProperties(){
+    if (tableDesc != null) {
+      Properties overlayedProps = new Properties(tableDesc.getProperties());
+      overlayedProps.putAll(getProperties());
+      return overlayedProps;
+    } else {
+      return getProperties();
+    }
+  }
+
   public void setProperties(final java.util.Properties properties) {
     this.properties = properties;
   }
