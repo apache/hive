@@ -55,6 +55,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class ZooKeeperHiveLockManager implements HiveLockManager {
   HiveLockManagerCtx ctx;
   public static final Log LOG = LogFactory.getLog("ZooKeeperHiveLockManager");
@@ -439,7 +441,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   }
 
   /* Remove the lock specified */
-  private static void unlockPrimitive(HiveConf conf, ZooKeeper zkpClient,
+  @VisibleForTesting
+  static void unlockPrimitive(HiveConf conf, ZooKeeper zkpClient,
                              HiveLock hiveLock, String parent) throws LockException {
     ZooKeeperHiveLock zLock = (ZooKeeperHiveLock)hiveLock;
     try {
@@ -452,7 +455,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       List<String> children = zkpClient.getChildren(name, false);
       if ((children == null) || (children.isEmpty()))
       {
-        zkpClient.delete(name, -1);
+        try {
+          zkpClient.delete(name, -1);
+        } catch (KeeperException.NoNodeException e) {
+          LOG.debug("Node " + name + " previously deleted when attempting to delete.");
+        }
       }
     } catch (Exception e) {
       LOG.error("Failed to release ZooKeeper lock: ", e);
