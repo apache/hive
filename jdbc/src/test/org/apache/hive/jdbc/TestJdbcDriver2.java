@@ -383,6 +383,17 @@ public class TestJdbcDriver2 extends TestCase {
     doTestSelectAll(tableName, 100, 20);
   }
 
+  public void testNullType() throws Exception {
+    Statement stmt = con.createStatement();
+    try {
+      ResultSet res = stmt.executeQuery("select null from " + dataTypeTableName);
+      assertTrue(res.next());
+      assertNull(res.getObject(1));
+    } finally {
+      stmt.close();
+    }
+  }
+
   public void testDataTypes() throws Exception {
     Statement stmt = con.createStatement();
 
