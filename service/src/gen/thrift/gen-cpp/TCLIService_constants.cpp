@@ -22,6 +22,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   PRIMITIVE_TYPES.insert((TTypeId::type)8);
   PRIMITIVE_TYPES.insert((TTypeId::type)9);
   PRIMITIVE_TYPES.insert((TTypeId::type)15);
+  PRIMITIVE_TYPES.insert((TTypeId::type)16);
 
   COMPLEX_TYPES.insert((TTypeId::type)10);
   COMPLEX_TYPES.insert((TTypeId::type)11);
@@ -47,6 +48,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)12, "STRUCT"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)13, "UNIONTYPE"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)15, "DECIMAL"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)16, "NULL"));
 
 }
 

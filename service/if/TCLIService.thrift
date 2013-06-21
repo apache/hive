@@ -57,21 +57,23 @@ enum TTypeId {
   STRUCT_TYPE,
   UNION_TYPE,
   USER_DEFINED_TYPE,
-  DECIMAL_TYPE
+  DECIMAL_TYPE,
+  NULL_TYPE,
 }
   
 const set<TTypeId> PRIMITIVE_TYPES = [
-  TTypeId.BOOLEAN_TYPE
-  TTypeId.TINYINT_TYPE
-  TTypeId.SMALLINT_TYPE
-  TTypeId.INT_TYPE
-  TTypeId.BIGINT_TYPE
-  TTypeId.FLOAT_TYPE
-  TTypeId.DOUBLE_TYPE
-  TTypeId.STRING_TYPE
-  TTypeId.TIMESTAMP_TYPE
+  TTypeId.BOOLEAN_TYPE,
+  TTypeId.TINYINT_TYPE,
+  TTypeId.SMALLINT_TYPE,
+  TTypeId.INT_TYPE,
+  TTypeId.BIGINT_TYPE,
+  TTypeId.FLOAT_TYPE,
+  TTypeId.DOUBLE_TYPE,
+  TTypeId.STRING_TYPE,
+  TTypeId.TIMESTAMP_TYPE,
   TTypeId.BINARY_TYPE,
-  TTypeId.DECIMAL_TYPE
+  TTypeId.DECIMAL_TYPE,
+  TTypeId.NULL_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -101,8 +103,9 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.ARRAY_TYPE: "ARRAY",
   TTypeId.MAP_TYPE: "MAP",
   TTypeId.STRUCT_TYPE: "STRUCT",
-  TTypeId.UNION_TYPE: "UNIONTYPE"
-  TTypeId.DECIMAL_TYPE: "DECIMAL"
+  TTypeId.UNION_TYPE: "UNIONTYPE",
+  TTypeId.DECIMAL_TYPE: "DECIMAL",
+  TTypeId.NULL_TYPE: "NULL"
 }
 
 // Thrift does not support recursively defined types or forward declarations,
@@ -285,7 +288,7 @@ union TColumnValue {
   4: TI32Value    i32Val       // INT
   5: TI64Value    i64Val       // BIGINT, TIMESTAMP
   6: TDoubleValue doubleVal    // FLOAT, DOUBLE
-  7: TStringValue stringVal    // STRING, LIST, MAP, STRUCT, UNIONTYPE, BINARY, DECIMAL
+  7: TStringValue stringVal    // STRING, LIST, MAP, STRUCT, UNIONTYPE, BINARY, DECIMAL, NULL
 }
 
 // Represents a row in a rowset.
