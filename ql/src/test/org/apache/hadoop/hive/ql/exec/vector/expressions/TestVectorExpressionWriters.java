@@ -42,7 +42,6 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
@@ -102,7 +101,7 @@ public class TestVectorExpressionWriters {
     VectorExpressionWriter vew = getWriter(type);
     for (int i = 0; i < vectorSize; i++) {
       Writable w = (Writable) vew.writeValue(dcv, i);
-      if (!(w instanceof NullWritable)) {
+      if (w != null) {
         Writable expected = getWritableValue(type, dcv.vector[i]);
         Assert.assertEquals(expected, w);
       } else {
@@ -118,7 +117,7 @@ public class TestVectorExpressionWriters {
     VectorExpressionWriter vew = getWriter(type);
     for (int i = 0; i < vectorSize; i++) {
       Writable w = (Writable) vew.writeValue(lcv, i);
-      if (!(w instanceof NullWritable)) {
+      if (w != null) {
         Writable expected = getWritableValue(type, lcv.vector[i]);
         if (expected instanceof TimestampWritable) {
           TimestampWritable t1 = (TimestampWritable) expected;
@@ -148,7 +147,7 @@ public class TestVectorExpressionWriters {
     VectorExpressionWriter vew = getWriter(type);
     for (int i = 0; i < vectorSize; i++) {
       Writable w = (Writable) vew.writeValue(bcv, i);
-      if (!(w instanceof NullWritable)) {
+      if (w != null) {
         byte [] val = new byte[bcv.length[i]];
         System.arraycopy(bcv.vector[i], bcv.start[i], val, 0, bcv.length[i]);
         Writable expected = getWritableValue(type, val);

@@ -53,7 +53,6 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1730,7 +1729,7 @@ public class TestVectorGroupByOperator {
       assertEquals(1, arr.length);
 
       if (expected == null) {
-        Assert.assertSame(key, NullWritable.get(), arr[0]);
+        assertEquals(key, null, arr[0]);
       } else if (arr[0] instanceof LongWritable) {
         LongWritable lw = (LongWritable) arr[0];
         assertEquals(key, (Long) expected, (Long) lw.get());
@@ -1759,7 +1758,7 @@ public class TestVectorGroupByOperator {
       assertEquals (1, arr.length);
 
       if (expected == null) {
-        Assert.assertSame(key, NullWritable.get(), arr[0]);
+        assertEquals(key, null, arr[0]);
       } else {
         assertEquals (true, arr[0] instanceof Object[]);
         Object[] vals = (Object[]) arr[0];
@@ -1787,7 +1786,7 @@ public class TestVectorGroupByOperator {
       assertEquals (1, arr.length);
 
       if (expected == null) {
-        Assert.assertSame(NullWritable.get(), arr[0]);
+        assertEquals(null, arr[0]);
       } else {
         assertEquals (true, arr[0] instanceof Object[]);
         Object[] vals = (Object[]) arr[0];
