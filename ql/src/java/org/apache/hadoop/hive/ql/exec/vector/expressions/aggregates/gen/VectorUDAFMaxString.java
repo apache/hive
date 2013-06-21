@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.NullWritable;
 
 /**
 * VectorUDAFMaxString. Vectorized implementation for MIN/MAX aggregates. 
@@ -356,7 +355,7 @@ public class VectorUDAFMaxString extends VectorAggregateExpression {
         AggregationBuffer agg) throws HiveException {
     Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
-        return NullWritable.get();
+        return null;
       }
       else {
         result.set(myagg.bytes, 0, myagg.length);

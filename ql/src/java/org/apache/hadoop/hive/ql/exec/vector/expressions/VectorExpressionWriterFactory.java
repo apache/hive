@@ -43,7 +43,6 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -113,11 +112,11 @@ public final class VectorExpressionWriterFactory {
       } else if (!lcv.noNulls && !lcv.isRepeating && !lcv.isNull[row]) {
         return writeValue(lcv.vector[row]);
       } else if (!lcv.noNulls && !lcv.isRepeating && lcv.isNull[row]) {
-        return NullWritable.get();
+        return null;
       } else if (!lcv.noNulls && lcv.isRepeating && !lcv.isNull[0]) {
         return writeValue(lcv.vector[0]);
       } else if (!lcv.noNulls && lcv.isRepeating && lcv.isNull[0]) {
-        return NullWritable.get();
+        return null;
       }
       throw new HiveException(
         String.format(
@@ -141,11 +140,11 @@ public final class VectorExpressionWriterFactory {
       } else if (!dcv.noNulls && !dcv.isRepeating && !dcv.isNull[row]) {
         return writeValue(dcv.vector[row]);
       } else if (!dcv.noNulls && !dcv.isRepeating && dcv.isNull[row]) {
-        return NullWritable.get();
+        return null;
       } else if (!dcv.noNulls && dcv.isRepeating && !dcv.isNull[0]) {
         return writeValue(dcv.vector[0]);
       } else if (!dcv.noNulls && dcv.isRepeating && dcv.isNull[0]) {
-        return NullWritable.get();
+        return null;
       }
       throw new HiveException(
         String.format(
@@ -169,11 +168,11 @@ public final class VectorExpressionWriterFactory {
       } else if (!bcv.noNulls && !bcv.isRepeating && !bcv.isNull[row]) {
         return writeValue(bcv.vector[row], bcv.start[row], bcv.length[row]);
       } else if (!bcv.noNulls && !bcv.isRepeating && bcv.isNull[row]) {
-        return NullWritable.get();
+        return null;
       } else if (!bcv.noNulls && bcv.isRepeating && !bcv.isNull[0]) {
         return writeValue(bcv.vector[0], bcv.start[0], bcv.length[0]);
       } else if (!bcv.noNulls && bcv.isRepeating && bcv.isNull[0]) {
-        return NullWritable.get();
+        return null;
       }
       throw new HiveException(
         String.format(
