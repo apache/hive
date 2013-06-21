@@ -258,7 +258,7 @@ public class ObjectStore implements RawStore, Configurable {
     return prop;
   }
 
-  private static PersistenceManagerFactory getPMF() {
+  private static synchronized PersistenceManagerFactory getPMF() {
     if (pmf == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(prop);
       DataStoreCache dsc = pmf.getDataStoreCache();
