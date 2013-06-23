@@ -242,6 +242,10 @@ public class PartitionDesc implements Serializable, Cloneable {
     return baseFileName;
   }
 
+  public boolean isPartitioned() {
+    return partSpec != null && !partSpec.isEmpty();
+  }
+
   @Override
   public PartitionDesc clone() {
     PartitionDesc ret = new PartitionDesc();

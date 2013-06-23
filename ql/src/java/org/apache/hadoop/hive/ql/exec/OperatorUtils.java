@@ -1,4 +1,9 @@
 /**
+ <<<<<<< HEAD
+ =======
+ * Copyright 2010 The Apache Software Foundation
+ *
+ >>>>>>> HIVE-1402 [jira] Add parallel ORDER BY to Hive
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +31,11 @@ public class OperatorUtils {
 
   public static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz) {
     return findOperator(start, clazz, new HashSet<T>());
+  }
+
+  public static <T> T findSingleOperator(Operator<?> start, Class<T> clazz) {
+    Set<T> found = findOperator(start, clazz, new HashSet<T>());
+    return found.size() == 1 ? found.iterator().next() : null;
   }
 
   public static <T> Set<T> findOperators(Collection<Operator<?>> starts, Class<T> clazz) {

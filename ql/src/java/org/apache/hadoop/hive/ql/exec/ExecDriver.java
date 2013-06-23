@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -84,6 +85,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
@@ -416,6 +418,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       addInputPaths(job, work, emptyScratchDirStr, ctx);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
+
+      if (work.getSamplingType() > 0) {
+        try {
+          handleSampling(driverContext, work, job, new HiveConf(conf));
+          job.setPartitionerClass(HiveTotalOrderPartitioner.class);
+        } catch (Exception e) {
+          LOG.info("Failed to use sampling", e);
+          work.setNumReduceTasks(1);  // rollback
+        }
+      }
+
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs
       String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTOREPWD);
@@ -509,6 +522,64 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
+  }
+
+  private void handleSampling(DriverContext context, MapredWork work, JobConf job, HiveConf conf)
+      throws Exception {
+    assert work.getAliasToWork().keySet().size() == 1;
+
+    String alias = work.getAliases().get(0);
+    Operator<?> topOp = work.getAliasToWork().get(alias);
+    PartitionDesc partDesc = work.getAliasToPartnInfo().get(alias);
+
+    ArrayList<String> paths = work.getPaths();
+    ArrayList<PartitionDesc> parts = work.getPartitionDescs();
+
+    Path onePath = new Path(paths.get(0));
+    String tmpPath = context.getCtx().getExternalTmpFileURI(onePath.toUri());
+
+    Path partitionFile = new Path(tmpPath, ".partitions");
+    TotalOrderPartitioner.setPartitionFile(job, partitionFile);
+
+    PartitionKeySampler sampler = new PartitionKeySampler();
+
+    if (work.getSamplingType() == MapredWork.SAMPLING_ON_PREV_MR) {
+      console.printInfo("Use sampling data created in previous MR");
+      // merges sampling data from previous MR and make paritition keys for total sort
+      for (String path : paths) {
+        Path inputPath = new Path(path);
+        FileSystem fs = inputPath.getFileSystem(job);
+        for (FileStatus status : fs.globStatus(new Path(inputPath, ".sampling*"))) {
+          sampler.addSampleFile(status.getPath(), job);
+        }
+      }
+    } else if (work.getSamplingType() == MapredWork.SAMPLING_ON_START) {
+      console.printInfo("Creating sampling data..");
+      assert topOp instanceof TableScanOperator;
+      TableScanOperator ts = (TableScanOperator) topOp;
+
+      FetchWork fetchWork;
+      if (!partDesc.isPartitioned()) {
+        assert paths.size() == 1;
+        fetchWork = new FetchWork(paths.get(0), partDesc.getTableDesc());
+      } else {
+        fetchWork = new FetchWork(paths, parts, partDesc.getTableDesc());
+      }
+      fetchWork.setSource(ts);
+
+      // random sampling
+      FetchOperator fetcher = PartitionKeySampler.createSampler(fetchWork, conf, job, ts);
+      try {
+        ts.initialize(conf, new ObjectInspector[]{fetcher.getOutputObjectInspector()});
+        ts.setOutputCollector(sampler);
+        while (fetcher.pushRow()) { }
+      } finally {
+        fetcher.clearFetchContext();
+      }
+    } else {
+      throw new IllegalArgumentException("Invalid sampling type " + work.getSamplingType());
+    }
+    sampler.writePartitionKeys(partitionFile, job);
   }
 
   /**

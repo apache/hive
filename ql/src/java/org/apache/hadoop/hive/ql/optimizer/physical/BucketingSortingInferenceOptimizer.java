@@ -91,7 +91,9 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
         continue;
       }
 
-      BucketingSortingCtx bCtx = new BucketingSortingCtx();
+      // uses sampling, which means it's not bucketed
+      boolean disableBucketing = mapRedTask.getWork().getSamplingType() > 0;
+      BucketingSortingCtx bCtx = new BucketingSortingCtx(disableBucketing);
 
       // RuleRegExp rules are used to match operators anywhere in the tree
       // RuleExactMatch rules are used to specify exactly what the tree should look like
