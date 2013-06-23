@@ -487,9 +487,13 @@ public class FetchOperator implements Serializable {
   public boolean pushRow() throws IOException, HiveException {
     InspectableObject row = getNextRow();
     if (row != null) {
-      operator.process(row.o, 0);
+      pushRow(row);
     }
     return row != null;
+  }
+
+  protected void pushRow(InspectableObject row) throws HiveException {
+    operator.process(row.o, 0);
   }
 
   private transient final InspectableObject inspectable = new InspectableObject();
