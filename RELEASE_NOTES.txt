@@ -269,6 +269,7 @@ Release Notes - Hive - Version 0.11.0
     * [HIVE-4505] - Hive can't load transforms added using 'ADD FILE'
     * [HIVE-4527] - Fix eclipse project template
     * [HIVE-4784] - ant testreport doesn't include any HCatalog tests
+    * [HIVE-4591] - Making changes to webhcat-site.xml have no effect
 
 ** Improvement
     * [HIVE-581] - improve group by syntax

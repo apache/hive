@@ -46,7 +46,7 @@ SLEEP_TIME_AFTER_START=10
 #================================================
 
 #These parameters can be overriden by webhcat-env.sh
-# the root of the WEBHCAT installation
+# the root of the WEBHCAT installation  ('this' is defined in webhcat_server.sh)
 export WEBHCAT_PREFIX=`dirname "$this"`/..
 
 #check to see if the conf dir is given as an optional argument
@@ -62,9 +62,9 @@ then
 fi
 
 # Allow alternate conf dir location.
-if [ -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-env.sh" ]; then
+if [ -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-env.sh" -o -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-site.xml" ]; then
   DEFAULT_CONF_DIR=${WEBHCAT_PREFIX}/"etc/webhcat"
-elif [ -e "${WEBHCAT_PREFIX}/conf/webhcat-env.sh" ]; then
+elif [ -e "${WEBHCAT_PREFIX}/conf/webhcat-env.sh" -o -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-site.xml" ]; then
   DEFAULT_CONF_DIR=${WEBHCAT_PREFIX}/"conf"
 else
   DEFAULT_CONF_DIR="/etc/webhcat"
