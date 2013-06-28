@@ -26,7 +26,8 @@
   <!-- <import file="../build-common.xml"/> -->
 
     <property name="path.to.basedir" location="${basedir}"/>
-
+    <property name="test.result.dir" location="${build.dir.hive}/hcatalog/test"
+              description="location to place TEST-*.xml files so that hive's testreport includes them"/>
     <loadproperties srcfile="${basedir}/build.properties"/>
 
     <!--
@@ -91,16 +92,29 @@
     <target name="gen-test" description="Generate tests, a no-op for hcat"/>
 
     <target name="test" depends="jar" description="run unit tests">
+        <mkdir dir="${test.result.dir}"/>
         <!-- Placed in a parallel structure so that the tests keep going
              even if some fail.  Otherwise a failure in one of the earlier ant
              call terminates the target and the rest do not run.  -->
         <parallel threadCount="1">
-            <ant target="test" dir="core" inheritAll="false"/>
-            <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false"/>
-            <ant target="test" dir="server-extensions" inheritAll="false"/>
-            <ant target="test" dir="webhcat/svr" inheritAll="false"/>
-            <ant target="test" dir="webhcat/java-client" inheritAll="false"/>
-            <ant target="test" dir="storage-handlers/hbase" inheritAll="false"/>
+            <ant target="test" dir="core" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
+            <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
+            <ant target="test" dir="server-extensions" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
+            <ant target="test" dir="webhcat/svr" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
+            <ant target="test" dir="webhcat/java-client" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
+            <ant target="test" dir="storage-handlers/hbase" inheritAll="false">
+                <property name="test.result.dir" location="${test.result.dir}"/>
+            </ant>
             <!-- One checkstyle run for the whole repo. Runs after junit tests
             to piggyback on resolved jars. -->
             <path id="checkstyle.class.path">
@@ -174,6 +188,7 @@
     <!-- Clean up children -->
     <target name="clean-test" description="Cleanup test artifacts">
         <echo message="${ant.project.name}"/>
+        <delete dir="${test.result.dir}"/>
         <delete dir="${build.dir}"/>
         <ant target="clean-test" dir="core" inheritAll="false"/>
         <ant target="clean-test" dir="hcatalog-pig-adapter" inheritAll="false"/>
