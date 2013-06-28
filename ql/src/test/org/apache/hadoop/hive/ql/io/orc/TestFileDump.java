@@ -43,7 +43,7 @@ public class TestFileDump {
   Path workDir = new Path(System.getProperty("test.tmp.dir",
       "target" + File.separator + "test" + File.separator + "tmp"));
   Path resourceDir = new Path(System.getProperty("test.build.resources",
-      "src" + File.separator + "test" + File.separator + "resources"));
+      "ql" + File.separator + "src" + File.separator + "test" + File.separator + "resources"));
 
   Configuration conf;
   FileSystem fs;
