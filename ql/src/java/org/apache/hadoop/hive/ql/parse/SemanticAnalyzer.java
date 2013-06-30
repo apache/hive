@@ -2902,11 +2902,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator(QBParseInfo parseInfo,
-      String dest, Operator reduceSinkOperatorInfo, GroupByDesc.Mode mode,
+      String dest, Operator input, ReduceSinkOperator rs, GroupByDesc.Mode mode,
       Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
       throws SemanticException {
     RowResolver groupByInputRowResolver = opParseCtx
-        .get(reduceSinkOperatorInfo).getRowResolver();
+        .get(input).getRowResolver();
     RowResolver groupByOutputRowResolver = new RowResolver();
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
@@ -2937,15 +2937,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // get the last colName for the reduce KEY
     // it represents the column name corresponding to distinct aggr, if any
     String lastKeyColName = null;
-    List<ExprNodeDesc> reduceValues = null;
-    if (reduceSinkOperatorInfo.getConf() instanceof ReduceSinkDesc) {
-      List<String> inputKeyCols = ((ReduceSinkDesc)
-          reduceSinkOperatorInfo.getConf()).getOutputKeyColumnNames();
-      if (inputKeyCols.size() > 0) {
-        lastKeyColName = inputKeyCols.get(inputKeyCols.size() - 1);
-      }
-      reduceValues = ((ReduceSinkDesc) reduceSinkOperatorInfo.getConf()).getValueCols();
+    List<String> inputKeyCols = ((ReduceSinkDesc) rs.getConf()).getOutputKeyColumnNames();
+    if (inputKeyCols.size() > 0) {
+      lastKeyColName = inputKeyCols.get(inputKeyCols.size() - 1);
     }
+    List<ExprNodeDesc> reduceValues = ((ReduceSinkDesc) rs.getConf()).getValueCols();
     int numDistinctUDFs = 0;
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
@@ -3022,7 +3018,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
             false, groupByMemoryUsage, memoryThreshold, null, false, 0, numDistinctUDFs > 0),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
-        reduceSinkOperatorInfo), groupByOutputRowResolver);
+        input), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
   }
@@ -3490,7 +3486,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private Operator genGroupByPlanReduceSinkOperator(QB qb,
+  private ReduceSinkOperator genGroupByPlanReduceSinkOperator(QB qb,
       String dest,
       Operator inputOperatorInfo,
       List<ASTNode> grpByExprs,
@@ -3680,7 +3676,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genCommonGroupByPlanReduceSinkOperator(QB qb, List<String> dests,
+  private ReduceSinkOperator genCommonGroupByPlanReduceSinkOperator(QB qb, List<String> dests,
       Operator inputOperatorInfo) throws SemanticException {
 
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo)
@@ -4027,7 +4023,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // ////// 1. Generate ReduceSinkOperator
-    Operator reduceSinkOperatorInfo =
+    ReduceSinkOperator reduceSinkOperatorInfo =
         genGroupByPlanReduceSinkOperator(qb,
             dest,
             input,
@@ -4040,7 +4036,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
-        dest, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
+        dest, reduceSinkOperatorInfo, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
 
     return groupByOperatorInfo;
   }
@@ -4110,7 +4106,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator select = insertSelectAllPlanForGroupBy(selectInput);
 
     // Generate ReduceSinkOperator
-    Operator reduceSinkOperatorInfo = genCommonGroupByPlanReduceSinkOperator(qb, dests, select);
+    ReduceSinkOperator reduceSinkOperatorInfo =
+        genCommonGroupByPlanReduceSinkOperator(qb, dests, select);
 
     // It is assumed throughout the code that a reducer has a single child, add a
     // ForwardOperator so that we can add multiple filter/group by operators as children
@@ -4130,7 +4127,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Generate GroupbyOperator
       Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
-          dest, curr, GroupByDesc.Mode.COMPLETE, null);
+          dest, curr, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
 
       curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb);
     }
@@ -4272,7 +4269,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // DISTINCT
     // operator. We set the numPartitionColumns to -1 for this purpose. This is
     // captured by WritableComparableHiveObject.hashCode() function.
-    Operator reduceSinkOperatorInfo =
+    ReduceSinkOperator reduceSinkOperatorInfo =
         genGroupByPlanReduceSinkOperator(qb,
             dest,
             input,
@@ -4287,7 +4284,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
         new LinkedHashMap<String, GenericUDAFEvaluator>();
     GroupByOperator groupByOperatorInfo = (GroupByOperator) genGroupByPlanGroupByOperator(
-        parseInfo, dest, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIAL1,
+        parseInfo, dest, reduceSinkOperatorInfo, reduceSinkOperatorInfo, GroupByDesc.Mode.PARTIAL1,
         genericUDAFEvaluators);
 
     int numReducers = -1;
