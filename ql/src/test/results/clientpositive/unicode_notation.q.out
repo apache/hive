@@ -1,0 +1,130 @@
+PREHOOK: query: -- HIVE-4618 hive should accept unicode notation like \uxxxx
+
+CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- HIVE-4618 hive should accept unicode notation like \uxxxx
+
+CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@k1
+PREHOOK: query: desc formatted k1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted k1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\u0001              
+	serialization.format	\u0001              
+PREHOOK: query: drop table k1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@k1
+PREHOOK: Output: default@k1
+POSTHOOK: query: drop table k1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@k1
+POSTHOOK: Output: default@k1
+PREHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@k1
+PREHOOK: query: desc formatted k1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted k1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	\u0001              
+	serialization.format	\u0001              
+PREHOOK: query: drop table k1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@k1
+PREHOOK: Output: default@k1
+POSTHOOK: query: drop table k1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@k1
+POSTHOOK: Output: default@k1
+PREHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@k1
+PREHOOK: query: desc formatted k1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted k1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	|                   
+	serialization.format	|                   
+PREHOOK: query: drop table k1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@k1
+PREHOOK: Output: default@k1
+POSTHOOK: query: drop table k1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@k1
+POSTHOOK: Output: default@k1
