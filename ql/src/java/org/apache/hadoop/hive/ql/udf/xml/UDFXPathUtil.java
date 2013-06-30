@@ -121,6 +121,7 @@ public class UDFXPathUtil {
         throw new IOException("Stream closed");
     }
 
+    @Override
     public int read() throws IOException {
       ensureOpen();
       if (next >= length)
@@ -128,6 +129,7 @@ public class UDFXPathUtil {
       return str.charAt(next++);
     }
 
+    @Override
     public int read(char cbuf[], int off, int len) throws IOException {
       ensureOpen();
       if ((off < 0) || (off > cbuf.length) || (len < 0)
@@ -144,6 +146,7 @@ public class UDFXPathUtil {
       return n;
     }
 
+    @Override
     public long skip(long ns) throws IOException {
       ensureOpen();
       if (next >= length)
@@ -155,15 +158,18 @@ public class UDFXPathUtil {
       return n;
     }
 
+    @Override
     public boolean ready() throws IOException {
       ensureOpen();
       return true;
     }
 
+    @Override
     public boolean markSupported() {
       return true;
     }
 
+    @Override
     public void mark(int readAheadLimit) throws IOException {
       if (readAheadLimit < 0) {
         throw new IllegalArgumentException("Read-ahead limit < 0");
@@ -172,11 +178,13 @@ public class UDFXPathUtil {
       mark = next;
     }
 
+    @Override
     public void reset() throws IOException {
       ensureOpen();
       next = mark;
     }
 
+    @Override
     public void close() {
       str = null;
     }
