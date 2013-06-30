@@ -522,6 +522,11 @@
     <copy todir="${target.dir}/hcatalog">
         <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
     </copy>
+    <!--fix permissions since 'copy' looses them (known ant/Java issue)-->
+    <chmod perm="ugo+x" type="file">
+      <fileset dir="${target.dir}/hcatalog/bin"/>
+      <fileset dir="${target.dir}/hcatalog/sbin"/>
+    </chmod>
   </target>
 
 
@@ -752,6 +757,8 @@
         <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}"
                     excludes="${vcs.excludes}">
           <include name="bin/**"/>
+          <include name="hcatalog/bin/*"/>
+          <include name="hcatalog/sbin/*"/>
         </tarfileset>
         <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}"
                     excludes="${vcs.excludes}">
@@ -763,6 +770,8 @@
           <exclude name="bin/**"/>
           <exclude name="docs/**"/>
           <exclude name="lib/py/**/*-remote"/>
+          <exclude name="hcatalog/bin/*"/>
+          <exclude name="hcatalog/sbin/*"/>
         </tarfileset>
       </param.listofitems>
     </macro_tar>
