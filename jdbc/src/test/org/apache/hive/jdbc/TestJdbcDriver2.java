@@ -478,6 +478,12 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(true, res.getBoolean(1));
     assertEquals(true, res.getBoolean(4));
 
+    // test case sensitivity
+    assertFalse(meta.isCaseSensitive(1));
+    assertFalse(meta.isCaseSensitive(2));
+    assertFalse(meta.isCaseSensitive(3));
+    assertTrue(meta.isCaseSensitive(4));
+
     // no more rows
     assertFalse(res.next());
   }

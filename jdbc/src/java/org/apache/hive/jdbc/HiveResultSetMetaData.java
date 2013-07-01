@@ -82,14 +82,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public String getColumnTypeName(int column) throws SQLException {
-    if (columnTypes == null) {
-      throw new SQLException(
-          "Could not determine column type name for ResultSet");
-    }
-
-    if (column < 1 || column > columnTypes.size()) {
-      throw new SQLException("Invalid column value: " + column);
-    }
+    validateColumnType(column);
 
     // we need to convert the Hive type to the SQL type name
     // TODO: this would be better handled in an enum
@@ -155,7 +148,17 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public boolean isCaseSensitive(int column) throws SQLException {
-    throw new SQLException("Method not supported");
+    validateColumnType(column);
+
+    // we need to convert the Hive type to the SQL type name
+    // TODO: this would be better handled in an enum
+    String type = columnTypes.get(column - 1);
+
+    if("string".equalsIgnoreCase(type)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public boolean isCurrency(int column) throws SQLException {
@@ -196,4 +199,14 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
+  protected void validateColumnType(int column) throws SQLException {
+    if (columnTypes == null) {
+      throw new SQLException(
+          "Could not determine column type name for ResultSet");
+    }
+
+    if (column < 1 || column > columnTypes.size()) {
+      throw new SQLException("Invalid column value: " + column);
+    }    
+  }
 }
