@@ -203,7 +203,7 @@ public class TestVectorizedRowBatchCtx {
 
     // Create the context
     VectorizedRowBatchCtx ctx = new VectorizedRowBatchCtx(oi, oi, serDe, null);
-    VectorizedRowBatch batch = ctx.CreateVectorizedRowBatch();
+    VectorizedRowBatch batch = ctx.createVectorizedRowBatch();
     VectorizedBatchUtil.SetNoNullFields(true, batch);
 
     // Iterate thru the rows and populate the batch
@@ -213,7 +213,7 @@ public class TestVectorizedRowBatchCtx {
       BytesRefArrayWritable cols = new BytesRefArrayWritable();
       reader.getCurrentRow(cols);
       cols.resetValid(colCount);
-      ctx.AddRowToBatch(i, cols, batch);
+      ctx.addRowToBatch(i, cols, batch);
     }
     reader.close();
     batch.size = 10;

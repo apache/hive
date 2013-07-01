@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -63,6 +64,10 @@ public class VectorizedRowBatchCtx {
 
   // Hash map of partition values. Key=TblColName value=PartitionValue
   private LinkedHashMap<String, String> partitionValues;
+
+  // Column projection list - List of column indexes to include. This
+  // list does not contain partition columns
+  private List<Integer> colsToInclude;
 
   /**
    * Constructor for VectorizedRowBatchCtx
@@ -106,7 +111,7 @@ public class VectorizedRowBatchCtx {
    * @throws IllegalAccessException
    * @throws HiveException
    */
-  public void Init(Configuration hiveConf, FileSplit split) throws ClassNotFoundException,
+  public void init(Configuration hiveConf, FileSplit split) throws ClassNotFoundException,
       IOException,
       SerDeException,
       InstantiationException,
@@ -158,7 +163,16 @@ public class VectorizedRowBatchCtx {
       for (int i = 0; i < partKeys.length; i++) {
         String key = partKeys[i];
         partNames.add(key);
-        partitionValues.put(key, partSpec.get(key));
+        if (partSpec == null) {
+          // for partitionless table, initialize partValue to empty string.
+          // We can have partitionless table even if we have partition keys
+          // when there is only only partition selected and the partition key is not
+          // part of the projection/include list.
+          partitionValues.put(key, "");
+        } else {
+          partitionValues.put(key, partSpec.get(key));
+        }
+
         partObjectInspectors
             .add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       }
@@ -179,6 +193,8 @@ public class VectorizedRowBatchCtx {
       rowOI = partRawRowObjectInspector;
       rawRowOI = partRawRowObjectInspector;
     }
+
+    colsToInclude = ColumnProjectionUtils.getReadColumnIDs(hiveConf);
   }
 
   /**
@@ -187,48 +203,54 @@ public class VectorizedRowBatchCtx {
    * @return VectorizedRowBatch
    * @throws HiveException
    */
-  public VectorizedRowBatch CreateVectorizedRowBatch() throws HiveException
+  public VectorizedRowBatch createVectorizedRowBatch() throws HiveException
   {
     List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
     VectorizedRowBatch result = new VectorizedRowBatch(fieldRefs.size());
     for (int j = 0; j < fieldRefs.size(); j++) {
-      ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
-      switch (foi.getCategory()) {
-      case PRIMITIVE: {
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
-        // Vectorization currently only supports the following data types:
-        // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING and TIMESTAMP
-        switch (poi.getPrimitiveCategory()) {
-        case BOOLEAN:
-        case BYTE:
-        case SHORT:
-        case INT:
-        case LONG:
-        case TIMESTAMP:
-          result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+      // If the column is included in the include list or if the column is a
+      // partition column then create the column vector. Also note that partition columns are not
+      // in the included list.
+      if ((colsToInclude == null) || colsToInclude.contains(j)
+          || ((partitionValues != null) && (partitionValues.get(fieldRefs.get(j).getFieldName()) != null))) {
+        ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
+        switch (foi.getCategory()) {
+        case PRIMITIVE: {
+          PrimitiveObjectInspector poi = (PrimitiveObjectInspector) foi;
+          // Vectorization currently only supports the following data types:
+          // BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING and TIMESTAMP
+          switch (poi.getPrimitiveCategory()) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+          case TIMESTAMP:
+            result.cols[j] = new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+            break;
+          case FLOAT:
+          case DOUBLE:
+            result.cols[j] = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+            break;
+          case STRING:
+            result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+            break;
+          default:
+            throw new RuntimeException("Vectorizaton is not supported for datatype:"
+                + poi.getPrimitiveCategory());
+          }
           break;
-        case FLOAT:
-        case DOUBLE:
-          result.cols[j] = new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          break;
-        case STRING:
-          result.cols[j] = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          break;
-        default:
-          throw new RuntimeException("Vectorizaton is not supported for datatype:"
-              + poi.getPrimitiveCategory());
         }
-        break;
-      }
-      case LIST:
-      case MAP:
-      case STRUCT:
-      case UNION:
-        throw new HiveException("Vectorizaton is not supported for datatype:"
-            + foi.getCategory());
-      default:
-        throw new HiveException("Unknown ObjectInspector category!");
+        case LIST:
+        case MAP:
+        case STRUCT:
+        case UNION:
+          throw new HiveException("Vectorizaton is not supported for datatype:"
+              + foi.getCategory());
+        default:
+          throw new HiveException("Unknown ObjectInspector category!");
 
+        }
       }
     }
     result.numCols = fieldRefs.size();
@@ -247,7 +269,7 @@ public class VectorizedRowBatchCtx {
    * @throws HiveException
    * @throws SerDeException
    */
-  public void AddRowToBatch(int rowIndex, Writable rowBlob, VectorizedRowBatch batch)
+  public void addRowToBatch(int rowIndex, Writable rowBlob, VectorizedRowBatch batch)
       throws HiveException, SerDeException
   {
     Object row = this.deserializer.deserialize(rowBlob);
@@ -263,7 +285,7 @@ public class VectorizedRowBatchCtx {
    *          Vectorized row batch which contains deserialized data
    * @throws SerDeException
    */
-  public void ConvertRowBatchBlobToVectorizedBatch(Object rowBlob, int rowsInBlob,
+  public void convertRowBatchBlobToVectorizedBatch(Object rowBlob, int rowsInBlob,
       VectorizedRowBatch batch)
       throws SerDeException {
 
@@ -275,7 +297,7 @@ public class VectorizedRowBatchCtx {
     }
   }
 
-  private int GetColIndexBasedOnColName(String colName) throws HiveException
+  private int getColIndexBasedOnColName(String colName) throws HiveException
   {
     List<? extends StructField> fieldRefs = rowOI.getAllStructFieldRefs();
     for (int i = 0; i < fieldRefs.size(); i++) {
@@ -292,14 +314,14 @@ public class VectorizedRowBatchCtx {
    * @param batch
    * @throws HiveException
    */
-  public void AddPartitionColsToBatch(VectorizedRowBatch batch) throws HiveException
+  public void addPartitionColsToBatch(VectorizedRowBatch batch) throws HiveException
   {
     int colIndex;
     String value;
     BytesColumnVector bcv;
     if (partitionValues != null) {
       for (String key : partitionValues.keySet()) {
-        colIndex = GetColIndexBasedOnColName(key);
+        colIndex = getColIndexBasedOnColName(key);
         value = partitionValues.get(key);
         bcv = (BytesColumnVector) batch.cols[colIndex];
         bcv.setRef(0, value.getBytes(), 0, value.length());
