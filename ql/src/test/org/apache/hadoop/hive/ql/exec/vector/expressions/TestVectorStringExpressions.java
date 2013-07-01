@@ -624,6 +624,52 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(initialBatchSize, batch.size);
   }
 
+  public void testStringLikePatternType() {
+    FilterStringColLikeStringScalar expr;
+
+    // BEGIN pattern
+    expr = new FilterStringColLikeStringScalar(0, new Text("abc%"));
+    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.BEGIN,
+        expr.getType());
+
+    // END pattern
+    expr = new FilterStringColLikeStringScalar(0, new Text("%abc"));
+    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.END,
+        expr.getType());
+
+    // MIDDLE pattern
+    expr = new FilterStringColLikeStringScalar(0, new Text("%abc%"));
+    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.MIDDLE,
+        expr.getType());
+
+    // COMPLEX pattern
+    expr = new FilterStringColLikeStringScalar(0, new Text("%abc%de"));
+    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.COMPLEX,
+        expr.getType());
+
+    // NONE pattern
+    expr = new FilterStringColLikeStringScalar(0, new Text("abc"));
+    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.NONE,
+        expr.getType());
+  }
+
+  public void testStringLikeMultiByte() {
+    FilterStringColLikeStringScalar expr;
+    VectorizedRowBatch batch;
+
+    // verify that a multi byte LIKE expression matches a matching string
+    batch = makeStringBatchMixedCharSize();
+    expr = new FilterStringColLikeStringScalar(0, new Text("%" + multiByte + "%"));
+    expr.evaluate(batch);
+    Assert.assertEquals(batch.size, 1);
+
+    // verify that a multi byte LIKE expression doesn't match a non-matching string
+    batch = makeStringBatchMixedCharSize();
+    expr = new FilterStringColLikeStringScalar(0, new Text("%" + multiByte + "x"));
+    expr.evaluate(batch);
+    Assert.assertEquals(batch.size, 0);
+  }
+
   @Test
   public void testColConcatScalar() {
 

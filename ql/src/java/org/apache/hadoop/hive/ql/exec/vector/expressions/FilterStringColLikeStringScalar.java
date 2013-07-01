@@ -21,35 +21,245 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.hive.ql.udf.UDFLike;
+
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.ql.udf.UDFLike.likePatternToRegExp;
 
 /**
  * Evaluate LIKE filter on a batch for a vector of strings.
  */
 public class FilterStringColLikeStringScalar extends VectorExpression {
   private int colNum;
-  private Text likePattern;
-  private Text s;
-  private UDFLike likeFunc;
+  private Pattern compiledPattern;
+  private final Text simplePattern = new Text();
+  private ByteBuffer byteBuffer;
+  private CharBuffer charBuffer;
+  private CharsetDecoder decoder;
+  private PatternType type = PatternType.NONE;
+
+  // Doing characters comparison directly instead of regular expression
+  // matching for simple patterns like "%abc%".
+  enum PatternType {
+    NONE, // "abc"
+    BEGIN, // "abc%"
+    END, // "%abc"
+    MIDDLE, // "%abc%"
+    COMPLEX, // all other cases, such as "ab%c_de"
+  }
 
   public FilterStringColLikeStringScalar(int colNum, Text likePattern) {
     this.colNum = colNum;
-    this.likePattern = likePattern;
-    likeFunc = new UDFLike();
-    s = new Text();
+    String stringLikePattern = likePattern.toString();
+    parseSimplePattern(stringLikePattern);
+    if (type == PatternType.COMPLEX) {
+      compiledPattern = Pattern.compile(likePatternToRegExp(stringLikePattern));
+    }
+    decoder = Charset.forName("UTF-8").newDecoder()
+        .onMalformedInput(CodingErrorAction.REPLACE)
+        .onUnmappableCharacter(CodingErrorAction.REPLACE);
+    byteBuffer = ByteBuffer.allocate(4);
+    charBuffer = CharBuffer.allocate(4);
   }
 
-  /*
-   * This vectorized version of LIKE calls the standard LIKE
-   * function code. In the future, as an optimization, consider
-   * unwinding some of that logic here, e.g. to determine
-   * if the LIKE pattern is a simple one like 'abc%' so that
-   * can be executed more efficiently as a special case.
-   */
+  PatternType getType() {
+    return type;
+  }
 
   private boolean like(byte[] bytes, int start, int len) {
-    s.set(bytes, start, len);
-    return (likeFunc.evaluate(s, likePattern)).get();
+    switch (type) {
+      case NONE:
+        return noneLike(bytes, start, len, simplePattern.getBytes());
+      case BEGIN:
+        return beginLike(bytes, start, len, simplePattern.getBytes());
+      case END:
+        return endLike(bytes, start, len, simplePattern.getBytes());
+      case MIDDLE:
+        return midLike(bytes, start, len, simplePattern.getBytes());
+      case COMPLEX:
+        return complexLike(bytes, start, len);
+      default:
+        return false;
+    }
+  }
+
+  private static boolean noneLike(byte[] byteS, int start, int len, byte[] byteSub) {
+    int lenSub = byteSub.length;
+    if (len != lenSub) {
+      return false;
+    }
+    for (int i = start, j = 0; j < len; i++, j++) {
+      if (byteS[i] != byteSub[j]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean beginLike(byte[] byteS, int start, int len, byte[] byteSub) {
+    if (len < byteSub.length) {
+      return false;
+    }
+    for (int i = start, j = 0; j < byteSub.length; i++, j++) {
+      if (byteS[i] != byteSub[j]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean endLike(byte[] byteS, int start, int len, byte[] byteSub) {
+    int lenSub = byteSub.length;
+    if (len < lenSub) {
+      return false;
+    }
+    for (int i = start + len - lenSub, j = 0; j < lenSub; i++, j++) {
+      if (byteS[i] != byteSub[j]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean midLike(byte[] byteS, int start, int len, byte[] byteSub) {
+    int lenSub = byteSub.length;
+    if (len < lenSub) {
+      return false;
+    }
+    int end = start + len - lenSub + 1;
+    boolean match = false;
+    for (int i = start; (i < end) && (!match); i++) {
+      match = true;
+      for (int j = 0; j < lenSub; j++) {
+        if (byteS[i + j] != byteSub[j]) {
+          match = false;
+          break;
+        }
+      }
+    }
+    return match;
+  }
+
+  /**
+   * Matches the byte array against the complex like pattern. This method uses
+   * {@link #compiledPattern} to match. For decoding performance, it caches
+   * {@link #compiledPattern}, {@link #byteBuffer} and {@link #charBuffer}.
+   * When the length to decode is greater than the capacity of
+   * {@link #byteBuffer}, it creates new {@link #byteBuffer} and
+   * {@link #charBuffer}. The capacity of the new {@link #byteBuffer} is the
+   * double of the length, for fewer object creations and higher memory
+   * utilization.
+   *
+   * @param byteS
+   *          A byte array that contains a UTF-8 string.
+   * @param start
+   *          A position to start decoding.
+   * @param len
+   *          A length to decode.
+   * @return
+   *          true if the byte array matches the complex like pattern,
+   *          otherwise false.
+   */
+  private boolean complexLike(byte[] byteS, int start, int len) {
+    // Prepare buffers
+    if (byteBuffer.capacity() < len) {
+      byteBuffer = ByteBuffer.allocate(len * 2);
+    }
+    byteBuffer.clear();
+    byteBuffer.put(byteS, start, len);
+    byteBuffer.flip();
+
+    int maxChars = (int) (byteBuffer.capacity() * decoder.maxCharsPerByte());
+    if (charBuffer.capacity() < maxChars) {
+      charBuffer = CharBuffer.allocate(maxChars);
+    }
+    charBuffer.clear();
+
+    // Decode UTF-8
+    decoder.reset();
+    decoder.decode(byteBuffer, charBuffer, true);
+    decoder.flush(charBuffer);
+    charBuffer.flip();
+
+    // Match the given bytes with the like pattern
+    return compiledPattern.matcher(charBuffer).matches();
+  }
+
+  /**
+   * Parses the likePattern. Based on it is a simple pattern or not, the
+   * function might change two member variables. {@link #type} will be changed
+   * to the corresponding pattern type; {@link #simplePattern} will record the
+   * string in it for later pattern matching if it is a simple pattern.
+   * <p>
+   * Examples: <blockquote>
+   *
+   * <pre>
+   * parseSimplePattern("%abc%") changes {@link #type} to PatternType.MIDDLE
+   * and changes {@link #simplePattern} to "abc"
+   * parseSimplePattern("%ab_c%") changes {@link #type} to PatternType.COMPLEX
+   * and does not change {@link #simplePattern}
+   * </pre>
+   *
+   * </blockquote>
+   *
+   * @param likePattern
+   *          the input LIKE query pattern
+   */
+  private void parseSimplePattern(String likePattern) {
+    int length = likePattern.length();
+    int beginIndex = 0;
+    int endIndex = length;
+    char lastChar = 'a';
+    String strPattern = new String();
+    type = PatternType.NONE;
+
+    for (int i = 0; i < length; i++) {
+      char n = likePattern.charAt(i);
+      if (n == '_') { // such as "a_b"
+        if (lastChar != '\\') { // such as "a%bc"
+          type = PatternType.COMPLEX;
+          return;
+        } else { // such as "abc\%de%"
+          strPattern += likePattern.substring(beginIndex, i - 1);
+          beginIndex = i;
+        }
+      } else if (n == '%') {
+        if (i == 0) { // such as "%abc"
+          type = PatternType.END;
+          beginIndex = 1;
+        } else if (i < length - 1) {
+          if (lastChar != '\\') { // such as "a%bc"
+            type = PatternType.COMPLEX;
+            return;
+          } else { // such as "abc\%de%"
+            strPattern += likePattern.substring(beginIndex, i - 1);
+            beginIndex = i;
+          }
+        } else {
+          if (lastChar != '\\') {
+            endIndex = length - 1;
+            if (type == PatternType.END) { // such as "%abc%"
+              type = PatternType.MIDDLE;
+            } else {
+              type = PatternType.BEGIN; // such as "abc%"
+            }
+          } else { // such as "abc\%"
+            strPattern += likePattern.substring(beginIndex, i - 1);
+            beginIndex = i;
+            endIndex = length;
+          }
+        }
+      }
+      lastChar = n;
+    }
+
+    strPattern += likePattern.substring(beginIndex, endIndex);
+    simplePattern.set(strPattern);
   }
 
   @Override
@@ -61,7 +271,7 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-
+    byte[] simplePatternBytes = simplePattern.getBytes();
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -74,25 +284,97 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
         // All must be selected otherwise size would be zero Repeating property will not change.
         if (!like(vector[0], start[0], length[0])) {
 
-          //Entire batch is filtered out.
+          // Entire batch is filtered out.
           batch.size = 0;
         }
       } else if (batch.selectedInUse) {
         int newSize = 0;
-        for(int j=0; j != n; j++) {
-          int i = sel[j];
-          if (like(vector[i], start[i], length[i])) {
-            sel[newSize++] = i;
-          }
+
+        switch (type) {
+          case NONE:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (noneLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case BEGIN:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (beginLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case END:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (endLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case MIDDLE:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (midLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case COMPLEX:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (complexLike(vector[i], start[i], length[i])) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
         }
+
         batch.size = newSize;
       } else {
         int newSize = 0;
-        for(int i = 0; i != n; i++) {
-          if (like(vector[i], start[i], length[i])) {
-            sel[newSize++] = i;
-          }
+
+        switch (type) {
+          case NONE:
+            for (int i = 0; i != n; i++) {
+              if (noneLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case BEGIN:
+            for (int i = 0; i != n; i++) {
+              if (beginLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case END:
+            for (int i = 0; i != n; i++) {
+              if (endLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case MIDDLE:
+            for (int i = 0; i != n; i++) {
+              if (midLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
+          case COMPLEX:
+            for (int i = 0; i != n; i++) {
+              if (complexLike(vector[i], start[i], length[i])) {
+                sel[newSize++] = i;
+              }
+            }
+            break;
         }
+
         if (newSize < n) {
           batch.size = newSize;
           batch.selectedInUse = true;
@@ -113,26 +395,113 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
         }
       } else if (batch.selectedInUse) {
         int newSize = 0;
-        for(int j=0; j != n; j++) {
-          int i = sel[j];
-          if (!nullPos[i]) {
-           if (like(vector[i], start[i], length[i])) {
-             sel[newSize++] = i;
-           }
-          }
+
+        switch (type) {
+          case NONE:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (!nullPos[i]) {
+                if (noneLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case BEGIN:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (!nullPos[i]) {
+                if (beginLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case END:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (!nullPos[i]) {
+                if (endLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case MIDDLE:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (!nullPos[i]) {
+                if (midLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case COMPLEX:
+            for (int j = 0; j != n; j++) {
+              int i = sel[j];
+              if (!nullPos[i]) {
+                if (complexLike(vector[i], start[i], length[i])) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
         }
 
         //Change the selected vector
         batch.size = newSize;
       } else {
         int newSize = 0;
-        for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
-            if (like(vector[i], start[i], length[i])) {
-              sel[newSize++] = i;
+
+        switch (type) {
+          case NONE:
+            for (int i = 0; i != n; i++) {
+              if (!nullPos[i]) {
+                if (noneLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
             }
-          }
+            break;
+          case BEGIN:
+            for (int i = 0; i != n; i++) {
+              if (!nullPos[i]) {
+                if (beginLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case END:
+            for (int i = 0; i != n; i++) {
+              if (!nullPos[i]) {
+                if (endLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case MIDDLE:
+            for (int i = 0; i != n; i++) {
+              if (!nullPos[i]) {
+                if (midLike(vector[i], start[i], length[i], simplePatternBytes)) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
+          case COMPLEX:
+            for (int i = 0; i != n; i++) {
+              if (!nullPos[i]) {
+                if (complexLike(vector[i], start[i], length[i])) {
+                  sel[newSize++] = i;
+                }
+              }
+            }
+            break;
         }
+
         if (newSize < n) {
           batch.size = newSize;
           batch.selectedInUse = true;
