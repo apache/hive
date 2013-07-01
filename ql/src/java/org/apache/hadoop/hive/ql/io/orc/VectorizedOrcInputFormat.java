@@ -66,7 +66,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
       try {
         rbCtx = new VectorizedRowBatchCtx();
-        rbCtx.Init(conf, fileSplit);
+        rbCtx.init(conf, fileSplit);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -85,13 +85,13 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         // as this does not call CreateValue for each new RecordReader it creates, this check is
         // required in next()
         if (addPartitionCols) {
-          rbCtx.AddPartitionColsToBatch(value);
+          rbCtx.addPartitionColsToBatch(value);
           addPartitionCols = false;
         }
         reader.nextBatch(value);
-        rbCtx.ConvertRowBatchBlobToVectorizedBatch((Object) value, value.size, value);
+        rbCtx.convertRowBatchBlobToVectorizedBatch((Object) value, value.size, value);
       } catch (Exception e) {
-        new RuntimeException(e);
+        throw new RuntimeException(e);
       }
       progress = reader.getProgress();
       return true;
@@ -106,9 +106,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     public VectorizedRowBatch createValue() {
       VectorizedRowBatch result = null;
       try {
-        result = rbCtx.CreateVectorizedRowBatch();
+        result = rbCtx.createVectorizedRowBatch();
       } catch (HiveException e) {
-        new RuntimeException("Error creating a batch", e);
+        throw new RuntimeException("Error creating a batch", e);
       }
       return result;
     }

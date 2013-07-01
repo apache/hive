@@ -126,7 +126,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
     more = start < end;
     try {
       rbCtx = new VectorizedRowBatchCtx();
-      rbCtx.Init(conf, split);
+      rbCtx.init(conf, split);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -149,7 +149,7 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
   public VectorizedRowBatch createValue() {
     VectorizedRowBatch result = null;
     try {
-      result = rbCtx.CreateVectorizedRowBatch();
+      result = rbCtx.createVectorizedRowBatch();
     } catch (HiveException e) {
       new RuntimeException("Error creating a batch", e);
     }
@@ -181,13 +181,13 @@ public class VectorizedRCFileRecordReader implements RecordReader<NullWritable, 
           // CombineHiveRecordReader and as this does not call CreateValue() for
           // each new RecordReader it creates, this check is required in next()
           if (addPartitionCols) {
-            rbCtx.AddPartitionColsToBatch(value);
+            rbCtx.addPartitionColsToBatch(value);
             addPartitionCols = false;
           }
           in.getCurrentRow(colsCache);
           // Currently RCFile reader does not support reading vectorized
           // data. Populating the batch by adding one row at a time.
-          rbCtx.AddRowToBatch(i, (Writable) colsCache, value);
+          rbCtx.addRowToBatch(i, (Writable) colsCache, value);
         } else {
           break;
         }
