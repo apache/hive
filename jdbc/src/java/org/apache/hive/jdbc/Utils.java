@@ -190,7 +190,14 @@ public class Utils {
       connParams.setEmbeddedMode(true);
       return connParams;
     }
+
     URI jdbcURI = URI.create(uri.substring(URI_JDBC_PREFIX.length()));
+
+    // If the url format contains like this, then condition will get execute.
+    // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
+    if((jdbcURI.getPath().equals("")) && (jdbcURI.getHost()==null)){
+       throw new IllegalArgumentException("Bad URL format and it should be in the format of jdbc:hive2://<hostame>:<port>/<DB_name>");
+    }
 
     connParams.setHost(jdbcURI.getHost());
     if (connParams.getHost() == null) {
