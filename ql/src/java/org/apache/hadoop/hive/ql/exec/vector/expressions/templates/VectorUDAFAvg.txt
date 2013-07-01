@@ -51,7 +51,7 @@ public class <ClassName> extends VectorAggregateExpression {
     
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
-      <ValueType> sum;
+      double sum;
       long count;
       boolean isNull;
       

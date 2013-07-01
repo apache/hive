@@ -165,7 +165,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
     private void  iterateRepeatingNoNullsWithAggregationSelection(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregateIndex, 
-        long value, 
+        double value, 
         int batchSize) {
 
       for (int i=0; i<batchSize; ++i) {
@@ -200,7 +200,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          long value = vector[i];
+          double value = vector[i];
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -226,7 +226,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
           aggregationBufferSets, 
           aggregateIndex,
           i);
-        long value = vector[selected[i]];
+        double value = vector[selected[i]];
         if (myagg.isNull) {
           myagg.init ();
         }
@@ -252,7 +252,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
             aggregationBufferSets, 
             aggregateIndex,
           i);
-          long value = vector[i];
+          double value = vector[i];
           if (myagg.isNull) {
             myagg.init (); 
           }
@@ -280,7 +280,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
         if (myagg.isNull) {
           myagg.init ();
         }
-        long value = vector[i];
+        double value = vector[i];
         myagg.sum += value;
         myagg.count += 1;
         if(myagg.count > 1) {
@@ -330,7 +330,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
 
     private void  iterateRepeatingNoNulls(
         Aggregation myagg, 
-        long value, 
+        double value, 
         int batchSize) {
       
       if (myagg.isNull) {
@@ -366,7 +366,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          long value = vector[i];
+          double value = vector[i];
           if (myagg.isNull) {
             myagg.init ();
           }
@@ -390,7 +390,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      long value = vector[selected[0]];
+      double value = vector[selected[0]];
       myagg.sum += value;
       myagg.count += 1;
       if(myagg.count > 1) {
@@ -417,7 +417,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
       
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          long value = vector[i];
+          double value = vector[i];
           if (myagg.isNull) {
             myagg.init (); 
           }
@@ -440,7 +440,7 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
         myagg.init ();
       }
 
-      long value = vector[0];
+      double value = vector[0];
       myagg.sum += value;
       myagg.count += 1;
       

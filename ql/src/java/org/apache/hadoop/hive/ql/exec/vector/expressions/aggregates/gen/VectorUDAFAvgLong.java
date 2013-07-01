@@ -51,7 +51,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
     
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
-      long sum;
+      double sum;
       long count;
       boolean isNull;
       
