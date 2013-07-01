@@ -18,21 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringCol;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.
-  FilterStringColGreaterEqualStringScalar;
-import org.junit.Test;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
 import org.apache.hadoop.io.Text;
+import org.junit.Test;
 
 /**
  * Test vectorized expression and filter evaluation for strings.
@@ -167,79 +166,79 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 0);
     Assert.assertTrue(batch.selected[1] == 1);
   }
-  
+
   @Test
   public void testStringColCompareStringColFilter() {
     VectorizedRowBatch batch;
     VectorExpression expr;
-    
+
     /* input data
-     * 
+     *
      * col0       col1
      * ===============
      * blue       red
      * green      green
      * red        blue
      * NULL       red            col0 data is empty string if we un-set NULL property
-     */    
-    
+     */
+
     // nulls possible on left, right
     batch = makeStringBatchForColColCompare();
     expr = new FilterStringColLessStringCol(0,1);
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
     Assert.assertEquals(0, batch.selected[0]);
-    
+
     // no nulls possible
     batch = makeStringBatchForColColCompare();
     batch.cols[0].noNulls = true;
     batch.cols[1].noNulls = true;
     expr.evaluate(batch);
     Assert.assertEquals(2, batch.size);
-    Assert.assertEquals(3, batch.selected[1]);    
-    
+    Assert.assertEquals(3, batch.selected[1]);
+
     // nulls on left, no nulls on right
     batch = makeStringBatchForColColCompare();
     batch.cols[1].noNulls = true;
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
     Assert.assertEquals(0, batch.selected[0]);
-    
+
     // nulls on right, no nulls on left
     batch = makeStringBatchForColColCompare();
     batch.cols[0].noNulls = true;
     batch.cols[1].isNull[3] = true;
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
-    Assert.assertEquals(0, batch.selected[0]);    
-    
+    Assert.assertEquals(0, batch.selected[0]);
+
     // Now vary isRepeating
     // nulls possible on left, right
-    
+
     // left repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     Assert.assertEquals(3, batch.selected[2]);
-    
+
     // right repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[1].isRepeating = true;
     expr.evaluate(batch);
     Assert.assertEquals(2, batch.size); // first 2 qualify
     Assert.assertEquals(1, batch.selected[1]);
-    
+
     // left and right repeat
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
     batch.cols[1].isRepeating = true;
     expr.evaluate(batch);
     Assert.assertEquals(4, batch.size);
-    
+
     // Now vary isRepeating
     // nulls possible only on left
-    
+
     // left repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
@@ -247,7 +246,7 @@ public class TestVectorStringExpressions {
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     Assert.assertEquals(3, batch.selected[2]);
-    
+
     // left repeats and is null
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
@@ -255,15 +254,15 @@ public class TestVectorStringExpressions {
     batch.cols[0].isNull[0] = true;
     expr.evaluate(batch);
     Assert.assertEquals(0, batch.size);
-    
+
     // right repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[1].isRepeating = true;
     batch.cols[1].noNulls = true;
     expr.evaluate(batch);
-    Assert.assertEquals(3, batch.size); 
+    Assert.assertEquals(3, batch.size);
     Assert.assertEquals(1, batch.selected[1]);
-    
+
     // left and right repeat
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
@@ -272,10 +271,10 @@ public class TestVectorStringExpressions {
     expr.evaluate(batch);
     Assert.assertEquals(4, batch.size);
 
-    
+
     // Now vary isRepeating
     // nulls possible only on right
-    
+
     // left repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
@@ -284,22 +283,22 @@ public class TestVectorStringExpressions {
     expr.evaluate(batch);
     Assert.assertEquals(2, batch.size);
     Assert.assertEquals(3, batch.selected[1]);
-    
+
     // right repeats
     batch = makeStringBatchForColColCompare();
     batch.cols[1].isRepeating = true;
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
-    Assert.assertEquals(3, batch.size); 
+    Assert.assertEquals(3, batch.size);
     Assert.assertEquals(3, batch.selected[2]);
-    
+
     // right repeats and is null
     batch = makeStringBatchForColColCompare();
     batch.cols[1].isRepeating = true;
     batch.cols[0].noNulls = true;
     batch.cols[1].isNull[0] = true;
     expr.evaluate(batch);
-    Assert.assertEquals(0, batch.size); 
+    Assert.assertEquals(0, batch.size);
 
     // left and right repeat
     batch = makeStringBatchForColColCompare();
@@ -308,7 +307,7 @@ public class TestVectorStringExpressions {
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     Assert.assertEquals(4, batch.size);
-    
+
     // left and right repeat and right is null
     batch = makeStringBatchForColColCompare();
     batch.cols[0].isRepeating = true;
@@ -316,7 +315,7 @@ public class TestVectorStringExpressions {
     batch.cols[0].noNulls = true;
     batch.cols[1].isNull[0] = true;
     expr.evaluate(batch);
-    Assert.assertEquals(0, batch.size);  
+    Assert.assertEquals(0, batch.size);
   }
 
   VectorizedRowBatch makeStringBatch() {
@@ -537,7 +536,7 @@ public class TestVectorStringExpressions {
     batch.size = 3;
     return batch;
   }
-  
+
   private VectorizedRowBatch makeStringBatchForColColCompare() {
     VectorizedRowBatch batch = new VectorizedRowBatch(3);
     BytesColumnVector v = new BytesColumnVector();
@@ -565,10 +564,10 @@ public class TestVectorStringExpressions {
     v2.setRef(3, red, 0, red.length);
     v2.isNull[3] = false;
     v2.noNulls = false;
-    
+
     batch.size = 4;
     return batch;
-  }  
+  }
 
   @Test
   public void testStringLike() {
@@ -938,4 +937,438 @@ public class TestVectorStringExpressions {
         outCol.start[0], outCol.length[0]);
     Assert.assertEquals(0, cmp);
   }
-}
+
+  @Test
+  public void testSubstrStart() throws UnsupportedEncodingException {
+    // Testing no nulls and no repeating
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    BytesColumnVector v = new BytesColumnVector();
+    batch.cols[0] = v;
+    BytesColumnVector outV = new BytesColumnVector();
+    batch.cols[1] = outV;
+    byte[] data1 = "abcd string".getBytes("UTF-8");
+    byte[] data2 = "efgh string".getBytes("UTF-8");
+    byte[] data3 = "efgh".getBytes("UTF-8");
+    batch.size = 3;
+    v.noNulls = true;
+    v.setRef(0, data1, 0, data1.length);
+    v.isNull[0] = false;
+    v.setRef(1, data2, 0, data2.length);
+    v.isNull[1] = false;
+    v.setRef(2, data3, 0, data3.length);
+    v.isNull[2] = false;
+
+    StringSubstrColStart expr = new StringSubstrColStart(0, 5, 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    byte[] expected = "string".getBytes("UTF-8");
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    // This yields empty because starting idx is out of bounds.
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    outCol.noNulls = false;
+    outCol.isRepeating = true;
+
+    // Testing negative substring index.
+    // For a string with length 11, start idx 5 should yield same results as -6
+
+    expr = new StringSubstrColStart(0, -6, 1);
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    outCol.noNulls = false;
+    outCol.isRepeating = true;
+
+    // Testing substring starting from index 0
+
+    expr = new StringSubstrColStart(0, 0, 1);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data1, 0, data1.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data2, 0, data2.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data3, 0, data3.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    outV.noNulls = false;
+    outV.isRepeating = true;
+
+    // Testing with nulls
+
+    expr = new StringSubstrColStart(0, 5, 1);
+    v.noNulls = false;
+    v.isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    Assert.assertFalse(outV.noNulls);
+    Assert.assertTrue(outV.isNull[0]);
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    outCol.noNulls = false;
+    outCol.isRepeating = false;
+
+    // Testing with repeating and no nulls
+
+    outV = new BytesColumnVector();
+    v = new BytesColumnVector();
+    v.isRepeating = true;
+    v.noNulls = true;
+    v.setRef(0, data1, 0, data1.length);
+    batch = new VectorizedRowBatch(2);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    expected = "string".getBytes("UTF-8");
+    Assert.assertTrue(outV.isRepeating);
+    Assert.assertTrue(outV.noNulls);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    // Testing multiByte string substring
+
+    v = new BytesColumnVector();
+    v.isRepeating = false;
+    v.noNulls = true;
+    v.setRef(0, multiByte, 0, 10);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    outV.isRepeating = true;
+    outV.noNulls = false;
+    expr = new StringSubstrColStart(0, 2, 1);
+    batch.size = 1;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertFalse(outV.isRepeating);
+    Assert.assertTrue(outV.noNulls);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            // 3nd char starts from index 3 and total length should be 7 bytes as max is 10
+            multiByte, 3, 10 - 3, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+
+    // Testing multiByte string with reference starting mid array
+
+    v = new BytesColumnVector();
+    v.isRepeating = false;
+    v.noNulls = true;
+    v.setRef(0, multiByte, 3, 10);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    outV.isRepeating = true;
+    outV.noNulls = false;
+    outCol = (BytesColumnVector) batch.cols[1];
+    expr = new StringSubstrColStart(0, 1, 1);
+    expr.evaluate(batch);
+    Assert.assertFalse(outV.isRepeating);
+    Assert.assertTrue(outV.noNulls);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            // Since references starts at index 3 (2nd char), substring with start idx 1
+            // will start at the 3rd char which starts at index 6
+            multiByte, 6, 10 - 6, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+  }
+
+  @Test
+  public void testSubstrStartLen() throws UnsupportedEncodingException {
+    // Testing no nulls and no repeating
+
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    BytesColumnVector v = new BytesColumnVector();
+    batch.cols[0] = v;
+    BytesColumnVector outV = new BytesColumnVector();
+    batch.cols[1] = outV;
+    byte[] data1 = "abcd string".getBytes("UTF-8");
+    byte[] data2 = "efgh string".getBytes("UTF-8");
+    byte[] data3 = "efgh".getBytes("UTF-8");
+    batch.size = 3;
+    v.noNulls = true;
+    v.setRef(0, data1, 0, data1.length);
+    v.isNull[0] = false;
+    v.setRef(1, data2, 0, data2.length);
+    v.isNull[1] = false;
+    v.setRef(2, data3, 0, data3.length);
+    v.isNull[2] = false;
+
+    outV.isRepeating = true;
+    outV.noNulls = false;
+
+    StringSubstrColStartLen expr = new StringSubstrColStartLen(0, 5, 6, 1);
+    expr.evaluate(batch);
+    BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    byte[] expected = "string".getBytes("UTF-8");
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    // Testing negative substring index
+    outV.isRepeating = true;
+    outV.noNulls = false;
+
+    expr = new StringSubstrColStartLen(0, -6, 6, 1);
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(3, batch.size);
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+        StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    // This yields empty because starting index is out of bounds
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    //Testing substring index starting with 0 and length equal to array length
+
+    outV.isRepeating = true;
+    outV.noNulls = false;
+
+    expr = new StringSubstrColStartLen(0, 0, 11, 1);
+    outCol = (BytesColumnVector) batch.cols[1];
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data1, 0, data1.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data2, 0, data2.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            data3, 0, data3.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+
+    // Testing setting length larger than array length, which should cap to the length itself
+
+    outV.isRepeating = true;
+    outV.noNulls = false;
+
+    expr = new StringSubstrColStartLen(0, 5, 10, 1);
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+    outV.isRepeating = true;
+    outV.noNulls = true;
+
+    // Testing with nulls
+
+    v.noNulls = false;
+    v.isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    Assert.assertFalse(outV.noNulls);
+    Assert.assertTrue(outV.isNull[0]);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+        StringExpr.compare(
+            emptyString, 0, emptyString.length, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+
+    // Testing with repeating and no nulls
+    outV = new BytesColumnVector();
+    v = new BytesColumnVector();
+    outV.isRepeating = false;
+    outV.noNulls = true;
+    v.isRepeating = true;
+    v.noNulls = false;
+    v.setRef(0, data1, 0, data1.length);
+    batch = new VectorizedRowBatch(2);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertTrue(outCol.isRepeating);
+
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            expected, 0, expected.length, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    // Testing with multiByte String
+    v = new BytesColumnVector();
+    v.isRepeating = false;
+    v.noNulls = true;
+    batch.size = 1;
+    v.setRef(0, multiByte, 0, 10);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    outV.isRepeating = true;
+    outV.noNulls = false;
+    expr = new StringSubstrColStartLen(0, 2, 2, 1);
+    expr.evaluate(batch);
+    Assert.assertEquals(1, batch.size);
+    Assert.assertFalse(outV.isRepeating);
+    Assert.assertTrue(outV.noNulls);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            // 3rd char starts at index 3, and with length 2 it is covering the rest of the array.
+            multiByte, 3, 10 - 3, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    // Testing multiByte string with reference set to mid array
+    v = new BytesColumnVector();
+    v.isRepeating = false;
+    v.noNulls = true;
+    outV = new BytesColumnVector();
+    batch.size = 1;
+    v.setRef(0, multiByte, 3, 7);
+    batch.cols[0] = v;
+    batch.cols[1] = outV;
+    outV.isRepeating = true;
+    outV.noNulls = false;
+    expr = new StringSubstrColStartLen(0, 1, 2, 1);
+    expr.evaluate(batch);
+    outCol = (BytesColumnVector) batch.cols[1];
+    Assert.assertEquals(1, batch.size);
+    Assert.assertFalse(outV.isRepeating);
+    Assert.assertTrue(outV.noNulls);
+    Assert.assertEquals(0,
+    StringExpr.compare(
+            // 2nd substring index refers to the 6th index (last char in the array)
+            multiByte, 6, 10 - 6, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+  }
+ }
