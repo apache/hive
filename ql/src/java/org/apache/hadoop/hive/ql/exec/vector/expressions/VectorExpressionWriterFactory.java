@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -67,7 +68,16 @@ public final class VectorExpressionWriterFactory {
     }
 
     public VectorExpressionWriter init(ExprNodeDesc nodeDesc) throws HiveException {
-      this.objectInspector = nodeDesc.getWritableObjectInspector();
+      objectInspector = nodeDesc.getWritableObjectInspector();
+      if (null == objectInspector) {
+        objectInspector = TypeInfoUtils
+            .getStandardWritableObjectInspectorFromTypeInfo(nodeDesc.getTypeInfo());
+      }
+      if (null == objectInspector) {
+        throw new HiveException(String.format(
+            "Failed to initialize VectorExpressionWriter for expr: %s", 
+            nodeDesc.getExprString()));
+      }
       return this;
     }
 
