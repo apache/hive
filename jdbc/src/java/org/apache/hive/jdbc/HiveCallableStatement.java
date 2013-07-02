@@ -41,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 
+
 /**
  * HiveCallableStatement.
  *
@@ -481,6 +482,16 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public Object getObject(String parameterName, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
+    throw new SQLException("Method not supported");
+  }
+  
+  public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
+    // TODO JDK 1.7
+     throw new SQLException("Method not supported");
+  }
+
+  public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
+    // TODO JDK 1.7
     throw new SQLException("Method not supported");
   }
 
@@ -2029,6 +2040,16 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
+  
+  public void closeOnCompletion() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
+   public boolean isCloseOnCompletion() throws SQLException {
+     // JDK 1.7
+     throw new SQLException("Method not supported");
+   }
 
   /*
    * (non-Javadoc)

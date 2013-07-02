@@ -86,17 +86,16 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
-   */
-
   public Logger getParentLogger() throws SQLFeatureNotSupportedException {
     // JDK 1.7
     throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+   */
 
   public void setLogWriter(PrintWriter arg0) throws SQLException {
     // TODO Auto-generated method stub

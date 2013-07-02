@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import javax.security.sasl.SaslException;
 
@@ -105,6 +107,11 @@ public class HiveConnection implements java.sql.Connection {
     configureConnection(connParams);
   }
 
+  public void abort(Executor executor) throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+  
   private void configureConnection(Utils.JdbcConnectionParams connParams)
       throws SQLException {
     // set the hive variable in session state for local mode
@@ -297,16 +304,29 @@ public class HiveConnection implements java.sql.Connection {
     return new HiveStatement(client, sessHandle);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Connection#createStatement(int, int)
+  /**
+   * Constructs a Statement of the given type and result set concurrency.
+   * 
+   * @param resultSetType - one of the following ResultSet constants: ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, or ResultSet.TYPE_SCROLL_SENSITIVE 
+   * @param resultSetConcurrency - one of the following ResultSet constants: ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
    */
 
   public Statement createStatement(int resultSetType, int resultSetConcurrency)
       throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (isClosed) {
+      throw new SQLException("Can't create Statement, connection is closed ");
+    }
+    
+    if(resultSetType != ResultSet.TYPE_FORWARD_ONLY) {
+      throw new SQLException(
+          "Invalid parameter to createStatement() only TYPE_FORWARD_ONLY is supported");
+    }
+    
+    if(resultSetConcurrency != ResultSet.CONCUR_READ_ONLY) {
+      throw new SQLException(
+          "Invalid parameter to createStatement() only CONCUR_READ_ONLY is supported");
+    }
+    return createStatement();
   }
 
   /*
@@ -396,6 +416,17 @@ public class HiveConnection implements java.sql.Connection {
     return new HiveDatabaseMetaData(client, sessHandle);
   }
 
+  public int getNetworkTimeout() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
+
+  public String getSchema() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+  
   /*
    * (non-Javadoc)
    *
@@ -613,8 +644,10 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public void setAutoCommit(boolean autoCommit) throws SQLException {
-    if (autoCommit) {
-      throw new SQLException("enabling autocommit is not supported");
+    // getAutoCommit() always returns true - so 'true' is fine for
+    // consistency's sake
+    if(!autoCommit) {
+      throw new SQLException("Method not supported - setAutoCommit(false)");
     }
   }
 
@@ -663,6 +696,11 @@ public class HiveConnection implements java.sql.Connection {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
+  
+  public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
 
   /*
    * (non-Javadoc)
@@ -671,8 +709,10 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public void setReadOnly(boolean readOnly) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if(!readOnly) {
+      throw new SQLException("Method not supported - setReadOnly(false)");
+    }
+    // Hive is read-only, so 'true' is fine
   }
 
   /*
@@ -694,6 +734,11 @@ public class HiveConnection implements java.sql.Connection {
 
   public Savepoint setSavepoint(String name) throws SQLException {
     // TODO Auto-generated method stub
+    throw new SQLException("Method not supported");
+  }
+  
+  public void setSchema(String schema) throws SQLException {
+    // JDK 1.7
     throw new SQLException("Method not supported");
   }
 

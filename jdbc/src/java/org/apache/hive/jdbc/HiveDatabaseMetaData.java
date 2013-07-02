@@ -143,6 +143,17 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
       String table, String columnNamePattern) throws SQLException {
     throw new SQLException("Method not supported");
   }
+ 
+  public ResultSet getPseudoColumns(String catalog, String schemaPattern, 
+      String tableNamePattern, String columnNamePattern) throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+  
+  public boolean generatedKeyAlwaysReturned() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
 
   /**
    * Convert a pattern containing JDBC catalog search wildcards into
@@ -206,6 +217,18 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     .setSessionHandle(sessHandle)
     .setStmtHandle(colResp.getOperationHandle())
     .build();
+  }
+  
+  public <T> T getObject(String columnLabel, Class<T> type)
+      throws SQLException {
+    // JDK 1.7  
+    throw new SQLException("Method not supported");
+  }
+
+  public <T> T getObject(int columnIndex, Class<T> type)
+      throws SQLException {
+    // JDK 1.7  
+    throw new SQLException("Method not supported");
   }
 
   /**
@@ -323,8 +346,14 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     .build();
   }
 
+  /**
+   * Returns the identifier quote string.
+   *
+   * @return String
+   * @throws
+   */
   public String getIdentifierQuoteString() throws SQLException {
-    throw new SQLException("Method not supported");
+    return "'";
   }
 
   public ResultSet getImportedKeys(String catalog, String schema, String table)
@@ -709,6 +738,18 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
       public boolean next() throws SQLException {
         return false;
       }
+      
+      public <T> T getObject(String columnLabel, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
+
+      public <T> T getObject(int columnIndex, Class<T> type)
+          throws SQLException {
+        // JDK 1.7  
+        throw new SQLException("Method not supported");
+      }
     };
   }
 
@@ -733,8 +774,13 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
+  /**
+   *  Returns a true as the database meta data is readonly.
+   *
+   *  @return boolean true
+   */
   public boolean isReadOnly() throws SQLException {
-    throw new SQLException("Method not supported");
+    return true;
   }
 
   public boolean locatorsUpdateCopy() throws SQLException {
@@ -992,7 +1038,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
   public boolean supportsResultSetConcurrency(int type, int concurrency)
       throws SQLException {
-    throw new SQLException("Method not supported");
+    return supportsResultSetType(type) && concurrency == ResultSet.CONCUR_READ_ONLY;
   }
 
   public boolean supportsResultSetHoldability(int holdability)
@@ -1064,9 +1110,14 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  public boolean supportsTransactionIsolationLevel(int level)
-      throws SQLException {
-    throw new SQLException("Method not supported");
+  /**
+   * Always returns a false as the database does not support transactions.
+   *
+   * @param level - the level of isolation
+   * @return boolean false
+   */
+  public boolean supportsTransactionIsolationLevel(int level) {
+    return false;
   }
 
   public boolean supportsTransactions() throws SQLException {
