@@ -238,7 +238,9 @@ public class JDBCStatsPublisher implements StatsPublisher {
         try {
           // The following closes the derby connection. It throws an exception that has to be caught
           // and ignored.
-          DriverManager.getConnection(connectionString + ";shutdown=true");
+          synchronized(DriverManager.class) {
+            DriverManager.getConnection(connectionString + ";shutdown=true");
+          }
         } catch (Exception e) {
           // Do nothing because we know that an exception is thrown anyway.
         }
@@ -261,22 +263,24 @@ public class JDBCStatsPublisher implements StatsPublisher {
       connectionString = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
       String driver = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
       Class.forName(driver).newInstance();
-      DriverManager.setLoginTimeout(timeout);
-      conn = DriverManager.getConnection(connectionString);
+      synchronized(DriverManager.class) {
+        DriverManager.setLoginTimeout(timeout);
+        conn = DriverManager.getConnection(connectionString);
 
-      Statement stmt = conn.createStatement();
-      stmt.setQueryTimeout(timeout);
+        Statement stmt = conn.createStatement();
+        stmt.setQueryTimeout(timeout);
 
-      // Check if the table exists
-      DatabaseMetaData dbm = conn.getMetaData();
-      ResultSet rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
-      boolean tblExists = rs.next();
-      if (!tblExists) { // Table does not exist, create it
-        String createTable = JDBCStatsUtils.getCreate("");
-        stmt.executeUpdate(createTable);
-        stmt.close();
+        // Check if the table exists
+        DatabaseMetaData dbm = conn.getMetaData();
+        ResultSet rs = dbm.getTables(null, null, JDBCStatsUtils.getStatTableName(), null);
+        boolean tblExists = rs.next();
+        if (!tblExists) { // Table does not exist, create it
+          String createTable = JDBCStatsUtils.getCreate("");
+          stmt.executeUpdate(createTable);
+          stmt.close();
+        }
+        closeConnection();
       }
-      closeConnection();
     } catch (Exception e) {
       LOG.error("Error during JDBC initialization. ", e);
       return false;
