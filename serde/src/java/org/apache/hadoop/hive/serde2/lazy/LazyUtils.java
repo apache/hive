@@ -367,6 +367,30 @@ public final class LazyUtils {
     return Arrays.copyOf(sourceBw.getBytes(), sourceBw.getLength());
   }
 
+  /**
+   * Utility function to get separator for current level used in serialization.
+   * Used to get a better log message when out of bound lookup happens
+   * @param separators - array of separators byte, byte at index x indicates
+   *  separator used at that level
+   * @param level - nesting level
+   * @return separator at given level
+   * @throws SerDeException
+   */
+  static byte getSeparator(byte[] separators, int level) throws SerDeException {
+    try{
+      return separators[level];
+    }catch(ArrayIndexOutOfBoundsException e){
+      String msg = "Number of levels of nesting supported for " +
+          "LazySimpleSerde is " + (separators.length - 1) +
+          " Unable to work with level " + level;
+      if(separators.length < 9){
+        msg += ". Use " + LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS +
+            " serde property for tables using LazySimpleSerde.";
+      }
+      throw new SerDeException(msg, e);
+    }
+  }
+
   private LazyUtils() {
     // prevent instantiation
   }

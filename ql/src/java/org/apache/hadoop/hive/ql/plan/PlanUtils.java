@@ -270,7 +270,11 @@ public final class PlanUtils {
       String fileFormat) {
     TableDesc tblDesc = getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
         false, false, fileFormat);
+    //enable escaping
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
+    //enable extended nesting levels
+    tblDesc.getProperties().setProperty(
+        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");    
     return tblDesc;
   }
 
