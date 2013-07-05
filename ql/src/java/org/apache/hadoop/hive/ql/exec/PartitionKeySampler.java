@@ -89,6 +89,9 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
       while (last >= k && C.compare(sorted[last], sorted[k]) == 0) {
         k++;
       }
+      if (k >= sorted.length) {
+        throw new IllegalStateException("not enough number of sample");
+      }
       partitionKeys[i - 1] = sorted[k];
       last = k;
     }

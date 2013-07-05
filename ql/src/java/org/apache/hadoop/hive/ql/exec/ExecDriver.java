@@ -419,13 +419,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
 
-      if (work.getSamplingType() > 0) {
+      if (work.getSamplingType() > 0 && work.getNumReduceTasks() > 1) {
         try {
           handleSampling(driverContext, work, job, new HiveConf(conf));
           job.setPartitionerClass(HiveTotalOrderPartitioner.class);
         } catch (Exception e) {
-          LOG.info("Failed to use sampling", e);
-          work.setNumReduceTasks(1);  // rollback
+          console.printInfo("Not enough sampling data.. Rolling back to single reducer task");
+          work.setNumReduceTasks(1);
+          job.setNumReduceTasks(1);
         }
       }
 
