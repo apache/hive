@@ -1,27 +1,40 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.List;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+
+import java.util.ArrayList;
 
 @Description(name ="inline", value= "_FUNC_( ARRAY( STRUCT()[,STRUCT()] "
 + "- explodes and array and struct into a table")
 public class GenericUDTFInline extends GenericUDTF {
 
-  private Object[] forwardObj;
   private ListObjectInspector li;
-  private StructObjectInspector daStruct;
 
   public GenericUDTFInline(){
-
   }
 
   @Override
@@ -39,29 +52,13 @@ public class GenericUDTFInline extends GenericUDTF {
     if (sub.getCategory() != Category.STRUCT){
       throw new UDFArgumentException("The sub element must be struct, but was "+sub.getTypeName());
     }
-    daStruct = (StructObjectInspector) sub;
-    forwardObj = new Object[daStruct.getAllStructFieldRefs().size()];
-    return daStruct;
+    return (StructObjectInspector) sub;
   }
 
   @Override
   public void process(Object[] os) throws HiveException {
-    //list is always one item
-    List l = li.getList(os);
-    List<? extends StructField> fields = this.daStruct.getAllStructFieldRefs();
-    for (Object linner: l ){
-      List<List> innerList = (List) linner;
-      for (List rowList : innerList){
-        int i=0;
-        for (StructField f: fields){
-          GenericUDFUtils.ReturnObjectInspectorResolver res
-            = new GenericUDFUtils.ReturnObjectInspectorResolver();
-          res.update(f.getFieldObjectInspector());
-          this.forwardObj[i]=res.convertIfNecessary(rowList.get(i), f.getFieldObjectInspector());
-          i++;
-        }
-        forward(this.forwardObj);
-      }
+    for (Object row : new ArrayList<Object>(li.getList(os[0]))) {
+      forward(row);
     }
   }
 
