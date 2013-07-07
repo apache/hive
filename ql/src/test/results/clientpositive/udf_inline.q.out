@@ -75,3 +75,28 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	dude!
 2	Wheres
+PREHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
+select * from (SELECT
+  ARRAY(
+    STRUCT (1,'dude!'),
+    STRUCT (2,'Wheres'),
+    STRUCT (3,'my car?')
+  ) as value FROM SRC limit 1) input
+ LATERAL VIEW inline(value) myTable AS id, text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
+select * from (SELECT
+  ARRAY(
+    STRUCT (1,'dude!'),
+    STRUCT (2,'Wheres'),
+    STRUCT (3,'my car?')
+  ) as value FROM SRC limit 1) input
+ LATERAL VIEW inline(value) myTable AS id, text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[{"col1":1,"col2":"dude!"},{"col1":2,"col2":"Wheres"},{"col1":3,"col2":"my car?"}]	1	dude!
+[{"col1":1,"col2":"dude!"},{"col1":2,"col2":"Wheres"},{"col1":3,"col2":"my car?"}]	2	Wheres
+[{"col1":1,"col2":"dude!"},{"col1":2,"col2":"Wheres"},{"col1":3,"col2":"my car?"}]	3	my car?
