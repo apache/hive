@@ -729,8 +729,9 @@ public class Hive {
       List<Order> sortCols = new ArrayList<Order>();
       storageDescriptor.setBucketCols(null);
       int k = 0;
-      for (int i = 0; i < storageDescriptor.getCols().size(); i++) {
-        FieldSchema col = storageDescriptor.getCols().get(i);
+      Table metaBaseTbl = new Table(baseTbl);
+      for (int i = 0; i < metaBaseTbl.getCols().size(); i++) {
+        FieldSchema col = metaBaseTbl.getCols().get(i);
         if (indexedCols.contains(col.getName())) {
           indexTblCols.add(col);
           sortCols.add(new Order(col.getName(), 1));
