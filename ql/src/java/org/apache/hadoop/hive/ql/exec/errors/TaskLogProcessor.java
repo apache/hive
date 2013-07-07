@@ -47,13 +47,11 @@ public class TaskLogProcessor {
     new HashMap<ErrorHeuristic, HeuristicStats>();
   private final List<String> taskLogUrls = new ArrayList<String>();
 
-  private JobConf conf = null;
   // Query is the hive query string i.e. "SELECT * FROM src;" associated with
   // this set of tasks logs
-  private String query = null;
+  private final String query;
 
   public TaskLogProcessor(JobConf conf) {
-    this.conf = conf;
     query = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING);
 
     heuristics.put(new ScriptErrorHeuristic(), new HeuristicStats());
@@ -197,7 +195,6 @@ public class TaskLogProcessor {
       try {
         in = new BufferedReader(
             new InputStreamReader(taskAttemptLogUrl.openStream()));
-        String inputLine;
         String lastLine = null;
         boolean lastLineMatched = false;
         List<String> stackTrace = null;
@@ -207,9 +204,20 @@ public class TaskLogProcessor {
         Pattern endStackTracePattern =
             Pattern.compile("^\t... [0-9]+ more.*", Pattern.CASE_INSENSITIVE);
 
-        while ((inputLine =
-          ShimLoader.getHadoopShims().unquoteHtmlChars(in.readLine())) != null) {
-
+        String inputLine;
+        while (true) {
+          inputLine = in.readLine();
+          if (inputLine == null) { // EOF:
+            if (stackTrace != null) {
+              stackTraces.add(stackTrace);
+              stackTrace = null;
+            }
+            break;
+          }
+          
+          inputLine =
+              ShimLoader.getHadoopShims().unquoteHtmlChars(inputLine);
+          
           if (stackTracePattern.matcher(inputLine).matches() ||
               endStackTracePattern.matcher(inputLine).matches()) {
             // We are in a stack trace
