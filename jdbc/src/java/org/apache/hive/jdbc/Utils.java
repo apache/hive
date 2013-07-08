@@ -193,10 +193,14 @@ public class Utils {
 
     URI jdbcURI = URI.create(uri.substring(URI_JDBC_PREFIX.length()));
 
-    // If the url format contains like this, then condition will get execute.
+    //Check to prevent unintentional use of embedded mode. A missing "/" can
+    // to separate the 'path' portion of URI can result in this.
+    //The missing "/" common typo while using secure mode, eg of such url -
     // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
-    if((jdbcURI.getPath().equals("")) && (jdbcURI.getHost()==null)){
-       throw new IllegalArgumentException("Bad URL format and it should be in the format of jdbc:hive2://<hostame>:<port>/<DB_name>");
+    if((jdbcURI.getAuthority() != null) && (jdbcURI.getHost()==null)){
+       throw new IllegalArgumentException("Bad URL format. Hostname not found "
+           + " in authority part of the url: " + jdbcURI.getAuthority()
+           + ". Are you missing a '/' after the hostname ?");
     }
 
     connParams.setHost(jdbcURI.getHost());
