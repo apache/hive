@@ -196,17 +196,22 @@ public class TestJdbcDriver2 extends TestCase {
   }
 
   public void testBadURL() throws Exception {
-    Class.forName(driverName);
-     try{
-
-       DriverManager.getConnection("jdbc:hive2://localhost:10000;principal=test", "", "");
-       fail("should have thrown IllegalArgumentException but did not ");
-
-     }catch(IllegalArgumentException i){
-       assertEquals("Bad URL format and it should be in the format of jdbc:hive2://<hostame>:<port>/<DB_name>", i.getMessage());
-     }
+    checkBadUrl("jdbc:hive2://localhost:10000;principal=test");
+    checkBadUrl("jdbc:hive2://localhost:10000;" +
+    		"principal=hive/HiveServer2Host@YOUR-REALM.COM");
+    checkBadUrl("jdbc:hive2://localhost:10000test");
   }
 
+
+  private void checkBadUrl(String url) throws SQLException {
+    try{
+      DriverManager.getConnection(url, "", "");
+      fail("should have thrown IllegalArgumentException but did not ");
+    }catch(IllegalArgumentException i){
+      assertTrue(i.getMessage().contains("Bad URL format. Hostname not found "
+          + " in authority part of the url"));
+    }
+  }
 
   public void testDataTypes2() throws Exception {
     Statement stmt = con.createStatement();
