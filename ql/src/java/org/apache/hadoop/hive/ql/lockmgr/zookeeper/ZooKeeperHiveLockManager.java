@@ -446,20 +446,20 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
                              HiveLock hiveLock, String parent) throws LockException {
     ZooKeeperHiveLock zLock = (ZooKeeperHiveLock)hiveLock;
     try {
+      // can throw KeeperException.NoNodeException, which might mean something is wrong
       zkpClient.delete(zLock.getPath(), -1);
 
       // Delete the parent node if all the children have been deleted
       HiveLockObject obj = zLock.getHiveLockObject();
       String name  = getLastObjectName(parent, obj);
 
-      List<String> children = zkpClient.getChildren(name, false);
-      if ((children == null) || (children.isEmpty()))
-      {
-        try {
+      try {
+        List<String> children = zkpClient.getChildren(name, false);
+        if (children == null || children.isEmpty()) {
           zkpClient.delete(name, -1);
-        } catch (KeeperException.NoNodeException e) {
-          LOG.debug("Node " + name + " previously deleted when attempting to delete.");
         }
+      } catch (KeeperException.NoNodeException e) {
+        LOG.debug("Node " + name + " previously deleted when attempting to delete.");
       }
     } catch (Exception e) {
       LOG.error("Failed to release ZooKeeper lock: ", e);
