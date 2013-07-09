@@ -204,7 +204,7 @@ public class ExprNodeDescUtils {
       return backtrack(column, parent, terminal);
     }
     if (source instanceof ExprNodeFieldDesc) {
-      // field epression should be resolved
+      // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
       field.setDesc(backtrack(field.getDesc(), current, terminal));
       return field;
