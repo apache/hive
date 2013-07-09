@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class BucketingSortingCtx implements NodeProcessorCtx {
 
+  boolean disableBucketing;
+
   // A mapping from an operator to the columns by which it's output is bucketed
   Map<Operator<? extends OperatorDesc>, List<BucketCol>> bucketedColsByOp;
   // A mapping from a directory which a FileSinkOperator writes into to the columns by which that
@@ -48,7 +50,8 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
   // output is sorted
   Map<String, List<SortCol>> sortedColsByDirectory;
 
-  public BucketingSortingCtx() {
+  public BucketingSortingCtx(boolean disableBucketing) {
+    this.disableBucketing = disableBucketing;
     this.bucketedColsByOp = new HashMap<Operator<? extends OperatorDesc>, List<BucketCol>>();
     this.bucketedColsByDirectory = new HashMap<String, List<BucketCol>>();
     this.sortedColsByOp = new HashMap<Operator<? extends OperatorDesc>, List<SortCol>>();
@@ -57,21 +60,25 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
 
 
   public List<BucketCol> getBucketedCols(Operator<? extends OperatorDesc> op) {
-    return bucketedColsByOp.get(op);
+    return disableBucketing ? null : bucketedColsByOp.get(op);
   }
 
 
   public void setBucketedCols(Operator<? extends OperatorDesc> op, List<BucketCol> bucketCols) {
-    this.bucketedColsByOp.put(op, bucketCols);
+    if (!disableBucketing) {
+      bucketedColsByOp.put(op, bucketCols);
+    }
   }
 
   public Map<String, List<BucketCol>> getBucketedColsByDirectory() {
-    return bucketedColsByDirectory;
+    return disableBucketing ? null : bucketedColsByDirectory;
   }
 
 
   public void setBucketedColsByDirectory(Map<String, List<BucketCol>> bucketedColsByDirectory) {
-    this.bucketedColsByDirectory = bucketedColsByDirectory;
+    if (!disableBucketing) {
+      this.bucketedColsByDirectory = bucketedColsByDirectory;
+    }
   }
 
 

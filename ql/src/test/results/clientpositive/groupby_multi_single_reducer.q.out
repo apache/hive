@@ -83,7 +83,7 @@ STAGE PLANS:
                 type: boolean
             Group By Operator
               aggregations:
-                    expr: count(DISTINCT KEY._col1:1._col0)
+                    expr: count(DISTINCT KEY._col1:0._col0)
                     expr: sum(KEY._col1:1._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
@@ -120,7 +120,7 @@ STAGE PLANS:
                 type: boolean
             Group By Operator
               aggregations:
-                    expr: count(DISTINCT KEY._col1:1._col0)
+                    expr: count(DISTINCT KEY._col1:0._col0)
                     expr: sum(KEY._col1:1._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
@@ -153,7 +153,7 @@ STAGE PLANS:
                       name: default.dest_g3
           Group By Operator
             aggregations:
-                  expr: count(DISTINCT KEY._col1:1._col0)
+                  expr: count(DISTINCT KEY._col1:0._col0)
                   expr: sum(KEY._col1:1._col0)
                   expr: sum(DISTINCT KEY._col1:1._col0)
                   expr: count(VALUE._col0)
@@ -445,7 +445,7 @@ STAGE PLANS:
                 type: boolean
             Group By Operator
               aggregations:
-                    expr: count(DISTINCT KEY._col1:1._col0)
+                    expr: count(DISTINCT KEY._col1:0._col0)
                     expr: sum(KEY._col1:1._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
@@ -482,7 +482,7 @@ STAGE PLANS:
                 type: boolean
             Group By Operator
               aggregations:
-                    expr: count(DISTINCT KEY._col1:1._col0)
+                    expr: count(DISTINCT KEY._col1:0._col0)
                     expr: sum(KEY._col1:1._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
@@ -515,7 +515,7 @@ STAGE PLANS:
                       name: default.dest_g3
           Group By Operator
             aggregations:
-                  expr: count(DISTINCT KEY._col1:1._col0)
+                  expr: count(DISTINCT KEY._col1:0._col0)
                   expr: sum(KEY._col1:1._col0)
                   expr: sum(DISTINCT KEY._col1:1._col0)
                   expr: count(VALUE._col0)

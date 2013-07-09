@@ -83,6 +83,7 @@ public class AppConfig extends Configuration {
     public static final String EXEC_MAX_BYTES_NAME = "templeton.exec.max-output-bytes";
     public static final String EXEC_MAX_PROCS_NAME = "templeton.exec.max-procs";
     public static final String EXEC_TIMEOUT_NAME   = "templeton.exec.timeout";
+    public static final String HADOOP_QUEUE_NAME   = "templeton.hadoop.queue.name";
     public static final String HADOOP_NAME         = "templeton.hadoop";
     public static final String HADOOP_CONF_DIR     = "templeton.hadoop.conf.dir";
     public static final String HCAT_NAME           = "templeton.hcat";
@@ -115,6 +116,7 @@ public class AppConfig extends Configuration {
     public static final String HADOOP_SPECULATIVE_NAME
         = "mapred.map.tasks.speculative.execution";
     public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
+    public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
 
     
     private static final Log LOG = LogFactory.getLog(AppConfig.class);
@@ -175,6 +177,7 @@ public class AppConfig extends Configuration {
 
     public String templetonJar()     { return get(TEMPLETON_JAR_NAME); }
     public String libJars()          { return get(LIB_JARS_NAME); }
+    public String hadoopQueueName()  { return get(HADOOP_QUEUE_NAME); }
     public String clusterHadoop()    { return get(HADOOP_NAME); }
     public String clusterHcat()      { return get(HCAT_NAME); }
     public String pigPath()          { return get(PIG_PATH_NAME); }

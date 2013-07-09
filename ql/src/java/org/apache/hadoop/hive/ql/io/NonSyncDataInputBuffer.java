@@ -118,6 +118,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final boolean readBoolean() throws IOException {
     int temp = in.read();
     if (temp < 0) {
@@ -135,6 +136,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final byte readByte() throws IOException {
     int temp = in.read();
     if (temp < 0) {
@@ -165,6 +167,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
     return offset;
   }
 
+  @Override
   public final char readChar() throws IOException {
     if (readToBuff(2) < 0) {
       throw new EOFException();
@@ -182,6 +185,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final double readDouble() throws IOException {
     return Double.longBitsToDouble(readLong());
   }
@@ -195,6 +199,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final float readFloat() throws IOException {
     return Float.intBitsToFloat(readInt());
   }
@@ -211,6 +216,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final void readFully(byte[] buffer) throws IOException {
     readFully(buffer, 0, buffer.length);
   }
@@ -233,6 +239,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           if reaches the end of the stream before enough bytes have been
    *           read
    */
+  @Override
   public final void readFully(byte[] buffer, int offset, int length)
       throws IOException {
     if (length < 0) {
@@ -267,6 +274,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final int readInt() throws IOException {
     if (readToBuff(4) < 0) {
       throw new EOFException();
@@ -292,6 +300,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    * @deprecated Use BufferedReader
    */
   @Deprecated
+  @Override
   public final String readLine() throws IOException {
     StringBuilder line = new StringBuilder(80); // Typical line length
     boolean foundTerminator = false;
@@ -335,6 +344,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final long readLong() throws IOException {
     if (readToBuff(8) < 0) {
       throw new EOFException();
@@ -356,6 +366,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final short readShort() throws IOException {
     if (readToBuff(2) < 0) {
       throw new EOFException();
@@ -373,6 +384,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final int readUnsignedByte() throws IOException {
     int temp = in.read();
     if (temp < 0) {
@@ -391,6 +403,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final int readUnsignedShort() throws IOException {
     if (readToBuff(2) < 0) {
       throw new EOFException();
@@ -407,6 +420,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    *           If a problem occurs reading from this DataInputStream.
    * 
    */
+  @Override
   public final String readUTF() throws IOException {
     return decodeUTF(readUnsignedShort());
   }
@@ -450,6 +464,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements
    * @throws IOException
    *           If the stream is already closed or another IOException occurs.
    */
+  @Override
   public final int skipBytes(int count) throws IOException {
     int skipped = 0;
     long skip;

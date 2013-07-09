@@ -62,8 +62,13 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   private static final int NO_DECIMAL_MASK = 0x7FFFFFFF;
   private static final int HAS_DECIMAL_MASK = 0x80000000;
 
-  private static final DateFormat dateFormat =
-    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private static final ThreadLocal<DateFormat> threadLocalDateFormat =
+      new ThreadLocal<DateFormat>() {
+        @Override
+        protected synchronized DateFormat initialValue() {
+          return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+      };
 
   private Timestamp timestamp = new Timestamp(0);
 
@@ -325,13 +330,13 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     if (timestampString.length() > 19) {
       if (timestampString.length() == 21) {
         if (timestampString.substring(19).compareTo(".0") == 0) {
-          return dateFormat.format(timestamp);
+          return threadLocalDateFormat.get().format(timestamp);
         }
       }
-      return dateFormat.format(timestamp) + timestampString.substring(19);
+      return threadLocalDateFormat.get().format(timestamp) + timestampString.substring(19);
     }
 
-    return dateFormat.format(timestamp);
+    return threadLocalDateFormat.get().format(timestamp);
   }
 
   @Override

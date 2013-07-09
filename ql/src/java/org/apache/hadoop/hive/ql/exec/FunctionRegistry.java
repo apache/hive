@@ -1105,6 +1105,10 @@ public final class FunctionRegistry {
       GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
       return new GenericUDFBridge(bridge.getUdfName(), bridge.isOperator(),
           bridge.getUdfClass());
+    } else if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro bridge = (GenericUDFMacro) genericUDF;
+      return new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
+          bridge.getColNames(), bridge.getColTypes());
     }
 
     return (GenericUDF) ReflectionUtils
@@ -1173,6 +1177,11 @@ public final class FunctionRegistry {
       }
     }
 
+    if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro macro = (GenericUDFMacro) (genericUDF);
+      return macro.isDeterministic();
+    }
+
     return true;
   }
 
@@ -1191,6 +1200,11 @@ public final class FunctionRegistry {
       if (bridgeUDFType != null && bridgeUDFType.stateful()) {
         return true;
       }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro macro = (GenericUDFMacro) (genericUDF);
+      return macro.isStateful();
     }
 
     return false;
@@ -1300,6 +1314,27 @@ public final class FunctionRegistry {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Registers thae appropriate kind of temporary function based on a class's
+   * type.
+   *
+   * @param macroName name under which to register the macro
+   *
+   * @param body the expression which the macro evaluates to
+   *
+   * @param colNames the names of the arguments to the macro
+   *
+   * @param colTypes the types of the arguments to the macro
+   */
+  public static void registerTemporaryMacro(
+    String macroName, ExprNodeDesc body,
+    List<String> colNames, List<TypeInfo> colTypes) {
+
+    FunctionInfo fI = new FunctionInfo(false, macroName,
+        new GenericUDFMacro(macroName, body, colNames, colTypes));
+    mFunctions.put(macroName.toLowerCase(), fI);
   }
 
   /**

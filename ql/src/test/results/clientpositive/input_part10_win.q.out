@@ -1,4 +1,5 @@
 PREHOOK: query: -- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
 
 CREATE TABLE part_special (
   a STRING,
@@ -9,6 +10,7 @@ CREATE TABLE part_special (
 )
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- INCLUDE_OS_WINDOWS
+-- included only on  windows because of difference in file name encoding logic
 
 CREATE TABLE part_special (
   a STRING,
@@ -105,18 +107,26 @@ POSTHOOK: query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = 
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
-a	string	
-b	string	
-ds	string	
-ts	string	
+a                   	string              	None                
+b                   	string              	None                
+ds                  	string              	None                
+ts                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+ts                  	string              	None                
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_special
 PREHOOK: Input: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_special
 POSTHOOK: Input: default@part_special@ds=2008%2004%2008/ts=10%3A11%3A12%3D455
 #### A masked pattern was here ####
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []

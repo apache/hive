@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -516,17 +516,29 @@ public final class ObjectInspectorUtils {
       ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
       ObjectInspector valueOI = mapOI.getMapValueObjectInspector();
       Map<?, ?> map = mapOI.getMap(o);
-      for (Map.Entry entry : map.entrySet()) {
+      for (Map.Entry<?,?> entry : map.entrySet()) {
         r += hashCode(entry.getKey(), keyOI) ^
              hashCode(entry.getValue(), valueOI);
       }
       return r;
     }
     case STRUCT:
+      int r = 0;
+      StructObjectInspector structOI = (StructObjectInspector)objIns;
+      List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+      for (StructField field : fields) {
+        r = 31 * r + hashCode(structOI.getStructFieldData(o, field),
+            field.getFieldObjectInspector());
+      }
+      return r;
+
     case UNION:
+      UnionObjectInspector uOI = (UnionObjectInspector)objIns;
+      byte tag = uOI.getTag(o);
+      return hashCode(uOI.getField(o), uOI.getObjectInspectors().get(tag));
+
     default:
-      throw new RuntimeException(
-          "Hash code on complex types not supported yet.");
+      throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
     }
   }
 

@@ -1,4 +1,3 @@
 PREHOOK: query: describe src_thrift.lint.abc
 PREHOOK: type: DESCTABLE
-FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: Error in getting fields from serde.Unknown type for abc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error in getting fields from serde.Unknown type for abc

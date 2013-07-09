@@ -90,6 +90,13 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   public boolean isDeterministic() {
     return true;
   }
+  
+  /**
+   * Return whether this node (or any children nodes) are stateful.
+   */
+  public boolean isStateful() {
+    return false;
+  }
 
   /**
    * Return child evaluators if exist

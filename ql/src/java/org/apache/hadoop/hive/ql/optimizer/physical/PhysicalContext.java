@@ -72,11 +72,27 @@ public class PhysicalContext {
     this.context = context;
   }
 
+  public List<Task<? extends Serializable>> getRootTasks() {
+    return rootTasks;
+  }
+
+  public void setRootTasks(List<Task<? extends Serializable>> rootTasks) {
+    this.rootTasks = rootTasks;
+  }
+
+  public Task<? extends Serializable> getFetchTask() {
+    return fetchTask;
+  }
+
+  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+    this.fetchTask = fetchTask;
+  }
+
   public void addToRootTask(Task<? extends Serializable> tsk){
     rootTasks.add(tsk);
   }
+
   public void removeFromRootTask(Task<? extends Serializable> tsk){
     rootTasks.remove(tsk);
   }
-
 }

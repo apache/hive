@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
 import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -217,6 +219,94 @@ public class TestRCFile extends TestCase {
       }
     }
 
+    reader.close();
+  }
+  
+  /**
+   * Tests {@link RCFile.Reader#getColumn(int, BytesRefArrayWritable) } method.
+   * @throws IOException
+   */
+  public void testGetColumn() throws IOException {
+    fs.delete(file, true);
+
+    RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
+    RCFile.Writer writer =
+      new RCFile.Writer(fs, conf, file, null,
+                        RCFile.createMetadata(new Text("apple"),
+                                              new Text("block"),
+                                              new Text("cat"),
+                                              new Text("dog")),
+                        new DefaultCodec());
+    
+    byte[][] record_1 = {
+        "123".getBytes("UTF-8"), 
+        "456".getBytes("UTF-8"),
+        "789".getBytes("UTF-8"), 
+        "1000".getBytes("UTF-8"),
+        "5.3".getBytes("UTF-8"), 
+        "hive and hadoop".getBytes("UTF-8"),
+        new byte[0], 
+        "NULL".getBytes("UTF-8") };
+    byte[][] record_2 = {
+        "100".getBytes("UTF-8"), 
+        "200".getBytes("UTF-8"),
+        "123".getBytes("UTF-8"), 
+        "1000".getBytes("UTF-8"),
+        "5.3".getBytes("UTF-8"), 
+        "hive and hadoop".getBytes("UTF-8"),
+        new byte[0], 
+        "NULL".getBytes("UTF-8")};
+    
+    BytesRefArrayWritable bytes = new BytesRefArrayWritable(record_1.length);
+    for (int i = 0; i < record_1.length; i++) {
+      BytesRefWritable cu = new BytesRefWritable(record_1[i], 0,
+          record_1[i].length);
+      bytes.set(i, cu);
+    }
+    writer.append(bytes);
+    bytes.clear();
+    for (int i = 0; i < record_2.length; i++) {
+      BytesRefWritable cu = new BytesRefWritable(record_2[i], 0,
+          record_2[i].length);
+      bytes.set(i, cu);
+    }
+    writer.append(bytes);
+    writer.close();
+
+    RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
+    
+    LongWritable rowID = new LongWritable();
+    assertTrue(reader.next(rowID));
+    assertEquals(rowID.get(), 0L);
+    
+    assertTrue(reader.next(rowID));
+    assertEquals(rowID.get(), 1L);
+    
+    BytesRefArrayWritable result = null;
+    BytesRefWritable brw;
+    for (int col=0; col < 8; col++) {
+      BytesRefArrayWritable result2 = reader.getColumn(col, result);
+      if (result == null) {
+        assertNotNull(result2);
+        result = result2;
+      } else {
+        // #getColumn(2) should return the instance passed in: 
+        assertSame(result2, result);
+      }
+      // each column has height of 2: 
+      assertEquals(2, result.size());
+      for (int row=0; row<result.size(); row++) {
+        brw = result.get(row);
+        int start = brw.getStart();
+        int len = brw.getLength();
+        byte[] actualData = Arrays.copyOfRange(brw.getData(), start, start + len);
+        byte[] expectedData = (row == 0) ? record_1[col] : record_2[col];
+        assertArrayEquals("col="+col+" : row="+row,  expectedData, actualData);
+      }
+      
+      result.clear();
+    }
+    
     reader.close();
   }
 

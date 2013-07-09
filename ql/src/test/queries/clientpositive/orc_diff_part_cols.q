@@ -16,4 +16,4 @@ ALTER TABLE test_orc ADD COLUMNS (cnt INT);
 
 INSERT OVERWRITE TABLE test_orc PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5;
 
-SELECT * FROM test_orc; 
+SELECT * FROM test_orc ORDER BY key; 

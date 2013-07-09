@@ -1,4 +1,3 @@
 PREHOOK: query: describe src_thrift.$key$
 PREHOOK: type: DESCTABLE
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. cannot find field $key$ from [private int org.apache.hadoop.hive.serde2.thrift.test.Complex.aint, private java.lang.String org.apache.hadoop.hive.serde2.thrift.test.Complex.aString, private java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lint, private java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lString, private java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lintString, private java.util.Map org.apache.hadoop.hive.serde2.thrift.test.Complex.mStringString]

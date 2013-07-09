@@ -4,5 +4,4 @@ POSTHOOK: query: drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: show locks tstsrcpart extended
 PREHOOK: type: SHOWLOCKS
-FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.InvalidTableException: Table tstsrcpart not found 
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.InvalidTableException: Table not found tstsrcpart

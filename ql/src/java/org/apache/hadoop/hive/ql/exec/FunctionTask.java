@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.CreateMacroDesc;
+import org.apache.hadoop.hive.ql.plan.DropMacroDesc;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
@@ -67,6 +69,16 @@ public class FunctionTask extends Task<FunctionWork> {
     if (dropFunctionDesc != null) {
       return dropFunction(dropFunctionDesc);
     }
+
+    CreateMacroDesc createMacroDesc = work.getCreateMacroDesc();
+    if (createMacroDesc != null) {
+      return createMacro(createMacroDesc);
+    }
+
+    DropMacroDesc dropMacroDesc = work.getDropMacroDesc();
+    if (dropMacroDesc != null) {
+      return dropMacro(dropMacroDesc);
+    }
     return 0;
   }
 
@@ -85,6 +97,26 @@ public class FunctionTask extends Task<FunctionWork> {
     } catch (ClassNotFoundException e) {
       console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
       LOG.info("create function: " + StringUtils.stringifyException(e));
+      return 1;
+    }
+  }
+
+  private int createMacro(CreateMacroDesc createMacroDesc) {
+    FunctionRegistry.registerTemporaryMacro(
+      createMacroDesc.getMacroName(),
+      createMacroDesc.getBody(),
+      createMacroDesc.getColNames(),
+      createMacroDesc.getColTypes());
+    return 0;
+  }
+
+  private int dropMacro(DropMacroDesc dropMacroDesc) {
+    try {
+      FunctionRegistry.unregisterTemporaryUDF(dropMacroDesc
+          .getMacroName());
+      return 0;
+    } catch (HiveException e) {
+      LOG.info("drop macro: " + StringUtils.stringifyException(e));
       return 1;
     }
   }
@@ -113,10 +145,5 @@ public class FunctionTask extends Task<FunctionWork> {
   @Override
   public String getName() {
     return "FUNCTION";
-  }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    throw new RuntimeException ("Unexpected call");
   }
 }

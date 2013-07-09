@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -110,6 +111,12 @@ public class MapredWork extends AbstractOperatorDesc {
       new HashMap<String, List<BucketCol>>();
   private final Map<String, List<SortCol>> sortedColsByDirectory =
       new HashMap<String, List<SortCol>>();
+
+  // use sampled partitioning
+  private int samplingType;
+
+  public static final int SAMPLING_ON_PREV_MR = 1;  // todo HIVE-3841
+  public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -221,6 +228,33 @@ public class MapredWork extends AbstractOperatorDesc {
   public void setAliasToWork(
       final LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork) {
     this.aliasToWork = aliasToWork;
+  }
+
+  public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
+    ArrayList<String> aliases = pathToAliases.get(pathDir);
+    if (aliases == null) {
+      aliases = new ArrayList<String>(Arrays.asList(alias));
+      pathToAliases.put(pathDir, aliases);
+      pathToPartitionInfo.put(pathDir, partitionInfo);
+    } else {
+      aliases.add(alias);
+    }
+  }
+
+  public ArrayList<String> getAliases() {
+    return new ArrayList<String>(aliasToWork.keySet());
+  }
+
+  public ArrayList<Operator<?>> getWorks() {
+    return new ArrayList<Operator<?>>(aliasToWork.values());
+  }
+
+  public ArrayList<String> getPaths() {
+    return new ArrayList<String>(pathToAliases.keySet());
+  }
+
+  public ArrayList<PartitionDesc> getPartitionDescs() {
+    return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
   }
 
   /**
@@ -581,5 +615,19 @@ public class MapredWork extends AbstractOperatorDesc {
         PlanUtils.configureJobConf(fs.getConf().getTableInfo(), jobConf);
       }
     }
+  }
+
+  public int getSamplingType() {
+    return samplingType;
+  }
+
+  public void setSamplingType(int samplingType) {
+    this.samplingType = samplingType;
+  }
+
+  @Explain(displayName = "Sampling")
+  public String getSamplingTypeString() {
+    return samplingType == 1 ? "SAMPLING_ON_PREV_MR" :
+        samplingType == 2 ? "SAMPLING_ON_START" : null;
   }
 }

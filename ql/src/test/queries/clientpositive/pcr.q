@@ -102,3 +102,40 @@ select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds
 drop table pcr_t1;
 drop table pcr_t2;
 drop table pcr_t3;
+
+
+-- Test cases when a non-boolean ds expression has same and different values for all possible ds values: 
+drop table pcr_foo;
+create table pcr_foo (key int, value string) partitioned by (ds int);
+insert overwrite table pcr_foo partition (ds=3) select * from src where key < 10 order by key;
+insert overwrite table pcr_foo partition (ds=5) select * from src where key < 10 order by key;
+insert overwrite table pcr_foo partition (ds=7) select * from src where key < 10 order by key;
+
+-- the condition is 'true' for all the 3 partitions (ds=3,5,7):
+select key, value, ds from pcr_foo where (ds % 2 == 1);
+
+-- the condition is 'true' for partitions (ds=3,5) but 'false' of partition ds=7:
+select key, value, ds from pcr_foo where (ds / 3 < 2);
+
+drop table pcr_foo;
+
+
+
+-- Cover org.apache.hadoop.hive.ql.optimizer.pcr.PcrExprProcFactory.FieldExprProcessor.
+-- Create a table with a struct data:
+create table ab(strct struct<a:int, b:string>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001';
+load data local inpath '../data/files/kv1.txt'
+overwrite into table ab;
+
+-- Create partitioned table with struct data:
+drop table foo_field;
+create table foo_field (s struct<a:int,b:string>) partitioned by (ds int);
+insert overwrite table foo_field partition (ds=5) select strct from ab where strct.a < 10 limit 2;
+insert overwrite table foo_field partition (ds=7) select strct from ab where strct.a > 190 limit 2;
+select s,ds from foo_field where ((ds + s.a) > 0) order by ds,s;
+
+drop table foo_field;
+

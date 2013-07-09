@@ -107,6 +107,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
         processInputPartition();
       }
     }
+    inputPart.close();
 	}
 
 	@Override

@@ -44,7 +44,7 @@
                 transitive="false"/>
     <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}"
                 transitive="false"/>
-    <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}"
+    <dependency org="javax.jdo" name="jdo-api" rev="${jdo-api.version}"
                 transitive="false"/>
     <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
     <dependency org="asm" name="asm" rev="${asm.version}"/>

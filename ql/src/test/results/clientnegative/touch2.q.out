@@ -1,5 +1,4 @@
 PREHOOK: query: ALTER TABLE src TOUCH PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_TOUCH
 PREHOOK: Input: default@src
-FAILED: Error in metadata: table is not partitioned but partition spec exists: {ds=2008-04-08, hr=12}
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. table is not partitioned but partition spec exists: {ds=2008-04-08, hr=12}

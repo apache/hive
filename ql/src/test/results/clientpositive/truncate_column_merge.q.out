@@ -69,12 +69,12 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- The first column (key) should be null for all 10 rows
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
 POSTHOOK: query: -- The first column (key) should be null for all 10 rows
-SELECT * FROM test_tab
+SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -82,16 +82,16 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-NULL	val_238
-NULL	val_86
-NULL	val_311
-NULL	val_27
+NULL	val_165
 NULL	val_165
 NULL	val_238
-NULL	val_86
-NULL	val_311
+NULL	val_238
 NULL	val_27
-NULL	val_165
+NULL	val_27
+NULL	val_311
+NULL	val_311
+NULL	val_86
+NULL	val_86
 PREHOOK: query: -- The value should be 1 indicating the table has 1 file
 SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
 PREHOOK: type: QUERY

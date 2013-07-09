@@ -125,7 +125,7 @@ public class SkewedInfo implements org.apache.thrift.TBase<SkewedInfo, SkewedInf
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
     tmpMap.put(_Fields.SKEWED_COL_VALUE_LOCATION_MAPS, new org.apache.thrift.meta_data.FieldMetaData("skewedColValueLocationMaps", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SkewedValueList.class),
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SkewedValueList.class), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SkewedInfo.class, metaDataMap);

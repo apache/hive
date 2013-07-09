@@ -65,6 +65,9 @@ public class LazySimpleSerDe extends AbstractSerDe {
   public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
       .getName());
 
+  public static final String SERIALIZATION_EXTEND_NESTING_LEVELS
+    = "hive.serialization.extend.nesting.levels";
+
   public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
 
   private ObjectInspector cachedObjectInspector;
@@ -177,6 +180,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    *
    * @see SerDe#initialize(Configuration, Properties)
    */
+  @Override
   public void initialize(Configuration job, Properties tbl)
       throws SerDeException {
 
@@ -209,9 +213,13 @@ public class LazySimpleSerDe extends AbstractSerDe {
   public static SerDeParameters initSerdeParams(Configuration job,
       Properties tbl, String serdeName) throws SerDeException {
     SerDeParameters serdeParams = new SerDeParameters();
-    // Read the separators: We use 8 levels of separators by default, but we
-    // should change this when we allow users to specify more than 10 levels
-    // of separators through DDL.
+    // Read the separators: We use 8 levels of separators by default,
+    // and 24 if SERIALIZATION_EXTEND_NESTING_LEVELS is set to true
+    // The levels possible are the set of control chars that we can use as
+    // special delimiters, ie they should absent in the data or escaped.
+    // To increase this level further, we need to stop relying
+    // on single control chars delimiters
+
     serdeParams.separators = new byte[8];
     serdeParams.separators[0] = getByte(tbl.getProperty(serdeConstants.FIELD_DELIM,
         tbl.getProperty(serdeConstants.SERIALIZATION_FORMAT)), DefaultSeparators[0]);
@@ -219,8 +227,53 @@ public class LazySimpleSerDe extends AbstractSerDe {
         .getProperty(serdeConstants.COLLECTION_DELIM), DefaultSeparators[1]);
     serdeParams.separators[2] = getByte(
         tbl.getProperty(serdeConstants.MAPKEY_DELIM), DefaultSeparators[2]);
-    for (int i = 3; i < serdeParams.separators.length; i++) {
-      serdeParams.separators[i] = (byte) (i + 1);
+    String extendedNesting =
+        tbl.getProperty(SERIALIZATION_EXTEND_NESTING_LEVELS);
+    if(extendedNesting == null || !extendedNesting.equalsIgnoreCase("true")){
+      //use the default smaller set of separators for backward compatibility
+      for (int i = 3; i < serdeParams.separators.length; i++) {
+        serdeParams.separators[i] = (byte) (i + 1);
+      }
+    }
+    else{
+      //If extended nesting is enabled, set the extended set of separator chars
+
+      final int MAX_CTRL_CHARS = 29;
+      byte[] extendedSeparators = new byte[MAX_CTRL_CHARS];
+      int extendedSeparatorsIdx = 0;
+
+      //get the first 3 separators that have already been set (defaults to 1,2,3)
+      for(int i = 0; i < 3; i++){
+        extendedSeparators[extendedSeparatorsIdx++] = serdeParams.separators[i];
+      }
+
+      for (byte asciival = 4; asciival <= MAX_CTRL_CHARS; asciival++) {
+
+        //use only control chars that are very unlikely to be part of the string
+        // the following might/likely to be used in text files for strings
+        // 9 (horizontal tab, HT, \t, ^I)
+        // 10 (line feed, LF, \n, ^J),
+        // 12 (form feed, FF, \f, ^L),
+        // 13 (carriage return, CR, \r, ^M),
+        // 27 (escape, ESC, \e [GCC only], ^[).
+
+        //reserving the following values for future dynamic level impl
+        // 30
+        // 31
+
+        switch(asciival){
+        case 9:
+        case 10:
+        case 12:
+        case 13:
+        case 27:
+          continue;
+        }
+        extendedSeparators[extendedSeparatorsIdx++] = asciival;
+      }
+
+      serdeParams.separators =
+          Arrays.copyOfRange(extendedSeparators, 0, extendedSeparatorsIdx);
     }
 
     serdeParams.nullString = tbl.getProperty(
@@ -272,6 +325,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    * @return The deserialized row Object.
    * @see SerDe#deserialize(Writable)
    */
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     if (byteArrayRef == null) {
       byteArrayRef = new ByteArrayRef();
@@ -297,6 +351,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
   /**
    * Returns the ObjectInspector for the row.
    */
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
   }
@@ -306,6 +361,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    *
    * @see SerDe#getSerializedClass()
    */
+  @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
   }
@@ -324,6 +380,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    * @throws IOException
    * @see SerDe#serialize(Object, ObjectInspector)
    */
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
 
@@ -410,11 +467,12 @@ public class LazySimpleSerDe extends AbstractSerDe {
    *          128. Negative byte values (or byte values >= 128) are never
    *          escaped.
    * @throws IOException
+   * @throws SerDeException
    */
   public static void serialize(ByteStream.Output out, Object obj,
       ObjectInspector objInspector, byte[] separators, int level,
       Text nullSequence, boolean escaped, byte escapeChar, boolean[] needsEscape)
-      throws IOException {
+      throws IOException, SerDeException {
 
     if (obj == null) {
       out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
@@ -430,7 +488,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
           needsEscape);
       return;
     case LIST:
-      separator = (char) separators[level];
+      separator = (char) LazyUtils.getSeparator(separators, level);
       ListObjectInspector loi = (ListObjectInspector) objInspector;
       list = loi.getList(obj);
       ObjectInspector eoi = loi.getListElementObjectInspector();
@@ -447,8 +505,10 @@ public class LazySimpleSerDe extends AbstractSerDe {
       }
       return;
     case MAP:
-      separator = (char) separators[level];
-      char keyValueSeparator = (char) separators[level + 1];
+      separator = (char) LazyUtils.getSeparator(separators, level);
+      char keyValueSeparator =
+           (char) LazyUtils.getSeparator(separators, level + 1);
+
       MapObjectInspector moi = (MapObjectInspector) objInspector;
       ObjectInspector koi = moi.getMapKeyObjectInspector();
       ObjectInspector voi = moi.getMapValueObjectInspector();
@@ -472,7 +532,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
       }
       return;
     case STRUCT:
-      separator = (char) separators[level];
+      separator = (char) LazyUtils.getSeparator(separators, level);
       StructObjectInspector soi = (StructObjectInspector) objInspector;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
       list = soi.getStructFieldsDataAsList(obj);
@@ -490,7 +550,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
       }
       return;
     case UNION:
-      separator = (char) separators[level];
+      separator = (char) LazyUtils.getSeparator(separators, level);
       UnionObjectInspector uoi = (UnionObjectInspector) objInspector;
       List<? extends ObjectInspector> ois = uoi.getObjectInspectors();
       if (ois == null) {
@@ -517,6 +577,7 @@ public class LazySimpleSerDe extends AbstractSerDe {
    * Returns the statistics after (de)serialization)
    */
 
+  @Override
   public SerDeStats getSerDeStats() {
     // must be different
     assert (lastOperationSerialize != lastOperationDeserialize);

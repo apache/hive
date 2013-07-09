@@ -63,9 +63,9 @@ select count(*) from list_bucketing_static_part;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.optimize.listbucketing=true;
 explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
-select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
+select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
 
 -- clean up
 drop table list_bucketing_static_part;

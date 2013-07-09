@@ -34,7 +34,7 @@ public class IndexWhereResolver implements PhysicalPlanResolver {
     Dispatcher dispatcher = new IndexWhereTaskDispatcher(physicalContext);
     GraphWalker opGraphWalker = new DefaultGraphWalker(dispatcher);
     ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(physicalContext.rootTasks);
+    topNodes.addAll(physicalContext.getRootTasks());
     opGraphWalker.startWalking(topNodes, null);
 
     return physicalContext;

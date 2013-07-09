@@ -89,7 +89,7 @@ public class $className extends TestCase {
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qf.getCanonicalPath())
+  #set ($fpath = $qf.getCanonicalPath().replaceAll("\\","\\\\"))
   public void testCliDriver_$tname() throws Exception {
     runTest("$tname", "$fname", "$fpath");
   }

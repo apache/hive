@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -287,6 +289,11 @@ public class PTFPersistence {
       bldr.append("]\n");
     }
 
+    public void close() {
+      bytes = null;
+      offsetsArray = null;
+    }
+
     class WIterator implements Iterator<Writable>
     {
       Writable wObj;
@@ -403,6 +410,12 @@ public class PTFPersistence {
 
   public static class PartitionedByteBasedList extends ByteBasedList
   {
+    private static final ShutdownHook hook = new ShutdownHook();
+
+    static {
+      Runtime.getRuntime().addShutdownHook(hook);
+    }
+
     ArrayList<ByteBasedList> partitions;
     ArrayList<Integer> partitionOffsets;
     ArrayList<File> reusableFiles;
@@ -413,8 +426,7 @@ public class PTFPersistence {
     {
       this.batchSize = batchSize;
       currentSize = 0;
-      dir = PartitionedByteBasedList.createTempDir();
-      Runtime.getRuntime().addShutdownHook(new ShutdownHook(dir));
+      hook.register(dir = PartitionedByteBasedList.createTempDir());
 
       partitions = new ArrayList<ByteBasedList>();
       partitionOffsets = new ArrayList<Integer>();
@@ -444,6 +456,22 @@ public class PTFPersistence {
       finally {
         lock.writeLock().unlock();
       }
+    }
+
+    @Override
+    public void close() {
+      super.close();
+      reusableFiles.clear();
+      partitionOffsets.clear();
+      for (ByteBasedList partition : partitions) {
+        partition.close();
+      }
+      partitions.clear();
+      try {
+        PartitionedByteBasedList.deleteRecursively(dir);
+      } catch (Exception e) {
+      }
+      hook.unregister(dir);
     }
 
     private void addPartition() throws HiveException
@@ -636,11 +664,14 @@ public class PTFPersistence {
 
     static class ShutdownHook extends Thread
     {
-      File dir;
+      private final Set<File> dirs = new LinkedHashSet<File>();
 
-      public ShutdownHook(File dir)
-      {
-        this.dir = dir;
+      public void register(File dir) {
+        dirs.add(dir);
+      }
+
+      public void unregister(File dir) {
+        dirs.remove(dir);
       }
 
       @Override
@@ -648,9 +679,11 @@ public class PTFPersistence {
       {
         try
         {
-          PartitionedByteBasedList.deleteRecursively(dir);
+          for (File dir : dirs) {
+            PartitionedByteBasedList.deleteRecursively(dir);
+          }
         }
-        catch(IOException ie)
+        catch(Exception ie)
         {
         }
       }
@@ -850,6 +883,21 @@ public class PTFPersistence {
     @Override
     protected void reset(int startOffset) throws HiveException {
       throw new HiveException("Reset on PersistentByteBasedList not supported");
+    }
+
+    @Override
+    public void close() {
+      super.close();
+      ByteBasedList list = memList.get();
+      if (list != null) {
+        list.close();
+      }
+      memList.clear();
+      try {
+        PartitionedByteBasedList.deleteRecursively(file);
+      } catch (Exception e) {
+        // ignore
+      }
     }
 
     private ByteBasedList getList() throws HiveException

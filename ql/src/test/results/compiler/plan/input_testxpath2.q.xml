@@ -209,6 +209,10 @@
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
                           <void method="put"> 
+                           <string>hive.serialization.extend.nesting.levels</string> 
+                           <string>true</string> 
+                          </void> 
+                          <void method="put"> 
                            <string>columns</string> 
                            <string>_col0,_col1,_col2</string> 
                           </void> 

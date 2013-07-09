@@ -14,5 +14,4 @@ POSTHOOK: type: SHOWPARTITIONS
 PREHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='1,2,3,4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@part_whitelist_test
-FAILED: Error in metadata: MetaException(message:Partition value '1,2,3,4' contains a character not matched by whitelist pattern '[\\x20-\\x7E&&[^,]]*'.  (configure with hive.metastore.partition.name.whitelist.pattern))
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Partition value '1,2,3,4' contains a character not matched by whitelist pattern '[\\x20-\\x7E&&[^,]]*'.  (configure with hive.metastore.partition.name.whitelist.pattern))

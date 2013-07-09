@@ -171,7 +171,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     Dispatcher disp = new MetadataOnlyTaskDispatcher(pctx);
     GraphWalker ogw = new DefaultGraphWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pctx.rootTasks);
+    topNodes.addAll(pctx.getRootTasks());
     ogw.startWalking(topNodes, null);
     return pctx;
   }

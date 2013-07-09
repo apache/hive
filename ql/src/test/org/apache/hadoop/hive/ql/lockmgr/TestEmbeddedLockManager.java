@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import junit.framework.TestCase;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.junit.Assert;

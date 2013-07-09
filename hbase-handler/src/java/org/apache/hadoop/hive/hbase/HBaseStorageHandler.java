@@ -299,7 +299,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     try {
       TableMapReduceUtil.addDependencyJars(jobConf);
       org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil.addDependencyJars(jobConf,
-          HBaseStorageHandler.class);
+          HBaseStorageHandler.class, org.apache.hadoop.hbase.HBaseConfiguration.class);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

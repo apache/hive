@@ -71,7 +71,11 @@ public class Row {
   public TRow toTRow() {
     TRow tRow = new TRow();
     for (ColumnValue columnValue : values) {
-      tRow.addToColVals(columnValue.toTColumnValue());
+      if (columnValue != null) {
+        tRow.addToColVals(columnValue.toTColumnValue());
+      } else {
+        tRow.addToColVals(ColumnValue.NULL);
+      }
     }
     return tRow;
   }

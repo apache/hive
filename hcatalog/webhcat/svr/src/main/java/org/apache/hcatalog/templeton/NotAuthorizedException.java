@@ -18,11 +18,13 @@
  */
 package org.apache.hcatalog.templeton;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 /**
  * Simple "user not found" type exception.
  */
 public class NotAuthorizedException extends SimpleWebException {
     public NotAuthorizedException(String msg) {
-        super(401, msg);
+        super(HttpStatus.UNAUTHORIZED_401, msg);
     }
 }

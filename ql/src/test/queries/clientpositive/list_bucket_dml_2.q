@@ -46,16 +46,16 @@ select count(*) from list_bucketing_static_part;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.optimize.listbucketing=true;
 explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
-select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
+select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr;
+select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' ORDER BY key, value;
 
 -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
 -- but query should succeed for 51 or 51 and val_14
-select * from srcpart where ds = '2008-04-08' and key = '51';
-select * from list_bucketing_static_part where key = '51';
-select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14';
-select * from list_bucketing_static_part where key = '51' and value = 'val_14';
+select * from srcpart where ds = '2008-04-08' and key = '51' ORDER BY key, value;
+select * from list_bucketing_static_part where key = '51' ORDER BY key, value, ds, hr;
+select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14'  ORDER BY key, value;
+select * from list_bucketing_static_part where key = '51' and value = 'val_14' ORDER BY key, value, ds, hr;
 
 -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
 select count(1) from srcpart where ds = '2008-04-08' and key < '51';

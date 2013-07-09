@@ -1313,6 +1313,18 @@ public final class Utilities {
   }
 
   /**
+   * returns null if path is not exist
+   */
+  public static FileStatus[] listStatusIfExists(Path path, FileSystem fs) throws IOException {
+    try {
+      return fs.listStatus(path);
+    } catch (FileNotFoundException e) {
+      // FS in hadoop 2.0 throws FNF instead of returning null
+      return null;
+    }
+  }
+
+  /**
    * Get all file status from a root path and recursively go deep into certain levels.
    *
    * @param path

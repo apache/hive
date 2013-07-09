@@ -167,36 +167,59 @@ POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.Field
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b LIMIT 5
+PREHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * FROM orc_createas1b LIMIT 5
+POSTHOOK: query: EXPLAIN SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orc_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_createas1b))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 5)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_createas1b))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 5)))
 
 STAGE DEPENDENCIES:
+  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_createas1b 
+          TableScan
+            alias: orc_createas1b
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
   Stage: Stage-0
     Fetch Operator
       limit: 5
-      Processor Tree:
-        TableScan
-          alias: orc_createas1b
-          Select Operator
-            expressions:
-                  expr: key
-                  type: string
-                  expr: value
-                  type: string
-            outputColumnNames: _col0, _col1
-            Limit
-              ListSink
 
 
 PREHOOK: query: SELECT * FROM orc_createas1b ORDER BY key LIMIT 5
