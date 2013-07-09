@@ -364,15 +364,13 @@ public final class PcrExprProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ExprNodeFieldDesc fnd = (ExprNodeFieldDesc) nd;
       boolean unknown = false;
-      int idx = 0;
       for (Object child : nodeOutputs) {
         NodeInfoWrapper wrapper = (NodeInfoWrapper) child;
         if (wrapper.state == WalkState.UNKNOWN) {
           unknown = true;
+          break;
         }
       }
-
-      assert (idx == 0);
 
       if (unknown) {
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, fnd);
