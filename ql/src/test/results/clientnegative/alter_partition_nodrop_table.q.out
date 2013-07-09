@@ -37,5 +37,4 @@ PREHOOK: query: drop table alter_part_nodrop_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_part_nodrop_table
 PREHOOK: Output: default@alter_part_nodrop_table
-FAILED: Error in metadata: Table alter_part_nodrop_table Partitionyear=1996/month=10 is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Table alter_part_nodrop_table Partitionyear=1996/month=10 is protected from being dropped

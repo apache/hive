@@ -95,6 +95,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected List<Task<? extends Serializable>> childTasks;
   protected List<Task<? extends Serializable>> parentTasks;
+  /**
+   * this can be set by the Task, to provide more info about the failure in TaskResult
+   * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.DriverContext)}
+   * returns non-0 code.
+   */
+  private Throwable exception;
 
   public Task() {
     isdone = false;
@@ -493,5 +499,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public List<FieldSchema> getResultSchema() {
     return null;
+  }
+  Throwable getException() {
+    return exception;
+  }
+  void setException(Throwable ex) {
+    exception = ex;
   }
 }

@@ -18,6 +18,8 @@
  */
 package org.apache.hcatalog.templeton;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 import java.util.HashMap;
 
 /**
@@ -28,7 +30,7 @@ public class HcatException extends SimpleWebException {
     public String statement;
 
     public HcatException(String msg, final ExecBean bean, final String statement) {
-        super(500, msg, new HashMap<String, Object>() {
+        super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg, new HashMap<String, Object>() {
             {
                 put("exec", bean);
                 put("statement", statement);

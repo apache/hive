@@ -57,5 +57,4 @@ PREHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='1
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: default@tstsrcpart
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
-FAILED: Error in metadata: Conflict with existing archive ds=2008-04-08
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Conflict with existing archive ds=2008-04-08

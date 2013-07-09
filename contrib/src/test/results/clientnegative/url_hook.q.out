@@ -5,5 +5,4 @@ POSTHOOK: type: SHOWTABLES
 src
 PREHOOK: query: SHOW TABLES 'src'
 PREHOOK: type: SHOWTABLES
-FAILED: Error in metadata: ERROR: The database default does not exist.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Database does not exist: default

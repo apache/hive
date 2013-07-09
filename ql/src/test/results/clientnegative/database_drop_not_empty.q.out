@@ -24,5 +24,4 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
-FAILED: Error in metadata: InvalidOperationException(message:Database test_db is not empty)
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Database test_db is not empty)

@@ -40,4 +40,3 @@ PREHOOK: Input: default@tstsrcpart
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

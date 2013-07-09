@@ -27,5 +27,4 @@ PREHOOK: query: alter table alter_rename_partition partition (pCol1='old_part1:'
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@alter_rename_partition
 PREHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
-FAILED: Error in metadata: Unable to rename partition.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to rename partition.
