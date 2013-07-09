@@ -58,9 +58,10 @@ public class RuleRegExp implements Rule {
    * @return cost of the function
    * @throws SemanticException
    */
+  @Override
   public int cost(Stack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
-    String name = new String();
+    String name = "";
     for (int pos = numElems - 1; pos >= 0; pos--) {
       name = stack.get(pos).getName() + "%" + name;
       Matcher m = pattern.matcher(name);
@@ -68,13 +69,13 @@ public class RuleRegExp implements Rule {
         return m.group().length();
       }
     }
-
     return -1;
   }
 
   /**
    * @return the name of the Node
    **/
+  @Override
   public String getName() {
     return ruleName;
   }

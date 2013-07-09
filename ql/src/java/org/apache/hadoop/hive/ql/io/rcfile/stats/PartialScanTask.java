@@ -379,11 +379,4 @@ public class PartialScanTask extends Task<PartialScanWork> implements
   public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     // no op
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // no op
-  }
-
-
 }

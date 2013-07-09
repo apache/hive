@@ -106,12 +106,4 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   public String getName() {
     return "COPY";
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    // copy task is only used by the load command and
-    // does not use any map-reduce tmp files
-    // we don't expect to enter this code path at all
-    throw new RuntimeException ("Unexpected call");
-  }
 }

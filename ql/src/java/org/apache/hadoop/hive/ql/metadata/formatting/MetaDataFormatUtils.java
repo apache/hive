@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -324,5 +325,12 @@ public final class MetaDataFormatUtils {
     StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
     return indexCols.toString();
+  }
+  public static MetaDataFormatter getFormatter(HiveConf conf) {
+    if ("json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
+      return new JsonMetaDataFormatter();
+    } else {
+      return new TextMetaDataFormatter(conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS));
+    }
   }
 }

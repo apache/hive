@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
@@ -78,6 +79,7 @@ public class Context {
   private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
+  protected boolean explainLogical = false;
   protected String cmd = "";
   // number of previous attempts
   protected int tryCount = 0;
@@ -139,8 +141,23 @@ public class Context {
    * Find whether the current query is an explain query
    * @return true if the query is an explain query, false if not
    */
-  public boolean getExplain () {
+  public boolean getExplain() {
     return explain;
+  }
+
+  /**
+   * Find whether the current query is a logical explain query
+   */
+  public boolean getExplainLogical() {
+    return explainLogical;
+  }
+
+  /**
+   * Set the context on whether the current query is a logical
+   * explain query.
+   */
+  public void setExplainLogical(boolean explainLogical) {
+    this.explainLogical = explainLogical;
   }
 
   /**
@@ -165,16 +182,17 @@ public class Context {
    * @param scheme Scheme of the target FS
    * @param authority Authority of the target FS
    * @param mkdir create the directory if true
-   * @param scratchdir path of tmp directory
+   * @param scratchDir path of tmp directory
    */
   private String getScratchDir(String scheme, String authority,
                                boolean mkdir, String scratchDir) {
 
     String fileSystem =  scheme + ":" + authority;
-    String dir = fsScratchDirs.get(fileSystem);
+    String dir = fsScratchDirs.get(fileSystem + "-" + TaskRunner.getTaskRunnerID());
 
     if (dir == null) {
-      Path dirPath = new Path(scheme, authority, scratchDir);
+      Path dirPath = new Path(scheme, authority,
+          scratchDir + "-" + TaskRunner.getTaskRunnerID());
       if (mkdir) {
         try {
           FileSystem fs = dirPath.getFileSystem(conf);
@@ -191,7 +209,7 @@ public class Context {
         }
       }
       dir = dirPath.toString();
-      fsScratchDirs.put(fileSystem, dir);
+      fsScratchDirs.put(fileSystem + "-" + TaskRunner.getTaskRunnerID(), dir);
 
     }
     return dir;
@@ -228,9 +246,10 @@ public class Context {
     try {
       Path dir = FileUtils.makeQualified(nonLocalScratchPath, conf);
       URI uri = dir.toUri();
-      return getScratchDir(uri.getScheme(), uri.getAuthority(),
+      String newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
                            !explain, uri.getPath());
-
+      LOG.info("New scratch dir is " + newScratchDir);
+      return newScratchDir;
     } catch (IOException e) {
       throw new RuntimeException(e);
     } catch (IllegalArgumentException e) {

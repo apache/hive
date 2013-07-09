@@ -96,9 +96,6 @@ STAGE PLANS:
                       expr: key
                       type: string
                 tag: 0
-                value expressions:
-                      expr: ds
-                      type: string
         t2 
           TableScan
             alias: t2
@@ -115,18 +112,14 @@ STAGE PLANS:
                       expr: key
                       type: string
                 tag: 1
-                value expressions:
-                      expr: ds
-                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col2}
-            1 {VALUE._col2}
+            0 
+            1 
           handleSkewJoin: false
-          outputColumnNames: _col2, _col7
           Select Operator
             Group By Operator
               aggregations:
@@ -177,12 +170,16 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t2
 PREHOOK: Input: default@t2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -57,8 +57,9 @@ import org.apache.hadoop.io.Writable;
 public class TestLazyHBaseObject extends TestCase {
   /**
    * Test the LazyMap class with Integer-to-String.
+   * @throws SerDeException
    */
-  public void testLazyHBaseCellMap1() {
+  public void testLazyHBaseCellMap1() throws SerDeException {
     // Map of Integer to String
     Text nullSequence = new Text("\\N");
     ObjectInspector oi = LazyFactory.createLazyObjectInspector(
@@ -118,8 +119,9 @@ public class TestLazyHBaseObject extends TestCase {
 
   /**
    * Test the LazyMap class with String-to-String.
+   * @throws SerDeException
    */
-  public void testLazyHBaseCellMap2() {
+  public void testLazyHBaseCellMap2() throws SerDeException {
     // Map of String to String
     Text nullSequence = new Text("\\N");
     ObjectInspector oi = LazyFactory.createLazyObjectInspector(
@@ -180,8 +182,9 @@ public class TestLazyHBaseObject extends TestCase {
   /**
    * Test the LazyHBaseCellMap class for the case where both the key and the value in the family
    * map are stored in binary format using the appropriate LazyPrimitive objects.
+   * @throws SerDeException
    */
-  public void testLazyHBaseCellMap3() {
+  public void testLazyHBaseCellMap3() throws SerDeException {
 
     Text nullSequence = new Text("\\N");
     TypeInfo mapBinaryIntKeyValue = TypeInfoUtils.getTypeInfoFromTypeString("map<int,int>");
@@ -450,8 +453,9 @@ public class TestLazyHBaseObject extends TestCase {
   /**
    * Test the LazyHBaseRow class with one-for-one mappings between
    * Hive fields and HBase columns.
+   * @throws SerDeException
    */
-  public void testLazyHBaseRow1() {
+  public void testLazyHBaseRow1() throws SerDeException {
     List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
           "string,int,array<string>,map<string,string>,string");
@@ -573,8 +577,9 @@ public class TestLazyHBaseObject extends TestCase {
   /**
    * Test the LazyHBaseRow class with a mapping from a Hive field to
    * an HBase column family.
+   * @throws SerDeException
    */
-  public void testLazyHBaseRow2() {
+  public void testLazyHBaseRow2() throws SerDeException {
     // column family is mapped to Map<string,string>
     List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
@@ -695,8 +700,9 @@ public class TestLazyHBaseObject extends TestCase {
    * Test the LazyHBaseRow class with a one-to-one/onto mapping between Hive columns and
    * HBase column family/column qualifier pairs. The column types are primitive and fields
    * are stored in binary format in HBase.
+   * @throws SerDeException
    */
-  public void testLazyHBaseRow3() {
+  public void testLazyHBaseRow3() throws SerDeException {
 
     List<TypeInfo> fieldTypeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
         "string,int,tinyint,smallint,bigint,float,double,string,boolean");

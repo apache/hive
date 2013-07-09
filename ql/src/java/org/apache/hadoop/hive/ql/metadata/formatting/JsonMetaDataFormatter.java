@@ -48,12 +48,12 @@ import org.codehaus.jackson.map.ObjectMapper;
  * json.
  */
 public class JsonMetaDataFormatter implements MetaDataFormatter {
-    private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
+    private static final Log LOG = LogFactory.getLog(JsonMetaDataFormatter.class);
 
     /**
      * Convert the map to a JSON string.
      */
-    public void asJson(OutputStream out, Map<String, Object> data)
+    private void asJson(OutputStream out, Map<String, Object> data)
         throws HiveException
     {
         try {
@@ -66,70 +66,29 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     /**
      * Write an error message.
      */
-    public void error(OutputStream out, String msg, int errorCode)
+    @Override
+    public void error(OutputStream out, String msg, int errorCode, String sqlState)
         throws HiveException
     {
-        asJson(out,
-               MapBuilder.create()
-               .put("error", msg)
-               .put("errorCode", errorCode)
-               .build());
+        error(out, msg, errorCode, sqlState, null);
     }
-
-    /**
-     * Write a log warn message.
-     */
-    public void logWarn(OutputStream out, String msg, int errorCode)
-        throws HiveException
-    {
-        LOG.warn(msg);
-        error(out, msg, errorCode);
-    }
-
-    /**
-     * Write a log info message.
-     */
-    public void logInfo(OutputStream out, String msg, int errorCode)
-        throws HiveException
-    {
-        LOG.info(msg);
-        error(out, msg, errorCode);
-    }
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, int errorCode) {
-        try {
-            console.printError(msg);
-            error(console.getOutStream(), msg, errorCode);
-        } catch (HiveException e) {
-            console.printError("unable to create json: " + e);
+    @Override
+    public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail) throws HiveException {
+        MapBuilder mb = MapBuilder.create().put("error", errorMessage);
+        if(errorDetail != null) {
+            mb.put("errorDetail", errorDetail);
         }
-    }
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, String detail,
-                             int errorCode)
-    {
-        try {
-            console.printError(msg, detail);
-            asJson(console.getOutStream(),
-                   MapBuilder.create()
-                   .put("error", msg)
-                   .put("errorDetail", detail)
-                   .put("errorCode", errorCode)
-                   .build());
-        } catch (HiveException e) {
-            console.printError("unable to create json: " + e);
+        mb.put("errorCode", errorCode);
+        if(sqlState != null) {
+          mb.put("sqlState", sqlState);
         }
+        asJson(out,mb.build());
     }
 
     /**
      * Show a list of tables.
      */
+    @Override
     public void showTables(DataOutputStream out, Set<String> tables)
         throws HiveException
     {
@@ -142,6 +101,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     /**
      * Describe table.
      */
+    @Override
     public void describeTable(DataOutputStream out,
                               String colPath, String tableName,
                               Table tbl, Partition part, List<FieldSchema> cols,
@@ -178,6 +138,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
             .build();
     }
 
+    @Override
     public void showTableStatus(DataOutputStream out,
                                 Hive db,
                                 HiveConf conf,
@@ -366,6 +327,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     /**
      * Show the table partitions.
      */
+    @Override
     public void showTablePartitons(DataOutputStream out, List<String> parts)
         throws HiveException
     {
@@ -424,6 +386,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     /**
      * Show a list of databases
      */
+    @Override
     public void showDatabases(DataOutputStream out, List<String> databases)
         throws HiveException
     {
@@ -436,6 +399,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     /**
      * Show the description of a database
      */
+    @Override
     public void showDatabaseDescription(DataOutputStream out,
                                         String database,
                                         String comment,

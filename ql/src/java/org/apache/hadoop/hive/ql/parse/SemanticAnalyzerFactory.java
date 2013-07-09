@@ -70,6 +70,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOWLOCKS, HiveOperation.SHOWLOCKS);
     commandType.put(HiveParser.TOK_CREATEFUNCTION, HiveOperation.CREATEFUNCTION);
     commandType.put(HiveParser.TOK_DROPFUNCTION, HiveOperation.DROPFUNCTION);
+    commandType.put(HiveParser.TOK_CREATEMACRO, HiveOperation.CREATEMACRO);
+    commandType.put(HiveParser.TOK_DROPMACRO, HiveOperation.DROPMACRO);
     commandType.put(HiveParser.TOK_CREATEVIEW, HiveOperation.CREATEVIEW);
     commandType.put(HiveParser.TOK_DROPVIEW, HiveOperation.DROPVIEW);
     commandType.put(HiveParser.TOK_CREATEINDEX, HiveOperation.CREATEINDEX);
@@ -223,6 +225,9 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ANALYZE:
         return new ColumnStatsSemanticAnalyzer(conf, tree);
 
+      case HiveParser.TOK_CREATEMACRO:
+      case HiveParser.TOK_DROPMACRO:
+        return new MacroSemanticAnalyzer(conf);
       default:
         return new SemanticAnalyzer(conf);
       }

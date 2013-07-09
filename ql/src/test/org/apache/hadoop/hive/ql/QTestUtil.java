@@ -1013,7 +1013,6 @@ public class QTestUtil {
         ".*LOCATION '.*",
         ".*transient_lastDdlTime.*",
         ".*last_modified_.*",
-        ".*java.lang.RuntimeException.*",
         ".*at org.*",
         ".*at sun.*",
         ".*at java.*",

@@ -28,7 +28,13 @@ public class NumDistinctValueEstimator {
 
   static final Log LOG = LogFactory.getLog(NumDistinctValueEstimator.class.getName());
 
-  private final int bitVectorSize = 32;
+  /* We want a,b,x to come from a finite field of size 0 to k, where k is a prime number.
+   * 2^p - 1 is prime for p = 31. Hence bitvectorSize has to be 31. Pick k to be 2^p -1.
+   * If a,b,x didn't come from a finite field ax1 + b mod k and ax2 + b mod k will not be pair wise
+   * independent. As a consequence, the hash values will not distribute uniformly from 0 to 2^p-1
+   * thus introducing errors in the estimates.
+   */
+  private static final int bitVectorSize = 31;
   private int numBitVectors;
 
   // Refer to Flajolet-Martin'86 for the value of phi
@@ -53,8 +59,23 @@ public class NumDistinctValueEstimator {
     a = new int[numBitVectors];
     b = new int[numBitVectors];
 
-    aValue = new Random(79798);
-    bValue = new Random(34115);
+    /* Use a large prime number as a seed to the random number generator.
+     * Java's random number generator uses the Linear Congruential Generator to generate random
+     * numbers using the following recurrence relation,
+     *
+     * X(n+1) = (a X(n) + c ) mod m
+     *
+     *  where X0 is the seed. Java implementation uses m = 2^48. This is problematic because 2^48
+     *  is not a prime number and hence the set of numbers from 0 to m don't form a finite field.
+     *  If these numbers don't come from a finite field any give X(n) and X(n+1) may not be pair
+     *  wise independent.
+     *
+     *  However, empirically passing in prime numbers as seeds seems to work better than when passing
+     *  composite numbers as seeds. Ideally Java's Random should pick m such that m is prime.
+     *
+     */
+    aValue = new Random(99397);
+    bValue = new Random(9876413);
 
     for (int i = 0; i < numBitVectors; i++) {
       int randVal;
@@ -76,11 +97,11 @@ public class NumDistinctValueEstimator {
       b[i] = randVal;
 
       if (a[i] < 0) {
-        a[i] = a[i] + (1 << (bitVectorSize -1));
+        a[i] = a[i] + (1 << bitVectorSize - 1);
       }
 
       if (b[i] < 0) {
-        b[i] = b[i] + (1 << (bitVectorSize -1));
+        b[i] = b[i] + (1 << bitVectorSize - 1);
       }
     }
   }
@@ -197,8 +218,8 @@ public class NumDistinctValueEstimator {
   }
 
   private int generateHash(long v, int hashNum) {
-    int mod = 1 << (bitVectorSize - 1) - 1;
-    long tempHash = a[hashNum] * v + b[hashNum];
+    int mod = (1<<bitVectorSize) - 1;
+    long tempHash = a[hashNum] * v  + b[hashNum];
     tempHash %= mod;
     int hash = (int) tempHash;
 
@@ -206,7 +227,7 @@ public class NumDistinctValueEstimator {
      * Hence hash value has to be non-negative.
      */
     if (hash < 0) {
-      hash = hash + mod + 1;
+      hash = hash + mod;
     }
     return hash;
   }
@@ -266,6 +287,7 @@ public class NumDistinctValueEstimator {
     bitVector[hash%numBitVectors].set(index);
   }
 
+
   public void mergeEstimators(NumDistinctValueEstimator o) {
     // Bitwise OR the bitvector with the bitvector in the agg buffer
     for (int i=0; i<numBitVectors; i++) {
@@ -289,36 +311,22 @@ public class NumDistinctValueEstimator {
     return ((long)numDistinctValues);
   }
 
-  /* We use two estimators - one due to Flajolet-Martin and a modification due to
-   * Alon-Matias-Szegedy. FM uses the location of the least significant zero as an estimate of
-   * log2(phi*ndvs).
-   * AMS uses the location of the most significant one as an estimate of the log2(ndvs).
-   * We average the two estimators with suitable modifications to obtain an estimate of ndvs.
+  /* We use the Flajolet-Martin estimator to estimate the number of distinct values.FM uses the
+   * location of the least significant zero as an estimate of log2(phi*ndvs).
    */
   public long estimateNumDistinctValues() {
     int sumLeastSigZero = 0;
-    int sumMostSigOne = 0;
     double avgLeastSigZero;
-    double avgMostSigOne;
     double numDistinctValues;
 
     for (int i=0; i< numBitVectors; i++) {
       int leastSigZero = bitVector[i].nextClearBit(0);
       sumLeastSigZero += leastSigZero;
-      int mostSigOne = bitVectorSize;
-
-      for (int j=0; j< bitVectorSize; j++) {
-        if (bitVector[i].get(j)) {
-          mostSigOne = j;
-        }
-      }
-      sumMostSigOne += mostSigOne;
     }
 
     avgLeastSigZero =
         (double)(sumLeastSigZero/(numBitVectors * 1.0)) - (Math.log(phi)/Math.log(2.0));
-    avgMostSigOne = (double)(sumMostSigOne/(numBitVectors * 1.0));
-    numDistinctValues = Math.pow(2.0, (avgMostSigOne + avgLeastSigZero)/2.0);
+    numDistinctValues = Math.pow(2.0, avgLeastSigZero);
     return ((long)(numDistinctValues));
   }
 }

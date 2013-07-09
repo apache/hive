@@ -45,5 +45,4 @@ PREHOOK: query: drop table drop_table_failure_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dtf3@drop_table_failure_temp
 PREHOOK: Output: dtf3@drop_table_failure_temp
-FAILED: Error in metadata: Table drop_table_failure_temp Partitionp=p3 is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Table drop_table_failure_temp Partitionp=p3 is protected from being dropped

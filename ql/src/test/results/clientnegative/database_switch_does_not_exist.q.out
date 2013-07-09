@@ -6,5 +6,4 @@ default
 PREHOOK: query: -- Try to switch to a database that does not exist
 USE does_not_exist
 PREHOOK: type: SWITCHDATABASE
-FAILED: Error in metadata: ERROR: The database does_not_exist does not exist.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Database does not exist: does_not_exist

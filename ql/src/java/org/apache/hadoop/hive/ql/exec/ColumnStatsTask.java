@@ -390,17 +390,4 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   public String getName() {
     return "COLUMNSTATS TASK";
   }
-
-  @Override
-  protected void localizeMRTmpFilesImpl(Context ctx) {
-    FetchWork fWork = work.getfWork();
-    String s = fWork.getTblDir();
-    if ((s != null) && ctx.isMRTmpFileURI(s)) {
-      fWork.setTblDir(ctx.localizeMRTmpFileURI(s));
-    }
-    ArrayList<String> ls = fWork.getPartDir();
-    if (ls != null) {
-      ctx.localizePaths(ls);
-    }
-  }
 }

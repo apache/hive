@@ -205,6 +205,8 @@ TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_CREATEMACRO;
+TOK_DROPMACRO;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
 TOK_ALTERVIEW_AS;
@@ -238,6 +240,7 @@ TOK_RECORDREADER;
 TOK_RECORDWRITER;
 TOK_LEFTSEMIJOIN;
 TOK_LATERAL_VIEW;
+TOK_LATERAL_VIEW_OUTER;
 TOK_TABALIAS;
 TOK_ANALYZE;
 TOK_CREATEROLE;
@@ -555,7 +558,7 @@ statement
 explainStatement
 @init { msgs.push("explain statement"); }
 @after { msgs.pop(); }
-	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY)? execStatement
+	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY|explainOptions=KW_LOGICAL)? execStatement
       -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 
@@ -606,9 +609,11 @@ ddlStatement
     | createViewStatement
     | dropViewStatement
     | createFunctionStatement
+    | createMacroStatement
     | createIndexStatement
     | dropIndexStatement
     | dropFunctionStatement
+    | dropMacroStatement
     | analyzeStatement
     | lockStatement
     | unlockStatement
@@ -1384,6 +1389,21 @@ dropFunctionStatement
 @after { msgs.pop(); }
     : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? identifier
     -> ^(TOK_DROPFUNCTION identifier ifExists?)
+    ;
+
+createMacroStatement
+@init { msgs.push("create macro statement"); }
+@after { msgs.pop(); }
+    : KW_CREATE KW_TEMPORARY KW_MACRO Identifier
+      LPAREN columnNameTypeList? RPAREN expression
+    -> ^(TOK_CREATEMACRO Identifier columnNameTypeList? expression)
+    ;
+
+dropMacroStatement
+@init { msgs.push("drop macro statement"); }
+@after { msgs.pop(); }
+    : KW_DROP KW_TEMPORARY KW_MACRO ifExists? Identifier
+    -> ^(TOK_DROPMACRO Identifier ifExists?)
     ;
 
 createViewStatement

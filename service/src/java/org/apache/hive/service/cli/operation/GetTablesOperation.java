@@ -46,7 +46,7 @@ public class GetTablesOperation extends MetadataOperation {
 
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addStringColumn("TABLE_CAT", "Catalog name. NULL if not applicable.")
-  .addStringColumn("TABLE_SCHEMA", "Schema name.")
+  .addStringColumn("TABLE_SCHEM", "Schema name.")
   .addStringColumn("TABLE_NAME", "Table name.")
   .addStringColumn("TABLE_TYPE", "The table type, e.g. \"TABLE\", \"VIEW\", etc.")
   .addStringColumn("REMARKS", "Comments about the table.");

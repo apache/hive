@@ -73,6 +73,8 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESCRIPTOPERATORTR
  * If two reducer sink operators share the same partition/sort columns and order,
  * they can be merged. This should happen after map join optimization because map
  * join optimization will remove reduce sink operators.
+ *
+ * This optimizer removes/replaces child-RS (not parent) which is safer way for DefaultGraphWalker.
  */
 public class ReduceSinkDeDuplication implements Transform{
 
@@ -89,9 +91,12 @@ public class ReduceSinkDeDuplication implements Transform{
     // generate pruned column list for all relevant operators
     ReduceSinkDeduplicateProcCtx cppCtx = new ReduceSinkDeduplicateProcCtx(pGraphContext);
 
+    // for auto convert map-joins, it not safe to dedup in here (todo)
     boolean mergeJoins = !pctx.getConf().getBoolVar(HIVECONVERTJOIN) &&
         !pctx.getConf().getBoolVar(HIVECONVERTJOINNOCONDITIONALTASK);
 
+    // If multiple rules can be matched with same cost, last rule will be choosen as a processor
+    // see DefaultRuleDispatcher#dispatch()
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", RS + "%.*%" + RS + "%"),
         ReduceSinkDeduplicateProcFactory.getReducerReducerProc());
@@ -119,8 +124,14 @@ public class ReduceSinkDeDuplication implements Transform{
   class ReduceSinkDeduplicateProcCtx implements NodeProcessorCtx {
 
     ParseContext pctx;
+
+    // For queries using script, the optimization cannot be applied without user's confirmation
+    // If script preserves alias and value for columns related to keys, user can set this true
     boolean trustScript;
-    // min reducer num for merged RS (to avoid query contains "order by" executed by one reducer)
+
+    // This is min number of reducer for deduped RS to avoid query executed on
+    // too small number of reducers. For example, queries GroupBy+OrderBy can be executed by
+    // only one reducer if this configuration does not prevents
     int minReducer;
     Set<Operator<?>> removedOps;
 
@@ -178,7 +189,7 @@ public class ReduceSinkDeDuplication implements Transform{
     }
   }
 
-  public abstract static class AbsctractReducerReducerProc implements NodeProcessor {
+  public abstract static class AbstractReducerReducerProc implements NodeProcessor {
 
     ReduceSinkDeduplicateProcCtx dedupCtx;
 
@@ -323,6 +334,8 @@ public class ReduceSinkDeDuplication implements Transform{
       return result;
     }
 
+    // for left outer joins, left alias is sorted but right alias might be not
+    // (nulls, etc.). vice versa.
     private boolean isSortedTag(JoinOperator joinOp, int tag) {
       for (JoinCondDesc cond : joinOp.getConf().getConds()) {
         switch (cond.getType()) {
@@ -356,6 +369,10 @@ public class ReduceSinkDeDuplication implements Transform{
       return -1;
     }
 
+    /**
+     * Current RSDedup remove/replace child RS. So always copies
+     * more specific part of configurations of child RS to that of parent RS.
+     */
     protected boolean merge(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
         throws SemanticException {
       int[] result = checkStatus(cRS, pRS, minReducer);
@@ -379,7 +396,15 @@ public class ReduceSinkDeDuplication implements Transform{
       return true;
     }
 
-    // -1 for p to c, 1 for c to p
+    /**
+     * Returns merge directions between two RSs for criterias (ordering, number of reducers,
+     * reducer keys, partition keys). Returns null if any of categories is not mergeable.
+     *
+     * Values for each index can be -1, 0, 1
+     * 1. 0 means two configuration in the category is the same
+     * 2. for -1, configuration of parent RS is more specific than child RS
+     * 3. for 1, configuration of child RS is more specific than parent RS
+     */
     private int[] checkStatus(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
         throws SemanticException {
       ReduceSinkDesc cConf = cRS.getConf();
@@ -408,6 +433,11 @@ public class ReduceSinkDeDuplication implements Transform{
       return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo, moveReducerNumTo};
     }
 
+    /**
+     * Overlapping part of keys should be the same between parent and child.
+     * And if child has more keys than parent, non-overlapping part of keys
+     * should be backtrackable to parent.
+     */
     private Integer checkExprs(List<ExprNodeDesc> ckeys, List<ExprNodeDesc> pkeys,
         ReduceSinkOperator cRS, ReduceSinkOperator pRS) throws SemanticException {
       Integer moveKeyColTo = 0;
@@ -419,6 +449,7 @@ public class ReduceSinkDeDuplication implements Transform{
         if (pkeys == null || pkeys.isEmpty()) {
           for (ExprNodeDesc ckey : ckeys) {
             if (ExprNodeDescUtils.backtrack(ckey, cRS, pRS) == null) {
+              // cKey is not present in parent
               return null;
             }
           }
@@ -430,6 +461,7 @@ public class ReduceSinkDeDuplication implements Transform{
       return moveKeyColTo;
     }
 
+    // backtrack key exprs of child to parent and compare it with parent's
     protected Integer sameKeys(List<ExprNodeDesc> cexprs, List<ExprNodeDesc> pexprs,
         Operator<?> child, Operator<?> parent) throws SemanticException {
       int common = Math.min(cexprs.size(), pexprs.size());
@@ -438,13 +470,14 @@ public class ReduceSinkDeDuplication implements Transform{
       for (; i < common; i++) {
         ExprNodeDesc pexpr = pexprs.get(i);
         ExprNodeDesc cexpr = ExprNodeDescUtils.backtrack(cexprs.get(i), child, parent);
-        if (!pexpr.isSame(cexpr)) {
+        if (cexpr == null || !pexpr.isSame(cexpr)) {
           return null;
         }
       }
       for (;i < limit; i++) {
         if (cexprs.size() > pexprs.size()) {
           if (ExprNodeDescUtils.backtrack(cexprs.get(i), child, parent) == null) {
+            // cKey is not present in parent
             return null;
           }
         }
@@ -452,6 +485,7 @@ public class ReduceSinkDeDuplication implements Transform{
       return Integer.valueOf(cexprs.size()).compareTo(pexprs.size());
     }
 
+    // order of overlapping keys should be exactly the same
     protected Integer checkOrder(String corder, String porder) {
       if (corder == null || corder.trim().equals("")) {
         if (porder == null || porder.trim().equals("")) {
@@ -471,6 +505,11 @@ public class ReduceSinkDeDuplication implements Transform{
       return Integer.valueOf(corder.length()).compareTo(porder.length());
     }
 
+    /**
+     * If number of reducers for RS is -1, the RS can have any number of reducers.
+     * It's generally true except for order-by or forced bucketing cases.
+     * if both of num-reducers are not -1, those number should be the same.
+     */
     protected Integer checkNumReducer(int creduce, int preduce) {
       if (creduce < 0) {
         if (preduce < 0) {
@@ -549,6 +588,8 @@ public class ReduceSinkDeDuplication implements Transform{
       return select;
     }
 
+    // replace the cRS to SEL operator
+    // If child if cRS is EXT, EXT also should be removed
     private SelectOperator replaceOperatorWithSelect(Operator<?> operator, ParseContext context)
         throws SemanticException {
       RowResolver inputRR = context.getOpParseCtx().get(operator).getRowResolver();
@@ -585,6 +626,8 @@ public class ReduceSinkDeDuplication implements Transform{
       Operator<?> parent = getSingleParent(cRS);
 
       if (parent instanceof GroupByOperator) {
+        // pRS-cGBYm-cRS-cGBYr (map aggregation) --> pRS-cGBYr(COMPLETE)
+        // copies desc of cGBYm to cGBYr and remove cGBYm and cRS
         GroupByOperator cGBYm = (GroupByOperator) parent;
 
         cGBYr.getConf().setKeys(cGBYm.getConf().getKeys());
@@ -597,6 +640,8 @@ public class ReduceSinkDeDuplication implements Transform{
         RowResolver resolver = context.getOpParseCtx().get(cGBYm).getRowResolver();
         context.getOpParseCtx().get(cGBYr).setRowResolver(resolver);
       } else {
+        // pRS-cRS-cGBYr (no map aggregation) --> pRS-cGBYr(COMPLETE)
+        // revert expressions of cGBYr to that of cRS
         cGBYr.getConf().setKeys(ExprNodeDescUtils.backtrack(cGBYr.getConf().getKeys(), cGBYr, cRS));
         for (AggregationDesc aggr : cGBYr.getConf().getAggregators()) {
           aggr.setParameters(ExprNodeDescUtils.backtrack(aggr.getParameters(), cGBYr, cRS));
@@ -655,7 +700,7 @@ public class ReduceSinkDeDuplication implements Transform{
     }
   }
 
-  static class GroupbyReducerProc extends AbsctractReducerReducerProc {
+  static class GroupbyReducerProc extends AbstractReducerReducerProc {
 
     // pRS-pGBY-cRS
     public Object process(ReduceSinkOperator cRS, ParseContext context)
@@ -689,7 +734,7 @@ public class ReduceSinkDeDuplication implements Transform{
     }
   }
 
-  static class JoinReducerProc extends AbsctractReducerReducerProc {
+  static class JoinReducerProc extends AbstractReducerReducerProc {
 
     // pRS-pJOIN-cRS
     public Object process(ReduceSinkOperator cRS, ParseContext context)
@@ -717,7 +762,7 @@ public class ReduceSinkDeDuplication implements Transform{
     }
   }
 
-  static class ReducerReducerProc extends AbsctractReducerReducerProc {
+  static class ReducerReducerProc extends AbstractReducerReducerProc {
 
     // pRS-cRS
     public Object process(ReduceSinkOperator cRS, ParseContext context)

@@ -280,6 +280,8 @@
             <arg value="${test.location}/tests/hive.conf"/>
             <arg value="${test.location}/tests/hcat.conf"/>
             <arg value="${test.location}/tests/hadoop.conf"/>
+            <arg value="${test.location}/tests/hive_nightly.conf"/>
+            <arg value="${test.location}/tests/hive_cmdline.conf"/>
         </exec>
     </target>
 

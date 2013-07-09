@@ -195,6 +195,24 @@ public class TestJdbcDriver2 extends TestCase {
         expectedException);
   }
 
+  public void testBadURL() throws Exception {
+    checkBadUrl("jdbc:hive2://localhost:10000;principal=test");
+    checkBadUrl("jdbc:hive2://localhost:10000;" +
+    		"principal=hive/HiveServer2Host@YOUR-REALM.COM");
+    checkBadUrl("jdbc:hive2://localhost:10000test");
+  }
+
+
+  private void checkBadUrl(String url) throws SQLException {
+    try{
+      DriverManager.getConnection(url, "", "");
+      fail("should have thrown IllegalArgumentException but did not ");
+    }catch(IllegalArgumentException i){
+      assertTrue(i.getMessage().contains("Bad URL format. Hostname not found "
+          + " in authority part of the url"));
+    }
+  }
+
   public void testDataTypes2() throws Exception {
     Statement stmt = con.createStatement();
 
@@ -383,6 +401,17 @@ public class TestJdbcDriver2 extends TestCase {
     doTestSelectAll(tableName, 100, 20);
   }
 
+  public void testNullType() throws Exception {
+    Statement stmt = con.createStatement();
+    try {
+      ResultSet res = stmt.executeQuery("select null from " + dataTypeTableName);
+      assertTrue(res.next());
+      assertNull(res.getObject(1));
+    } finally {
+      stmt.close();
+    }
+  }
+
   public void testDataTypes() throws Exception {
     Statement stmt = con.createStatement();
 
@@ -466,6 +495,12 @@ public class TestJdbcDriver2 extends TestCase {
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
     assertEquals(true, res.getBoolean(4));
+
+    // test case sensitivity
+    assertFalse(meta.isCaseSensitive(1));
+    assertFalse(meta.isCaseSensitive(2));
+    assertFalse(meta.isCaseSensitive(3));
+    assertTrue(meta.isCaseSensitive(4));
 
     // no more rows
     assertFalse(res.next());
@@ -637,6 +672,14 @@ public class TestJdbcDriver2 extends TestCase {
 
     for (String checkPattern: tests.keySet()) {
       ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, checkPattern, null);
+      ResultSetMetaData resMeta = rs.getMetaData();
+      assertEquals(5, resMeta.getColumnCount());
+      assertEquals("TABLE_CAT", resMeta.getColumnName(1));
+      assertEquals("TABLE_SCHEM", resMeta.getColumnName(2));
+      assertEquals("TABLE_NAME", resMeta.getColumnName(3));
+      assertEquals("TABLE_TYPE", resMeta.getColumnName(4));
+      assertEquals("REMARKS", resMeta.getColumnName(5));
+
       int cnt = 0;
       while (rs.next()) {
         String resultTableName = rs.getString("TABLE_NAME");
@@ -678,7 +721,7 @@ public class TestJdbcDriver2 extends TestCase {
     ResultSet rs = (ResultSet)con.getMetaData().getSchemas();
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(2, resMeta.getColumnCount());
-    assertEquals("TABLE_SCHEMA", resMeta.getColumnName(1));
+    assertEquals("TABLE_SCHEM", resMeta.getColumnName(1));
     assertEquals("TABLE_CATALOG", resMeta.getColumnName(2));
 
     assertTrue(rs.next());
@@ -1274,5 +1317,7 @@ public class TestJdbcDriver2 extends TestCase {
     Connection conn = driver.connect("jdbc:derby://localhost:10000/default", new Properties());
     assertNull(conn);
   }
+
+
 
 }

@@ -242,10 +242,12 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
       SerDeException {
     PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
     LinkedHashMap<String, String> partSpec = pd.getPartSpec();
-    // Use tblProps in case of unpartitioned tables
+    // Use table properties in case of unpartitioned tables,
+    // and the union of table properties and partition properties, with partition
+    // taking precedence
     Properties partProps =
         (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
-            pd.getTableDesc().getProperties() : pd.getProperties();
+            pd.getTableDesc().getProperties() : pd.getOverlayedProperties();
 
     Class serdeclass = pd.getDeserializerClass();
     if (serdeclass == null) {
@@ -409,7 +411,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
         // If the partition does not exist, use table properties
         Properties partProps =
             (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
-                tblProps : pd.getProperties();
+                tblProps : pd.getOverlayedProperties();
 
         Class sdclass = pd.getDeserializerClass();
         if (sdclass == null) {

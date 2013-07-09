@@ -38,5 +38,4 @@ PREHOOK: query: drop table tbl_protectmode__no_drop
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_protectmode__no_drop
 PREHOOK: Output: default@tbl_protectmode__no_drop
-FAILED: Error in metadata: Table tbl_protectmode__no_drop is protected from being dropped
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Table tbl_protectmode__no_drop is protected from being dropped

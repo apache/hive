@@ -1,5 +1,4 @@
 PREHOOK: query: ALTER TABLE srcpart TOUCH PARTITION (ds='2008-04-08', hr='13')
 PREHOOK: type: ALTERTABLE_TOUCH
 PREHOOK: Input: default@srcpart
-FAILED: Error in metadata: Specified partition does not exist
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Specified partition does not exist

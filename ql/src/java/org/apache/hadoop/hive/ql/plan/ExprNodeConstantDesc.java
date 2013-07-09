@@ -103,7 +103,11 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     if (!typeInfo.equals(dest.getTypeInfo())) {
       return false;
     }
-    if (!value.equals(dest.getValue())) {
+    if (value == null) {
+      if (dest.getValue() != null) {
+        return false;
+      }
+    } else if (!value.equals(dest.getValue())) {
       return false;
     }
 

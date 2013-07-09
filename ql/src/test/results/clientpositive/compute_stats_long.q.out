@@ -30,4 +30,4 @@ select compute_stats(a, 16) from tab_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_int
 #### A masked pattern was here ####
-{"columntype":"Long","min":0,"max":344,"countnulls":1,"numdistinctvalues":16}
+{"columntype":"Long","min":0,"max":344,"countnulls":1,"numdistinctvalues":11}

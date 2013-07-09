@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 public class DataCorruptErrorHeuristic extends RegexErrorHeuristic {
 
-  private static final String SPLIT_REGEX = "split:.*";
+  private static final String SPLIT_REGEX = "split:\\s*([^\\s]+)";
   private static final String EXCEPTION_REGEX = "EOFException";
 
   public DataCorruptErrorHeuristic() {
@@ -55,14 +55,13 @@ public class DataCorruptErrorHeuristic extends RegexErrorHeuristic {
           rll.get(SPLIT_REGEX).size() > 0) {
 
         // There should only be a single split line...
-        assert(rll.get(SPLIT_REGEX).size()==1);
         String splitLogLine = rll.get(SPLIT_REGEX).get(0);
 
         // Extract only 'split: hdfs://...'
         Pattern p = Pattern.compile(SPLIT_REGEX, Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(splitLogLine);
         m.find();
-        String splitStr = m.group();
+        String splitStr = m.group(1);
 
         es = new ErrorAndSolution(
             "Data file " + splitStr + " is corrupted.",

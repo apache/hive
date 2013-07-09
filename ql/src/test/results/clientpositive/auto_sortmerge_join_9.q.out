@@ -4765,18 +4765,6 @@ PREHOOK: query: select count(*) from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
 #### A masked pattern was here ####
-Execution failed with exit status: 2
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-7
-
-Logs:
-
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 POSTHOOK: query: select count(*) from 
   (
   select * from
@@ -6137,18 +6125,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-Execution failed with exit status: 2
-Obtaining error information
-
-Task failed!
-Task ID:
-  Stage-10
-
-Logs:
-
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 POSTHOOK: query: select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join

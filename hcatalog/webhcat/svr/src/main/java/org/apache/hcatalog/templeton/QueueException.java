@@ -18,12 +18,14 @@
  */
 package org.apache.hcatalog.templeton;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 /**
  * Unable to queue the job
  */
 public class QueueException extends SimpleWebException {
     public QueueException(String msg) {
-        super(500, msg);
+        super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg);
     }
 
 }

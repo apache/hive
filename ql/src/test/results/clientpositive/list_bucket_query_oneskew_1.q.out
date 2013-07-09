@@ -150,12 +150,12 @@ Skewed Values:      	[[484]]
 #### A masked pattern was here ####
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1' ORDER BY x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1
@@ -212,6 +212,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types int
                         escape.delim \
+                        hive.serialization.extend.nesting.levels true
                         serialization.format 1
                   TotalFiles: 1
                   GatherStats: false
@@ -328,6 +329,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types int
                         escape.delim \
+                        hive.serialization.extend.nesting.levels true
                         serialization.format 1
                   TotalFiles: 1
                   GatherStats: false
@@ -440,6 +442,7 @@ STAGE PLANS:
                         columns _col0
                         columns.types int
                         escape.delim \
+                        hive.serialization.extend.nesting.levels true
                         serialization.format 1
                   TotalFiles: 1
                   GatherStats: false

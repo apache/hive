@@ -36,7 +36,7 @@ public class GetSchemasOperation extends MetadataOperation {
   private final String schemaName;
 
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
-  .addStringColumn("TABLE_SCHEMA", "Schema name.")
+  .addStringColumn("TABLE_SCHEM", "Schema name.")
   .addStringColumn("TABLE_CATALOG", "Catalog name.");
 
   private RowSet rowSet;

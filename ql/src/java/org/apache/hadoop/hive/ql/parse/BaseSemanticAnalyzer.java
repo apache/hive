@@ -72,6 +72,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
  * BaseSemanticAnalyzer.
  *
  */
+@SuppressWarnings("deprecation")
 public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
@@ -426,6 +427,8 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  private static final int[] multiplier = new int[] {1000, 100, 10, 1};
+
   @SuppressWarnings("nls")
   public static String unescapeSQLString(String b) {
 
@@ -448,6 +451,18 @@ public abstract class BaseSemanticAnalyzer {
 
       if (enclosure.equals(currentChar)) {
         enclosure = null;
+        continue;
+      }
+
+      if (currentChar == '\\' && (i + 6 < b.length()) && b.charAt(i + 1) == 'u') {
+        int code = 0;
+        int base = i + 2;
+        for (int j = 0; j < 4; j++) {
+          int digit = Character.digit(b.charAt(j + base), 16);
+          code += digit * multiplier[j];
+        }
+        sb.append((char)code);
+        i += 5;
         continue;
       }
 
@@ -551,20 +566,22 @@ public abstract class BaseSemanticAnalyzer {
     for (int i = 0; i < numCh; i++) {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
+      Tree grandChild = child.getChild(0);
+      if(grandChild != null) {
+        String name = grandChild.getText();
+        if(lowerCase) {
+          name = name.toLowerCase();
+        }
+        // child 0 is the name of the column
+        col.setName(unescapeIdentifier(name));
+        // child 1 is the type of the column
+        ASTNode typeChild = (ASTNode) (child.getChild(1));
+        col.setType(getTypeStringFromAST(typeChild));
 
-      String name = child.getChild(0).getText();
-      if(lowerCase) {
-        name = name.toLowerCase();
-      }
-      // child 0 is the name of the column
-      col.setName(unescapeIdentifier(name));
-      // child 1 is the type of the column
-      ASTNode typeChild = (ASTNode) (child.getChild(1));
-      col.setType(getTypeStringFromAST(typeChild));
-
-      // child 2 is the optional comment of the column
-      if (child.getChildCount() == 3) {
-        col.setComment(unescapeSQLString(child.getChild(2).getText()));
+        // child 2 is the optional comment of the column
+        if (child.getChildCount() == 3) {
+          col.setComment(unescapeSQLString(child.getChild(2).getText()));
+        }        
       }
       colList.add(col);
     }

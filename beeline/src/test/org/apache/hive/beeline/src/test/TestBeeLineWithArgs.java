@@ -18,23 +18,19 @@
 
 package org.apache.hive.beeline.src.test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
-
-import junit.framework.TestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Assert;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.hive.service.server.HiveServer2;
-import org.apache.hive.service.cli.HiveSQLException;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -216,4 +212,31 @@ public class TestBeeLineWithArgs {
       throw e;
     }
   }
+
+  /**
+   * HIVE-4566
+   * @throws UnsupportedEncodingException
+   */
+  @Test
+  public void testNPE() throws UnsupportedEncodingException {
+    BeeLine beeLine = new BeeLine();
+
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    PrintStream beelineOutputStream = new PrintStream(os);
+    beeLine.setOutputStream(beelineOutputStream);
+    beeLine.setErrorStream(beelineOutputStream);
+
+    beeLine.runCommands( new String[] {"!typeinfo"} );
+    String output = os.toString("UTF8");
+    Assert.assertFalse( output.contains("java.lang.NullPointerException") );
+    Assert.assertTrue( output.contains("No current connection") );
+
+    beeLine.runCommands( new String[] {"!nativesql"} );
+    output = os.toString("UTF8");
+    Assert.assertFalse( output.contains("java.lang.NullPointerException") );
+    Assert.assertTrue( output.contains("No current connection") );
+
+    System.out.println(">>> PASSED " + "testNPE" );
+  }
+
 }

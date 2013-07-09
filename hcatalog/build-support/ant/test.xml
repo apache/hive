@@ -62,6 +62,12 @@
           <enable/>
         </assertions>
       </junit>
+      <copy todir="${test.result.dir}">
+        <!--make sure hive's 'ant testreport' includes them-->
+        <fileset dir="${test.logs}">
+          <include name="**/TEST-*.xml"/>
+        </fileset>
+      </copy>
       <fail if="tests.failed">Tests failed!</fail>
     </sequential>
   </macrodef>

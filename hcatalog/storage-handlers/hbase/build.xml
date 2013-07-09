@@ -63,7 +63,6 @@
     <property name="test.tmp.dir" value="${test.build.dir}/temp" />
     <property name="test.data.dir" value="${test.build.dir}/data" />
     <property name="test.timeout" value="2700000" />
-    <property name="test.junit.output.format" value="plain" />
     <property name="test.output" value="no"/>
     <property name="hive.conf.dir" value="${hive.root}/conf"/>
 

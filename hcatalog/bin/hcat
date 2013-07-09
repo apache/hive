@@ -91,7 +91,7 @@ if [ ! -d "$HIVE_LIB_DIR" ]; then
   exit 4;
 fi
 
-HIVE_CONF_DIR=${HIVE_HOME}/conf
+HIVE_CONF_DIR=${HIVE_CONF_DIR:-$HIVE_HOME/conf}
 if [ ! -d "$HIVE_CONF_DIR" ]; then
   echo "Cannot find conf dir within HIVE_HOME : $HIVE_CONF_DIR";
   exit 4;

@@ -477,6 +477,7 @@ STAGE PLANS:
                   columns _col0,_col1
                   columns.types string:bigint
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
@@ -965,6 +966,7 @@ STAGE PLANS:
                   columns _col0,_col1
                   columns.types string:bigint
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
@@ -1518,6 +1520,7 @@ STAGE PLANS:
                   columns _col0,_col1
                   columns.types string:bigint
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
