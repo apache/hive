@@ -67,7 +67,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/antlr-@antlr.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/antlr-runtime-@antlr-runtime.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/junit-@junit.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/jdo2-api-@jdo-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/jdo-api-@jdo-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-core-@datanucleus-core.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
