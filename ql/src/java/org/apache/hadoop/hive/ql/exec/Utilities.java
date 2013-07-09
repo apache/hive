@@ -97,6 +97,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -1404,7 +1406,7 @@ public final class Utilities {
       jc = new JobConf(hconf);
     } else {
       // test code path
-      jc = new JobConf(hconf, ExecDriver.class);
+      jc = new JobConf(hconf);
     }
     HiveOutputFormat<?, ?> hiveOutputFormat = null;
     Class<? extends Writable> outputClass = null;

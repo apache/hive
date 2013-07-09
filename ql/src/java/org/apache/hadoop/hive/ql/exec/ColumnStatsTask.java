@@ -74,7 +74,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     super.initialize(conf, queryPlan, ctx);
     work.initializeForFetch();
     try {
-      JobConf job = new JobConf(conf, ExecDriver.class);
+      JobConf job = new JobConf(conf);
       ftOp = new FetchOperator(work.getfWork(), job);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));

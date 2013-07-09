@@ -34,4 +34,4 @@ Logs:
 
 #### A masked pattern was here ####
 End cached logs.
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

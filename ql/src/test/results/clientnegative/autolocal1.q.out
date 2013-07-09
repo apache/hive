@@ -12,4 +12,5 @@ SELECT key FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MapRedTask
+Job Submission failed with exception 'java.lang.RuntimeException(Not a host:port pair: abracadabra)'
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

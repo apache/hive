@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,18 +76,18 @@ public final class Throttle {
 
         // fetch the xml tag <dogc>xxx</dogc>
         Pattern dowait = Pattern.compile("<dogc>", Pattern.CASE_INSENSITIVE
-            | Pattern.DOTALL | Pattern.MULTILINE);
+                                         | Pattern.DOTALL | Pattern.MULTILINE);
         String[] results = dowait.split(fetchString);
         if (results.length != 2) {
           throw new IOException("Throttle: Unable to parse response of URL "
-              + url + ". Get retuned " + fetchString);
+                                + url + ". Get retuned " + fetchString);
         }
         dowait = Pattern.compile("</dogc>", Pattern.CASE_INSENSITIVE
-            | Pattern.DOTALL | Pattern.MULTILINE);
+                                 | Pattern.DOTALL | Pattern.MULTILINE);
         results = dowait.split(results[1]);
         if (results.length < 1) {
           throw new IOException("Throttle: Unable to parse response of URL "
-              + url + ". Get retuned " + fetchString);
+                                + url + ". Get retuned " + fetchString);
         }
 
         // if the jobtracker signalled that the threshold is not exceeded,
@@ -99,7 +99,7 @@ public final class Throttle {
         // The JobTracker has exceeded its threshold and is doing a GC.
         // The client has to wait and retry.
         LOG.warn("Job is being throttled because of resource crunch on the "
-            + "JobTracker. Will retry in " + retry + " seconds..");
+                 + "JobTracker. Will retry in " + retry + " seconds..");
         Thread.sleep(retry * 1000L);
       }
     } catch (Exception e) {

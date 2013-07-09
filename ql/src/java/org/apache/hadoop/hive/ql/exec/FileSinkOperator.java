@@ -338,7 +338,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         jc = (JobConf) hconf;
       } else {
         // test code path
-        jc = new JobConf(hconf, ExecDriver.class);
+        jc = new JobConf(hconf);
       }
 
       if (multiFileSpray) {
@@ -808,7 +808,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private String lsDir() {
     String specPath = conf.getDirName();
     // need to get a JobConf here because it's not passed through at client side
-    JobConf jobConf = new JobConf(ExecDriver.class);
+    JobConf jobConf = new JobConf();
     Path tmpPath = Utilities.toTempPath(specPath);
     StringBuilder sb = new StringBuilder("\n");
     try {

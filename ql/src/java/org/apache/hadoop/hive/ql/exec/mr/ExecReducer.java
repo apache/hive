@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -25,11 +25,13 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.ExecMapper.reportStats;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -51,7 +53,14 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * ExecReducer.
+ * ExecReducer is the generic Reducer class for Hive. Together with ExecMapper it is 
+ * the bridge between the map-reduce framework and the Hive operator pipeline at
+ * execution time. It's main responsabilities are:
+ * 
+ * - Load and setup the operator pipeline from XML
+ * - Run the pipeline by transforming key, value pairs to records and forwarding them to the operators
+ * - Sending start and end group messages to separate records with same key from one another
+ * - Catch and handle errors during execution of the operators.
  *
  */
 public class ExecReducer extends MapReduceBase implements Reducer {

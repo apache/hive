@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -198,7 +197,7 @@ public class Driver implements CommandProcessor {
   public ClusterStatus getClusterStatus() throws Exception {
     ClusterStatus cs;
     try {
-      JobConf job = new JobConf(conf, ExecDriver.class);
+      JobConf job = new JobConf(conf);
       JobClient jc = new JobClient(job);
       cs = jc.getClusterStatus();
     } catch (Exception e) {

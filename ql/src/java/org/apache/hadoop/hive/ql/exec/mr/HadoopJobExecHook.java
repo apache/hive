@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
 
