@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
  * ExplainWork.
@@ -37,20 +38,26 @@ public class ExplainWork implements Serializable {
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private String astStringTree;
   private HashSet<ReadEntity> inputs;
+  private ParseContext pCtx;
+
   boolean extended;
   boolean formatted;
   boolean dependency;
+  boolean logical;
+
 
   public ExplainWork() {
   }
 
   public ExplainWork(String resFile,
+      ParseContext pCtx,
       List<Task<? extends Serializable>> rootTasks,
       String astStringTree,
       HashSet<ReadEntity> inputs,
       boolean extended,
       boolean formatted,
-      boolean dependency) {
+      boolean dependency,
+      boolean logical) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.astStringTree = astStringTree;
@@ -58,6 +65,8 @@ public class ExplainWork implements Serializable {
     this.extended = extended;
     this.formatted = formatted;
     this.dependency = dependency;
+    this.logical = logical;
+    this.pCtx = pCtx;
   }
 
   public String getResFile() {
@@ -115,4 +124,21 @@ public class ExplainWork implements Serializable {
   public void setFormatted(boolean formatted) {
     this.formatted = formatted;
   }
+
+  public ParseContext getParseContext() {
+    return pCtx;
+  }
+
+  public void setParseContext(ParseContext pCtx) {
+    this.pCtx = pCtx;
+  }
+
+  public boolean isLogical() {
+    return logical;
+  }
+
+  public void setLogical(boolean logical) {
+    this.logical = logical;
+  }
+
 }

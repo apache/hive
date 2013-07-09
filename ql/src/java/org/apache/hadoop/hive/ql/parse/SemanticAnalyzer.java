@@ -8319,12 +8319,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess());
     }
 
-    // At this point we have the complete operator tree
-    // from which we want to create the map-reduce plan
-    MapReduceCompiler compiler = new MapReduceCompiler();
-    compiler.init(conf, console, db);
-    compiler.compile(pCtx, rootTasks, inputs, outputs);
-    fetchTask = pCtx.getFetchTask();
+    if (!ctx.getExplainLogical()) {
+      // At this point we have the complete operator tree
+      // from which we want to create the map-reduce plan
+      MapReduceCompiler compiler = new MapReduceCompiler();
+      compiler.init(conf, console, db);
+      compiler.compile(pCtx, rootTasks, inputs, outputs);
+      fetchTask = pCtx.getFetchTask();
+    }
 
     LOG.info("Completed plan generation");
 
