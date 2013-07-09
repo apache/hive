@@ -951,7 +951,7 @@ public class Hive {
     } catch (NoSuchObjectException e) {
       if (throwException) {
         LOG.error(StringUtils.stringifyException(e));
-        throw new InvalidTableException("Table " + tableName + " not found ", tableName);
+        throw new InvalidTableException(tableName);
       }
       return null;
     } catch (Exception e) {

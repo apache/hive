@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -102,10 +103,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
-import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -205,14 +204,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
-    if ("json".equals(conf.get(
-            HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
-      formatter = new JsonMetaDataFormatter();
-    } else {
-      formatter = new TextMetaDataFormatter(
-                      conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS));
-    }
-
+    formatter = MetaDataFormatUtils.getFormatter(conf);
     INTERMEDIATE_ARCHIVED_DIR_SUFFIX =
       HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED);
     INTERMEDIATE_ORIGINAL_DIR_SUFFIX =
@@ -437,32 +429,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTableExchangePartition != null) {
         return exchangeTablePartition(db, alterTableExchangePartition);
       }
-
-    } catch (InvalidTableException e) {
-      formatter.consoleError(console, "Table " + e.getTableName() + " does not exist",
-                             formatter.MISSING);
-      LOG.debug(stringifyException(e));
+    } catch (Throwable e) {
+      setException(e);
+      LOG.error(stringifyException(e));
       return 1;
-    } catch (AlreadyExistsException e) {
-      formatter.consoleError(console, e.getMessage(), formatter.CONFLICT);
-      return 1;
-    } catch (NoSuchObjectException e) {
-      formatter.consoleError(console, e.getMessage(),
-                             "\n" + stringifyException(e),
-                             formatter.MISSING);
-      return 1;
-    } catch (HiveException e) {
-      formatter.consoleError(console,
-                             "FAILED: Error in metadata: " + e.getMessage(),
-                             "\n" + stringifyException(e),
-                             formatter.ERROR);
-      LOG.debug(stringifyException(e));
-      return 1;
-    } catch (Exception e) {
-      formatter.consoleError(console, "Failed with exception " + e.getMessage(),
-                             "\n" + stringifyException(e),
-                             formatter.ERROR);
-      return (1);
     }
     assert false;
     return 0;
@@ -881,7 +851,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       db.alterDatabase(database.getName(), database);
     } else {
-      throw new HiveException("ERROR: The database " + dbName + " does not exist.");
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
     return 0;
   }
@@ -1000,16 +970,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    */
-  /**
-   * Add a partition to a table.
-   *
-   * @param db
-   *          Database to add the partition to.
-   * @param addPartitionDesc
-   *          Add this partition.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   */
   private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
 
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
@@ -1118,7 +1078,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       db.alterTable(tabName, tbl);
     } catch (InvalidOperationException e) {
-      throw new HiveException("Uable to update table");
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + tabName);
     }
 
     work.getInputs().add(new ReadEntity(tbl));
@@ -1878,10 +1838,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl = db.getTable(tabName);
 
     if (!tbl.isPartitioned()) {
-      formatter.consoleError(console,
-                             "Table " + tabName + " is not a partitioned table",
-                             formatter.ERROR);
-      return 1;
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tabName);
     }
     if (showParts.getPartSpec() != null) {
       parts = db.getPartitionNames(tbl.getDbName(),
@@ -1899,20 +1856,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       formatter.showTablePartitons(outStream, parts);
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
-    } catch (FileNotFoundException e) {
-        formatter.logWarn(outStream, "show partitions: " + stringifyException(e),
-                          MetaDataFormatter.ERROR);
-        return 1;
-      } catch (IOException e) {
-        formatter.logWarn(outStream, "show partitions: " + stringifyException(e),
-                          MetaDataFormatter.ERROR);
-        return 1;
     } catch (Exception e) {
-      throw new HiveException(e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show partitions for table " + tabName);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -2212,7 +2161,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   /**
    * Write a list of the available databases to a file.
    *
-   * @param showDatabases
+   * @param showDatabasesDesc
    *          These are the databases we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
@@ -2237,20 +2186,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = fs.create(resFile);
 
       formatter.showDatabases(outStream, databases);
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
-    } catch (FileNotFoundException e) {
-      formatter.logWarn(outStream, "show databases: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
-    } catch (IOException e) {
-      formatter.logWarn(outStream, "show databases: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show databases");
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2272,8 +2213,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String dbName = showTbls.getDbName();
 
     if (!db.databaseExists(dbName)) {
-      throw new HiveException("ERROR: The database " + dbName + " does not exist.");
-
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
     if (showTbls.getPattern() != null) {
       LOG.info("pattern: " + showTbls.getPattern());
@@ -2292,20 +2232,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       formatter.showTables(outStream, sortedTbls);
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
-    } catch (FileNotFoundException e) {
-      formatter.logWarn(outStream, "show table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
-    } catch (IOException e) {
-      formatter.logWarn(outStream, "show table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2337,8 +2269,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ((FSDataOutputStream) outStream).close();
       outStream = null;
     } catch (IOException e) {
-      LOG.warn("show columns: " + stringifyException(e));
-      return 1;
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
@@ -2668,9 +2599,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Database database = db.getDatabase(descDatabase.getDatabaseName());
 
       if (database == null) {
-          formatter.error(outStream,
-                          "No such database: " + descDatabase.getDatabaseName(),
-                          formatter.MISSING);
+        throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, descDatabase.getDatabaseName());
       } else {
           Map<String, String> params = null;
           if(descDatabase.isExt()) {
@@ -2683,22 +2612,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                                             database.getLocationUri(),
                                             params);
       }
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
-    } catch (FileNotFoundException e) {
-      formatter.logWarn(outStream,
-                        "describe database: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (IOException e) {
-      formatter.logWarn(outStream,
-                        "describe database: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2713,7 +2632,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Return 0 when execution succeeds and above 0 if it fails.
    */
   private int showTableStatus(Hive db, ShowTableStatusDesc showTblStatus) throws HiveException {
-    // get the tables for the desired pattenn - populate the output stream
+    // get the tables for the desired pattern - populate the output stream
     List<Table> tbls = new ArrayList<Table>();
     Map<String, String> part = showTblStatus.getPartSpec();
     Partition par = null;
@@ -2749,20 +2668,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       formatter.showTableStatus(outStream, db, conf, tbls, part, par);
 
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
-    } catch (FileNotFoundException e) {
-      formatter.logInfo(outStream, "show table status: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
-    } catch (IOException e) {
-      formatter.logInfo(outStream, "show table status: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (Exception e) {
-      throw new HiveException(e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show table status");
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
     return 0;
   }
@@ -2835,7 +2746,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     return 0;
   }
-
   /**
    * Write the description of a table to a file.
    *
@@ -2860,36 +2770,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl == null) {
         FileSystem fs = resFile.getFileSystem(conf);
         outStream = fs.create(resFile);
-        String errMsg = "Table " + tableName + " does not exist";
-        formatter.error(outStream, errMsg, formatter.MISSING);
-        ((FSDataOutputStream) outStream).close();
+        outStream.close();
         outStream = null;
-        return 0;
+        throw new HiveException(ErrorMsg.INVALID_TABLE, tableName);
       }
       if (descTbl.getPartSpec() != null) {
         part = db.getPartition(tbl, descTbl.getPartSpec(), false);
         if (part == null) {
           FileSystem fs = resFile.getFileSystem(conf);
           outStream = fs.create(resFile);
-          String errMsg = "Partition " + descTbl.getPartSpec() + " for table "
-              + tableName + " does not exist";
-          formatter.error(outStream, errMsg, formatter.MISSING);
-          ((FSDataOutputStream) outStream).close();
+          outStream.close();
           outStream = null;
-          return 0;
+          throw new HiveException(ErrorMsg.INVALID_PARTITION,
+                  StringUtils.join(descTbl.getPartSpec().keySet(), ','), tableName);
         }
         tbl = part.getTable();
       }
-    } catch (FileNotFoundException e) {
-      formatter.logInfo(outStream, "describe table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (IOException e) {
-      formatter.logInfo(outStream, "describe table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     try {
@@ -2916,21 +2816,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                               descTbl.isFormatted(), descTbl.isExt(), descTbl.isPretty());
 
       LOG.info("DDLTask: written data for " + tbl.getTableName());
-      ((FSDataOutputStream) outStream).close();
+      outStream.close();
       outStream = null;
 
-    } catch (FileNotFoundException e) {
-      formatter.logInfo(outStream, "describe table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
     } catch (IOException e) {
-      formatter.logInfo(outStream, "describe table: " + stringifyException(e),
-                        formatter.ERROR);
-      return 1;
-    } catch (Exception e) {
-      throw new HiveException(e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
     } finally {
-      IOUtils.closeStream((FSDataOutputStream) outStream);
+      IOUtils.closeStream(outStream);
     }
 
     return 0;
@@ -3009,11 +2901,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl.getOp() != AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
         part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
         if (part == null) {
-          formatter.consoleError(console,
-                                 "Partition : " + alterTbl.getPartSpec().toString()
-                                 + " does not exist.",
-                                 formatter.MISSING);
-          return 1;
+          throw new HiveException(ErrorMsg.INVALID_PARTITION,
+                  StringUtils.join(alterTbl.getPartSpec().keySet(), ',') + " for table " + alterTbl.getOldName());
         }
       }
       else {
@@ -3044,10 +2933,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           while (iterOldCols.hasNext()) {
             String oldColName = iterOldCols.next().getName();
             if (oldColName.equalsIgnoreCase(newColName)) {
-              formatter.consoleError(console,
-                                     "Column '" + newColName + "' exists",
-                                     formatter.CONFLICT);
-              return 1;
+              throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newColName);
             }
           }
           oldCols.add(newCol);
@@ -3078,10 +2964,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         String oldColName = col.getName();
         if (oldColName.equalsIgnoreCase(newName)
             && !oldColName.equalsIgnoreCase(oldName)) {
-          formatter.consoleError(console,
-                                 "Column '" + newName + "' exists",
-                                 formatter.CONFLICT);
-          return 1;
+          throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newName);
         } else if (oldColName.equalsIgnoreCase(oldName)) {
           col.setName(newName);
           if (type != null && !type.trim().equals("")) {
@@ -3108,17 +2991,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       // did not find the column
       if (!found) {
-        formatter.consoleError(console,
-                               "Column '" + oldName + "' does not exists",
-                               formatter.MISSING);
-        return 1;
+        throw new HiveException(ErrorMsg.INVALID_COLUMN, oldName);
       }
       // after column is not null, but we did not find it.
       if ((afterCol != null && !afterCol.trim().equals("")) && position < 0) {
-        formatter.consoleError(console,
-                               "Column '" + afterCol + "' does not exists",
-                               formatter.MISSING);
-        return 1;
+        throw new HiveException(ErrorMsg.INVALID_COLUMN, afterCol);
       }
 
       if (position >= 0) {
@@ -3139,11 +3016,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           && !tbl.getSerializationLib().equals(LazySimpleSerDe.class.getName())
           && !tbl.getSerializationLib().equals(ColumnarSerDe.class.getName())
           && !tbl.getSerializationLib().equals(DynamicSerDe.class.getName())) {
-        formatter.consoleError(console,
-                               "Replace columns is not supported for this table. "
-                               + "SerDe may be incompatible.",
-                               formatter.ERROR);
-        return 1;
+        throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
       }
       tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
@@ -3242,10 +3115,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         URI locUri = new URI(newLocation);
         if (!locUri.isAbsolute() || locUri.getScheme() == null
             || locUri.getScheme().trim().equals("")) {
-          throw new HiveException(
-              newLocation
-                  + " is not absolute or has no scheme information. "
-                  + "Please specify a complete absolute uri with scheme information.");
+          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
         }
         if (part != null) {
           part.setLocation(newLocation);
@@ -3313,34 +3183,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
     } else {
-      formatter.consoleError(console,
-                             "Unsupported Alter commnad",
-                             formatter.ERROR);
-      return 1;
+      throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
 
     if (part == null && allPartitions == null) {
-      if (!updateModifiedParameters(tbl.getTTable().getParameters(), conf)) {
-        return 1;
-      }
-      try {
-        tbl.checkValidity();
-      } catch (HiveException e) {
-        formatter.consoleError(console,
-                               "Invalid table columns : " + e.getMessage(),
-                               formatter.ERROR);
-        return 1;
-      }
+      updateModifiedParameters(tbl.getTTable().getParameters(), conf);
+      tbl.checkValidity();
     } else if (part != null) {
-      if (!updateModifiedParameters(part.getParameters(), conf)) {
-        return 1;
-      }
+      updateModifiedParameters(part.getParameters(), conf);
     }
     else {
       for (Partition tmpPart: allPartitions) {
-        if (!updateModifiedParameters(tmpPart.getParameters(), conf)) {
-          return 1;
-        }
+        updateModifiedParameters(tmpPart.getParameters(), conf);
       }
     }
 
@@ -3354,11 +3208,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         db.alterPartitions(tbl.getTableName(), allPartitions);
       }
     } catch (InvalidOperationException e) {
-      console.printError("Invalid alter operation: " + e.getMessage());
       LOG.info("alter table: " + stringifyException(e));
-      return 1;
-    } catch (HiveException e) {
-      return 1;
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
 
     // This is kind of hacky - the read entity contains the old table, whereas
@@ -3525,16 +3376,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param user
    *          user that is doing the updating.
    */
-  private boolean updateModifiedParameters(Map<String, String> params, HiveConf conf) {
+  private boolean updateModifiedParameters(Map<String, String> params, HiveConf conf) throws HiveException {
     String user = null;
     try {
       user = conf.getUser();
     } catch (IOException e) {
-      formatter.consoleError(console,
-                             "Unable to get current user: " + e.getMessage(),
-                             stringifyException(e),
-                             formatter.ERROR);
-      return false;
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to get current user");
     }
 
     params.put("last_modified_by", user);
@@ -3562,17 +3409,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param crtDb
    * @return Always returns 0
    * @throws HiveException
-   * @throws AlreadyExistsException
    */
   private int createDatabase(Hive db, CreateDatabaseDesc crtDb)
-      throws HiveException, AlreadyExistsException {
+      throws HiveException {
     Database database = new Database();
     database.setName(crtDb.getName());
     database.setDescription(crtDb.getComment());
     database.setLocationUri(crtDb.getLocationUri());
     database.setParameters(crtDb.getDatabaseProperties());
-
-    db.createDatabase(database, crtDb.getIfNotExists());
+    try {
+      db.createDatabase(database, crtDb.getIfNotExists());
+    }
+    catch (AlreadyExistsException ex) {
+      //it would be better if AlreadyExistsException had an errorCode field....
+      throw new HiveException(ex, ErrorMsg.DATABSAE_ALREADY_EXISTS, crtDb.getName());
+    }
     return 0;
   }
 
@@ -3582,11 +3433,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param dropDb
    * @return Always returns 0
    * @throws HiveException
-   * @throws NoSuchObjectException
    */
   private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
-      throws HiveException, NoSuchObjectException {
-    db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists(), dropDb.isCasdade());
+      throws HiveException {
+    try {
+      db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists(), dropDb.isCasdade());
+    }
+    catch (NoSuchObjectException ex) {
+      throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
+    }
     return 0;
   }
 
@@ -3601,7 +3456,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throws HiveException {
     String dbName = switchDb.getDatabaseName();
     if (!db.databaseExists(dbName)) {
-      throw new HiveException("ERROR: The database " + dbName + " does not exist.");
+      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
     db.setCurrentDatabase(dbName);
 
@@ -3988,7 +3843,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         fs.mkdirs(location);
       }
     } catch (Exception e) {
-      throw new HiveException(e);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
     return 0;
   }
@@ -4023,15 +3878,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return locations;
   }
 
-  private int setGenericTableAttributes(Table tbl) {
+  private int setGenericTableAttributes(Table tbl) throws HiveException {
     try {
       tbl.setOwner(conf.getUser());
     } catch (IOException e) {
-      formatter.consoleError(console,
-                             "Unable to get current user: " + e.getMessage(),
-                             stringifyException(e),
-                             formatter.ERROR);
-      return 1;
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to get current user");
     }
     // set create time
     tbl.setCreateTime((int) (System.currentTimeMillis() / 1000));

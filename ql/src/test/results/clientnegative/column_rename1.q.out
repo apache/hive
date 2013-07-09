@@ -23,5 +23,4 @@ PREHOOK: query: alter table tstsrc change src_not_exist key_value string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@tstsrc
-Column 'src_not_exist' does not exists
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Invalid column reference src_not_exist

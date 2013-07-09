@@ -32,11 +32,15 @@ import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 /**
  * List of all error messages.
  * This list contains both compile time and run-time errors.
- **/
+ *
+ * This class supports parametrized messages such as (@link #TRUNCATE_FOR_NON_MANAGED_TABLE}.  These are
+ * preferable over un-parametrized ones where arbitrary String is appended to the end of the message,
+ * for example {@link #getMsg(String)} and {@link #INVALID_TABLE}.
+ */
 
 public enum ErrorMsg {
   // The error codes are Hive-specific and partitioned into the following ranges:
-  // 10000 to 19999: Errors occuring during semantic analysis and compilation of the query.
+  // 10000 to 19999: Errors occurring during semantic analysis and compilation of the query.
   // 20000 to 29999: Runtime errors where Hive believes that retries are unlikely to succeed.
   // 30000 to 39999: Runtime errors which Hive thinks may be transient and retrying may succeed.
   // 40000 to 49999: Errors where Hive is unable to advise about retries.
@@ -351,6 +355,12 @@ public enum ErrorMsg {
   TRUNCATE_LIST_BUCKETED_COLUMN(10240,
       "A column on which a partition/table is list bucketed cannot be truncated."),
 
+  TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
+  DATABSAE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
+  CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
+  BAD_LOCATION_VALUE(10244, "{0}  is not absolute or has no scheme information.  Please specify a complete absolute uri with scheme information."),
+  UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
@@ -488,7 +498,7 @@ public enum ErrorMsg {
 
   /**
    * For a given error message string, searches for a <code>ErrorMsg</code> enum
-   * that appears to be a match. If an match is found, returns the
+   * that appears to be a match. If a match is found, returns the
    * <code>SQLState</code> associated with the <code>ErrorMsg</code>. If a match
    * is not found or <code>ErrorMsg</code> has no <code>SQLState</code>, returns
    * the <code>SQLState</code> bound to the <code>GENERIC_ERROR</code>
@@ -605,10 +615,41 @@ public enum ErrorMsg {
   public String format(String reason) {
     return format(new String[]{reason});
   }
-
+  /**
+   * If the message is parametrized, this will fill the parameters with supplied 
+   * {@code reasons}, otherwise {@code reasons} are appended at the end of the 
+   * message.
+   */
   public String format(String... reasons) {
-    assert format != null;
-    return format.format(reasons);
+    /* Not all messages are parametrized even those that should have been, e.g {@link #INVALID_TABLE}.
+     INVALID_TABLE is usually used with {@link #getMsg(String)}.
+     This method can also be used with INVALID_TABLE and the like and will match getMsg(String) behavior.
+
+     Another example: {@link #INVALID_PARTITION}.  Ideally you want the message to have 2 parameters one for
+     partition name one for table name.  Since this is already defined w/o any parameters, one can still call
+     {@code INVALID_PARTITION.format("<partName> <table Name>"}.  This way the message text will be slightly
+     different but at least the errorCode will match.  Note this, should not be abused by adding anything other
+     than what should have been parameter names to keep msg text standardized.
+     */
+    if(reasons == null || reasons.length == 0) {
+      return getMsg();
+    }
+    if(format != null) {
+      return format.format(reasons);
+    }
+    if(reasons.length > 1) {
+      StringBuilder sb = new StringBuilder();
+      for(String re : reasons) {
+        if(re != null) {
+          if(sb.length() > 0) {
+            sb.append(" ");
+          }
+          sb.append(re);
+        }
+      }
+      return getMsg(sb.toString());
+    }
+    return getMsg(reasons[0]);
   }
 
   public String getErrorCodedMsg() {

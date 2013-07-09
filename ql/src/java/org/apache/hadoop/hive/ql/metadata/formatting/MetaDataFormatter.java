@@ -38,49 +38,18 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 public interface MetaDataFormatter {
     /**
-     * Generic error code.  This and the other error codes are
-     * designed to match the HTTP status codes.
-     */
-    static final int ERROR = 500;
-
-    /**
-     * Missing error code.
-     */
-    static final int MISSING = 404;
-
-    /**
-     * Conflict error code.
-     */
-    static final int CONFLICT = 409;
-
-    /**
      * Write an error message.
+     * @param sqlState if {@code null}, will be ignored
      */
-    public void error(OutputStream out, String msg, int errorCode)
+    public void error(OutputStream out, String msg, int errorCode, String sqlState)
         throws HiveException;
 
-    /**
-     * Write a log warn message.
-     */
-    public void logWarn(OutputStream out, String msg, int errorCode)
-        throws HiveException;
-
-    /**
-     * Write a log info message.
-     */
-    public void logInfo(OutputStream out, String msg, int errorCode)
-        throws HiveException;
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, int errorCode);
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, String detail,
-                             int errorCode);
+  /**
+   * @param sqlState if {@code null}, will be skipped in output
+   * @param errorDetail usually string version of some Exception, if {@code null}, will be ignored
+   */
+    public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
+          throws HiveException;
 
     /**
      * Show a list of tables.

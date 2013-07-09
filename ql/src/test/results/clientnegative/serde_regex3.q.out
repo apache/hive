@@ -16,5 +16,4 @@ PREHOOK: query: -- null input.regex, raise an exception
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException This table does not have serde property "input.regex"!)

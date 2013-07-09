@@ -25,17 +25,34 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hcatalog.templeton.tool.TempletonUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.eclipse.jetty.http.HttpStatus;
 
 /**
  * Helper class to build new json objects with new top level
  * properties.  Only add non-null entries.
  */
 public class JsonBuilder {
-    static final int OK = 200;
-    static final int MISSING = 404;
-    static final int SERVER_ERROR = 500;
+    private static final Map<Object, Integer> hiveError2HttpStatusCode = new HashMap<Object, Integer>();
+
+    /**
+     * It's expected that Hive (and thus HCat CLI) will return canonical error msgs/codes.
+     * Here they are mapped to appropriate HTTP Status Code.
+     */
+    static {
+        hiveError2HttpStatusCode.put(ErrorMsg.GENERIC_ERROR.getErrorCode(), HttpStatus.INTERNAL_SERVER_ERROR_500);
+        hiveError2HttpStatusCode.put(ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), HttpStatus.NOT_FOUND_404);
+        hiveError2HttpStatusCode.put(ErrorMsg.INVALID_TABLE.getErrorCode(), HttpStatus.NOT_FOUND_404);
+        hiveError2HttpStatusCode.put(ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode(), HttpStatus.NOT_FOUND_404);
+        hiveError2HttpStatusCode.put(ErrorMsg.INVALID_PARTITION.getErrorCode(), HttpStatus.NOT_FOUND_404);
+
+        hiveError2HttpStatusCode.put(ErrorMsg.DUPLICATE_COLUMN_NAMES.getErrorCode(), HttpStatus.CONFLICT_409);
+        hiveError2HttpStatusCode.put(ErrorMsg.DATABSAE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+        hiveError2HttpStatusCode.put(ErrorMsg.PARTITION_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+        hiveError2HttpStatusCode.put(ErrorMsg.TABLE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+    }
 
     // The map we're building.
     private Map map;
@@ -65,11 +82,11 @@ public class JsonBuilder {
     /**
      * Create a new map error object.
      */
-    public static JsonBuilder createError(String msg, int code)
+    public static JsonBuilder createError(String msg, int errorCode)
         throws IOException {
         return new JsonBuilder(null)
             .put("error", msg)
-            .put("errorCode", code);
+            .put("errorCode", errorCode);
     }
 
     /**
@@ -115,16 +132,13 @@ public class JsonBuilder {
      * Turn the map back to response object.
      */
     public Response buildResponse() {
-        int status = OK;        // Server ok.
+        int status = HttpStatus.OK_200;        // Server ok.
         if (map.containsKey("error"))
-            status = SERVER_ERROR; // Generic http server error.
+            status = HttpStatus.INTERNAL_SERVER_ERROR_500; // Generic http server error.
         Object o = map.get("errorCode");
         if (o != null) {
-            try {
-                status = Integer.parseInt(o.toString());
-            } catch (Exception e) {
-                if (o instanceof Number)
-                    status = ((Number) o).intValue();
+            if(hiveError2HttpStatusCode.containsKey(o)) {
+                status = hiveError2HttpStatusCode.get(o);
             }
         }
         return buildResponse(status);
