@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.BucketMatcher;
+import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
@@ -63,6 +70,15 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
+
+/**
+ * MapredLocalTask represents any local work (i.e.: client side work) that hive needs to
+ * execute. E.g.: This is used for generating Hashtables for Mapjoins on the client
+ * before the Join is executed on the cluster.
+ * 
+ * MapRedLocalTask does not actually execute the work in process, but rather generates 
+ * a command using ExecDriver. ExecDriver is what will finally drive processing the records.
+ */
 public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
   private Map<String, FetchOperator> fetchOperators;
@@ -202,7 +218,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // This will be used by hadoop only in unsecure(/non kerberos) mode
       HadoopShims shim = ShimLoader.getHadoopShims();
       String endUserName = shim.getShortUserName(shim.getUGIForConf(job));
-      console.printInfo("setting HADOOP_USER_NAME\t" + endUserName);
+      LOG.debug("setting HADOOP_USER_NAME\t" + endUserName);
       variables.put("HADOOP_USER_NAME", endUserName);
 
       if (variables.containsKey(HADOOP_OPTS_KEY)) {

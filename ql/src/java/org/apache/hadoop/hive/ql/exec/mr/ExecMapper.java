@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -28,6 +28,11 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.MapOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -38,8 +43,16 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
+
 /**
- * ExecMapper.
+ * ExecMapper is the generic Map class for Hive. Together with ExecReducer it is 
+ * the bridge between the map-reduce framework and the Hive operator pipeline at
+ * execution time. It's main responsabilities are:
+ * 
+ * - Load and setup the operator pipeline from XML
+ * - Run the pipeline by transforming key value pairs to records and forwarding them to the operators
+ * - Stop execution when the "limit" is reached
+ * - Catch and handle errors during execution of the operators.
  *
  */
 public class ExecMapper extends MapReduceBase implements Mapper {
@@ -50,7 +63,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private JobConf jc;
   private boolean abort = false;
   private Reporter rp;
-  public static final Log l4j = LogFactory.getLog("ExecMapper");
+  public static final Log l4j = LogFactory.getLog(ExecMapper.class);
   private static boolean done;
 
   // used to log memory usage periodically

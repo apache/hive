@@ -11,4 +11,4 @@ SELECT evaluate_npe(src.key) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

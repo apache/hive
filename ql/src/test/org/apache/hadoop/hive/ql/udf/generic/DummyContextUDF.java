@@ -38,8 +38,7 @@ public class DummyContextUDF extends GenericUDF {
 
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Reporter reporter = context.getReporter();
-    Counters.Counter counter = reporter.getCounter(
-        "org.apache.hadoop.mapred.Task$Counter", "MAP_INPUT_RECORDS");
+    Counters.Counter counter = reporter.getCounter("org.apache.hadoop.mapred.Task$Counter", "MAP_INPUT_RECORDS");
     result.set(counter.getValue());
     return result;
   }
@@ -49,7 +48,7 @@ public class DummyContextUDF extends GenericUDF {
   }
 
   @Override
-  public void configure(MapredContext context) {
+    public void configure(MapredContext context) {
     this.context = context;
   }
 }
