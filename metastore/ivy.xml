@@ -31,10 +31,7 @@
     <dependency org="org.antlr" name="ST4" rev="${ST4.version}" transitive="false"/><!-- manually added (antlr dep), bad POM -->
     <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
                 conf="compile->default" />
-    <dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
-      <exclude module="commons-pool" />
-      <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
-    </dependency>
+    <dependency org="com.jolbox" name="bonecp" rev="${BoneCP.version}"/>
     <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
     <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}"
                 transitive="false"/>

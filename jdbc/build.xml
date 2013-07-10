@@ -33,7 +33,8 @@
       <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
       <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
       <pathelement location="${build.dir.hive}/ql/test/classes"/>
-      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+      <fileset dir="${build.ivy.lib.dir}" includes="default/*.jar"/>
+      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />     
       <path refid="classpath" />
     </distinctelementsclasspath>
   </target>
