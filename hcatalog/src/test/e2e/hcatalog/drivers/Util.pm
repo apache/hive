@@ -421,10 +421,10 @@ sub getHiveLibsForPig($$)
         /datanucleus-.*\.jar$/ && do {
             $cp .= $cfg->{'hivelib'} . '/' . $_ . ':';
         };
-        /jdo2-api-.*\.jar$/ && do {
+        /jdo-api-.*\.jar$/ && do {
             $cp .= $cfg->{'hivelib'} . '/' . $_ . ':';
         };
-        /commons-dbcp-.*\.jar$/ && do {
+        /bonecp-.*\.jar$/ && do {
             $cp .= $cfg->{'hivelib'} . '/' . $_ . ':';
         };
         /commons-pool-.*\.jar$/ && do {
