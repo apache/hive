@@ -73,7 +73,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-cli-@commons-cli.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-collections-@commons-collections.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/commons-dbcp-@commons-dbcp.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/bonecp-@BoneCP.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-pool-@commons-pool.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>
