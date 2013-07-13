@@ -59,6 +59,51 @@
   <property name="rat.build.dir" location="${build.dir.hive}/rat"/>
   <property name="md5sum.format" value="{0}  {1}"/>
 
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="${hive.root}/testlibs/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
+  <if>
+    <equals arg1="${build.profile}" arg2="core"/>
+    <then>
+      <property name="iterate.hive.all" value="${iterate.hive.core.all}"/>
+      <property name="iterate.hive.modules" value="${iterate.hive.core.modules}"/>
+      <property name="iterate.hive.tests" value="${iterate.hive.core.tests}"/>
+      <property name="iterate.hive.thrift" value="${iterate.hive.core.thrift}"/>
+      <property name="iterate.hive.protobuf" value="${iterate.hive.core.protobuf}"/>
+      <property name="iterate.hive.cpp" value="${iterate.hive.core.cpp}"/>
+    </then>
+  </if>
+
+  <if>
+    <equals arg1="${build.profile}" arg2="nohcat"/>
+    <then>
+      <property name="iterate.hive.all" value="${iterate.hive.nohcat.all}"/>
+      <property name="iterate.hive.modules" value="${iterate.hive.nohcat.modules}"/>
+      <property name="iterate.hive.tests" value="${iterate.hive.nohcat.tests}"/>
+      <property name="iterate.hive.thrift" value="${iterate.hive.nohcat.thrift}"/>
+      <property name="iterate.hive.protobuf" value="${iterate.hive.nohcat.protobuf}"/>
+      <property name="iterate.hive.cpp" value="${iterate.hive.nohcat.cpp}"/>
+    </then>
+  </if>
+
+  <if>
+    <or>
+      <equals arg1="${build.profile}" arg2="full"/>
+      <not><isset property="build.profile"/></not>
+    </or>
+    <then>
+      <property name="iterate.hive.all" value="${iterate.hive.full.all}"/>
+      <property name="iterate.hive.modules" value="${iterate.hive.full.modules}"/>
+      <property name="iterate.hive.tests" value="${iterate.hive.full.tests}"/>
+      <property name="iterate.hive.thrift" value="${iterate.hive.full.thrift}"/>
+      <property name="iterate.hive.protobuf" value="${iterate.hive.full.protobuf}"/>
+      <property name="iterate.hive.cpp" value="${iterate.hive.full.cpp}"/>
+    </then>
+  </if>
+
   <!-- Check minimum ant version required -->
   <fail message="Please use ant version 1.8.0 or greater for building hive.">
     <condition>
@@ -477,18 +522,18 @@
         <exclude name="**/hive-anttasks*.jar"/>
         <exclude name="**/hive-testutils*.jar"/>
       </fileset>
-      <fileset file="${build.dir.hive}/beeline/hive-beeline-${version}.jar"/>
-      <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar"/>
-      <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
-      <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
-      <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
-      <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
-      <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
+      <fileset file="${build.dir.hive}/beeline/hive-beeline-${version}.jar" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/common/hive-common-${version}.jar" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war" erroronmissingdir="false"/>
+      <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar" erroronmissingdir="false"/>
       <fileset dir="${build.dir.hive}/ivy/lib/default">
         <include name="*.jar"/>
         <exclude name="*.tar.gz"/>
         <exclude name="hadoop-*.jar" />
-	<exclude name="**/*high-scale-lib-*"/>
+        <exclude name="**/*high-scale-lib-*"/>
         <exclude name="**/hamcrest-core-*jar"/>
         <exclude name="**/junit*.jar"/>
         <exclude name="**/asm*.jar"/>
@@ -516,12 +561,17 @@
     </chmod>
 
     <!-- Package the hcat stuff and pull it up into Hive's build dir -->
-    <ant antfile="${hive.root}/hcatalog/build.xml" target="package"
-        inheritAll="false"/>
-    <mkdir dir="${target.dir}/hcatalog"/>
-    <copy todir="${target.dir}/hcatalog">
-        <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
-    </copy>
+    <if>
+      <matches string="${iterate.hive.all}" pattern="hcatalog"/>
+      <then>
+        <ant antfile="${hive.root}/hcatalog/build.xml" target="package"
+          inheritAll="false"/>
+        <mkdir dir="${target.dir}/hcatalog"/>
+        <copy todir="${target.dir}/hcatalog">
+          <fileset dir="${hive.root}/hcatalog/build/hcatalog-${hcatalog.version}"/>
+        </copy>
+      </then>
+    </if>
     <!--fix permissions since 'copy' looses them (known ant/Java issue)-->
     <chmod perm="ugo+x" type="file">
       <fileset dir="${target.dir}/hcatalog/bin"/>
