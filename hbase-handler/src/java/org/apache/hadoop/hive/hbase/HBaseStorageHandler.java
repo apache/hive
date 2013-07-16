@@ -281,6 +281,18 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       tableProperties.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING));
     jobProperties.put(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,
       tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,"string"));
+    String scanCache = tableProperties.getProperty(HBaseSerDe.HBASE_SCAN_CACHE);
+    if (scanCache != null) {
+      jobProperties.put(HBaseSerDe.HBASE_SCAN_CACHE, scanCache);
+    }
+    String scanCacheBlocks = tableProperties.getProperty(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS);
+    if (scanCacheBlocks != null) {
+      jobProperties.put(HBaseSerDe.HBASE_SCAN_CACHEBLOCKS, scanCacheBlocks);
+    }
+    String scanBatch = tableProperties.getProperty(HBaseSerDe.HBASE_SCAN_BATCH);
+    if (scanBatch != null) {
+      jobProperties.put(HBaseSerDe.HBASE_SCAN_BATCH, scanBatch);
+    }
 
     String tableName =
       tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);
