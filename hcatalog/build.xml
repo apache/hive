@@ -28,6 +28,8 @@
     <property name="path.to.basedir" location="${basedir}"/>
     <property name="test.result.dir" location="${build.dir.hive}/hcatalog/test"
               description="location to place TEST-*.xml files so that hive's testreport includes them"/>
+    <property name="hive.dist.dir" location="${build.dir.hive}/dist"
+            description="where all hive build artifacts are placed to make binary tar ball"/>
     <loadproperties srcfile="${basedir}/build.properties"/>
 
     <!--
@@ -108,6 +110,8 @@
             </ant>
             <ant target="test" dir="webhcat/svr" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
+                <property name="env.HIVE_HOME" value="${hive.dist.dir}"/>
+                <property name="env.HCAT_PREFIX" value="${hive.dist.dir}/hcatalog"/>
             </ant>
             <ant target="test" dir="webhcat/java-client" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>

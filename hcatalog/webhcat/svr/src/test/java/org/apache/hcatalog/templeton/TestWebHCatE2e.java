@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -62,8 +63,7 @@ public class TestWebHCatE2e {
     private static final String ERROR_CODE = "errorCode";
     private static Main templetonServer;
     private static final String charSet = "UTF-8";
-    //  "not ready due to HIVE-4820"
-    //@BeforeClass
+    @BeforeClass
     public static void startHebHcatInMem() {
         templetonServer = new Main(new String[] {"-D" + AppConfig.UNIT_TEST_MODE + "=true"});
         LOG.info("Starting Main");
@@ -78,7 +78,6 @@ public class TestWebHCatE2e {
             LOG.info("Main stopped");
         }
     }
-    @Ignore("not ready due to HIVE-4820")
     @Test
     public void getStatus() throws IOException {
         LOG.debug("+getStatus()");
@@ -100,7 +99,6 @@ public class TestWebHCatE2e {
      * Check that we return correct status code when the URL doesn't map to any method
      * in {@link Server}
      */
-    @Ignore("not ready due to HIVE-4820")
     @Test
     public void invalidPath() throws IOException {
         MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/no_such_mapping/database", HTTP_METHOD_TYPE.GET);

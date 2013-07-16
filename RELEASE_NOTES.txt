@@ -15,6 +15,7 @@ Release Notes - Hive - Version 0.11.0
     * [HIVE-4326] - Clean up remaining items in hive/hcatalog/historical/trunk
 
 ** Bug
+    * [HIVE-4820] - webhcat_config.sh should set default values for HIVE_HOME and HCAT_PREFIX that work with default build tree structure
     * [HIVE-2264] - Hive server is SHUTTING DOWN when invalid queries beeing executed.
     * [HIVE-2332] - If all of the parameters of distinct functions are exists in group by columns, query fails in runtime
     * [HIVE-2689] - ObjectInspectorConverters cannot convert Void types to Array/Map/Struct types.
