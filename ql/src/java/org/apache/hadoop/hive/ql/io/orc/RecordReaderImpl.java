@@ -179,17 +179,24 @@ class RecordReaderImpl implements RecordReader {
      * @throws IOException
      */
     Object nextVector(Object previousVector, long batchSize) throws IOException {
-      if (present != null) {
 
+      ColumnVector result = (ColumnVector) previousVector;
+      if (present != null) {
         // Set noNulls and isNull vector of the ColumnVector based on
         // present stream
-        ColumnVector result = (ColumnVector) previousVector;
         result.noNulls = true;
         for (int i = 0; i < batchSize; i++) {
           result.isNull[i] = (present.next() != 1);
           if (result.noNulls && result.isNull[i]) {
             result.noNulls = false;
           }
+        }
+      } else {
+        // There is not present stream, this means that all the values are
+        // present.
+        result.noNulls = true;
+        for (int i = 0; i < batchSize; i++) {
+          result.isNull[i] = false;
         }
       }
       return previousVector;
