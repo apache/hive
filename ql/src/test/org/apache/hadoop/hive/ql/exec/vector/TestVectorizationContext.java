@@ -14,6 +14,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
@@ -155,6 +156,31 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(exprDesc);
 
     assertTrue(ve instanceof FilterStringColGreaterStringScalar);
+  }
+
+  @Test
+  public void testFilterStringColCompareStringColumnExpressions() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(String.class, "col1", "table", false);
+    ExprNodeColumnDesc col2Expr = new  ExprNodeColumnDesc(String.class, "col2", "table", false);
+
+    GenericUDFOPGreaterThan udf = new GenericUDFOPGreaterThan();
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(col1Expr);
+    children1.add(col2Expr);
+    exprDesc.setChildExprs(children1);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    columnMap.put("col2", 2);
+
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    vc.setOperatorType(OperatorType.FILTER);
+
+    VectorExpression ve = vc.getVectorExpression(exprDesc);
+
+    assertTrue(ve instanceof FilterStringColGreaterStringColumn);
   }
 
   @Test
