@@ -1091,9 +1091,9 @@ public class VectorizationContext {
     {"std",       "Long",   VectorUDAFStdPopLong.class},
     {"stddev",    "Long",   VectorUDAFStdPopLong.class},
     {"stddev_pop","Long",   VectorUDAFStdPopLong.class},
-    {"std",       "Long",   VectorUDAFStdPopDouble.class},
-    {"stddev",    "Long",   VectorUDAFStdPopDouble.class},
-    {"stddev_pop","Long",   VectorUDAFStdPopDouble.class},
+    {"std",       "Double", VectorUDAFStdPopDouble.class},
+    {"stddev",    "Double", VectorUDAFStdPopDouble.class},
+    {"stddev_pop","Double", VectorUDAFStdPopDouble.class},
     {"stddev_samp","Long",  VectorUDAFStdSampLong.class},
     {"stddev_samp","Double",VectorUDAFStdSampDouble.class},
   };
