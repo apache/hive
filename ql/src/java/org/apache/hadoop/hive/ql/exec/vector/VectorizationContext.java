@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
@@ -99,6 +101,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.io.Text;
 
 /**
  * Context class for vectorization execution.
@@ -448,9 +451,31 @@ public class VectorizationContext {
         cl.equals(UDFMinute.class) ||
         cl.equals(UDFSecond.class)) {
       return getTimestampFieldExpression(cl.getSimpleName(), childExpr);
+    } else if (cl.equals(UDFLike.class)) {
+      return getLikeExpression(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getLikeExpression(List<ExprNodeDesc> childExpr) throws HiveException {
+    ExprNodeDesc leftExpr = childExpr.get(0);
+    ExprNodeDesc rightExpr = childExpr.get(1);
+
+    VectorExpression expr = null;
+    if ((leftExpr instanceof ExprNodeColumnDesc) &&
+        (rightExpr instanceof ExprNodeConstantDesc) ) {
+      ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
+      ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
+      int inputCol = getInputColumnIndex(leftColDesc.getColumn());
+      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol, 
+          new Text((byte[]) getScalarValue(constDesc)));  
+    }
+    // TODO add logic to handle cases where left input is an expression. 
+    if (expr == null) {
+      throw new HiveException("Vector LIKE filter expression could not be initialized");
+    }
+    return expr;
   }
 
   private VectorExpression getTimestampFieldExpression(String udf,
