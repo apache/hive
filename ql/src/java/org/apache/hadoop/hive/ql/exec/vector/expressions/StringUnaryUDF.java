@@ -38,6 +38,11 @@ public class StringUnaryUDF extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+    
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+    
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
     int n = batch.size;

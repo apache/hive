@@ -26,7 +26,7 @@ public class StringLength extends VectorExpression {
   private int colNum;
   private int outputColumn;
   
-  StringLength (int colNum, int outputColumn) {
+  public StringLength (int colNum, int outputColumn) {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
   }
@@ -34,6 +34,11 @@ public class StringLength extends VectorExpression {
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+    
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+    
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];  
     int[] sel = batch.selected;
@@ -127,7 +132,7 @@ public class StringLength extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "String";
+    return "Long";
   }
 
 
