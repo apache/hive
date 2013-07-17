@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
 
 public class StringUpper extends StringUnaryUDF {
-  StringUpper(int colNum, int outputColumn) {
+  public StringUpper(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFUpper());
   }
 }

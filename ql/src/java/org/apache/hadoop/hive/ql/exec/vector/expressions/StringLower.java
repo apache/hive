@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
 
 public class StringLower extends StringUnaryUDF {
-  StringLower(int colNum, int outputColumn) {
+  public StringLower(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFLower());
   }
 }

@@ -72,7 +72,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
+import org.apache.hadoop.hive.ql.udf.UDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
@@ -83,6 +85,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -453,27 +456,90 @@ public class VectorizationContext {
       return getTimestampFieldExpression(cl.getSimpleName(), childExpr);
     } else if (cl.equals(UDFLike.class)) {
       return getLikeExpression(childExpr);
+    } else if (cl.equals(UDFLower.class)) {
+      return getUnaryStringExpression("StringLower", "String", childExpr);
+    } else if (cl.equals(UDFUpper.class)) {
+      return getUnaryStringExpression("StringUpper", "String", childExpr);
+    } else if (cl.equals(UDFLength.class)) {
+      return getUnaryStringExpression("StringLength", "Long", childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  /* Return a unary string vector expression. This is used for functions like
+   * UPPER() and LOWER().
+   */
+  private VectorExpression getUnaryStringExpression(String vectorExprClassName, 
+      String resultType, // result type name
+      List<ExprNodeDesc> childExprList) throws HiveException {
+    
+    /* Create an instance of the class vectorExprClassName for the input column or expression result
+     * and return it.
+     */
+    
+    ExprNodeDesc childExpr = childExprList.get(0);
+    int inputCol;
+    VectorExpression v1 = null;
+    if (childExpr instanceof ExprNodeGenericFuncDesc) {
+      v1 = getVectorExpression(childExpr);
+      inputCol = v1.getOutputColumn();
+    } else if (childExpr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) childExpr;
+      inputCol = getInputColumnIndex(colDesc.getColumn());
+    } else {
+      // TODO? add code to handle constant argument case
+      throw new HiveException("Expression not supported: "+childExpr);
+    }
+    String outputColumnType = getNormalizedTypeName(resultType);
+    int outputCol = ocm.allocateOutputColumn(outputColumnType);
+    String className = "org.apache.hadoop.hive.ql.exec.vector.expressions."
+       + vectorExprClassName;
+    VectorExpression expr;
+    try {
+      expr = (VectorExpression) Class.forName(className).
+          getDeclaredConstructors()[0].newInstance(inputCol, outputCol);
+    } catch (Exception ex) {
+      throw new HiveException(ex);
+    }
+    if (v1 != null) {
+      expr.setChildExpressions(new VectorExpression [] {v1});
+      ocm.freeOutputColumn(v1.getOutputColumn());
+    }
+    return expr;
   }
 
   private VectorExpression getLikeExpression(List<ExprNodeDesc> childExpr) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
+    VectorExpression v1 = null;
     VectorExpression expr = null;
+    int inputCol;
+    ExprNodeConstantDesc constDesc;
+    
     if ((leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
-      ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) rightExpr;
-      int inputCol = getInputColumnIndex(leftColDesc.getColumn());
+      constDesc = (ExprNodeConstantDesc) rightExpr;
+      inputCol = getInputColumnIndex(leftColDesc.getColumn());
+      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol, 
+          new Text((byte[]) getScalarValue(constDesc)));  
+    } else if ((leftExpr instanceof ExprNodeGenericFuncDesc) &&
+               (rightExpr instanceof ExprNodeConstantDesc)) {
+      v1 = getVectorExpression(leftExpr);
+      inputCol = v1.getOutputColumn();
+      constDesc = (ExprNodeConstantDesc) rightExpr;
       expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol, 
           new Text((byte[]) getScalarValue(constDesc)));  
     }
     // TODO add logic to handle cases where left input is an expression. 
     if (expr == null) {
       throw new HiveException("Vector LIKE filter expression could not be initialized");
+    }
+    if (v1 != null) {
+      expr.setChildExpressions(new VectorExpression [] {v1});
+      ocm.freeOutputColumn(v1.getOutputColumn());
     }
     return expr;
   }
